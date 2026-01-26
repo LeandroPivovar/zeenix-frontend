@@ -401,7 +401,7 @@ export default {
 		data() {
 		return {
 			// Estado de seleção inicial (Baseado na imagem)
-			selectedAgent: '', 
+			selectedAgent: null, 
 			selectedMarket: 'volatility_75', 
 			stopLossBlindado: false, 
 			selectedRisk: 'balanced',
@@ -717,7 +717,7 @@ export default {
     background-color: #111;
     border: 1px solid #333;
     color: #fff;
-    text-align: center;
+    text-align: left;
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 0.75rem;

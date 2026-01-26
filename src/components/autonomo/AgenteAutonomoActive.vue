@@ -912,20 +912,39 @@
 			// Fallback: usar balance do agentConfig ou sessionStats
 			return this.agentConfig?.currentBalance || this.sessionStats?.totalCapital || 0;
 		},
-			periodProfit() {
-				return this.sessionStats?.netProfit || 0;
-			},
+            periodProfit() {
+                if (this.selectedPeriod === 'session') {
+                    return this.sessionStats?.netProfit || 0;
+                }
+                if (!this.dailyData || this.dailyData.length === 0) return 0;
+                return this.dailyData.reduce((sum, day) => sum + (day.profit || 0), 0);
+            },
 			periodProfitPercent() {
-				const startBalance = this.agentConfig?.initialBalance || 0;
-				if (startBalance <= 0) return 0;
-				return (this.periodProfit / startBalance) * 100;
+				// Para período, calculamos % sobre o capital inicial (ou saldo atual estimado se não tiver inicial guardado)
+                // Se for session, usa logica existente.
+                // Se for filtro (ex: 30 dias), calcular sobre o capital NO INICIO do periodo?
+                // Simplificação: (LucroPeriodo / (CapitalFinal - LucroPeriodo)) * 100
+                const profit = this.periodProfit;
+                const finalCap = this.finalCapital; // Computed
+                const startCap = finalCap - profit;
+                if (startCap <= 0) return 0;
+                return (profit / startCap) * 100;
 			},
 			avgDailyProfit() {
-				// Lucro médio dos últimos 30 dias (independente da sessão)
+				// Se for sessão, cálculo de média/dia baseado na duração da sessão
+                if (this.selectedPeriod === 'session') {
+                     if (!this.agentConfig || !this.agentConfig.sessionDate) return this.periodProfit; 
+                     const sessionStart = new Date(this.agentConfig.sessionDate);
+                     const now = new Date();
+                     const diffTime = Math.abs(now - sessionStart);
+                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+                     return this.periodProfit / diffDays;
+                }
+                
+                // Para outros filtros, média simples dos dias retornados
 				if (!this.dailyData || this.dailyData.length === 0) return 0;
-				
-				const totalProfit = this.dailyData.reduce((sum, day) => sum + (day.profit || 0), 0);
-				return totalProfit / this.dailyData.length;
+				// periodProfit já é a soma
+				return this.periodProfit / this.dailyData.length;
 			},
 	avgProfitPerOp() {
 		// Calculate average profit per operation
@@ -1108,6 +1127,7 @@
 			selectedPeriod() {
 				// Atualizar dados quando o filtro mudar
 				this.fetchProfitEvolution();
+                this.fetchDailyStats();
 			},
 			'agenteData.sessionStatus'(newStatus) {
 				// Apenas logar, o modal agora é controlado exclusivamente pelos LOGS (checkLogsForStopEvents)
@@ -1421,12 +1441,25 @@
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
                     const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
                     let dateRangeParams = '';
+                    
+                    // Determine days based on selectedPeriod (similar to fetchProfitEvolution)
+                    let days = 30; // Default
+                    if (this.selectedPeriod === '7d') days = 7;
+                    if (this.selectedPeriod === 'today') days = 1;
+                    if (this.selectedPeriod === 'yesterday') days = 2; // Logic handled by backend potentially or just fetch last 2 days
+                    if (this.selectedPeriod === '30d') days = 30;
+                    if (this.selectedPeriod === '6m') days = 180;
+                    if (this.selectedPeriod === '1y') days = 365;
+                    if (this.selectedPeriod === 'thisMonth') days = new Date().getDate(); 
+                    if (this.selectedPeriod === 'all') days = 3650;
+                    if (this.selectedPeriod === 'session') days = 7; // Fallback for table if in session mode, show recent history
+
                     if (this.selectedPeriod === 'custom' && this.customDateRange) {
                          dateRangeParams = `&startDate=${this.customDateRange.start}&endDate=${this.customDateRange.end}`;
                     }
 
-					console.log('[AgenteAutonomo] Buscando stats diários em:', `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30${agentFilter}${dateRangeParams}`);
-					const url = `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30${agentFilter}${dateRangeParams}`;
+					console.log('[AgenteAutonomo] Buscando stats diários em:', `${apiBase}/autonomous-agent/daily-stats/${userId}?days=${days}${agentFilter}${dateRangeParams}`);
+					const url = `${apiBase}/autonomous-agent/daily-stats/${userId}?days=${days}${agentFilter}${dateRangeParams}`;
 					const options = {
 						method: "GET",
 						headers: {
