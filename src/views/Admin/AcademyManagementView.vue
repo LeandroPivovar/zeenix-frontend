@@ -196,10 +196,21 @@
                             </div>
                             <div class="form-group">
                                 <label for="subscription">Plano de Assinatura</label>
-                                <select id="subscription" class="input-select" v-model="course.subscription">
-                                    <option value="1" disabled>Nenhum</option>
-                                    <option value="2">Premium</option>
+                                <select id="subscription" class="input-select" @change="togglePlan($event.target.value)">
+                                    <option value="" disabled selected>Selecione os planos...</option>
+                                    <option v-for="plan in availablePlans" :key="plan.id" :value="plan.id">
+                                        {{ plan.name }}
+                                    </option>
                                 </select>
+                            </div>
+                            <div class="form-group" v-if="course.planIds && course.planIds.length > 0">
+                                <label>Planos Selecionados</label>
+                                <div class="selected-plans-container">
+                                    <div v-for="planId in course.planIds" :key="planId" class="plan-tag">
+                                        {{ getPlanName(planId) }}
+                                        <button class="remove-plan-btn" @click.prevent="togglePlan(planId)">×</button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="discount">Desconto</label>
@@ -343,7 +354,9 @@ export default {
                 currency: "R$", 
                 subscription: "1", 
                 discount: "0", 
+                planIds: [],
             },
+            availablePlans: [],
             // Preview
             isPreviewModalOpen: false,
             previewCourse: {},
@@ -421,6 +434,7 @@ export default {
             return;
         }
         await this.loadCourses();
+        await this.loadAvailablePlans();
         document.addEventListener('click', this.closeLessonDropdown);
         
         // ** INÍCIO: LÓGICA DO HAMBÚRGUER/RESPONSIVIDADE **
@@ -548,6 +562,7 @@ export default {
                     availableFrom: this.course.availableFrom || null,
                     availableUntil: this.course.availableUntil || null,
                     visibility: this.course.visibility,
+                    planIds: this.course.planIds || [],
                 };
                 
                 let response;
@@ -1648,6 +1663,7 @@ export default {
             this.course.availableFrom = courseData.availableFrom ? courseData.availableFrom.split('T')[0] : '';
             this.course.availableUntil = courseData.availableUntil ? courseData.availableUntil.split('T')[0] : '';
             this.course.visibility = courseData.visibility || "public";
+            this.course.planIds = courseData.planIds || [];
 
             if (courseData.modules) {
                 this.modules = courseData.modules.map(m => ({
@@ -1687,6 +1703,39 @@ export default {
                 };
             }
         },
+        async loadAvailablePlans() {
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const response = await fetch(`${apiBaseUrl}/plans/admin`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (response.ok) {
+                    this.availablePlans = await response.json();
+                } else {
+                    console.error('Erro ao carregar planos:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar planos:', error);
+            }
+        },
+        togglePlan(planId) {
+            if (!this.course.planIds) {
+                this.course.planIds = [];
+            }
+            const index = this.course.planIds.indexOf(planId);
+            if (index === -1) {
+                this.course.planIds.push(planId);
+            } else {
+                this.course.planIds.splice(index, 1);
+            }
+        },
+        getPlanName(planId) {
+            const plan = this.availablePlans.find(p => p.id === planId);
+            return plan ? plan.name : planId;
+        }
     },
 }
 </script>

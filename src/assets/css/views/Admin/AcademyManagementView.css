@@ -416,6 +416,48 @@ label {
     margin-top: 10px;
 }
 
+/* Novo: Estilo para Planos Selecionados */
+.selected-plans-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    background: #1b1b1b;
+    border-radius: 6px;
+    border: 1px solid var(--color-border-subtle);
+    min-height: 40px;
+    margin-top: 5px;
+}
+
+.plan-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #00ff7f;
+    color: #0f1013;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.remove-plan-btn {
+    background: none;
+    border: none;
+    color: #0f1013;
+    cursor: pointer;
+    font-size: 1.2rem;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-plan-btn:hover {
+    color: white;
+}
+
 /* --- SEÇÃO MÓDULOS E AULAS (Refatorada) --- */
 .modules-list-container {
     padding: 20px 0;
@@ -955,12 +997,14 @@ label {
     }
 
 }
+
 /* Star Button for Deriv Tutorial */
 .btn-star {
     background: transparent;
     border: none;
     cursor: pointer;
-    color: #4b5563; /* Gray default */
+    color: #4b5563;
+    /* Gray default */
     transition: all 0.2s;
     padding: 0;
     margin-right: 8px;
@@ -975,10 +1019,10 @@ label {
 }
 
 .btn-star.active {
-    color: #f59e0b; /* Amber/Gold */
+    color: #f59e0b;
+    /* Amber/Gold */
 }
 
 .btn-star.active svg {
     fill: currentColor;
 }
-
