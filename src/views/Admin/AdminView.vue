@@ -232,6 +232,7 @@
                                     <span class="card-value-user">{{ new Date(user.createdAt).toLocaleDateString('pt-BR') }}</span>
                                 </div>
                             </div>
+                        </div>
                     </div>
 
                     <!-- Paginação para Todos os Usuários -->
@@ -636,8 +637,6 @@ export default {
     },
     computed: {
         filteredAllUsers() {
-            if (!this.allUsersSearch) return this.allUsers;
-            const query = this.allUsersSearch.toLowerCase();
             return this.allUsers; // Backend handles search now
         }
     },
