@@ -601,54 +601,7 @@
 	</div>
     </Teleport>
 
-	<!-- Stop Status Modal -->
-    <Teleport to="body">
-	<div v-if="showStopStatusModal" 
-		class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300"
-		@click.self="closeStopStatusModal"
-	>
-		<div role="dialog" 
-			class="w-full max-w-md border border-[#27272a] bg-[#09090b] p-6 shadow-2xl rounded-xl relative flex flex-col scale-in-center animate-in zoom-in-95 duration-200"
-		>
-			<button class="absolute right-4 top-4 text-[#A1A1AA] hover:text-[#FAFAFA] transition-colors" @click="closeStopStatusModal">
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x h-5 w-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-			</button>
 
-			<div class="flex flex-col items-center text-center gap-4">
-				<div class="w-16 h-16 rounded-full flex items-center justify-center mb-2"
-					:class="stopStatusData.type === 'profit' ? 'bg-green-500/20 text-green-500' : stopStatusData.type === 'blindado' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-red-500/20 text-red-500'"
-				>
-					<svg v-if="stopStatusData.type === 'profit'" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trophy"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17"></path><path d="M14 14.66V17"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
-					<svg v-else-if="stopStatusData.type === 'blindado'" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
-					<svg v-else xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-octagon-x"><path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41l-7.59-7.59a2.41 2.41 0 0 0-3.41 0Z"></path><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
-				</div>
-
-				<div>
-					<h1 class="text-[20px] font-bold text-white mb-1">
-						Agente Autônomo Zenix
-					</h1>
-					<p class="text-[14px] text-white/50">
-						Agente de alta frequência em mercado futuro.
-					</p>
-				</div>
-
-				<div class="w-full bg-[#1a1a1a] rounded-lg p-4 custom-border-card mt-2">
-					<div class="flex justify-between items-center mb-2">
-						<span class="text-xs text-[#A1A1AA] uppercase font-bold">Resultado da Sessão</span>
-						<span class="text-xs text-[#A1A1AA]">{{ currentDate }}</span>
-					</div>
-					<div class="text-2xl font-bold tabular-nums" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
-					</div>
-				</div>
-
-				<button @click="closeStopStatusModal" class="w-full bg-[#FAFAFA] text-black hover:bg-[#e4e4e7] font-bold py-3 rounded-lg transition-colors text-sm mt-2">
-					Entendi
-				</button>
-			</div>
-		</div>
-	</div>
-    </Teleport>
 
 	<!-- Modal de Stop (Novos) -->
 	<StopLossModal v-if="showNewStopLossModal" @close="showNewStopLossModal = false" />
@@ -1728,7 +1681,7 @@
                 );
                 
                 if (hasBlindadoHit) {
-                    if (!this.showNewStopBlindadoModal && !this.showNewStopLossModal && !this.showStopBlindadoAjusteModal) {
+                    if (!this.showNewStopBlindadoModal && !this.showNewStopLossModal && !this.showStopBlindadoAjusteModal && !this.showStopLossAjusteModal) {
                         console.log('[AgenteAutonomo] 🛡️ [Logs] Exact Hit detected!');
                         
                         // Verificar se é por ajuste de entrada
@@ -1754,7 +1707,7 @@
                 );
                 
                 if (hasNormalStopLossMessage) {
-                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal) {
+                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !this.showStopBlindadoAjusteModal) {
                         console.log('[AgenteAutonomo] 🛑 [Logs] Stop Loss detectado!');
                         
                         // Verificar se é por ajuste de entrada

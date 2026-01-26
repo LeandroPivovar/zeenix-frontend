@@ -433,6 +433,8 @@ export default {
 		console.log('[AgenteAutonomoInactive] Componente montado.');
 		// Carregar configurações salvas do backend
 		await this.loadSavedConfig();
+        // Garantir que nenhum agente venha selecionado por padrão
+        this.selectedAgent = null;
 	},
 	methods: {
 		async loadSavedConfig() {

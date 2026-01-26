@@ -97,6 +97,7 @@ export default {
 }
 
 .modal-title {
+  text-align: center;
   font-size: 24px;
   font-weight: 700;
   color: #FFD058;
