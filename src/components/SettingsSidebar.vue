@@ -656,12 +656,14 @@ export default {
         // ✅ NOVO: Resolver Contexto Ativo
         let activeContext = 'all';
         const currentPath = this.$route.path;
+        console.log(`[SettingsSidebar] 🔍 Detectando contexto - Path atual: ${currentPath}`);
+        
         if (currentPath.includes('/ia') || currentPath.includes('/copy-trading')) {
             activeContext = 'ai';
         } else if (currentPath.includes('/autonomo')) {
             activeContext = 'agent';
         }
-        console.log(`[SettingsSidebar] Trocando para ${type}. Contexto: ${activeContext}`);
+        console.log(`[SettingsSidebar] Trocando para ${type}. Contexto detectado: ${activeContext}`);
 
         // ✅ NOVO: Salvar token selecionado no banco de dados (ou apenas moeda se token for null)
         try {

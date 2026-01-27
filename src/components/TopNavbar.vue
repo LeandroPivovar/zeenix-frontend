@@ -887,6 +887,7 @@ export default {
           // ✅ Determinar Active Context baseado na rota atual
           let activeContext = 'all';
           const currentPath = this.$route.path;
+          console.log(`[TopNavbar] 🔍 Detectando contexto - Path atual: ${currentPath}`);
           
           if (currentPath.includes('/ia') || currentPath.includes('/copy-trading')) {
              activeContext = 'ai';
