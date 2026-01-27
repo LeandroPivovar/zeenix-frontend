@@ -12,11 +12,11 @@ aside.sidebar,
 	color: #DFDFDF;
 	display: flex;
 	flex-direction: column;
-	position: fixed;
+	position: sticky;
 	left: 0;
-	top: 60px;
+	top: 0;
 	height: calc(100vh - 60px);
-	z-index: 100;
+	z-index: 1000;
 	box-sizing: border-box;
 	transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
 	font-family: 'Inter', sans-serif;
