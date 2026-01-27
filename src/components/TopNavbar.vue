@@ -467,41 +467,18 @@ export default {
     balanceNumeric: {
       immediate: true,
       handler(newVal) {
-        // Se ainda não estiver pronto e o renderedBalance for 0, permite atualização inicial
-        // Mas se o fictitious estiver ativo, precisamos ter cuidado extra
-        
-        // Se Saldo Fictício estiver ativo e o valor calculado for EXATAMENTE igual ao saldo fictício,
-        // significa que o saldo Demo ainda é 0 (ou não carregou). 
-        // Nesse caso, EVITAR mostrar o valor (manter anterior ou esperar)
-        if (this.isFictitiousBalanceActive && newVal === this.fictitiousBalance) {
-           // Verifica se os saldos demo realmente carregaram
-           // Se balancesByCurrencyDemo estiver vazio ou zerado, provavelmente ainda está carregando
-           const hasDemoBalance = this.balancesByCurrencyDemo && Object.keys(this.balancesByCurrencyDemo).length > 0;
-           
-           if (!hasDemoBalance) {
-             console.log('[TopNavbar] Aguardando saldo demo carregar antes de exibir composição...');
-             return; // Não atualiza renderedBalance ainda
-           }
-        }
-
-        // Se estiver pronto ou se for a primeira vez, atualiza
-        if (this.isBalanceReady || this.renderedBalance === 0) {
-          this.renderedBalance = newVal;
-        }
+        this.tryUpdateRenderedBalance(newVal);
       }
     },
     isBalanceReady(ready) {
       if (ready) {
-        // Quando ficar pronto, força atualização com checagem adicional
-        // Se ainda for apenas o saldo fictício puro, talvez segurar mais um pouco?
-        // Mas o timeout já serve para isso. Vamos confiar no calculation agora.
-        this.renderedBalance = this.balanceNumeric;
+        this.tryUpdateRenderedBalance(this.balanceNumeric);
       }
     }
   },
   async mounted() {
     // Inicializar renderedBalance
-    this.renderedBalance = this.balanceNumeric;
+    this.tryUpdateRenderedBalance(this.balanceNumeric);
 
     document.addEventListener('click', this.handleClickOutside);
     window.addEventListener('storage', this.handleStorageChange);
