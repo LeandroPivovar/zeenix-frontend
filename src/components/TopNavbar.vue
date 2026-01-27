@@ -515,7 +515,7 @@ export default {
           const hasDemoBalance = this.balancesByCurrencyDemo && Object.keys(this.balancesByCurrencyDemo).length > 0;
           if (!hasDemoBalance) return;
       }
-      if (this.isBalanceReady || this.renderedBalance === null || this.renderedBalance === 0) {
+      if (this.isBalanceReady) {
         this.renderedBalance = val;
       }
     },
