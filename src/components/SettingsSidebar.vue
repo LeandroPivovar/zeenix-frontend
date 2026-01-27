@@ -504,6 +504,19 @@ export default {
             timestamp: Date.now()
           }));
 
+          // ✅ Determinar Active Context baseado na rota atual (usando window.location pois $route pode não estar disponível?)
+          // Assumindo que $route está disponível ($route.path)
+          let activeContext = 'all';
+          const currentPath = this.$route.path;
+          
+          if (currentPath.includes('/ia') || currentPath.includes('/copy-trading')) {
+             activeContext = 'ai';
+          } else if (currentPath.includes('/autonomo')) {
+             activeContext = 'agent';
+          }
+
+          console.log(`[SettingsSidebar] Selecionando conta. Contexto ativo: ${activeContext}`);
+
           // ✅ NOVO: Salvar token selecionado no banco de dados
           try {
             const saveTokenResponse = await fetch(`${apiBase}/settings/deriv-token`, {
@@ -514,7 +527,8 @@ export default {
               },
               body: JSON.stringify({
                 token: account.token,
-                tradeCurrency: account.isDemo ? 'DEMO' : (account.currency || 'USD')
+                tradeCurrency: account.isDemo ? 'DEMO' : (account.currency || 'USD'),
+                activeContext: activeContext // ✅ Enviar contexto
               })
             });
 
@@ -529,7 +543,8 @@ export default {
           }
 
           // ✅ Desativar apenas o serviço da página atual (se houver)
-          await this.deactivateAllActiveServices(this.activeService);
+          // Isso já é redundante pois o backend faz a desativação, mas o frontend pode limpar estado local se precisar
+          // await this.deactivateAllActiveServices(this.activeService); 
 
           const accountType = account.isDemo ? 'demo' : 'real';
           this.$emit('account-type-changed', accountType);
@@ -638,10 +653,21 @@ export default {
           // Mas vamos avisar o usuário ou tentar o fallback de moeda
         }
 
+        // ✅ NOVO: Resolver Contexto Ativo
+        let activeContext = 'all';
+        const currentPath = this.$route.path;
+        if (currentPath.includes('/ia') || currentPath.includes('/copy-trading')) {
+            activeContext = 'ai';
+        } else if (currentPath.includes('/autonomo')) {
+            activeContext = 'agent';
+        }
+        console.log(`[SettingsSidebar] Trocando para ${type}. Contexto: ${activeContext}`);
+
         // ✅ NOVO: Salvar token selecionado no banco de dados (ou apenas moeda se token for null)
         try {
           const payload = {
-              tradeCurrency: type === 'demo' ? 'DEMO' : 'USD'
+              tradeCurrency: type === 'demo' ? 'DEMO' : 'USD',
+              activeContext: activeContext // ✅ Passar contexto
           };
           if (selectedToken) {
               payload.token = selectedToken;
@@ -679,7 +705,8 @@ export default {
         }
 
         // ✅ Desativar apenas o serviço da página atual (se houver)
-        await this.deactivateAllActiveServices(this.activeService);
+        // Redundante se backend faz, mas ok manter estado
+        // await this.deactivateAllActiveServices(this.activeService);
 
         this.$emit('account-type-changed', type);
         

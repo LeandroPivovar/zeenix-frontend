@@ -884,6 +884,18 @@ export default {
             timestamp: Date.now()
           }));
 
+          // ✅ Determinar Active Context baseado na rota atual
+          let activeContext = 'all';
+          const currentPath = this.$route.path;
+          
+          if (currentPath.includes('/ia') || currentPath.includes('/copy-trading')) {
+             activeContext = 'ai';
+          } else if (currentPath.includes('/autonomo')) {
+             activeContext = 'agent';
+          }
+
+          console.log(`[TopNavbar] Trocando conta. Contexto ativo detectado: ${activeContext}`);
+
           try {
             const saveTokenResponse = await fetch(`${apiBase}/settings/deriv-token`, {
               method: 'POST',
@@ -893,7 +905,8 @@ export default {
               },
               body: JSON.stringify({
                 token: account.token,
-                tradeCurrency: account.isDemo ? 'DEMO' : (account.currency || 'USD')
+                tradeCurrency: account.isDemo ? 'DEMO' : (account.currency || 'USD'),
+                activeContext: activeContext // ✅ Enviar contexto para o backend
               })
             });
 
