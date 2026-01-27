@@ -16,7 +16,10 @@
                 <div class="main-header header-markup">
                 <div class="main-header-left">
                     <h1 style="font-size: 20px;">Markup - Comissões</h1>
-                    <p style="font-size: 14px;">Comissão de 3% sobre o payout de cada operação realizada na Deriv</p>
+                    <p style="font-size: 14px;">
+                        Comissão de 3% sobre o payout de cada operação realizada na Deriv
+                        <span v-if="selectedUserName" style="color: #22C55E; font-weight: 500;"> • {{ selectedUserName }}</span>
+                    </p>
                 </div>
                 <div class="main-header-right">
                     <button class="btn pdf-btn" @click="exportReportToPDF"><img src="../../assets/icons/box-down.svg" alt="" width="20px"> Exportar Relatório</button>
@@ -195,6 +198,17 @@
             @close="showSettingsModal = false"
         />
 
+        <!-- User Selection Modal -->
+        <SelectionModal
+            :show="showUserModal"
+            title="Selecionar Usuário"
+            :items="userItems"
+            :selected-value="selectedUserId"
+            search-placeholder="Buscar usuário..."
+            @select="selectUser"
+            @close="showUserModal = false"
+        />
+
     </div>
 </template>
 
@@ -202,6 +216,7 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
+import SelectionModal from '../../components/SelectionModal.vue';
 
 // NOTA: DESCOMENTE AS LINHAS ABAIXO APÓS INSTALAR AS DEPENDÊNCIAS (npm install jspdf html2canvas)
 // import jsPDF from 'jspdf';
@@ -213,6 +228,7 @@ export default {
         AppSidebar,
         TopNavbar,
         SettingsSidebar,
+        SelectionModal,
     },
     data() {
         const currentDate = new Date().toISOString().split('T')[0];
@@ -244,16 +260,33 @@ export default {
             derivMarkupTotal: 0,
             derivMarkupLoading: false,
             derivMarkupError: null,
+            // Modal de seleção de usuário
+            showUserModal: false,
+            selectedUserId: null,
+            selectedUserName: '',
+            users: [],
         };
+    },
+    computed: {
+        userItems() {
+            return this.users.map(user => ({
+                value: user.id.toString(),
+                label: user.name || user.email,
+                description: user.email
+            }));
+        },
     },
     watch: {
     },
     created() {
-        this.fetchData();
+        // Não buscar dados automaticamente, esperar seleção de usuário
     },
     mounted() {
         this.handleResize();
         window.addEventListener('resize', this.handleResize);
+        // Buscar lista de usuários e mostrar modal
+        this.fetchUsers();
+        this.showUserModal = true;
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
@@ -433,6 +466,11 @@ export default {
         },
         
         async fetchDerivMarkupStatistics() {
+            if (!this.selectedUserId) {
+                console.warn('[MarkupView] Nenhum usuário selecionado');
+                return;
+            }
+            
             this.derivMarkupLoading = true;
             this.derivMarkupError = null;
             
@@ -441,6 +479,7 @@ export default {
                 const apiUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 
                 const params = new URLSearchParams({
+                    userId: this.selectedUserId,
                     dateFrom: this.filterStartDate,
                     dateTo: this.filterEndDate,
                 });
@@ -474,6 +513,41 @@ export default {
             } finally {
                 this.derivMarkupLoading = false;
             }
+        },
+
+        async fetchUsers() {
+            try {
+                const token = localStorage.getItem('token');
+                const apiUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                
+                const response = await fetch(`${apiUrl}/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar usuários');
+                }
+                
+                const result = await response.json();
+                this.users = result.data || result || [];
+                console.log('[MarkupView] Usuários carregados:', this.users.length);
+                
+            } catch (error) {
+                console.error('Erro ao buscar usuários:', error);
+                this.$root.$toast.error('Erro ao carregar lista de usuários');
+            }
+        },
+
+        selectUser(user) {
+            this.selectedUserId = user.value;
+            this.selectedUserName = user.label;
+            console.log('[MarkupView] Usuário selecionado:', user.label, '(ID:', user.value, ')');
+            
+            // Buscar dados do markup para o usuário selecionado
+            this.fetchData();
+            this.fetchDerivMarkupStatistics();
         },
 
         calculateTotalCommission(users) {
