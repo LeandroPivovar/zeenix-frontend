@@ -239,20 +239,10 @@ export default {
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
         
         const res = await fetch(`${apiBaseUrl}/courses`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` })
-          }
-        })
-
-        if (!res.ok) throw new Error(`Erro ao buscar cursos: ${res.statusText}`)
-
-        const data = await res.json()
-        
         // Recuperar informações do usuário do localStorage
         let userPlanId = null;
         let isAdmin = false;
+
         try {
             const userStr = localStorage.getItem('user');
             if (userStr) {
@@ -260,7 +250,6 @@ export default {
                 userPlanId = user.planId;
                 isAdmin = user.role === 'admin';
             } else {
-                // Tentar decodificar do token se não estiver no user (fallback)
                 if (token) {
                      const payload = JSON.parse(atob(token.split('.')[1]));
                      isAdmin = payload.role === 'admin';
@@ -270,25 +259,35 @@ export default {
             console.warn('Erro ao ler dados do usuário para filtro:', e);
         }
 
+        // Se isAdmin, mostra tudo.
+        // Se usuário comum:
+        // - Mostra públicos
+        // - Mostra restritos APENAS se userPlanId estiver na lista de permitidos
+        
         this.courses = data
-            .filter(course => course.status === 'published')
             .filter(course => {
-                // Admin vê tudo
+                // 1. Curso não publicado? Ignora (já estava no filtro original)
+                if (course.status !== 'published') return false;
+
+                // 2. Admin vê tudo
                 if (isAdmin) return true;
-                
-                // Filtro de visibilidade
-                if (course.visibility === 'public') return true;
-                
-                // Se for restrito, checar se o usuário tem o plano
+
+                // 3. Público -> Todo mundo vê
+                if (!course.visibility || course.visibility === 'public') return true;
+
+                // 4. Restrito -> Verifica lista de planos
                 if (course.visibility === 'restricted') {
-                    if (!userPlanId) return false; // Sem plano não vê restrito
-                    // Verifica se o plano do usuário está na lista de planos permitidos do curso
-                    // O backend retorna planIds como array de strings (IDs) ou null
-                    if (course.planIds && Array.isArray(course.planIds)) {
-                         return course.planIds.includes(userPlanId);
-                    }
+                    // Sem plano definido no user? Não vê
+                    if (!userPlanId) return false;
+
+                    // Lista de planos do curso está vazia ou nula? (Inconsistência, melhor esconder)
+                    if (!course.planIds || !Array.isArray(course.planIds)) return false;
+
+                    // Verifica se o ID do plano do user está na lista
+                    return course.planIds.includes(userPlanId);
                 }
-                
+
+                // 5. Privado ou outro status desconhecido -> Esconde
                 return false;
             })
             .map(course => ({
