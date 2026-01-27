@@ -1257,19 +1257,13 @@ export default {
 
 .dashboard-content-wrapper {
     flex-grow: 1;
-    margin-left: 280px;
-    transition: margin-left 0.3s ease;
-    min-height: 100vh;
+    min-height: calc(100vh - 60px);
     display: flex;
     flex-direction: column;
-    width: calc(100% - 280px);
+    width: 100%;
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
-}
-
-.dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 80px;
 }
 
 .layout-content {
