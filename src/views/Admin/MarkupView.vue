@@ -340,7 +340,8 @@ export default {
                 // Buscar dados agregados de outros períodos em paralelo (pode manter isso ou também streacar)
                 // Para manter a resposta rápida, vamos carregar o markup total via stream e deixar
                 // os "cards" de períodos carregarem via request normal em background
-                this.fetchPeriodData(token, apiUrl);
+                // TEMPORARIAMENTE DESABILITADO - endpoint /trades/markup não implementado
+                // this.fetchPeriodData(token, apiUrl);
                 
                 // Buscar dados de markup da Deriv API
                 this.fetchDerivMarkupStatistics();
