@@ -1257,14 +1257,15 @@ export default {
 
 .dashboard-content-wrapper {
     flex-grow: 1;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
     min-height: calc(100vh - 60px);
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: calc(100% - 280px);
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
-    margin: 0!important;
 }
 
 .layout-content {
