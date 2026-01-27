@@ -219,6 +219,7 @@ export default {
                   this.firstName = userData.name.split(' ')[0]
                   this.fullName = userData.name
                   localStorage.setItem('user', JSON.stringify({ 
+                    name: userData.name,
                     email: userData.email,
                     firstAccess: userData.firstAccess,
                     planId: userData.planId,
