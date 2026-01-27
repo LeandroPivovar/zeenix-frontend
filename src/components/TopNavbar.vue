@@ -467,23 +467,18 @@ export default {
     balanceNumeric: {
       immediate: true,
       handler(newVal) {
-        // Se estiver pronto ou se for a primeira vez (0), atualiza
-        if (this.isBalanceReady || this.renderedBalance === 0) {
-          this.renderedBalance = newVal;
-        }
-        // Se isBalanceReady for false, MANTÉM o valor antigo no renderedBalance
-        // Assim o usuário vê o valor "congelado" em vez de um intermediário
+        this.tryUpdateRenderedBalance(newVal);
       }
     },
     isBalanceReady(ready) {
       if (ready) {
-        this.renderedBalance = this.balanceNumeric;
+        this.tryUpdateRenderedBalance(this.balanceNumeric);
       }
     }
   },
   async mounted() {
     // Inicializar renderedBalance
-    this.renderedBalance = this.balanceNumeric;
+    this.tryUpdateRenderedBalance(this.balanceNumeric);
 
     document.addEventListener('click', this.handleClickOutside);
     window.addEventListener('storage', this.handleStorageChange);
@@ -515,6 +510,15 @@ export default {
     window.removeEventListener('resize', this.checkMobile);
   },
   methods: {
+    tryUpdateRenderedBalance(val) {
+      if (this.isFictitiousBalanceActive && val === this.fictitiousBalance) {
+          const hasDemoBalance = this.balancesByCurrencyDemo && Object.keys(this.balancesByCurrencyDemo).length > 0;
+          if (!hasDemoBalance) return;
+      }
+      if (this.isBalanceReady || this.renderedBalance === null || this.renderedBalance === 0) {
+        this.renderedBalance = val;
+      }
+    },
     checkMobile() {
       this.isMobile = window.innerWidth <= 1024;
     },
