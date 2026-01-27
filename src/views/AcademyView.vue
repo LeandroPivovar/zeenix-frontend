@@ -239,6 +239,17 @@ export default {
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
         
         const res = await fetch(`${apiBaseUrl}/courses`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+          }
+        })
+
+        if (!res.ok) throw new Error(`Erro ao buscar cursos: ${res.statusText}`)
+
+        const data = await res.json()
+
         // Recuperar informações do usuário do localStorage
         let userPlanId = null;
         let isAdmin = false;
