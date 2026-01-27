@@ -47,7 +47,7 @@
         <div class="flex items-center space-x-3">
           <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF] inline-flex items-center gap-2">
             <span>Saldo:</span>
-            <span v-if="!balanceHidden" class="inline-flex items-center gap-1.5 animate-fadeIn">
+            <span v-if="isBalanceReady && !balanceHidden" class="inline-flex items-center gap-1.5 animate-fadeIn">
               <span v-if="uiAccountType !== 'demo' || showDollarSign">
                 {{ isFictitiousBalanceActive ? '$' : currencyPrefix }}
               </span>
@@ -499,10 +499,12 @@ export default {
     await this.loadMasterTraderSettings();
     await this.loadStudentGroupConfig();
 
-    // Delay de segurança
+    // Delay de segurança: 200ms para conta fictícia (conforme solicitado), 300ms para contas normais
+    const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
+    
     setTimeout(() => {
       this.isBalanceReady = true;
-    }, 500);
+    }, delayTime);
   },
   beforeUnmount() {
     window.removeEventListener('masterTraderSettingsUpdated', this.handleMasterTraderSettingsUpdate);
