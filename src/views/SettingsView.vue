@@ -513,7 +513,7 @@ export default {
       accountCurrency: 'USD',
       accountLoginid: null,
       isDemo: false,
-      isDemo: false,
+
       balancesByCurrencyReal: {},
       balancesByCurrencyDemo: {},
       isCreatorModeExpanded: false
