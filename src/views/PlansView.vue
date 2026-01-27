@@ -74,8 +74,8 @@
 
                              <!-- 2. YouTube Link -->
                              <iframe 
-                                v-else-if="isYoutube(tutorialVideo.contentLink)"
-                                :src="getYoutubeEmbed(tutorialVideo.contentLink)" 
+                                v-else-if="isYoutube(tutorialVideo.contentLink) || isYoutube(tutorialVideo.videoUrl)"
+                                :src="getYoutubeEmbed(tutorialVideo.contentLink || tutorialVideo.videoUrl)" 
                                 frameborder="0" 
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                 allowfullscreen
@@ -84,8 +84,8 @@
 
                             <!-- 3. Vimeo Link -->
                             <iframe 
-                                v-else-if="isVimeo(tutorialVideo.contentLink)"
-                                :src="getVimeoEmbed(tutorialVideo.contentLink)" 
+                                v-else-if="isVimeo(tutorialVideo.contentLink) || isVimeo(tutorialVideo.videoUrl)"
+                                :src="getVimeoEmbed(tutorialVideo.contentLink || tutorialVideo.videoUrl)" 
                                 frameborder="0" 
                                 allow="autoplay; fullscreen; picture-in-picture" 
                                 allowfullscreen
@@ -95,7 +95,7 @@
                             <!-- 4. Fallback (Link genérico ou erro) -->
                             <div v-else class="video-fallback">
                                 <p>Não foi possível carregar o player diretamente.</p>
-                                <a :href="tutorialVideo.contentLink" target="_blank" class="btn-open-link">
+                                <a :href="tutorialVideo.contentLink || tutorialVideo.videoUrl" target="_blank" class="btn-open-link">
                                     Abrir vídeo externa <i class="fas fa-external-link-alt"></i>
                                 </a>
                             </div>
