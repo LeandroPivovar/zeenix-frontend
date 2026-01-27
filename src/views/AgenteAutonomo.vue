@@ -53,6 +53,7 @@
             :plan-features="planFeatures"
             @pausar-agente="toggleAgenteStatus('componenteAtivo')"
             @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
+            @change-agent="handleChangeAgent"
           />
         </div>
 
@@ -408,6 +409,24 @@
         }
       },
   
+      async handleChangeAgent(agentId) {
+        console.log('[AgenteAutonomo] Trocando para o agente:', agentId);
+        
+        // Preparar configuração baseada no agente selecionado
+        const configData = {
+          agentType: agentId,
+          // Manter configurações atuais se possível, ou usar padrões seguros
+          initialStake: this.agentConfig?.initialStake || 10.0,
+          goalValue: this.agentConfig?.dailyProfitTarget || 200.0,
+          stopValue: this.agentConfig?.dailyLossLimit || 240.0,
+          risco: this.agentConfig?.riskLevel || 'balanced',
+          mercado: this.agentConfig?.symbol === 'R_100' ? 'volatility_100' : 'volatility_75', // Mapeamento reverso simples
+          estrategia: agentId === 'zeus' ? 'zeus' : 'falcon'
+        };
+
+        await this.activateAgent(configData);
+      },
+
       async toggleAgenteStatus(source, configData = null) {
         console.log('[AgenteAutonomo] toggleAgenteStatus chamado:', { source, configData });
         if (source === 'componenteInativo') {
