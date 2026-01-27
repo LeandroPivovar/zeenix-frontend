@@ -42,7 +42,9 @@
             </div>
             <p class="settings-balance-amount text-left">
               <span v-if="balanceVisible" class="inline-flex items-center">
-                <span v-if="(isFictitiousBalanceActive || uiAccountType !== 'demo')">{{ currencyPrefix }}</span>
+                <span v-if="(isFictitiousBalanceActive || uiAccountType !== 'demo')">
+                  {{ isFictitiousBalanceActive ? '$' : currencyPrefix }}
+                </span>
                 <span v-else class="demo-currency-symbol-wrapper">
                   <span class="demo-currency-symbol">D</span>
                 </span>
