@@ -536,7 +536,7 @@
                         
 
                         <!-- Histórico View (Tabela de Operações Executadas) -->
-                        <div v-show="activeTab === 'logs'" id="logs-view" class="flex-1 overflow-y-auto mobile-logs-view min-h-0">
+                        <div v-show="activeTab === 'logs'" id="logs-view" class="flex-1 overflow-y-auto custom-scrollbar mobile-logs-view min-h-0">
                             <!-- Mobile: Título do Histórico -->
                             <div class="mobile-logs-title">
                                 <h3 class="mobile-logs-title-text">Histórico de Operações</h3>
@@ -620,7 +620,7 @@
                         </div>
 
                         <!-- Registros View (Logs Detalhados em Tempo Real) -->
-                        <div v-show="activeTab === 'register'" id="register-view" class="flex-1 overflow-hidden flex flex-col mobile-tab-content min-h-0">
+                        <div v-show="activeTab === 'register'" id="register-view" class="flex-1 overflow-y-auto custom-scrollbar flex flex-col mobile-tab-content min-h-0">
                             <!-- Desktop Header -->
                             <div class="flex items-center justify-between mb-3 px-2 desktop-register-header">
                                 <div class="flex items-center gap-2">

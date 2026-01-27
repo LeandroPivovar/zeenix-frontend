@@ -333,7 +333,7 @@
                         </button>
                     </div>
 				</div>
-				<div class="overflow-x-auto">
+				<div class="overflow-x-auto overflow-y-auto max-h-[300px] custom-scrollbar">
 					<table class="w-full text-[11px] sm:text-xs md:text-sm">
 						<thead class="border-b border-[#27272a]">
 							<tr class="text-[#A1A1AA] text-[10px] sm:text-xs">
