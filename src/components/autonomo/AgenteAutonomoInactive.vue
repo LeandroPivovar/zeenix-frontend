@@ -623,6 +623,7 @@ export default {
 	},
 	computed: {
 		availableAgents() {
+			/*
 			if (!this.planFeatures) return this.allAgents;
 			
 			const allowedAgents = this.planFeatures.agents || [];
@@ -630,6 +631,8 @@ export default {
 			return this.allAgents.filter(agent => {
 				return allowedAgents.some(allowedId => allowedId.toLowerCase() === agent.id.toLowerCase());
 			});
+			*/
+			return this.allAgents;
 		},
 		riskLevelText() {
 			const labels = {
