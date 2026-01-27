@@ -419,10 +419,10 @@
     </main>
     
     <DesktopBottomNav />
-    <OnboardingModal 
-      :visible="showOnboardingModal" 
-      :user-name="fullUserName"
-      @finish="handleOnboardingFinish"
+    
+    <FirstAccessVideoModal 
+      :visible="showWelcomeVideo"
+      @close="handleWelcomeVideoClose"
     />
   </div>
 </div>
@@ -535,7 +535,8 @@ import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import AppSidebar from '../components/Sidebar.vue'
 import SettingsSidebar from '../components/SettingsSidebar.vue'
 import { loadAvailableAccounts } from '../utils/accountsLoader'
-import OnboardingModal from '../components/modals/OnboardingModal.vue'
+import FirstAccessVideoModal from '../components/modals/FirstAccessVideoModal.vue'
+
 import accountBalanceMixin from '../mixins/accountBalanceMixin'
 
 export default {
@@ -546,7 +547,8 @@ export default {
     DesktopBottomNav,
     AppSidebar,
     SettingsSidebar,
-    OnboardingModal
+    FirstAccessVideoModal
+
   },
   props: { 
     info: { 
@@ -567,7 +569,7 @@ export default {
       showIAsModal: false,
       showSettingsModal: false,
       showNotificationsModal: false,
-      showOnboardingModal: false,
+      showWelcomeVideo: false,
       userProfilePictureUrl: null,
       tradeCurrency: 'USD',
       tickerItems: [
@@ -938,7 +940,9 @@ export default {
     // Carregar desempenho semanal
     await this.loadWeeklyPerformance();
     this.loadLoginNotifications();
-    this.checkOnboarding();
+    // Check for welcome video flag
+    this.checkWelcomeVideo();
+
     // Iniciar atualização de saldo em tempo real (5s)
     this.startBalancePolling(5000);
   },
@@ -1309,32 +1313,21 @@ export default {
         }
       }
     },
-    checkOnboarding() {
-      const userInfo = localStorage.getItem('user');
-      if (userInfo) {
-        try {
-          const user = JSON.parse(userInfo);
-          if (user.firstAccess) {
-            this.showOnboardingModal = true;
-          }
-        } catch (e) {
-          console.error('Erro ao verificar onboarding:', e);
-        }
+
+    checkWelcomeVideo() {
+      // Check if the flag is set in localStorage
+      const shouldShow = localStorage.getItem('showDashboardWelcomeVideo');
+      if (shouldShow === 'true') {
+        this.showWelcomeVideo = true;
       }
     },
-    handleOnboardingFinish() {
-      this.showOnboardingModal = false;
-      const userInfo = localStorage.getItem('user');
-      if (userInfo) {
-        try {
-          const user = JSON.parse(userInfo);
-          user.firstAccess = false;
-          localStorage.setItem('user', JSON.stringify(user));
-        } catch (e) {
-          console.error('Erro ao atualizar onboarding:', e);
-        }
-      }
+    
+    handleWelcomeVideoClose() {
+      this.showWelcomeVideo = false;
+      // Remove the flag so it doesn't show again
+      localStorage.removeItem('showDashboardWelcomeVideo');
     },
+
     getNotificationIcon(type) {
       const iconMap = {
         'success': 'fa-solid fa-check-circle',
