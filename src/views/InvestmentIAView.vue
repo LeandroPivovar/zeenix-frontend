@@ -860,6 +860,14 @@ export default {
             if (isChecked && !this.isInvestmentActive) {
                 // Ativando IA
                 await this.activateIA();
+                
+                // ✅ FIX: Se a ativação falhar (isInvestmentActive continuar false),
+                // forçar o checkbox a voltar para unchecked.
+                if (!this.isInvestmentActive) {
+                    console.log('[InvestmentIAView] ⚠️ Ativação falhou ou cancelada, revertendo toggle.');
+                    // Forçar atualização do DOM caso o Vue não detecte a mudança (já que o model já era false)
+                    event.target.checked = false;
+                }
             } else if (!isChecked && this.isInvestmentActive) {
                 // Desativando IA
                 await this.deactivateIA();

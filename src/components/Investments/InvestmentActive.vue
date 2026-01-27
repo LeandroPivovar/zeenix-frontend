@@ -2419,7 +2419,10 @@ export default {
         // 📊 Buscar configuração da sessão ativa
         async fetchSessionConfig() {
             try {
-                this.isLoadingConfig = true;
+                // ✅ [FIX] Só mostrar loading se não tiver dados anteriores (evita piscar a tela)
+                if (!this.sessionConfig || !this.sessionConfig.entryValue) {
+                    this.isLoadingConfig = true;
+                }
                 console.log('[InvestmentActive] 📊 Buscando configuração da sessão...');
                 
                 const userId = this.getUserId();
@@ -2626,13 +2629,11 @@ export default {
         handleInsufficientBalanceConfirm() {
             this.showInsufficientBalanceModal = false;
             window.zenixStopModalActive = false;
-            // ✅ Marcar que a IA foi parada automaticamente para mudar o botão para "Reiniciar"
-            this.aiStoppedAutomatically = true;
-            // ✅ Forçar estado inativo localmente
-            if (this.sessionConfig) {
-                this.sessionConfig.isActive = false;
-            }
-            console.log('[InvestmentActive] ✅ IA parada por Saldo Insuficiente - botão mudará para "Reiniciar IA"');
+            
+            // ✅ [FIX] Em vez de manter na tela com botão "Reiniciar", voltar para configuração
+            // Isso atende ao pedido de "deixar o botão de status desativado" (toggle off na config)
+            console.log('[InvestmentActive] ✅ IA parada por Saldo Insuficiente - retornando para configuração');
+            this.$emit('deactivate');
         },
         
         /**

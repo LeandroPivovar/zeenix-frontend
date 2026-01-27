@@ -1,52 +1,54 @@
 <template>
-  <transition name="modal-fade">
-    <div v-if="visible" class="insufficient-balance-modal-overlay" @click.self="handleClose">
-      <div class="insufficient-balance-modal">
-        <div class="modal-icon-container">
-          <div class="modal-icon">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="32" cy="32" r="30" stroke="#FF5252" stroke-width="3"/>
-              <path d="M32 20V36M32 40H32.01" stroke="#FF5252" stroke-width="3" stroke-linecap="round"/>
-            </svg>
+  <Teleport to="body">
+    <transition name="modal-fade">
+      <div v-if="visible" class="insufficient-balance-modal-overlay" @click.self="handleClose">
+        <div class="insufficient-balance-modal">
+          <div class="modal-icon-container">
+            <div class="modal-icon">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="30" stroke="#FF5252" stroke-width="3"/>
+                <path d="M32 20V36M32 40H32.01" stroke="#FF5252" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
           </div>
+          
+          <h2 class="modal-title text-center" style="text-align: center; justify-self: center;">SALDO INSUFICIENTE</h2>
+          
+          <p class="modal-message">
+            <span v-if="hasDetailedInfo">
+              Seu saldo atual é insuficiente para cobrir a operação de Martingale calculada.
+            </span>
+            <span v-else>
+              Seu saldo atual é insuficiente para iniciar as operações. É necessário ter saldo para pelo menos a primeira entrada de <span class="highlight">{{ formattedEntryValue }}</span>.
+            </span>
+          </p>
+          
+          <div class="result-section">
+            <div class="balance-item">
+              <p class="balance-label">SALDO ATUAL</p>
+              <p class="balance-value current-value">{{ formattedBalance }}</p>
+            </div>
+            <div class="balance-divider"></div>
+            <div class="balance-item">
+              <p class="balance-label">VALOR DA ENTRADA</p>
+              <p class="balance-value required-value">{{ formattedStake }}</p>
+            </div>
+          </div>
+          
+          <p v-if="hasDetailedInfo" class="info-message">
+             Tentativa de entrada: <span class="highlight">{{ formattedStake }}</span>. O sistema de proteção bloqueou a operação para evitar saldo negativo.
+          </p>
+          <p v-else class="info-message">
+            Por favor, ajuste o valor da sua entrada ou faça um depósito para continuar operando com nossas ferramentas de IA.
+          </p>
+          
+          <button class="confirm-button" type="button" @click="handleConfirm">
+            Entendido
+          </button>
         </div>
-        
-        <h2 class="modal-title text-center" style="text-align: center; justify-self: center;">SALDO INSUFICIENTE</h2>
-        
-        <p class="modal-message">
-          <span v-if="hasDetailedInfo">
-            Seu saldo atual é insuficiente para cobrir a operação de Martingale calculada.
-          </span>
-          <span v-else>
-            Seu saldo atual é insuficiente para iniciar as operações. É necessário ter saldo para pelo menos a primeira entrada de <span class="highlight">{{ formattedEntryValue }}</span>.
-          </span>
-        </p>
-        
-        <div class="result-section">
-          <div class="balance-item">
-            <p class="balance-label">SALDO ATUAL</p>
-            <p class="balance-value current-value">{{ formattedBalance }}</p>
-          </div>
-          <div class="balance-divider"></div>
-          <div class="balance-item">
-            <p class="balance-label">VALOR DA ENTRADA</p>
-            <p class="balance-value required-value">{{ formattedStake }}</p>
-          </div>
-        </div>
-        
-        <p v-if="hasDetailedInfo" class="info-message">
-           Tentativa de entrada: <span class="highlight">{{ formattedStake }}</span>. O sistema de proteção bloqueou a operação para evitar saldo negativo.
-        </p>
-        <p v-else class="info-message">
-          Por favor, ajuste o valor da sua entrada ou faça um depósito para continuar operando com nossas ferramentas de IA.
-        </p>
-        
-        <button class="confirm-button" type="button" @click="handleConfirm">
-          Entendido
-        </button>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </Teleport>
 </template>
 
 <script>
