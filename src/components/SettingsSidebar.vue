@@ -92,6 +92,24 @@
           </div>
         </div>
 
+        <div class="settings-modal-section settings-modal-section-with-border">
+          <h3 class="text-[14px] font-semibold text-white/50 mb-4 uppercase tracking-wider">Notificações</h3>
+          <div class="flex items-center justify-between py-2 mb-2">
+            <div>
+              <p class="text-[14px] text-white font-medium">Resumo diário por e-mail</p>
+              <p class="text-[11px] text-white/40">Receba suas estatísticas de trading todo dia</p>
+            </div>
+            <label class="toggle-switch">
+              <input 
+                type="checkbox" 
+                v-model="emailNotifications" 
+                @change="saveNotificationSettings"
+              >
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
 
 
         <div class="settings-modal-section settings-modal-section-with-border">
@@ -219,6 +237,7 @@ export default {
       idRealAccount: null,
       idDemoAccount: null,
       loadingTopup: false,
+      emailNotifications: true,
     };
   },
   computed: {
@@ -819,6 +838,7 @@ export default {
           this.tokenDemoCurrency = data.tokenDemoCurrency;
           this.demoAmount = data.demoAmount;
           this.idDemoAccount = data.idDemoAccount;
+          if (data.emailNotifications !== undefined) this.emailNotifications = data.emailNotifications;
         }
       } catch (error) {
         console.error('[SettingsSidebar] Erro ao carregar configurações:', error);
@@ -867,6 +887,33 @@ export default {
         }
       } catch (error) {
         console.error('[SettingsSidebar] Erro ao salvar configurações do Master Trader:', error);
+      }
+    },
+
+    async saveNotificationSettings() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBaseUrl}/settings`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            emailNotifications: this.emailNotifications
+          })
+        });
+
+        if (res.ok) {
+          console.log('[SettingsSidebar] Configurações de notificação salvas:', this.emailNotifications);
+        } else {
+          console.error('[SettingsSidebar] Erro ao salvar notificações:', await res.text());
+        }
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao salvar notificações:', error);
       }
     },
 
@@ -1361,6 +1408,51 @@ export default {
     top: 0 !important;
     height: 100vh !important;
   }
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #2A2A2A;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #22C55E;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
 }
 </style>
 
