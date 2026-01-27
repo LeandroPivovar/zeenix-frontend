@@ -128,14 +128,24 @@
 					<table v-else>
 						<thead>
 							<tr>
-								<th>Nome <span class="sort-icon"></span></th>
-								<th>Login ID <span class="sort-icon"></span></th>
-								<th>Email <span class="sort-icon"></span></th>
+								<th @click="handleSort('name')" class="sortable-header">
+									Nome <span class="sort-icon">{{ getSortIndicator('name') }}</span>
+								</th>
+								<th @click="handleSort('loginId')" class="sortable-header">
+									Login ID <span class="sort-icon">{{ getSortIndicator('loginId') }}</span>
+								</th>
+								<th @click="handleSort('email')" class="sortable-header">
+									Email <span class="sort-icon">{{ getSortIndicator('email') }}</span>
+								</th>
 								<th>Role</th>
-								<th>Saldo (USD) <span class="sort-icon"></span></th>
-								<th>Tempo gasto <span class="sort-icon"></span></th>
-								<th>Criado em <span class="sort-icon"></span></th>
-								<th>Última atividade <span class="sort-icon"></span></th>
+								<th @click="handleSort('balance')" class="sortable-header">
+									Saldo (USD) <span class="sort-icon">{{ getSortIndicator('balance') }}</span>
+								</th>
+								<th>Tempo gasto</th>
+								<th @click="handleSort('createdAt')" class="sortable-header">
+									Criado em <span class="sort-icon">{{ getSortIndicator('createdAt') }}</span>
+								</th>
+								<th>Última atividade</th>
 								<th>Número de WhatsApp</th>
 							</tr>
 						</thead>
@@ -371,6 +381,10 @@ export default {
 			searchQuery: '',
 			balanceFilter: '',
 			
+			// Sorting
+			sortBy: 'createdAt',
+			sortOrder: 'DESC',
+			
 			// Filter Modal State
 			showFilterModal: false,
 			showBalanceIntervalModal: false,
@@ -454,6 +468,10 @@ export default {
 				if (this.balanceFilter) {
 					params.append('balanceFilter', this.balanceFilter);
 				}
+				
+				// Sorting
+				if (this.sortBy) params.append('sortBy', this.sortBy);
+				if (this.sortOrder) params.append('sortOrder', this.sortOrder);
 				
 				// Novos filtros
 				if (this.filters.onlyRealAccount) params.append('onlyRealAccount', 'true');
@@ -620,8 +638,12 @@ export default {
 			this.showBalanceIntervalModal = true;
 		},
 		saveBalanceInterval() {
-			this.filters.minBalance = this.tempMinBalance;
-			this.filters.maxBalance = this.tempMaxBalance;
+			// Convert empty strings to null
+			const min = this.tempMinBalance === '' || this.tempMinBalance === null ? null : Number(this.tempMinBalance);
+			const max = this.tempMaxBalance === '' || this.tempMaxBalance === null ? null : Number(this.tempMaxBalance);
+			
+			this.filters.minBalance = min;
+			this.filters.maxBalance = max;
 			
 			// If interval is set, clear other modes
 			if (this.filters.minBalance !== null || this.filters.maxBalance !== null) {
@@ -649,6 +671,22 @@ export default {
 		applyFilters() {
 			this.fetchClients();
 			this.closeFilterModal();
+		},
+		
+		// Sorting Methods
+		handleSort(column) {
+			if (this.sortBy === column) {
+				// Toggle order
+				this.sortOrder = this.sortOrder === 'ASC' ? 'DESC' : 'ASC';
+			} else {
+				this.sortBy = column;
+				this.sortOrder = 'DESC'; // Default to DESC for new column
+			}
+			this.fetchClients();
+		},
+		getSortIndicator(column) {
+			if (this.sortBy !== column) return '';
+			return this.sortOrder === 'ASC' ? '▲' : '▼';
 		}
 	}
 }
@@ -915,7 +953,21 @@ p {
 	color: #a0a0a0;
 	font-size: 13px;
 	border-bottom: 1px solid #333;
+	cursor: default; /* Default not clickable */
+}
+
+.c-table thead th.sortable-header {
 	cursor: pointer;
+	transition: color 0.2s;
+}
+
+.c-table thead th.sortable-header:hover {
+	color: #fff;
+}
+
+.c-table .sort-icon {
+	font-size: 10px;
+	margin-left: 5px;
 }
 
 .c-table tbody td {
