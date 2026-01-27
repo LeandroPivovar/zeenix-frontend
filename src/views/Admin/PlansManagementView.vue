@@ -414,6 +414,9 @@ export default {
                 isActive: true,
                 displayOrder: 0,
                 externalId: '',
+                selectedIAs: [],
+                selectedAgents: [],
+                selectedTraders: []
             },
             
             // Dados Dinâmicos
@@ -802,6 +805,9 @@ export default {
                 isActive: plan.isActive !== undefined ? plan.isActive : true,
                 displayOrder: plan.displayOrder || 0,
                 externalId: plan.externalId || '',
+                selectedIAs: plan.selectedIAs || [],
+                selectedAgents: plan.selectedAgents || [],
+                selectedTraders: plan.selectedTraders || [],
             };
             
             this.isEditing = true;
