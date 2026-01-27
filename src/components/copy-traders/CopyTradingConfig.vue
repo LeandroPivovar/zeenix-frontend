@@ -370,7 +370,6 @@ export default {
                 if (result.success && result.data) {
                     const allTraders = result.data;
                     
-                    /*
                     if (this.planFeatures && this.planFeatures.traders) {
                         const allowedTraders = this.planFeatures.traders;
                         this.tradersList = allTraders.filter(trader => {
@@ -384,8 +383,6 @@ export default {
                         // Fallback se planFeatures ainda não carregou
                         this.tradersList = allTraders;
                     }
-                    */
-                    this.tradersList = allTraders;
                 } else {
                     console.error('Erro ao carregar traders:', result.message || 'Unknown error');
                     this.tradersList = [];
