@@ -234,16 +234,27 @@
 
 
 
-                <a
-                    href="#"
-                    class="menu-item"
-                    :class="{ active: isPlansManagementActive }"
-                    @click.prevent="navigateAndClose('/PlansManagement')"
-                    data-text="Gerenciar Planos"
-                >
-                    <i class="fa-solid fa-crown w-5 opacity-85"></i>
-                    <span>Gerenciar Planos</span>
-                </a>
+                    <a
+                        href="#"
+                        class="menu-item"
+                        :class="{ active: isPlansManagementActive }"
+                        @click.prevent="navigateAndClose('/PlansManagement')"
+                        data-text="Gerenciar Planos"
+                    >
+                        <i class="fa-solid fa-crown w-5 opacity-85"></i>
+                        <span>Gerenciar Planos</span>
+                    </a>
+                    
+                    <a
+                        href="#"
+                        class="menu-item"
+                        :class="{ active: isNotificationsAdminActive }"
+                        @click.prevent="navigateAndClose('/admin/notifications')"
+                        data-text="Notificações"
+                    >
+                        <i class="fa-solid fa-bell w-5 opacity-85"></i>
+                        <span>Notificações</span>
+                    </a>
 
 
 

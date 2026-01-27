@@ -217,6 +217,12 @@ const routes = [
     name: 'PlansManagement',
     component: PlansManagementView,
     meta: { requiresAuth: true, requiresRole: ['admin'] }
+  },
+  {
+    path: '/admin/notifications',
+    name: 'NotificationsAdmin',
+    component: () => import('../views/Admin/NotificationsAdminView.vue'),
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   }
 
 ]
