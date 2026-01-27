@@ -48,7 +48,9 @@
           <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF] inline-flex items-center gap-2">
             <span>Saldo:</span>
             <span v-if="!balanceHidden" class="inline-flex items-center gap-1.5">
-              <span v-if="uiAccountType !== 'demo' || showDollarSign">{{ currencyPrefix }}</span>
+              <span v-if="uiAccountType !== 'demo' || showDollarSign">
+                {{ isFictitiousBalanceActive ? '$' : currencyPrefix }}
+              </span>
               <span v-else>Đ</span>
               {{ formattedBalance }}
             </span>
