@@ -47,7 +47,7 @@
         <div class="flex items-center space-x-3">
           <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF] inline-flex items-center gap-2">
             <span>Saldo:</span>
-            <span v-if="!balanceHidden" class="inline-flex items-center gap-1.5">
+            <span v-if="!balanceHidden" class="inline-flex items-center gap-1.5 animate-fadeIn">
               <span v-if="uiAccountType !== 'demo' || showDollarSign">
                 {{ isFictitiousBalanceActive ? '$' : currencyPrefix }}
               </span>
@@ -325,6 +325,7 @@ export default {
       isFictitiousBalanceActive: false,
       fictitiousBalance: 0,
       showDollarSign: false,
+      isBalanceReady: false,
       
       // Novas colunas do banco de dados para contas
       tokenReal: null,
@@ -340,7 +341,8 @@ export default {
         text: 'Grupo de Alunos',
         link: 'https://wa.me/5511999999999',
         icon: null
-      }
+      },
+      renderedBalance: 0
     }
   },
   computed: {
@@ -352,8 +354,8 @@ export default {
       return this.accountType || 'real';
     },
     formattedBalance() {
-      // Valor base
-      const value = this.balanceNumeric;
+      // Usar renderedBalance para exibição estável
+      const value = this.renderedBalance;
 
       // Determinar decimais
       const currency = this.currency || 'USD';
@@ -461,7 +463,28 @@ export default {
       return `${baseUrl}${this.userProfilePictureUrl}`;
     }
   },
-  mounted() {
+  watch: {
+    balanceNumeric: {
+      immediate: true,
+      handler(newVal) {
+        // Se estiver pronto ou se for a primeira vez (0), atualiza
+        if (this.isBalanceReady || this.renderedBalance === 0) {
+          this.renderedBalance = newVal;
+        }
+        // Se isBalanceReady for false, MANTÉM o valor antigo no renderedBalance
+        // Assim o usuário vê o valor "congelado" em vez de um intermediário
+      }
+    },
+    isBalanceReady(ready) {
+      if (ready) {
+        this.renderedBalance = this.balanceNumeric;
+      }
+    }
+  },
+  async mounted() {
+    // Inicializar renderedBalance
+    this.renderedBalance = this.balanceNumeric;
+
     document.addEventListener('click', this.handleClickOutside);
     window.addEventListener('storage', this.handleStorageChange);
     window.addEventListener('userProfileUpdated', this.handleProfileUpdate);
@@ -471,9 +494,15 @@ export default {
     this.loadLoginNotifications();
     window.addEventListener('masterTraderSettingsUpdated', this.handleMasterTraderSettingsUpdate);
     window.addEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
-    window.addEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
-    this.loadMasterTraderSettings();
-    this.loadStudentGroupConfig();
+    
+    // Carregar configurações antes de liberar o saldo
+    await this.loadMasterTraderSettings();
+    await this.loadStudentGroupConfig();
+
+    // Delay de segurança
+    setTimeout(() => {
+      this.isBalanceReady = true;
+    }, 500);
   },
   beforeUnmount() {
     window.removeEventListener('masterTraderSettingsUpdated', this.handleMasterTraderSettingsUpdate);

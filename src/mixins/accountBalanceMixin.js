@@ -13,6 +13,7 @@ export default {
       tradeCurrency: 'USD', // 'USD' ou 'DEMO'
       balanceUpdateInterval: null,
       loadingBalance: false,
+      isBalanceReady: false,
       isFictitiousBalanceActive: false,
       fictitiousBalance: 10000
     };
@@ -648,6 +649,8 @@ export default {
     }
   },
   async mounted() {
+    this.loadingBalance = true; // Forçar loading inicial para evitar glitch
+
     // Carregar configurações de Master Trader
     await this.loadMasterTraderSettings();
 
@@ -690,6 +693,13 @@ export default {
       balancesByCurrencyReal: this.balancesByCurrencyReal,
       balancesByCurrencyDemo: this.balancesByCurrencyDemo
     });
+
+    // Pequeno atraso artificial para garantir que a UI não mostre valores intermediários
+    // Isso resolve o glitch visual do "pulo" do saldo fictício
+    setTimeout(() => {
+      this.isBalanceReady = true;
+      this.loadingBalance = false;
+    }, 500);
   },
   beforeUnmount() {
     // Limpar intervalos
