@@ -34,8 +34,8 @@
                 <main class="layout-content">
                     <div class="admin-dashboard">
                         <header class="dashboard-header">
-                            <h1 style="font-size: 20px;">Gerenciar Notificações</h1>
-                            <p style="font-size: 14px;">Crie e gerencie notificações do sistema para os usuários.</p>
+                            <h1>Gerenciar Notificações</h1>
+                            <p>Crie e gerencie notificações do sistema para os usuários.</p>
                         </header>
 
                         <section class="notification-list">
@@ -50,10 +50,6 @@
                                 <table class="modern-table">
                                     <thead>
                                         <tr>
-                                            <th>NOME</th>
-                                            <th>DESCRIÇÃO</th>
-                                            <th>CRIADO EM</th>
-                                            <th>DATA EXPIRAÇÃO</th>
                                             <th>NOME</th>
                                             <th>DESCRIÇÃO</th>
                                             <th>CRIADO EM</th>
@@ -408,7 +404,7 @@ export default {
 .dashboard-content-wrapper {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 10px 20px; /* Reduzido padding vertical */
     margin-left: 260px; /* Largura da sidebar expandida */
     transition: margin-left 0.3s ease;
 }
@@ -428,9 +424,22 @@ export default {
     background: #141414;
     border: 1px solid #1C1C1C;
     border-radius: 12px;
-    padding: 24px; /* Aumentado padding interno */
-    margin-top: 20px;
+    padding: 16px; /* Reduzido padding interno */
+    margin-top: 10px; /* Reduzido margin top */
     width: 100%; /* Força largura total */
+}
+
+.dashboard-header {
+    margin-bottom: 0px;
+}
+
+.dashboard-header h1 {
+    margin-bottom: 4px;
+}
+
+.dashboard-header p {
+    margin-bottom: 0px;
+    color: #9CA3AF;
 }
 
 .section-header {
