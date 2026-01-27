@@ -1,38 +1,40 @@
 <template>
-  <transition name="modal-fade">
-    <div v-if="visible" class="strategy-required-modal-overlay" @click.self="handleClose">
-      <div class="strategy-required-modal">
-        <div class="modal-icon-container">
-          <div class="modal-icon">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M32 60C47.464 60 60 47.464 60 32C60 16.536 47.464 4 32 4C16.536 4 4 16.536 4 32C4 47.464 16.536 60 32 60Z" stroke="#22C55E" stroke-width="3"/>
-              <path d="M32 18V34" stroke="#22C55E" stroke-width="3" stroke-linecap="round"/>
-              <path d="M32 42V42.5" stroke="#22C55E" stroke-width="3" stroke-linecap="round"/>
-            </svg>
+  <Teleport to="body">
+    <transition name="modal-fade">
+      <div v-if="visible" class="strategy-required-modal-overlay" @click.self="handleClose">
+        <div class="strategy-required-modal">
+          <div class="modal-icon-container">
+            <div class="modal-icon">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M32 60C47.464 60 60 47.464 60 32C60 16.536 47.464 4 32 4C16.536 4 4 16.536 4 32C4 47.464 16.536 60 32 60Z" stroke="#22C55E" stroke-width="3"/>
+                <path d="M32 18V34" stroke="#22C55E" stroke-width="3" stroke-linecap="round"/>
+                <path d="M32 42V42.5" stroke="#22C55E" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
           </div>
+          
+          <h2 class="modal-title">SELECIONE UMA IA</h2>
+          
+          <p class="modal-message">
+            Nenhuma Inteligência Artificial foi selecionada.
+          </p>
+          
+          <div class="info-box">
+            <p class="info-label">AÇÃO NECESSÁRIA</p>
+            <p class="info-value">Escolher Estratégia</p>
+          </div>
+          
+          <p class="description-message">
+            Para iniciar as operações, você precisa selecionar uma das estratégias disponíveis (Orion, Atlas, Nexus, etc.).
+          </p>
+          
+          <button class="confirm-button" type="button" @click="handleConfirm">
+            Selecionar Agora
+          </button>
         </div>
-        
-        <h2 class="modal-title">SELECIONE UMA IA</h2>
-        
-        <p class="modal-message">
-          Nenhuma Inteligência Artificial foi selecionada.
-        </p>
-        
-        <div class="info-box">
-          <p class="info-label">AÇÃO NECESSÁRIA</p>
-          <p class="info-value">Escolher Estratégia</p>
-        </div>
-        
-        <p class="description-message">
-          Para iniciar as operações, você precisa selecionar uma das estratégias disponíveis (Orion, Atlas, Nexus, etc.).
-        </p>
-        
-        <button class="confirm-button" type="button" @click="handleConfirm">
-          Selecionar Agora
-        </button>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </Teleport>
 </template>
 
 <script>

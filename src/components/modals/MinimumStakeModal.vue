@@ -1,37 +1,39 @@
 <template>
-  <transition name="modal-fade">
-    <div v-if="visible" class="minimum-stake-modal-overlay" @click.self="handleClose">
-      <div class="minimum-stake-modal">
-        <div class="modal-icon-container">
-          <div class="modal-icon">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="32" cy="32" r="30" stroke="#FFD058" stroke-width="3"/>
-              <path d="M32 20V36M32 40H32.01" stroke="#FFD058" stroke-width="3" stroke-linecap="round"/>
-            </svg>
+  <Teleport to="body">
+    <transition name="modal-fade">
+      <div v-if="visible" class="minimum-stake-modal-overlay" @click.self="handleClose">
+        <div class="minimum-stake-modal">
+          <div class="modal-icon-container">
+            <div class="modal-icon">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="30" stroke="#FFD058" stroke-width="3"/>
+                <path d="M32 20V36M32 40H32.01" stroke="#FFD058" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
           </div>
+          
+          <h2 class="modal-title">VALOR MÍNIMO</h2>
+          
+          <p class="modal-message">
+            O valor de entrada informado é inferior ao limite permitido.
+          </p>
+          
+          <div class="info-box">
+            <p class="info-label">VALOR MÍNIMO EXIGIDO</p>
+            <p class="info-value">$0.35</p>
+          </div>
+          
+          <p class="description-message">
+            O valor mínimo de entrada aceito pela corretora Deriv é <span class="highlight">$0.35</span>. Por favor, ajuste o valor da sua entrada para continuar.
+          </p>
+          
+          <button class="confirm-button" type="button" @click="handleConfirm">
+            Entendido
+          </button>
         </div>
-        
-        <h2 class="modal-title">VALOR MÍNIMO</h2>
-        
-        <p class="modal-message">
-          O valor de entrada informado é inferior ao limite permitido.
-        </p>
-        
-        <div class="info-box">
-          <p class="info-label">VALOR MÍNIMO EXIGIDO</p>
-          <p class="info-value">$0.35</p>
-        </div>
-        
-        <p class="description-message">
-          O valor mínimo de entrada aceito pela corretora Deriv é <span class="highlight">$0.35</span>. Por favor, ajuste o valor da sua entrada para continuar.
-        </p>
-        
-        <button class="confirm-button" type="button" @click="handleConfirm">
-          Entendido
-        </button>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </Teleport>
 </template>
 
 <script>
