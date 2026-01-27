@@ -251,15 +251,12 @@ export default {
         const data = await res.json()
 
         // Recuperar informações do usuário do localStorage
-        let accessiblePlanIds = [];
         let isAdmin = false;
 
         try {
             const userStr = localStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
-                // fallback se não tiver accessiblePlanIds (versão antiga do cache), usa o próprio planId no array
-                accessiblePlanIds = user.accessiblePlanIds || (user.planId ? [user.planId] : []);
                 isAdmin = user.role === 'admin';
             } else {
                 if (token) {
@@ -289,16 +286,9 @@ export default {
                 // 3. Público -> Todo mundo vê
                 if (!course.visibility || course.visibility === 'public') return true;
 
-                // 4. Restrito -> Verifica lista de planos
+                // 4. Restrito -> O backend já filtra o que o usuário pode ver.
                 if (course.visibility === 'restricted') {
-                    // Sem planos acessíveis? Não vê
-                    if (!accessiblePlanIds || accessiblePlanIds.length === 0) return false;
-
-                    // Lista de planos do curso inconsistente?
-                    if (!course.planIds || !Array.isArray(course.planIds) || course.planIds.length === 0) return false;
-
-                    // Verifica intersecção: se algum plano acessível do usuário está nos permitidos do curso
-                    return course.planIds.some(coursePlanId => accessiblePlanIds.includes(coursePlanId));
+                    return true;
                 }
 
                 // 5. Privado ou outro status desconhecido -> Esconde

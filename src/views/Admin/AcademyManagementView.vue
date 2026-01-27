@@ -279,6 +279,8 @@
                 @save-new-material="saveNewMaterial"
                 @edit-material="openEditMaterial"
                 @update:new-material="newMaterial = $event"
+                @update:new-module="newModule = $event"
+                @update:new-lesson="newLesson = $event"
                 :is-tutorial-selection-modal-open="isTutorialSelectionModalOpen"
                 :initial-tutorial-type="selectedLessonForTutorial?.isDerivTutorial || 0"
                 @close-tutorial-modal="closeTutorialModal"
