@@ -127,7 +127,10 @@
                                 :key="`benefit-${index}`" 
                                 class="feature-item"
                             >
-                                <span>{{ benefit }}</span>
+                                <div class="feature-check">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <span class="feature-text">{{ benefit }}</span>
                             </li>
                             
                             <!-- Mensagem se não houver benefícios -->
