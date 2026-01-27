@@ -638,8 +638,12 @@ export default {
 			this.showBalanceIntervalModal = true;
 		},
 		saveBalanceInterval() {
-			this.filters.minBalance = this.tempMinBalance;
-			this.filters.maxBalance = this.tempMaxBalance;
+			// Convert empty strings to null
+			const min = this.tempMinBalance === '' || this.tempMinBalance === null ? null : Number(this.tempMinBalance);
+			const max = this.tempMaxBalance === '' || this.tempMaxBalance === null ? null : Number(this.tempMaxBalance);
+			
+			this.filters.minBalance = min;
+			this.filters.maxBalance = max;
 			
 			// If interval is set, clear other modes
 			if (this.filters.minBalance !== null || this.filters.maxBalance !== null) {
