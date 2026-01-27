@@ -658,9 +658,14 @@ export default {
         const currentPath = this.$route.path;
         console.log(`[SettingsSidebar] 🔍 Detectando contexto - Path atual: ${currentPath}`);
         
-        if (currentPath.includes('/ia') || currentPath.includes('/copy-trading')) {
+        // Verificar se está em páginas de IA (StatsIAs, InvestmentIA, copy-trading)
+        if (currentPath.includes('StatsIAs') || 
+            currentPath.includes('Investment') || 
+            currentPath.includes('copy-trading')) {
             activeContext = 'ai';
-        } else if (currentPath.includes('/autonomo')) {
+        } 
+        // Verificar se está em páginas do Agente Autônomo (agente-autonomo)
+        else if (currentPath.includes('agente-autonomo')) {
             activeContext = 'agent';
         }
         console.log(`[SettingsSidebar] Trocando para ${type}. Contexto detectado: ${activeContext}`);
