@@ -593,16 +593,17 @@ export default {
             // Melhor mostrar todas por padrão até carregar, ou filtrar se planFeatures existir
             if (!this.planFeatures) return this.allStrategies;
             
-            const allowedIAs = this.planFeatures.ias || [];
+            // const allowedIAs = this.planFeatures.ias || [];
             
-            // Se o array de IAs estiver vazio e planFeatures existir, 
-            // talvez seja um plano que não dá acesso a nenhuma IA? 
             // Mas geralmente no config do admin as IAs são selecionadas.
             
+            return this.allStrategies;
+            /*
             return this.allStrategies.filter(strategy => {
                 // Verificar se o ID da estratégia (em minúsculo) está na lista de IAs permitidas
                 return allowedIAs.some(allowed => allowed.toLowerCase() === strategy.id.toLowerCase());
             });
+            */
         },
         
         formattedLastUpdate() {

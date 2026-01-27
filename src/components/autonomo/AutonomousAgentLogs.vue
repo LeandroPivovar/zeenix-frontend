@@ -126,7 +126,7 @@ export default {
   },
   computed: {
     formattedLogs() {
-      const limitedLogs = this.realtimeLogs.slice(0, 500);
+      const limitedLogs = this.realtimeLogs;
       return limitedLogs.map(log => {
         const message = log.message || '';
         
