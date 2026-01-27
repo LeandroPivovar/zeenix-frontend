@@ -110,10 +110,11 @@
                                     <li v-for="lesson in filteredLessonsForModule(module.id, true)" :key="lesson.id" class="lesson-item">
                                         <div class="lesson-info">
                                             <button 
+                                            <button 
                                                 class="btn-star" 
-                                                :class="{ 'active': lesson.isDerivTutorial }" 
-                                                @click.stop="toggleDerivTutorial(lesson)"
-                                                title="Definir como Tutorial Deriv da Home"
+                                                :class="{ 'active': lesson.isDerivTutorial > 0 }" 
+                                                @click.stop="openFeaturedLessonModal(lesson)"
+                                                title="Definir destaque (Tutorial)"
                                             >
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -285,6 +286,13 @@
                 @update:new-material="newMaterial = $event"
             />
 
+            <FeaturedLessonModal
+                :visible="isFeaturedLessonModalOpen"
+                :current-value="selectedLessonForFeatured ? Number(selectedLessonForFeatured.isDerivTutorial) : null"
+                @close="isFeaturedLessonModalOpen = false"
+                @save="saveFeaturedLesson"
+            />
+
             <StudentPreview
                 v-if="isPreviewModalOpen"
                 :course-data="previewCourse"
@@ -320,6 +328,7 @@ import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import StudentPreview from '../../components/StudentPreview.vue';
 import AcademyModals from '../../components/modals/AcademyModals.vue'; 
+import FeaturedLessonModal from '../../components/modals/FeaturedLessonModal.vue';
 import ConfirmActionModal from '../../components/modals/ConfirmActionModal.vue'; 
 
 export default {
@@ -329,7 +338,9 @@ export default {
         TopNavbar,
         SettingsSidebar,
         StudentPreview,
+        StudentPreview,
         AcademyModals,
+        FeaturedLessonModal,
         ConfirmActionModal,
     },
     data() {
@@ -409,7 +420,11 @@ export default {
             
             // Dados do Backend
             modules: [],
-            lessons: []
+            lessons: [],
+            
+            // Modal Featured Lesson
+            isFeaturedLessonModalOpen: false,
+            selectedLessonForFeatured: null,
         };
     },
     async mounted() {
@@ -788,15 +803,26 @@ export default {
                 this.lessons = [...this.lessons];
             }
         },
-        async toggleDerivTutorial(lesson) {
-            // Optimistic update
-            const newState = !lesson.isDerivTutorial;
+        openFeaturedLessonModal(lesson) {
+            this.selectedLessonForFeatured = lesson;
+            this.isFeaturedLessonModalOpen = true;
+        },
+        async saveFeaturedLesson(value) {
+            if (!this.selectedLessonForFeatured) return;
+            const lesson = this.selectedLessonForFeatured;
             
-            // Reset all locally
-            this.lessons.forEach(l => l.isDerivTutorial = false);
+            const oldValue = lesson.isDerivTutorial;
             
-            // Set clicked one
-            lesson.isDerivTutorial = newState;
+            // Optimistic Update
+            // Se value > 0, remove de outros que tenham o mesmo valor
+            if (value > 0) {
+                this.lessons.forEach(l => {
+                    if (l.isDerivTutorial === value) {
+                        l.isDerivTutorial = null;
+                    }
+                });
+            }
+            lesson.isDerivTutorial = value;
             
             try {
                 const apiBaseUrl = this.getApiBaseUrl();
@@ -807,7 +833,7 @@ export default {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        isDerivTutorial: lesson.isDerivTutorial
+                        isDerivTutorial: value
                     }),
                 });
 
@@ -815,10 +841,11 @@ export default {
                     throw new Error('Falha ao atualizar');
                 }
                 
-                this.$root.$toast.success(lesson.isDerivTutorial ? 'Definido como Tutorial Deriv' : 'Removido de Tutorial Deriv');
+                this.$root.$toast.success(value ? 'Destaque atualizado com sucesso' : 'Destaque removido');
             } catch (error) {
                 console.error(error);
                 this.$root.$toast.error('Erro ao atualizar. Revertendo...');
+                // Revert
                 await this.loadCourseDetails();
             }
         },
