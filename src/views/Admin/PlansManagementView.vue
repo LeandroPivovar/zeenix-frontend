@@ -146,6 +146,15 @@
                             <span class="hint-text">Plano ativo e visível para usuários.</span>
                         </div>
 
+                        <div class="form-group" style="flex: 1 1 100%; margin-top: 10px;">
+                            <button type="button" class="manage-features-btn" @click="showFeaturesModal = true">
+                                <i class="fas fa-list-ul"></i> Gerenciar Recursos (IAs, Agentes, Traders)
+                            </button>
+                            <div v-if="getSelectedFeaturesCount > 0" class="selected-features-summary">
+                                {{ getSelectedFeaturesCount }} recurso(s) selecionado(s)
+                            </div>
+                        </div>
+
                         <div class="divisor"></div>
 
                         <div class="footer-form">
@@ -314,6 +323,54 @@
             @close="showSettingsModal = false"
         />
         <ToastNotification ref="toast" />
+
+        <!-- Features Selection Modal -->
+        <transition name="modal-fade">
+            <div class="modal-overlay" v-if="showFeaturesModal" @click.self="showFeaturesModal = false">
+                <div class="modal-content features-modal">
+                    <div class="modal-header">
+                        <h3>Gerenciar Recursos do Plano</h3>
+                        <button class="close-button" @click="showFeaturesModal = false">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="features-section">
+                            <h4>IAs DISPONÍVEIS</h4>
+                            <div class="features-grid">
+                                <label v-for="ia in availableIAs" :key="ia" class="feature-checkbox">
+                                    <input type="checkbox" :value="ia" v-model="planForm.selectedIAs">
+                                    <span>{{ ia }}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="features-section">
+                            <h4>AGENTES AUTÔNOMOS</h4>
+                            <div class="features-grid">
+                                <label v-for="agent in availableAgents" :key="agent" class="feature-checkbox">
+                                    <input type="checkbox" :value="agent" v-model="planForm.selectedAgents">
+                                    <span>{{ agent }}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="features-section">
+                            <h4>MASTER TRADERS</h4>
+                            <div v-if="isLoadingTraders" class="loading-text">Carregando traders...</div>
+                            <div v-else-if="masterTraders.length === 0" class="empty-text">Nenhum Master Trader cadastrado.</div>
+                            <div v-else class="features-grid">
+                                <label v-for="trader in masterTraders" :key="trader.id" class="feature-checkbox">
+                                    <input type="checkbox" :value="trader.id" v-model="planForm.selectedTraders">
+                                    <span>{{ trader.name }}</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-save-config" @click="showFeaturesModal = false">Concluir</button>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
 
@@ -368,8 +425,22 @@ export default {
                 title: '',
                 message: '',
                 confirmAction: null
-            }
+            },
+
+            // Gerenciamento de Recursos
+            showFeaturesModal: false,
+            isLoadingTraders: false,
+            masterTraders: [],
+            availableIAs: ['Nexus', 'Atlas', 'Orion', 'Titan', 'Apollo'],
+            availableAgents: ['Falcon', 'Zeus']
         };
+    },
+    computed: {
+        getSelectedFeaturesCount() {
+            return (this.planForm.selectedIAs?.length || 0) + 
+                   (this.planForm.selectedAgents?.length || 0) + 
+                   (this.planForm.selectedTraders?.length || 0);
+        }
     },
     async mounted() {
         console.log('🔍 [PlansManagement] Componente montado');
@@ -379,6 +450,7 @@ export default {
         window.addEventListener('resize', this.checkMobileStatus);
         document.addEventListener('click', this.handleClickOutside);
         await this.loadPlans();
+        await this.fetchMasterTraders();
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobileStatus);
@@ -444,6 +516,24 @@ export default {
             }
         },
 
+        async fetchMasterTraders() {
+            this.isLoadingTraders = true;
+            try {
+                const token = localStorage.getItem('token');
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const response = await fetch(`${baseUrl}/admin/master-traders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    this.masterTraders = await response.json();
+                }
+            } catch (error) {
+                console.error('Erro ao buscar master traders:', error);
+            } finally {
+                this.isLoadingTraders = false;
+            }
+        },
+
         mapPlanFromBackend(plan) {
             const features = plan.features || {};
             
@@ -493,6 +583,10 @@ export default {
                 isActive: plan.isActive !== undefined ? plan.isActive : true,
                 displayOrder: plan.displayOrder || 0,
                 externalId: plan.externalId || '',
+                // Features extraídas
+                selectedIAs: parsedFeatures.ias || [],
+                selectedAgents: parsedFeatures.agents || [],
+                selectedTraders: parsedFeatures.traders || [],
             };
         },
 
@@ -511,6 +605,9 @@ export default {
                 isActive: true,
                 displayOrder: 0,
                 externalId: '',
+                selectedIAs: [],
+                selectedAgents: [],
+                selectedTraders: []
             };
             console.log('📋 [PlansManagement] Formulário vazio criado com', form.benefits.length, 'benefícios');
             return form;
@@ -594,6 +691,9 @@ export default {
 
                 const features = {
                     benefits: benefits,
+                    ias: this.planForm.selectedIAs || [],
+                    agents: this.planForm.selectedAgents || [],
+                    traders: this.planForm.selectedTraders || [],
                 };
 
                 const payload = {
@@ -1475,5 +1575,102 @@ body {
     width: 100%;
     max-width: none;
 }
+
+/* Features Modal Styles */
+.manage-features-btn {
+    background: #1d1c1d;
+    border: 1px dashed #4CAF50;
+    color: #4CAF50;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.manage-features-btn:hover {
+    background: rgba(76, 175, 80, 0.1);
+    border-style: solid;
+}
+
+.selected-features-summary {
+    font-size: 12px;
+    color: #a0a0a0;
+    margin-top: 6px;
+    padding-left: 4px;
+}
+
+.features-modal {
+    max-width: 600px !important;
+    width: 90% !important;
+}
+
+.features-section {
+    margin-bottom: 24px;
+}
+
+.features-section h4 {
+    font-size: 12px;
+    color: #22C55E;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+    padding-bottom: 6px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.feature-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    background: #1d1c1d;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    transition: all 0.2s;
+}
+
+.feature-checkbox:hover {
+    border-color: #4CAF50;
+    background: #252525;
+}
+
+.feature-checkbox input {
+    width: 16px !important;
+    height: 16px !important;
+    margin: 0 !important;
+    cursor: pointer;
+}
+
+.feature-checkbox span {
+    font-size: 13px;
+    color: #fff;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+}
+
+.loading-text, .empty-text {
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+    padding: 10px;
+}
 </style>
+
 
