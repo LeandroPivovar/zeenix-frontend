@@ -1302,7 +1302,7 @@ export default {
     height: 60px;
     background-color: #0b0b0b;
     z-index: 998;
-    padding: 0 20px;
+    padding: 0 10px;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid #1C1C1C;
