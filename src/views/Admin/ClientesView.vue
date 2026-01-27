@@ -600,10 +600,19 @@ export default {
 		},
 		toggleOnlyRealAccount() {
 			this.filters.onlyRealAccount = !this.filters.onlyRealAccount;
-			// Se ativar "Somente Real", "Sem Saldo Real" faz sentido em conjunto? Sim.
+			if (this.filters.onlyRealAccount) {
+				this.filters.noRealBalance = false;
+				this.filters.minBalance = null;
+				this.filters.maxBalance = null;
+			}
 		},
 		toggleNoRealBalance() {
 			this.filters.noRealBalance = !this.filters.noRealBalance;
+			if (this.filters.noRealBalance) {
+				this.filters.onlyRealAccount = false;
+				this.filters.minBalance = null;
+				this.filters.maxBalance = null;
+			}
 		},
 		openBalanceIntervalModal() {
 			this.tempMinBalance = this.filters.minBalance;
@@ -613,11 +622,19 @@ export default {
 		saveBalanceInterval() {
 			this.filters.minBalance = this.tempMinBalance;
 			this.filters.maxBalance = this.tempMaxBalance;
+			
+			// If interval is set, clear other modes
+			if (this.filters.minBalance !== null || this.filters.maxBalance !== null) {
+				this.filters.onlyRealAccount = false;
+				this.filters.noRealBalance = false;
+			}
+			
 			this.showBalanceIntervalModal = false;
 		},
 		clearBalanceFilter() {
 			this.filters.minBalance = null;
 			this.filters.maxBalance = null;
+			// No need to set others, just clearing interval
 		},
 		clearAllFilters() {
 			this.filters = {
