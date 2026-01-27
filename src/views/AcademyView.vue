@@ -251,14 +251,15 @@ export default {
         const data = await res.json()
 
         // Recuperar informações do usuário do localStorage
-        let userPlanId = null;
+        let accessiblePlanIds = [];
         let isAdmin = false;
 
         try {
             const userStr = localStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
-                userPlanId = user.planId;
+                // fallback se não tiver accessiblePlanIds (versão antiga do cache), usa o próprio planId no array
+                accessiblePlanIds = user.accessiblePlanIds || (user.planId ? [user.planId] : []);
                 isAdmin = user.role === 'admin';
             } else {
                 if (token) {
@@ -273,7 +274,9 @@ export default {
         // Se isAdmin, mostra tudo.
         // Se usuário comum:
         // - Mostra públicos
-        // - Mostra restritos APENAS se userPlanId estiver na lista de permitidos
+        // - Mostra restritos APENAS se:
+        //   1. O usuário tem planos acessíveis (accessiblePlanIds não vazio)
+        //   2. ALGUM dos accessiblePlanIds do usuário está na lista planIds do curso
         
         this.courses = data
             .filter(course => {
@@ -288,14 +291,14 @@ export default {
 
                 // 4. Restrito -> Verifica lista de planos
                 if (course.visibility === 'restricted') {
-                    // Sem plano definido no user? Não vê
-                    if (!userPlanId) return false;
+                    // Sem planos acessíveis? Não vê
+                    if (!accessiblePlanIds || accessiblePlanIds.length === 0) return false;
 
-                    // Lista de planos do curso está vazia ou nula? (Inconsistência, melhor esconder)
-                    if (!course.planIds || !Array.isArray(course.planIds)) return false;
+                    // Lista de planos do curso inconsistente?
+                    if (!course.planIds || !Array.isArray(course.planIds) || course.planIds.length === 0) return false;
 
-                    // Verifica se o ID do plano do user está na lista
-                    return course.planIds.includes(userPlanId);
+                    // Verifica intersecção: se algum plano acessível do usuário está nos permitidos do curso
+                    return course.planIds.some(coursePlanId => accessiblePlanIds.includes(coursePlanId));
                 }
 
                 // 5. Privado ou outro status desconhecido -> Esconde

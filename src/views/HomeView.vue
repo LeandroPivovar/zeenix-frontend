@@ -220,7 +220,8 @@ export default {
                     email: userData.email,
                     firstAccess: userData.firstAccess,
                     planId: userData.planId,
-                    role: userData.role
+                    role: userData.role,
+                    accessiblePlanIds: userData.accessiblePlanIds || []
                   }))
                   
                   if (userData.firstAccess) {
