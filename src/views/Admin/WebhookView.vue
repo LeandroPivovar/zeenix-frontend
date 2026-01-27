@@ -1167,8 +1167,9 @@ input:checked + .slider:before {
     }
 
     .layout{
-        max-width: 100%;
+        max-width: calc(100% - 280px);
         padding: 0 20px;
+        margin-left: 280px;
     }
 }
 
