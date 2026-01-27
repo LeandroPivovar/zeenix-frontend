@@ -1703,23 +1703,37 @@ export default {
          * Retorna a classe CSS baseada no tipo do log
          */
         getLogClass(log) {
-            // Check message content for win/loss keywords first
             const message = log.message || '';
             const lowerMessage = message.toLowerCase();
+            const firstLine = message.split('\n')[0].toUpperCase();
             
-            // Verde para ganho/vitória/sucesso
+            // PRIORITY OVERRIDES
+            if (firstLine.includes('META') || firstLine.includes('BLINDADO')) {
+                return 'text-green-400';
+            }
+            if (firstLine.includes('BLOQUEADA') || 
+                firstLine.includes('MARTINGALE') || 
+                firstLine.includes('INSUFICIENTE') ||
+                firstLine.includes('ERRO DE CONEXÃO')) {
+                return 'text-yellow-400';
+            }
+            if (firstLine.includes('INÍCIO') || 
+                firstLine.includes('ANÁLISE') || 
+                firstLine.includes('AJUSTE') ||
+                firstLine.includes('CONTRATO') ||
+                firstLine.includes('STAKE')) {
+                return 'text-blue-400';
+            }
+
+            // General keyword checks (only if not caught above)
             if (lowerMessage.includes('vitória') || 
                 lowerMessage.includes('vitoria') ||
-                lowerMessage.includes('ganho') || 
                 lowerMessage.includes('ganhou') || 
-                lowerMessage.includes('lucro') ||
                 lowerMessage.includes('win')) {
                 return 'text-green-400';
             }
             
-            // Vermelho para perda/derrota/erro
             if (lowerMessage.includes('derrota') || 
-                lowerMessage.includes('perda') || 
                 lowerMessage.includes('perdeu') ||
                 lowerMessage.includes('loss') ||
                 lowerMessage.includes('lost')) {
@@ -1730,11 +1744,12 @@ export default {
             const colors = {
                 info: 'text-blue-400',
                 tick: 'text-gray-400',
-                analise: 'text-purple-400',
+                analise: 'text-blue-400',
+                vitoria: 'text-green-400',
                 sinal: 'text-yellow-400',
                 operacao: 'text-cyan-400',
                 resultado: 'text-green-400',
-                alerta: 'text-orange-400',
+                alerta: 'text-yellow-400',
                 erro: 'text-red-500'
             };
             

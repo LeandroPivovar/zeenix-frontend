@@ -145,15 +145,15 @@ export default {
         }
         // 2. Yellow/Warning Logs
         else if (
+          titleLine.includes('BLOQUEADA') || 
+          titleLine.includes('INSUFICIENTE') ||
+          titleLine.includes('ERRO') ||
           log.type === 'alerta' ||
           log.type === 'erro' ||
-          titleLine.includes('BLOQUEADA') || 
           titleLine.includes('SEQUÊNCIA') || 
           titleLine.includes('TROCA') || 
           titleLine.includes('MARTINGALE') ||
           titleLine.includes('PARCIAL') ||
-          titleLine.includes('INSUFICIENTE') ||
-          titleLine.includes('ERRO') ||
           (titleLine.includes('INÍCIO') && titleLine.includes('RECUPERAÇÃO')) ||
           (titleLine.includes('NÍVEL') && !titleLine.includes('SOROS'))
         ) {
@@ -161,10 +161,10 @@ export default {
         }
         // 3. Blue/Analysis Logs (Blue)
         else if (
-          log.type === 'analise' ||
           titleLine.includes('INÍCIO') || 
-          titleLine.includes('COLETA') || 
           titleLine.includes('ANÁLISE') || 
+          log.type === 'analise' ||
+          titleLine.includes('COLETA') || 
           titleLine.includes('AJUSTE') ||
           titleLine.includes('CONTRATO') ||
           titleLine.includes('STAKE')
