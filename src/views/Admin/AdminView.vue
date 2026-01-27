@@ -162,9 +162,6 @@
                                     class="search-input"
                                 >
                             </div>
-                            <button class="btn btn-secondary" @click="showUserFilterModal = true" style="margin-right: 10px;">
-                                <i class="fas fa-filter"></i> Filtrar
-                            </button>
                             <button class="btn btn-add-admin" @click="showAddUserModal = true">+ Adicionar Novo Usuário</button>
                         </div>
                     </div>
@@ -593,51 +590,6 @@
             </div>
         </transition>
 
-        <!-- User Filter Modal -->
-        <transition name="modal-fade">
-            <div v-if="showUserFilterModal" class="modal-overlay" @click.self="showUserFilterModal = false">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3>Filtros Avançados</h3>
-                        <button class="close-button" @click="showUserFilterModal = false">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group toggle-group">
-                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                <input type="checkbox" v-model="userFilters.realOnly" style="width: auto;">
-                                <span>Somente Conta Real</span>
-                            </label>
-                        </div>
-                        
-                        <div class="form-group toggle-group" style="margin-top: 15px;">
-                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                <input type="checkbox" v-model="userFilters.noBalance" style="width: auto;">
-                                <span>Usuários Sem Saldo (Real)</span>
-                            </label>
-                        </div>
-
-                        <div v-if="!userFilters.noBalance" style="margin-top: 20px; border-top: 1px solid #333; padding-top: 20px;">
-                            <h4 style="margin-bottom: 15px; color: #ccc;">Intervalo de Saldo (Real)</h4>
-                            <div style="display: flex; gap: 10px;">
-                                <div class="form-group" style="flex: 1;">
-                                    <label>Mínimo ($)</label>
-                                    <input type="number" v-model.number="userFilters.minBalance" placeholder="0.00" step="0.01">
-                                </div>
-                                <div class="form-group" style="flex: 1;">
-                                    <label>Máximo ($)</label>
-                                    <input type="number" v-model.number="userFilters.maxBalance" placeholder="10000.00" step="0.01">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-actions">
-                        <button class="btn btn-secondary" @click="clearUserFilters">Limpar</button>
-                        <button class="btn btn-save-config" @click="applyUserFilters">Aplicar Filtros</button>
-                    </div>
-                </div>
-            </div>
-        </transition>
-
         <!-- Settings Modal -->
         <SettingsSidebar
             :is-open="showSettingsModal"
@@ -687,16 +639,7 @@ export default {
             
             showSettingsModal: false,
             showAddAdminModal: false,
-
-            showKiwifyModal: false,
-            showUserFilterModal: false,
-
-            userFilters: {
-                realOnly: false,
-                noBalance: false,
-                minBalance: '',
-                maxBalance: ''
-            }, 
+            showKiwifyModal: false, 
             
             newAdmin: {
                 name: '',
@@ -939,12 +882,6 @@ export default {
                     url.searchParams.append('search', this.allUsersSearch);
                 }
 
-                // Append filters
-                if (this.userFilters.realOnly) url.searchParams.append('realOnly', 'true');
-                if (this.userFilters.noBalance) url.searchParams.append('noBalance', 'true');
-                if (this.userFilters.minBalance !== '') url.searchParams.append('minBalance', this.userFilters.minBalance);
-                if (this.userFilters.maxBalance !== '') url.searchParams.append('maxBalance', this.userFilters.maxBalance);
-
                 const response = await fetch(url.toString(), {
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -982,21 +919,6 @@ export default {
             } finally {
                 this.isLoadingAllUsers = false;
             }
-        },
-
-        applyUserFilters() {
-            this.showUserFilterModal = false;
-            this.loadAllUsers(1, this.allUsersPagination.recordsPerPage);
-        },
-
-        clearUserFilters() {
-            this.userFilters = {
-                realOnly: false,
-                noBalance: false,
-                minBalance: '',
-                maxBalance: ''
-            };
-            this.applyUserFilters();
         },
 
         async loadPlans() {
