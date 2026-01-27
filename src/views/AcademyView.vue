@@ -251,15 +251,12 @@ export default {
         const data = await res.json()
 
         // Recuperar informações do usuário do localStorage
-        let accessiblePlanIds = [];
         let isAdmin = false;
 
         try {
             const userStr = localStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
-                // fallback se não tiver accessiblePlanIds (versão antiga do cache), usa o próprio planId no array
-                accessiblePlanIds = user.accessiblePlanIds || (user.planId ? [user.planId] : []);
                 isAdmin = user.role === 'admin';
             } else {
                 if (token) {
