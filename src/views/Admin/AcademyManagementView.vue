@@ -110,11 +110,10 @@
                                     <li v-for="lesson in filteredLessonsForModule(module.id, true)" :key="lesson.id" class="lesson-item">
                                         <div class="lesson-info">
                                             <button 
-
                                                 class="btn-star" 
                                                 :class="{ 'active': lesson.isDerivTutorial > 0 }" 
-                                                @click.stop="openFeaturedLessonModal(lesson)"
-                                                title="Definir destaque (Tutorial)"
+                                                @click.stop="openTutorialModal(lesson)"
+                                                title="Definir como Tutorial Deriv da Home"
                                             >
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -279,18 +278,11 @@
                 @save-new-lesson="saveNewLesson"
                 @save-new-material="saveNewMaterial"
                 @edit-material="openEditMaterial"
-                @cancel-edit-material="cancelEditMaterial"
-                @delete-material="requestDeleteMaterial"
-                @update:new-module="newModule = $event"
-                @update:new-lesson="newLesson = $event"
                 @update:new-material="newMaterial = $event"
-            />
-
-            <FeaturedLessonModal
-                :visible="isFeaturedLessonModalOpen"
-                :current-value="selectedLessonForFeatured ? Number(selectedLessonForFeatured.isDerivTutorial) : null"
-                @close="isFeaturedLessonModalOpen = false"
-                @save="saveFeaturedLesson"
+                :is-tutorial-selection-modal-open="isTutorialSelectionModalOpen"
+                :initial-tutorial-type="selectedLessonForTutorial?.isDerivTutorial || 0"
+                @close-tutorial-modal="closeTutorialModal"
+                @save-tutorial-selection="saveTutorialSelection"
             />
 
             <StudentPreview
@@ -328,7 +320,6 @@ import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import StudentPreview from '../../components/StudentPreview.vue';
 import AcademyModals from '../../components/modals/AcademyModals.vue'; 
-import FeaturedLessonModal from '../../components/modals/FeaturedLessonModal.vue';
 import ConfirmActionModal from '../../components/modals/ConfirmActionModal.vue'; 
 
 export default {
@@ -338,9 +329,7 @@ export default {
         TopNavbar,
         SettingsSidebar,
         StudentPreview,
-
         AcademyModals,
-        FeaturedLessonModal,
         ConfirmActionModal,
     },
     data() {
@@ -422,9 +411,9 @@ export default {
             modules: [],
             lessons: [],
             
-            // Modal Featured Lesson
-            isFeaturedLessonModalOpen: false,
-            selectedLessonForFeatured: null,
+            // Tutorial Modal
+            isTutorialSelectionModalOpen: false,
+            selectedLessonForTutorial: null
         };
     },
     async mounted() {
@@ -803,26 +792,35 @@ export default {
                 this.lessons = [...this.lessons];
             }
         },
-        openFeaturedLessonModal(lesson) {
-            this.selectedLessonForFeatured = lesson;
-            this.isFeaturedLessonModalOpen = true;
+        openTutorialModal(lesson) {
+            this.selectedLessonForTutorial = lesson;
+            this.isTutorialSelectionModalOpen = true;
         },
-        async saveFeaturedLesson(value) {
-            if (!this.selectedLessonForFeatured) return;
-            const lesson = this.selectedLessonForFeatured;
+        closeTutorialModal() {
+            this.isTutorialSelectionModalOpen = false;
+            this.selectedLessonForTutorial = null;
+        },
+        async saveTutorialSelection(typeId) {
+            if (!this.selectedLessonForTutorial) return;
             
-            // Optimistic Update
-            // Se value > 0, remove de outros que tenham o mesmo valor
-            if (value > 0) {
-                this.lessons.forEach(l => {
-                    if (l.isDerivTutorial === value) {
-                        l.isDerivTutorial = null;
-                    }
-                });
-            }
-            lesson.isDerivTutorial = value;
+            const lesson = this.selectedLessonForTutorial;
+            const previousState = lesson.isDerivTutorial;
             
             try {
+                // Se o usuário selecionou algo removendo (0) ou um novo valor
+                
+                // Optimistic UI updates
+                // 1. Zera todos se for uma nova seleção positiva
+                if (typeId > 0) {
+                    this.lessons.forEach(l => {
+                        if (l.isDerivTutorial === typeId) {
+                            l.isDerivTutorial = 0;
+                        }
+                    });
+                }
+                // 2. Define o da aula atual
+                lesson.isDerivTutorial = typeId;
+                
                 const apiBaseUrl = this.getApiBaseUrl();
                 const response = await fetch(`${apiBaseUrl}/courses/lessons/${lesson.id}`, {
                     method: 'PUT',
@@ -831,20 +829,24 @@ export default {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        isDerivTutorial: value
+                        isDerivTutorial: typeId
                     }),
                 });
-
+                
                 if (!response.ok) {
-                    throw new Error('Falha ao atualizar');
+                    throw new Error('Falha na atualização');
                 }
                 
-                this.$root.$toast.success(value ? 'Destaque atualizado com sucesso' : 'Destaque removido');
+                this.$root.$toast.success('Tutorial definido com sucesso!');
+                this.closeTutorialModal();
+                
             } catch (error) {
-                console.error(error);
-                this.$root.$toast.error('Erro ao atualizar. Revertendo...');
+                console.error('Erro ao atualizar tutorial:', error);
+                this.$root.$toast.error('Erro ao definir tutorial.');
                 // Revert
-                await this.loadCourseDetails();
+                lesson.isDerivTutorial = previousState;
+                // Seria ideal recarregar da API para garantir consistência total dos outros resets
+                await this.loadCourseDetails(); 
             }
         },
         getApiBaseUrl() {
