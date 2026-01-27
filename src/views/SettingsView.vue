@@ -84,6 +84,9 @@
                 <h2 class="text-xl font-bold text-white mb-1 text-center">{{ settings.name || 'Usuário' }}</h2>
                 <p class="text-zenix-secondary text-sm mb-1 text-center">{{ settings.email }}</p>
                 <p class="text-zenix-secondary text-xs text-center">Conta criada em {{ formatDate(settings.createdAt) }}</p>
+                <p v-if="settings.planExpirationDate" class="text-zenix-secondary text-xs text-center mt-1">
+                  Expiração do plano em {{ formatDate(settings.planExpirationDate) }}
+                </p>
               </div>
 
               <div class="space-y-3">
@@ -311,6 +314,9 @@
               </div>
               <h2 class="text-lg font-bold text-white mb-1 text-center">{{ settings.name || 'Usuário' }}</h2>
               <p class="text-zenix-secondary text-xs text-center">{{ settings.email }}</p>
+              <p v-if="settings.planExpirationDate" class="text-zenix-secondary text-xs text-center mt-1">
+                Expiração do plano em {{ formatDate(settings.planExpirationDate) }}
+              </p>
             </div>
             <div class="grid grid-cols-2 gap-3">
               <button @click="openEditNameModal" class="hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-2.5 rounded-xl transition-all text-xs" style="background-color: #1d1c1d;">
@@ -493,7 +499,8 @@ export default {
         emailNotifications: true,
         pushNotifications: true,
         twoFactorEnabled: false,
-        tradeCurrency: 'USD'
+        tradeCurrency: 'USD',
+        planExpirationDate: null
       },
       lastLogin: null,
       activeSessions: 0,
@@ -619,7 +626,8 @@ export default {
           isMasterTrader: !!data.traderMestre, // Read-only from backend role check usually or specific flag
           fictitiousBalance: data.fictitiousBalance !== undefined ? parseFloat(data.fictitiousBalance) : 10000,
           isFictitiousBalanceActive: !!data.isFictitiousBalanceActive,
-          showDollarSign: data.showDollarSign !== undefined ? data.showDollarSign : false
+          showDollarSign: data.showDollarSign !== undefined ? data.showDollarSign : false,
+          planExpirationDate: data.planExpirationDate
         }
         this.lastLogin = data.lastLogin
         this.activeSessions = data.activeSessions || 0
