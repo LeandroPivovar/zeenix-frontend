@@ -110,7 +110,7 @@
                                     <li v-for="lesson in filteredLessonsForModule(module.id, true)" :key="lesson.id" class="lesson-item">
                                         <div class="lesson-info">
                                             <button 
-                                            <button 
+
                                                 class="btn-star" 
                                                 :class="{ 'active': lesson.isDerivTutorial > 0 }" 
                                                 @click.stop="openFeaturedLessonModal(lesson)"
@@ -338,7 +338,7 @@ export default {
         TopNavbar,
         SettingsSidebar,
         StudentPreview,
-        StudentPreview,
+
         AcademyModals,
         FeaturedLessonModal,
         ConfirmActionModal,
@@ -810,8 +810,6 @@ export default {
         async saveFeaturedLesson(value) {
             if (!this.selectedLessonForFeatured) return;
             const lesson = this.selectedLessonForFeatured;
-            
-            const oldValue = lesson.isDerivTutorial;
             
             // Optimistic Update
             // Se value > 0, remove de outros que tenham o mesmo valor
