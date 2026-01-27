@@ -510,6 +510,15 @@ export default {
     window.removeEventListener('resize', this.checkMobile);
   },
   methods: {
+    tryUpdateRenderedBalance(val) {
+      if (this.isFictitiousBalanceActive && val === this.fictitiousBalance) {
+          const hasDemoBalance = this.balancesByCurrencyDemo && Object.keys(this.balancesByCurrencyDemo).length > 0;
+          if (!hasDemoBalance) return;
+      }
+      if (this.isBalanceReady || this.renderedBalance === null || this.renderedBalance === 0) {
+        this.renderedBalance = val;
+      }
+    },
     checkMobile() {
       this.isMobile = window.innerWidth <= 1024;
     },
