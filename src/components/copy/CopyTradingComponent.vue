@@ -195,20 +195,7 @@
             <!-- Conteúdo da aba Desempenho -->
             <div class="dashboard-grid">
 
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Evolução do seu Copy</h3>
-                        <div class="period-controls">
-                            <button @click="setPeriod('7')" :class="{ active: selectedPeriod === '7' }">7 dias</button>
-                            <button @click="setPeriod('30')" :class="{ active: selectedPeriod === '30' }">30 dias</button>
-                            <button @click="setPeriod('90')" :class="{ active: selectedPeriod === '90' }">90 dias</button>
-                        </div>
-                    </div>
-                    <div class="chart-placeholder">
-                        Gráfico em desenvolvimento
-                    </div>
-                    <p class="chart-caption">Seu saldo vem aumentando de forma constante nos últimos dias.</p>
-                </div>
+
 
                 <div class="card">
                     <div class="card-header">
