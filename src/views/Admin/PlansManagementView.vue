@@ -366,6 +366,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
+                        <button class="btn btn-outline" @click="syncFeaturesToBenefits">Sincronizar com Benefícios</button>
                         <button class="btn btn-save-config" @click="showFeaturesModal = false">Concluir</button>
                     </div>
                 </div>
@@ -534,6 +535,48 @@ export default {
             }
         },
 
+        syncFeaturesToBenefits() {
+            // Criar lista de benefícios baseada nas seleções
+            const newBenefits = [];
+            
+            // IAs
+            if (this.planForm.selectedIAs) {
+                this.planForm.selectedIAs.forEach(ia => {
+                    newBenefits.push(`Acesso à IA ${ia}`);
+                });
+            }
+            
+            // Agentes
+            if (this.planForm.selectedAgents) {
+                this.planForm.selectedAgents.forEach(agent => {
+                    newBenefits.push(`Agente Autônomo ${agent}`);
+                });
+            }
+            
+            // Traders
+            if (this.planForm.selectedTraders && this.masterTraders.length > 0) {
+                this.planForm.selectedTraders.forEach(traderId => {
+                    const trader = this.masterTraders.find(t => t.id === traderId);
+                    if (trader) {
+                        newBenefits.push(`Copy Trading: ${trader.name}`);
+                    }
+                });
+            }
+
+            // Mesclar com benefícios existentes (removendo duplicatas e vazios)
+            const currentBenefits = this.planForm.benefits.filter(b => b && b.trim());
+            
+            // Adicionar apenas os que já não estão lá
+            newBenefits.forEach(nb => {
+                if (!currentBenefits.includes(nb)) {
+                    currentBenefits.push(nb);
+                }
+            });
+
+            this.planForm.benefits = currentBenefits.length > 0 ? currentBenefits : [''];
+            this.showToast('✅ Benefícios sincronizados com as seleções!', 'success', 3000);
+        },
+
         mapPlanFromBackend(plan) {
             const features = plan.features || {};
             
@@ -547,28 +590,12 @@ export default {
             if (typeof features === 'string') {
                 try {
                     parsedFeatures = JSON.parse(features);
-                    console.log('   ✅ Features parseado:', parsedFeatures);
                 } catch (e) {
-                    console.error('   ❌ Erro ao fazer parse de features:', e);
+                    console.error('Erro ao parsear features:', e);
                     parsedFeatures = {};
                 }
             }
-            
-            // Extrair benefícios do features
-            let benefits = [];
-            if (parsedFeatures.benefits && Array.isArray(parsedFeatures.benefits)) {
-                benefits = parsedFeatures.benefits.filter(b => b && b.trim());  // Remover vazios
-                console.log('   ✅ Benefícios encontrados:', benefits.length, '→', benefits);
-            } else {
-                console.log('   ⚠️ Nenhum benefício encontrado em features.benefits');
-            }
-            
-            // Se não houver benefícios, adicionar um campo vazio
-            if (benefits.length === 0) {
-                benefits = [''];
-                console.log('   📝 Adicionado benefício vazio para input');
-            }
-            
+
             return {
                 id: plan.id,
                 name: plan.name || '',
@@ -576,8 +603,7 @@ export default {
                 price: plan.price || 0,
                 currency: plan.currency || 'BRL',
                 billingPeriod: plan.billingPeriod || 'month',
-                features: parsedFeatures,
-                benefits: benefits,
+                benefits: [...finalBenefits], // Usar os benefícios finais
                 isPopular: plan.isPopular || false,
                 isRecommended: plan.isRecommended || false,
                 isActive: plan.isActive !== undefined ? plan.isActive : true,
@@ -689,8 +715,8 @@ export default {
 
                 const method = this.isEditing ? 'PUT' : 'POST';
 
+                // Features funcionais (acesso técnico)
                 const features = {
-                    benefits: benefits,
                     ias: this.planForm.selectedIAs || [],
                     agents: this.planForm.selectedAgents || [],
                     traders: this.planForm.selectedTraders || [],
@@ -703,6 +729,7 @@ export default {
                     currency: this.planForm.currency,
                     billingPeriod: this.planForm.billingPeriod,
                     features: features,
+                    benefits: benefits, // Nova coluna dedicada
                     isPopular: this.planForm.isPopular || false,
                     isRecommended: this.planForm.isRecommended || false,
                     isActive: this.planForm.isActive !== undefined ? this.planForm.isActive : true,

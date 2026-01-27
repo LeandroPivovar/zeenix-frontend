@@ -359,33 +359,28 @@ export default {
             return '';
         },
         getPlanBenefits(plan) {
-            // Extrair array de benefícios do features
-            if (!plan.features) {
-                console.log(`📦 [GetBenefits] ${plan.name} → Sem features`);
-                return [];
+            // Prioridade para a nova coluna dedicada 'benefits'
+            if (plan.benefits && Array.isArray(plan.benefits) && plan.benefits.length > 0) {
+                const benefits = plan.benefits.filter(b => b && b.trim());
+                if (benefits.length > 0) return benefits;
             }
+
+            // Fallback para a lógica antiga baseada em features.benefits
+            if (!plan.features) return [];
             
-            // Se features for string, fazer parse
             let features = plan.features;
             if (typeof features === 'string') {
                 try {
                     features = JSON.parse(features);
-                    console.log(`📦 [GetBenefits] ${plan.name} → Features parseado:`, features);
                 } catch (e) {
-                    console.error('[PlansView] Erro ao fazer parse de features:', e);
                     return [];
                 }
             }
             
-            // Verificar se tem array de benefits
             if (features.benefits && Array.isArray(features.benefits)) {
-                const benefits = features.benefits.filter(b => b && b.trim());
-                console.log(`✅ [GetBenefits] ${plan.name} → ${benefits.length} benefícios:`, benefits);
-                return benefits;
+                return features.benefits.filter(b => b && b.trim());
             }
             
-            console.log(`⚠️ [GetBenefits] ${plan.name} → features.benefits não é array ou está vazio`);
-            console.log('   Features completo:', features);
             return [];
         },
         loadUserPlan() {
