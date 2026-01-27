@@ -275,8 +275,8 @@
 								<span class="filter-label">Somente conta real</span>
 								<p class="filter-desc">Exibe apenas usuários com conta real e seus saldos reais</p>
 							</div>
-							<div class="custom-checkbox" :class="{ 'checked': filters.onlyRealAccount }">
-								<i class="fas fa-check" v-if="filters.onlyRealAccount" style="color: white; font-size: 12px;">✓</i>
+							<div class="custom-checkbox" :class="{ 'checked': tempFilters.onlyRealAccount }">
+								<i class="fas fa-check" v-if="tempFilters.onlyRealAccount" style="color: white; font-size: 12px;">✓</i>
 							</div>
 						</div>
 
@@ -288,8 +288,8 @@
 							</div>
 							<i class="fas fa-chevron-right" style="color: #6b7280;">></i>
 						</div>
-						<div v-if="filters.minBalance !== null || filters.maxBalance !== null" class="active-filter-tag">
-							Saldo: {{ formatCurrency(filters.minBalance || 0) }} - {{ filters.maxBalance ? formatCurrency(filters.maxBalance) : '∞' }}
+						<div v-if="tempFilters.minBalance !== null || tempFilters.maxBalance !== null" class="active-filter-tag">
+							Saldo: {{ formatCurrency(tempFilters.minBalance || 0) }} - {{ tempFilters.maxBalance ? formatCurrency(tempFilters.maxBalance) : '∞' }}
 							<span @click.stop="clearBalanceFilter" class="clear-tag">×</span>
 						</div>
 
@@ -299,8 +299,8 @@
 								<span class="filter-label">Usuários sem saldo na conta real</span>
 								<p class="filter-desc">Exibe usuários com conta real zerada</p>
 							</div>
-							<div class="custom-checkbox" :class="{ 'checked': filters.noRealBalance }">
-								<i class="fas fa-check" v-if="filters.noRealBalance" style="color: white; font-size: 12px;">✓</i>
+							<div class="custom-checkbox" :class="{ 'checked': tempFilters.noRealBalance }">
+								<i class="fas fa-check" v-if="tempFilters.noRealBalance" style="color: white; font-size: 12px;">✓</i>
 							</div>
 						</div>
 					</div>
@@ -396,6 +396,14 @@ export default {
 				minBalance: null,
 				maxBalance: null
 			},
+			
+			// Temp filters for modal (to allow cancel)
+            tempFilters: {
+				onlyRealAccount: false,
+				noRealBalance: false,
+				minBalance: null,
+				maxBalance: null
+            },
 			
 			// Temp storage for interval modal
 			tempMinBalance: null,
@@ -610,31 +618,34 @@ export default {
 		},
 		
 		// Filter Methods
+		// Filter Methods
 		openFilterModal() {
+			// Copy current filters to temp
+			this.tempFilters = { ...this.filters };
 			this.showFilterModal = true;
 		},
 		closeFilterModal() {
 			this.showFilterModal = false;
 		},
 		toggleOnlyRealAccount() {
-			this.filters.onlyRealAccount = !this.filters.onlyRealAccount;
-			if (this.filters.onlyRealAccount) {
-				this.filters.noRealBalance = false;
-				this.filters.minBalance = null;
-				this.filters.maxBalance = null;
+			this.tempFilters.onlyRealAccount = !this.tempFilters.onlyRealAccount;
+			if (this.tempFilters.onlyRealAccount) {
+				this.tempFilters.noRealBalance = false;
+				this.tempFilters.minBalance = null;
+				this.tempFilters.maxBalance = null;
 			}
 		},
 		toggleNoRealBalance() {
-			this.filters.noRealBalance = !this.filters.noRealBalance;
-			if (this.filters.noRealBalance) {
-				this.filters.onlyRealAccount = false;
-				this.filters.minBalance = null;
-				this.filters.maxBalance = null;
+			this.tempFilters.noRealBalance = !this.tempFilters.noRealBalance;
+			if (this.tempFilters.noRealBalance) {
+				this.tempFilters.onlyRealAccount = false;
+				this.tempFilters.minBalance = null;
+				this.tempFilters.maxBalance = null;
 			}
 		},
 		openBalanceIntervalModal() {
-			this.tempMinBalance = this.filters.minBalance;
-			this.tempMaxBalance = this.filters.maxBalance;
+			this.tempMinBalance = this.tempFilters.minBalance;
+			this.tempMaxBalance = this.tempFilters.maxBalance;
 			this.showBalanceIntervalModal = true;
 		},
 		saveBalanceInterval() {
@@ -642,20 +653,20 @@ export default {
 			const min = this.tempMinBalance === '' || this.tempMinBalance === null ? null : Number(this.tempMinBalance);
 			const max = this.tempMaxBalance === '' || this.tempMaxBalance === null ? null : Number(this.tempMaxBalance);
 			
-			this.filters.minBalance = min;
-			this.filters.maxBalance = max;
+			this.tempFilters.minBalance = min;
+			this.tempFilters.maxBalance = max;
 			
 			// If interval is set, clear other modes
-			if (this.filters.minBalance !== null || this.filters.maxBalance !== null) {
-				this.filters.onlyRealAccount = false;
-				this.filters.noRealBalance = false;
+			if (this.tempFilters.minBalance !== null || this.tempFilters.maxBalance !== null) {
+				this.tempFilters.onlyRealAccount = false;
+				this.tempFilters.noRealBalance = false;
 			}
 			
 			this.showBalanceIntervalModal = false;
 		},
 		clearBalanceFilter() {
-			this.filters.minBalance = null;
-			this.filters.maxBalance = null;
+			this.tempFilters.minBalance = null;
+			this.tempFilters.maxBalance = null;
 			// No need to set others, just clearing interval
 		},
 		clearAllFilters() {
@@ -665,10 +676,12 @@ export default {
 				minBalance: null,
 				maxBalance: null
 			};
+			this.tempFilters = { ...this.filters }; // Sync temp
 			this.fetchClients();
 			this.closeFilterModal();
 		},
 		applyFilters() {
+			this.filters = { ...this.tempFilters }; // Commit temp to actual
 			this.fetchClients();
 			this.closeFilterModal();
 		},
