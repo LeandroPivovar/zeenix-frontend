@@ -16,15 +16,7 @@
         />
 
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-            <!-- Top Navbar -->
-            <TopNavbar 
-                v-if="!isMobile"
-                :is-sidebar-collapsed="isSidebarCollapsed"
-                @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
-                @toggle-sidebar-collapse="toggleSidebarCollapse"
-                @open-settings="showSettingsModal = true"
-            />
-            
+
             <!-- Mobile Header -->
             <div v-if="isMobile" class="mobile-header-admin">
                 <button class="menu-toggler-btn" @click="isSidebarOpen = true">
@@ -617,7 +609,7 @@
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
-import TopNavbar from '../../components/TopNavbar.vue';
+
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import ConfirmActionModal from '../../components/modals/ConfirmActionModal.vue';
 import KiwifyUsersModal from '../../components/modals/KiwifyUsersModal.vue';
@@ -626,7 +618,7 @@ export default {
     name: 'AdminView',
     components: {
         AppSidebar,
-        TopNavbar,
+
         SettingsSidebar,
         ConfirmActionModal,
         KiwifyUsersModal

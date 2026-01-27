@@ -71,7 +71,7 @@
             <div v-else class="video-placeholder">
               <div class="play">▶</div>
             </div>
-            <div class="video-text">{{ derivTutorialTitle || 'Zenix Black Tutorial Video' }}</div>
+
           </div>
           <p v-if="!showCreateAccountCard" class="text-mobile-description">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
         </div>
@@ -131,6 +131,8 @@
       :visible="showOnboardingModal" 
       :user-name="userFullName"
       @finish="handleOnboardingFinish"
+    />
+
     />
   </div>
 </template>
@@ -217,9 +219,12 @@ export default {
                   this.firstName = userData.name.split(' ')[0]
                   this.fullName = userData.name
                   localStorage.setItem('user', JSON.stringify({ 
-                    name: userData.name, 
+                    name: userData.name,
                     email: userData.email,
-                    firstAccess: userData.firstAccess
+                    firstAccess: userData.firstAccess,
+                    planId: userData.planId,
+                    role: userData.role,
+                    accessiblePlanIds: userData.accessiblePlanIds || []
                   }))
                   
                   if (userData.firstAccess) {
@@ -412,14 +417,20 @@ export default {
     },
     handleOnboardingFinish() {
       this.showOnboardingModal = false;
-      // Atualizar o primeiro acesso no localStorage
+      
+      // Define flag para mostrar o vídeo quando o dashboard carregar
+      localStorage.setItem('showDashboardWelcomeVideo', 'true');
+      
       const userInfo = localStorage.getItem('user');
       if (userInfo) {
-        const user = JSON.parse(userInfo);
-        user.firstAccess = false;
-        localStorage.setItem('user', JSON.stringify(user));
+        try {
+          const user = JSON.parse(userInfo);
+          user.firstAccess = false;
+          localStorage.setItem('user', JSON.stringify(user));
+        } catch (e) {
+          console.error('Erro ao atualizar onboarding:', e);
+        }
       }
-
     },
     async loadDerivTutorial() {
         try {

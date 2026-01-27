@@ -80,16 +80,22 @@
                         :class="[
                             plan.slug === 'starter' ? 'starter-card' : '',
                             plan.slug === 'pro' ? 'pro-card' : '',
-                            plan.slug === 'black' ? 'black-card' : ''
+                            plan.slug === 'black' ? 'black-card' : '',
+                            isCurrentPlan(plan) ? 'current-plan-card' : ''
                         ]"
                     >
+                        <!-- Badge Plano Atual -->
+                        <div v-if="isCurrentPlan(plan)" class="plan-badge-current">
+                            <span>SEU PLANO ATUAL</span>
+                        </div>
+                        
                         <!-- Badge Popular -->
-                        <div v-if="plan.isPopular" class="plan-badge-popular">
+                        <div v-else-if="plan.isPopular" class="plan-badge-popular">
                             <span>MAIS POPULAR</span>
                         </div>
                         
                         <!-- Badge Recomendado -->
-                        <div v-if="plan.isRecommended" class="plan-badge-recommended">
+                        <div v-else-if="plan.isRecommended" class="plan-badge-recommended">
                             <span>RECOMENDADO</span>
                         </div>
                         
@@ -200,6 +206,7 @@ export default {
     created() {
         this.checkMobile();
         window.addEventListener('resize', this.checkMobile);
+        this.loadUserPlan();
     },
     mounted() {
         this.loadDependencies();
@@ -308,6 +315,21 @@ export default {
             console.log(`⚠️ [GetBenefits] ${plan.name} → features.benefits não é array ou está vazio`);
             console.log('   Features completo:', features);
             return [];
+        },
+        loadUserPlan() {
+            try {
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    this.currentPlan = user.planId || null;
+                    console.log('[PlansView] Plano atual do usuário:', this.currentPlan);
+                }
+            } catch (error) {
+                console.error('[PlansView] Erro ao carregar plano do usuário:', error);
+            }
+        },
+        isCurrentPlan(plan) {
+            return this.currentPlan && plan.id === this.currentPlan;
         },
         async handlePlanAction(plan) {
             // Placeholder para ação do botão

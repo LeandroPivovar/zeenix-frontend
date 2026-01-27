@@ -249,8 +249,61 @@ export default {
         if (!res.ok) throw new Error(`Erro ao buscar cursos: ${res.statusText}`)
 
         const data = await res.json()
+
+        // Recuperar informações do usuário do localStorage
+        let accessiblePlanIds = [];
+        let isAdmin = false;
+
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                // fallback se não tiver accessiblePlanIds (versão antiga do cache), usa o próprio planId no array
+                accessiblePlanIds = user.accessiblePlanIds || (user.planId ? [user.planId] : []);
+                isAdmin = user.role === 'admin';
+            } else {
+                if (token) {
+                     const payload = JSON.parse(atob(token.split('.')[1]));
+                     isAdmin = payload.role === 'admin';
+                }
+            }
+        } catch (e) {
+            console.warn('Erro ao ler dados do usuário para filtro:', e);
+        }
+
+        // Se isAdmin, mostra tudo.
+        // Se usuário comum:
+        // - Mostra públicos
+        // - Mostra restritos APENAS se:
+        //   1. O usuário tem planos acessíveis (accessiblePlanIds não vazio)
+        //   2. ALGUM dos accessiblePlanIds do usuário está na lista planIds do curso
+        
         this.courses = data
-            .filter(course => course.status === 'published')
+            .filter(course => {
+                // 1. Curso não publicado? Ignora (já estava no filtro original)
+                if (course.status !== 'published') return false;
+
+                // 2. Admin vê tudo
+                if (isAdmin) return true;
+
+                // 3. Público -> Todo mundo vê
+                if (!course.visibility || course.visibility === 'public') return true;
+
+                // 4. Restrito -> Verifica lista de planos
+                if (course.visibility === 'restricted') {
+                    // Sem planos acessíveis? Não vê
+                    if (!accessiblePlanIds || accessiblePlanIds.length === 0) return false;
+
+                    // Lista de planos do curso inconsistente?
+                    if (!course.planIds || !Array.isArray(course.planIds) || course.planIds.length === 0) return false;
+
+                    // Verifica intersecção: se algum plano acessível do usuário está nos permitidos do curso
+                    return course.planIds.some(coursePlanId => accessiblePlanIds.includes(coursePlanId));
+                }
+
+                // 5. Privado ou outro status desconhecido -> Esconde
+                return false;
+            })
             .map(course => ({
                 ...course,
                 coverImage: this.resolveImageUrl(course.coverImage)
