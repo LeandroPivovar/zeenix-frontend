@@ -249,8 +249,48 @@ export default {
         if (!res.ok) throw new Error(`Erro ao buscar cursos: ${res.statusText}`)
 
         const data = await res.json()
+        
+        // Recuperar informações do usuário do localStorage
+        let userPlanId = null;
+        let isAdmin = false;
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                userPlanId = user.planId;
+                isAdmin = user.role === 'admin';
+            } else {
+                // Tentar decodificar do token se não estiver no user (fallback)
+                if (token) {
+                     const payload = JSON.parse(atob(token.split('.')[1]));
+                     isAdmin = payload.role === 'admin';
+                }
+            }
+        } catch (e) {
+            console.warn('Erro ao ler dados do usuário para filtro:', e);
+        }
+
         this.courses = data
             .filter(course => course.status === 'published')
+            .filter(course => {
+                // Admin vê tudo
+                if (isAdmin) return true;
+                
+                // Filtro de visibilidade
+                if (course.visibility === 'public') return true;
+                
+                // Se for restrito, checar se o usuário tem o plano
+                if (course.visibility === 'restricted') {
+                    if (!userPlanId) return false; // Sem plano não vê restrito
+                    // Verifica se o plano do usuário está na lista de planos permitidos do curso
+                    // O backend retorna planIds como array de strings (IDs) ou null
+                    if (course.planIds && Array.isArray(course.planIds)) {
+                         return course.planIds.includes(userPlanId);
+                    }
+                }
+                
+                return false;
+            })
             .map(course => ({
                 ...course,
                 coverImage: this.resolveImageUrl(course.coverImage)
