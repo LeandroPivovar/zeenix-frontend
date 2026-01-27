@@ -242,6 +242,100 @@
         </div>
       </div>
     </div>
+    <!-- Modal de Seleção de Tutorial Deriv -->
+    <div v-if="isTutorialSelectionModalOpen" class="modal-overlay" @click.self="closeTutorialSelectionModal">
+      <div class="modal-content categorized-modal" style="max-width: 600px;">
+        <div class="modal-header-premium">
+            <h3 class="modal-title">Definir Tutorial da Home</h3>
+            <button @click="closeTutorialSelectionModal" class="modal-close-btn">
+                <i class="fas fa-times"></i> ×
+            </button>
+        </div>
+        <div class="modal-body">
+            <p class="card-subtitle-modal" style="margin-bottom: 20px;">
+              Selecione qual tipo de tutorial esta aula representa na Home do aluno.
+              <br><small style="color: #cc5656;">Atenção: Apenas uma aula de cada tipo pode existir. Ao selecionar, a anterior será substituída.</small>
+            </p>
+            <div class="agents-modal-list">
+                <div 
+                    class="agent-option-premium"
+                    :class="{ 'active': selectedTutorialType === 1 }"
+                    @click="selectTutorialType(1)"
+                >
+                    <div class="agent-option-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                    </div>
+                    <div class="agent-option-info">
+                        <h4 class="agent-option-title">Vídeo da Tela de Conexão</h4>
+                        <p class="agent-option-desc">Exibido na tela de conectar conta Deriv.</p>
+                    </div>
+                    <div class="agent-option-check">
+                        <span v-if="selectedTutorialType === 1">✔</span>
+                    </div>
+                </div>
+
+                <div 
+                    class="agent-option-premium"
+                    :class="{ 'active': selectedTutorialType === 2 }"
+                    @click="selectTutorialType(2)"
+                >
+                    <div class="agent-option-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </div>
+                    <div class="agent-option-info">
+                        <h4 class="agent-option-title">Vídeo de Boas-vindas</h4>
+                        <p class="agent-option-desc">Exibido no primeiro acesso ao dashboard.</p>
+                    </div>
+                    <div class="agent-option-check">
+                        <span v-if="selectedTutorialType === 2">✔</span>
+                    </div>
+                </div>
+
+                <div 
+                    class="agent-option-premium"
+                    :class="{ 'active': selectedTutorialType === 3 }"
+                    @click="selectTutorialType(3)"
+                >
+                    <div class="agent-option-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    </div>
+                    <div class="agent-option-info">
+                        <h4 class="agent-option-title">Vídeo de Planos</h4>
+                        <p class="agent-option-desc">Exibido na seção de upgrade de planos.</p>
+                    </div>
+                    <div class="agent-option-check">
+                         <span v-if="selectedTutorialType === 3">✔</span>
+                    </div>
+                </div>
+                 
+                 <div 
+                    class="agent-option-premium"
+                    :class="{ 'active': selectedTutorialType === 0 }"
+                    @click="selectTutorialType(0)"
+                    style="border-color: #cc5656; background: rgba(204, 86, 86, 0.1);"
+                >
+                    <div class="agent-option-icon" style="background: rgba(204, 86, 86, 0.2);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                    </div>
+                    <div class="agent-option-info">
+                        <h4 class="agent-option-title">Remover Tutorial</h4>
+                        <p class="agent-option-desc">Esta aula não será mais um tutorial especial.</p>
+                    </div>
+                    <div class="agent-option-check">
+                         <span v-if="selectedTutorialType === 0">✔</span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-save-lesson" @click="confirmTutorialSelection">
+                Salvar Definição
+              </button>
+              <button class="btn btn-cancel" @click="closeTutorialSelectionModal">Cancelar</button>
+            </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -270,6 +364,11 @@ export default {
     },
     isDeleteLessonModalOpen: Boolean,
     lessonToDelete: Object,
+    isTutorialSelectionModalOpen: Boolean,
+    initialTutorialType: {
+      type: Number,
+      default: 0
+    }
   },
   emits: [
     'closeNewModuleModal',
@@ -287,6 +386,8 @@ export default {
     'update:new-material',
     'edit-material',
     'cancel-edit-material',
+    'close-tutorial-modal',
+    'save-tutorial-selection'
   ],
   computed: {
     selectedModuleForLesson() {
@@ -305,6 +406,20 @@ export default {
       }
       return this.materialsList.filter(m => m.lessonId === this.normalizedSelectedLessonId);
     },
+      return this.materialsList.filter(m => m.lessonId === this.normalizedSelectedLessonId);
+    },
+  },
+  data() {
+    return {
+      selectedTutorialType: 0
+    }
+  },
+  watch: {
+    isTutorialSelectionModalOpen(newVal) {
+      if (newVal) {
+        this.selectedTutorialType = this.initialTutorialType || 0;
+      }
+    }
   },
   methods: {
     getMaterialCountForLesson(lessonId) {
@@ -391,6 +506,18 @@ export default {
     removeMaterialFile() {
       this.updateNewMaterial({ file: null, fileName: '', filePath: '' });
     },
+    removeMaterialFile() {
+      this.updateNewMaterial({ file: null, fileName: '', filePath: '' });
+    },
+    closeTutorialSelectionModal() {
+      this.$emit('close-tutorial-modal');
+    },
+    selectTutorialType(type) {
+      this.selectedTutorialType = type;
+    },
+    confirmTutorialSelection() {
+      this.$emit('save-tutorial-selection', this.selectedTutorialType);
+    }
   },
 };
 </script>
@@ -815,5 +942,108 @@ label {
   color: #8c929a;
   font-style: italic;
   margin-top: 2px;
+}
+
+/* --- Estilos Premium do Modal de Tutorial (Copiados/Adaptados do InvestmentIAView) --- */
+.categorized-modal {
+    background: #171a20; /* Mantendo consistência com o tema do Academy */
+}
+
+.modal-header-premium {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.modal-close-btn:hover {
+    color: #fff;
+}
+
+.agents-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.agent-option-premium {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: #111;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.agent-option-premium:hover {
+    border-color: #22C55E66;
+    background: #161616;
+}
+
+.agent-option-premium.active {
+    border-color: #22C55E;
+    background: #102018; /* Verde bem escuro */
+}
+
+.agent-option-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.agent-option-icon svg {
+    color: #FFFFFF;
+}
+
+.agent-option-info {
+    flex: 1;
+    text-align: left;
+}
+
+.agent-option-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 0.125rem 0;
+}
+
+.agent-option-desc {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.agent-option-check {
+    color: #22C55E;
+    font-size: 1rem;
+    font-weight: bold;
 }
 </style>
