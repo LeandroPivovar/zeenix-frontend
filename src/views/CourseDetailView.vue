@@ -176,7 +176,7 @@
                     <div v-for="(module, idx) in modules" :key="module.id || idx" class="module-container">
                         <button class="module-trigger" @click="toggleModule(idx)">
                             <div class="module-info">
-                                <div class="module-title">Módulo {{ module.orderIndex || idx + 1 }} — {{ module.title }}</div>
+                                <div class="module-title">{{ module.title }}</div>
                                 <div class="module-progress" :style="{ color: getModuleProgress(module) === 100 ? '#22C55E' : '#8D8D8D' }">
                                     {{ getModuleProgress(module) }}% concluído
                                 </div>
