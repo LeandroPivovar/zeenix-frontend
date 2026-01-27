@@ -964,15 +964,23 @@ export default {
           const result = await response.json();
           const stats = result.data;
           
-          // Calcular base para percentual (Saldo Inicial = Saldo Atual - Lucro Total da Semana)
-          const currentBalance = this.balanceNumeric;
-          const initialBalance = currentBalance - stats.netResult;
+          // Escolher qual saldo usar baseado no tipo de conta (Real ou Demo)
+          const isDemo = this.accountType === 'demo';
+          const initial = isDemo ? stats.initialBalances.demo : stats.initialBalances.real;
+          const current = isDemo ? stats.currentBalances.demo : stats.currentBalances.real;
           
-          // Evitar divisão por zero
-          const safeInitialBalance = initialBalance || 1;
+          // Calcular percentual baseado no histórico de saldo
+          let performance = 0;
+          if (initial > 0) {
+            performance = ((current - initial) / initial) * 100;
+          }
           
-          // Calcular percentual total
-          this.totalWeeklyPerformance = (stats.netResult / safeInitialBalance) * 100;
+          // ✅ REQUISITO: Se for negativa, mostrar +0,0%
+          if (performance < 0) {
+            performance = 0;
+          }
+          
+          this.totalWeeklyPerformance = performance;
 
           // 1. Atualizar performanceData no estado reativo com Percentuais
           if (stats && stats.sources) {
