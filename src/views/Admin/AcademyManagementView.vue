@@ -360,7 +360,6 @@ export default {
                 currency: "R$", 
                 subscription: "1", 
                 discount: "0", 
-                discount: "0", 
                 planIds: [],
                 daysToUnlock: 0,
             },
