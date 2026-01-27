@@ -187,10 +187,40 @@ export default {
 @media (max-width: 640px) {
   .video-card {
     padding: 20px;
+    width: 90%; /* More breathing room on sides */
+    max-height: 85vh; /* Prevent overflow on vertical axis */
+    overflow-y: auto; /* Enable scrolling if content is too tall */
   }
   
   .modal-title {
-    font-size: 20px;
+    font-size: 18px; /* Slightly smaller title */
+  }
+
+  .close-btn {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Landscape mode handling for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .video-card {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 16px;
+    max-height: 95vh;
+  }
+  
+  .modal-header {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .video-container {
+    width: 100%;
+    /* Limit video height in landscape to avoid taking full screen height */
+    max-height: 60vh; 
   }
 }
 </style>
