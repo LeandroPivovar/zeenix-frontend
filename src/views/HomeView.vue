@@ -71,7 +71,7 @@
             <div v-else class="video-placeholder">
               <div class="play">▶</div>
             </div>
-            <div class="video-text d-none">{{ derivTutorialTitle || 'Zenix Black Tutorial Video' }}</div>
+
           </div>
           <p v-if="!showCreateAccountCard" class="text-mobile-description">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
         </div>

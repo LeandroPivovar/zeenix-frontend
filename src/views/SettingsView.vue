@@ -136,37 +136,47 @@
                 </div>
 
                 <div v-if="settings.isMasterTrader" class="pt-4 border-t border-zenix-border">
-                  <h4 class="text-sm font-bold text-white mb-4">Modo Criador de Conteúdo</h4>
+                  <div 
+                    @click="isCreatorModeExpanded = !isCreatorModeExpanded"
+                    class="flex items-center justify-center cursor-pointer py-2 hover:bg-white/5 rounded-lg transition-colors group"
+                    title="Modo Criador de Conteúdo"
+                  >
+                    <i class="fas fa-chevron-down text-zenix-secondary group-hover:text-white transition-transform duration-300 transform" :class="{ 'rotate-180': isCreatorModeExpanded }"></i>
+                  </div>
                   
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                      <span class="text-sm font-medium text-zenix-text">Ativar Saldo Fictício</span>
-                      <label class="switch">
-                        <input type="checkbox" v-model="settings.isFictitiousBalanceActive">
-                        <span class="slider"></span>
-                      </label>
-                    </div>
-
-                    <div v-if="settings.isFictitiousBalanceActive">
-                      <label class="block text-sm font-medium text-zenix-text mb-2">Saldo Fictício</label>
-                      <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zenix-secondary">$</span>
-                        <input 
-                          type="number" 
-                          v-model="settings.fictitiousBalance" 
-                          class="w-full border border-zenix-border rounded-xl px-4 py-3 pl-8 text-zenix-text focus:outline-none focus:border-zenix-green transition-all"
-                          style="background-color: #1d1c1d;"
-                          step="0.01"
-                        />
+                  <div v-show="isCreatorModeExpanded" class="mt-4 transition-all duration-300">
+                    <h4 class="text-sm font-bold text-white mb-4">Modo Criador de Conteúdo</h4>
+                    
+                    <div class="space-y-4">
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-zenix-text">Ativar Saldo Fictício</span>
+                        <label class="switch">
+                          <input type="checkbox" v-model="settings.isFictitiousBalanceActive">
+                          <span class="slider"></span>
+                        </label>
                       </div>
-                    </div>
 
-                    <div class="flex items-center justify-between">
-                      <span class="text-sm font-medium text-zenix-text">Exibir cifrão ($) no header</span>
-                      <label class="switch">
-                        <input type="checkbox" v-model="settings.showDollarSign">
-                        <span class="slider"></span>
-                      </label>
+                      <div v-if="settings.isFictitiousBalanceActive">
+                        <label class="block text-sm font-medium text-zenix-text mb-2">Saldo Fictício</label>
+                        <div class="relative">
+                          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zenix-secondary">$</span>
+                          <input 
+                            type="number" 
+                            v-model="settings.fictitiousBalance" 
+                            class="w-full border border-zenix-border rounded-xl px-4 py-3 pl-8 text-zenix-text focus:outline-none focus:border-zenix-green transition-all"
+                            style="background-color: #1d1c1d;"
+                            step="0.01"
+                          />
+                        </div>
+                      </div>
+
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-zenix-text">Exibir cifrão ($) no header</span>
+                        <label class="switch">
+                          <input type="checkbox" v-model="settings.showDollarSign">
+                          <span class="slider"></span>
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -503,8 +513,10 @@ export default {
       accountCurrency: 'USD',
       accountLoginid: null,
       isDemo: false,
+      isDemo: false,
       balancesByCurrencyReal: {},
-      balancesByCurrencyDemo: {}
+      balancesByCurrencyDemo: {},
+      isCreatorModeExpanded: false
     }
   },
   computed: {
