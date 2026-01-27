@@ -446,6 +446,9 @@
 					:userId="getUserId()" 
 					:isActive="true"
 					:agentName="agenteData.estrategia.replace('IA ', '')"
+					:market="agenteData.mercado"
+					:riskProfile="agenteData.risco"
+					:accountType="accountType === 'demo' ? 'test' : 'prod'"
 					ref="strategyLogs"
 					@update-logs="realtimeLogs = $event"
 				/>

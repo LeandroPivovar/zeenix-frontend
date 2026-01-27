@@ -13,14 +13,14 @@
           <span>Limpar</span>
         </button>
         
-        <!-- Export PDF Button -->
+        <!-- Export Logs Button -->
         <button
-          @click="exportToPDF"
+          @click="exportLogs"
           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors"
-          title="Exportar para PDF"
+          title="Exportar registros"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-down"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
-          <span>Exportar PDF</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
+          <span>Exportar Registro</span>
         </button>
       </div>
     </div>
@@ -97,7 +97,10 @@ export default {
   props: {
     userId: { type: String, default: null },
     isActive: { type: Boolean, default: false },
-    agentName: { type: String, default: 'AGENTE' }
+    agentName: { type: String, default: 'AGENTE' },
+    market: { type: String, default: '' },
+    riskProfile: { type: String, default: '' },
+    accountType: { type: String, default: '' }
   },
   data() {
     return {
@@ -263,28 +266,11 @@ export default {
         console.log('[AutonomousAgentLogs] Logs limpos pelo usuário');
       }
     },
-    async exportToPDF() {
+    async exportLogs() {
       try {
-        // Get agente name
+        // Get data for filename
         const agenteName = this.agentName || 'AGENTE';
         const now = new Date();
-        
-        // Create printable content
-        const content = this.formattedLogs.map((log) => {
-          const timestamp = this.formatTimestamp(log.timestamp);
-          const emoji = this.getLogEmoji(log.logType);
-          return `[${timestamp}] ${emoji} ${log.title}\n${log.details || ''}\n${log.message && log.message.includes('\n') ? log.message.split('\n').slice(1).map(l => '  • ' + l.trim()).join('\n') : ''}`;
-        }).join('\n\n');
-
-        // Create a hidden iframe for printing
-        const printFrame = document.createElement('iframe');
-        printFrame.style.position = 'absolute';
-        printFrame.style.width = '0';
-        printFrame.style.height = '0';
-        printFrame.style.border = 'none';
-        document.body.appendChild(printFrame);
-
-        const doc = printFrame.contentWindow.document;
         
         // Format YYYY-MM-DD
         const yyyy = now.getFullYear();
@@ -292,67 +278,53 @@ export default {
         const dd = String(now.getDate()).padStart(2, '0');
         const dateISO = `${yyyy}-${mm}-${dd}`;
         
-        // Requested format: Logs-2026-01-25-nome-do-agente-ou-ia
-        // sanitize agent name
-        const safeAgentName = agenteName.replace(/[^a-zA-Z0-9-_]/g, '-');
-        const fileName = `Logs-${dateISO}-${safeAgentName}`;
+        // Sanitize and format fields
+        const safeAgentName = agenteName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const mode = 'auto'; // Autonomous agent is always auto
+        
+        // Sanitize market (simbolo) 
+        // Ex: 'Volatility 100 Index' -> '1hz100v' (custom mapping if needed, or simple sanitize)
+        // User example: '1hz100v'. Let's try to map if possible, or just slugify safely.
+        // Simple slugify for now as strict mapping table isn't provided for all assets.
+        let safeSymbol = (this.market || 'market').toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+        // Attempt basic mapping for common Deriv indices if discernible
+        if (safeSymbol.includes('volatility100')) safeSymbol = '1hz100v';
+        else if (safeSymbol.includes('volatility75')) safeSymbol = 'r75';
+        else if (safeSymbol.includes('volatility10')) safeSymbol = 'r10';
+        
+        // Map risk profile
+        let safeProfile = 'mod'; // Default
+        const riskLower = (this.riskProfile || '').toLowerCase();
+        if (riskLower.includes('conservador')) safeProfile = 'cons';
+        else if (riskLower.includes('agressivo')) safeProfile = 'agr';
+        else if (riskLower.includes('moderado')) safeProfile = 'mod';
+        
+        const safeEnvironment = this.accountType || 'test';
+        
+        // Construct filename: zenix-{agente}-{modo}-{simbolo}-{perfil}-{ambiente}-{data}
+        const fileName = `zenix-${safeAgentName}-${mode}-${safeSymbol}-${safeProfile}-${safeEnvironment}-${dateISO}.txt`;
 
-        doc.open();
-        doc.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>${fileName}</title>
-            <style>
-              @page { margin: 2cm; }
-              body {
-                font-family: 'Courier New', monospace;
-                font-size: 10pt;
-                line-height: 1.4;
-                color: #000;
-                white-space: pre-wrap;
-                word-wrap: break-word;
-              }
-              h1 {
-                font-size: 14pt;
-                margin-bottom: 10px;
-                border-bottom: 2px solid #333;
-                padding-bottom: 5px;
-              }
-              .meta {
-                font-size: 9pt;
-                color: #666;
-                margin-bottom: 20px;
-              }
-            </style>
-          </head>
-          <body>
-            <h1>📋 Relatório de Logs - ${agenteName}</h1>
-            <div class="meta">
-              Gerado em: ${now.toLocaleString('pt-BR')}<br>
-              Total de logs: ${this.formattedLogs.length}
-            </div>
-            <pre>${content}</pre>
-          </body>
-          </html>
-        `);
-        doc.close();
+        // Create content
+        const content = this.formattedLogs.map((log) => {
+          const timestamp = this.formatTimestamp(log.timestamp);
+          // Plain text format: [TIME] [TYPE] TITLE - Details
+          return `[${timestamp}] [${log.logType.toUpperCase()}] ${log.title}\n${log.details || ''}`;
+        }).join('\n\n----------------------------------------\n\n');
 
-        // Wait for content to load then print
-        setTimeout(() => {
-          printFrame.contentWindow.focus();
-          printFrame.contentWindow.print();
-          
-          // Clean up after a delay
-          setTimeout(() => {
-            document.body.removeChild(printFrame);
-          }, 1000);
-        }, 250);
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+        
+        URL.revokeObjectURL(link.href);
 
-        console.log(`[AutonomousAgentLogs] Exportação PDF iniciada: ${this.formattedLogs.length} logs`);
+        console.log(`[AutonomousAgentLogs] Logs exportados: ${fileName}`);
       } catch (error) {
-        console.error('[AutonomousAgentLogs] Erro ao exportar PDF:', error);
-        await alert('Erro ao exportar PDF. Verifique o console para mais detalhes.');
+        console.error('[AutonomousAgentLogs] Erro ao exportar logs:', error);
+        alert('Erro ao exportar logs.');
       }
     },
     stopLogPolling() {

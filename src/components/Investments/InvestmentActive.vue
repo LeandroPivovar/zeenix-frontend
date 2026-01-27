@@ -1804,21 +1804,79 @@ export default {
         exportLogs() {
             if (this.realtimeLogs.length === 0) return;
             
+            // Get data for filename
+            const strategyName = (this.strategyName || (this.sessionConfig && this.sessionConfig.strategy) || 'IA').replace('IA ', '');
+            const now = new Date();
+            
+            // Format YYYY-MM-DD
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const dateISO = `${yyyy}-${mm}-${dd}`;
+            
+            // Sanitize Agent Name
+            const safeAgentName = strategyName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            
+            // Resolve Mode (veloz/normal/preciso)
+            let modeRaw = (this.mode || (this.sessionConfig && this.sessionConfig.mode) || 'normal').toLowerCase();
+            let safeMode = 'normal';
+            if (modeRaw.includes('veloz')) safeMode = 'veloz';
+            else if (modeRaw.includes('mod')) safeMode = 'normal';
+            else if (modeRaw.includes('cons') || modeRaw.includes('preciso')) safeMode = 'preciso';
+            
+            // Sanitize Market - Use activeMarket or fallback
+            // In InvestmentActive, market is not explicitly stored in data sometimes, but sessionConfig might have it or not.
+            // If unknown, use 'market'.
+            // In Agent, we used '1hz100v' logic. Here we can reuse if market is known.
+            // If I can't find market variable easily, I will default to 'market' or 'multi' if multiple.
+            // But let's check log content or sessionConfig.
+            // Assuming '1hz100v' style is preferred if market known.
+            // For now, I will use a generic placeholder if unavailable, or try to get from `formattedMarketName` or similar if it exists.
+            // I'll stick to 'auto' for mode if user meant autonomous, but user said 'veloz/normal/preciso'.
+            // Wait, for InvestmentActive logic, 'auto' vs 'manual' was earlier prompt.
+            // But user said "o modo é por exemplo veloz ou normal ou preciso". 
+            // So I will use that for {modo}.
+            
+            // Symbol:
+            let safeSymbol = 'market';
+            if (this.sessionConfig && this.sessionConfig.market) {
+                 safeSymbol = this.sessionConfig.market.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+                 if (safeSymbol.includes('volatility100')) safeSymbol = '1hz100v';
+                 else if (safeSymbol.includes('volatility75')) safeSymbol = 'r75';
+            }
+
+            // Profile:
+            let safeProfile = 'mod';
+            if (this.sessionConfig && this.sessionConfig.risco) {
+                const risk = this.sessionConfig.risco.toLowerCase();
+                if (risk.includes('conservador')) safeProfile = 'cons';
+                else if (risk.includes('agressivo')) safeProfile = 'agr';
+            }
+
+            const safeEnvironment = (this.accountType || 'test') === 'demo' ? 'test' : 'prod';
+
+            // Construct filename
+            const fileName = `zenix-${safeAgentName}-${safeMode}-${safeSymbol}-${safeProfile}-${safeEnvironment}-${dateISO}.txt`;
+            
             const text = this.realtimeLogs.map(log => {
-                return `[${log.timestamp}] ${log.icon} ${log.message}`;
+                // Determine log type label for text file
+                let typeLabel = 'INFO';
+                if (log.type) typeLabel = log.type.toUpperCase();
+                
+                return `[${log.timestamp}] [${typeLabel}] ${log.message}`;
             }).join('\n');
             
             const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `zenix-logs-${new Date().toISOString().slice(0, 10)}.txt`;
+            a.download = fileName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
-            this.addLog('info', '📥 Logs exportados com sucesso');
+            this.addLog('info', `📥 Logs exportados: ${fileName}`);
         },
         
         /**
