@@ -26,12 +26,7 @@
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button class="btn-primary" @click="close">
-          Começar a Operar
-          <i class="fas fa-arrow-right ml-2"></i>
-        </button>
-      </div>
+
     </div>
   </div>
 </template>
@@ -48,7 +43,7 @@ export default {
   data() {
     return {
       // URL do vídeo explicativo (pode ser substituída por uma prop ou vinda da API)
-      videoUrl: 'https://www.youtube.com/watch?v=K4kN_JdmqoY' // Placeholder - Substituir pelo vídeo real
+      videoUrl: 'https://www.youtube.com/embed/K4kN_JdmqoY?si=1fgXH7T_nfOMXDiw' // Placeholder - Substituir pelo vídeo real
     }
   },
   methods: {
