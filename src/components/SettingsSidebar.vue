@@ -110,6 +110,19 @@
           </div>
         </div>
 
+        <!-- Seção Admin (Apenas para Testes) -->
+        <div v-if="userRole === 'admin'" class="settings-modal-section settings-modal-section-with-border">
+          <h3 class="text-[14px] font-semibold text-[#FFD700]/50 mb-4 uppercase tracking-wider">Painel Admin (Testes)</h3>
+          <button 
+            @click="triggerTestEmail" 
+            class="settings-admin-btn"
+            :disabled="sendingTestEmail"
+          >
+            <span v-if="sendingTestEmail">Enviando...</span>
+            <span v-else>📊 Enviar E-mail de Teste Agora</span>
+          </button>
+        </div>
+
 
 
         <div class="settings-modal-section settings-modal-section-with-border">
@@ -238,6 +251,8 @@ export default {
       idDemoAccount: null,
       loadingTopup: false,
       emailNotifications: true,
+      userRole: 'user',
+      sendingTestEmail: false,
     };
   },
   computed: {
@@ -839,6 +854,13 @@ export default {
           this.demoAmount = data.demoAmount;
           this.idDemoAccount = data.idDemoAccount;
           if (data.emailNotifications !== undefined) this.emailNotifications = data.emailNotifications;
+          
+          // Capturar role do usuário (pode vir no objeto user ou no token)
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            const user = JSON.parse(userStr);
+            this.userRole = user.role || 'user';
+          }
         }
       } catch (error) {
         console.error('[SettingsSidebar] Erro ao carregar configurações:', error);
@@ -914,6 +936,37 @@ export default {
         }
       } catch (error) {
         console.error('[SettingsSidebar] Erro ao salvar notificações:', error);
+      }
+    },
+
+    async triggerTestEmail() {
+      if (this.sendingTestEmail) return;
+      
+      this.sendingTestEmail = true;
+      try {
+        const token = localStorage.getItem('token');
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        
+        const response = await fetch(`${apiBaseUrl}/notifications/trigger-test-email`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const result = await response.json();
+        
+        if (response.ok) {
+          alert('✅ Resumo diário enviado com sucesso para o seu e-mail!');
+          console.log('[SettingsSidebar] Test email triggered:', result);
+        } else {
+          alert('❌ Erro ao enviar resumo: ' + (result.message || 'Erro desconhecido'));
+        }
+      } catch (error) {
+        console.error('[SettingsSidebar] Error triggering test email:', error);
+        alert('❌ Erro de conexão ao tentar enviar e-mail.');
+      } finally {
+        this.sendingTestEmail = false;
       }
     },
 
@@ -1453,6 +1506,30 @@ input:checked + .toggle-slider {
 
 input:checked + .toggle-slider:before {
   transform: translateX(20px);
+}
+
+.settings-admin-btn {
+  width: 100%;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  color: #FFD700;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+}
+
+.settings-admin-btn:hover:not(:disabled) {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.5);
+}
+
+.settings-admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
 
