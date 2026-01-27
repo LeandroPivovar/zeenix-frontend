@@ -59,7 +59,21 @@
                     </p>
                 </div>
 
-                <!-- Tabela Desktop -->
+            <!-- Barra de Progresso -->
+            <div v-if="isLoading" class="mb-4">
+                <div class="flex justify-between mb-1">
+                    <span class="text-sm font-medium text-blue-700 dark:text-blue-500">Carregando dados...</span>
+                    <span class="text-sm font-medium text-blue-700 dark:text-blue-500">{{ loadingProgress }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" :style="{ width: loadingProgress + '%' }"></div>
+                </div>
+                <div class="text-xs text-center mt-1 text-gray-500" v-if="totalToLoad > 0">
+                    Processando {{ allUsers.length }} de {{ totalToLoad }} usuários
+                </div>
+            </div>
+
+            <!-- Tabela Desktop -->
                 <div class="table-container desktop-table" id="commission-table">
                     <table>
                         <thead>
@@ -211,6 +225,8 @@ export default {
                 lastMonth: 0,
                 annual: 0,
             },
+            loadingProgress: 0,
+            totalToLoad: 0,
         };
     },
     watch: {
@@ -245,42 +261,97 @@ export default {
         async fetchData() {
             this.isLoading = true;
             this.error = null;
+            // Limpar dados anteriores mas manter estrutura
+            this.allUsers = [];
+            this.displayedClients = [];
+            this.periodData = { today: 0, monthly: 0, lastMonth: 0, annual: 0 };
+            this.loadingProgress = 0;
+            this.totalToLoad = 0;
             
             try {
                 const token = localStorage.getItem('token');
                 const apiUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 
-                // Buscar dados do período filtrado
                 const params = new URLSearchParams({
                     startDate: this.filterStartDate,
                     endDate: this.filterEndDate,
                 });
-                
-                const response = await fetch(`${apiUrl}/trades/markup?${params}`, {
+
+                // Criar conexão SSE usando EventSourceWrapper ou Fetch Stream para passar headers
+                // Como EventSource nativo não suporta headers, usaremos fetch com reader
+                const response = await fetch(`${apiUrl}/trades/markup/stream?${params}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
+                        'Accept': 'text/event-stream',
                     },
                 });
-                
-                if (!response.ok) {
-                    throw new Error('Erro ao buscar dados de markup');
+
+                if (!response.ok) throw new Error(response.statusText);
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                // Iniciar leitura do stream
+                // eslint-disable-next-line no-constant-condition
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value, { stream: true });
+                    buffer += chunk;
+                    
+                    // Processar linhas do SSE (padrão "data: {...}\n\n")
+                    const lines = buffer.split('\n\n');
+                    buffer = lines.pop(); // Guardar o resto incompleto para o próximo chunk
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const jsonStr = line.replace('data: ', '');
+                                const eventData = JSON.parse(jsonStr);
+                                this.handleStreamEvent(eventData);
+                            } catch (e) {
+                                console.warn('Erro ao processar mensagem do stream JSON:', e);
+                            }
+                        }
+                    }
                 }
+
+                this.isLoading = false;
                 
-                const data = await response.json();
-                this.allUsers = data.users || [];
+                // Buscar dados agregados de outros períodos em paralelo (pode manter isso ou também streacar)
+                // Para manter a resposta rápida, vamos carregar o markup total via stream e deixar
+                // os "cards" de períodos carregarem via request normal em background
+                this.fetchPeriodData(token, apiUrl);
+
+            } catch (error) {
+                console.error('Erro ao buscar dados (stream):', error);
+                this.error = 'Erro na conexão de stream: ' + error.message;
+                this.isLoading = false;
+            }
+        },
+
+        handleStreamEvent(event) {
+            if (event.type === 'start') {
+                this.totalToLoad = event.totalUsers;
+                this.loadingProgress = 0;
+            } else if (event.type === 'user_data') {
+                const user = event.user;
+                this.allUsers.push(user);
                 this.applyFilters();
                 
-                // Buscar dados agregados por período
-                await this.fetchPeriodData(token, apiUrl);
+                // Atualizar progresso
+                if (this.totalToLoad > 0) {
+                    this.loadingProgress = Math.round((this.allUsers.length / this.totalToLoad) * 100);
+                }
                 
-            } catch (error) {
-                console.error('Erro ao buscar dados:', error);
-                this.error = error.message;
-                this.allUsers = [];
-                this.displayedClients = [];
-            } finally {
+                if (this.allUsers.length === 1) {
+                   // Apenas para remover estado de "nenhum dado" se houver
+                } 
+            } else if (event.type === 'done') {
                 this.isLoading = false;
+                this.loadingProgress = 100;
             }
         },
         
