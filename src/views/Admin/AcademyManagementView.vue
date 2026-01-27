@@ -549,6 +549,11 @@ export default {
             try {
                 const apiBaseUrl = this.getApiBaseUrl();
                 // Não envia imagens base64 se forem muito grandes (apenas URLs ou null)
+                // Garante consistência antes de salvar
+                const visibilityToSave = (this.course.planIds && this.course.planIds.length > 0) 
+                    ? 'restricted' 
+                    : this.course.visibility;
+
                 const courseDataToSave = {
                     title: this.course.name,
                     description: this.course.description,
@@ -561,7 +566,7 @@ export default {
                     status: this.course.status,
                     availableFrom: this.course.availableFrom || null,
                     availableUntil: this.course.availableUntil || null,
-                    visibility: this.course.visibility,
+                    visibility: visibilityToSave,
                     planIds: this.course.planIds || [],
                 };
                 
@@ -1730,6 +1735,14 @@ export default {
                 this.course.planIds.push(planId);
             } else {
                 this.course.planIds.splice(index, 1);
+            }
+            
+            // Se houver planos selecionados, a visibilidade deve ser 'restricted'
+            // Caso contrário, volta para 'public' (todos podem ver)
+            if (this.course.planIds.length > 0) {
+                this.course.visibility = 'restricted';
+            } else {
+                this.course.visibility = 'public';
             }
         },
         getPlanName(planId) {
