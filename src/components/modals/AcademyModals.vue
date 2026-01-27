@@ -406,8 +406,6 @@ export default {
       }
       return this.materialsList.filter(m => m.lessonId === this.normalizedSelectedLessonId);
     },
-      return this.materialsList.filter(m => m.lessonId === this.normalizedSelectedLessonId);
-    },
   },
   data() {
     return {
@@ -502,9 +500,6 @@ export default {
       } else {
         this.removeMaterialFile();
       }
-    },
-    removeMaterialFile() {
-      this.updateNewMaterial({ file: null, fileName: '', filePath: '' });
     },
     removeMaterialFile() {
       this.updateNewMaterial({ file: null, fileName: '', filePath: '' });
