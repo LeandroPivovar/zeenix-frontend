@@ -41,12 +41,13 @@
               :class="['space-y-0.5 animate-in fade-in slide-in-from-left-1 duration-200 p-2 border-b border-white/[0.05]']"
             >
               <div class="flex items-start gap-2">
-                <span class="shrink-0 font-mono transition-colors text-[#A1A1AA] text-[10px] leading-[1.6]">[{{ formatTimestamp(log.timestamp) }}]</span>
-                <div :class="['space-y-0.5', getLogColorClass(log.logType)]">
-                  <div class="font-bold flex items-center gap-1.5 uppercase tracking-wider text-[10px] sm:text-[11px]">
+                <span class="shrink-0 font-mono transition-colors text-[#A1A1AA] text-[10px] items-center flex h-5">[{{ formatTimestamp(log.timestamp) }}]</span>
+                <div :class="['space-y-0.5 w-full', getLogColorClass(log.logType)]">
+                  <div class="font-bold flex items-center gap-1.5 uppercase tracking-wider text-[11px] h-5">
+                    <i v-if="log.icon" :class="[log.icon, 'text-[10px]']"></i>
                     <span>{{ log.title }}</span>
                   </div>
-                  <div v-if="log.details" class="pl-0 text-[10px] leading-relaxed transition-colors text-[#A1A1AA] whitespace-pre-wrap">
+                  <div v-if="log.details" class="pl-0 text-[10px] leading-relaxed transition-colors text-[#D1D1D6] whitespace-pre-wrap">
                     {{ log.details }}
                   </div>
                 </div>
@@ -65,21 +66,21 @@
           <p class="text-xs">Nenhum log registrado</p>
         </div>
         
-        <div v-else class="space-y-3 p-3">
+        <div v-else class="space-y-2 p-3">
           <div 
             v-for="(log, index) in formattedLogs" 
             :key="log.id || index" 
-            class="flex items-start gap-3 p-3 bg-[#111111] border border-[#1c1c1c] rounded-xl"
+            class="flex items-start gap-3 p-3 bg-[#111111]/50 border border-white/[0.05] rounded-lg"
           >
-            <div :class="['w-8 h-8 rounded-md flex items-center justify-center shrink-0', getLogBgClass(log.logType)]">
-              <i :class="[log.icon, 'text-xs text-white']"></i>
+            <div :class="['shrink-0 mt-0.5', getLogColorClass(log.logType)]">
+              <i :class="[log.icon, 'text-sm']"></i>
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between mb-0.5">
-                <p class="text-[11px] font-bold text-white uppercase tracking-tight">{{ log.title }}</p>
+                <p :class="['text-[11px] font-bold uppercase tracking-tight', getLogColorClass(log.logType)]">{{ log.title }}</p>
                 <span class="text-[9px] text-[#A1A1AA] font-mono">{{ formatTimestamp(log.timestamp) }}</span>
               </div>
-              <div v-if="log.details" class="text-[10px] text-[#A1A1AA] leading-snug text-left mt-0.5 whitespace-pre-wrap">
+              <div v-if="log.details" class="text-[10px] text-[#D1D1D6] leading-snug text-left mt-0.5 whitespace-pre-wrap">
                  {{ log.details.trim() }}
               </div>
             </div>
@@ -127,38 +128,59 @@ export default {
     formattedLogs() {
       const limitedLogs = this.realtimeLogs.slice(0, 500);
       return limitedLogs.map(log => {
+        const message = log.message || '';
+        
+        // Parse title and details
+        const lines = message.split('\n');
+        const titleLine = lines[0].replace(/^\[.*?\]\s*/, '').trim().toUpperCase();
+        const details = lines.length > 1 ? lines.slice(1).join('\n') : '';
+        
+        // Determine type based on title and content
         let logType = 'info';
         
-        const message = log.message || '';
-        const type = (log.type || '').toLowerCase();
-        
-        // Map backend types to frontend types
-        if (type === 'vitoria') logType = 'success';
-        else if (type === 'derrota') logType = 'loss';
-        else if (type === 'analise') logType = 'analysis';
-        else if (type === 'sinal') logType = 'purchase';
-        else if (type === 'alerta') logType = 'risk';
-        else if (type === 'config') logType = 'config';
-        else if (type === 'resultado') logType = 'success';
+        // 1. Result Logs (Green/Red)
+        if (titleLine.includes('RESULTADO') || titleLine.includes('CONCLUÍDA')) {
+          if (message.toUpperCase().includes('LOSS')) logType = 'loss';
+          else logType = 'success';
+        }
+        // 2. Warning Logs (Yellow)
+        else if (
+          titleLine.includes('BLOQUEADA') || 
+          titleLine.includes('SEQUÊNCIA') || 
+          titleLine.includes('TROCA') || 
+          titleLine.includes('NÍVEL') || 
+          titleLine.includes('PARCIAL') ||
+          titleLine.includes('MARTINGALE') ||
+          titleLine.includes('RECUPERAÇÃO')
+        ) {
+          logType = 'warning';
+        }
+        // 3. Info/Process Logs (Blue)
+        else if (
+          titleLine.includes('INÍCIO') || 
+          titleLine.includes('COLETA') || 
+          titleLine.includes('ANÁLISE') || 
+          titleLine.includes('SINAL') || 
+          titleLine.includes('SOROS') || 
+          titleLine.includes('AJUSTE') ||
+          titleLine.includes('CONTRATO') ||
+          titleLine.includes('OPERAÇÃO') ||
+          titleLine.includes('STAKE')
+        ) {
+          logType = 'blue';
+        }
         
         // Icons
         const iconMap = {
-          success: 'fa-solid fa-check',
-          loss: 'fa-solid fa-xmark',
-          analysis: 'fa-solid fa-brain',
-          purchase: 'fa-solid fa-rocket',
-          risk: 'fa-solid fa-shield-halved',
-          config: 'fa-solid fa-gear',
+          success: 'fa-solid fa-circle-check',
+          loss: 'fa-solid fa-circle-xmark',
+          warning: 'fa-solid fa-triangle-exclamation',
+          blue: 'fa-solid fa-circle-info',
           info: 'fa-solid fa-info-circle'
         };
         const icon = iconMap[logType] || iconMap.info;
 
-        // Parse title and details
-        const lines = message.split('\n');
-        const title = lines[0].replace(/^\[.*?\]\s*/, '').trim().toUpperCase();
-        const details = lines.length > 1 ? lines.slice(1).join('\n') : '';
-
-        return { ...log, logType, icon, title, details };
+        return { ...log, logType, icon, title: titleLine, details };
       });
     }
   },
@@ -168,27 +190,21 @@ export default {
     },
     getLogColorClass(type) {
       const classes = {
-        config: 'text-blue-400',
-        success: 'text-green-500',
-        loss: 'text-red-500',
-        purchase: 'text-blue-400',
-        risk: 'text-orange-400 border-l-2 border-orange-400/30 pl-2',
-        analysis: 'text-blue-400',
-        data: 'text-[#A1A1AA] opacity-80',
+        blue: 'text-blue-400',
+        success: 'text-emerald-500',
+        loss: 'text-rose-500',
+        warning: 'text-amber-400',
         info: 'text-[#FAFAFA]'
       };
       return classes[type] || classes.info;
     },
     getLogBgClass(type) {
       const classes = {
-        config: 'bg-blue-600',
-        success: 'bg-green-600',
-        loss: 'bg-red-600',
-        purchase: 'bg-blue-600',
-        risk: 'bg-orange-600',
-        analysis: 'bg-blue-600',
-        data: 'bg-gray-600',
-        info: 'bg-gray-700'
+        blue: 'bg-blue-400/10',
+        success: 'bg-emerald-500/10',
+        loss: 'bg-rose-500/10',
+        warning: 'bg-amber-400/10',
+        info: 'bg-gray-700/10'
       };
       return classes[type] || classes.info;
     },
