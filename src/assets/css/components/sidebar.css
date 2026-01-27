@@ -12,9 +12,9 @@ aside.sidebar,
 	color: #DFDFDF;
 	display: flex;
 	flex-direction: column;
-	position: sticky;
+	position: fixed;
 	left: 0;
-	top: 0;
+	top: 60px;
 	height: calc(100vh - 60px);
 	z-index: 1000;
 	box-sizing: border-box;
