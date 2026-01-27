@@ -552,7 +552,7 @@
                             
                             <template v-else>
                                 <!-- Desktop: Tabela -->
-                                <div class="logs-table-wrapper desktop-logs-table">
+                                <div class="logs-table-wrapper desktop-logs-table custom-scrollbar">
                                     <table class="logs-table">
                                         <thead>
                                             <tr>
@@ -601,7 +601,7 @@
                                 </div>
                                 
                                 <!-- Mobile: Cards -->
-                                <div class="mobile-logs-cards">
+                                <div class="mobile-logs-cards custom-scrollbar">
                                     <div v-for="(op, index) in logOperations" :key="index" class="mobile-log-card">
                                         <div class="mobile-log-time">{{ op.time }}</div>
                                         <div class="mobile-log-type">
