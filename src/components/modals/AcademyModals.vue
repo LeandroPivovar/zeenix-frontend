@@ -406,8 +406,6 @@ export default {
       }
       return this.materialsList.filter(m => m.lessonId === this.normalizedSelectedLessonId);
     },
-      return this.materialsList.filter(m => m.lessonId === this.normalizedSelectedLessonId);
-    },
   },
   data() {
     return {
