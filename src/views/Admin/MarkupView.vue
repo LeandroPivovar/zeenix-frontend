@@ -28,7 +28,9 @@
                 <div class="summary-cards">
                     <div class="card total">
                         <h3>Comissão Total</h3>
-                        <p class="value">{{ formatCurrency(summaryCards.totalCommission) }}</p>
+                        <p class="value" v-if="!derivMarkupLoading">{{ formatCurrency(derivMarkupTotal) }}</p>
+                        <p class="value" v-else style="font-size: 14px; color: #999;">Carregando...</p>
+                        <p v-if="derivMarkupError" style="font-size: 12px; color: #ff4444; margin-top: 5px;">{{ derivMarkupError }}</p>
                     </div>
                     <div class="card total">
                         <h3>Saldo Total (Real)</h3>
@@ -238,6 +240,10 @@ export default {
             },
             loadingProgress: 0,
             totalToLoad: 0,
+            // Dados do markup da Deriv API
+            derivMarkupTotal: 0,
+            derivMarkupLoading: false,
+            derivMarkupError: null,
         };
     },
     watch: {
@@ -335,6 +341,9 @@ export default {
                 // Para manter a resposta rápida, vamos carregar o markup total via stream e deixar
                 // os "cards" de períodos carregarem via request normal em background
                 this.fetchPeriodData(token, apiUrl);
+                
+                // Buscar dados de markup da Deriv API
+                this.fetchDerivMarkupStatistics();
 
             } catch (error) {
                 console.error('Erro ao buscar dados (stream):', error);
@@ -419,6 +428,47 @@ export default {
                     lastMonth: 0,
                     annual: 0,
                 };
+            }
+        },
+        
+        async fetchDerivMarkupStatistics() {
+            this.derivMarkupLoading = true;
+            this.derivMarkupError = null;
+            
+            try {
+                const token = localStorage.getItem('token');
+                const apiUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                
+                const params = new URLSearchParams({
+                    dateFrom: this.filterStartDate,
+                    dateTo: this.filterEndDate,
+                });
+                
+                const response = await fetch(`${apiUrl}/markup/statistics?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ao buscar estatísticas de markup: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    this.derivMarkupTotal = result.data.total_app_markup_usd || 0;
+                    console.log('[MarkupView] Markup total da Deriv API:', this.derivMarkupTotal);
+                } else {
+                    this.derivMarkupTotal = 0;
+                }
+                
+            } catch (error) {
+                console.error('Erro ao buscar estatísticas de markup da Deriv:', error);
+                this.derivMarkupError = error.message;
+                this.derivMarkupTotal = 0;
+            } finally {
+                this.derivMarkupLoading = false;
             }
         },
 
