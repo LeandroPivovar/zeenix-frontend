@@ -219,6 +219,13 @@ export default {
             allUsers: [],
             isLoading: false,
             error: null,
+            // Dados agregados por período
+            periodData: {
+                today: 0,
+                monthly: 0,
+                lastMonth: 0,
+                annual: 0,
+            },
             targetUserId: '', // ID do usuário selecionado para ver o markup
             showUserModal: false,
         };
