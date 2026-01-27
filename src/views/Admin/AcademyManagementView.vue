@@ -248,6 +248,10 @@
                                     <option value="restricted">Restrito (por plano)</option>
                                 </select>
                             </div>
+                            <div class="form-group" v-if="course.visibility === 'restricted'">
+                                <label for="days-to-unlock">Disponível após (dias da compra/ativação)</label>
+                                <input type="number" id="days-to-unlock" class="input-text" v-model.number="course.daysToUnlock" min="0" placeholder="0 = Imediato" />
+                            </div>
                         </form>
                     </section>
                 </div>
@@ -356,7 +360,9 @@ export default {
                 currency: "R$", 
                 subscription: "1", 
                 discount: "0", 
+                discount: "0", 
                 planIds: [],
+                daysToUnlock: 0,
             },
             availablePlans: [],
             // Preview
@@ -574,6 +580,7 @@ export default {
                     availableUntil: this.course.availableUntil || null,
                     visibility: visibilityToSave,
                     planIds: this.course.planIds || [],
+                    daysToUnlock: this.course.daysToUnlock || 0,
                 };
                 
                 let response;
@@ -1624,6 +1631,7 @@ export default {
             this.course.coverImagePreview = null;
             this.course.availableFrom = '';
             this.course.availableUntil = '';
+            this.course.daysToUnlock = 0;
             this.modules = [];
             this.lessons = [];
         },
@@ -1698,6 +1706,7 @@ export default {
             this.course.availableUntil = courseData.availableUntil ? courseData.availableUntil.split('T')[0] : '';
             this.course.visibility = courseData.visibility || "public";
             this.course.planIds = courseData.planIds || [];
+            this.course.daysToUnlock = courseData.daysToUnlock || 0;
 
             if (courseData.modules) {
                 this.modules = courseData.modules.map(m => ({
