@@ -41,7 +41,7 @@
                         <section class="notification-list">
                             <div class="section-header">
                                 <h2>Notificações Criadas</h2>
-                                <button class="btn btn-add-admin" @click="showCreateModal = true">
+                                <button class="btn btn-add-admin" @click="openCreateModal">
                                     <i class="fas fa-plus mr-2"></i>Nova Notificação
                                 </button>
                             </div>
@@ -54,7 +54,12 @@
                                             <th>DESCRIÇÃO</th>
                                             <th>CRIADO EM</th>
                                             <th>DATA EXPIRAÇÃO</th>
+                                            <th>NOME</th>
+                                            <th>DESCRIÇÃO</th>
+                                            <th>CRIADO EM</th>
+                                            <th>DATA EXPIRAÇÃO</th>
                                             <th>STATUS</th>
+                                            <th>AÇÕES</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -74,6 +79,19 @@
                                                     {{ isExpired(notification.displayUntil) ? 'Expirada' : 'Ativa' }}
                                                 </span>
                                             </td>
+                                            <td class="actions-cell">
+                                                <button class="action-btn edit" @click="openEditModal(notification)" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button 
+                                                    v-if="!isExpired(notification.displayUntil)"
+                                                    class="action-btn deactivate" 
+                                                    @click="deactivateNotification(notification)" 
+                                                    title="Desativar (Expirar Agora)"
+                                                >
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -89,11 +107,11 @@
             <div v-if="showCreateModal" class="modal-overlay" @click.self="showCreateModal = false">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3>Nova Notificação</h3>
-                        <button class="close-button" @click="showCreateModal = false">×</button>
+                        <h3>{{ isEditing ? 'Editar Notificação' : 'Nova Notificação' }}</h3>
+                        <button class="close-button" @click="closeModal">×</button>
                     </div>
                     <div class="modal-body">
-                        <form @submit.prevent="createNotification">
+                        <form @submit.prevent="saveNotification">
                             <div class="form-group">
                                 <label>Nome / Título</label>
                                 <input type="text" v-model="newNotification.name" required placeholder="Ex: Manutenção Programada">
@@ -109,9 +127,9 @@
                             </div>
                             
                             <div class="modal-actions">
-                                <button type="button" class="btn btn-secondary" @click="showCreateModal = false">Cancelar</button>
+                                <button type="button" class="btn btn-secondary" @click="closeModal">Cancelar</button>
                                 <button type="submit" class="btn btn-save-config" :disabled="isSaving">
-                                    {{ isSaving ? 'Salvando...' : 'Criar Notificação' }}
+                                    {{ isSaving ? 'Salvando...' : (isEditing ? 'Atualizar' : 'Criar Notificação') }}
                                 </button>
                             </div>
                         </form>
@@ -145,6 +163,8 @@ export default {
             notifications: [],
             
             showCreateModal: false,
+            isEditing: false, // Flag para saber se é edição
+            editingId: null, // ID da notificação sendo editada
             isSaving: false,
             newNotification: {
                 name: '',
@@ -195,6 +215,41 @@ export default {
                 this.isLoading = false;
             }
         },
+        openCreateModal() {
+            this.isEditing = false;
+            this.editingId = null;
+            this.newNotification = { name: '', description: '', displayUntil: '' };
+            this.showCreateModal = true;
+        },
+        openEditModal(notification) {
+            this.isEditing = true;
+            this.editingId = notification.id;
+            // Formatar data para o input datetime-local (YYYY-MM-DDThh:mm)
+            const date = new Date(notification.displayUntil);
+            // Ajuste para fuso local simples para o input, ou usar slice se tiver certeza do formato
+            // O input datetime-local espera YYYY-MM-DDThh:mm
+            const localIso = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            
+            this.newNotification = {
+                name: notification.name,
+                description: notification.description,
+                displayUntil: localIso
+            };
+            this.showCreateModal = true;
+        },
+        closeModal() {
+            this.showCreateModal = false;
+            this.newNotification = { name: '', description: '', displayUntil: '' };
+            this.isEditing = false;
+            this.editingId = null;
+        },
+        async saveNotification() {
+            if (this.isEditing) {
+                await this.updateNotification();
+            } else {
+                await this.createNotification();
+            }
+        },
         async createNotification() {
             this.isSaving = true;
             try {
@@ -220,8 +275,7 @@ export default {
 
                 if (response.ok) {
                     this.$root.$toast?.success('Notificação criada com sucesso');
-                    this.showCreateModal = false;
-                    this.newNotification = { name: '', description: '', displayUntil: '' };
+                    this.closeModal();
                     this.loadNotifications();
                 } else {
                     throw new Error('Falha ao criar');
@@ -231,6 +285,75 @@ export default {
                 this.$root.$toast?.error('Erro ao criar notificação');
             } finally {
                 this.isSaving = false;
+            }
+        },
+        async updateNotification() {
+            this.isSaving = true;
+            try {
+                const displayUntilDate = new Date(this.newNotification.displayUntil);
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + `/notifications/${this.editingId}`,
+                    {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: this.newNotification.name,
+                            description: this.newNotification.description,
+                            displayUntil: displayUntilDate.toISOString()
+                        })
+                    }
+                );
+
+                if (response.ok) {
+                    this.$root.$toast?.success('Notificação atualizada com sucesso');
+                    this.closeModal();
+                    this.loadNotifications();
+                } else {
+                    throw new Error('Falha ao atualizar');
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar notificação:', error);
+                this.$root.$toast?.error('Erro ao atualizar notificação');
+            } finally {
+                this.isSaving = false;
+            }
+        },
+        async deactivateNotification(notification) {
+            if (!confirm('Deseja realmente desativar esta notificação? Ela expirará imediatamente.')) return;
+            
+            try {
+                const token = localStorage.getItem('token');
+                // Definir data de expiração para AGORA
+                const now = new Date();
+                
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + `/notifications/${notification.id}`,
+                    {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            displayUntil: now.toISOString()
+                        })
+                    }
+                );
+
+                if (response.ok) {
+                    this.$root.$toast?.success('Notificação desativada');
+                    this.loadNotifications();
+                } else {
+                    throw new Error('Falha ao desativar');
+                }
+            } catch (error) {
+                console.error('Erro ao desativar notificação:', error);
+                this.$root.$toast?.error('Erro ao desativar notificação');
             }
         },
         formatDate(dateStr) {
@@ -251,6 +374,11 @@ export default {
     flex-direction: column;
     height: 100vh;
     background-color: #0B0B0B;
+}
+
+.admin-dashboard {
+    width: 100%;
+    max-width: 100%; /* Garante que ocupe todo o espaço disponível */
 }
 
 .admin-sticky-header {
@@ -300,17 +428,18 @@ export default {
     background: #141414;
     border: 1px solid #1C1C1C;
     border-radius: 12px;
-    padding: 20px;
+    padding: 24px; /* Aumentado padding interno */
     margin-top: 20px;
+    width: 100%; /* Força largura total */
 }
 
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
-
+/* ... restante dos estilos permanece igual ... */
 .section-header h2 {
     color: #FFF;
     font-size: 18px;
@@ -339,24 +468,24 @@ export default {
 
 .modern-table th {
     text-align: left;
-    padding: 12px;
+    padding: 16px; /* Aumentado padding das células */
     color: #9CA3AF;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
     border-bottom: 1px solid #1C1C1C;
 }
 
 .modern-table td {
-    padding: 14px 12px;
+    padding: 16px; /* Aumentado padding das células */
     color: #DFDFDF;
     font-size: 14px;
     border-bottom: 1px solid #1C1C1C;
 }
 
 .status-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border-radius: 6px;
     font-size: 12px;
     font-weight: 500;
 }
@@ -464,5 +593,40 @@ export default {
 .btn-save-config {
     background: #22C55E;
     color: #000;
+}
+
+.actions-cell {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.action-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 6px;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn.edit {
+    color: #3B82F6;
+}
+
+.action-btn.edit:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.action-btn.deactivate {
+    color: #EF4444;
+}
+
+.action-btn.deactivate:hover {
+    background: rgba(239, 68, 68, 0.1);
 }
 </style>
