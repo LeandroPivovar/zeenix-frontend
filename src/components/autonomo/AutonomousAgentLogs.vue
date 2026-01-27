@@ -143,30 +143,42 @@ export default {
           if (message.toUpperCase().includes('LOSS')) logType = 'loss';
           else logType = 'success';
         }
-        // 2. Yellow Logs
+        // 2. Yellow/Warning Logs
         else if (
+          log.type === 'alerta' ||
+          log.type === 'erro' ||
           titleLine.includes('BLOQUEADA') || 
           titleLine.includes('SEQUÊNCIA') || 
           titleLine.includes('TROCA') || 
           titleLine.includes('MARTINGALE') ||
           titleLine.includes('PARCIAL') ||
+          titleLine.includes('INSUFICIENTE') ||
+          titleLine.includes('ERRO') ||
           (titleLine.includes('INÍCIO') && titleLine.includes('RECUPERAÇÃO')) ||
           (titleLine.includes('NÍVEL') && !titleLine.includes('SOROS'))
         ) {
           logType = 'warning';
         }
-        // 3. Blue Logs
+        // 3. Blue/Analysis Logs (Blue)
         else if (
+          log.type === 'analise' ||
           titleLine.includes('INÍCIO') || 
           titleLine.includes('COLETA') || 
           titleLine.includes('ANÁLISE') || 
-          titleLine.includes('SINAL') || 
-          titleLine.includes('SOROS') || 
           titleLine.includes('AJUSTE') ||
           titleLine.includes('CONTRATO') ||
           titleLine.includes('STAKE')
         ) {
           logType = 'blue';
+        }
+        // 4. Success/Win Logs (Green)
+        else if (
+          log.type === 'vitoria' ||
+          titleLine.includes('META') ||
+          titleLine.includes('PROTEÇÃO') ||
+          titleLine.includes('BLINDADO')
+        ) {
+          logType = 'success';
         }
         
         // Icons
