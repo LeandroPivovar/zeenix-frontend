@@ -1,16 +1,7 @@
 <template>
     <div class="sidebar-wrapper">
         <aside class="sidebar" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
-        <div v-if="isAdminFlow" class="flex items-center justify-center pt-0 pb-6">
-            <template v-if="!isCollapsed">
-                <span class="text-white font-bold text-2xl">ZEN</span>
-                <span class="text-white font-bold text-2xl">I</span>
-                <span class="text-[#22C55E] font-bold text-2xl">X</span>
-            </template>
-            <template v-else>
-                <span class="text-[#22C55E] font-bold text-2xl">Z</span>
-            </template>
-        </div>
+
         <nav class="menu">
             <template v-if="!isAdminFlow">
                 <a

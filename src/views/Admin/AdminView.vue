@@ -17,6 +17,20 @@
 
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
 
+            <!-- Desktop Header -->
+            <header v-if="!isMobile" class="admin-desktop-header">
+                <div class="header-left">
+                    <button class="toggle-menu-btn-header" @click="toggleSidebarCollapse" :title="isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'">
+                        <i class="fas fa-bars text-[#DFDFDF]"></i>
+                    </button>
+                    <div class="header-brand-text ml-4">
+                        <span class="text-white font-bold text-xl">ZEN</span>
+                        <span class="text-white font-bold text-xl">I</span>
+                        <span class="text-[#22C55E] font-bold text-xl">X</span>
+                    </div>
+                </div>
+            </header>
+
             <!-- Mobile Header -->
             <div v-if="isMobile" class="mobile-header-admin">
                 <button class="menu-toggler-btn" @click="isSidebarOpen = true">
@@ -1307,7 +1321,47 @@ export default {
     font-size: 0.9em;
     color: #ccc;
     text-align: left;
+}
 
+/* Admin Desktop Header */
+.admin-desktop-header {
+    height: 60px;
+    background-color: #0b0b0b;
+    border-bottom: 1px solid #1C1C1C;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 997;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.toggle-menu-btn-header {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.toggle-menu-btn-header:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.header-brand-text {
+    display: flex;
+    align-items: center;
 }
 
 /* --- Separador --- */
