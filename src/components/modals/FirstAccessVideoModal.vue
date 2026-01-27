@@ -2,9 +2,9 @@
   <div v-if="visible" class="modal-overlay" @click.self="close">
     <div class="modal-content video-card">
       <div class="modal-header">
-        <h3 class="modal-title">{{ videoTitle || 'Bem-vindo à Zenix!' }}</h3>
-        <button class="close-btn" @click="close">
-          <i class="fas fa-times"></i>
+        <h3 class="modal-title">Bem-vindo ao Zenix</h3>
+        <button class="close-video-btn" @click="close">
+          Fechar vídeo
         </button>
       </div>
       
@@ -216,24 +216,22 @@ export default {
   letter-spacing: -0.5px;
 }
 
-.close-btn {
+.close-video-btn {
   background: rgba(255, 255, 255, 0.05);
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #9CA3AF;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  padding: 8px 16px;
+  border-radius: 10px;
   cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
-.close-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
+.close-video-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
   color: #EF4444;
-  transform: rotate(90deg);
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
 .video-container {
