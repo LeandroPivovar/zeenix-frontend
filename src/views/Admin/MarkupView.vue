@@ -59,7 +59,21 @@
                     </p>
                 </div>
 
-                <!-- Tabela Desktop -->
+            <!-- Barra de Progresso -->
+            <div v-if="isLoading" class="mb-4">
+                <div class="flex justify-between mb-1">
+                    <span class="text-sm font-medium text-blue-700 dark:text-blue-500">Carregando dados...</span>
+                    <span class="text-sm font-medium text-blue-700 dark:text-blue-500">{{ loadingProgress }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" :style="{ width: loadingProgress + '%' }"></div>
+                </div>
+                <div class="text-xs text-center mt-1 text-gray-500" v-if="totalToLoad > 0">
+                    Processando {{ allUsers.length }} de {{ totalToLoad }} usuários
+                </div>
+            </div>
+
+            <!-- Tabela Desktop -->
                 <div class="table-container desktop-table" id="commission-table">
                     <table>
                         <thead>
@@ -211,6 +225,8 @@ export default {
                 lastMonth: 0,
                 annual: 0,
             },
+            loadingProgress: 0,
+            totalToLoad: 0,
         };
     },
     watch: {
@@ -249,6 +265,8 @@ export default {
             this.allUsers = [];
             this.displayedClients = [];
             this.periodData = { today: 0, monthly: 0, lastMonth: 0, annual: 0 };
+            this.loadingProgress = 0;
+            this.totalToLoad = 0;
             
             try {
                 const token = localStorage.getItem('token');
@@ -315,18 +333,24 @@ export default {
 
         handleStreamEvent(event) {
             if (event.type === 'start') {
-                // Pode mostrar "Carregando X usuários..."
+                this.totalToLoad = event.totalUsers;
+                this.loadingProgress = 0;
             } else if (event.type === 'user_data') {
                 const user = event.user;
-                // Adcionar usuário à lista
                 this.allUsers.push(user);
-                // Reaplicar filtros (debounced seria ideal, mas array pequeno ok)
                 this.applyFilters();
-                // O loading pode continuar true até o 'done' ou false se quisermos interatividade imediata
-                // Vamos manter isLoading = true mas já exibindo dados (skeleton sumindo)
-                if (this.allUsers.length === 1) this.isLoading = false; 
+                
+                // Atualizar progresso
+                if (this.totalToLoad > 0) {
+                    this.loadingProgress = Math.round((this.allUsers.length / this.totalToLoad) * 100);
+                }
+                
+                if (this.allUsers.length === 1) {
+                   // Apenas para remover estado de "nenhum dado" se houver
+                } 
             } else if (event.type === 'done') {
                 this.isLoading = false;
+                this.loadingProgress = 100;
             }
         },
         
