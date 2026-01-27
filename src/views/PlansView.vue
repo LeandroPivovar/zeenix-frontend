@@ -43,25 +43,90 @@
 
             <main class="plans-content" style="margin-top: 60px;">
                 
-                <div class="video-card-wrapper">
+                <div v-if="tutorialVideo" class="video-card-wrapper animate-fade-in-up">
 					<div class="video-box">
-						<div class="video-thumbnail" @click="playVideo">
+						<div v-if="!isPlaying" class="video-thumbnail" @click="playVideo">
+                            <!-- Overlay com gradiente premium -->
 							<div class="video-overlay"></div>
+                            
+                            <!-- Thumbnail placeholder ou customizada se tiver -->
+                            <div class="thumbnail-bg"></div>
+
 							<div class="play-button-wrapper">
-								<div v-if="!isPlaying" class="play-button">
+                                <div class="play-button-ring"></div>
+								<div class="play-button">
 									<i class="fas fa-play"></i>
 								</div>
-								<div v-else class="video-player-placeholder">
-									<p>Player de vídeo carregando...</p>
-								</div>
 							</div>
+						</div>
+                        
+						<div v-else class="video-player-container">
+                             <!-- Verifica o tipo de conteúdo para renderizar corretamente -->
+                             
+                             <!-- 1. Vídeo Uploaded (URL direto do backend) -->
+                             <video 
+                                v-if="isVideoFile(tutorialVideo.videoUrl)" 
+                                :src="getSafeUrl(tutorialVideo.videoUrl)" 
+                                controls 
+                                autoplay 
+                                class="video-player-element"
+                            ></video>
+
+                             <!-- 2. YouTube Link -->
+                             <iframe 
+                                v-else-if="isYoutube(tutorialVideo.contentLink)"
+                                :src="getYoutubeEmbed(tutorialVideo.contentLink)" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen
+                                class="video-player-element"
+                            ></iframe>
+
+                            <!-- 3. Vimeo Link -->
+                            <iframe 
+                                v-else-if="isVimeo(tutorialVideo.contentLink)"
+                                :src="getVimeoEmbed(tutorialVideo.contentLink)" 
+                                frameborder="0" 
+                                allow="autoplay; fullscreen; picture-in-picture" 
+                                allowfullscreen
+                                class="video-player-element"
+                            ></iframe>
+
+                            <!-- 4. Fallback (Link genérico ou erro) -->
+                            <div v-else class="video-fallback">
+                                <p>Não foi possível carregar o player diretamente.</p>
+                                <a :href="tutorialVideo.contentLink" target="_blank" class="btn-open-link">
+                                    Abrir vídeo externa <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
 						</div>
 					</div>
                     <div class="video-details">
                         <div class="video-title-row">
-                            <h3 class="video-title">Marcos Explica os Planos Zenix</h3>
+                             <div class="video-badge">
+                                <i class="fas fa-star"></i> Destaque
+                            </div>
+                            <h3 class="video-title">{{ tutorialVideo.title || 'Marcos Explica os Planos Zenix' }}</h3>
                         </div>
-                        <p class="video-description">Assista e entenda qual plano se encaixa melhor no seu perfil de operações.</p>
+                        <p class="video-description">
+                            {{ tutorialVideo.description || 'Assista e entenda qual plano se encaixa melhor no seu perfil de operações.' }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Fallback estático caso não tenha vídeo cadastrado (Opcional, ou pode remover se quiser que suma) -->
+                <div v-else class="video-card-wrapper">
+					<div class="video-box">
+						<div class="video-thumbnail no-video">
+                            <i class="fas fa-film fa-3x" style="opacity: 0.3;"></i>
+                            <p style="margin-top: 10px; opacity: 0.5;">Vídeo explicativo indisponível no momento</p>
+						</div>
+					</div>
+                    <div class="video-details">
+                        <div class="video-title-row">
+                            <h3 class="video-title">Conheça os Planos Zenix</h3>
+                        </div>
+                        <p class="video-description">Escolha o plano ideal para alavancar suas operações.</p>
                     </div>
                 </div>
 
@@ -197,7 +262,10 @@ export default {
             balanceVisible: true,
             balanceUpdateInterval: null,
             balancesByCurrencyReal: {},
-            balancesByCurrencyDemo: {}
+            balancesByCurrencyDemo: {},
+
+            // Tutorial Video
+            tutorialVideo: null
         }
     },
     computed: {
@@ -216,6 +284,7 @@ export default {
         this.fetchPlansFromAPI();
         this.fetchAccountBalance();
         this.startBalanceUpdates();
+        this.fetchTutorialVideo();
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobile);
@@ -403,9 +472,152 @@ export default {
                 clearInterval(this.balanceUpdateInterval);
                 this.balanceUpdateInterval = null;
             }
+        },
+
+        // --- Video Tutorial Logic ---
+        async fetchTutorialVideo() {
+            try {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                // Buscar tipo 3 = Video de Planos
+                const response = await fetch(`${apiBase}/courses/deriv-tutorial-video?type=3`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data) {
+                        this.tutorialVideo = data;
+                        console.log('✅ [PlansView] Vídeo de tutorial carregado:', data);
+                    }
+                }
+            } catch (error) {
+                console.error('[PlansView] Erro ao carregar vídeo tutorial:', error);
+            }
+        },
+        getSafeUrl(path) {
+            if (!path) return '';
+            if (path.startsWith('http')) return path;
+            const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+            // Se for caminho relativo /uploads...
+            const cleanPath = path.startsWith('/') ? path : `/${path}`;
+            // Remover /api do base se já tiver (hack simples, ideal é ter uma base URL para assets separada)
+            const baseUrl = apiBase.replace('/api', '');
+            return `${baseUrl}${cleanPath}`;
+        },
+        isVideoFile(url) {
+            return url && (url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov') || url.indexOf('/uploads/') > -1);
+        },
+        isYoutube(url) {
+            return url && (url.includes('youtube.com') || url.includes('youtu.be'));
+        },
+        isVimeo(url) {
+            return url && url.includes('vimeo.com');
+        },
+        getYoutubeEmbed(url) {
+            if (!url) return '';
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            const id = (match && match[2].length === 11) ? match[2] : null;
+            return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : url;
+        },
+        getVimeoEmbed(url) {
+             if (!url) return '';
+             // Logica simples para extrair ID vimeo
+             const regExp = /vimeo.*\/(\d+)/i;
+             const match = url.match(regExp);
+             const id = match ? match[1] : null;
+             return id ? `https://player.vimeo.com/video/${id}?autoplay=1` : url;
         }
     }
 }
 </script>
 
 <style scoped src="../assets/css/views/plansView.css"></style>
+
+<style scoped>
+/* Estilos Adicionais para Player Dinâmico (Sobrescreve ou complementar ao css importado) */
+
+.video-player-container {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.video-player-element {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.video-thumbnail {
+    cursor: pointer;
+    position: relative;
+}
+
+.thumbnail-bg {
+    position: absolute;
+    inset: 0;
+    /* Imagem de fundo padrão ou gradiente premium */
+    background: radial-gradient(circle at center, #1b3a2a 0%, #0a0f0c 100%);
+    z-index: 1;
+}
+
+.video-overlay {
+    z-index: 2;
+    background: rgba(0,0,0,0.3);
+}
+
+.play-button-wrapper {
+    z-index: 3;
+}
+
+.play-button-ring {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border: 2px solid rgba(34, 197, 94, 0.5);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+.video-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #22c55e;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-right: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Animate fade in */
+.animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
