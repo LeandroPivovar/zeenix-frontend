@@ -1821,7 +1821,7 @@ export default {
             // Template logic: mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Normal' : 'Preciso'
             // We need to map internal values to these display name for filename
             let modeRaw = (this.mode || (this.sessionConfig && this.sessionConfig.mode) || 'veloz').toLowerCase();
-            let safeMode = 'preciso'; // Default/Fallback
+            let safeMode = 'preciso'; // Default/Fallback (covers 'devagar' -> 'Preciso')
             
             if (modeRaw === 'veloz') safeMode = 'veloz';
             else if (modeRaw === 'moderado') safeMode = 'normal';
