@@ -1818,41 +1818,42 @@ export default {
             const safeAgentName = strategyName.toLowerCase().replace(/[^a-z0-9]/g, '');
             
             // Resolve Mode (veloz/normal/preciso)
-            let modeRaw = (this.mode || (this.sessionConfig && this.sessionConfig.mode) || 'normal').toLowerCase();
-            let safeMode = 'normal';
-            if (modeRaw.includes('veloz')) safeMode = 'veloz';
-            else if (modeRaw.includes('mod')) safeMode = 'normal';
-            else if (modeRaw.includes('cons') || modeRaw.includes('preciso')) safeMode = 'preciso';
+            // Template logic: mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Normal' : 'Preciso'
+            // We need to map internal values to these display name for filename
+            let modeRaw = (this.mode || (this.sessionConfig && this.sessionConfig.mode) || 'veloz').toLowerCase();
+            let safeMode = 'preciso'; // Default/Fallback
             
-            // Sanitize Market - Use activeMarket or fallback
-            // In InvestmentActive, market is not explicitly stored in data sometimes, but sessionConfig might have it or not.
-            // If unknown, use 'market'.
-            // In Agent, we used '1hz100v' logic. Here we can reuse if market is known.
-            // If I can't find market variable easily, I will default to 'market' or 'multi' if multiple.
-            // But let's check log content or sessionConfig.
-            // Assuming '1hz100v' style is preferred if market known.
-            // For now, I will use a generic placeholder if unavailable, or try to get from `formattedMarketName` or similar if it exists.
-            // I'll stick to 'auto' for mode if user meant autonomous, but user said 'veloz/normal/preciso'.
-            // Wait, for InvestmentActive logic, 'auto' vs 'manual' was earlier prompt.
-            // But user said "o modo é por exemplo veloz ou normal ou preciso". 
-            // So I will use that for {modo}.
+            if (modeRaw === 'veloz') safeMode = 'veloz';
+            else if (modeRaw === 'moderado') safeMode = 'normal';
             
-            // Symbol:
-            let safeSymbol = 'market';
-            if (this.sessionConfig && this.sessionConfig.market) {
-                 safeSymbol = this.sessionConfig.market.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-                 if (safeSymbol.includes('volatility100')) safeSymbol = '1hz100v';
-                 else if (safeSymbol.includes('volatility75')) safeSymbol = 'r75';
+            // Sanitize Market
+            // Use selectedMarketProp as fallback if selectedMarket is null
+            let marketRaw = this.selectedMarket || this.selectedMarketProp || 'market';
+            let safeSymbol = marketRaw.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+            
+            // Optional: Map common codes if cleaner (e.g., vol10 -> vol10, R_100 -> r100)
+            // If the prop comes as 'vol10' or 'R_100', the simple sanitize above handles it well enough (vol10, r100).
+            // Example: 'Volatility 100 Index' -> 'volatility100index' -> maybe too long?
+            // User requested "simbolo". Usually short code. '1hz100v' was user example.
+            // If we have full name, we might want to shorten, but if we have code (vol10), it's fine.
+            if (safeSymbol.includes('volatility')) {
+                // Shorten volatility to vol? Or keep as is. User example was 'market'. 
+                // Let's try to detect if it's a full name and shorten it to common synthetic codes if possible.
+                // But generally safeSymbol is fine.
             }
 
             // Profile:
             let safeProfile = 'mod';
-            if (this.sessionConfig && this.sessionConfig.risco) {
-                const risk = this.sessionConfig.risco.toLowerCase();
-                if (risk.includes('conservador')) safeProfile = 'cons';
-                else if (risk.includes('agressivo')) safeProfile = 'agr';
-            }
+            // Use sessionConfig.modoMartingale (which maps to risk) or selectedRisk
+            let riskRaw = (this.sessionConfig && this.sessionConfig.modoMartingale) || this.selectedRisk || 'moderado';
+            riskRaw = riskRaw.toLowerCase();
+            
+            if (riskRaw.includes('conser')) safeProfile = 'cons';
+            else if (riskRaw.includes('agres')) safeProfile = 'agr';
+            else if (riskRaw.includes('mod')) safeProfile = 'mod';
+            else if (riskRaw.includes('fix')) safeProfile = 'fix';
 
+            // Environment
             const safeEnvironment = (this.accountType || 'test') === 'demo' ? 'test' : 'prod';
 
             // Construct filename
