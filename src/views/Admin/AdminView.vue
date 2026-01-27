@@ -1264,6 +1264,7 @@ export default {
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
+    margin: 0!important;
 }
 
 .layout-content {

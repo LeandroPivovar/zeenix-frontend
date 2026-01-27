@@ -800,7 +800,6 @@ body {
 
 .dashboard-content-wrapper {
     flex-grow: 1;
-    margin-left: 280px;
     transition: margin-left 0.3s ease;
     min-height: 100vh;
     display: flex;
