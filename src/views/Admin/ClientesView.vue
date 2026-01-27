@@ -306,6 +306,33 @@
 								<i class="fas fa-check" v-if="tempFilters.noRealBalance" style="color: white; font-size: 12px;">✓</i>
 							</div>
 						</div>
+
+                        <!-- Option 4: Activity Period -->
+                        <div class="filter-section">
+                            <span class="filter-label">Período de Atividade</span>
+                            <div class="chips-container">
+                                <div 
+                                    class="chip" 
+                                    :class="{ active: tempFilters.activityPeriod === 'Manhã' }"
+                                    @click="toggleActivityPeriod('Manhã')"
+                                >Manhã</div>
+                                <div 
+                                    class="chip" 
+                                    :class="{ active: tempFilters.activityPeriod === 'Tarde' }"
+                                    @click="toggleActivityPeriod('Tarde')"
+                                >Tarde</div>
+                                <div 
+                                    class="chip" 
+                                    :class="{ active: tempFilters.activityPeriod === 'Noite' }"
+                                    @click="toggleActivityPeriod('Noite')"
+                                >Noite</div>
+                                <div 
+                                    class="chip" 
+                                    :class="{ active: tempFilters.activityPeriod === 'Madrugada' }"
+                                    @click="toggleActivityPeriod('Madrugada')"
+                                >Madrugada</div>
+                            </div>
+                        </div>
 					</div>
 					<div class="modal-footer">
 						<button class="btn-secondary" @click="clearAllFilters">Limpar</button>
@@ -397,7 +424,8 @@ export default {
 				onlyRealAccount: false,
 				noRealBalance: false,
 				minBalance: null,
-				maxBalance: null
+				maxBalance: null,
+                activityPeriod: null
 			},
 			
 			// Temp filters for modal (to allow cancel)
@@ -405,7 +433,8 @@ export default {
 				onlyRealAccount: false,
 				noRealBalance: false,
 				minBalance: null,
-				maxBalance: null
+				maxBalance: null,
+                activityPeriod: null
             },
 			
 			// Temp storage for interval modal
@@ -489,6 +518,7 @@ export default {
 				if (this.filters.noRealBalance) params.append('noRealBalance', 'true');
 				if (this.filters.minBalance !== null) params.append('minBalance', this.filters.minBalance);
 				if (this.filters.maxBalance !== null) params.append('maxBalance', this.filters.maxBalance);
+                if (this.filters.activityPeriod) params.append('activityPeriod', this.filters.activityPeriod);
 				
 				const url = `${apiBaseUrl}/clients/list${params.toString() ? '?' + params.toString() : ''}`;
 				
@@ -677,7 +707,8 @@ export default {
 				onlyRealAccount: false,
 				noRealBalance: false,
 				minBalance: null,
-				maxBalance: null
+				maxBalance: null,
+                activityPeriod: null
 			};
 			this.tempFilters = { ...this.filters }; // Sync temp
 			this.fetchClients();
@@ -688,6 +719,14 @@ export default {
 			this.fetchClients();
 			this.closeFilterModal();
 		},
+        
+        toggleActivityPeriod(period) {
+            if (this.tempFilters.activityPeriod === period) {
+                this.tempFilters.activityPeriod = null; // Toggle off
+            } else {
+                this.tempFilters.activityPeriod = period;
+            }
+        },
 		
 		// Sorting Methods
 		handleSort(column) {
@@ -1496,6 +1535,40 @@ p {
 }
 
 .form-input:focus {
+    border-color: #22c55e;
+}
+
+.filter-section {
+    margin-top: 16px;
+    padding: 0 16px;
+}
+
+.chips-container {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.chip {
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: #a0a0a0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chip:hover {
+    border-color: #22c55e;
+    color: #fff;
+}
+
+.chip.active {
+    background: #22c55e;
+    color: #fff;
     border-color: #22c55e;
 }
 </style>
