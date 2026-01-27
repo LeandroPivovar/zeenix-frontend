@@ -24,10 +24,19 @@
             </div>
 
             <div class="main-content">
-                <div class="cards-diary">
-                    <div v-for="(card, index) in summaryCards" :key="index" class="card">
-                        <h2>{{ card.title }}</h2>
-                        <p><strong>{{ formatCurrency(card.value) }}</strong></p>
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card total">
+                        <h3>Comissão Total</h3>
+                        <p class="value">{{ formatCurrency(summaryCards.totalCommission) }}</p>
+                    </div>
+                    <div class="card total">
+                        <h3>Saldo Total (Real)</h3>
+                        <p class="value">{{ formatCurrency(summaryCards.totalRealAmount) }}</p>
+                    </div>
+                    <div class="card count">
+                        <h3>Usuários com Saldo</h3>
+                        <p class="value">{{ summaryCards.usersWithMarkup }}</p>
                     </div>
                 </div>
 
@@ -55,7 +64,8 @@
                     <p>
                         Comissão: {{ formatCurrency(totalCommissionDisplayed) }} |
                         Transações: {{ totalTransactionsDisplayed.toLocaleString() }} |
-                        Clientes: {{ displayedClients.length }}
+                        Clientes: {{ displayedClients.length }} |
+                        Saldo Real: {{ formatCurrency(totalRealAmountDisplayed) }}
                     </p>
                 </div>
 
@@ -81,8 +91,8 @@
                                 <th>Nome</th>
                                 <th>País</th>
                                 <th>Login ID</th>
-                                <th>Comissão</th>
-                                <th>Transações</th>
+                                <th>Saldo Real</th>
+                                <th>Comissão (3%)</th>
                                 <th>WhatsApp</th>
                             </tr>
                         </thead>
@@ -106,8 +116,8 @@
                                 <td>{{ client.name }}</td>
                                 <td>{{ client.country }}</td>
                                 <td>{{ client.email }}</td>
+                                <td>{{ formatCurrency(client.realAmount) }}</td>
                                 <td class="commission-value">{{ formatCurrency(client.commission) }}</td>
-                                <td>{{ client.transactionCount }}</td>
                                 <td>
                                     <a v-if="client.whatsapp || client.phone || client.phoneNumber" 
                                        :href="`https://wa.me/${(client.whatsapp || client.phone || client.phoneNumber).replace(/\D/g, '')}?text=${encodeURIComponent(`Olá, ${client.name.split(' ')[0]}, como vai?`)}`" 
@@ -138,9 +148,6 @@
                     <div v-else v-for="client in displayedClients" :key="client.userId" class="mobile-card">
                         <div class="card-header">
                             <h3 class="card-name">{{ client.name }}</h3>
-                            <div class="card-commission">
-                                <span class="commission-value">{{ formatCurrency(client.commission) }}</span>
-                            </div>
                         </div>
                         <div class="card-body">
                             <div class="card-row">
@@ -152,8 +159,12 @@
                                 <span class="card-value">{{ client.email }}</span>
                             </div>
                             <div class="card-row">
-                                <span class="card-label">Transações:</span>
-                                <span class="card-value">{{ client.transactionCount }}</span>
+                                <span class="card-label">Saldo Real:</span>
+                                <span class="card-value">{{ formatCurrency(client.realAmount) }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Comissão:</span>
+                                <span class="card-value">{{ formatCurrency(client.commission) }}</span>
                             </div>
                             <div class="card-row">
                                 <span class="card-label">WhatsApp:</span>
@@ -471,11 +482,17 @@ export default {
     },
     computed: {
         totalCommissionDisplayed() {
-            return this.calculateTotalCommission(this.displayedClients);
+            // Agora "commission" vem calculado do backend (markup 3%)
+            return this.displayedClients.reduce((sum, client) => sum + (Number(client.commission) || 0), 0);
+        },
+        
+        totalRealAmountDisplayed() {
+            return this.displayedClients.reduce((sum, client) => sum + (Number(client.realAmount) || 0), 0);
         },
 
         totalTransactionsDisplayed() {
-            return this.displayedClients.reduce((sum, client) => sum + client.transactionCount, 0);
+            // This value is no longer directly available or relevant in the new context
+            return 0;
         },
 
         availableCountries() {
@@ -485,7 +502,6 @@ export default {
 
         summaryCards() {
             return [
-                { title: 'Hoje', value: this.periodData.today },
                 { title: 'Mensal', value: this.periodData.monthly },
                 { title: 'Mês Passado', value: this.periodData.lastMonth },
                 { title: 'Anual', value: this.periodData.annual },
@@ -712,7 +728,7 @@ export default {
     font-size: 14px;
     color: #7e7d7d;
     text-align: left;
-    font-weight: 55500;
+    font-weight: 500;
 }
 
 /* Tabela Desktop */
