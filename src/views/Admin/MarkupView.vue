@@ -18,7 +18,10 @@
                     <h1 style="font-size: 20px;">Markup - Comissões</h1>
                     <p style="font-size: 14px;">Comissão de 3% sobre o payout de cada operação realizada na Deriv</p>
                 </div>
-                <div class="main-header-right">
+                <div class="main-header-right" style="display: flex; gap: 10px;">
+                    <button class="btn pdf-btn" @click="showUserModal = true">
+                        <i class="fas fa-user-cog" style="margin-right: 5px;"></i> {{ selectedUserName || 'Selecionar Usuário' }}
+                    </button>
                     <button class="btn pdf-btn" @click="exportReportToPDF"><img src="../../assets/icons/box-down.svg" alt="" width="20px"> Exportar Relatório</button>
                 </div>
             </div>
@@ -40,6 +43,7 @@
                         <span>Data final</span>
                         <input type="date" v-model="filterEndDate">
                     </div>
+                    
                     <div class="filter-item">
                         <span style="display: block; font-size: 12px; margin-bottom: 5px; color: #a0a0a0;">País</span>
                         <select v-model="filterSelectedCountry" class="select-country" style="height: 40px;">
@@ -162,9 +166,19 @@
         </div>
 
         <!-- Settings Modal -->
-        <SettingsSidebar
             :is-open="showSettingsModal"
             @close="showSettingsModal = false"
+        />
+
+        <!-- User Selection Modal -->
+        <SelectionModal
+            :show="showUserModal"
+            title="Selecionar Usuário"
+            :items="adminUsersFormatted"
+            :selected-value="targetUserId"
+            search-placeholder="Buscar usuário..."
+            @select="handleUserSelection"
+            @close="closeUserModal"
         />
     </div>
 </template>
@@ -173,6 +187,7 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
+import SelectionModal from '../../components/SelectionModal.vue';
 
 // NOTA: DESCOMENTE AS LINHAS ABAIXO APÓS INSTALAR AS DEPENDÊNCIAS (npm install jspdf html2canvas)
 // import jsPDF from 'jspdf';
@@ -180,10 +195,10 @@ import SettingsSidebar from '../../components/SettingsSidebar.vue';
 
 export default {
     name: 'MarkupView',
-    components: {
         AppSidebar,
         TopNavbar,
         SettingsSidebar,
+        SelectionModal,
     },
     data() {
         const currentDate = new Date().toISOString().split('T')[0];
@@ -202,17 +217,20 @@ export default {
             allUsers: [],
             isLoading: false,
             error: null,
-            // Dados agregados por período
-            periodData: {
-                today: 0,
-                monthly: 0,
-                lastMonth: 0,
-                annual: 0,
-            },
+            targetUserId: '', // ID do usuário selecionado para ver o markup
+            showUserModal: false,
         };
+    },
+    watch: {
+        // Recarregar automaticamente ao trocar o usuário alvo?
+        // Ou deixar o botão "Buscar" fazer isso? Vamos deixar o botão Buscar.
     },
     created() {
         this.fetchData();
+        // Se não tiver usuário selecionado, abrir modal
+        if (!this.targetUserId) {
+            this.showUserModal = true;
+        }
     },
     mounted() {
         this.handleResize();
@@ -251,6 +269,10 @@ export default {
                     startDate: this.filterStartDate,
                     endDate: this.filterEndDate,
                 });
+
+                if (this.targetUserId) {
+                    params.append('targetUserId', this.targetUserId);
+                }
                 
                 const response = await fetch(`${apiUrl}/trades/markup?${params}`, {
                     headers: {
@@ -268,7 +290,7 @@ export default {
                 this.applyFilters();
                 
                 // Buscar dados agregados por período
-                await this.fetchPeriodData(token, apiUrl);
+                await this.fetchPeriodData(token, apiUrl, this.targetUserId);
                 
             } catch (error) {
                 console.error('Erro ao buscar dados:', error);
@@ -280,8 +302,12 @@ export default {
             }
         },
         
-        async fetchPeriodData(token, apiUrl) {
+        async fetchPeriodData(token, apiUrl, targetUserId) {
             try {
+                let queryParams = '';
+                if (targetUserId) {
+                    queryParams = `&targetUserId=${targetUserId}`;
+                }
                 const today = new Date();
                 const year = today.getFullYear();
                 const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -302,16 +328,16 @@ export default {
                 
                 // Fazer chamadas paralelas para todos os períodos
                 const [todayData, monthlyData, lastMonthData, annualData] = await Promise.all([
-                    fetch(`${apiUrl}/trades/markup?startDate=${startOfToday}&endDate=${endOfToday}`, {
+                    fetch(`${apiUrl}/trades/markup?startDate=${startOfToday}&endDate=${endOfToday}${queryParams}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }).then(r => r.json()),
-                    fetch(`${apiUrl}/trades/markup?startDate=${startOfMonth}&endDate=${endOfToday}`, {
+                    fetch(`${apiUrl}/trades/markup?startDate=${startOfMonth}&endDate=${endOfToday}${queryParams}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }).then(r => r.json()),
-                    fetch(`${apiUrl}/trades/markup?startDate=${startOfLastMonth}&endDate=${endOfLastMonth}`, {
+                    fetch(`${apiUrl}/trades/markup?startDate=${startOfLastMonth}&endDate=${endOfLastMonth}${queryParams}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }).then(r => r.json()),
-                    fetch(`${apiUrl}/trades/markup?startDate=${startOfYear}&endDate=${endOfToday}`, {
+                    fetch(`${apiUrl}/trades/markup?startDate=${startOfYear}&endDate=${endOfToday}${queryParams}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }).then(r => r.json()),
                 ]);
@@ -347,6 +373,18 @@ export default {
             }
             
             this.displayedClients = filtered;
+        },
+
+        handleUserSelection(user) {
+            this.targetUserId = user.value;
+            this.fetchData();
+        },
+
+        closeUserModal() {
+            // Se não tiver usuário selecionado e fechar o modal, 
+            // talvez devêssemos forçar seleção ou usar o usuário logado (se for admin mesmo)
+            // Por enquanto só fecha
+            this.showUserModal = false;
         },
         
         exportReportToPDF() {
@@ -407,15 +445,26 @@ export default {
             return [...new Set(countries)].sort();
         },
 
-        summaryCards() {
-            return [
-                { title: 'Hoje', value: this.periodData.today },
-                { title: 'Mensal', value: this.periodData.monthly },
-                { title: 'Mês Passado', value: this.periodData.lastMonth },
-                { title: 'Anual', value: this.periodData.annual },
                 { title: 'Total (Período)', value: this.totalCommissionDisplayed },
             ];
         },
+
+        adminUsersFormatted() {
+            // Filtra apenas admins e formata para o SelectionModal
+            return this.allUsers
+                .filter(user => user.role === 'admin' || user.isAdmin || user.traderMestre) // Ajuste conforme sua estrutura de User
+                .map(user => ({
+                    value: user.userId,
+                    label: user.name,
+                    description: user.loginid || user.email
+                }));
+        },
+
+        selectedUserName() {
+            if (!this.targetUserId) return null;
+            const user = this.allUsers.find(u => u.userId === this.targetUserId);
+            return user ? user.name : null;
+        }
     },
 };
 </script>
