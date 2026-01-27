@@ -146,7 +146,8 @@
 									Criado em <span class="sort-icon">{{ getSortIndicator('createdAt') }}</span>
 								</th>
 								<th>Última atividade</th>
-								<th>Número de WhatsApp</th>
+								<th>Período de Atividade</th>
+								<th>WhatsApp</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -173,11 +174,13 @@
 								<td>{{ client.timeSpent }}</td>
 								<td>{{ client.createdAt }}</td>
 								<td>{{ client.lastActivity }}</td>
+								<td>{{ client.activityPeriod || '-' }}</td>
 								<td>
-									<button v-if="client.whatsapp" class="whatsapp-btn">
+									<button v-if="client.whatsappNumber" class="whatsapp-btn" @click="openWhatsapp(client.whatsappNumber)">
 										<span class="c-icon"><img src="../../assets/icons/whattsapp.svg" alt="" width="15px" ></span>
-										Conversar
+										{{ client.whatsappNumber }}
 									</button>
+									<span v-else class="text-muted">-</span>
 								</td>
 							</tr>
 						</tbody>
@@ -700,7 +703,12 @@ export default {
 		getSortIndicator(column) {
 			if (this.sortBy !== column) return '';
 			return this.sortOrder === 'ASC' ? '▲' : '▼';
-		}
+		},
+        openWhatsapp(number) {
+            // Remove non-numeric characters
+            const cleanNumber = number.replace(/\D/g, '');
+            window.open(`https://wa.me/${cleanNumber}`, '_blank');
+        }
 	}
 }
 </script>
