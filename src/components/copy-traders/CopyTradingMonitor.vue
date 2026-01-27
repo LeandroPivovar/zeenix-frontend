@@ -218,107 +218,6 @@
                 </div>
             </div>
 
-            <div class="card full-width performance-card">
-                <div class="chart-header">
-                    <div class="card-header" style="margin-bottom:0">
-                        <span class="card-title">Evolução da Performance</span>
-                        <ZenixTooltip :offset="20">
-                            <p>Evolução da sua performance com base nas operações replicadas.</p>
-                        </ZenixTooltip>
-                    </div>
-                    <div class="period-btns">
-                        <button v-for="periodo in periodos" :key="periodo.label" :class="['period-btn', { active: periodoAtivo === periodo.label }]" @click="setPeriodo(periodo.label)">
-                            <span v-if="periodo.label !== 'Personalizado'">{{ periodo.label }}</span>
-                            <span v-else class="periodo-personalizado-content">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin-right: 4px;">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor"/>
-                                    <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor"/>
-                                    <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor"/>
-                                    <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor"/>
-                                </svg>
-                                <span class="desktop-only">
-                                    <template v-if="periodoAtivo === 'Personalizado'">
-                                        Personalizado: {{ formatarData(dataInicioPersonalizada) }} - {{ formatarData(dataFimPersonalizada) }}
-                                    </template>
-                                    <template v-else>
-                                        {{ periodo.label }}
-                                    </template>
-                                </span>
-                                <span class="mobile-only">{{ periodo.label }}</span>
-                            </span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div v-if="showDateRangePicker" class="date-picker-area">
-                    <div class="date-inputs-row">
-                        <div class="date-input-group">
-                            <label for="date-start">Data Início:</label>
-                            <input id="date-start" type="date" v-model="dataInicioPersonalizada" class="date-input">
-                        </div>
-                        <div class="date-input-group">
-                            <label for="date-end">Data Fim:</label>
-                            <input id="date-end" type="date" v-model="dataFimPersonalizada" class="date-input">
-                        </div>
-                    </div>
-                    <button class="apply-btn" @click="aplicarPeriodoPersonalizado">Aplicar</button>
-                </div>
-
-                <div class="chart-content">
-                    <div class="chart-y">
-                        <span v-for="y in chart.yLabels" :key="y">{{ y }}</span>
-                    </div>
-                    <div class="chart-area-wrapper">
-                        <div class="chart-area">
-                            <svg viewBox="0 0 600 180" preserveAspectRatio="none">
-                                <defs>
-                                    <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                        <stop offset="0%" stop-color="#22c55e" stop-opacity="0.3"/>
-                                        <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
-                                    </linearGradient>
-                                </defs>
-                                <line x1="0" y1="30" x2="600" y2="30" stroke="#222" stroke-dasharray="4"/>
-                                <line x1="0" y1="90" x2="600" y2="90" stroke="#222" stroke-dasharray="4"/>
-                                <line x1="0" y1="150" x2="600" y2="150" stroke="#222" stroke-dasharray="4"/>
-                                <line x1="100" y1="0" x2="100" y2="180" stroke="#1a1a1a"/>
-                                <line x1="200" y1="0" x2="200" y2="180" stroke="#1a1a1a"/>
-                                <line x1="300" y1="0" x2="300" y2="180" stroke="#1a1a1a"/>
-                                <line x1="400" y1="0" x2="400" y2="180" stroke="#1a1a1a"/>
-                                <line x1="500" y1="0" x2="500" y2="180" stroke="#1a1a1a"/>
-
-                                <polygon :points="chart.polygonPoints" fill="url(#grad)"/>
-                                <polyline :points="chart.linePoints" fill="none" stroke="#22c55e" stroke-width="2"/>
-                                <circle v-for="(point, index) in chart.points" :key="index" :cx="point.cx" :cy="point.cy" r="3" :fill="point.result === 'loss' ? '#ef4444' : '#22c55e'" stroke="none"/>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="chart-x-wrapper">
-                    <div class="chart-x">
-                        <span v-for="x in chart.xLabels" :key="x">{{ x }}</span>
-                    </div>
-                </div>
-                
-                <div class="performance-footer">
-                    <div class="footer-item">
-                        <div class="label">ROI Total</div>
-                        <div class="value green">{{ performance.roiTotal }}</div>
-                    </div>
-                    <div class="footer-item">
-                        <div class="label">Média Diária</div>
-                        <div class="value">{{ performance.mediaDiaria }}</div>
-                    </div>
-                    <div class="footer-item">
-                        <div class="label">Maior Ganho</div>
-                        <div class="value green">{{ performance.maiorGanho }}</div>
-                    </div>
-                    <div class="footer-item">
-                        <div class="label">Maior Perda</div>
-                        <div class="value red">{{ performance.maiorPerda }}</div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div v-if="showAllOperationsModal" class="modal-overlay" @click="closeModal">
@@ -378,120 +277,21 @@ export default {
         },
     },
     data() {
-        const chartData = [
-            { date: '01/11', value: 100, result: 'win' },
-            { date: '02/11', value: 110, result: 'win' },
-            { date: '03/11', value: 105, result: 'loss' },
-            { date: '04/11', value: 125, result: 'win' },
-            { date: '05/11', value: 120, result: 'loss' },
-            { date: '06/11', value: 140, result: 'win' },
-            { date: '07/11', value: 145, result: 'win' }
-        ];
-        
-        const maxChartValue = 150; 
-        const chartHeight = 180;
-        const chartWidth = 600;
-        const stepX = chartWidth / (chartData.length - 1);
-
-        const mapValueToY = (value) => {
-            const normalized = value / maxChartValue;
-            return chartHeight - (normalized * chartHeight);
-        };
-
-        const linePoints = chartData.map((d, i) => `${i * stepX},${mapValueToY(d.value)}`).join(' ');
-        const polygonPoints = `${linePoints} ${chartWidth},${chartHeight} 0,${chartHeight}`;
-
-        const chartPoints = chartData.map((d, i) => ({
-            cx: i * stepX,
-            cy: mapValueToY(d.value),
-            result: d.result
-        }));
-
-        return {
-            tabAtiva: 'monitor', 
-            periodoAtivo: '7 dias', 
-            showAllOperationsModal: false, 
-            loadingOperations: false,
-            
-            showDateRangePicker: false, 
-            
-            dataInicioPersonalizada: '2025-11-01',
-            dataFimPersonalizada: '2025-11-30', 
-
-            resumo: {
-                lucroHoje: '+$89.50',
-                percentualHoje: '+1.7%',
-                wins: 0,
-                losses: 0,
-                lucroSemana: '+$142.00',
-                percentualSemana: '+2.3%',
-            },
-            statusCopy: {
-                status: 'COPIANDO',
-                trader: '',
-                operacoesHoje: 0,
-                ultimaSincronizacao: 'há 2 minutos',
-                slValor: '$0',
-                tpValor: '$0',
-            },
-            operacoes: [], 
-            operacoesModal: [],
-            risco: {
-                exposicaoAtual: '2.3%',
-                slDiario: '$250',
-                tpDiario: '$500',
-                slBlindado: 'Ativo',
-                riscoNivel: 'Baixo',
-            },
-            performance: {
-                roiTotal: '+42.0%',
-                mediaDiaria: '+$20.43',
-                maiorGanho: '+$17.00',
-                maiorPerda: '-$7.00',
-            },
-            periodos: [
-                { label: 'Hoje' },
-                { label: '7 dias' },
-                { label: '30 dias' },
-                { label: 'Personalizado' }
-            ],
             chart: {
-                yLabels: ['$150', '$100', '$50', '$0'], 
-                xLabels: chartData.map(d => d.date),
-                linePoints,
-                polygonPoints,
-                points: chartPoints,
+                yLabels: [], 
+                xLabels: [],
+                linePoints: '',
+                polygonPoints: '',
+                points: [],
             }
         };
     },
     methods: {
-        setTab(tab) {
-            this.tabAtiva = tab;
-        },
-        setPeriodo(periodo) {
-            this.periodoAtivo = periodo;
-            this.showDateRangePicker = periodo === 'Personalizado';
-            
-            if (this.periodoAtivo !== 'Personalizado') {
-                console.log(`Carregando dados para o período: ${periodo}`);
-            }
-        },
-        /**
-         * Formata a data de 'YYYY-MM-DD' para 'DD/MM', resolvendo o erro de no-unused-vars.
-         */
-        formatarData(dataISO) {
-            if (!dataISO) return '';
-            const parts = dataISO.split('-');
-            const month = parts[1];
-            const day = parts[2];
-            return `${day}/${month}`;
-        },
         async aplicarPeriodoPersonalizado() {
             if (new Date(this.dataFimPersonalizada) < new Date(this.dataInicioPersonalizada)) {
                 await alert("A data final não pode ser anterior à data inicial.");
                 return;
             }
-            console.log(`Aplicando período personalizado de ${this.dataInicioPersonalizada} até ${this.dataFimPersonalizada}`);
         },
         showModal() {
             this.showAllOperationsModal = true;
