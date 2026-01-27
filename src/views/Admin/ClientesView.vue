@@ -76,7 +76,7 @@
 				</div>
 
 				<div class="list-controls c-mobile">
-					<button class="filter-btn">Filtrar por saldo</button>
+					<button class="filter-btn" @click="openFilterModal">Filtrar</button>
 					<div class="controls-row-buttons">
 						<button class="export-btn" @click="exportClients">Exportar Lista</button>
 						<button class="update-btn" @click="updateData">Atualizar dados</button>
@@ -98,7 +98,14 @@
 				<div class="c-table desktop-table">
 					<div class="list-controls c-desk">
 						<div class="controls-left">
-							<button class="filter-btn">Filtrar por saldo</button>
+							<button class="filter-btn" @click="openFilterModal">
+								<span class="c-icon" style="filter: none; margin-right: 5px;">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"></path>
+									</svg>
+								</span>
+								Filtrar
+							</button>
 							<button class="export-btn" @click="exportClients">Exportar Lista</button>
 							<button class="update-btn" @click="updateData">Atualizar dados</button>
 						</div>
@@ -240,6 +247,89 @@
 			:is-open="showSettingsModal"
 			@close="showSettingsModal = false"
 		/>
+
+		<!-- Filter Modal -->
+		<Teleport to="body">
+			<div v-if="showFilterModal" class="modal-overlay" @click.self="closeFilterModal">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h3 class="modal-title">Filtros de Clientes</h3>
+						<button class="modal-close-btn" @click="closeFilterModal">
+							<i class="fas fa-times">X</i>
+						</button>
+					</div>
+					<div class="modal-body">
+						<!-- Option 1: Only Real Account -->
+						<div class="filter-option" @click="toggleOnlyRealAccount">
+							<div class="filter-info">
+								<span class="filter-label">Somente conta real</span>
+								<p class="filter-desc">Exibe apenas usuários com conta real e seus saldos reais</p>
+							</div>
+							<div class="custom-checkbox" :class="{ 'checked': filters.onlyRealAccount }">
+								<i class="fas fa-check" v-if="filters.onlyRealAccount" style="color: white; font-size: 12px;">✓</i>
+							</div>
+						</div>
+
+						<!-- Option 2: Balance Interval -->
+						<div class="filter-option" @click="openBalanceIntervalModal">
+							<div class="filter-info">
+								<span class="filter-label">Intervalo de saldo</span>
+								<p class="filter-desc">Filtrar por valor mínimo e máximo (Somente Conta Real)</p>
+							</div>
+							<i class="fas fa-chevron-right" style="color: #6b7280;">></i>
+						</div>
+						<div v-if="filters.minBalance !== null || filters.maxBalance !== null" class="active-filter-tag">
+							Saldo: {{ formatCurrency(filters.minBalance || 0) }} - {{ filters.maxBalance ? formatCurrency(filters.maxBalance) : '∞' }}
+							<span @click.stop="clearBalanceFilter" class="clear-tag">×</span>
+						</div>
+
+						<!-- Option 3: Users without balance -->
+						<div class="filter-option" @click="toggleNoRealBalance">
+							<div class="filter-info">
+								<span class="filter-label">Usuários sem saldo na conta real</span>
+								<p class="filter-desc">Exibe usuários com conta real zerada</p>
+							</div>
+							<div class="custom-checkbox" :class="{ 'checked': filters.noRealBalance }">
+								<i class="fas fa-check" v-if="filters.noRealBalance" style="color: white; font-size: 12px;">✓</i>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button class="btn-secondary" @click="clearAllFilters">Limpar</button>
+						<button class="btn-primary" @click="applyFilters">Aplicar Filtros</button>
+					</div>
+				</div>
+			</div>
+		</Teleport>
+
+		<!-- Balance Interval Modal (Second Modal) -->
+		<Teleport to="body">
+			<div v-if="showBalanceIntervalModal" class="modal-overlay" @click.self="showBalanceIntervalModal = false">
+				<div class="modal-content small-modal">
+					<div class="modal-header">
+						<h3 class="modal-title">Intervalo de Saldo</h3>
+						<button class="modal-close-btn" @click="showBalanceIntervalModal = false">
+							<i class="fas fa-times">X</i>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p class="modal-subtitle">Defina o intervalo de saldo para contas reais.</p>
+						<div class="form-group">
+							<label>Saldo Mínimo ($)</label>
+							<input type="number" v-model.number="tempMinBalance" placeholder="0.00" class="form-input">
+						</div>
+						<div class="form-group">
+							<label>Saldo Máximo ($)</label>
+							<input type="number" v-model.number="tempMaxBalance" placeholder="Sem limite" class="form-input">
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button class="btn-secondary" @click="showBalanceIntervalModal = false">Cancelar</button>
+						<button class="btn-primary" @click="saveBalanceInterval">Confirmar</button>
+					</div>
+				</div>
+			</div>
+		</Teleport>
 	</div>
 </template>
 
@@ -280,6 +370,22 @@ export default {
 			clients: [],
 			searchQuery: '',
 			balanceFilter: '',
+			
+			// Filter Modal State
+			showFilterModal: false,
+			showBalanceIntervalModal: false,
+			
+			// Filters
+			filters: {
+				onlyRealAccount: false,
+				noRealBalance: false,
+				minBalance: null,
+				maxBalance: null
+			},
+			
+			// Temp storage for interval modal
+			tempMinBalance: null,
+			tempMaxBalance: null
 		};
 	},
 	mounted() {
@@ -348,6 +454,12 @@ export default {
 				if (this.balanceFilter) {
 					params.append('balanceFilter', this.balanceFilter);
 				}
+				
+				// Novos filtros
+				if (this.filters.onlyRealAccount) params.append('onlyRealAccount', 'true');
+				if (this.filters.noRealBalance) params.append('noRealBalance', 'true');
+				if (this.filters.minBalance !== null) params.append('minBalance', this.filters.minBalance);
+				if (this.filters.maxBalance !== null) params.append('maxBalance', this.filters.maxBalance);
 				
 				const url = `${apiBaseUrl}/clients/list${params.toString() ? '?' + params.toString() : ''}`;
 				
@@ -477,6 +589,66 @@ export default {
 				console.error('Erro ao atualizar role:', err);
 				await alert('Erro ao atualizar role do usuário');
 			}
+		},
+		
+		// Filter Methods
+		openFilterModal() {
+			this.showFilterModal = true;
+		},
+		closeFilterModal() {
+			this.showFilterModal = false;
+		},
+		toggleOnlyRealAccount() {
+			this.filters.onlyRealAccount = !this.filters.onlyRealAccount;
+			if (this.filters.onlyRealAccount) {
+				this.filters.noRealBalance = false;
+				this.filters.minBalance = null;
+				this.filters.maxBalance = null;
+			}
+		},
+		toggleNoRealBalance() {
+			this.filters.noRealBalance = !this.filters.noRealBalance;
+			if (this.filters.noRealBalance) {
+				this.filters.onlyRealAccount = false;
+				this.filters.minBalance = null;
+				this.filters.maxBalance = null;
+			}
+		},
+		openBalanceIntervalModal() {
+			this.tempMinBalance = this.filters.minBalance;
+			this.tempMaxBalance = this.filters.maxBalance;
+			this.showBalanceIntervalModal = true;
+		},
+		saveBalanceInterval() {
+			this.filters.minBalance = this.tempMinBalance;
+			this.filters.maxBalance = this.tempMaxBalance;
+			
+			// If interval is set, clear other modes
+			if (this.filters.minBalance !== null || this.filters.maxBalance !== null) {
+				this.filters.onlyRealAccount = false;
+				this.filters.noRealBalance = false;
+			}
+			
+			this.showBalanceIntervalModal = false;
+		},
+		clearBalanceFilter() {
+			this.filters.minBalance = null;
+			this.filters.maxBalance = null;
+			// No need to set others, just clearing interval
+		},
+		clearAllFilters() {
+			this.filters = {
+				onlyRealAccount: false,
+				noRealBalance: false,
+				minBalance: null,
+				maxBalance: null
+			};
+			this.fetchClients();
+			this.closeFilterModal();
+		},
+		applyFilters() {
+			this.fetchClients();
+			this.closeFilterModal();
 		}
 	}
 }
@@ -1044,5 +1216,213 @@ p {
 	.mobile-clients-cards {
 		display: none !important;
 	}
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: #1e1e1e;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    border: 1px solid #333;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-content.small-modal {
+    max-width: 400px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+}
+
+.modal-subtitle {
+    font-size: 0.9rem;
+    color: #a0a0a0;
+    margin-bottom: 20px;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+    transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+    color: #fff;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-option:hover {
+    border-color: rgba(34, 197, 94, 0.3);
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.filter-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.filter-label {
+    font-weight: 500;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.filter-desc {
+    font-size: 0.8rem;
+    color: #a0a0a0;
+    margin: 0;
+}
+
+.custom-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #555;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    background: transparent;
+}
+
+.custom-checkbox.checked {
+    background: #22c55e;
+    border-color: #22c55e;
+}
+
+.active-filter-tag {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.clear-tag {
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.modal-footer {
+    padding: 20px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #22c55e;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #16a34a;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #a0a0a0;
+    border: 1px solid #333;
+}
+
+.btn-secondary:hover {
+    border-color: #555;
+    color: #fff;
+}
+
+.form-group {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    color: #a0a0a0;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.form-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid #333;
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    outline: none;
+    font-size: 1rem;
+}
+
+.form-input:focus {
+    border-color: #22c55e;
 }
 </style>
