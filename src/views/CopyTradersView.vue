@@ -155,6 +155,7 @@
 
         <CopyTradingConfig 
           v-if="activeTab === 'config' && !hasActiveSession" 
+          :plan-features="planFeatures"
           @copy-activated="handleCopyActivated"
         />
         <CopyTradingMonitor 
@@ -174,6 +175,7 @@
   import CopyTradingConfig from '../components/copy-traders/CopyTradingConfig.vue';
   import CopyTradingMonitor from '../components/copy-traders/CopyTradingMonitor.vue';
   import DesktopBottomNav from '../components/DesktopBottomNav.vue';
+  import accountBalanceMixin from '../mixins/accountBalanceMixin';
   import { loadAccountBalance } from '../utils/balanceLoader';
   
   export default {
@@ -186,6 +188,7 @@
       CopyTradingMonitor,
       DesktopBottomNav
     },
+    mixins: [accountBalanceMixin],
     data() {
       return {
         activeTab: 'config',

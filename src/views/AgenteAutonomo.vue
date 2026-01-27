@@ -50,6 +50,7 @@
             :session-stats="sessionStats"
             :trade-history="tradeHistoryData"
             :user-id="currentUserId"
+            :plan-features="planFeatures"
             @pausar-agente="toggleAgenteStatus('componenteAtivo')"
             @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
           />
@@ -69,6 +70,7 @@
   import DesktopBottomNav from "../components/DesktopBottomNav.vue";
   import { loadAccountBalance, reloadAccountBalance } from '../utils/balanceLoader';
   import { loadAvailableAccounts } from '../utils/accountsLoader';
+  import accountBalanceMixin from '../mixins/accountBalanceMixin';
 
   export default {
     name: "AgenteAutonomoView",
@@ -80,6 +82,7 @@
       SettingsSidebar,
       DesktopBottomNav,
     },
+    mixins: [accountBalanceMixin],
     data() {
       return {
         // Estado Principal

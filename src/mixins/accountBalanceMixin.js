@@ -15,7 +15,8 @@ export default {
       loadingBalance: false,
       isBalanceReady: false,
       isFictitiousBalanceActive: false,
-      fictitiousBalance: 10000
+      fictitiousBalance: 10000,
+      planFeatures: null
     };
   },
   computed: {
@@ -400,10 +401,12 @@ export default {
           // Atualizar accountType baseado no tradeCurrency
           const newAccountType = newTradeCurrency === 'DEMO' ? 'demo' : 'real';
           this.accountType = newAccountType;
+          this.planFeatures = data.planFeatures || null;
 
           console.log('[AccountBalanceMixin] loadTradeCurrency - Carregado:', {
             tradeCurrency: newTradeCurrency,
-            accountType: newAccountType
+            accountType: newAccountType,
+            hasPlanFeatures: !!this.planFeatures
           });
         }
       } catch (error) {

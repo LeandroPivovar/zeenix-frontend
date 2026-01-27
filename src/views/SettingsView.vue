@@ -500,7 +500,8 @@ export default {
         pushNotifications: true,
         twoFactorEnabled: false,
         tradeCurrency: 'USD',
-        planExpirationDate: null
+        planExpirationDate: null,
+        planFeatures: null
       },
       lastLogin: null,
       activeSessions: 0,
@@ -627,7 +628,8 @@ export default {
           fictitiousBalance: data.fictitiousBalance !== undefined ? parseFloat(data.fictitiousBalance) : 10000,
           isFictitiousBalanceActive: !!data.isFictitiousBalanceActive,
           showDollarSign: data.showDollarSign !== undefined ? data.showDollarSign : false,
-          planExpirationDate: data.planExpirationDate
+          planExpirationDate: data.planExpirationDate,
+          planFeatures: data.planFeatures
         }
         this.lastLogin = data.lastLogin
         this.activeSessions = data.activeSessions || 0

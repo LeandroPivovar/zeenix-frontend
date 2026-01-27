@@ -522,7 +522,7 @@ export default {
             selectedMarket: 'vol10',
             selectedStrategy: null,
             showStrategyModal: false,
-            availableStrategies: [
+            allStrategies: [
                 { id: 'atlas', title: 'IA Atlas', icon: 'fas fa-brain', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%' },
                 { id: 'apollo', title: 'IA Apollo', icon: 'fas fa-rocket', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%' },
                 { id: 'nexus', title: 'IA Nexus', icon: 'fas fa-project-diagram', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%' },
@@ -586,6 +586,23 @@ export default {
                 'titan': 'IA Titan'
             };
             return strategyNames[this.selectedStrategy] || 'Selecione uma estratégia';
+        },
+        
+        availableStrategies() {
+            // Se não houver configurações de plano carregadas ainda, mostrar todas ou nenhuma?
+            // Melhor mostrar todas por padrão até carregar, ou filtrar se planFeatures existir
+            if (!this.planFeatures) return this.allStrategies;
+            
+            const allowedIAs = this.planFeatures.ias || [];
+            
+            // Se o array de IAs estiver vazio e planFeatures existir, 
+            // talvez seja um plano que não dá acesso a nenhuma IA? 
+            // Mas geralmente no config do admin as IAs são selecionadas.
+            
+            return this.allStrategies.filter(strategy => {
+                // Verificar se o ID da estratégia (em minúsculo) está na lista de IAs permitidas
+                return allowedIAs.some(allowed => allowed.toLowerCase() === strategy.id.toLowerCase());
+            });
         },
         
         formattedLastUpdate() {

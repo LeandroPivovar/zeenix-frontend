@@ -393,6 +393,10 @@ export default {
 		shouldTeleport: {
 			type: Boolean,
 			default: false
+		},
+		planFeatures: {
+			type: Object,
+			default: null
 		}
 		// NOTA: Este componente também está recebendo 'estrategia', 'mercado', 'risco', etc.
 		// do 'agenteData' (via v-bind), mas está usando seu próprio 'data()' local.
@@ -412,7 +416,7 @@ export default {
 			metaLucro: 100.00,
 			limitePerda: 100.00,
 			showAgentSelectorModal: false,
-			availableAgents: [
+			allAgents: [
 				{
 					id: 'zeus',
 					title: 'Agente Zeus',
@@ -618,6 +622,15 @@ export default {
 		},
 	},
 	computed: {
+		availableAgents() {
+			if (!this.planFeatures) return this.allAgents;
+			
+			const allowedAgents = this.planFeatures.agents || [];
+			
+			return this.allAgents.filter(agent => {
+				return allowedAgents.some(allowedId => allowedId.toLowerCase() === agent.id.toLowerCase());
+			});
+		},
 		riskLevelText() {
 			const labels = {
 				'conservative': 'Baixo',

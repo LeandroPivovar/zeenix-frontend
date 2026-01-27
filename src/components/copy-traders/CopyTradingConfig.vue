@@ -314,6 +314,12 @@ export default {
     components: {
         ZenixTooltip,
     },
+    props: {
+        planFeatures: {
+            type: Object,
+            default: null
+        }
+    },
     data() {
         return {
             selectedTrader: '',
@@ -362,7 +368,21 @@ export default {
 
                 const result = await response.json();
                 if (result.success && result.data) {
-                    this.tradersList = result.data;
+                    const allTraders = result.data;
+                    
+                    if (this.planFeatures && this.planFeatures.traders) {
+                        const allowedTraders = this.planFeatures.traders;
+                        this.tradersList = allTraders.filter(trader => {
+                            // Comparar IDs (que podem ser números ou strings dependendo da origem)
+                            return allowedTraders.some(allowedId => String(allowedId) === String(trader.id));
+                        });
+                    } else if (this.planFeatures) {
+                        // Se planFeatures existe mas traders não (ex: plano sem copy), limpar lista
+                        this.tradersList = [];
+                    } else {
+                        // Fallback se planFeatures ainda não carregou
+                        this.tradersList = allTraders;
+                    }
                 } else {
                     console.error('Erro ao carregar traders:', result.message || 'Unknown error');
                     this.tradersList = [];
