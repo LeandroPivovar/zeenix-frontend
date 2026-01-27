@@ -504,9 +504,6 @@ export default {
     removeMaterialFile() {
       this.updateNewMaterial({ file: null, fileName: '', filePath: '' });
     },
-    removeMaterialFile() {
-      this.updateNewMaterial({ file: null, fileName: '', filePath: '' });
-    },
     closeTutorialSelectionModal() {
       this.$emit('close-tutorial-modal');
     },
