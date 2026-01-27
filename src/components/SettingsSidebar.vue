@@ -27,6 +27,10 @@
             <div class="settings-user-info">
               <h3 class="settings-user-name">{{ userName }}</h3>
               <p class="settings-user-status">Conta Ativa</p>
+              <div class="settings-plan-badge-container">
+                <span v-if="planName" class="settings-plan-badge">{{ planName }}</span>
+                <span v-else class="settings-plan-badge free">Plano Gratuito</span>
+              </div>
             </div>
           </div>
 
@@ -223,6 +227,7 @@ export default {
       idRealAccount: null,
       idDemoAccount: null,
       loadingTopup: false,
+      planName: null,
     };
   },
   computed: {
@@ -823,6 +828,7 @@ export default {
           this.tokenDemoCurrency = data.tokenDemoCurrency;
           this.demoAmount = data.demoAmount;
           this.idDemoAccount = data.idDemoAccount;
+          this.planName = data.planName;
         }
       } catch (error) {
         console.error('[SettingsSidebar] Erro ao carregar configurações:', error);
@@ -1144,6 +1150,31 @@ export default {
   font-weight: 500;
   margin: 2px 0 0 0;
   line-height: 1.3;
+}
+
+.settings-plan-badge-container {
+  margin-top: 6px;
+}
+
+.settings-plan-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: rgba(34, 197, 94, 0.15);
+  color: #22C55E;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.1);
+}
+
+.settings-plan-badge.free {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
 }
 
 .settings-balance-label {
