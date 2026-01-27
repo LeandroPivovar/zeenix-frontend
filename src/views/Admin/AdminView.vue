@@ -1266,7 +1266,7 @@ export default {
 .admin-dashboard {
     width: 100%;
     max-width: 100%;
-    margin: 0 auto;
+    margin: 60px auto;
     padding: 10px;
     padding-bottom: 0;
     box-sizing: border-box;
