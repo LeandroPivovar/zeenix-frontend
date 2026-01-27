@@ -408,6 +408,50 @@
                   <span class="slider"></span>
                 </label>
               </div>
+
+              <!-- Content Creator Section (Mobile) -->
+              <div v-if="settings.isMasterTrader" class="pt-4 border-t border-zenix-border">
+                <div 
+                  @click="isCreatorModeExpanded = !isCreatorModeExpanded"
+                  class="flex items-center justify-between cursor-pointer py-2 hover:bg-white/5 rounded-lg transition-colors group"
+                >
+                  <span class="text-xs font-bold text-white">Modo Criador de Conteúdo</span>
+                  <i class="fas fa-chevron-down text-zenix-secondary group-hover:text-white transition-transform duration-300 transform" :class="{ 'rotate-180': isCreatorModeExpanded }"></i>
+                </div>
+                
+                <div v-show="isCreatorModeExpanded" class="mt-4 space-y-4">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-white">Ativar Saldo Fictício</span>
+                    <label class="switch">
+                      <input type="checkbox" v-model="settings.isFictitiousBalanceActive">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+
+                  <div v-if="settings.isFictitiousBalanceActive">
+                    <label class="block text-[10px] font-medium text-zenix-text mb-2">Saldo Fictício</label>
+                    <div class="relative">
+                      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zenix-secondary text-xs">$</span>
+                      <input 
+                        type="number" 
+                        v-model="settings.fictitiousBalance" 
+                        class="w-full border border-zenix-border rounded-xl px-3 py-2 pl-6 text-xs text-white focus:outline-none focus:border-zenix-green transition-all"
+                        style="background-color: #1d1c1d;"
+                        step="0.01"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-white">Exibir cifrão ($) no header</span>
+                    <label class="switch">
+                      <input type="checkbox" v-model="settings.showDollarSign">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
               <div class="pt-4 border-t border-zenix-border">
                 <a href="#" class="text-blue-500 hover:text-blue-400 text-xs transition-all">
                   Gerenciar minhas permissões
