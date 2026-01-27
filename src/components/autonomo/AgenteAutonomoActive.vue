@@ -183,7 +183,7 @@
 								:key="agent.id"
 								@click="selectAgent(agent.id)"
 								class="p-3 flex items-center gap-3 hover:bg-[#1a1a1a] cursor-pointer transition-colors border-b border-[#27272a]/50 last:border-0"
-								:class="{ 'bg-green-500/[0.01] border-green-500/40 shadow-[inset_0_0_15px_rgba(34,197,94,0.27)]': agenteData.id === agent.id }"
+								:class="{ 'bg-[#052e16]': agenteData.id === agent.id }"
 							>
 								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
 									<span>{{ agent.emoji }}</span>
@@ -197,21 +197,10 @@
 										<span v-if="agenteData.id === agent.id" class="text-[8px] text-white font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
 									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line" v-html="formatAgentDescription(agent.description)"></p>
-									<div class="flex items-center gap-2 mt-1.5 text-left">
-										<span class="text-[9px] text-[#A1A1AA]">WR: <span class="text-white">{{ agent.winRate }}%</span></span>
-										<span class="text-[9px] text-[#A1A1AA]">Estilo: <span class="text-white">{{ agent.style }}</span></span>
-									</div>
 								</div>
 							</div>
 						</div>
 
-						<button 
-							@click="goToConfiguration"
-							class="w-full p-4 flex items-center justify-center gap-2 bg-[#1a1a1a] hover:bg-[#222] transition-colors text-white text-xs font-bold"
-						>
-							<i class="fas fa-plus text-[10px] text-green-500"></i>
-							Configurar Novo Agente
-						</button>
 					</div>
 				</div>
 
@@ -843,7 +832,7 @@
 						id: 'zeus', 
 						title: 'IA Zeus', 
 						emoji: '⚡', 
-						description: 'Análise: Híbrida (Fluxo de Dígitos + Price Action)\nAssertividade: 55% a 65%\nRetorno: 56% / 85%',
+						description: 'Análise: Tick a Tick\nPrecisão: Cirúrgica\nRetorno: Consistente',
 						winRate: 58,
 						style: 'Agressivo / Híbrido'
 					},
@@ -851,7 +840,7 @@
 						id: 'falcon', 
 						title: 'IA Falcon', 
 						emoji: '🦅', 
-						description: 'Análise: Padrão Estatístico (Entropia + Força)\nAssertividade: 60% a 70%\nRetorno: 63.5%',
+						description: 'Análise: Estatística\nPrecisão: Superior\nRetorno: Seguro',
 						winRate: 62,
 						style: 'Estatístico / Preciso'
 					}
@@ -1207,7 +1196,7 @@
 				// Destacar palavras-chave em branco e negrito
 				return description
 					.replace(/Análise:/g, '<span style="color: white; font-weight: bold;">Análise:</span>')
-					.replace(/Assertividade:/g, '<span style="color: white; font-weight: bold;">Assertividade:</span>')
+					.replace(/Precisão:/g, '<span style="color: white; font-weight: bold;">Precisão:</span>')
 					.replace(/Retorno:/g, '<span style="color: white; font-weight: bold;">Retorno:</span>');
 			},
             formatPrice(value) {
@@ -1706,6 +1695,11 @@
 				console.log('Switching to agent:', agentId);
 				this.selectedAgentFilter = agentId;
 				this.showAgentSwitcher = false;
+				
+				// Se for um agente específico (não 'all'), emitir evento para o pai ativar
+				if (agentId !== 'all') {
+					this.$emit('change-agent', agentId);
+				}
 				
 				// Recarregar todos os dados com o novo filtro
 				this.fetchAllStats();
