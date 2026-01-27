@@ -48,7 +48,7 @@ export default {
   data() {
     return {
       // URL do vídeo explicativo (pode ser substituída por uma prop ou vinda da API)
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1' // Placeholder - Substituir pelo vídeo real
+      videoUrl: 'https://www.youtube.com/watch?v=K4kN_JdmqoY' // Placeholder - Substituir pelo vídeo real
     }
   },
   methods: {
