@@ -579,12 +579,21 @@ export default {
 
         mapPlanFromBackend(plan) {
             const features = plan.features || {};
+            const benefitsColumn = plan.benefits || [];
             
-            console.log('🔍 [MapPlan] Plano:', plan.name);
-            console.log('   📦 Features raw:', features);
-            console.log('   📦 Type of features:', typeof features);
-            console.log('   📦 Is string?', typeof features === 'string');
-            
+            // Suporte para backwards compatibility: se features.benefits existe mas a coluna benefits está vazia
+            let finalBenefits = [];
+            if (Array.isArray(benefitsColumn) && benefitsColumn.length > 0) {
+                finalBenefits = benefitsColumn;
+            } else if (features.benefits && Array.isArray(features.benefits)) {
+                finalBenefits = features.benefits;
+            }
+
+            // Fallback para formulário vazio se não tiver benefícios
+            if (finalBenefits.length === 0) {
+                finalBenefits = [''];
+            }
+
             // Se features vier como string JSON, fazer parse
             let parsedFeatures = features;
             if (typeof features === 'string') {
@@ -603,7 +612,7 @@ export default {
                 price: plan.price || 0,
                 currency: plan.currency || 'BRL',
                 billingPeriod: plan.billingPeriod || 'month',
-                benefits: [...finalBenefits], // Usar os benefícios finais
+                benefits: [...finalBenefits],
                 isPopular: plan.isPopular || false,
                 isRecommended: plan.isRecommended || false,
                 isActive: plan.isActive !== undefined ? plan.isActive : true,
