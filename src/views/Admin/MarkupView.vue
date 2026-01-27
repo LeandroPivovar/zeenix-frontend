@@ -65,7 +65,7 @@
                         Comissão: {{ formatCurrency(totalCommissionDisplayed) }} |
                         Transações: {{ totalTransactionsDisplayed.toLocaleString() }} |
                         Clientes: {{ displayedClients.length }} |
-                        Markup: {{ formatCurrency(totalMarkupDisplayed) }}
+                        Saldo Real: {{ formatCurrency(totalRealAmountDisplayed) }}
                     </p>
                 </div>
 
@@ -501,6 +501,7 @@ export default {
         },
 
         summaryCards() {
+            return [
                 { title: 'Mensal', value: this.periodData.monthly },
                 { title: 'Mês Passado', value: this.periodData.lastMonth },
                 { title: 'Anual', value: this.periodData.annual },
@@ -727,7 +728,7 @@ export default {
     font-size: 14px;
     color: #7e7d7d;
     text-align: left;
-    font-weight: 55500;
+    font-weight: 500;
 }
 
 /* Tabela Desktop */
