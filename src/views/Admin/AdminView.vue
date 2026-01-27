@@ -1,53 +1,53 @@
 <template>
     <div class="dashboard-layout">
-        <div
-            v-if="isSidebarOpen && isMobile"
-            class="sidebar-overlay"
-            @click="isSidebarOpen = false"
-        ></div>
-
-        <AppSidebar 
-            :is-open="isSidebarOpen" 
-            :is-collapsed="isSidebarCollapsed" 
-            :is-mobile="isMobile"
-            @toggle-collapse="toggleSidebarCollapse" 
-            @close-sidebar="isSidebarOpen = false" 
-            @open-settings="showSettingsModal = true"
-        />
-
-        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-
-            <!-- Desktop Header -->
-            <header v-if="!isMobile" class="admin-desktop-header">
-                <div class="header-left">
-                    <button class="toggle-menu-btn-header" @click="toggleSidebarCollapse" :title="isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'">
-                        <i class="fas fa-bars text-[#DFDFDF]"></i>
-                    </button>
-                    <div class="header-brand-text ml-4">
-                        <span class="text-white font-bold text-xl">ZEN</span>
-                        <span class="text-white font-bold text-xl">I</span>
-                        <span class="text-[#22C55E] font-bold text-xl">X</span>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Mobile Header -->
-            <div v-if="isMobile" class="mobile-header-admin">
-                <button class="menu-toggler-btn" @click="isSidebarOpen = true">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+        <!-- Desktop Header -->
+        <header v-if="!isMobile" class="admin-desktop-header">
+            <div class="header-left">
+                <button class="toggle-menu-btn-header" @click="toggleSidebarCollapse" :title="isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'">
+                    <i class="fas fa-bars text-[#DFDFDF]"></i>
                 </button>
-                <div class="mobile-brand">
-                    <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
+                <div class="header-brand-text ml-4">
+                    <span class="text-white font-bold text-xl">ZEN</span>
+                    <span class="text-white font-bold text-xl">I</span>
+                    <span class="text-[#22C55E] font-bold text-xl">X</span>
                 </div>
-                <button class="mobile-profile-btn" @click="showSettingsModal = true">
-                    <i class="fas fa-user-circle text-2xl text-[#DFDFDF]"></i>
-                </button>
             </div>
+        </header>
 
-            <main class="layout-content">
-                <div class="admin-dashboard">
+        <!-- Mobile Header -->
+        <div v-if="isMobile" class="mobile-header-admin">
+            <button class="menu-toggler-btn" @click="isSidebarOpen = true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div class="mobile-brand">
+                <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
+            </div>
+            <button class="mobile-profile-btn" @click="showSettingsModal = true">
+                <i class="fas fa-user-circle text-2xl text-[#DFDFDF]"></i>
+            </button>
+        </div>
+
+        <div class="main-body-wrapper">
+            <div
+                v-if="isSidebarOpen && isMobile"
+                class="sidebar-overlay"
+                @click="isSidebarOpen = false"
+            ></div>
+
+            <AppSidebar 
+                :is-open="isSidebarOpen" 
+                :is-collapsed="isSidebarCollapsed" 
+                :is-mobile="isMobile"
+                @toggle-collapse="toggleSidebarCollapse" 
+                @close-sidebar="isSidebarOpen = false" 
+                @open-settings="showSettingsModal = true"
+            />
+
+            <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+                <main class="layout-content">
+                    <div class="admin-dashboard">
                 <header class="dashboard-header">
                     <h1 style="font-size: 20px;">Painel Administrativo</h1>
                     <p style="font-size: 14px;">Controle total da operação, permissões e desempenho da plataforma.</p>
@@ -469,7 +469,7 @@
                             </div>
             </main>
         </div>
-        
+    </div>
         <transition name="modal-fade">
             <div class="modal-overlay" v-if="showAddAdminModal" @click.self="showAddAdminModal = false">
                 <div class="modal-content">
@@ -1231,6 +1231,7 @@ export default {
 /* --- Layout Base (seguindo padrão da Dashboard) --- */
 .dashboard-layout {
     display: flex;
+    flex-direction: column;
     min-height: 100vh;
     font-family: Arial, sans-serif;
     background-color: #0b0b0b;
@@ -1238,6 +1239,13 @@ export default {
     max-width: 100vw;
     overflow-x: hidden;
     box-sizing: border-box;
+}
+
+.main-body-wrapper {
+    display: flex;
+    flex-grow: 1;
+    position: relative;
+    width: 100%;
 }
 
 .sidebar-overlay {
@@ -1266,8 +1274,7 @@ export default {
 
 .layout-content {
     flex-grow: 1;
-    padding: 20px;
-    padding-top: 80px; /* Espaço para o TopNavbar */
+    padding: 10px;
     overflow-y: auto;
     overflow-x: hidden;
     background-color: #0b0b0b;
@@ -1279,7 +1286,7 @@ export default {
     width: 100%;
     max-width: 100%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
     padding-bottom: 0;
     box-sizing: border-box;
     overflow-x: hidden;
@@ -1331,10 +1338,11 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
+    padding: 0 10px;
     position: sticky;
     top: 0;
-    z-index: 997;
+    z-index: 1001;
+    width: 100%;
 }
 
 .header-left {
