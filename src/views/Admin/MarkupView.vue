@@ -267,15 +267,6 @@ export default {
             users: [],
         };
     },
-    computed: {
-        userItems() {
-            return this.users.map(user => ({
-                value: user.id.toString(),
-                label: user.name || user.email,
-                description: user.email
-            }));
-        },
-    },
     watch: {
     },
     created() {
@@ -609,6 +600,14 @@ export default {
         }
     },
     computed: {
+        userItems() {
+            return this.users.map(user => ({
+                value: user.id.toString(),
+                label: user.name || user.email,
+                description: user.email
+            }));
+        },
+        
         totalCommissionDisplayed() {
             // Agora "commission" vem calculado do backend (markup 3%)
             return this.displayedClients.reduce((sum, client) => sum + (Number(client.commission) || 0), 0);
@@ -629,12 +628,10 @@ export default {
         },
 
         summaryCards() {
-            return [
-                { title: 'Mensal', value: this.periodData.monthly },
-                { title: 'Mês Passado', value: this.periodData.lastMonth },
-                { title: 'Anual', value: this.periodData.annual },
-                { title: 'Total (Período)', value: this.totalCommissionDisplayed },
-            ];
+            return {
+                totalRealAmount: this.totalRealAmountDisplayed,
+                usersWithMarkup: this.displayedClients.length,
+            };
         },
     },
 };
