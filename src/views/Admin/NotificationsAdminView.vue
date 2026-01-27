@@ -420,6 +420,15 @@ export default {
     }
 }
 
+.layout-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start !important; /* Tirei o center */
+    align-items: stretch !important;
+    width: 100%;
+}
+
 .notification-list {
     background: #141414;
     border: 1px solid #1C1C1C;
