@@ -163,7 +163,7 @@ export default {
     }
   },
   methods: {
-    getLogEmoji(type) {
+    getLogEmoji() {
       return '';
     },
     getLogColorClass(type) {
