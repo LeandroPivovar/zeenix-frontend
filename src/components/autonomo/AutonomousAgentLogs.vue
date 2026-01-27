@@ -138,24 +138,24 @@ export default {
         // Determine type based on title and content
         let logType = 'info';
         
-        // 1. Result Logs (Green/Red)
+        // 1. Result Logs (Green/Red) - Prioritize explicit result/concluída
         if (titleLine.includes('RESULTADO') || titleLine.includes('CONCLUÍDA')) {
           if (message.toUpperCase().includes('LOSS')) logType = 'loss';
           else logType = 'success';
         }
-        // 2. Warning Logs (Yellow)
+        // 2. Yellow Logs
         else if (
           titleLine.includes('BLOQUEADA') || 
           titleLine.includes('SEQUÊNCIA') || 
           titleLine.includes('TROCA') || 
-          titleLine.includes('NÍVEL') || 
-          titleLine.includes('PARCIAL') ||
           titleLine.includes('MARTINGALE') ||
-          titleLine.includes('RECUPERAÇÃO')
+          titleLine.includes('PARCIAL') ||
+          (titleLine.includes('INÍCIO') && titleLine.includes('RECUPERAÇÃO')) ||
+          (titleLine.includes('NÍVEL') && !titleLine.includes('SOROS'))
         ) {
           logType = 'warning';
         }
-        // 3. Info/Process Logs (Blue)
+        // 3. Blue Logs
         else if (
           titleLine.includes('INÍCIO') || 
           titleLine.includes('COLETA') || 
@@ -164,7 +164,6 @@ export default {
           titleLine.includes('SOROS') || 
           titleLine.includes('AJUSTE') ||
           titleLine.includes('CONTRATO') ||
-          titleLine.includes('OPERAÇÃO') ||
           titleLine.includes('STAKE')
         ) {
           logType = 'blue';
@@ -190,20 +189,20 @@ export default {
     },
     getLogColorClass(type) {
       const classes = {
-        blue: 'text-blue-400',
-        success: 'text-emerald-500',
-        loss: 'text-rose-500',
-        warning: 'text-amber-400',
+        blue: 'text-cyan-400',
+        success: 'text-green-400',
+        loss: 'text-red-500',
+        warning: 'text-yellow-400',
         info: 'text-[#FAFAFA]'
       };
       return classes[type] || classes.info;
     },
     getLogBgClass(type) {
       const classes = {
-        blue: 'bg-blue-400/10',
-        success: 'bg-emerald-500/10',
-        loss: 'bg-rose-500/10',
-        warning: 'bg-amber-400/10',
+        blue: 'bg-cyan-400/10',
+        success: 'bg-green-400/10',
+        loss: 'bg-red-500/10',
+        warning: 'bg-yellow-400/10',
         info: 'bg-gray-700/10'
       };
       return classes[type] || classes.info;
