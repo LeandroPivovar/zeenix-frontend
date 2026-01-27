@@ -166,6 +166,7 @@
         </div>
 
         <!-- Settings Modal -->
+        <SettingsSidebar
             :is-open="showSettingsModal"
             @close="showSettingsModal = false"
         />
@@ -195,6 +196,7 @@ import SelectionModal from '../../components/SelectionModal.vue';
 
 export default {
     name: 'MarkupView',
+    components: {
         AppSidebar,
         TopNavbar,
         SettingsSidebar,
@@ -445,6 +447,12 @@ export default {
             return [...new Set(countries)].sort();
         },
 
+        summaryCards() {
+            return [
+                { title: 'Hoje', value: this.periodData.today },
+                { title: 'Mensal', value: this.periodData.monthly },
+                { title: 'Mês Passado', value: this.periodData.lastMonth },
+                { title: 'Anual', value: this.periodData.annual },
                 { title: 'Total (Período)', value: this.totalCommissionDisplayed },
             ];
         },
