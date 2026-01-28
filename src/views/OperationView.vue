@@ -208,7 +208,6 @@ export default {
   },
   methods: {
     checkMobile() {
-      const wasMobile = this.isMobile;
       this.isMobile = window.innerWidth <= 768;
       // Removido o switch forçado entre OperationChart e OperationDigits no mobile
       // pois agora a análise de dígitos está integrada no Gráfico.
