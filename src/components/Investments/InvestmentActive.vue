@@ -1147,9 +1147,9 @@ export default {
                 return 'R_100';
             }
 
-            // ✅ Se ATLAS está ativa, forçar 1HZ100V (Vol 100 1s)
+            // ✅ Se ATLAS está ativa, forçar R_50 (Index 50)
             if (strategyLower === 'atlas') {
-                return '1HZ100V';
+                return 'R_50';
             }
 
             // Usar o prop ou data local
