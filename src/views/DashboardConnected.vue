@@ -167,7 +167,7 @@
           </div>
           <div class="mobile-account-balance">
             <span v-if="balanceVisible" class="inline-flex items-center gap-2">
-              <span>{{ preferredCurrencyPrefix }}</span>
+              <span>{{ mobileCurrencyPrefix }}</span>
               {{ balanceVisible ? mobileBalanceValue : '' }}
             </span>
             <span v-else>••••••</span>
@@ -790,6 +790,14 @@ export default {
     },
     preferredCurrencyPrefix() {
       return this.info?.preferredCurrencyPrefix || this.currencyPrefix;
+    },
+    mobileCurrencyPrefix() {
+      // Se o saldo fictício estiver ativo, sempre mostrar $ (nunca D$)
+      if (this.isFictitiousBalanceActive) {
+        return '$';
+      }
+      // Caso contrário, usar o prefixo padrão
+      return this.preferredCurrencyPrefix;
     },
     // Removidos balanceNumeric e formattedBalance para usar os do mixin
     balancesByCurrency() {
