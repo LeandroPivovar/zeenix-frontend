@@ -427,19 +427,25 @@
       async handleChangeAgent(agentId) {
         console.log('[AgenteAutonomo] Trocando para o agente:', agentId);
         
-        // Preparar configuração baseada no agente selecionado
-        const configData = {
-          agentType: agentId,
-          // Manter configurações atuais se possível, ou usar padrões seguros
-          initialStake: this.agentConfig?.initialStake || 10.0,
-          goalValue: this.agentConfig?.dailyProfitTarget || 200.0,
-          stopValue: this.agentConfig?.dailyLossLimit || 240.0,
-          risco: this.agentConfig?.riskLevel || 'balanced',
-          mercado: this.agentConfig?.symbol === 'R_100' ? 'volatility_100' : 'volatility_75', // Mapeamento reverso simples
-          estrategia: agentId === 'zeus' ? 'zeus' : 'falcon'
+        // 1. Atualizar a estratégia selecionada no estado (para que o Inactive carregue o certo)
+        // Mapear agentId para o formato esperado (Ex: 'zeus' -> 'IA Zeus')
+        const strategyMap = {
+            'zeus': 'IA Zeus',
+            'falcon': 'IA Falcon'
         };
-
-        await this.activateAgent(configData);
+        // Se preferir, pode salvar apenas o ID e o child component converte. 
+        // Vamos salvar o ID em uma nova prop ou reutilizar as existentes.
+        // O AgenteAutonomoInactive usa dados do 'agenteData'.
+        // Vamos forçar a atualização do 'agentConfig' local temporariamente antes de desativar?
+        // Melhor: apenas desativar e garantir que o 'selectedAgentType' seja passado.
+        
+        // Atualiza a estratégia padrão para quando cair na tela de config
+        this.estrategia = strategyMap[agentId] || 'IA Sentinel';
+        
+        // 2. Parar o agente atual (isso vai trocar o componente para Inactive)
+        await this.deactivateAgent();
+        
+        // 3. (Opcional) Poderíamos forçar um reload ou limpar filtros, mas o Inactive deve pegar o this.estrategia
       },
 
       async toggleAgenteStatus(source, configData = null) {
