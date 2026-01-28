@@ -154,50 +154,6 @@
             </div>
           </div>
 
-          <!-- Creator Mode Section (Sidebar) -->
-          <div v-if="isMasterTrader" class="mb-4 border-t border-white/5 pt-2">
-            <button 
-              @click="isCreatorModeExpanded = !isCreatorModeExpanded"
-              class="w-full flex items-center justify-between py-4 text-white/70 hover:text-white transition-colors"
-            >
-              <div class="flex items-center gap-3">
-                <i class="fa-solid fa-wand-magic-sparkles text-[16px]"></i>
-                <span class="text-[14px] font-medium">Modo Criador</span>
-              </div>
-              <i :class="isCreatorModeExpanded ? 'fa-solid fa-chevron-up text-[12px]' : 'fa-solid fa-chevron-down text-[12px]'"></i>
-            </button>
-            
-            <div v-if="isCreatorModeExpanded" class="creator-mode-options space-y-4 px-2 pb-4">
-              <div class="flex items-center justify-between">
-                <span class="text-[13px] text-white/70">Saldo Fictício</span>
-                <label class="switch-small">
-                  <input type="checkbox" v-model="isFictitiousBalanceActive" @change="saveMasterTraderSettings">
-                  <span class="slider-small"></span>
-                </label>
-              </div>
-
-              <div v-if="isFictitiousBalanceActive" class="space-y-2">
-                <label class="block text-[11px] text-white/40">Valor do Saldo ($)</label>
-                <div class="relative">
-                  <input 
-                    type="number" 
-                    v-model="fictitiousBalance" 
-                    @blur="saveMasterTraderSettings"
-                    class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[13px] text-white focus:outline-none focus:border-[#22C55E]/50 transition-all"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-
-              <div class="flex items-center justify-between">
-                <span class="text-[13px] text-white/70">Exibir cifrão ($)</span>
-                <label class="switch-small">
-                  <input type="checkbox" v-model="showDollarSign" @change="saveMasterTraderSettings">
-                  <span class="slider-small"></span>
-                </label>
-              </div>
-            </div>
-          </div>
 
           <button 
             @click="logout"

@@ -183,7 +183,7 @@
 								:key="agent.id"
 								@click="selectAgent(agent.id)"
 								class="p-3 flex items-center gap-3 hover:bg-[#1a1a1a] cursor-pointer transition-colors border-b border-[#27272a]/50 last:border-0"
-								:class="{ 'bg-[#052e16]': agenteData.id === agent.id }"
+								:class="{ 'bg-[#FFBC29]': agenteData.id === agent.id }"
 							>
 								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
 									<span>{{ agent.emoji }}</span>
@@ -193,10 +193,10 @@
 								</div>
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center justify-between gap-2">
-										<h5 class="text-xs font-bold text-white truncate text-left">{{ agent.title }}</h5>
-										<span v-if="agenteData.id === agent.id" class="text-[8px] text-white font-bold uppercase tracking-tighter shrink-0">Ativo</span>
+										<h5 class="text-xs font-bold truncate text-left" :class="agenteData.id === agent.id ? 'text-black' : 'text-white'">{{ agent.title }}</h5>
+										<span v-if="agenteData.id === agent.id" class="text-[8px] text-black font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
-									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line" v-html="formatAgentDescription(agent.description)"></p>
+									<p class="text-[10px] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line" :class="agenteData.id === agent.id ? 'text-black/70' : 'text-[#A1A1AA]'" v-html="formatAgentDescription(agent.description)"></p>
 								</div>
 							</div>
 						</div>
@@ -832,7 +832,7 @@
 						id: 'zeus', 
 						title: 'IA Zeus', 
 						emoji: '⚡', 
-						description: 'Análise: Tick a Tick\nPrecisão: Cirúrgica\nRetorno: Consistente',
+						description: 'Análise: Fluxo de Mercado (Tick a Tick)\nAssertividade: 90%\nRetorno: 85%',
 						winRate: 58,
 						style: 'Agressivo / Híbrido'
 					},
@@ -840,7 +840,7 @@
 						id: 'falcon', 
 						title: 'IA Falcon', 
 						emoji: '🦅', 
-						description: 'Análise: Estatística\nPrecisão: Superior\nRetorno: Seguro',
+						description: 'Análise: Entropia + Força + Assertividade\nAssertividade: 70%\nRetorno: 63.5%',
 						winRate: 62,
 						style: 'Estatístico / Preciso'
 					}
