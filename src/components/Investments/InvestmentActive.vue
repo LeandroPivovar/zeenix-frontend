@@ -2179,7 +2179,8 @@ export default {
             // ✅ 1. VERIFICAR STOP BLINDADO ATINGIDO (Extreme Strict Mode)
             const hasBlindadoHit = recentLogs.some(log => 
                 log.message && (
-                    log.message.trim().includes('🛡️ STOP BLINDADO ATINGIDO!')
+                    log.message.includes('STOP BLINDADO ATINGIDO') ||
+                    log.message.includes('STOP-LOSS BLINDADO ATIVADO')
                 )
             );
             
