@@ -92,6 +92,10 @@
                   <i class="fas fa-envelope mr-2"></i>
                   Alterar E-mail
                 </button>
+                <button @click="openEditPhoneModal" class="w-full hover:bg-zenix-green/10 text-zenix-text hover:text-zenix-green border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all flex items-center justify-center text-sm" style="background-color: #1d1c1d;">
+                   <i class="fas fa-phone mr-2"></i>
+                   Alterar Telefone
+                </button>
                 <button @click="openChangePhotoModal" class="w-full hover:bg-zenix-green/10 text-zenix-text hover:text-zenix-green border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all flex items-center justify-center text-sm" style="background-color: #1d1c1d;">
                   <i class="fas fa-image mr-2"></i>
                   Trocar Foto
@@ -495,6 +499,7 @@
     <!-- Modals (Existing) -->
     <EditNameModal :visible="showEditNameModal" :currentName="settings.name" @close="closeEditNameModal" @save="handleSaveName" />
     <EditEmailModal :visible="showEditEmailModal" :currentEmail="settings.email" @close="closeEditEmailModal" @save="handleSaveEmail" />
+    <EditPhoneModal :visible="showEditPhoneModal" :currentPhone="settings.phone" @close="closeEditPhoneModal" @save="handleSavePhone" />
     <ChangePasswordModal :visible="showChangePasswordModal" @close="closeChangePasswordModal" @save="handleSavePassword" />
     <ChangePhotoModal :visible="showChangePhotoModal" @close="closeChangePhotoModal" @save="handleSavePhoto" />
     <DesktopBottomNav />
@@ -507,6 +512,7 @@ import TopNavbar from '../components/TopNavbar.vue'
 import SettingsSidebar from '../components/SettingsSidebar.vue'
 import EditNameModal from '../components/modals/EditNameModal.vue'
 import EditEmailModal from '../components/modals/EditEmailModal.vue'
+import EditPhoneModal from '../components/modals/EditPhoneModal.vue'
 import ChangePasswordModal from '../components/modals/ChangePasswordModal.vue'
 import ChangePhotoModal from '../components/modals/ChangePhotoModal.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
@@ -521,6 +527,7 @@ export default {
     SettingsSidebar,
     EditNameModal,
     EditEmailModal,
+    EditPhoneModal,
     ChangePasswordModal,
     ChangePhotoModal,
     DesktopBottomNav
@@ -530,6 +537,7 @@ export default {
       settings: {
         name: '',
         email: '',
+        phone: '', 
         createdAt: null,
         profilePictureUrl: null,
         language: 'pt-BR',
@@ -550,6 +558,7 @@ export default {
       saving: false,
       showEditNameModal: false,
       showEditEmailModal: false,
+      showEditPhoneModal: false,
       showChangePasswordModal: false,
       showChangePhotoModal: false,
       sidebarIsOpen: false,
@@ -653,6 +662,7 @@ export default {
         this.settings = {
           name: data.name,
           email: data.email,
+          phone: data.phone,
           createdAt: data.createdAt,
           profilePictureUrl: data.profilePictureUrl,
           language: data.language || 'pt-BR',
@@ -677,6 +687,41 @@ export default {
         this.error = 'Não foi possível carregar as configurações.'
       } finally {
         this.loading = false
+      }
+    },
+    // ... (other methods)
+
+    openEditPhoneModal() {
+      this.showEditPhoneModal = true;
+    },
+    closeEditPhoneModal() {
+      this.showEditPhoneModal = false;
+    },
+    async handleSavePhone(newPhone) {
+      try {
+        const token = localStorage.getItem('token')
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+
+        const res = await fetch(`${apiBaseUrl}/settings/phone`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+          },
+          body: JSON.stringify({ phone: newPhone })
+        })
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.message || 'Erro ao atualizar telefone')
+        }
+
+        await this.fetchSettings()
+        this.closeEditPhoneModal()
+        this.$root.$toast.success('Telefone atualizado com sucesso!')
+      } catch (err) {
+        this.$root.$toast.error(err.message || 'Erro ao atualizar telefone')
+        // throw err
       }
     },
     async saveAll() {
