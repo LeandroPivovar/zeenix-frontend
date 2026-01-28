@@ -1070,7 +1070,7 @@ export default {
     },
     showDigitsPredictionCard() {
       const excludedTypes = ['DIGITEVEN', 'DIGITODD'];
-      return this.isDigitContract && !excludedTypes.includes(this.tradeType) && this.latestTick;
+      return this.isDigitContract && !excludedTypes.includes(this.tradeType) && this.latestTick && this.tradingMode !== 'ai';
     },
     canExecuteOrder() {
       return this.symbol && this.duration && this.amount && !this.isTrading && !this.activeContract;
@@ -2615,22 +2615,25 @@ export default {
         let profit = 0;
         const type = (this.activeContract.contract_type || this.tradeType || '').toUpperCase();
         
+        const lastDigit = Number(currentPrice.toFixed(this.pricePrecision).slice(-1));
+        const barrier = this.digitMatchValue !== null ? this.digitMatchValue : 5;
+
         if (type === 'CALL' || type === 'RISE' || type === 'CALLE') {
           profit = currentPrice > entryPrice ? (this.amount * 0.95) : -this.amount;
         } else if (type === 'PUT' || type === 'FALL' || type === 'PUTE') {
           profit = currentPrice < entryPrice ? (this.amount * 0.95) : -this.amount;
         } else if (type === 'DIGITMATCH') {
-          const lastDigit = Math.floor(currentPrice * Math.pow(10, this.pricePrecision)) % 10;
-          profit = lastDigit === this.digitMatchValue ? (this.amount * 8) : -this.amount;
+          profit = lastDigit === barrier ? (this.amount * 8) : -this.amount;
         } else if (type === 'DIGITDIFF') {
-          const lastDigit = Math.floor(currentPrice * Math.pow(10, this.pricePrecision)) % 10;
-          profit = lastDigit !== this.digitMatchValue ? (this.amount * 0.1) : -this.amount;
+          profit = lastDigit !== barrier ? (this.amount * 0.1) : -this.amount;
         } else if (type === 'DIGITEVEN') {
-          const lastDigit = Math.floor(currentPrice * Math.pow(10, this.pricePrecision)) % 10;
           profit = lastDigit % 2 === 0 ? (this.amount * 0.95) : -this.amount;
         } else if (type === 'DIGITODD') {
-          const lastDigit = Math.floor(currentPrice * Math.pow(10, this.pricePrecision)) % 10;
           profit = lastDigit % 2 !== 0 ? (this.amount * 0.95) : -this.amount;
+        } else if (type === 'DIGITOVER') {
+          profit = lastDigit > barrier ? (this.amount * 0.95) : -this.amount;
+        } else if (type === 'DIGITUNDER') {
+          profit = lastDigit < barrier ? (this.amount * 0.95) : -this.amount;
         }
         
         this.realTimeProfit = profit;
