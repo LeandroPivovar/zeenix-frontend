@@ -108,15 +108,7 @@
 					>
 						{{ hideValues ? '••••' : (periodProfit >= 0 ? '+' : '') + '$' + periodProfit.toFixed(2) }}
 					</div>
-					<div class="flex items-center gap-2 relative z-10">
-						<div 
-							class="inline-flex items-center rounded-full border border-transparent font-semibold text-[10px] px-2 py-0.5" 
-							:class="periodProfit >= 0 ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'"
-							v-if="!hideValues"
-						>
-							{{ periodProfit >= 0 ? '+' : '' }}{{ periodProfitPercent.toFixed(2) }}%
-						</div>
-					</div>
+					<!-- Percentage Badge Removed -->
 				</div>
 
 				<!-- Lucro Medio/Dia -->
@@ -134,7 +126,7 @@
 						class="text-2xl font-bold mb-1 tabular-nums text-left"
 						:class="avgDailyProfit >= 0 ? 'text-green-500' : 'text-red-500'"
 					>
-						{{ hideValues ? '••••' : (avgDailyProfit >= 0 ? '+' : '') + '$' + avgDailyProfit.toFixed(2) }}
+						{{ hideValues ? '••••' : (avgDailyProfitPercent >= 0 ? '+' : '') + avgDailyProfitPercent.toFixed(2) + '%' }}
 					</div>
 					<div class="flex items-center gap-2">
 						<div 
@@ -942,6 +934,19 @@
                 if (startCap <= 0) return 0;
                 return (profit / startCap) * 100;
 			},
+			avgDailyProfitPercent() {
+				// Média percentual diária
+				if (this.selectedPeriod === 'session') {
+					if (!this.agentConfig || !this.agentConfig.sessionDate) return this.periodProfitPercent;
+					const sessionStart = new Date(this.agentConfig.sessionDate);
+					const now = new Date();
+					const diffTime = Math.abs(now - sessionStart);
+					const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+					return this.periodProfitPercent / diffDays;
+				}
+				if (!this.dailyData || this.dailyData.length === 0) return 0;
+				return this.periodProfitPercent / this.dailyData.length;
+			},
 			avgDailyProfit() {
 				// Se for sessão, cálculo de média/dia baseado na duração da sessão
                 if (this.selectedPeriod === 'session') {
@@ -957,13 +962,6 @@
 				if (!this.dailyData || this.dailyData.length === 0) return 0;
 				// periodProfit já é a soma
 				return this.periodProfit / this.dailyData.length;
-			},
-			avgDailyProfitPercent() {
-				const avgProfit = this.avgDailyProfit;
-				const finalCap = this.finalCapital;
-				const startCap = finalCap - this.periodProfit;
-				if (startCap <= 0) return 0;
-				return (avgProfit / startCap) * 100;
 			},
 	avgProfitPerOp() {
 		// Calculate average profit per operation
