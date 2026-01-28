@@ -2179,8 +2179,9 @@ export default {
             // ✅ 1. VERIFICAR STOP BLINDADO ATINGIDO (Strict Mode)
             const hasBlindadoHit = recentLogs.some(log => 
                 log.message && (
-                    log.message.includes('STOP BLINDADO ATINGIDO')
-                )
+                    log.message.includes('STOP BLINDADO ATINGIDO') ||
+                    log.message.includes('STOP-LOSS BLINDADO ATINGIDO')
+                ) && !log.message.includes('ATIVADO')
             );
             
             if (hasBlindadoHit) {
