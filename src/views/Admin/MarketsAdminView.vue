@@ -37,7 +37,7 @@
                                         <th class="p-4 font-semibold border-b border-[#333]">Símbolo</th>
                                         <th class="p-4 font-semibold border-b border-[#333]">Nome</th>
                                         <th class="p-4 font-semibold border-b border-[#333]">Mercado</th>
-                                        <th class="p-4 font-semibold border-b border-[#333]">Submercado</th>
+                                        <th class="p-4 font-semibold border-b border-[#333]">Tipos de Contrato</th>
                                         <th class="p-4 font-semibold border-b border-[#333] text-center">Status</th>
                                     </tr>
                                 </thead>
@@ -59,8 +59,26 @@
                                     >
                                         <td class="p-4 font-mono text-zenix-green">{{ market.symbol }}</td>
                                         <td class="p-4 font-medium">{{ market.displayName }}</td>
-                                        <td class="p-4 text-gray-400">{{ market.marketDisplayName || market.market }}</td>
-                                        <td class="p-4 text-gray-400">{{ market.submarketDisplayName || market.submarket }}</td>
+                                        <td class="p-4 text-gray-400">
+                                            <div class="flex flex-col">
+                                                <span>{{ market.marketDisplayName || market.market }}</span>
+                                                <span class="text-xs text-gray-600">{{ market.submarketDisplayName || market.submarket }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="flex flex-wrap gap-1 max-w-[300px]">
+                                                <template v-if="market.operations && market.operations.length">
+                                                    <span 
+                                                        v-for="op in market.operations" 
+                                                        :key="op"
+                                                        class="px-2 py-0.5 rounded textxs bg-[#333] text-gray-300 border border-gray-700 text-[10px]"
+                                                    >
+                                                        {{ op }}
+                                                    </span>
+                                                </template>
+                                                <span v-else class="text-gray-600 text-xs italic">Nenhum</span>
+                                            </div>
+                                        </td>
                                         <td class="p-4 text-center">
                                             <span 
                                                 class="px-2 py-1 rounded-full text-xs font-bold"
