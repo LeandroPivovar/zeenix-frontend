@@ -2,10 +2,7 @@
 	<div class="min-h-screen text-[#FAFAFA] font-sans" style="padding-top: 2rem;">
 		<!-- Header -->
 		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 md:mt-8 mt-0">
-			<div class="text-left flex flex-col gap-[3px]">
-				<h2 class="text-xl font-bold leading-tight">Monitoramento de agentes</h2>
-				<p class="text-[#A1A1AA] text-xs leading-tight">Acompanhe os resultados dos seus agentes ativos ou configure um novo agente.</p>
-			</div>
+
 			<div class="flex flex-row items-center gap-2 w-full md:w-auto">
 				<div class="relative z-[40] flex-1 md:flex-none">
 					<button 
@@ -1306,7 +1303,7 @@
 						textColor: '#A0A0A0',
 					},
 					grid: {
-						vertLines: { color: 'rgba(42, 46, 57, 0)' },
+						vertLines: { visible: false },
 						horzLines: { color: 'rgba(42, 46, 57, 0.2)' },
 					},
 					rightPriceScale: {
@@ -1315,39 +1312,26 @@
 					leftPriceScale: {
 						visible: true,
 						borderColor: 'rgba(197, 203, 206, 0.2)',
+						// ✅ ADICIONA O $ NA LEGENDA DO EIXO Y
+						localization: {
+							priceFormatter: price => '$' + price.toFixed(2),
+						},
 					},
 					width: this.$refs.performanceChartContainer.clientWidth,
 					height: 300,
 					timeScale: {
 						borderColor: 'rgba(197, 203, 206, 0.2)',
 						timeVisible: true,
-						secondsVisible: false,
 					},
-                    crosshair: {
-                        mode: 1, // CrosshairMode.Normal
-                        vertLine: {
-                            color: 'rgba(34, 197, 94, 0.5)',
-                            width: 1,
-                            style: 3,
-                            labelBackgroundColor: '#22c55e',
-                        },
-                        horzLine: {
-                            color: 'rgba(34, 197, 94, 0.5)',
-                            width: 1,
-                            style: 3,
-                            labelBackgroundColor: '#22c55e',
-                        },
-                    },
 				});
 
                 console.log('[AgenteAutonomo] Gráfico criado com sucesso');
 
-				this.indexChartSeries = this.indexChart.addLineSeries({
-					color: 'rgba(34, 197, 94, 1)',
+				this.indexChartSeries = this.indexChart.addAreaSeries({
+					lineColor: '#22C55E', // Cor da linha superior (Verde Zenix)
+					topColor: 'rgba(34, 197, 94, 0.4)', // Cor do preenchimento no topo
+					bottomColor: 'rgba(34, 197, 94, 0.0)', // Degradê para transparente no fundo
 					lineWidth: 2,
-                    crosshairMarkerVisible: true,
-                    crosshairMarkerRadius: 4,
-					priceScaleId: 'left',
 				});
 
 				this.indexChartInitialized = true;

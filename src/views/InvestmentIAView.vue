@@ -1,5 +1,6 @@
 <template>
     <div class="layout">
+        <div class="sidebar-overlay" v-if="isSidebarOpen && isMobile" @click.stop="closeSidebar"></div>
 
         
         <AppSidebar 
@@ -718,6 +719,13 @@ export default {
         }
     },
     methods: {
+        openStrategyModal() {
+            this.showStrategyModal = true;
+        },
+        closeStrategyModal() {
+            this.showStrategyModal = false;
+        },
+
         /**
          * ✅ ZENIX v3.5: Atualiza o saldo em tempo real vindo da IA (InvestmentActive)
          * Evita chamadas extras à API Deriv usando os dados de lucro já disponíveis

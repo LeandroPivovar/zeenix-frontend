@@ -978,7 +978,7 @@ export default {
 }
 
 .mobile-main-title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: #f0f6fc;
     margin: 0 0 8px 0;
