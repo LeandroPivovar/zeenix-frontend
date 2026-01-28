@@ -110,6 +110,15 @@
 					>
 						{{ hideValues ? '••••' : (periodProfit >= 0 ? '+' : '') + '$' + periodProfit.toFixed(2) }}
 					</div>
+					<!-- ✅ Formatação Dual: Mostrar Percentual -->
+					<div class="text-xs font-medium tabular-nums relative z-10 text-left opacity-80"
+						:class= "periodProfit >= 0 ? 'text-green-400' : 'text-red-400'"
+					>
+						<span v-if="!hideValues && initialCapital > 0">
+							{{ (periodProfit >= 0 ? '+' : '') + ((periodProfit / initialCapital) * 100).toFixed(2) }}%
+						</span>
+						<span v-else-if="hideValues">••••</span>
+					</div>
 					<!-- Percentage Badge Removed -->
 				</div>
 

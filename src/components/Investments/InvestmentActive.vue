@@ -567,7 +567,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="(op, index) in logOperations" :key="index" :class="['log-row', index % 2 === 0 ? 'log-row-even' : 'log-row-odd']">
+                                            <tr v-for="(op, index) in logOperations" :key="op.id || op.created_at || op.timestamp || `log-${index}`" :class="['log-row', index % 2 === 0 ? 'log-row-even' : 'log-row-odd']">
                                                 <td>{{ op.time }}</td>
                                                 <td>{{ getMarketDisplayName(op.pair) }}</td>
                                                 <td>
@@ -602,7 +602,7 @@
                                 
                                 <!-- Mobile: Cards -->
                                 <div class="mobile-logs-cards custom-scrollbar">
-                                    <div v-for="(op, index) in logOperations" :key="index" class="mobile-log-card">
+                                    <div v-for="(op, index) in logOperations" :key="op.id || op.created_at || op.timestamp || `mob-log-${index}`" class="mobile-log-card">
                                         <div class="mobile-log-time">{{ op.time }}</div>
                                         <div class="mobile-log-type">
                                             <span v-if="op.pair">{{ getMarketDisplayName(op.pair) }}</span>
@@ -664,7 +664,7 @@
                                 </div>
                                 
                                 <div v-else class="text-left">
-                                    <div v-for="(log, index) in realtimeLogs" :key="index" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
+                                    <div v-for="(log, index) in realtimeLogs" :key="log.id || log.created_at || log.timestamp || `rt-log-${index}`" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
                                         <span class="text-gray-500">[{{ log.timestamp }}]</span>
                                         <span class="ml-1">{{ log.icon }}</span>
                                         <span class="ml-1 log-message">{{ log.message }}</span>
@@ -686,7 +686,7 @@
                                 </div>
                                 
                                 <div v-else class="mobile-register-cards-container">
-                                    <div v-for="(log, index) in realtimeLogs" :key="index" class="mobile-register-card">
+                                    <div v-for="(log, index) in realtimeLogs" :key="log.id || log.created_at || log.timestamp || `mob-rt-${index}`" class="mobile-register-card">
                                         <span class="mobile-register-time">{{ log.timestamp }}</span>
                                         <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
                                     </div>
