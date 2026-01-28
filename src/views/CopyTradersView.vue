@@ -605,6 +605,7 @@
 
     :deep(.sidebar.is-open) {
       transform: translateX(0);
+      z-index: 999999 !important;
     }
 
     /* Desktop/Mobile Header Visibility */

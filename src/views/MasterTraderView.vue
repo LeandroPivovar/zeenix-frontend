@@ -1167,7 +1167,7 @@ export default {
 
     :deep(.sidebar.is-open) {
         transform: translateX(0);
-        z-index: 10000 !important;
+        z-index: 999999 !important;
     }
 }
 

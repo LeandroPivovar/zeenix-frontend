@@ -5228,7 +5228,7 @@ tbody tr:hover {
 	/* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
 	:deep(.sidebar.is-open) {
 		transform: translateX(0);
-		z-index: 10000 !important;
+		z-index: 999999 !important;
 	}
 
 	.main-header {

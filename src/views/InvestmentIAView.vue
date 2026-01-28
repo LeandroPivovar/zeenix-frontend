@@ -4139,7 +4139,7 @@ export default {
     /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
     :deep(.sidebar.is-open) {
         transform: translateX(0);
-        z-index: 10000 !important;
+        z-index: 999999 !important;
     }
     
     /* Modal de Settings deve sobrepor tudo no mobile, incluindo TopNavbar */
