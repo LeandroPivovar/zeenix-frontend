@@ -626,6 +626,8 @@ export default {
     font-weight: bold;
 }
 
+.btn-primary {
+    background-color: #00b862; /* Verde */
     color: #fff;
 }
 
