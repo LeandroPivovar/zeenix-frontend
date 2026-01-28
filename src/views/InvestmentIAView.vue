@@ -453,14 +453,17 @@
             @close="showStrategyRequiredModal = false"
             @confirm="handleStrategyRequiredConfirm"
         />
-        <AppSidebar 
-            :is-open="isSidebarOpen" 
-            :is-collapsed="isSidebarCollapsed" 
-            @toggle-collapse="toggleSidebarCollapse"
-            @close-sidebar="closeSidebar"
-        />
     </div>
     <DesktopBottomNav />
+    
+    <!-- Sidebar Overlay & Component positioned at the very end to be on top of everything -->
+    <div class="sidebar-overlay" v-if="isSidebarOpen" @click="closeSidebar"></div>
+    <AppSidebar 
+        :is-open="isSidebarOpen" 
+        :is-collapsed="isSidebarCollapsed" 
+        @toggle-collapse="toggleSidebarCollapse"
+        @close-sidebar="closeSidebar"
+    />
 </template>
 
 <script>
@@ -1464,17 +1467,7 @@ export default {
     box-sizing: border-box;
 }
 
-/* Sidebar Overlay */
-.sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 9998;
-    backdrop-filter: blur(2px);
-}
+
 
 /* Force Sidebar Background on Mobile */
 :deep(.sidebar) {
@@ -3870,7 +3863,7 @@ export default {
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(2px);
-    z-index: 998;
+    z-index: 10001;
     cursor: pointer;
 }
 
