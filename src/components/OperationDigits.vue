@@ -73,12 +73,13 @@
                                 </div>
                             </div>
                             <button 
-                                class="bg-zenix-green opacity-30 cursor-not-allowed text-black font-bold px-4 py-2 rounded-lg transition-all text-xs flex items-center gap-2 pointer-events-auto"
-                                style="pointer-events: auto;"
-                                title="Funcionalidade em desenvolvimento. Para seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado."
+                                @click="toggleAnalysis"
+                                :disabled="isAnalyzing"
+                                class="bg-zenix-green text-black font-bold px-4 py-2 rounded-lg transition-all text-xs flex items-center gap-2 active:scale-95 hover:bg-opacity-90 transition-all shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                                :class="{ 'opacity-50 cursor-not-allowed grayscale': isAnalyzing }"
                             >
-                                <i class="fas fa-sync-alt"></i>
-                                <span>Gerar</span>
+                                <i class="fas" :class="isAnalyzing ? 'fa-spinner fa-spin' : 'fa-bolt'"></i>
+                                <span>{{ isAnalyzing ? 'Analisando...' : 'Gerar' }}</span>
                             </button>
                         </div>
 
@@ -130,7 +131,7 @@
                                 @click="setDirectionAndBuy(dir.value)" 
                                 :disabled="isTrading || activeContract || (digitType === dir.value && !currentProposalId) || (digitType !== dir.value && isLoadingProposal)"
                                 :class="[
-                                    dir.value.includes('DIFF') || dir.value.includes('PUT') || dir.value.includes('ODD') || dir.value.includes('UNDER') 
+                                    dir.value.includes('DIFF') || dir.value.includes('PUT') || dir.value.includes('ODD') || dir.value.includes('UNDER') || dir.value.includes('FALL')
                                         ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20 text-white' 
                                         : 'bg-zenix-green hover:bg-zenix-green/90 shadow-zenix-green/20 text-black',
                                     { 'opacity-30 cursor-not-allowed': isTrading || activeContract || (digitType !== dir.value && isLoadingProposal) }
@@ -138,6 +139,18 @@
                                 class="flex-1 font-black py-4 rounded-xl transition-all duration-300 shadow-lg uppercase tracking-widest text-sm"
                             >
                                 {{ dir.label }}
+                            </button>
+
+                            <!-- AI Execution Button -->
+                            <button 
+                                v-if="aiRecommendation && aiRecommendation.action && aiRecommendation.action !== 'ERRO' && aiRecommendation.action !== 'AGUARDAR'"
+                                @click="executeAIOrder"
+                                :disabled="isTrading || activeContract"
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all duration-300 shadow-lg uppercase tracking-widest text-sm mt-2 flex items-center justify-center gap-2"
+                                :class="{ 'opacity-30 cursor-not-allowed': isTrading || activeContract }"
+                            >
+                                <i class="fas fa-robot"></i>
+                                EXECUTAR SINAL IA
                             </button>
                         </div>
                     </div>
@@ -1034,6 +1047,44 @@ export default {
                 this.isAnalyzing = false;
             }, 1000);
         },
+        executeAIOrder() {
+            if (!this.aiRecommendation) return;
+            
+            // Se a recomendação incluir uma barreira (ex: para Match/Diff/Over/Under), usar ela
+            if (this.aiRecommendation.barrier !== undefined && this.aiRecommendation.barrier !== null) {
+                this.digitBarrier = String(this.aiRecommendation.barrier);
+            }
+            
+            console.log('[OperationDigits] Executar AI Order:', this.aiRecommendation.action, 'Barrier:', this.digitBarrier);
+            this.setDirectionAndBuy(this.aiRecommendation.action);
+        },
+        getButtonLabel(type) {
+            const labels = {
+                'CALL': 'CALL', 'PUT': 'PUT',
+                'CALLE': 'CALL (Equal)', 'PUTE': 'PUT (Equal)',
+                'DIGITMATCH': 'IGUAL', 'DIGITDIFF': 'DIFERENTE',
+                'DIGITEVEN': 'PAR', 'DIGITODD': 'ÍMPAR',
+                'DIGITOVER': 'SUPERIOR', 'DIGITUNDER': 'INFERIOR',
+                'ONETOUCH': 'TOCA', 'NOTOUCH': 'NÃO TOCA',
+                'MULTUP': 'ALTA', 'MULTDOWN': 'BAIXA'
+            };
+            return labels[type] || type;
+        },
+        getButtonIcon(type) {
+            const icons = {
+                'CALL': 'fas fa-arrow-up', 'PUT': 'fas fa-arrow-down',
+                'CALLE': 'fas fa-arrow-up-right-dots', 'PUTE': 'fas fa-arrow-down-right-dots',
+                'DIGITMATCH': 'fas fa-equals', 'DIGITDIFF': 'fas fa-not-equal',
+                'DIGITEVEN': 'fas fa-divide', 'DIGITODD': 'fas fa-percent',
+                'DIGITOVER': 'fas fa-greater-than', 'DIGITUNDER': 'fas fa-less-than',
+                'MULTUP': 'fas fa-chart-line', 'MULTDOWN': 'fas fa-chart-line'
+            };
+            return icons[type] || 'fas fa-bolt';
+        },
+        getButtonColor(type) {
+            const greens = ['CALL', 'CALLE', 'DIGITMATCH', 'DIGITEVEN', 'DIGITOVER', 'ONETOUCH', 'MULTUP', 'RISE'];
+            return greens.includes(type) ? 'text-zenix-green' : 'text-red-500';
+        },    
         stopAnalysis() {
             this.isAnalyzing = false;
             if (this.analysisTimer) {
@@ -1123,7 +1174,8 @@ export default {
                     action: recommendation.action || 'AGUARDAR',
                     confidence: confidenceValue,
                     reason: recommendation.reasoning || recommendation.reason || '',
-                    entry_time: recommendation.entry_time || 0
+                    entry_time: recommendation.entry_time || 0,
+                    barrier: recommendation.barrier
                 };
 
                 // Iniciar contagem regressiva se o Gemini sugerir um tempo de entrada

@@ -599,10 +599,10 @@
                    <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                    <div class="flex flex-col items-center gap-2 relative z-10 w-full">
                      <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Sinal da IA</span>
-                     <div v-if="aiRecommendation" class="flex flex-col items-center gap-1">
+                      <div v-if="aiRecommendation" class="flex flex-col items-center gap-1">
                         <div class="flex items-center gap-3">
-                           <i :class="aiRecommendation.action === 'CALL' || aiRecommendation.action === 'RISE' || aiRecommendation.action === 'CALLE' ? 'fas fa-arrow-up text-zenix-green text-2xl' : 'fas fa-arrow-down text-red-500 text-2xl'"></i>
-                           <span :class="aiRecommendation.action === 'CALL' || aiRecommendation.action === 'RISE' || aiRecommendation.action === 'CALLE' ? 'text-zenix-green' : 'text-red-500'" class="text-xl font-black">
+                           <i :class="getButtonIcon(aiRecommendation.action) + ' ' + getButtonColor(aiRecommendation.action) + ' text-2xl'"></i>
+                           <span :class="getButtonColor(aiRecommendation.action)" class="text-xl font-black">
                              {{ getButtonLabel(aiRecommendation.action) }}
                            </span>
                         </div>
@@ -2798,6 +2798,21 @@ export default {
       };
       return labels[type] || type;
     },
+    getButtonIcon(type) {
+      const icons = {
+        'CALL': 'fas fa-arrow-up', 'PUT': 'fas fa-arrow-down',
+        'CALLE': 'fas fa-arrow-up-right-dots', 'PUTE': 'fas fa-arrow-down-right-dots',
+        'DIGITMATCH': 'fas fa-equals', 'DIGITDIFF': 'fas fa-not-equal',
+        'DIGITEVEN': 'fas fa-divide', 'DIGITODD': 'fas fa-percent',
+        'DIGITOVER': 'fas fa-greater-than', 'DIGITUNDER': 'fas fa-less-than',
+        'MULTUP': 'fas fa-chart-line', 'MULTDOWN': 'fas fa-chart-line'
+      };
+      return icons[type] || 'fas fa-bolt';
+    },
+    getButtonColor(type) {
+      const greens = ['CALL', 'CALLE', 'DIGITMATCH', 'DIGITEVEN', 'DIGITOVER', 'ONETOUCH', 'MULTUP', 'RISE'];
+      return greens.includes(type) ? 'text-zenix-green' : 'text-red-500';
+    },
     async executeBuy() {
       if (!this.canExecuteOrder) {
         return;
@@ -3509,7 +3524,8 @@ export default {
           action: recommendation.action || 'CALL',
           confidence: confidenceValue,
           reasoning: recommendation.reasoning || '',
-          entry_time: recommendation.entry_time || 0
+          entry_time: recommendation.entry_time || 0,
+          barrier: recommendation.barrier
         };
 
         // Iniciar contagem regressiva se houver tempo de entrada
