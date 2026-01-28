@@ -704,6 +704,7 @@
 
 <script>
 const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
+import derivTradingService from '../services/deriv-trading.service.js';
 
 export default {
     name: 'OperationDigits',
@@ -866,6 +867,9 @@ export default {
                 currency = 'USD';
             }
             return currency.toUpperCase();
+        },
+        currentTradeCurrency() {
+            return localStorage.getItem('trade_currency') || (this.accountLoginid?.startsWith('VRT') ? 'DEMO' : 'USD');
         },
         needsDigitBarrier() {
             return this.digitType !== 'DIGITEVEN' && this.digitType !== 'DIGITODD';
@@ -1880,6 +1884,28 @@ export default {
                 direction: this.digitType,
                 status: 'EXECUTED',
             });
+            
+            // Persistir a trade no backend
+            try {
+                derivTradingService.notifyBuy({
+                    contract_id: buy.contract_id,
+                    buy_price: Number(buy.buy_price),
+                    currency: this.currentTradeCurrency,
+                    symbol: this.symbol,
+                    contract_type: this.digitType,
+                    status: 'OPEN',
+                    transaction_id: buy.transaction_id,
+                    purchase_time: buy.purchase_time,
+                    entry_tick: Number(buy.entry_spot || buy.spot || this.latestTick?.value || 0),
+                    barrier: this.needsDigitBarrier ? this.digitBarrier : null
+                }, this.currentTradeCurrency).then(() => {
+                    console.log('[OperationDigits] Trade persistida no backend com sucesso');
+                }).catch(err => {
+                    console.error('[OperationDigits] Erro ao persistir trade no backend:', err);
+                });
+            } catch (e) {
+                 console.error('[OperationDigits] Erro ao chamar notifyBuy:', e);
+            }
         },
         subscribeToContract(contractId) {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {

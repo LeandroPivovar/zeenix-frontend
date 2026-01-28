@@ -611,7 +611,10 @@ class DerivTradingService {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(tradeData),
+        body: JSON.stringify({
+          ...tradeData,
+          currency: tradeData.currency || localStorage.getItem('deriv_currency') || 'USD'
+        }),
       });
     } catch (error) {
       console.warn('[DerivTrading] Erro ao notificar compra:', error);

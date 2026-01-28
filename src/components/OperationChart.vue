@@ -2281,7 +2281,7 @@ export default {
           amount: Number(this.amount),
           basis: 'stake',
           contract_type: this.tradeType,
-          currency: this.currency || 'USD',
+          currency: this.currency || localStorage.getItem('trade_currency') || 'USD',
           symbol: this.symbol,
           duration: Number(this.duration),
           duration_unit: this.durationUnit,
