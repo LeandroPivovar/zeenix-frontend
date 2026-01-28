@@ -335,8 +335,12 @@ export default {
 </script>
 
 <style scoped>
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #444; }
+.custom-scrollbar::-webkit-scrollbar { width: 8px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { 
+  background: #22c55e; /* Ganha cor verde para ficar bem visível */
+  border-radius: 10px; 
+  border: 2px solid #000; /* Borda para dar profundidade */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #1eb054; }
 </style>

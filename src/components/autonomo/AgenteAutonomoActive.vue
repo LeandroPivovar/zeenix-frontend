@@ -136,6 +136,15 @@
 					>
 						{{ hideValues ? '••••' : (avgDailyProfit >= 0 ? '+' : '') + '$' + avgDailyProfit.toFixed(2) }}
 					</div>
+					<div class="flex items-center gap-2">
+						<div 
+							class="inline-flex items-center rounded-full border border-transparent font-semibold text-[10px] px-2 py-0.5" 
+							:class="avgDailyProfit >= 0 ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'"
+							v-if="!hideValues"
+						>
+							{{ avgDailyProfit >= 0 ? '+' : '' }}{{ avgDailyProfitPercent.toFixed(2) }}%
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -948,6 +957,13 @@
 				if (!this.dailyData || this.dailyData.length === 0) return 0;
 				// periodProfit já é a soma
 				return this.periodProfit / this.dailyData.length;
+			},
+			avgDailyProfitPercent() {
+				const avgProfit = this.avgDailyProfit;
+				const finalCap = this.finalCapital;
+				const startCap = finalCap - this.periodProfit;
+				if (startCap <= 0) return 0;
+				return (avgProfit / startCap) * 100;
 			},
 	avgProfitPerOp() {
 		// Calculate average profit per operation
