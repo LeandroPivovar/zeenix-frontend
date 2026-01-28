@@ -154,7 +154,15 @@
 									<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
 								</div>
 								<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
-									<span class="text-lg">{{ runningAgents.find(a => a.id === agenteData.id)?.emoji || '⚡' }}</span>
+									<div class="strategy-icons-inline mr-1" v-if="agenteData.id">
+										<img 
+											v-for="icon in runningAgents.find(a => a.id === agenteData.id)?.icons" 
+											:key="icon" 
+											:src="icon" 
+											class="deriv-svg-icon-small"
+										/>
+									</div>
+									<span v-else class="text-lg">{{ runningAgents.find(a => a.id === agenteData.id)?.emoji || '⚡' }}</span>
 									<span>{{ agenteData.estrategia.replace('IA ', '').charAt(0).toUpperCase() + agenteData.estrategia.replace('IA ', '').slice(1) }}</span>
 									<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
 								</div>
@@ -180,14 +188,17 @@
 								:class="{ 'bg-[#092012]/35': agenteData.id === agent.id }"
 							>
 								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
-									<span>{{ agent.emoji }}</span>
+									<div class="strategy-icons-inline" v-if="agent.icons">
+										<img v-for="icon in agent.icons" :key="icon" :src="icon" class="deriv-svg-icon-small" />
+									</div>
+									<span v-else>{{ agent.emoji }}</span>
 									<div v-if="agenteData.id === agent.id" class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0c0c0c] flex items-center justify-center">
 										<i class="fas fa-check text-[8px] text-black"></i>
 									</div>
 								</div>
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center justify-between gap-2">
-										<h5 class="text-xs font-bold text-white truncate text-left">{{ agent.title }}</h5>
+										<h5 class="text-xs font-bold text-white truncate text-left">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
 										<span v-if="agenteData.id === agent.id" class="text-[8px] text-[#22c55e] font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
 									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line" v-html="formatAgentDescription(agent.description)"></p>
@@ -824,7 +835,9 @@
                     { id: 'all', title: 'Todos os Agentes', emoji: '🤖' },
 					{ 
 						id: 'zeus', 
-						title: 'IA Zeus', 
+						title: 'Agente Zeus',
+						marketType: 'Digits',
+						icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'],
 						emoji: '⚡', 
 						description: 'Análise: Fluxo de Mercado (Tick a Tick)\nAssertividade: 90%\nRetorno: 85%',
 						winRate: 58,
@@ -832,7 +845,9 @@
 					},
 					{ 
 						id: 'falcon', 
-						title: 'IA Falcon', 
+						title: 'Agente Falcon',
+						marketType: 'Digits',
+						icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'],
 						emoji: '🦅', 
 						description: 'Análise: Entropia + Força + Assertividade\nAssertividade: 70%\nRetorno: 63.5%',
 						winRate: 62,
@@ -1819,6 +1834,24 @@
 </script>
 
 <style scoped>
+.strategy-icons-inline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.deriv-svg-icon {
+    width: 28px;
+    height: 28px;
+    filter: brightness(0) invert(1);
+}
+
+.deriv-svg-icon-small {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
 /* Custom sidebar styles for specific internal scrollbars if tailwind classes aren't enough */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;

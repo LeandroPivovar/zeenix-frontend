@@ -132,13 +132,16 @@
 							>
 								<div class="selector-content">
 									<div class="selector-left">
-										<div class="selector-icon-active" v-if="selectedAgent">
-											<i v-if="selectedAgent === 'zeus'" class="fas fa-bolt"></i>
-											<i v-else-if="selectedAgent === 'falcon'" class="fas fa-rocket"></i>
-											<i v-else class="fas fa-robot"></i>
+										<div class="strategy-icons-inline" v-if="selectedAgent">
+											<img 
+												v-for="icon in availableAgents.find(a => a.id === selectedAgent)?.icons" 
+												:key="icon" 
+												:src="icon" 
+												class="deriv-svg-icon-small"
+											/>
 										</div>
 										<span :class="{ 'placeholder': !selectedAgent }">
-											{{ selectedAgent ? getAgentTitle(selectedAgent) : 'Selecione seu agente' }}
+											{{ selectedAgent ? 'IA ' + getAgentTitle(selectedAgent).replace('Agente ', '') : 'Selecione seu agente' }}
 										</span>
 									</div>
 									<i class="fas fa-chevron-right selector-arrow"></i>
@@ -149,13 +152,7 @@
 							<transition name="slide-fade" mode="out-in">
 								<div v-if="selectedAgent" :key="selectedAgent" class="agent-description-card mt-3">
 									<div class="agent-desc-content">
-										<div class="agent-desc-icon">
-											<i v-if="selectedAgent === 'zeus'" class="fas fa-bolt" style="color: white !important;"></i>
-											<i v-else-if="selectedAgent === 'falcon'" class="fas fa-rocket" style="color: white !important;"></i>
-											<i v-else class="fas fa-robot" style="color: white !important;"></i>
-										</div>
 										<div class="agent-desc-info">
-											<h3>{{ getAgentTitle(selectedAgent).toUpperCase() }}</h3>
 											<p>{{ getAgentDescription(selectedAgent) }}</p>
 										</div>
 									</div>
@@ -361,16 +358,15 @@
 							<div 
 								v-for="agent in availableAgents" 
 								:key="agent.id"
-								class="agent-option-premium"
+								class="agent-option-simple-row"
 								:class="{ 'active': selectedAgent === agent.id }"
 								@click="selectAgent(agent.id)"
 							>
-								<div class="agent-option-icon">
-									<i :class="agent.icon"></i>
+								<div class="strategy-icons-inline">
+									<img v-for="icon in agent.icons" :key="icon" :src="icon" class="deriv-svg-icon" />
 								</div>
 								<div class="agent-option-info">
-									<h4 class="agent-option-title">{{ agent.title }}</h4>
-									<p class="agent-option-desc">{{ agent.description }}</p>
+									<h4 class="agent-option-title">{{ agent.title.toUpperCase() }} - {{ agent.marketType }}</h4>
 								</div>
 								<div class="agent-option-check">
 									<i class="fas" :class="selectedAgent === agent.id ? 'fa-check-circle' : 'fa-circle'"></i>
@@ -427,13 +423,15 @@ export default {
 				{
 					id: 'zeus',
 					title: 'Agente Zeus',
-					icon: 'fas fa-bolt',
+					marketType: 'Digits',
+					icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'],
 					description: 'Análise: Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação\nAssertividade: 56% a 90%\nRetorno: 56% / 85%'
 				},
 				{
 					id: 'falcon',
 					title: 'Agente Falcon',
-					icon: 'fas fa-rocket',
+					marketType: 'Digits',
+					icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'],
 					description: 'Análise: Padrão Estatístico (Entropia + Força + Assertividade)\nAssertividade: 60% a 70%\nRetorno: 63.5%'
 				}
 			]
@@ -1327,13 +1325,22 @@ export default {
     gap: 0.75rem;
 }
 
-.selector-icon-active {
-    width: 20px;
-    height: 20px;
+.strategy-icons-inline {
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: #22C55E;
+    gap: 6px;
+}
+
+.deriv-svg-icon {
+    width: 28px;
+    height: 28px;
+    filter: brightness(0) invert(1);
+}
+
+.deriv-svg-icon-small {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
 }
 
 .selector-left span {
@@ -1396,46 +1403,26 @@ export default {
     gap: 0.75rem;
 }
 
-.agent-option-premium {
+.agent-option-simple-row {
     display: flex;
     align-items: center;
-    padding: 1rem;
+    padding: 0.85rem 1rem;
     background: #111;
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
-    gap: 1rem;
+    gap: 1.25rem;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.agent-option-premium:hover {
+.agent-option-simple-row:hover {
     border-color: #22C55E66;
     background: #161616;
 }
 
-.agent-option-premium.active {
+.agent-option-simple-row.active {
     border-color: #22C55E;
     background: #0d1a10;
-}
-
-.agent-option-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    background: rgba(34, 197, 94, 0.1);
-    border-radius: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.agent-option-icon i,
-.agent-option-icon svg,
-.agent-option-icon path {
-    font-size: 1.25rem;
-    color: #FFFFFF !important;
-    fill: #FFFFFF !important;
-    stroke: #FFFFFF !important;
 }
 
 .agent-option-info {
@@ -1444,17 +1431,10 @@ export default {
 }
 
 .agent-option-title {
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     font-weight: 700;
     color: #fff;
-    margin: 0 0 0.125rem 0;
-}
-
-.agent-option-desc {
-    font-size: 0.75rem;
-    color: #A1A1A1;
     margin: 0;
-    line-height: 1.3;
 }
 
 .agent-option-check {
@@ -1462,7 +1442,7 @@ export default {
     font-size: 1rem;
 }
 
-.agent-option-premium.active .agent-option-check {
+.agent-option-simple-row.active .agent-option-check {
     color: #22C55E;
 }
 

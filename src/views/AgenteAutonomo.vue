@@ -1357,6 +1357,7 @@
       
       getStrategyTitle(id) {
         const map = {
+          'zeus': 'IA Zeus',
           'orion': 'IA Orion',
           'sentinel': 'IA Sentinel',
           'falcon': 'IA Falcon',
