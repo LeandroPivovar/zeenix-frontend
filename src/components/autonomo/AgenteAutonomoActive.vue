@@ -134,7 +134,7 @@
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 				
 				<!-- Estrategia -->
-				<div class="relative flex-1">
+				<div class="relative flex-1 agent-switcher-container">
 					<div 
 						class="flex items-center justify-between hover:bg-[#1a1a1a] rounded-lg p-2 -m-2 transition-colors cursor-pointer group"
 						@click.stop="toggleAgentSwitcher"
@@ -1677,7 +1677,7 @@
 				if (this.showDatePicker && !event.target.closest('.relative.z-\\[40\\]')) {
 					this.showDatePicker = false;
 				}
-				if (this.showAgentSwitcher && !event.target.closest('.relative.flex-1')) {
+				if (this.showAgentSwitcher && !event.target.closest('.agent-switcher-container')) {
 					this.showAgentSwitcher = false;
 				}
 			},

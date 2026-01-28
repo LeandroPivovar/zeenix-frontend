@@ -211,7 +211,7 @@
                                                     :key="strategy.id"
                                                     class="agent-option-premium"
                                                     :class="{ 'active': selectedStrategy === strategy.id }"
-                                                    @click="selectStrategy(strategy.id)"
+                                                    @click.stop="selectStrategy(strategy.id)"
                                                 >
                                                     <div class="agent-option-icon">
                                                         <template v-if="strategy.derivIcons">
@@ -1047,6 +1047,7 @@ export default {
             },
 
             selectStrategy(id) {
+                console.log('[InvestmentIAView] selectStrategy triggered:', id);
                 this.selectedStrategy = id;
                 // Sincronização de mercado (opcional conforme sua lógica)
                 const strategyLower = id.toLowerCase();
@@ -1055,6 +1056,7 @@ export default {
                 // FECHA TUDO
                 this.showStrategyModal = false;
                 this.showStrategyRequiredModal = false;
+                console.log('[InvestmentIAView] Modal closed. showStrategyModal:', this.showStrategyModal);
             },
         
         getUserId() {
@@ -4487,5 +4489,9 @@ export default {
     background: rgba(0, 0, 0, 0.5) !important;
     z-index: 9998 !important;
     backdrop-filter: blur(2px);
+}
+
+.main-content {
+    justify-content: flex-start !important;
 }
 </style>
