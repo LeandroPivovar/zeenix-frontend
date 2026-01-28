@@ -1,5 +1,5 @@
 <template>
-    <div class="zenix-layout">
+    <div class="layout">
 
         
         <AppSidebar 
@@ -194,44 +194,43 @@
                                 </transition>
                     </div>
 
-                    <!-- Strategy Selection Modal (Premium Style) -->
-                    <Teleport to="body">
-                        <div v-if="showStrategyModal" class="modal-overlay" @click.self="closeStrategyModal">
-                            <div class="modal-content categorized-modal" @click.stop>
-                                <div class="modal-header-premium">
-                                    <h3 class="modal-title">Selecionar Estratégia</h3>
-                                    <button @click="closeStrategyModal" class="modal-close-btn">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="agents-modal-list">
-                                        <div 
-                                            v-for="strategy in availableStrategies" 
-                                            :key="strategy.id"
-                                            class="agent-option-premium"
-                                            :class="{ 'active': selectedStrategy === strategy.id }"
-                                            @click="selectStrategy(strategy.id)"
-                                        >
-                                            <div class="agent-option-icon">
-                                                <div v-if="strategy.derivIcons" class="flex gap-1 justify-center">
-                                                    <img v-for="icon in strategy.derivIcons" :key="icon" :src="icon" class="w-6 h-6" />
+                            <Teleport to="body">
+                                <div v-if="showStrategyModal" class="modal-overlay" @click.self="closeStrategyModal">
+                                    <div class="modal-content categorized-modal">
+                                        <div class="modal-header-premium">
+                                            <h3 class="modal-title">Selecionar Estratégia</h3>
+                                            <button @click="closeStrategyModal" class="modal-close-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="agents-modal-list">
+                                                <div 
+                                                    v-for="strategy in availableStrategies" 
+                                                    :key="strategy.id"
+                                                    class="agent-option-premium"
+                                                    :class="{ 'active': selectedStrategy === strategy.id }"
+                                                    @click="selectStrategy(strategy.id)"
+                                                >
+                                                    <div class="agent-option-icon">
+                                                        <template v-if="strategy.derivIcons">
+                                                            <img v-for="icon in strategy.derivIcons" :key="icon" :src="icon" class="w-6 h-6" />
+                                                        </template>
+                                                        <i v-else :class="strategy.icon"></i>
+                                                    </div>
+                                                    <div class="agent-option-info">
+                                                        <h4 class="agent-option-title">{{ strategy.title }}</h4>
+                                                        <p class="agent-option-desc" v-html="strategy.description"></p>
+                                                    </div>
+                                                    <div class="agent-option-check">
+                                                        <i class="fas" :class="selectedStrategy === strategy.id ? 'fa-check-circle' : 'fa-circle'"></i>
+                                                    </div>
                                                 </div>
-                                                <i v-else :class="strategy.icon"></i>
-                                            </div>
-                                            <div class="agent-option-info">
-                                                <h4 class="agent-option-title">{{ strategy.title }}</h4>
-                                                <p class="agent-option-desc" v-html="strategy.description"></p>
-                                            </div>
-                                            <div class="agent-option-check">
-                                                <i class="fas" :class="selectedStrategy === strategy.id ? 'fa-check-circle' : 'fa-circle'"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </Teleport>
+                            </Teleport>
 
                             <div class="form-group">
                                 <label class="form-label">
@@ -1033,38 +1032,23 @@ export default {
 
         handleStrategyRequiredConfirm() {
             this.showStrategyRequiredModal = false;
-            this.$nextTick(() => {
-                this.openStrategyModal();
-            });
-        },
+            // Delay de 200ms para o aviso sumir antes do seletor aparecer
+                setTimeout(() => {
+                    this.showStrategyModal = true;
+                }, 200);
+            },
 
-        openStrategyModal() {
-            this.showStrategyModal = true;
-        },
+            selectStrategy(id) {
+                this.selectedStrategy = id;
+                // Sincronização de mercado (opcional conforme sua lógica)
+                const strategyLower = id.toLowerCase();
+                this.selectedMarket = strategyLower === 'atlas' ? 'vol100_1s' : 'vol100';
 
-        closeStrategyModal() {
-            this.showStrategyModal = false;
-        },
+                // FECHA TUDO
+                this.showStrategyModal = false;
+                this.showStrategyRequiredModal = false;
+            },
         
-        selectStrategy(id) {
-            this.selectedStrategy = id;
-            
-            // ✅ Sincronização de Mercado Automática (ZENIX v2.0)
-            const strategyLower = id.toLowerCase();
-            if (strategyLower === 'atlas') {
-                this.selectedMarket = 'vol100_1s';
-                console.log('[InvestmentIAView] 🎯 Atlas selecionado: Alternando mercado para Volatility 100 (1s) Index');
-            } else if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
-                this.selectedMarket = 'vol100';
-                console.log(`[InvestmentIAView] 🎯 ${id.toUpperCase()} selecionado: Alternando mercado para Volatility 100 Index`);
-            } else {
-                this.selectedMarket = 'vol10';
-            }
-
-            // Immediately close the modal
-            this.closeStrategyModal();
-        },
-
         getUserId() {
             try {
                 const token = localStorage.getItem('token');
@@ -4058,11 +4042,17 @@ export default {
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(4px);
-    z-index: 2000000 !important;
+    z-index: 1000000001 !important; /* Maior que o StrategyRequiredModal */
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
+}
+
+/* Garante que o conteúdo seja clicável */
+.agent-option-premium {
+    cursor: pointer !important;
+    pointer-events: auto !important;
 }
 
 .categorized-modal {
@@ -4218,7 +4208,7 @@ export default {
         position: fixed;
         width: 280px !important;
         height: 100vh;
-        z-index: 999;
+        z-index: 9990000;
         transform: translateX(-100%);
         transition: transform 0.3s ease-out;
     }
@@ -4226,7 +4216,7 @@ export default {
     /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
     :deep(.sidebar.is-open) {
         transform: translateX(0);
-        z-index: 10000 !important;
+        z-index: 999999 !important;
     }
     
     /* Modal de Settings deve sobrepor tudo no mobile, incluindo TopNavbar */
@@ -4450,5 +4440,35 @@ export default {
         text-transform: uppercase !important;
         color: #C5C5C5 !important;
     }
+
+    /* 4. Garantir que o painel da IA não "atropele" o Z-index */
+    #ai-vision-panel {
+        position: relative;
+        z-index: 10!important;
+    }
+
+    .ai-visualization-area {
+        isolation: isolate;
+    }
+}
+
+.layout {
+    background-color: #121212;
+    min-height: 100vh;
+    display: flex;
+}
+
+.sidebar-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 9998 !important;
+    backdrop-filter: blur(2px);
 }
 </style>

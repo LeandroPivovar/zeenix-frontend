@@ -28,7 +28,7 @@
             Para iniciar as operações, você precisa selecionar uma das estratégias disponíveis (Orion, Atlas, Nexus, etc.).
           </p>
           
-          <button class="confirm-button" type="button" @click="handleConfirm">
+          <button class="confirm-button" type="button" @click.stop="handleConfirm">
             Selecionar Agora
           </button>
         </div>
