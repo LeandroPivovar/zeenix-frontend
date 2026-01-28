@@ -195,43 +195,7 @@
                                 </transition>
                     </div>
 
-                            <Teleport to="body">
-                                <div v-if="showStrategyModal" class="modal-overlay" @click.self="closeStrategyModal">
-                                    <div class="modal-content categorized-modal">
-                                        <div class="modal-header-premium">
-                                            <h3 class="modal-title">Selecionar Estratégia</h3>
-                                            <button @click="closeStrategyModal" class="modal-close-btn">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="agents-modal-list">
-                                                <div 
-                                                    v-for="strategy in availableStrategies" 
-                                                    :key="strategy.id"
-                                                    class="agent-option-premium"
-                                                    :class="{ 'active': selectedStrategy === strategy.id }"
-                                                    @click.stop="selectStrategy(strategy.id)"
-                                                >
-                                                    <div class="agent-option-icon">
-                                                        <template v-if="strategy.derivIcons">
-                                                            <img v-for="icon in strategy.derivIcons" :key="icon" :src="icon" class="w-6 h-6" />
-                                                        </template>
-                                                        <i v-else :class="strategy.icon"></i>
-                                                    </div>
-                                                    <div class="agent-option-info">
-                                                        <h4 class="agent-option-title">{{ strategy.title }}</h4>
-                                                        <p class="agent-option-desc" v-html="strategy.description"></p>
-                                                    </div>
-                                                    <div class="agent-option-check">
-                                                        <i class="fas" :class="selectedStrategy === strategy.id ? 'fa-check-circle' : 'fa-circle'"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Teleport>
+
 
                             <div class="form-group">
                                 <label class="form-label">
@@ -467,6 +431,43 @@
             @confirm="handleStrategyRequiredConfirm"
         />
     </div>
+        <Teleport to="body">
+            <div v-if="showStrategyModal" class="modal-overlay" @click.self="closeStrategyModal">
+                <div class="modal-content categorized-modal">
+                    <div class="modal-header-premium">
+                        <h3 class="modal-title">Selecionar Estratégia</h3>
+                        <button @click="closeStrategyModal" class="modal-close-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="agents-modal-list">
+                            <div 
+                                v-for="strategy in availableStrategies" 
+                                :key="strategy.id"
+                                class="agent-option-premium"
+                                :class="{ 'active': selectedStrategy === strategy.id }"
+                                @click.stop.prevent="selectStrategy(strategy.id)"
+                            >
+                                <div class="agent-option-icon">
+                                    <template v-if="strategy.derivIcons">
+                                        <img v-for="icon in strategy.derivIcons" :key="icon" :src="icon" class="w-6 h-6" />
+                                    </template>
+                                    <i v-else :class="strategy.icon"></i>
+                                </div>
+                                <div class="agent-option-info">
+                                    <h4 class="agent-option-title">{{ strategy.title }}</h4>
+                                    <p class="agent-option-desc" v-html="strategy.description"></p>
+                                </div>
+                                <div class="agent-option-check">
+                                    <i class="fas" :class="selectedStrategy === strategy.id ? 'fa-check-circle' : 'fa-circle'"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     <DesktopBottomNav />
 </template>
 
