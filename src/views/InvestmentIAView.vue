@@ -197,7 +197,7 @@
                     <!-- Strategy Selection Modal (Premium Style) -->
                     <Teleport to="body">
                         <div v-if="showStrategyModal" class="modal-overlay" @click.self="closeStrategyModal">
-                            <div class="modal-content categorized-modal">
+                            <div class="modal-content categorized-modal" @click.stop>
                                 <div class="modal-header-premium">
                                     <h3 class="modal-title">Selecionar Estratégia</h3>
                                     <button @click="closeStrategyModal" class="modal-close-btn">
@@ -4056,7 +4056,7 @@ export default {
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(4px);
-    z-index: 10000;
+    z-index: 2000000 !important;
     display: flex;
     align-items: center;
     justify-content: center;
