@@ -132,7 +132,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: 10000000;
   padding: 20px;
 }
 
