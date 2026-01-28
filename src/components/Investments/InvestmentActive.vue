@@ -2131,11 +2131,13 @@ export default {
                             const isAtTop = container && container.scrollTop <= 50;
                             const isAtTopMobile = containerMobile && containerMobile.scrollTop <= 50;
                             
-                            // ✅ FORÇAR REATIVIDADE DO VUE: Criar novo array
-                            // Adicionar novos logs no INÍCIO do array (topo)
-                            // Backend já retorna mais novos primeiro, então usar direto
-                            // Vue 3: reatividade automática, não precisa de $set
-                            this.realtimeLogs = [...logsToAdd, ...this.realtimeLogs];
+                            // ✅ [FIX CRÍTICO] EVITAR RE-RENDER COMPLETO
+                            // ANTES: this.realtimeLogs = [...logsToAdd, ...this.realtimeLogs]
+                            // Isso substitui o array inteiro → Vue detecta nova referência → re-cria TODO o DOM
+                            // 
+                            // AGORA: Usar .unshift() para modificar array in-place
+                            // → Vue detecta apenas novos itens → adiciona apenas os novos no DOM
+                            this.realtimeLogs.unshift(...logsToAdd);
                             
                             // Atualizar timestamp do último log (usar created_at se disponível)
                             this.lastLogTimestamp = this.realtimeLogs[0].created_at || this.realtimeLogs[0].timestamp;
