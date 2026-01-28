@@ -665,10 +665,23 @@
                                 </div>
                                 
                                 <div v-else class="text-left">
-                                    <div v-for="log in realtimeLogs" :key="log.id" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
+                                    <div v-for="log in realtimeLogs" :key="log.id" class="mb-1.5 text-left log-entry">
                                         <span class="text-gray-500">[{{ log.timestamp }}]</span>
                                         <span class="ml-1">{{ log.icon }}</span>
-                                        <span class="ml-1 log-message">{{ log.message }}</span>
+                                        
+                                        <!-- Renderização Especial para IA ATLAS -->
+                                        <template v-if="sessionConfig.strategy === 'atlas'">
+                                            <div class="ml-1 inline-block">
+                                                <div v-for="(line, idx) in log.message.split('\n')" :key="idx" 
+                                                     :class="[idx === 0 ? getLogClass(log) + ' font-bold uppercase' : 'text-gray-400 text-[10px] ml-4']">
+                                                    <span v-if="idx > 0" class="mr-1">•</span>
+                                                    {{ line }}
+                                                </div>
+                                            </div>
+                                        </template>
+                                        
+                                        <!-- Renderização Padrão para outras IAs -->
+                                        <span v-else class="ml-1 log-message" :class="getLogClass(log)">{{ log.message }}</span>
                                     </div>
                                 </div>
                                 
@@ -688,8 +701,24 @@
                                 
                                 <div v-else class="mobile-register-cards-container">
                                     <div v-for="log in realtimeLogs" :key="log.id" class="mobile-register-card">
-                                        <span class="mobile-register-time">{{ log.timestamp }}</span>
-                                        <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
+                                        <div class="flex items-start">
+                                            <span class="mobile-register-time mr-2">[{{ log.timestamp }}]</span>
+                                            
+                                            <!-- Atlas Mobile Format -->
+                                            <div v-if="sessionConfig.strategy === 'atlas'" class="flex flex-col">
+                                                <div v-for="(line, idx) in log.message.split('\n')" :key="idx"
+                                                     :class="[idx === 0 ? getLogClass(log) + ' font-bold uppercase text-xs' : 'text-gray-400 text-[10px] ml-2']">
+                                                    <span v-if="idx === 0">{{ log.icon }} </span>
+                                                    <span v-if="idx > 0">• </span>
+                                                    {{ line }}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Standard Mobile Format -->
+                                            <span v-else class="mobile-register-message log-message" :class="getLogClass(log)">
+                                                {{ log.icon }} {{ log.message }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -1095,7 +1124,7 @@ export default {
             const strategyLower = strategy.toLowerCase();
 
             if (strategyLower === 'atlas') {
-                return 'Volatility 50 Index';
+                return 'Volatility 100 Index';
             }
 
             // ✅ Se ORION/TITAN/NEXUS/APOLLO está ativa, retornar Volatility 100 Index
@@ -2579,7 +2608,8 @@ export default {
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
-                    } else if (currentSessionStatus === 'stopped_insufficient_balance') {
+                    }
+ else if (currentSessionStatus === 'stopped_insufficient_balance') {
                         // ✅ [ZENIX v3.4] Suporte para saldo insuficiente
                         if (!this.showInsufficientBalanceModal) {
                             console.log('[InvestmentActive] ❌ Saldo insuficiente detectado na session_status!');
