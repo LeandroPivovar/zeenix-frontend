@@ -50,6 +50,7 @@
             @pausar-agente="toggleAgenteStatus('componenteAtivo')"
             @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
             @change-agent="handleChangeAgent"
+            @live-balance-update="handleLiveBalanceUpdate"
           />
         </div>
 
@@ -402,6 +403,24 @@
         } catch (error) {
           console.error('[AgenteAutonomo] Erro ao alterar moeda:', error);
           await alert('Erro ao alterar moeda. Tente novamente.');
+        }
+      },
+      handleLiveBalanceUpdate(newBalance) {
+        if (newBalance !== undefined && newBalance !== null) {
+          // Mantendo compatibilidade com o mixin e TopNavbar
+          console.log('[AgenteAutonomoView] 💰 Recebida atualização de saldo live:', newBalance);
+          this.accountBalance = newBalance;
+          
+          if (this.info) {
+              this.info.balance = newBalance;
+              // Sincronizar também no balancesByCurrency do info se for USD
+              const currency = this.accountCurrency || 'USD';
+              if (this.info.balancesByCurrencyReal && !this.isDemo) {
+                  this.info.balancesByCurrencyReal[currency] = newBalance;
+              } else if (this.info.balancesByCurrencyDemo && this.isDemo) {
+                  this.info.balancesByCurrencyDemo[currency] = newBalance;
+              }
+          }
         }
       },
   

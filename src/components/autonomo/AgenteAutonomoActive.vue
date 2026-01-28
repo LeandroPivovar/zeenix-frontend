@@ -1179,6 +1179,15 @@
                         this.checkLogsForStopEvents(newLogs);
                     }
                 }
+            },
+            finalCapital: {
+                immediate: true,
+                handler(newVal) {
+                    if (newVal !== undefined && newVal !== null) {
+                        console.log('[AgenteAutonomoActive] 💰 finalCapital changed, emitting update:', newVal);
+                        this.$emit('live-balance-update', newVal);
+                    }
+                }
             }
 		},
 		methods: {
