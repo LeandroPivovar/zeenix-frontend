@@ -207,15 +207,11 @@
                                             @click="selectStrategy(strategy.id)"
                                         >
                                             <div class="agent-option-info">
-                                                <div class="agent-option-header-row">
-                                                    <h4 class="agent-option-title">{{ strategy.title }}</h4>
-                                                    <span v-if="strategy.marketType" class="agent-market-type">{{ strategy.marketType }}</span>
-                                                </div>
-                                                <div class="agent-option-icons-row">
+                                                <div class="agent-option-simple-row">
                                                     <div class="strategy-icons-inline">
                                                         <img v-for="icon in strategy.icons" :key="icon" :src="icon" class="deriv-svg-icon" />
                                                     </div>
-                                                    <span class="agent-icon-label">{{ strategy.iconLabel }}</span>
+                                                    <h4 class="agent-option-title">{{ strategy.title }} - {{ strategy.marketType }}</h4>
                                                 </div>
                                             </div>
                                             <div class="agent-option-check">
@@ -522,11 +518,11 @@ export default {
             selectedStrategy: null,
             showStrategyModal: false,
             allStrategies: [
-                { id: 'atlas', title: 'ALTAS - OVER 2', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], iconLabel: 'Over/Under', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%' },
-                { id: 'apollo', title: 'APOLLO - RISE/FALL', marketType: 'Ups e Downs', icons: ['/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg', '/deriv_icons/TradeTypesUpsAndDownsFallIcon.svg'], iconLabel: 'Rise/Fall', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%' },
-                { id: 'nexus', title: 'NEXUS - BARREIRA', marketType: 'Ups e Downs', icons: ['/deriv_icons/TradeTypesHighsAndLowsHigherIcon.svg', '/deriv_icons/TradeTypesHighsAndLowsLowerIcon.svg'], iconLabel: 'Higher/Lower', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%' },
-                { id: 'orion', title: 'ORION - OVER 3', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], iconLabel: 'Over/Under', description: '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 54% a 61% - <strong>Retorno:</strong> 56% / 85%' },
-                { id: 'titan', title: 'TITAN - PAR/ÍMPAR', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'], iconLabel: 'Even/Odd', description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-55% - <strong>Retorno:</strong> 85%' }
+                { id: 'atlas', title: 'ALTAS - OVER 2', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%' },
+                { id: 'apollo', title: 'APOLLO - RISE/FALL', marketType: 'Ups e Downs', icons: ['/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg', '/deriv_icons/TradeTypesUpsAndDownsFallIcon.svg'], description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%' },
+                { id: 'nexus', title: 'NEXUS - BARREIRA', marketType: 'Ups e Downs', icons: ['/deriv_icons/TradeTypesHighsAndLowsHigherIcon.svg', '/deriv_icons/TradeTypesHighsAndLowsLowerIcon.svg'], description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%' },
+                { id: 'orion', title: 'ORION - OVER 3', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 54% a 61% - <strong>Retorno:</strong> 56% / 85%' },
+                { id: 'titan', title: 'TITAN - PAR/ÍMPAR', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'], description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-55% - <strong>Retorno:</strong> 85%' }
             ],
             
             dailyStats: {
@@ -4074,40 +4070,21 @@ export default {
     background: #0d1a10;
 }
 
-.agent-option-icons-row {
+.agent-option-simple-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
+    gap: 1rem;
 }
 
 .strategy-icons-inline {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
 }
 
 .deriv-svg-icon {
     width: 24px;
     height: 24px;
-}
-
-.agent-icon-label {
-    font-size: 0.75rem;
-    color: #A1A1A1;
-}
-
-.agent-market-type {
-    font-size: 0.7rem;
-    font-weight: 800;
-    color: #444;
-    text-transform: capitalize;
-}
-
-.agent-option-header-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
 }
 
 .agent-option-info {
