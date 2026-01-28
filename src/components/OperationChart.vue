@@ -916,36 +916,57 @@ export default {
     },
     marketsByCategory() {
       const grouped = {};
-      const integratedMarkets = [
-        // Índices Contínuos
-        'R_10', 'R_25', 'R_50', 'R_75', 'R_100',
-        '1HZ10V', '1HZ25V', '1HZ50V', '1HZ75V', '1HZ100V',
-        
-        // Criptomoedas
-        'cryBTCUSD', 'cryETHUSD',
-        
-        // Forex (Majors)
-        'frxEURUSD', 'frxUSDJPY', 'frxGBPUSD', 'frxUSDCHF', 
-        'frxAUDUSD', 'frxUSDCAD', 'frxNZDUSD',
-        
-        // Forex (Minors/Exotics)
-        'frxEURGBP', 'frxEURJPY', 'frxGBPJPY', 'frxAUDCAD', 
-        'frxAUDJPY', 'frxCHFJPY', 'frxEURAUD', 'frxGBPAUD', 'frxUSDMXN',
-        
-        // Metais
-        'frxXAUUSD', 'frxXAGUSD', 'frxXPTUSD', 'frxXPDUSD'
-      ];
+      
+      // Categorias na ordem de prioridade desejada
+      const categoryPriority = {
+        'Índices Contínuos': 1,
+        'Daily Reset Indices': 2,
+        'Indices Step': 3,
+        'Jump Indices': 4,
+        'Boom/Crash': 5,
+        'Criptomoedas': 6,
+        'Major Pairs': 7, // Forex Majors
+        'Minor Pairs': 8, // Forex Minors
+        'Outros': 99
+      };
+
+      // Mapeamento de nomes amigáveis baseados na imagem do usuário
+      const nameMap = {
+        'Indices Step': 'Índices Step',
+        'Jump Indices': 'Índices JUMP',
+        'Boom/Crash': 'Índices Crash/Boom',
+        'Daily Reset Indices': 'Índices Daily Reset',
+        'Major Pairs': 'Forex',
+        'Minor Pairs': 'Forex Minors'
+      };
       
       this.markets.forEach(market => {
-        if (integratedMarkets.includes(market.value)) {
-          const category = market.category || 'Outros';
+          let category = market.category || 'Outros';
+          
+          // Aplicar mapeamento de nomes amigáveis
+          if (nameMap[category]) {
+              category = nameMap[category];
+          }
+
           if (!grouped[category]) {
             grouped[category] = [];
           }
           grouped[category].push(market);
-        }
       });
-      return grouped;
+
+      // Ordenar as chaves do objeto agrupado com base na prioridade
+      const sortedGrouped = {};
+      const categories = Object.keys(grouped).sort((a, b) => {
+          const pA = categoryPriority[a] || categoryPriority[Object.keys(nameMap).find(k => nameMap[k] === a)] || 99;
+          const pB = categoryPriority[b] || categoryPriority[Object.keys(nameMap).find(k => nameMap[k] === b)] || 99;
+          return pA - pB;
+      });
+
+      categories.forEach(cat => {
+          sortedGrouped[cat] = grouped[cat];
+      });
+
+      return sortedGrouped;
     },
     selectedMarketLabel() {
       const market = this.markets.find(m => m.value === this.symbol);
@@ -2085,15 +2106,15 @@ export default {
         };
 
         const mappedMarkets = backendMarkets.map(m => {
-             let category = m.marketDisplayName || categoryMap[m.market] || 'Outros';
+             let category = m.submarketDisplayName || m.marketDisplayName || categoryMap[m.market] || 'Outros';
              
-             // Specific logic for continuos indices and naming
-             if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ')) {
-                 category = 'Índices Contínuos';
-             } else if (m.symbol.startsWith('frx')) {
-                 category = 'Forex';
+             // Forçar categorias específicas para o mapeamento de prioridade
+             if (m.symbol.startsWith('frx')) {
+                 category = 'Major Pairs';
              } else if (m.symbol.startsWith('cry')) {
                  category = 'Criptomoedas';
+             } else if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ')) {
+                 category = 'Índices Contínuos';
              }
 
              return {
