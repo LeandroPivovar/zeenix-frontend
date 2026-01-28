@@ -2076,15 +2076,12 @@ export default {
         // Validate current trade type
         if (this.tradeType) {
              const isAvailable = this.availableContracts.includes(this.tradeType) || 
-                                 // Some types map to multiple ops (e.g. Higher/Lower uses CALL/PUT barriers often, but here listed as specific ops? 
-                                 // Backend contracts_for returns 'CALL'/'PUT' usually. 
-                                 // If frontend uses HIGHER/LOWER but backend says CALL/PUT, we might need mapping.
-                                 // Usually Deriv contracts_for returns specific types like 'CALL', 'PUT', 'DIGITMATCH'.
-                                 // My OperationChart tradeTypeCategories uses mapping.
-                                 // We need to check if the *Category Item* is valid.
-                                 this.availableContracts.some(op => op === this.tradeType); // Simple check
+                                 this.availableContracts.some(op => op === this.tradeType);
              
-             // TODO: robust mapping check based on categories items directions
+             if (!isAvailable) {
+                 this.tradeType = '';
+                 console.log('[Chart] Tipo de negociação anterior não está disponível, limpo');
+             }
         }
         
       } catch (error) {
