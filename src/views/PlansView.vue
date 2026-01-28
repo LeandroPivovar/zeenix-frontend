@@ -523,42 +523,44 @@ export default {
 <style scoped src="../assets/css/views/plansView.css"></style>
 
 <style scoped>
-/* Estilos Adicionais para Player Dinâmico (Sobrescreve ou complementar ao css importado) */
-
+/* --- 1. Container e Elemento do Player (ESSENCIAL PARA O VÍDEO CHEGAR NA BORDA) --- */
 .video-player-container {
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    aspect-ratio: 16 / 9; /* Força a proporção padrão do YouTube */
     background: #000;
     border-radius: 12px;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .video-player-element {
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    height: 100% !important;
     display: block;
-    object-fit: cover;
+    object-fit: cover; /* Garante que o vídeo preencha toda a área */
+    border: none;
 }
 
-.video-thumbnail {
-    cursor: pointer;
-    position: relative;
-}
-
+/* --- 2. Elementos Visuais da Thumbnail --- */
 .thumbnail-bg {
     position: absolute;
     inset: 0;
-    /* Imagem de fundo padrão ou gradiente premium */
     background: radial-gradient(circle at center, #1b3a2a 0%, #0a0f0c 100%);
     z-index: 1;
 }
 
 .video-overlay {
+    position: absolute;
+    inset: 0;
     z-index: 2;
     background: rgba(0,0,0,0.3);
 }
 
+/* --- 3. Botão de Play e Animações --- */
 .play-button-wrapper {
+    position: relative;
     z-index: 3;
 }
 
@@ -579,6 +581,7 @@ export default {
     100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
 }
 
+/* --- 4. Badge e Tipografia --- */
 .video-badge {
     display: inline-flex;
     align-items: center;
@@ -590,12 +593,19 @@ export default {
     padding: 2px 8px;
     border-radius: 12px;
     margin-right: 10px;
+    margin-bottom: 8px; /* Espaço para o título abaixo */
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-/* Animate fade in */
+.video-details {
+    width: 100%;
+    text-align: left; /* Alinhamento à esquerda conforme solicitado */
+    margin-top: 15px;
+}
+
+/* --- 5. Animações de Entrada --- */
 .animate-fade-in-up {
     animation: fadeInUp 0.5s ease-out;
 }
@@ -609,5 +619,18 @@ export default {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* --- 6. Fallback (Caso o vídeo não carregue) --- */
+.video-fallback {
+    width: 100%;
+    aspect-ratio: 16/9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #111;
+    color: #888;
+    gap: 15px;
 }
 </style>
