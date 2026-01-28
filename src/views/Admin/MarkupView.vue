@@ -284,88 +284,52 @@ export default {
                 const token = localStorage.getItem('token');
                 const apiUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 
+                console.log('[MarkupView] Iniciando busca de dados de markup...');
+                console.log('[MarkupView] Período:', this.filterStartDate, 'até', this.filterEndDate);
+                
                 const params = new URLSearchParams({
                     startDate: this.filterStartDate,
                     endDate: this.filterEndDate,
                 });
 
-                // Criar conexão SSE usando EventSourceWrapper ou Fetch Stream para passar headers
-                // Como EventSource nativo não suporta headers, usaremos fetch com reader
-                const response = await fetch(`${apiUrl}/trades/markup/stream?${params}`, {
+                // Usar endpoint /trades/markup (GET simples) em vez de SSE stream
+                const response = await fetch(`${apiUrl}/trades/markup?${params}`, {
+                    method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        'Accept': 'text/event-stream',
+                        'Content-Type': 'application/json',
                     },
                 });
 
-                if (!response.ok) throw new Error(response.statusText);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
+                const data = await response.json();
+                console.log('[MarkupView] Dados recebidos:', data);
 
-                // Iniciar leitura do stream
-                // eslint-disable-next-line no-constant-condition
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-                    
-                    const chunk = decoder.decode(value, { stream: true });
-                    buffer += chunk;
-                    
-                    // Processar linhas do SSE (padrão "data: {...}\n\n")
-                    const lines = buffer.split('\n\n');
-                    buffer = lines.pop(); // Guardar o resto incompleto para o próximo chunk
-
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            try {
-                                const jsonStr = line.replace('data: ', '');
-                                const eventData = JSON.parse(jsonStr);
-                                this.handleStreamEvent(eventData);
-                            } catch (e) {
-                                console.warn('Erro ao processar mensagem do stream JSON:', e);
-                            }
-                        }
-                    }
+                // Processar dados recebidos
+                if (data.users && Array.isArray(data.users)) {
+                    this.allUsers = data.users;
+                    this.applyFilters();
+                    console.log('[MarkupView] Total de usuários processados:', this.allUsers.length);
+                } else {
+                    console.warn('[MarkupView] Nenhum usuário encontrado na resposta');
                 }
 
                 this.isLoading = false;
-                
-                // Buscar dados agregados de outros períodos em paralelo (pode manter isso ou também streacar)
-                // Para manter a resposta rápida, vamos carregar o markup total via stream e deixar
-                // os "cards" de períodos carregarem via request normal em background
-                // TEMPORARIAMENTE DESABILITADO - endpoint /trades/markup não implementado
-                // this.fetchPeriodData(token, apiUrl);
+                this.loadingProgress = 100;
 
             } catch (error) {
-                console.error('Erro ao buscar dados (stream):', error);
-                this.error = 'Erro na conexão de stream: ' + error.message;
+                console.error('[MarkupView] Erro ao buscar dados:', error);
+                this.error = 'Erro ao carregar dados de markup: ' + error.message;
                 this.isLoading = false;
             }
         },
 
         handleStreamEvent(event) {
-            if (event.type === 'start') {
-                this.totalToLoad = event.totalUsers;
-                this.loadingProgress = 0;
-            } else if (event.type === 'user_data') {
-                const user = event.user;
-                this.allUsers.push(user);
-                this.applyFilters();
-                
-                // Atualizar progresso
-                if (this.totalToLoad > 0) {
-                    this.loadingProgress = Math.round((this.allUsers.length / this.totalToLoad) * 100);
-                }
-                
-                if (this.allUsers.length === 1) {
-                   // Apenas para remover estado de "nenhum dado" se houver
-                } 
-            } else if (event.type === 'done') {
-                this.isLoading = false;
-                this.loadingProgress = 100;
-            }
+            // Manter método por compatibilidade, mas não será mais usado
+            console.log('[MarkupView] handleStreamEvent (deprecated):', event);
         },
         
         async fetchPeriodData(token, apiUrl) {
