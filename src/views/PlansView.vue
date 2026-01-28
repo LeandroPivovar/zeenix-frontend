@@ -525,24 +525,68 @@ export default {
 <style scoped>
 /* Estilos Adicionais para Player Dinâmico (Sobrescreve ou complementar ao css importado) */
 
-.video-player-container {
+/* --- Video Card Wrapper (Container Principal) --- */
+.video-card-wrapper {
+    background-color: #0E0E0E;
+    /* Adiciona a borda verde solicitada envolvendo todo o conteúdo */
+    border: 2px solid #22C55E !important; 
+    border-radius: 1rem;
+    padding: 2rem; /* Espaçamento interno para a borda não colar no conteúdo */
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.15); 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
-    height: 100%;
-    background: #000;
-    border-radius: 12px;
-    overflow: hidden;
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
-.video-player-element {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-}
-
+/* --- Ajuste da Proporção do Vídeo (Desktop) --- */
 .video-thumbnail {
-    cursor: pointer;
+    /* Altera de 21/9 para 16/9 para eliminar as bordas pretas laterais */
+    aspect-ratio: 16 / 9; 
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    background-color: #0B0B0B;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem; /* Aumentado o margin bottom para separar da descrição */
+    border: 1px solid #1C1C1C;
     position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+/* --- Responsividade Mobile --- */
+@media (max-width: 768px) {
+    .plans-content {
+        margin-top: 60px !important;
+        padding: 1rem;
+    }
+
+    .video-card-wrapper {
+        padding: 1.25rem; 
+        border: 2px solid #22C55E !important; /* Mantém a borda no mobile */
+        background: #0E0E0E;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Remove estilos conflitantes do mobile antigo que escondiam a borda */
+    .video-box {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0;
+    }
+
+    .video-thumbnail {
+        aspect-ratio: 16 / 9; /* Garante 16:9 no mobile também */
+        border-radius: 12px;
+    }
 }
 
 .thumbnail-bg {
