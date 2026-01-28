@@ -1,11 +1,5 @@
 <template>
   <div class="zenix-layout">
-    <!-- Overlay para fechar sidebar em mobile -->
-    <div 
-      class="sidebar-overlay" 
-      :class="{ 'show': isSidebarOpen && isMobile }" 
-      @click="closeSidebar"
-    ></div>
 
     <AppSidebar 
       class="app-sidebar"

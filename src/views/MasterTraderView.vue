@@ -1,11 +1,5 @@
 <template>
     <div class="layout-master-trader" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-        <div
-            v-if="isSidebarOpen"
-            class="sidebar-overlay"
-            @click="closeSidebar"
-        ></div>
-        
         <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="isSidebarCollapsed" 

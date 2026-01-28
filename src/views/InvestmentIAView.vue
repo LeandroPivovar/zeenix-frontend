@@ -1,11 +1,6 @@
 <template>
     <div class="zenix-layout">
-        <!-- Overlay para fechar sidebar ao clicar fora (mobile) -->
-        <div 
-            v-if="isSidebarOpen" 
-            class="sidebar-overlay" 
-            @click="closeSidebar"
-        ></div>
+
         
         <AppSidebar 
             :is-open="isSidebarOpen" 

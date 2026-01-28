@@ -1,10 +1,6 @@
 <template>
   <div class="dashboard-layout">
-    <div
-      v-if="isSidebarOpen && isMobile"
-      class="sidebar-overlay"
-      @click="closeSidebar"
-    ></div>
+
 
     <!-- Sidebar -->
     <AppSidebar 

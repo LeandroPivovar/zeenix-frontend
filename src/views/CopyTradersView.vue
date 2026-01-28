@@ -1,10 +1,6 @@
   <template>
     <div class="layout-copy-traders" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-      <div
-        v-if="isSidebarOpen && isMobile"
-        class="sidebar-overlay"
-        @click="closeSidebar"
-      ></div>
+
 
       <AppSidebar 
         :is-open="isSidebarOpen" 
