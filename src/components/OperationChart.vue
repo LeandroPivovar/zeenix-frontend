@@ -78,7 +78,6 @@
           </div>
         </div>
         
-        <!-- Signal Generator Card -->
         <!-- Desktop Signal Generator Card - Hidden on Mobile -->
         <div v-if="tradingMode === 'manual'" class="bg-[#0D0D0D] border border-white/5 p-6 rounded-2xl signal-area-card md:block hidden">
           <!-- Header -->
@@ -194,7 +193,7 @@
                 class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
                 :class="tradingMode === 'ai' ? 'bg-zenix-green text-black' : 'text-white/40 hover:text-white'"
               >
-                COM IA
+                SINAIS DE IA
               </button>
             </div>
           </div>
@@ -380,7 +379,7 @@
           </div>
           
           <!-- Real-time P&L -->
-          <div v-if="realTimeProfit !== null && activeContract" class="bg-zenix-bg border rounded-lg p-3 shadow-lg transition-all duration-300 transform hover:scale-[1.02]" :class="realTimeProfitClass">
+          <div v-if="realTimeProfit !== null && activeContract" class="w-full bg-zenix-bg border rounded-lg p-3 shadow-lg transition-all duration-300 transform hover:scale-[1.02]" :class="realTimeProfitClass">
             <div class="text-[10px] uppercase font-bold text-zenix-secondary mb-1 tracking-wider">Lucro Atual (Estimado):</div>
             <div class="text-lg font-black flex items-center gap-2" :class="realTimeProfitTextClass">
               <i :class="realTimeProfit >= 0 ? 'fas fa-trending-up' : 'fas fa-trending-down'"></i>
@@ -389,7 +388,7 @@
           </div>
           
           <!-- Tempo/Ticks Restantes -->
-          <div v-if="activeContract && (contractTimeRemaining !== null || contractTicksRemaining !== null)" class="bg-zenix-bg border border-zenix-border rounded-lg p-3 relative overflow-hidden group">
+          <div v-if="activeContract && (contractTimeRemaining !== null || contractTicksRemaining !== null)" class="w-full bg-zenix-bg border border-zenix-border rounded-lg p-3 relative overflow-hidden group">
             <!-- Barra de progresso sutil no topo -->
             <div class="absolute top-0 left-0 h-1 bg-zenix-green/30 transition-all duration-1000" :style="{ width: isTickBasedContract ? (100 - (contractTicksRemaining / activeContract.duration * 100)) + '%' : (100 - (contractTimeRemaining / contractDuration * 100)) + '%' }"></div>
             
@@ -431,9 +430,9 @@
               <!-- AI Mode Display & Button -->
               <div v-else class="space-y-4">
                 <!-- AI Signal Info -->
-                <div class="bg-zenix-green/5 border border-zenix-green/20 rounded-xl p-5 text-center transition-all duration-300 relative overflow-hidden group">
+                <div class="w-full bg-zenix-green/5 border border-zenix-green/20 rounded-xl p-5 text-center transition-all duration-300 relative overflow-hidden group flex flex-col items-center justify-center">
                    <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                   <div class="flex flex-col items-center gap-2 relative z-10">
+                   <div class="flex flex-col items-center gap-2 relative z-10 w-full">
                      <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Sinal da IA</span>
                      <div v-if="aiRecommendation" class="flex flex-col items-center gap-1">
                         <div class="flex items-center gap-3">
@@ -2448,6 +2447,9 @@ export default {
       
       // Inicializar P&L
       this.updateRealTimeProfit();
+      
+      // Clear recommendation after execution if desired, but user specifically asked
+      // after the contract finishes. So we keep it for now.
     },
     initializeContractCountdown() {
       if (!this.activeContract) return;
@@ -2681,6 +2683,7 @@ export default {
           this.purchasePrice = null;
           this.realTimeProfit = null;
           this.tradeMessage = '';
+          this.aiRecommendation = null; // Reset signal to allow new generation
         }
       }, 10000);
     },
@@ -2697,6 +2700,7 @@ export default {
         this.realTimeProfit = null;
         this.tradeMessage = '';
         this.stopContractCountdown();
+        this.aiRecommendation = null; // Ensure signal is cleared when modal closes
       }
     },
     addEntrySpotLine(entrySpot, entryTime) {
