@@ -301,6 +301,8 @@
           <!-- Mobile Header -->
           <div class="mobile-performance-header-title">
             <h2 class="text-[20px] font-bold text-[#E6E6E6]">Desempenho Geral</h2>
+          </div>
+          
           <!-- Performance Grid (Desktop) -->
           <div class="desktop-performance-grid hidden md:grid grid-cols-4 gap-6">
             <div 
