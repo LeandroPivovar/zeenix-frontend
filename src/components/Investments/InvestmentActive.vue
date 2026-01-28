@@ -543,8 +543,8 @@
                                 <h3 class="mobile-logs-title-text">Histórico de Operações</h3>
                             </div>
                             
-                            <div v-if="isLoadingLogs" class="loading-logs">
-                                <p>Carregando histórico de operações...</p>
+                            <div v-if="isLoadingLogs" class="loading-logs hidden">
+                                <!-- Loading oculto conforme solicitado para fluidez -->
                             </div>
                             
                             <div v-else-if="logOperations.length === 0" class="no-logs">
@@ -665,7 +665,7 @@
                                 </div>
                                 
                                 <div v-else class="text-left">
-                                    <div v-for="(log, index) in realtimeLogs" :key="log.id || log.created_at || log.timestamp || `rt-log-${index}`" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
+                                    <div v-for="log in realtimeLogs" :key="log.id" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
                                         <span class="text-gray-500">[{{ log.timestamp }}]</span>
                                         <span class="ml-1">{{ log.icon }}</span>
                                         <span class="ml-1 log-message">{{ log.message }}</span>
@@ -687,7 +687,7 @@
                                 </div>
                                 
                                 <div v-else class="mobile-register-cards-container">
-                                    <div v-for="(log, index) in realtimeLogs" :key="log.id || log.created_at || log.timestamp || `mob-rt-${index}`" class="mobile-register-card">
+                                    <div v-for="log in realtimeLogs" :key="log.id" class="mobile-register-card">
                                         <span class="mobile-register-time">{{ log.timestamp }}</span>
                                         <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
                                     </div>
@@ -777,6 +777,7 @@
                                         <p class="text-[11px] text-zenix-secondary mt-1 text-left leading-snug">Meta atingida ou limite de proteção alcançado.</p>
                                     </div>
                                     <button 
+                                        type="button"
                                         class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
                                         @click="handleDeactivate"
                                         :disabled="isDeactivating"
@@ -2109,13 +2110,24 @@ export default {
                             }
                         });
                     } else {
-                        // ✅ Adicionar apenas logs novos (comparar por ID ou created_at)
-                        // Usar ID se disponível, senão usar created_at
-                        const existingIds = new Set(this.realtimeLogs.map(log => log.id || log.created_at || log.timestamp));
-                        const logsToAdd = newLogs.filter(log => {
-                            const logId = log.id || log.created_at || log.timestamp;
-                            return !existingIds.has(logId);
+                        // ✅ Garantir que todos os novos logs tenham ID único para evitar re-render da tabela
+                        newLogs.forEach(log => {
+                            if (!log.id) {
+                                // Criar ID composto estável se não vier do backend
+                                const uniqueStr = `${log.timestamp || Date.now()}-${log.message || ''}-${log.icon || ''}`;
+                                // Simple hash string
+                                let hash = 0;
+                                for (let i = 0; i < uniqueStr.length; i++) {
+                                    hash = ((hash << 5) - hash) + uniqueStr.charCodeAt(i);
+                                    hash |= 0;
+                                }
+                                log.id = `gen-${Math.abs(hash)}`;
+                            }
                         });
+
+                        // ✅ Adicionar apenas logs novos (comparar por ID garantido)
+                        const existingIds = new Set(this.realtimeLogs.map(log => log.id));
+                        const logsToAdd = newLogs.filter(log => !existingIds.has(log.id));
                         
                         console.log('[InvestmentActive] 🔍 Verificando novos logs:', {
                             totalRecebidos: newLogs.length,
@@ -2821,7 +2833,10 @@ export default {
         // 📊 Buscar histórico de operações reais
         async fetchTradeHistory() {
             try {
-                this.isLoadingLogs = true;
+                // ✅ EVITAR PISCADA: Só mostrar loading se não tiver dados anteriores
+                if (this.logOperations.length === 0) {
+                    this.isLoadingLogs = true;
+                }
                 console.log('[InvestmentActive] 📊 Buscando histórico de operações...');
                 
                 // Obter userId
