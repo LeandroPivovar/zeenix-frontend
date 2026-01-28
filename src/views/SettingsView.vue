@@ -1,11 +1,5 @@
 <template>
   <div class="bg-zenix-bg noise-bg gradient-glow min-h-screen font-inter text-zenix-text">
-    <!-- Mobile Sidebar Overlay -->
-    <div
-      v-if="sidebarIsOpen && isMobile"
-      class="sidebar-overlay"
-      @click="closeSidebar"
-    ></div>
 
     <!-- Sidebar (using existing AppSidebar component but wrapped or positioned if needed) -->
     <AppSidebar 

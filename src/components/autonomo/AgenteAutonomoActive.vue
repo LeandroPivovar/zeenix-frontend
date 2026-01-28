@@ -128,15 +128,6 @@
 					>
 						{{ hideValues ? '••••' : (avgDailyProfitPercent >= 0 ? '+' : '') + avgDailyProfitPercent.toFixed(2) + '%' }}
 					</div>
-					<div class="flex items-center gap-2">
-						<div 
-							class="inline-flex items-center rounded-full border border-transparent font-semibold text-[10px] px-2 py-0.5" 
-							:class="avgDailyProfit >= 0 ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'"
-							v-if="!hideValues"
-						>
-							{{ avgDailyProfit >= 0 ? '+' : '' }}{{ avgDailyProfitPercent.toFixed(2) }}%
-						</div>
-					</div>
 				</div>
 			</div>
 		</div>
