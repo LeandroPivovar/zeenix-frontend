@@ -543,8 +543,8 @@
                                 <h3 class="mobile-logs-title-text">Histórico de Operações</h3>
                             </div>
                             
-                            <div v-if="isLoadingLogs" class="loading-logs">
-                                <p>Carregando histórico de operações...</p>
+                            <div v-if="isLoadingLogs" class="loading-logs hidden">
+                                <!-- Loading oculto conforme solicitado para fluidez -->
                             </div>
                             
                             <div v-else-if="logOperations.length === 0" class="no-logs">
@@ -2833,7 +2833,10 @@ export default {
         // 📊 Buscar histórico de operações reais
         async fetchTradeHistory() {
             try {
-                this.isLoadingLogs = true;
+                // ✅ EVITAR PISCADA: Só mostrar loading se não tiver dados anteriores
+                if (this.logOperations.length === 0) {
+                    this.isLoadingLogs = true;
+                }
                 console.log('[InvestmentActive] 📊 Buscando histórico de operações...');
                 
                 // Obter userId
