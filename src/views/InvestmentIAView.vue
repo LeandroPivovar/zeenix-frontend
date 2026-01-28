@@ -1054,12 +1054,12 @@ export default {
                 const strategyLower = id.toLowerCase();
                 this.selectedMarket = strategyLower === 'atlas' ? 'vol100_1s' : 'vol100';
 
-                // FECHA TUDO (com nextTick para garantir atualização do DOM)
-                this.$nextTick(() => {
+                // FECHA TUDO (com setTimeout para garantir que o evento de clique não interfira)
+                setTimeout(() => {
                     this.showStrategyModal = false;
                     this.showStrategyRequiredModal = false;
-                    console.log('[InvestmentIAView] Modal closed via nextTick. showStrategyModal:', this.showStrategyModal);
-                });
+                    console.log('[InvestmentIAView] Modal closed via setTimeout. showStrategyModal:', this.showStrategyModal);
+                }, 100);
             },
         
         getUserId() {
