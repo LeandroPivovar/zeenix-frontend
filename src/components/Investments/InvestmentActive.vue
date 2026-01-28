@@ -2578,11 +2578,9 @@ export default {
                         this.previousSessionStatus = currentSessionStatus;
                     }
                     
-                    // ✅ Verificar também nos logs recentes para garantir detecção imediata
-                    // Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
-                    if (!this.showTargetProfitModal && !this.showStopLossModal && !this.showStopBlindadoModal && this.realtimeLogs.length > 0) {
-                        this.checkLogsForStopEvents();
-                    }
+                    // ✅ [ZENIX v3.5] Detecção 100% via session_status do banco
+                    // Removida verificação via logs para evitar falsos positivos
+                    // O backend já atualiza session_status corretamente e emite eventos SSE
                     
                     this.sessionConfig = {
                         isActive: result.data.isActive || false,
@@ -3228,6 +3226,23 @@ export default {
                 try {
                     const payload = JSON.parse(event.data);
                     console.log('[InvestmentActive] 📡 Evento de trade recebido:', payload);
+                    
+                    // ✅ PRIORIDADE MÁXIMA: EVENTOS DE PARADA (Stop Loss, Stop Blindado, Meta Atingida)
+                    if (payload.type === 'stopped_blindado' || payload.type === 'stopped_loss' || payload.type === 'stopped_profit') {
+                        console.log(`[InvestmentActive] 🛑 Evento de parada detectado: ${payload.type}`);
+                        
+                        // Buscar configuração imediatamente para obter session_status atualizado
+                        await this.fetchSessionConfig();
+                        
+                        // Buscar também stats e logs para ter informações completas
+                        await Promise.all([
+                            this.fetchDailyStats(),
+                            this.fetchRealtimeLogs()
+                        ]);
+                        
+                        // O modal será aberto pelo fetchSessionConfig quando detectar o session_status
+                        return;
+                    }
                     
                     // ✅ TRATAMENTO ESPECÍFICO PARA EVENTOS DE LOG
                     if (payload.status === 'LOG') {
