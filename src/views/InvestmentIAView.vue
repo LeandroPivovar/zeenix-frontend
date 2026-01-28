@@ -1480,7 +1480,7 @@ export default {
 }
 
 /* Garante que o container da sidebar no mobile tenha prioridade máxima */
-.app-sidebar.mobile-open {
+.sidebar.is-open {
     z-index: 1000000 !important; /* Valor bem alto para vencer as animações da IA */
 }
 
