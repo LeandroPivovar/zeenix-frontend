@@ -1,4 +1,4 @@
-﻿<template>
+﻿﻿<template>
 	<div class="min-h-screen text-[#FAFAFA] font-sans" style="padding-top: 2rem;">
 		<!-- Header -->
 		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 md:mt-8 mt-0">
