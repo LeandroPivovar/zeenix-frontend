@@ -2525,20 +2525,7 @@ export default {
                     if (currentSessionStatus === 'stopped_loss') {
                         console.log('[InvestmentActive] 🛑 Stop Loss status detectado!');
                         
-                        // ✅ [FIX CRÍTICO] Validação de consistência: Stop Loss só deve aparecer com PREJUÍZO
-                        // Se o lucro for POSITIVO, então deveria ser Stop Blindado, não Stop Loss
-                        const sessionProfitLoss = this.dailyStats?.sessionProfitLoss || 0;
-                        
-                        if (sessionProfitLoss > 0) {
-                            console.warn(`[InvestmentActive] ⚠️ INCONSISTÊNCIA DETECTADA!`);
-                            console.warn(`[InvestmentActive] session_status = 'stopped_loss' MAS lucro = +$${sessionProfitLoss.toFixed(2)}`);
-                            console.warn(`[InvestmentActive] ⏳ Ignorando e aguardando próxima atualização do status...`);
-                            // NÃO mostrar modal de Stop Loss se há lucro
-                            // Aguardar próxima atualização que deve trazer 'stopped_blindado'
-                            return;
-                        }
-                        
-                        // ✅ [FIX] Abrir modal de Stop Loss com travas (apenas se prejuízo)
+                        // ✅ [FIX] Abrir modal de Stop Loss com travas
                         if (!this.showStopLossModal && !this.showStopBlindadoModal && !this.showTargetProfitModal && !this.processingStopEvent && !window.zenixStopModalActive) {
                              this.processingStopEvent = true;
                              window.zenixStopModalActive = true;
