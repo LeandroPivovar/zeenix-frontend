@@ -48,6 +48,7 @@
           :tempo-ativo="agenteData.tempoAtivo"
           :session-stats="sessionStats"
           :trade-history="tradeHistoryData"
+          :show-title="showTitle"
           @pausar-agente="toggleAgenteStatus('componenteAtivo')"
           @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
         />
@@ -151,6 +152,12 @@ export default {
       balancesByCurrencyDemo: {},
       isSettingsOpen: false,
     };
+  },
+  props: {
+    showTitle: {
+      type: Boolean,
+      default: true
+    }
   },
   computed: {
     componenteAtual() {

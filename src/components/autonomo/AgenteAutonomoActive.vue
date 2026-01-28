@@ -2,8 +2,13 @@
 	<div class="min-h-screen text-[#FAFAFA] font-sans" style="padding-top: 2rem;">
 		<!-- Header -->
 		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 md:mt-8 mt-0">
+			<!-- Title Section -->
+			<div v-if="showTitle" class="text-left">
+				<h2 class="text-xl font-bold text-[#FAFAFA] mb-1">MONITORAMENTO</h2>
+				<p class="text-xs text-[#A1A1AA]">Acompanhe em tempo real a performance do seu agente.</p>
+			</div>
 
-			<div class="flex flex-row items-center gap-2 w-full md:w-auto">
+			<div class="flex flex-row items-center gap-2 w-full md:w-auto ml-auto">
 				<div class="relative z-[40] flex-1 md:flex-none">
 					<button 
 						@click.stop="toggleDatePicker"

@@ -40,8 +40,6 @@
                         <div class="status-card active-copy-trading">
                             <div class="status-icon-wrapper active">
                                 <i class="fas fa-copy"></i>
-                            </div>
-                            <div class="status-text">
                                 <span class="status-label">Copy Trading</span>
                                 <span class="status-value active-label">Ativo</span>
                             </div>
@@ -261,7 +259,10 @@
             </div>
 
             <main id="master-trader-portal-target" class="master-trader-main-content">
-                <component :is="currentViewComponent" />
+                <component 
+                    :is="currentViewComponent" 
+                    :show-title="currentViewComponent === 'AgenteAutonomoView' ? false : true"
+                />
             </main>
         </div>
         <DesktopBottomNav />
