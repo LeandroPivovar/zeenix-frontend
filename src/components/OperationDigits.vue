@@ -152,6 +152,25 @@
             <!-- Main Content Grid -->
             <div class="main-content-grid">
                 <div class="cards-grid">
+                <!-- Linha 1: Frequência Geral (Heatmap adaptado) -->
+                <div class="frequency-unified-card bg-[#0D0D0D] border border-white/5 rounded-xl p-8 mb-4">
+                    <h3 class="section-title text-base font-bold text-white/90 mb-8 px-1">1. FREQUÊNCIA GERAL POR DÍGITO</h3>
+                    <div class="heatmap-grid !grid-cols-5 md:!grid-cols-10 gap-4">
+                        <div 
+                            v-for="item in digitFrequenciesWithStats" 
+                            :key="'heat-'+item.digit" 
+                            class="heatmap-digit-block !h-auto !p-4 flex flex-col items-center justify-between border border-white/5 rounded-lg bg-black/20"
+                            :class="[item.statusClass, item.isHighlighted ? 'heatmap-highlighted' : '']"
+                        >
+                            <div class="frequency-digit-number-large text-lg font-black text-white mb-2">{{ item.digit }}</div>
+                            <div class="histogram-bar-mini w-full bg-white/5 rounded h-1 mb-2 overflow-hidden">
+                                <div class="h-full bg-zenix-green transition-all duration-1000" :style="{ width: item.percentage + '%' }"></div>
+                            </div>
+                            <div class="frequency-percentage-label !relative !top-0 !left-0 !transform-none !opacity-100 font-bold text-zenix-green">{{ item.percentage }}%</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Linha 2: Paridade + Distribuição Alto/Baixo (Renomeado para Resumo por Categoria) -->
                 <div class="category-summary-wrapper space-y-4">
                     <h3 class="section-title text-base font-bold text-white/90 mb-4 px-1">2. RESUMO POR CATEGORIA</h3>
@@ -168,7 +187,7 @@
                                     <div class="tooltip-content">
                                         <div class="tooltip-title">🔵 Como Analisar?</div>
                                         <div class="tooltip-text">
-                                            Mostra a distribuição de dígitos pares (0,2,4,6,8) vs ímpares (1,3,5,7,9). O esperado é 50/50. Se houver desequilíbrio (>55% para um lado), o próximo tick tende a reverter para o lado oposto.<br><br>
+                                            Mostra a distribution de dígitos pares (0,2,4,6,8) vs ímpares (1,3,5,7,9). O esperado é 50/50. Se houver desequilíbrio (>55% para um lado), o próximo tick tende a reverter para o lado oposto.<br><br>
                                             <strong>Exemplo:</strong> Se Pares está em 62%, há excesso de pares. Próxima operação: aposte em ÍMPAR (ODD) na plataforma Deriv.
                                         </div>
                                     </div>
@@ -256,24 +275,6 @@
                         <div v-if="recentDigits.length === 0" class="text-white/20 text-xs italic">Aguardando dados...</div>
                     </div>
                 </div>
-
-                <!-- Linha 1: Frequência Geral (Heatmap adaptado) -->
-                <div class="frequency-unified-card bg-[#0D0D0D] border border-white/5 rounded-xl p-8 mb-4">
-                    <h3 class="section-title text-base font-bold text-white/90 mb-8 px-1">1. FREQUÊNCIA GERAL POR DÍGITO</h3>
-                    <div class="heatmap-grid !grid-cols-5 md:!grid-cols-10 gap-4">
-                        <div 
-                            v-for="item in digitFrequenciesWithStats" 
-                            :key="'heat-'+item.digit" 
-                            class="heatmap-digit-block !h-auto !p-4 flex flex-col items-center justify-between border border-white/5 rounded-lg bg-black/20"
-                            :class="[item.statusClass, item.isHighlighted ? 'heatmap-highlighted' : '']"
-                        >
-                            <div class="frequency-digit-number-large text-lg font-black text-white mb-2">{{ item.digit }}</div>
-                            <div class="histogram-bar-mini w-full bg-white/5 rounded h-1 mb-2 overflow-hidden">
-                                <div class="h-full bg-zenix-green transition-all duration-1000" :style="{ width: item.percentage + '%' }"></div>
-                            </div>
-                            <div class="frequency-percentage-label !relative !top-0 !left-0 !transform-none !opacity-100 font-bold text-zenix-green">{{ item.percentage }}%</div>
-                        </div>
-                    </div>
                 </div>
                 </div>
 

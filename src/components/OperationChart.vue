@@ -95,10 +95,10 @@
           <!-- Digit Analysis Tab -->
           <div v-if="activeTab === 'digits'" class="flex-1 overflow-y-auto bg-[#0B0B0B] custom-scrollbar">
             <div class="p-6 space-y-6">
-              <!-- Heatmap Card -->
+              <!-- 1. FREQUÊNCIA GERAL POR DÍGITO (Heatmap) -->
               <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl">
                 <div class="flex items-center justify-between mb-6">
-                  <h3 class="text-sm font-bold tracking-wider uppercase text-white/90">Heatmap Estatístico (0-9)</h3>
+                  <h3 class="text-sm font-bold tracking-wider uppercase text-white/90">FREQUÊNCIA GERAL POR DÍGITO</h3>
                   <div class="relative group">
                     <i class="far fa-question-circle text-sm text-zenix-green cursor-help"></i>
                   </div>
@@ -114,6 +114,10 @@
                     <span class="text-[10px] font-bold text-white/40">{{ item.percentage }}%</span>
                     <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" :class="item.statusClass + '-pill'">
                       {{ item.digit }}
+                    </div>
+                    <!-- Mini barra de progresso sutil -->
+                    <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden mt-1">
+                      <div class="h-full transition-all duration-500" :class="item.statusClass + '-bar'" :style="{ width: item.percentage + '%' }"></div>
                     </div>
                     <span class="text-[8px] uppercase tracking-tighter" :class="item.statusClass + '-text'">{{ item.statusText }}</span>
                   </div>
@@ -135,100 +139,72 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- DVX Gauge -->
-                <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl flex flex-col items-center">
-                  <h3 class="text-sm font-bold tracking-wider uppercase text-white/90 mb-6 self-start">Volatilidade (DVX)</h3>
-                  <div class="relative w-48 h-24 mb-4">
-                    <svg width="192" height="96" class="transform -rotate-1">
-                      <path d="M 20 85 A 75 75 0 0 1 172 85" stroke="rgba(255,255,255,0.05)" stroke-width="12" fill="none"></path>
-                      <path d="M 20 85 A 75 75 0 0 1 60 25" stroke="#10b981" stroke-width="12" fill="none" :stroke-dasharray="90.2" :stroke-dashoffset="dvxGreenOffset"></path>
-                      <path d="M 60 25 A 75 75 0 0 1 132 25" stroke="#eab308" stroke-width="12" fill="none" :stroke-dasharray="102.4" :stroke-dashoffset="dvxYellowOffset"></path>
-                      <path d="M 132 25 A 75 75 0 0 1 172 85" stroke="#ef4444" stroke-width="12" fill="none" :stroke-dasharray="90.2" :stroke-dashoffset="dvxRedOffset"></path>
-                    </svg>
-                    <div class="absolute inset-0 flex flex-col items-center justify-end pb-2">
-                       <span class="text-3xl font-black text-white leading-none">{{ dvxValueComputed }}</span>
-                       <span class="text-[10px] font-bold uppercase tracking-widest mt-1" :class="dvxStatusClass + '-text'">{{ dvxStatusText }}</span>
-                    </div>
-                  </div>
-                  <p class="text-[10px] text-white/40 font-medium">Ambiente {{ dvxEnvironmentText }} para operações</p>
-                </div>
-
-                <!-- Parity Meter -->
-                <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl lg:col-span-2">
-                  <h3 class="text-sm font-bold tracking-wider uppercase text-white/90 mb-6">Medidor de Paridade</h3>
-                  <div class="space-y-6">
+              <!-- 2. RESUMO POR CATEGORIA (Paridade + Alto/Baixo) -->
+              <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl">
+                <h3 class="text-sm font-bold tracking-wider uppercase text-white/90 mb-6">RESUMO POR CATEGORIA</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <!-- Paridade -->
+                  <div class="space-y-4">
                     <div class="space-y-2">
-                      <div class="flex justify-between text-xs font-bold uppercase">
+                      <div class="flex justify-between text-[10px] font-bold uppercase">
                         <span class="text-white/40">Par (0,2,4,6,8)</span>
                         <span class="text-zenix-green">{{ evenPercentage }}%</span>
                       </div>
-                      <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                      <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
                         <div class="h-full bg-zenix-green transition-all duration-700" :style="{ width: evenPercentage + '%' }"></div>
                       </div>
                     </div>
                     <div class="space-y-2">
-                      <div class="flex justify-between text-xs font-bold uppercase">
+                      <div class="flex justify-between text-[10px] font-bold uppercase">
                         <span class="text-white/40">Ímpar (1,3,5,7,9)</span>
                         <span class="text-orange-500">{{ oddPercentage }}%</span>
                       </div>
-                      <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                      <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
                         <div class="h-full bg-orange-500 transition-all duration-700" :style="{ width: oddPercentage + '%' }"></div>
                       </div>
                     </div>
-                    <div class="pt-4 border-t border-white/5 flex items-center gap-2">
-                      <i class="fas fa-info-circle text-[10px] text-zenix-green"></i>
-                      <span class="text-[10px] font-bold text-white/60 uppercase tracking-tighter">{{ parityRecommendationText }}</span>
+                  </div>
+                  <!-- Alto/Baixo (Summary) -->
+                  <div class="space-y-4">
+                    <div class="space-y-2">
+                      <div class="flex justify-between text-[10px] font-bold uppercase">
+                        <span class="text-white/40">Baixo (0-4)</span>
+                        <span class="text-zenix-green">{{ lowPercentage || 50 }}%</span>
+                      </div>
+                      <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full bg-zenix-green transition-all duration-700" :style="{ width: (lowPercentage || 50) + '%' }"></div>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <div class="flex justify-between text-[10px] font-bold uppercase">
+                        <span class="text-white/40">Alto (5-9)</span>
+                        <span class="text-blue-500">{{ highPercentage || 50 }}%</span>
+                      </div>
+                      <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500 transition-all duration-700" :style="{ width: (highPercentage || 50) + '%' }"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Frequency Histograms -->
+              <!-- 3. HISTÓRICO RECENTE (Últimos 30) -->
               <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl">
-                 <h3 class="text-sm font-bold tracking-wider uppercase text-white/90 mb-8 text-center">Frequência por Período</h3>
-                 <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                   <!-- 25 Ticks -->
-                   <div class="space-y-4">
-                     <p class="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center">Últimos 25 Ticks</p>
-                     <div class="flex items-end justify-between h-32 gap-1 px-2">
-                       <div v-for="item in frequencies25" :key="'h25-'+item.digit" class="flex-1 flex flex-col items-center gap-2">
-                          <div class="w-full bg-white/5 rounded-t-sm relative group" :style="{ height: (item.percentage * 3) + 'px' }" :class="getHistogramBarClass(item.digit, item.percentage, frequencies25)">
-                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-white text-black text-[8px] font-black px-1 rounded transition-opacity">
-                               {{ Math.round(item.percentage) }}%
-                             </div>
-                          </div>
-                          <span class="text-[10px] font-bold text-white/40">{{ item.digit }}</span>
-                       </div>
-                     </div>
+                 <h3 class="text-sm font-bold tracking-wider uppercase text-white/90 mb-6">HISTÓRICO RECENTE</h3>
+                 <div class="flex flex-wrap gap-2">
+                   <div 
+                    v-for="(digit, idx) in recentDigits" 
+                    :key="'recent-'+idx"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all duration-300"
+                    :class="[
+                      idx === 0 ? 'bg-zenix-green text-black scale-110 shadow-[0_0_10px_rgba(34,197,94,0.3)]' : 'bg-white/5 text-white/40',
+                      digit % 2 === 0 ? 'border-b-2 border-zenix-green/30' : 'border-b-2 border-orange-500/30'
+                    ]"
+                   >
+                     {{ digit }}
                    </div>
-                   <!-- 50 Ticks -->
-                   <div class="space-y-4">
-                     <p class="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center">Últimos 50 Ticks</p>
-                     <div class="flex items-end justify-between h-32 gap-1 px-2">
-                       <div v-for="item in frequencies50" :key="'h50-'+item.digit" class="flex-1 flex flex-col items-center gap-2">
-                          <div class="w-full bg-white/5 rounded-t-sm relative group" :style="{ height: (item.percentage * 3) + 'px' }" :class="getHistogramBarClass(item.digit, item.percentage, frequencies50)">
-                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-white text-black text-[8px] font-black px-1 rounded transition-opacity">
-                               {{ Math.round(item.percentage) }}%
-                             </div>
-                          </div>
-                          <span class="text-[10px] font-bold text-white/40">{{ item.digit }}</span>
-                       </div>
-                     </div>
-                   </div>
-                   <!-- 100 Ticks -->
-                   <div class="space-y-4">
-                     <p class="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center">Últimos 100 Ticks</p>
-                     <div class="flex items-end justify-between h-32 gap-1 px-2">
-                       <div v-for="item in frequencies100" :key="'h100-'+item.digit" class="flex-1 flex flex-col items-center gap-2">
-                          <div class="w-full bg-white/5 rounded-t-sm relative group" :style="{ height: (item.percentage * 3) + 'px' }" :class="getHistogramBarClass(item.digit, item.percentage, frequencies100)">
-                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-white text-black text-[8px] font-black px-1 rounded transition-opacity">
-                               {{ Math.round(item.percentage) }}%
-                             </div>
-                          </div>
-                          <span class="text-[10px] font-bold text-white/40">{{ item.digit }}</span>
-                       </div>
-                     </div>
+                   <div v-if="recentDigits.length === 0" class="text-xs text-white/20 uppercase font-bold tracking-widest py-4">
+                     Aguardando ticks...
                    </div>
                  </div>
               </div>
@@ -2386,15 +2362,13 @@ export default {
         frequency[i] = 0;
       }
       
-      last100Ticks.forEach(tick => {
-        // Extrair dígito usando a mesma lógica de updateDigitInfo para precisão
-        const valueStr = tick.value.toFixed(5);
-        const lastChar = valueStr[valueStr.length - 1];
-        const digit = parseInt(lastChar, 10);
-        
-        if (!isNaN(digit)) {
-          digits.push(digit);
-          frequency[digit] = (frequency[digit] || 0) + 1;
+      lastSample.forEach(tick => {
+        const val = Number(tick.value || tick.price || tick.quote);
+        const valStr = val.toFixed(5); // Usar 5 casas decimais para garantir precisão
+        const lastDigit = parseInt(valStr.charAt(valStr.length - 1));
+        if (!isNaN(lastDigit)) {
+          digits.push(lastDigit);
+          frequency[lastDigit] = (frequency[lastDigit] || 0) + 1;
         }
       });
       
@@ -2414,45 +2388,20 @@ export default {
           odd: total > 0 ? Math.round((oddCount / total) * 100) : 0,
         },
       };
-
-      // Atualizar frequências para histogramas
-      this.frequencies25 = this.getFrequenciesForCount(25);
-      this.frequencies50 = this.getFrequenciesForCount(50);
-      this.frequencies100 = this.getFrequenciesForCount(100);
     },
-    getFrequenciesForCount(count) {
-      const digits = this.storedTicks.slice(-count).map(tick => {
-        const valueStr = tick.value.toFixed(5);
-        return parseInt(valueStr[valueStr.length - 1], 10);
-      }).filter(d => !isNaN(d));
-
-      const total = digits.length;
-      const counts = new Array(10).fill(0);
-      
-      digits.forEach(d => {
-        if (d >= 0 && d <= 9) counts[d]++;
-      });
-
-      return counts.map((c, i) => ({
-        digit: i,
-        count: c,
-        percentage: total > 0 ? (c / total) * 100 : 0
-      }));
+    // Categorias de Dígitos
+    lowPercentage() {
+        if (!this.digitFrequency || !this.digitFrequency.digits || this.digitFrequency.digits.length === 0) return 50;
+        const low = this.digitFrequency.digits.filter(d => d <= 4).length;
+        return Math.round((low / this.digitFrequency.digits.length) * 100);
     },
-    getHistogramBarClass(digit, percentage, frequencies) {
-      if (!frequencies || frequencies.length === 0) return '';
-      
-      let max = -1;
-      let min = 101;
-      
-      frequencies.forEach(f => {
-        if (f.percentage > max) max = f.percentage;
-        if (f.percentage < min) min = f.percentage;
-      });
-
-      if (percentage === max && max > min) return 'bar-rank-highest';
-      if (percentage === min && min < max) return 'bar-rank-lowest';
-      return 'bar-rank-normal';
+    highPercentage() {
+        return 100 - this.lowPercentage;
+    },
+    // Histórico Recente de Dígitos
+    recentDigits() {
+        if (!this.digitFrequency || !this.digitFrequency.digits) return [];
+        return this.digitFrequency.digits.slice(-30).reverse();
     },
     setTab(tab) {
         this.activeTab = tab;
