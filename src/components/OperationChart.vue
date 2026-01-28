@@ -2118,16 +2118,47 @@ export default {
             'commodities': 'Commodities'
         };
 
-        const mappedMarkets = backendMarkets.map(m => {
+        const allowedForex = ['frxEURUSD', 'frxUSDJPY', 'frxGBPUSD', 'frxAUDUSD', 'frxUSDCHF', 'frxUSDCAD', 'frxNZDUSD', 'frxEURGBP', 'frxEURJPY', 'frxGBPJPY'];
+        const allowedCrypto = ['cryBTCUSD', 'cryETHUSD', 'cryLTCUSD', 'cryXRPUSD', 'cryBCHUSD'];
+        const allowedSynthetic = ['Continuous Indices', 'Daily Reset Indices', 'Indices Step', 'Jump Indices', 'Boom/Crash'];
+
+        const filteredMarkets = backendMarkets.filter(m => {
+             if (m.symbol.startsWith('frx')) return allowedForex.includes(m.symbol);
+             if (m.symbol.startsWith('cry')) return allowedCrypto.includes(m.symbol);
+             
+             // Check synthetic indices based on submarketDisplayName or common prefixes
+             const submarket = m.submarketDisplayName;
+             if (allowedSynthetic.includes(submarket)) return true;
+             
+             // Fallback for symbols if submarketDisplayName is missing or different
+             if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ') || 
+                 m.symbol.startsWith('JDM') || m.symbol.startsWith('BOOM') || 
+                 m.symbol.startsWith('CRASH') || m.symbol.startsWith('STP') ||
+                 m.symbol.startsWith('RDBEAR') || m.symbol.startsWith('RDBULL')) {
+                 return true;
+             }
+             
+             return false;
+        });
+
+        const mappedMarkets = filteredMarkets.map(m => {
              let category = m.submarketDisplayName || m.marketDisplayName || categoryMap[m.market] || 'Outros';
              
-             // Forçar categorias específicas para o mapeamento de prioridade
+             // Forçar categorias específicas para o mapeamento de prioridade e exibição correta
              if (m.symbol.startsWith('frx')) {
                  category = 'Major Pairs';
              } else if (m.symbol.startsWith('cry')) {
                  category = 'Criptomoedas';
              } else if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ')) {
                  category = 'Índices Contínuos';
+             } else if (m.symbol.startsWith('JDM')) {
+                 category = 'Jump Indices';
+             } else if (m.symbol.startsWith('BOOM') || m.symbol.startsWith('CRASH')) {
+                 category = 'Boom/Crash';
+             } else if (m.symbol.startsWith('STP')) {
+                 category = 'Indices Step';
+             } else if (m.symbol.startsWith('RDBEAR') || m.symbol.startsWith('RDBULL')) {
+                 category = 'Daily Reset Indices';
              }
 
              return {
