@@ -51,6 +51,7 @@ export default {
       default: 'USD'
     }
   },
+  emits: ['confirm'],
   computed: {
     formattedResult() {
       if (this.result === null || this.result === undefined) return '$0.00';
@@ -189,7 +190,7 @@ export default {
   transition: opacity 0.3s ease;
 }
 
-.modal-fade-enter,
+.modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
 }
