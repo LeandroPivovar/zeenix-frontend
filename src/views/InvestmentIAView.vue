@@ -206,13 +206,24 @@
                                 </div>
                                 <div class="modal-body">
                                     <div class="agents-modal-list">
-                                        <div 
-                                            v-for="strategy in availableStrategies" 
-                                            :key="strategy.id"
-                                            class="agent-option-premium"
-                                            :class="{ 'active': selectedStrategy === strategy.id }"
-                                            @click="selectStrategy(strategy.id)"
-                                        >
+                                        <div class="agents-modal-list">
+                                            <div 
+                                                v-for="strategy in availableStrategies" 
+                                                :key="strategy.id"
+                                                class="agent-option-premium"
+                                                :class="{ 'active': selectedStrategy === strategy.id }"
+                                                @click.stop="selectStrategy(strategy.id)" 
+                                            >
+                                            handleStrategyRequiredConfirm() {
+                                                this.showStrategyRequiredModal = false;
+                                                
+                                                // Aguarda o próximo ciclo do DOM para abrir o seletor
+                                                this.$nextTick(() => {
+                                                    setTimeout(() => {
+                                                        this.openStrategyModal();
+                                                    }, 50); // Delay mínimo apenas para o CSS respirar
+                                                });
+                                            },
                                             <div class="agent-option-icon">
                                                 <div v-if="strategy.derivIcons" class="flex gap-1 justify-center">
                                                     <img v-for="icon in strategy.derivIcons" :key="icon" :src="icon" class="w-6 h-6" />
@@ -1031,11 +1042,14 @@ export default {
             }
         },
 
+        // Localize esta função no seu InvestmentIAView.vue
         handleStrategyRequiredConfirm() {
-            this.showStrategyRequiredModal = false;
-            this.$nextTick(() => {
+            this.showStrategyRequiredModal = false; // Primeiro fecha
+            
+            // Aguarda um pequeno delay (tempo da transição) para abrir o próximo
+            setTimeout(() => {
                 this.openStrategyModal();
-            });
+            }, 100); 
         },
 
         openStrategyModal() {
@@ -1047,24 +1061,25 @@ export default {
         },
         
         selectStrategy(id) {
+            console.log('[InvestmentIAView] 🎯 Estratégia selecionada:', id);
             this.selectedStrategy = id;
             
-            // ✅ Sincronização de Mercado Automática (ZENIX v2.0)
+            // Sincronização de Mercado Automática
             const strategyLower = id.toLowerCase();
             if (strategyLower === 'atlas') {
                 this.selectedMarket = 'vol100_1s';
-                console.log('[InvestmentIAView] 🎯 Atlas selecionado: Alternando mercado para Volatility 100 (1s) Index');
             } else if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
                 this.selectedMarket = 'vol100';
-                console.log(`[InvestmentIAView] 🎯 ${id.toUpperCase()} selecionado: Alternando mercado para Volatility 100 Index`);
             } else {
                 this.selectedMarket = 'vol10';
             }
 
-            // Immediately close the modal
-            this.closeStrategyModal();
-        },
-
+            // FECHAMENTO FORÇADO
+            this.showStrategyModal = false; 
+            
+            // Garante que o body não fique travado (caso use algum lock de scroll)
+            document.body.style.overflow = ''; 
+        }
         getUserId() {
             try {
                 const token = localStorage.getItem('token');
