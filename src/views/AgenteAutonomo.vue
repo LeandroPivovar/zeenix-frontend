@@ -4,11 +4,7 @@
         class="layout-agente-autnomo"
         :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
       >
-        <div
-          v-if="isSidebarOpen && isMobile"
-          class="sidebar-overlay"
-          @click="closeSidebar"
-        ></div>
+
   
         <AppSidebar
           :is-open="isSidebarOpen"

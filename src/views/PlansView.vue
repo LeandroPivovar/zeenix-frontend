@@ -1,10 +1,5 @@
 <template>
     <div class="zenix-layout">
-        <div 
-            class="sidebar-overlay" 
-            :class="{ 'show': isMobileMenuOpen }"
-            @click="isMobileMenuOpen = false"
-        ></div>
 
         <AppSidebar 
             class="app-sidebar"

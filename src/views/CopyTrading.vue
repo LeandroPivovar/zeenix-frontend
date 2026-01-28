@@ -1,8 +1,6 @@
 <template>
     <div class="layout">
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
-        
-        <div v-if="isSidebarOpen" class="sidebar-overlay" @click="closeSidebar"></div>
 
         <main class="copy-trading-content loading-content" v-if="loading" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <div class="background-glow"></div>

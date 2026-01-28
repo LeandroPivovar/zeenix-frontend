@@ -1,13 +1,7 @@
 <template>
   <div class="course-layout">
-    <!-- Sidebar (AppSidebar handles fixed positioning) -->
-    <!-- Note: AppSidebar logic handles its own width/collapsing. 
-         We wrap the main content to offset it correctly via CSS (.layout margin-left) -->
     <AppSidebar :is-open="sidebarOpen" :is-collapsed="false" />
     
-    <!-- Overlay para fechar sidebar em mobile -->
-    <div v-if="sidebarOpen" class="sidebar-overlay" @click="closeSidebar"></div>
-
     <!-- TopNavbar -->
     <TopNavbar
         :is-sidebar-collapsed="false"
