@@ -526,6 +526,7 @@ export default {
 				goalValue: this.metaLucroNumero,
 				stopValue: this.limitePerdaNumero,
 				initialStake: this.valorOperacaoNumero,
+				stopLossType: this.stopLossBlindado ? 'blindado' : 'normal', // ✅ FIX: Send stop type
 			};
 
 			// 2. Atualiza os valores no componente pai antes de iniciar
