@@ -71,10 +71,10 @@
               <p class="text-zenix-text font-medium text-sm animate-pulse">Carregando dados do mercado...</p>
             </div>
             
-            <!-- Placeholder normal (não bloqueante) -->
-            <div v-else-if="showChartPlaceholder || isLoading" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
+            <!-- Placeholder (removido a pedido) -->
+            <!-- <div v-else-if="showChartPlaceholder || isLoading" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
               <p class="text-zenix-secondary">Atualizando gráfico...</p>
-            </div>
+            </div> -->
           </div>
         </div>
         
@@ -1025,6 +1025,8 @@ export default {
     this.initChart();
     
     // 3. Carregar dados iniciais
+    await this.fetchMarkets(); // Carregar mercados do backend
+
     if (!this.symbol) {
         this.symbol = 'R_100'; // Default
     }
@@ -1630,7 +1632,16 @@ export default {
         try {
             const authToken = localStorage.getItem('auth_token') || localStorage.getItem('token');
             if (authToken) {
-                const response = await fetch(`${process.env.VUE_APP_API_URL || 'http://localhost:3000'}/api/broker/deriv/trading/token`, {
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                // Remove /api from base url if it exists twice or ensure it's there? 
+                // DerivTradingService normalizes it. Let's do similar or just append path.
+                // Assuming VUE_APP_API_BASE_URL includes /api in production? 
+                // But DerivTradingService code: let API_BASE_URL = rawApiUrl... if (!ends with /api) add it.
+                // Safest is to rely on simple logic: just use the variable, if user set it right.
+                // The logs showed: Requisição para https://iazenix.com/api/broker/deriv/status
+                // So VUE_APP_API_BASE_URL likely is 'https://iazenix.com/api'.
+                
+                const response = await fetch(`${apiBaseUrl}/broker/deriv/trading/token`, {
                     method: 'GET',
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
