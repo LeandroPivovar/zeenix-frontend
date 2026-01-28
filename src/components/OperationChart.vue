@@ -1974,83 +1974,82 @@ export default {
        }
     },
     // Método loadMarketsFromAPI removido (substituído por subscribeWSActiveSymbols)
-    processActiveSymbols(symbols) {
-      if (!symbols || !Array.isArray(symbols)) {
-        console.warn('[Chart] active_symbols inválido:', symbols);
-        return;
-      }
-
-      console.log('[Chart] Processando símbolos ativos:', symbols.length);
-
-      // Mapear símbolos para o formato esperado
-      const mappedMarkets = symbols
-        .map(symbol => {
-          const symbolData = typeof symbol === 'string' ? { symbol } : symbol;
-          const symbolValue = symbolData.symbol || symbolData.market || symbol;
-          const displayName = symbolData.display_name || symbolData.name || symbolValue;
-          
-          // Determinar categoria baseado no prefixo do símbolo ou metadados da API
-          let category = symbolData.market_display_name || symbolData.market || 'Outros';
-          
-          // Normalização de nomes de categorias comuns
-          if (category === 'synthetic_index') category = 'Índices Sintéticos';
-          if (category === 'forex') category = 'Forex';
-          if (category === 'cryptocurrency') category = 'Criptomoedas';
-          if (category === 'indices') category = 'Índices';
-          if (category === 'commodities') category = 'Commodities';
-
-          // Refinar categoria se for prefixo conhecido
-          if (symbolValue.startsWith('R_') || symbolValue.startsWith('1HZ')) {
-            category = 'Índices Contínuos';
-          } else if (symbolValue.startsWith('cry')) {
-            category = 'Criptomoedas';
-          } else if (symbolValue.startsWith('frx')) {
-            if (symbolValue.includes('XAU') || symbolValue.includes('XAG') || symbolValue.includes('XPT') || symbolValue.includes('XPD')) {
-              category = 'Metais';
-            } else {
-              // Listas de categorização de Forex
-              const minors = ['frxEURGBP', 'frxEURJPY', 'frxGBPJPY', 'frxAUDCAD', 'frxAUDJPY', 'frxCHFJPY', 'frxEURAUD', 'frxGBPAUD'];
-              const exotics = ['frxUSDMXN'];
-              
-              if (minors.includes(symbolValue)) {
-                category = 'Forex Minors';
-              } else if (exotics.includes(symbolValue)) {
-                category = 'Forex Exotics';
-              } else {
-                category = 'Forex Majors';
-              }
+    async fetchMarkets() {
+      try {
+        const token = localStorage.getItem('token');
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        
+        const res = await fetch(`${apiBaseUrl}/markets`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
             }
-          }
-
-          return {
-            value: symbolValue,
-            label: displayName,
-            category: category,
-          };
         });
 
-      // Ordenar por categoria (usando prioridade definida) e depois por label
-      const categoryPriority = {
-        'Índices Contínuos': 1,
-        'Forex Minors': 2,
-        'Forex Majors': 3,
-        'Criptomoedas': 4,
-        'Metais': 5,
-        'Forex Exotics': 6
-      };
+        if (!res.ok) throw new Error('Falha ao buscar mercados');
 
-      mappedMarkets.sort((a, b) => {
-        const priorityA = categoryPriority[a.category] || 99;
-        const priorityB = categoryPriority[b.category] || 99;
+        const backendMarkets = await res.json();
         
-        if (priorityA !== priorityB) {
-          return priorityA - priorityB;
-        }
-        return a.label.localeCompare(b.label);
-      });
+        // Map backend to component format
+        const categoryMap = {
+            'synthetic_index': 'Índices Sintéticos',
+            'forex': 'Forex',
+            'cryptocurrency': 'Criptomoedas',
+            'indices': 'Índices',
+            'commodities': 'Commodities'
+        };
 
-      this.markets = mappedMarkets;
-      console.log('[Chart] Todos os mercados carregados dinamicamente:', this.markets.length);
+        const mappedMarkets = backendMarkets.map(m => {
+             let category = m.marketDisplayName || categoryMap[m.market] || 'Outros';
+             
+             // Specific logic for continuos indices and naming
+             if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ')) {
+                 category = 'Índices Contínuos';
+             } else if (m.symbol.startsWith('frx')) {
+                 category = 'Forex';
+             } else if (m.symbol.startsWith('cry')) {
+                 category = 'Criptomoedas';
+             }
+
+             return {
+                 value: m.symbol,
+                 label: m.displayName,
+                 category: category,
+                 operations: m.operations || []
+             };
+        });
+
+         // Sort by category
+        const categoryPriority = {
+            'Índices Contínuos': 1,
+            'Forex': 2,
+            'Criptomoedas': 3,
+            'commodities': 4
+        };
+
+        mappedMarkets.sort((a, b) => {
+             const pA = categoryPriority[a.category] || 99;
+             const pB = categoryPriority[b.category] || 99;
+             if (pA !== pB) return pA - pB;
+             return a.label.localeCompare(b.label);
+        });
+        
+        this.markets = mappedMarkets;
+        console.log('[Chart] Mercados carregados do backend:', this.markets.length);
+
+        if (!this.symbol && this.markets.length > 0) {
+             const defaultM = this.markets.find(m => m.value === 'R_100') || this.markets[0];
+             this.selectMarket(defaultM.value);
+        } else if (this.symbol) {
+            // Validate if current symbol exists in new list
+             const exists = this.markets.find(m => m.value === this.symbol);
+             if (exists) {
+                 this.loadAvailableContracts(this.symbol);
+             }
+        }
+
+      } catch (error) {
+        console.error('Erro ao buscar mercados do backend:', error);
+      }
     },
     async loadAvailableContracts(symbol) {
       if (!symbol) {
@@ -2061,53 +2060,35 @@ export default {
       try {
         this.isLoadingContracts = true;
         
-        // Buscar valores padrão (que incluem contratos disponíveis)
-        // Usar CALL como tipo padrão para buscar contratos
-        // O backend resolverá o token automaticamente para buscar contratos
-        const defaultValues = await derivTradingService.getDefaultValues(symbol, 'CALL');
+        // Find market in local list
+        const market = this.markets.find(m => m.value === symbol);
         
-        console.log('[Chart] Valores padrão recebidos:', defaultValues);
-        
-        // Processar contratos disponíveis
-        if (defaultValues.availableContracts) {
-          let contractsArray = [];
-          
-          if (Array.isArray(defaultValues.availableContracts)) {
-            contractsArray = defaultValues.availableContracts;
-          } else if (defaultValues.availableContracts.available && Array.isArray(defaultValues.availableContracts.available)) {
-            contractsArray = defaultValues.availableContracts.available;
-          } else if (typeof defaultValues.availableContracts === 'object') {
-            // Tentar extrair de outras estruturas
-            const values = Object.values(defaultValues.availableContracts);
-            for (const value of values) {
-              if (Array.isArray(value)) {
-                contractsArray = [...contractsArray, ...value];
-              }
-            }
-          }
-          
-              this.availableContracts = contractsArray;
-          console.log('[Chart] Contratos disponíveis atualizados:', this.availableContracts.length, 'contratos');
-          
-          // Se o tipo atual não estiver disponível, limpar seleção
-          if (this.tradeType) {
-            const isTypeAvailable = this.availableContracts.some(c => {
-              const contractType = typeof c === 'string' ? c : (c.contract_type || c.type || c.name);
-              return contractType && contractType.toUpperCase() === this.tradeType.toUpperCase();
-            });
-            
-            if (!isTypeAvailable) {
-              this.tradeType = '';
-              console.log('[Chart] Tipo de negociação anterior não está disponível, limpo');
-            }
-          }
+        if (market && market.operations && market.operations.length > 0) {
+             // operations is array of strings: ['CALL', 'PUT', 'DIGITMATCH', ...]
+             this.availableContracts = market.operations;
+             console.log('[Chart] Contratos disponíveis (cache local):', this.availableContracts);
         } else {
-          console.warn('[Chart] Nenhum contrato disponível retornado para o símbolo:', symbol);
-          this.availableContracts = [];
+             // Fallback if no operations data? Or just empty
+             console.warn('[Chart] Sem operações definidas para este mercado na tabela.');
+             this.availableContracts = [];
+        }
+
+        // Validate current trade type
+        if (this.tradeType) {
+             const isAvailable = this.availableContracts.includes(this.tradeType) || 
+                                 // Some types map to multiple ops (e.g. Higher/Lower uses CALL/PUT barriers often, but here listed as specific ops? 
+                                 // Backend contracts_for returns 'CALL'/'PUT' usually. 
+                                 // If frontend uses HIGHER/LOWER but backend says CALL/PUT, we might need mapping.
+                                 // Usually Deriv contracts_for returns specific types like 'CALL', 'PUT', 'DIGITMATCH'.
+                                 // My OperationChart tradeTypeCategories uses mapping.
+                                 // We need to check if the *Category Item* is valid.
+                                 this.availableContracts.some(op => op === this.tradeType); // Simple check
+             
+             // TODO: robust mapping check based on categories items directions
         }
         
       } catch (error) {
-        console.error('[Chart] Erro ao carregar contratos disponíveis:', error);
+        console.error('[Chart] Erro ao carregar contratos:', error);
         this.availableContracts = [];
       } finally {
         this.isLoadingContracts = false;
