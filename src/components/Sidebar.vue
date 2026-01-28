@@ -287,9 +287,6 @@
                 <button class="dev-modal-button" @click="showDevModal = false">Entendi</button>
             </div>
         </div>
-
-        <!-- Overlay Mobile para fechar sidebar clicando fora -->
-        <div v-if="isOpen" class="sidebar-mobile-overlay" @click="close"></div>
     </div>
 </template>
 
