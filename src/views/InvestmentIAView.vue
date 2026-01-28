@@ -160,11 +160,16 @@
                                 >
                                     <div class="selector-content">
                                         <div class="selector-left">
-                                            <div class="selector-icon-active">
-                                                <i :class="getStrategyIcon(selectedStrategy)"></i>
+                                            <div v-if="selectedStrategyObject" class="strategy-icons-inline mr-2">
+                                                <img v-for="icon in selectedStrategyObject.icons" :key="icon" :src="icon" class="deriv-svg-icon-small" />
                                             </div>
                                             <span :class="{ 'placeholder': !selectedStrategy }">
-                                                {{ selectedStrategyName }}
+                                                <template v-if="selectedStrategyObject">
+                                                    IA - {{ selectedStrategyObject.title }}
+                                                </template>
+                                                <template v-else>
+                                                    Selecione uma estratégia
+                                                </template>
                                             </span>
                                         </div>
                                         <i class="fas fa-chevron-right selector-arrow"></i>
@@ -175,11 +180,7 @@
                                 <transition name="slide-fade" mode="out-in">
                                     <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card mt-6">
                                         <div class="agent-desc-content">
-                                            <div class="agent-desc-icon">
-                                                <i :class="getStrategyIcon(selectedStrategy)" style="color: white !important;"></i>
-                                            </div>
                                             <div class="agent-desc-info">
-                                                <h3>{{ selectedStrategyName }}</h3>
                                                 <p v-html="strategyDescription"></p>
                                             </div>
                                         </div>
@@ -574,15 +575,12 @@ export default {
     computed: {
 
 
+        selectedStrategyObject() {
+            return this.allStrategies.find(s => s.id === this.selectedStrategy);
+        },
+
         selectedStrategyName() {
-            const strategyNames = {
-                'atlas': 'IA Atlas',
-                'apollo': 'IA Apollo',
-                'nexus': 'IA Nexus',
-                'orion': 'IA Orion',
-                'titan': 'IA Titan'
-            };
-            return strategyNames[this.selectedStrategy] || 'Selecione uma estratégia';
+            return this.selectedStrategyObject ? this.selectedStrategyObject.title : 'Selecione uma estratégia';
         },
         
         availableStrategies() {
@@ -824,10 +822,6 @@ export default {
             }
         },
 
-        getStrategyIcon(id) {
-            const strategy = this.availableStrategies.find(s => s.id === id);
-            return strategy ? strategy.icon : 'fas fa-brain';
-        },
 
 
         
@@ -3911,14 +3905,6 @@ export default {
     gap: 0.75rem;
 }
 
-.selector-icon-active {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #22C55E;
-}
 
 .selector-left span {
     font-size: 0.875rem;
@@ -3949,20 +3935,6 @@ export default {
     gap: 1rem;
 }
 
-.agent-desc-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    background: rgba(34, 197, 94, 0.1);
-    border-radius: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.agent-desc-icon i {
-    font-size: 1.25rem;
-}
 
 .agent-desc-info {
     text-align: left !important;
@@ -4086,6 +4058,12 @@ export default {
     width: 24px;
     height: 24px;
 }
+
+.deriv-svg-icon-small {
+    width: 18px;
+    height: 18px;
+}
+
 
 .agent-option-info {
     flex: 1;
