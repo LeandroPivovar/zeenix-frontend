@@ -8,69 +8,7 @@
             
         <div class="digits-layout">
             <!-- Seção: Porcentagem de frequência de dígitos -->
-            <div class="frequency-unified-card-wrapper">
-                <div class="frequency-unified-card bg-[#000000] border border-white/5 rounded-xl p-8 shadow-2xl">
-                    <h3 class="frequency-section-title text-base font-medium text-white/90 mb-10 text-center tracking-wide">Porcentagem de frequência de dígitos</h3>
-                    <div class="frequency-charts-grid grid grid-cols-1 md:grid-cols-3 gap-16">
-                        <!-- Últimos 25 Dígitos -->
-                        <div class="frequency-chart-container flex flex-col items-center">
-                            <h4 class="frequency-chart-subtitle text-xs font-normal text-white/40 mb-6 tracking-wider">Últimos 25 Dígitos</h4>
-                            <div class="histogram-container flex items-end w-full max-w-[280px]">
-                                <div v-for="item in frequencies25" :key="'freq25-'+item.digit" class="histogram-column flex flex-col items-center flex-1">
-                                    <div class="histogram-bar-wrapper w-full h-[120px] flex items-end justify-center">
-                                        <div 
-                                            class="histogram-bar w-full transition-all duration-700 ease-out relative" 
-                                            :class="getHistogramBarClass(item.digit, item.percentage, frequencies25)"
-                                            :style="{ height: (item.percentage > 0 ? Math.max(4, Math.min((item.percentage * 4), 130)) : 0) + 'px', maxHeight: '130px', minHeight: item.percentage > 0 ? '4px' : '0px' }"
-                                        >
-                                            <div class="histogram-percentage text-[10px] font-bold text-white absolute bottom-full left-1/2 transform -translate-x-1/2">{{ Math.round(item.percentage) }}%</div>
-                                        </div>
-                                    </div>
-                                    <div class="histogram-digit text-xs font-bold text-white mt-2">{{ item.digit }}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Últimos 50 Dígitos -->
-                        <div class="frequency-chart-container flex flex-col items-center">
-                            <h4 class="frequency-chart-subtitle text-xs font-normal text-white/40 mb-6 tracking-wider">Últimos 50 Dígitos</h4>
-                            <div class="histogram-container flex items-end w-full max-w-[280px]">
-                                <div v-for="item in frequencies50" :key="'freq50-'+item.digit" class="histogram-column flex flex-col items-center flex-1">
-                                    <div class="histogram-bar-wrapper w-full h-[120px] flex items-end justify-center">
-                                        <div 
-                                            class="histogram-bar w-full transition-all duration-700 ease-out relative" 
-                                            :class="getHistogramBarClass(item.digit, item.percentage, frequencies50)"
-                                            :style="{ height: (item.percentage > 0 ? Math.max(4, Math.min((item.percentage * 4), 130)) : 0) + 'px', maxHeight: '130px', minHeight: item.percentage > 0 ? '4px' : '0px' }"
-                                        >
-                                            <div class="histogram-percentage text-[10px] font-bold text-white absolute bottom-full left-1/2 transform -translate-x-1/2">{{ Math.round(item.percentage) }}%</div>
-                                        </div>
-                                    </div>
-                                    <div class="histogram-digit text-xs font-bold text-white mt-2">{{ item.digit }}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Últimos 100 Dígitos -->
-                        <div class="frequency-chart-container flex flex-col items-center">
-                            <h4 class="frequency-chart-subtitle text-xs font-normal text-white/40 mb-6 tracking-wider">Últimos 100 Dígitos</h4>
-                            <div class="histogram-container flex items-end w-full max-w-[280px]">
-                                <div v-for="item in frequencies100" :key="'freq100-'+item.digit" class="histogram-column flex flex-col items-center flex-1">
-                                    <div class="histogram-bar-wrapper w-full h-[120px] flex items-end justify-center">
-                                        <div 
-                                            class="histogram-bar w-full transition-all duration-700 ease-out relative" 
-                                            :class="getHistogramBarClass(item.digit, item.percentage, frequencies100)"
-                                            :style="{ height: (item.percentage > 0 ? Math.max(4, Math.min((item.percentage * 4), 130)) : 0) + 'px', maxHeight: '130px', minHeight: item.percentage > 0 ? '4px' : '0px' }"
-                                        >
-                                            <div class="histogram-percentage text-[10px] font-bold text-white absolute bottom-full left-1/2 transform -translate-x-1/2">{{ Math.round(item.percentage) }}%</div>
-                                        </div>
-                                    </div>
-                                    <div class="histogram-digit text-xs font-bold text-white mt-2">{{ item.digit }}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Seções de Análise unificadas foram movidas para main-content-grid -->
 
             <!-- Sidebar Panel (Trading) -->
             <div class="max-w-[400px] w-[400px] flex-shrink-0 bg-[#0D0D0D] border border-white/5 p-8 overflow-y-auto sidebar-panel rounded-xl trading-panel">
@@ -214,218 +152,128 @@
             <!-- Main Content Grid -->
             <div class="main-content-grid">
                 <div class="cards-grid">
-                    <!-- Linha 1: Heatmap + DVX -->
-                    <div class="heatmap-card">
-                    <div class="card-header-with-help">
-                        <h3 class="card-header">Heatmap Estatístico (0-9)</h3>
-                        <div class="relative group">
-                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
-                            <div class="tooltip-content">
-                                <div class="tooltip-title">🔵 Como Analisar?</div>
-                                <div class="tooltip-text">
-                                    Cada barra mostra quantas vezes aquele dígito apareceu. Verde escuro = apareceu pouco (subaquecido), Vermelho = apareceu muito (sobreaquecido). Dígitos subaquecidos têm maior probabilidade de aparecer em breve (reversão à média).<br><br>
-                                    <strong>Exemplo:</strong> Se o dígito 7 está vermelho (4%), ele está "devendo" aparecer. Considere estratégia MATCHES 7.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="heatmap-grid">
+                <!-- Linha 1: Frequência Geral (Heatmap adaptado) -->
+                <div class="frequency-unified-card bg-[#0D0D0D] border border-white/5 rounded-xl p-8 mb-4">
+                    <h3 class="section-title text-base font-bold text-white/90 mb-8 px-1">1. FREQUÊNCIA GERAL POR DÍGITO</h3>
+                    <div class="heatmap-grid !grid-cols-5 md:!grid-cols-10 gap-4">
                         <div 
                             v-for="item in digitFrequenciesWithStats" 
                             :key="'heat-'+item.digit" 
-                            class="heatmap-digit-block"
+                            class="heatmap-digit-block !h-auto !p-4 flex flex-col items-center justify-between border border-white/5 rounded-lg bg-black/20"
                             :class="[item.statusClass, item.isHighlighted ? 'heatmap-highlighted' : '']"
-                            :style="{ height: item.barHeight + 'px' }"
                         >
-                            <div class="frequency-percentage-label">{{ item.percentage }}%</div>
-                            <div 
-                                class="frequency-pill-visual" 
-                                :class="item.statusClass"
-                            >
-                                <span class="frequency-digit-number">{{ item.digit }}</span>
+                            <div class="frequency-digit-number-large text-lg font-black text-white mb-2">{{ item.digit }}</div>
+                            <div class="histogram-bar-mini w-full bg-white/5 rounded h-1 mb-2 overflow-hidden">
+                                <div class="h-full bg-zenix-green transition-all duration-1000" :style="{ width: item.percentage + '%' }"></div>
                             </div>
-                            <div class="frequency-status-label" :class="item.statusClass + '-text'">{{ item.statusText }}</div>
-                            <div class="frequency-z-score desktop-only">Z: {{ item.zScore }}</div>
-                        </div>
-                    </div>
-                    <div class="heatmap-legend">
-                        <div class="legend-item">
-                            <div class="legend-dot legend-dot-green"></div>
-                            <span>Baixo</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-dot legend-dot-yellow"></div>
-                            <span>Médio</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-dot legend-dot-orange"></div>
-                            <span>Alto</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-dot legend-dot-red"></div>
-                            <span>Crítico</span>
-                        </div>
-                    </div>
-                    </div>
-
-                    <!-- Linha 1: Heatmap + DVX (continuação) -->
-                    <div class="dvx-card">
-                    <div class="card-header-with-help">
-                        <div>
-                            <h3 class="card-header">Índice de Volatilidade (DVX)</h3>
-                            <p class="card-subtitle">Mede a variabilidade dos dígitos</p>
-                        </div>
-                        <div class="relative group">
-                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
-                            <div class="tooltip-content">
-                                <div class="tooltip-title">🔵 Como Analisar?</div>
-                                <div class="tooltip-text">
-                                    O DVX mede o quão "espalhados" estão os dígitos. Verde (0-30) = baixa volatilidade, ambiente ideal para operar. Amarelo (30-60) = moderado, cautela. Vermelho (60-100) = alta volatilidade, ambiente arriscado - reduza apostas ou não opere.<br><br>
-                                    <strong>Exemplo:</strong> DVX em 85 (vermelho) = mercado errático, padrões não confiáveis. Aguarde o ponteiro voltar para zona verde/amarela.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dvx-gauge-container">
-                        <svg width="240" height="120" class="dvx-gauge-svg">
-                            <!-- Arcos de Fundo (Baixa Opacidade) -->
-                            <path d="M 30 110 A 90 90 0 0 1 72 35" stroke="#22C55E" stroke-width="16" fill="none" opacity="0.15"></path>
-                            <path d="M 72 35 A 90 90 0 0 1 168 35" stroke="#FFD058" stroke-width="16" fill="none" opacity="0.15"></path>
-                            <path d="M 168 35 A 90 90 0 0 1 210 110" stroke="#FF4747" stroke-width="16" fill="none" opacity="0.15"></path>
-
-                            <!-- Arcos de Progresso (Dinamismo) -->
-                            <path 
-                                d="M 30 110 A 90 90 0 0 1 72 35" 
-                                stroke="#22C55E" stroke-width="16" fill="none" 
-                                :stroke-dasharray="90.2" 
-                                :stroke-dashoffset="dvxGreenOffset"
-                            ></path>
-                            <path 
-                                d="M 72 35 A 90 90 0 0 1 168 35" 
-                                stroke="#FFD058" stroke-width="16" fill="none" 
-                                :stroke-dasharray="102.4" 
-                                :stroke-dashoffset="dvxYellowOffset"
-                            ></path>
-                            <path 
-                                d="M 168 35 A 90 90 0 0 1 210 110" 
-                                stroke="#FF4747" stroke-width="16" fill="none" 
-                                :stroke-dasharray="90.2" 
-                                :stroke-dashoffset="dvxRedOffset"
-                            ></path>
-                        </svg>
-                        <div class="dvx-value-container">
-                            <div class="dvx-value">{{ dvxValue }}</div>
-                            <div class="dvx-status" :class="dvxStatusClass">{{ dvxStatusText }}</div>
-                            <div class="dvx-subtitle">Ambiente {{ dvxEnvironmentText }}</div>
-                        </div>
-                    </div>
-                    <div class="dvx-legend">
-                        <div class="dvx-legend-item">
-                            <div class="dvx-legend-bar dvx-legend-green"></div>
-                            <span>0–30 | Baixa</span>
-                        </div>
-                        <div class="dvx-legend-item">
-                            <div class="dvx-legend-bar dvx-legend-yellow"></div>
-                            <span>30–60 | Moderada</span>
-                        </div>
-                        <div class="dvx-legend-item">
-                            <div class="dvx-legend-bar dvx-legend-red"></div>
-                            <span>60–100 | Alta</span>
+                            <div class="frequency-percentage-label !relative !top-0 !left-0 !transform-none !opacity-100 font-bold text-zenix-green">{{ item.percentage }}%</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Linha 2: Paridade + Distribuição Alto/Baixo -->
-                <div class="parity-meter-card">
-                    <div class="card-header-with-help">
-                        <div>
-                            <h3 class="card-header">Medidor de Paridade</h3>
-                            <p class="card-subtitle">Distribuição Par vs Ímpar (esperado: 50/50)</p>
-                        </div>
-                        <div class="relative group">
-                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
-                            <div class="tooltip-content">
-                                <div class="tooltip-title">🔵 Como Analisar?</div>
-                                <div class="tooltip-text">
-                                    Mostra a distribuição de dígitos pares (0,2,4,6,8) vs ímpares (1,3,5,7,9). O esperado é 50/50. Se houver desequilíbrio (>55% para um lado), o próximo tick tende a reverter para o lado oposto.<br><br>
-                                    <strong>Exemplo:</strong> Se Pares está em 62%, há excesso de pares. Próxima operação: aposte em ÍMPAR (ODD) na plataforma Deriv.
+                <!-- Linha 2: Paridade + Distribuição Alto/Baixo (Renomeado para Resumo por Categoria) -->
+                <div class="category-summary-wrapper space-y-4">
+                    <h3 class="section-title text-base font-bold text-white/90 mb-4 px-1">2. RESUMO POR CATEGORIA</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Paridade -->
+                        <div class="parity-meter-card">
+                            <div class="card-header-with-help">
+                                <div>
+                                    <h3 class="card-header">PAR vs ÍMPAR</h3>
+                                    <p class="card-subtitle">Distribuição (esperado: 50/50)</p>
+                                </div>
+                                <div class="relative group">
+                                    <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                                    <div class="tooltip-content">
+                                        <div class="tooltip-title">🔵 Como Analisar?</div>
+                                        <div class="tooltip-text">
+                                            Mostra a distribution de dígitos pares (0,2,4,6,8) vs ímpares (1,3,5,7,9). O esperado é 50/50. Se houver desequilíbrio (>55% para um lado), o próximo tick tende a reverter para o lado oposto.<br><br>
+                                            <strong>Exemplo:</strong> Se Pares está em 62%, há excesso de pares. Próxima operação: aposte em ÍMPAR (ODD) na plataforma Deriv.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="parity-meter-content">
+                                <div class="parity-meter-item">
+                                    <div class="parity-meter-header">
+                                        <span>PAR: {{ evenCount }}</span>
+                                        <span class="parity-meter-percentage text-blue">{{ digitFrequency.parity.even }}%</span>
+                                    </div>
+                                    <div class="parity-meter-bar-container">
+                                        <div class="parity-meter-bar parity-meter-bar-blue" :style="{ width: digitFrequency.parity.even + '%' }"></div>
+                                    </div>
+                                </div>
+                                <div class="parity-meter-item">
+                                    <div class="parity-meter-header">
+                                        <span>ÍMPAR: {{ oddCount }}</span>
+                                        <span class="parity-meter-percentage text-orange">{{ digitFrequency.parity.odd }}%</span>
+                                    </div>
+                                    <div class="parity-meter-bar-container">
+                                        <div class="parity-meter-bar parity-meter-bar-orange" :style="{ width: digitFrequency.parity.odd + '%' }"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="parity-meter-content">
-                        <div class="parity-meter-item">
-                            <div class="parity-meter-header">
-                                <span>Par (0,2,4,6,8)</span>
-                                <span class="parity-meter-percentage text-blue">{{ digitFrequency.parity.even }}%</span>
+
+                        <!-- Distribuição Alto/Baixo -->
+                        <div class="high-low-card">
+                            <div class="card-header-with-help">
+                                <div>
+                                    <h3 class="card-header">BAIXO vs ALTO</h3>
+                                    <p class="card-subtitle">Baixos (0–4) vs Altos (5–9)</p>
+                                </div>
+                                <div class="relative group">
+                                    <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                                    <div class="tooltip-content">
+                                        <div class="tooltip-title">🔵 Como Analisar?</div>
+                                        <div class="tooltip-text">
+                                            Divide os dígitos em Baixos (0-4) e Altos (5-9). O esperado é 50/50. Desequilíbrio indica que o próximo tick terá maior probabilidade de ser do lado oposto.<br><br>
+                                            <strong>Exemplo:</strong> Se Baixos está em 58%, muitos dígitos 0-4 saíram. Próxima operação: escolha OVER 4 (apostar que o próximo será 5-9).
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="parity-meter-bar-container">
-                                <div class="parity-meter-bar parity-meter-bar-blue" :style="{ width: digitFrequency.parity.even + '%' }"></div>
-                                <div class="parity-meter-value">{{ evenCount }}</div>
+                            <div class="high-low-content">
+                                <div class="high-low-item">
+                                    <div class="high-low-header">
+                                        <span>BAIXO (0-4): {{ lowCount }}</span>
+                                        <span class="high-low-percentage text-green">{{ lowPercentage }}%</span>
+                                    </div>
+                                    <div class="high-low-bar-container">
+                                        <div class="high-low-bar high-low-bar-green" :style="{ width: lowPercentage + '%' }"></div>
+                                    </div>
+                                </div>
+                                <div class="high-low-item">
+                                    <div class="high-low-header">
+                                        <span>ALTO (5-9): {{ highCount }}</span>
+                                        <span class="high-low-percentage text-purple">{{ highPercentage }}%</span>
+                                    </div>
+                                    <div class="high-low-bar-container">
+                                        <div class="high-low-bar high-low-bar-purple" :style="{ width: highPercentage + '%' }"></div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="parity-meter-item">
-                            <div class="parity-meter-header">
-                                <span>Ímpar (1,3,5,7,9)</span>
-                                <span class="parity-meter-percentage text-orange">{{ digitFrequency.parity.odd }}%</span>
-                            </div>
-                            <div class="parity-meter-bar-container">
-                                <div class="parity-meter-bar parity-meter-bar-orange" :style="{ width: digitFrequency.parity.odd + '%' }"></div>
-                                <div class="parity-meter-value">{{ oddCount }}</div>
-                            </div>
-                        </div>
-                        <div class="parity-meter-recommendation">
-                            <i class="fas fa-check text-green"></i>
-                            <span>{{ parityRecommendationText }}</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Distribuição Alto/Baixo -->
-                <div class="high-low-card">
-                    <div class="card-header-with-help">
-                        <div>
-                            <h3 class="card-header">Distribuição Alto/Baixo</h3>
-                            <p class="card-subtitle">Baixos (0–4) vs Altos (5–9) — esperado: 50/50</p>
+                <!-- Linha 3: Histórico Recente -->
+                <div class="recent-history-card bg-[#0D0D0D] border border-white/5 p-6 rounded-xl mt-4">
+                    <h3 class="section-title text-base font-bold text-white/90 mb-6 px-1">3. HISTÓRICO RECENTE (últimos 30 ticks)</h3>
+                    <div class="recent-digits-list flex flex-wrap gap-2 justify-start items-center">
+                        <div 
+                            v-for="(digit, index) in recentDigits" 
+                            :key="'recent-'+index"
+                            class="recent-digit-item w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm bg-white/5 border border-white/10"
+                            :class="[
+                                digit % 2 === 0 ? 'text-blue-400' : 'text-orange-400',
+                                index === 0 ? 'border-zenix-green bg-zenix-green/5 scale-110 shadow-[0_0_10px_rgba(34,197,94,0.2)]' : ''
+                            ]"
+                        >
+                            {{ digit }}
                         </div>
-                        <div class="relative group">
-                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
-                            <div class="tooltip-content">
-                                <div class="tooltip-title">🔵 Como Analisar?</div>
-                                <div class="tooltip-text">
-                                    Divide os dígitos em Baixos (0-4) e Altos (5-9). O esperado é 50/50. Desequilíbrio indica que o próximo tick terá maior probabilidade de ser do lado oposto.<br><br>
-                                    <strong>Exemplo:</strong> Se Baixos está em 58%, muitos dígitos 0-4 saíram. Próxima operação: escolha OVER 4 (apostar que o próximo será 5-9).
-                                </div>
-                            </div>
-                        </div>
+                        <div v-if="recentDigits.length === 0" class="text-white/20 text-xs italic">Aguardando dados...</div>
                     </div>
-                    <div class="high-low-content">
-                        <div class="high-low-item">
-                            <div class="high-low-header">
-                                <span>Baixos (0–4)</span>
-                                <span class="high-low-percentage text-green">{{ lowPercentage }}%</span>
-                            </div>
-                            <div class="high-low-bar-container">
-                                <div class="high-low-bar high-low-bar-green" :style="{ width: lowPercentage + '%' }"></div>
-                                <div class="high-low-value">{{ lowCount }}</div>
-                            </div>
-                        </div>
-                        <div class="high-low-item">
-                            <div class="high-low-header">
-                                <span>Altos (5–9)</span>
-                                <span class="high-low-percentage text-purple">{{ highPercentage }}%</span>
-                            </div>
-                            <div class="high-low-bar-container">
-                                <div class="high-low-bar high-low-bar-purple" :style="{ width: highPercentage + '%' }"></div>
-                                <div class="high-low-value">{{ highCount }}</div>
-                            </div>
-                        </div>
-                        <div class="high-low-recommendation">
-                            <i class="fas fa-arrow-right text-green"></i>
-                            <span>{{ highLowRecommendationText }}</span>
-                        </div>
-                    </div>
-                </div>
                 </div>
 
                 <!-- Signal Generator Card -->
@@ -521,6 +369,7 @@
                             </div>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
 
@@ -1030,35 +879,9 @@ export default {
                 return 'Alta volatilidade ou sinais contraditórios detectados.';
             }
         },
-        // DVX (Índice de Volatilidade)
-        dvxValue() {
-            if (this.digitFrequency.digits.length < 20) {
-                return 0;
-            }
-            const frequencies = this.digitFrequencies;
-            const expected = 10; // 10% esperado para cada dígito
-            let variance = 0;
-            frequencies.forEach(f => {
-                variance += Math.pow(f.percentage - expected, 2);
-            });
-            const stdDev = Math.sqrt(variance / 10);
-            // Normalizar para 0-100 com escala mais sensível (divisor 25 para mais movimento)
-            return Math.min(100, Math.round((stdDev / 25) * 100));
-        },
-        dvxStatusClass() {
-            if (this.dvxValue <= 30) return 'dvx-status-green';
-            if (this.dvxValue <= 60) return 'dvx-status-yellow';
-            return 'dvx-status-red';
-        },
-        dvxStatusText() {
-            if (this.dvxValue <= 30) return 'Volatilidade Baixa';
-            if (this.dvxValue <= 60) return 'Volatilidade Moderada';
-            return 'Volatilidade Alta';
-        },
-        dvxEnvironmentText() {
-            if (this.dvxValue <= 30) return 'estável';
-            if (this.dvxValue <= 60) return 'moderado';
-            return 'arriscado';
+        // Histórico Recente de Dígitos
+        recentDigits() {
+            return this.digitFrequency.digits.slice(-30).reverse();
         },
         // Estatísticas de dígitos com Z-score
         digitFrequenciesWithStats() {
@@ -1160,24 +983,7 @@ export default {
                 return 'Próximo tick: maior probabilidade de BAIXO (UNDER 5)';
             }
         },
-        // Offsets para preenchimento dinâmico do gauge
-        dvxGreenOffset() {
-            const len = 90.2;
-            const fill = Math.min(30, this.dvxValue) / 30;
-            return len * (1 - fill);
-        },
-        dvxYellowOffset() {
-            const len = 102.4;
-            const val = Math.max(0, this.dvxValue - 30);
-            const fill = Math.min(30, val) / 30;
-            return len * (1 - fill);
-        },
-        dvxRedOffset() {
-            const len = 90.2;
-            const val = Math.max(0, this.dvxValue - 60);
-            const fill = Math.min(40, val) / 40;
-            return len * (1 - fill);
-        },
+        // Removido DVX Offsets
     },
     methods: {
         getDigitTypeLabel(type) {
@@ -1637,7 +1443,7 @@ export default {
             this.calculateDigitFrequency();
         },
         calculateDigitFrequency() {
-            const last100Ticks = this.ticks.slice(-100);
+            const lastSample = this.ticks.slice(-500);
             const digits = [];
             const frequency = {};
             
@@ -1645,11 +1451,13 @@ export default {
                 frequency[i] = 0;
             }
             
-            last100Ticks.forEach(tick => {
-                const value = Math.floor(tick.value);
-                const lastDigit = value % 10;
-                digits.push(lastDigit);
-                frequency[lastDigit] = (frequency[lastDigit] || 0) + 1;
+            lastSample.forEach(tick => {
+                const valueStr = tick.value.toString();
+                const lastDigit = parseInt(valueStr.charAt(valueStr.length - 1));
+                if (!isNaN(lastDigit)) {
+                    digits.push(lastDigit);
+                    frequency[lastDigit] = (frequency[lastDigit] || 0) + 1;
+                }
             });
             
             let evenCount = 0;

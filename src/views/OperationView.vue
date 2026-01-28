@@ -45,7 +45,7 @@
           <div class="view-toggle-bar">
             <button
               class="px-6 py-3 bg-zenix-card text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300 desktop-only"
-              :class="{ 'border-b-2 border-zenix-green text-zenix-text font-semibold shadow-[0_0_8px_rgba(0,0,0,0.25)]': currentView === 'OperationChart', 'border-b-2 border-transparent text-[#7A7A7A]': currentView !== 'OperationChart' }"
+              :class="{ 'border-b-2 border-zenix-green text-zenix-text font-semibold shadow-[0_0_8px_rgba(0,0,0,0.25)]': currentView === 'OperationChart' && activeSubTab === 'chart', 'border-b-2 border-transparent text-[#7A7A7A]': currentView !== 'OperationChart' || activeSubTab !== 'chart' }"
               @click="changeView('OperationChart')"
             >
               <span class="desktop-text">Análise gráfica</span>
@@ -53,7 +53,7 @@
             </button>
             <button
               class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-              :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationDigits', 'border-b-2 border-transparent': currentView !== 'OperationDigits' }"
+              :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationChart' && activeSubTab === 'digits', 'border-b-2 border-transparent': currentView !== 'OperationChart' || activeSubTab !== 'digits' }"
               @click="changeView('OperationDigits')"
             >
               <span class="desktop-text">Análise de dígitos</span>
@@ -80,7 +80,6 @@
 
         <div class="operation-content">
           <component
-            v-if="!isMobile || currentView !== 'OperationChart'"
             :is="currentView"
             ref="operationComponent"
             :account-balance="accountBalanceFormatted"
@@ -91,6 +90,7 @@
             :order-config="orderConfig"
             :trade-results="lastOrdersFormatted"
             @trade-result="handleTradeResult"
+            @tab-changed="activeSubTab = $event"
           ></component>
         </div>
       </main>
@@ -151,6 +151,7 @@ export default {
       tradeCurrency: 'USD', // 'USD' ou 'DEMO'
       availableAccounts: [],
       loadingAccounts: false,
+      activeSubTab: 'chart', // 'chart' ou 'digits'
     };
   },
   computed: {
@@ -207,16 +208,9 @@ export default {
   },
   methods: {
     checkMobile() {
-      const wasMobile = this.isMobile;
       this.isMobile = window.innerWidth <= 768;
-      // Se mudou para mobile e está na view de gráfico, mudar para dígitos
-      if (this.isMobile && !wasMobile && this.currentView === 'OperationChart') {
-        this.currentView = 'OperationDigits';
-      }
-      // Se mudou para desktop e estava em dígitos, pode voltar para gráfico
-      if (!this.isMobile && wasMobile && this.currentView === 'OperationDigits') {
-        this.currentView = 'OperationChart';
-      }
+      // Removido o switch forçado entre OperationChart e OperationDigits no mobile
+      // pois agora a análise de dígitos está integrada no Gráfico.
     },
     handleAccountTypeChange(newAccountType) {
         console.log('[OperationView] Tipo de conta alterado via componente filho para:', newAccountType);
@@ -383,50 +377,41 @@ export default {
       }
     },
     changeView(componentName) {
-      // No mobile, não permitir mudar para OperationChart
-      if (this.isMobile && componentName === 'OperationChart') {
-        return;
-      }
       // Verificar se componente ainda está montado antes de mudar view
       if (!this.isComponentMounted()) {
         return;
       }
 
-      // Se o usuário quer análise de dígitos, garantir que estamos no OperationChart e mudar aba
+      // Se o usuário quer análise de dígitos, garantimos que estamos no OperationChart e mudamos a aba interna
       if (componentName === 'OperationDigits') {
-        if (this.currentView === 'OperationChart') {
-          if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
-            this.$refs.operationComponent.setTab('digits');
-          }
-          return;
-        } else {
-          // Mudar para chart e depois setar aba
+        this.activeSubTab = 'digits';
+        if (this.currentView !== 'OperationChart') {
           this.currentView = 'OperationChart';
           this.$nextTick(() => {
             if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
               this.$refs.operationComponent.setTab('digits');
             }
           });
-          return;
+        } else if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
+          this.$refs.operationComponent.setTab('digits');
         }
+        return;
       }
 
       // Se mudar explicitamente para Chart, garantir que a aba correta esteja ativa
       if (componentName === 'OperationChart') {
-        if (this.currentView === 'OperationChart') {
-          if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
-            this.$refs.operationComponent.setTab('chart');
-          }
-          return;
-        } else {
+        this.activeSubTab = 'chart';
+        if (this.currentView !== 'OperationChart') {
           this.currentView = 'OperationChart';
           this.$nextTick(() => {
             if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
               this.$refs.operationComponent.setTab('chart');
             }
           });
-          return;
+        } else if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
+          this.$refs.operationComponent.setTab('chart');
         }
+        return;
       }
 
       try {

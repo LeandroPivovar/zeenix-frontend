@@ -4043,10 +4043,17 @@ export default {
     background-color: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(4px);
     z-index: 1000000001 !important; /* Maior que o StrategyRequiredModal */
+    z-index: 1000000001 !important; /* Maior que o StrategyRequiredModal */
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
+}
+
+/* Garante que o conteúdo seja clicável */
+.agent-option-premium {
+    cursor: pointer !important;
+    pointer-events: auto !important;
 }
 
 /* Garante que o conteúdo seja clicável */
@@ -4209,6 +4216,7 @@ export default {
         width: 280px !important;
         height: 100vh;
         z-index: 9990000;
+        z-index: 9990000;
         transform: translateX(-100%);
         transition: transform 0.3s ease-out;
     }
@@ -4216,6 +4224,7 @@ export default {
     /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
     :deep(.sidebar.is-open) {
         transform: translateX(0);
+        z-index: 999999 !important;
         z-index: 999999 !important;
     }
     
