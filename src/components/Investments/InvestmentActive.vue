@@ -2176,15 +2176,17 @@ export default {
             
             console.log('[InvestmentActive] 🔍 Verificando logs para eventos de stop...', recentLogs.length, 'logs recentes');
             
-            // ✅ 1. VERIFICAR STOP BLINDADO ATINGIDO (Extreme Strict Mode)
-            const hasBlindadoHit = recentLogs.some(log => 
-                log.message && (
-                    log.message.trim().includes('🛡️ STOP BLINDADO ATINGIDO!')
-                )
-            );
+            // ✅ 1. VERIFICAR STOP BLINDADO ATINGIDO (Robust Check)
+            // Procura por "BLINDADO" e alguma indicativa de parada/atingimento
+            const hasBlindadoHit = recentLogs.some(log => {
+                if (!log.message) return false;
+                const msg = log.message.toUpperCase();
+                return msg.includes('BLINDADO') && 
+                       (msg.includes('ATINGIDO') || msg.includes('REACHED') || msg.includes('STOPPED') || msg.includes('ENCERRANDO'));
+            });
             
             if (hasBlindadoHit) {
-                console.log('[InvestmentActive] 🛡️ [Logs] Exact Hit detected!');
+                console.log('[InvestmentActive] 🛡️ [Logs] Stop Blindado detected!');
                 if (!this.showStopBlindadoModal && !this.showStopLossModal && !this.showTargetProfitModal && !this.processingStopEvent && !window.zenixStopModalActive) {
                     this.processingStopEvent = true;
                     window.zenixStopModalActive = true;
@@ -2198,13 +2200,14 @@ export default {
             }
             
             // ✅ 2. VERIFICAR STOP LOSS NORMAL (Avoiding collision with Blindado)
-            const hasNormalStopLossMessage = recentLogs.some(log => 
-                log.message && (
-                    log.message.includes('STOP LOSS ATINGIDO') ||
-                    log.message.includes('STOP LOSS REACHED') ||
-                    (log.message.includes('STOP LOSS') && !log.message.includes('BLINDADO') && log.message.includes('ATINGIDO'))
-                )
-            );
+            // Só ativa se NÃO for Blindado
+            const hasNormalStopLossMessage = recentLogs.some(log => {
+                if (!log.message) return false;
+                const msg = log.message.toUpperCase();
+                return (msg.includes('STOP LOSS') || msg.includes('DE PERDA')) && 
+                       (msg.includes('ATINGIDO') || msg.includes('REACHED')) &&
+                       !msg.includes('BLINDADO'); // ❌ Ignorar se tiver BLINDADO no texto
+            });
             
             if (hasNormalStopLossMessage) {
                 console.log('[InvestmentActive] 🛑 Stop Loss normal detectado nos logs!');
