@@ -1059,10 +1059,8 @@ export default {
                 this.selectedMarket = 'vol10';
             }
 
-            // Delay closing to show visual feedback (check icon)
-            setTimeout(() => {
-                this.closeStrategyModal();
-            }, 300);
+            // Immediately close the modal
+            this.closeStrategyModal();
         },
 
         getUserId() {
@@ -4016,7 +4014,7 @@ export default {
 .agent-desc-icon {
     width: 2.5rem;
     height: 2.5rem;
-    background: rgba(34, 197, 94, 0.1);
+    background: transparent;
     border-radius: 0.5rem;
     display: flex;
     align-items: center;
@@ -4137,7 +4135,7 @@ export default {
 .agent-option-icon {
     width: 2.5rem;
     height: 2.5rem;
-    background: rgba(34, 197, 94, 0.1);
+    background: transparent;
     border-radius: 0.5rem;
     display: flex;
     align-items: center;
