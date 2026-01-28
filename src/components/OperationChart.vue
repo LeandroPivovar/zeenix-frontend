@@ -2456,6 +2456,7 @@ export default {
     },
     setTab(tab) {
         this.activeTab = tab;
+        this.$emit('tab-changed', tab);
         // Se voltar para o gráfico, garantir que ele redimensione
         if (tab === 'chart') {
             setTimeout(() => {
