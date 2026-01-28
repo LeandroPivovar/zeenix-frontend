@@ -1147,7 +1147,8 @@ export default {
     },
 
     onWSConnected() {
-        this.subscribeWSActiveSymbols();
+        // No longer subscribing to active_symbols via WS
+        // this.subscribeWSActiveSymbols(); 
         this.subscribeWSTicks();
     },
 
@@ -1166,9 +1167,6 @@ export default {
                 this.wsAuthorized = true;
                 console.log('[Chart] WS Autorizado');
                 this.onWSConnected();
-                break;
-            case 'active_symbols':
-                this.processWSActiveSymbols(msg.active_symbols);
                 break;
             case 'history':
                 this.processWSHistory(msg);
@@ -1211,14 +1209,8 @@ export default {
         }
     },
 
-    subscribeWSActiveSymbols() {
-        this.isLoadingMarkets = true;
-        this.wsSend({
-            active_symbols: 'brief',
-            product_type: 'basic'
-        });
-    },
-
+    // subscribeWSActiveSymbols removed
+    
     subscribeWSTicks() {
         if (!this.symbol) return;
         
@@ -1241,12 +1233,7 @@ export default {
         });
     },
 
-    processWSActiveSymbols(symbols) {
-        this.isLoadingMarkets = false;
-        if (symbols && Array.isArray(symbols)) {
-            this.processActiveSymbols(symbols); // Reutilizar lógica existente
-        }
-    },
+    // processWSActiveSymbols removed
 
     processWSHistory(msg) {
         const history = msg.history;
