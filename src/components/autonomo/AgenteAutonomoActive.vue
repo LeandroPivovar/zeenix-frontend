@@ -562,11 +562,11 @@
 			<div class="mt-4">
 				<h4 class="text-sm font-semibold mb-3 uppercase tracking-wide flex items-center gap-2 text-left text-[#FAFAFA]">
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity w-4 h-4 text-green-500"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
-					Operações Intraday
+					OPERAÇÕES DIÁRIAS
 				</h4>
 				<div class="overflow-x-auto max-h-[300px] overflow-y-auto custom-scrollbar">
 					<table class="w-full text-[10px] sm:text-xs">
-						<thead class="sticky top-0 bg-[#09090b] shadow-sm">
+						<thead class="sticky top-0 bg-[#09090b] shadow-sm z-10">
 							<tr class="border-b border-[#27272a]">
 								<th class="text-left py-2 text-[#A1A1AA] font-medium px-1">Hora</th>
 								<th class="text-left py-2 text-[#A1A1AA] font-medium px-1">Mercado</th>
@@ -579,26 +579,41 @@
 						</thead>
 						<tbody>
                             <!-- Session grouping logic -->
-                            <template v-for="(session, sIdx) in tradesBySession" :key="sIdx">
-                                <tr v-if="tradesBySession.length > 1" class="bg-[#1a1a1a]/50">
-                                    <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-green-500 uppercase tracking-wider border-y border-[#27272a]">
-                                         Sessão #{{ tradesBySession.length - sIdx }} • Início {{ formatToSPTime(session.trades[session.trades.length-1].createdAt) }}
+                            <template v-for="(item, idx) in formattedSessionItems" :key="item.id || idx">
+                                <!-- SESSION HEADER: INICIO -->
+                                <tr v-if="item.type === 'header'" class="bg-[#1a1a1a]">
+                                    <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-yellow-500 uppercase tracking-wider border-y border-[#27272a] text-left">
+                                         SESSÃO {{ item.sessionNumber }} - INÍCIO {{ item.startTime }}
                                     </td>
                                 </tr>
-                                <tr v-for="(op, idx) in session.trades" :key="op.id || idx" class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
-                                    <td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{ formatToSPTime(op.createdAt) }}</td>
-                                    <td class="py-2 px-1 text-[#FAFAFA] text-left truncate max-w-[50px] sm:max-w-none">{{op.market}}</td>
+
+                                <!-- TRADE ROW -->
+                                <tr v-else-if="item.type === 'trade'" class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
+                                    <td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{ formatToSPTime(item.data.createdAt) }}</td>
+                                    <td class="py-2 px-1 text-[#FAFAFA] text-left truncate max-w-[50px] sm:max-w-none">{{item.data.market}}</td>
                                     <td class="py-2 px-1 text-left">
                                         <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold"
-                                            :class="op.contract === 'DIGITMATCH' ? 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'">
-                                            {{ op.contract }}
+                                            :class="item.data.contract === 'DIGITMATCH' ? 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'">
+                                            {{ item.data.contract }}
                                         </span>
                                     </td>
-                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.entry}}</td>
-                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.exit}}</td>
-                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{parseFloat(op.stake).toFixed(2)}}</td>
-                                    <td class="py-2 px-1 text-right tabular-nums font-semibold" :class="parseFloat(op.profit) >= 0 ? 'text-green-500' : 'text-red-500'">
-                                        {{ parseFloat(op.profit) >= 0 ? '+' : '' }}{{ parseFloat(op.profit).toFixed(2) }}
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">${{item.data.entry}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">${{item.data.exit}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">${{parseFloat(item.data.stake).toFixed(2)}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums font-semibold" :class="parseFloat(item.data.profit) >= 0 ? 'text-green-500' : 'text-red-500'">
+                                        {{ parseFloat(item.data.profit) >= 0 ? '+' : '' }}${{parseFloat(item.data.profit).toFixed(2)}}
+                                    </td>
+                                </tr>
+
+                                <!-- SESSION FOOTER: FIM/PAUSA -->
+                                <tr v-else-if="item.type === 'footer'" class="bg-[#0c0c0c]">
+                                    <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider border-b border-[#27272a] text-left">
+                                        <div class="flex items-center justify-between">
+                                            <span>FIM DA SESSÃO - {{ item.endTime }}</span>
+                                            <span :class="item.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'">
+                                                RESULTADO: {{ item.totalProfit >= 0 ? '+' : '' }}${{ item.totalProfit.toFixed(2) }}
+                                            </span>
+                                        </div>
                                     </td>
                                 </tr>
                             </template>
@@ -841,7 +856,6 @@
 				// Agent Switcher
 				showAgentSwitcher: false,
 				runningAgents: [
-                    { id: 'all', title: 'Todos os Agentes', emoji: '🤖' },
 					{ 
 						id: 'zeus', 
 						title: 'Agente Zeus',
@@ -1147,42 +1161,94 @@
                 // Retorna 'Semanal', 'Mensal' etc baseado na range geral se quiser, por padrão 'Semanal' baseada na tabela
 				return 'Semanal';
 			},
-            tradesBySession() {
+            formattedSessionItems() {
                 if (!this.dailyTrades || this.dailyTrades.length === 0) return [];
                 
-                // Agrupar por "sessão" (gap > 30 min)
+                // 1. Agrupar trades em sessões (gap de 30 min)
                 const sessions = [];
-                let currentSession = [];
+                let currentSessionTrades = [];
                 
-                // Trades vem ordenados DESC do backend (mais recente primeiro)
-                // Para agrupar cronologicamente, talvez seja melhor iterar.
-                // Mas a exibição suele ser DESC tambem.
-                
-                // Vamos usar gaps. Se diff > 30min entre Trade[i] e Trade[i+1], i+1 pertence a outra sessão (anterior).
-                
-                let trades = [...this.dailyTrades]; // Clone
-                // Order is DESC. So trades[0] is 14:00, trades[1] is 13:58...
+                // Clone e order DESC (mais recente primeiro)
+                const trades = [...this.dailyTrades].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 
                 if (trades.length > 0) {
-                     currentSession.push(trades[0]);
+                     currentSessionTrades.push(trades[0]);
                      
                      for (let i = 1; i < trades.length; i++) {
                          const prevTradeTime = new Date(trades[i-1].createdAt).getTime();
                          const currTradeTime = new Date(trades[i].createdAt).getTime();
                          
+                         // Gap check: se trade atual é muito mais antigo que o anterior (pois a ordem é DESC)
+                         // Então houve um intervalo GRANDE antes do trade[i-1]. 
+                         // Ou seja, trade[i-1] foi o ÚLTIMO de uma sessão, e trade[i] é o PRIMEIRO da sessão anterior.
                          const diffMinutes = (prevTradeTime - currTradeTime) / (1000 * 60);
                          
                          if (diffMinutes > 30) {
-                             // Gap detectado, fecha sessão atual
-                             sessions.push({ trades: currentSession });
-                             currentSession = [];
+                             sessions.push(currentSessionTrades);
+                             currentSessionTrades = [];
                          }
-                         currentSession.push(trades[i]);
+                         currentSessionTrades.push(trades[i]);
                      }
-                     sessions.push({ trades: currentSession });
+                     sessions.push(currentSessionTrades);
                 }
                 
-                return sessions;
+                // 2. Criar lista flat com Header(Início) -> Trades -> Footer(Fim)
+                // Como trades estão DESC, sessions[0] é a mais recente.
+                // Mas dentro da sessão, trades[0] é o mais recente (FIM), trades[last] é INICIO.
+                // Na tabela queremos mostrar DESC? Geralmente sim (mais recente no topo).
+                // MAS o user pediu "Inicio a sessão ... Trades ... Fim".
+                // Se a ordem for DESC visualmente (topo->baixo), o "Fim" (mais recente) deveria estar em cima?
+                // Visualmente Logs costumam ser mais recentes em cima.
+                // Mas o pedido "Inicio... Trades... Fim" sugere ordem CRONOLÓGICA (ASC) dentro da sessão ou visualização de bloco.
+                // "Sessão 1 - Inicio 11:14" (Yellow).
+                // Se mostrar DESC, o Inicio fica EM BAIXO.
+                // A imagem mostra "Sessão 01 - Inicio" no TOPO da lista de trades dessa sessão.
+                // E os trades abaixo parecem ser os daquela sessão.
+                // Assumindo ordem DESC global (sessão mais recente em cima),
+                // Mas dentro da sessão, os trades devem estar DESC também?
+                // Se o header é "Inicio", ele deveria marcar o começo do bloco visual.
+                
+                const items = [];
+                
+                sessions.forEach((sessionTrades, idx) => {
+                    const sessionNum = sessions.length - idx; // Sessão 1 é a mais antiga
+                    
+                    // Calcular dados da sessão
+                    const startTime = this.formatToSPTime(sessionTrades[sessionTrades.length - 1].createdAt);
+                    const endTime = this.formatToSPTime(sessionTrades[0].createdAt);
+                    const totalProfit = sessionTrades.reduce((acc, t) => acc + t.profit, 0);
+                    
+                    // Header: INICIO (Visualmente topo do bloco)
+                    items.push({
+                        type: 'header',
+                        id: `header-${idx}`,
+                        sessionNumber: sessionNum,
+                        startTime: startTime
+                    });
+                    
+                    // Trades (Mantendo DESC: mais recentes primeiro, logo abaixo do header?)
+                    // Se o header diz "Inicio XX", e logo abaixo vem um trade das YY (onde YY > XX), faz sentido.
+                    sessionTrades.forEach(trade => {
+                        items.push({
+                            type: 'trade',
+                            id: trade.id,
+                            data: trade
+                        });
+                    });
+                    
+                    // Footer: FIM (Visualmente base do bloco)
+                    // Se é DESC, o fim (mais recente) já passou (foi o primeiro trade).
+                    // Talvez o user queira ver o bloco fechado.
+                    // Adicionamos footer após os trades.
+                    items.push({
+                        type: 'footer',
+                        id: `footer-${idx}`,
+                        endTime: endTime,
+                        totalProfit: totalProfit
+                    });
+                });
+                
+                return items;
             },
 		},
 		watch: {
@@ -1405,9 +1471,7 @@
                 const userId = this.getUserId();
                 if (!userId || !day) return;
                 
-                // Limpar trades anteriores enquanto carrega
-                this.dailyTrades = [];
-
+                
                 try {
                     // Use fullDate if available (YYYY-MM-DD), otherwise fallback (might fail if not standard)
                     const dateQuery = day.fullDate || 'today';
