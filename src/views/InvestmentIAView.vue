@@ -4224,7 +4224,7 @@ export default {
     /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
     :deep(.sidebar.is-open) {
         transform: translateX(0);
-        z-index: 100000 !important;
+        z-index: 999999 !important;
     }
     
     /* Modal de Settings deve sobrepor tudo no mobile, incluindo TopNavbar */
@@ -4447,6 +4447,16 @@ export default {
         font-weight: 700 !important;
         text-transform: uppercase !important;
         color: #C5C5C5 !important;
+    }
+
+    /* 4. Garantir que o painel da IA não "atropele" o Z-index */
+    #ai-vision-panel {
+        position: relative;
+        z-index: 10!important;
+    }
+
+    .ai-visualization-area {
+        isolation: isolate;
     }
 }
 </style>
