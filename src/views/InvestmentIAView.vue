@@ -180,7 +180,9 @@
                                     <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card mt-6">
                                         <div class="agent-desc-content">
                                             <div class="agent-desc-icon">
-                                                <img v-if="selectedStrategyDerivIcons" v-for="icon in selectedStrategyDerivIcons" :key="icon" :src="icon" class="w-8 h-8" />
+                                                <template v-if="selectedStrategyDerivIcons">
+                                                    <img v-for="icon in selectedStrategyDerivIcons" :key="icon" :src="icon" class="w-8 h-8" />
+                                                </template>
                                                 <i v-else :class="getStrategyIcon(selectedStrategy)" style="color: white !important;"></i>
                                             </div>
                                             <div class="agent-desc-info">
