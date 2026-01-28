@@ -665,23 +665,28 @@
                                 </div>
                                 
                                 <div v-else class="text-left">
-                                    <div v-for="log in realtimeLogs" :key="log.id" class="mb-1.5 text-left log-entry">
-                                        <span class="text-gray-500">[{{ log.timestamp }}]</span>
-                                        <span class="ml-1">{{ log.icon }}</span>
-                                        
+                                    <div v-for="log in realtimeLogs" :key="log.id" class="mb-3 text-left log-entry flex flex-col">
                                         <!-- Renderização Especial para IA ATLAS -->
                                         <template v-if="sessionConfig.strategy === 'atlas'">
-                                            <div class="ml-1 inline-block">
-                                                <div v-for="(line, idx) in log.message.split('\n')" :key="idx" 
-                                                     :class="[idx === 0 ? getLogClass(log) + ' font-bold uppercase' : 'text-gray-400 text-[10px] ml-4']">
-                                                    <span v-if="idx > 0" class="mr-1">•</span>
-                                                    {{ line }}
+                                            <span class="text-gray-500 text-[10px] mb-1">[{{ log.timestamp }}]</span>
+                                            <div class="flex items-start">
+                                                <span class="mr-1 mt-0.5">{{ log.icon }}</span>
+                                                <div class="flex flex-col">
+                                                    <div v-for="(line, idx) in log.message.split('\n')" :key="idx" 
+                                                         :class="[idx === 0 ? getLogClass(log) + ' font-bold uppercase text-[11px]' : 'text-gray-300 text-[10px] ml-1.5 opacity-90']">
+                                                        <span v-if="idx > 0" class="mr-1 opacity-60">•</span>
+                                                        {{ line }}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </template>
                                         
                                         <!-- Renderização Padrão para outras IAs -->
-                                        <span v-else class="ml-1 log-message" :class="getLogClass(log)">{{ log.message }}</span>
+                                        <div v-else class="flex items-center">
+                                            <span class="text-gray-500 mr-1">[{{ log.timestamp }}]</span>
+                                            <span class="mr-1">{{ log.icon }}</span>
+                                            <span class="log-message" :class="getLogClass(log)">{{ log.message }}</span>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -700,22 +705,26 @@
                                 </div>
                                 
                                 <div v-else class="mobile-register-cards-container">
-                                    <div v-for="log in realtimeLogs" :key="log.id" class="mobile-register-card">
-                                        <div class="flex items-start">
-                                            <span class="mobile-register-time mr-2">[{{ log.timestamp }}]</span>
-                                            
-                                            <!-- Atlas Mobile Format -->
-                                            <div v-if="sessionConfig.strategy === 'atlas'" class="flex flex-col">
-                                                <div v-for="(line, idx) in log.message.split('\n')" :key="idx"
-                                                     :class="[idx === 0 ? getLogClass(log) + ' font-bold uppercase text-xs' : 'text-gray-400 text-[10px] ml-2']">
-                                                    <span v-if="idx === 0">{{ log.icon }} </span>
-                                                    <span v-if="idx > 0">• </span>
-                                                    {{ line }}
+                                    <div v-for="log in realtimeLogs" :key="log.id" class="mobile-register-card pb-3 border-b border-[#1C1C1C] last:border-0">
+                                        <!-- Atlas Mobile Format -->
+                                        <template v-if="sessionConfig.strategy === 'atlas'">
+                                            <span class="mobile-register-time text-[9px] mb-1">[{{ log.timestamp }}]</span>
+                                            <div class="flex items-start">
+                                                <span class="mr-1 text-xs">{{ log.icon }}</span>
+                                                <div class="flex flex-col">
+                                                    <div v-for="(line, idx) in log.message.split('\n')" :key="idx"
+                                                         :class="[idx === 0 ? getLogClass(log) + ' font-bold uppercase text-[10px]' : 'text-gray-300 text-[9px] ml-1 opacity-80']">
+                                                        <span v-if="idx > 0" class="mr-1 opacity-60">•</span>
+                                                        {{ line }}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            
-                                            <!-- Standard Mobile Format -->
-                                            <span v-else class="mobile-register-message log-message" :class="getLogClass(log)">
+                                        </template>
+                                        
+                                        <!-- Standard Mobile Format -->
+                                        <div v-else class="flex items-center">
+                                            <span class="mobile-register-time mr-2">[{{ log.timestamp }}]</span>
+                                            <span class="mobile-register-message log-message" :class="getLogClass(log)">
                                                 {{ log.icon }} {{ log.message }}
                                             </span>
                                         </div>
@@ -1755,12 +1764,29 @@ export default {
                 return 'text-blue-400';
             }
 
+            // ATLAS SPECIFIC TITLES & CATEGORIES
+            if (this.sessionConfig.strategy === 'atlas') {
+                if (firstLine.includes('INÍCIO') || firstLine.includes('COLETA') || firstLine.includes('ANÁLISE') || 
+                    firstLine.includes('AVALIAÇÃO') || firstLine.includes('CONTRATO CRIADO') || firstLine.includes('EXECUÇÃO') ||
+                    firstLine.includes('RESET') || firstLine.includes('ENCERRAMENTO')) {
+                    return 'text-blue-500';
+                }
+                if (firstLine.includes('BLOQUEADA') || firstLine.includes('TROCA') || firstLine.includes('RECUPERAÇÃO') ||
+                    firstLine.includes('MARTINGALE') || firstLine.includes('PAUSA')) {
+                    return 'text-yellow-400';
+                }
+                if (firstLine.includes('SINAL') || firstLine.includes('RESULTADO') || firstLine.includes('SOROS') ||
+                    firstLine.includes('SEQUÊNCIA') || firstLine.includes('CONCLUÍDA')) {
+                    return 'text-green-500';
+                }
+            }
+
             // General keyword checks (only if not caught above)
             if (lowerMessage.includes('vitória') || 
                 lowerMessage.includes('vitoria') ||
                 lowerMessage.includes('ganhou') || 
                 lowerMessage.includes('win')) {
-                return 'text-green-400';
+                return 'text-green-500';
             }
             
             if (lowerMessage.includes('derrota') || 
@@ -1772,13 +1798,14 @@ export default {
             
             // Fallback to type-based colors
             const colors = {
-                info: 'text-blue-400',
+                info: 'text-blue-500',
                 tick: 'text-gray-400',
-                analise: 'text-blue-400',
-                vitoria: 'text-green-400',
-                sinal: 'text-yellow-400',
+                analise: 'text-blue-500',
+                vitoria: 'text-green-500',
+                derrota: 'text-red-500',
+                sinal: 'text-green-500',
                 operacao: 'text-cyan-400',
-                resultado: 'text-green-400',
+                resultado: 'text-green-500',
                 alerta: 'text-yellow-400',
                 erro: 'text-red-500'
             };

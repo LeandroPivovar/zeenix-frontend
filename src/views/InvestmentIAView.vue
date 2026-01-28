@@ -1036,8 +1036,8 @@ export default {
             // ✅ Sincronização de Mercado Automática (ZENIX v2.0)
             const strategyLower = id.toLowerCase();
             if (strategyLower === 'atlas') {
-                this.selectedMarket = 'vol50';
-                console.log('[InvestmentIAView] 🎯 Atlas selecionado: Alternando mercado para Volatility 50 Index');
+                this.selectedMarket = 'vol100';
+                console.log('[InvestmentIAView] 🎯 Atlas selecionado: Alternando mercado para Volatility 100 Index');
             } else if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
                 this.selectedMarket = 'vol100';
                 console.log(`[InvestmentIAView] 🎯 ${id.toUpperCase()} selecionado: Alternando mercado para Volatility 100 Index`);
