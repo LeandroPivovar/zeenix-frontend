@@ -963,13 +963,6 @@
 				// periodProfit já é a soma
 				return this.periodProfit / this.dailyData.length;
 			},
-			avgDailyProfitPercent() {
-				const avgProfit = this.avgDailyProfit;
-				const finalCap = this.finalCapital;
-				const startCap = finalCap - this.periodProfit;
-				if (startCap <= 0) return 0;
-				return (avgProfit / startCap) * 100;
-			},
 	avgProfitPerOp() {
 		// Calculate average profit per operation
 		const totalOps = this.sessionStats?.totalTrades || 0;
