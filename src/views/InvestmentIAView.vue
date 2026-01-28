@@ -1479,6 +1479,27 @@ export default {
     backdrop-filter: blur(2px);
 }
 
+/* Garante que o container da sidebar no mobile tenha prioridade máxima */
+.sidebar.is-open {
+    z-index: 1000000 !important; /* Valor bem alto para vencer as animações da IA */
+}
+
+/* Se você estiver usando o SettingsSidebar (Configurações) */
+.settings-sidebar {
+    z-index: 1000100 !important;
+}
+
+/* Opcional: Diminuir a prioridade do painel da IA para não "saltar" para a frente */
+#ai-vision-panel {
+    position: relative;
+    z-index: 1; /* Valor baixo para ser facilmente sobreposto pela sidebar */
+}
+
+/* Garante que o overlay (fundo escuro) também fique atrás da sidebar mas à frente da IA */
+.sidebar-overlay.show {
+    z-index: 999900 !important;
+}
+
 /* Force Sidebar Background on Mobile */
 :deep(.sidebar) {
     background-color: #0B0B0B !important;
