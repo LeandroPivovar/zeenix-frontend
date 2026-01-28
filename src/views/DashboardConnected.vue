@@ -301,16 +301,16 @@
           <!-- Mobile Header -->
           <div class="mobile-performance-header-title">
             <h2 class="text-[20px] font-bold text-[#E6E6E6]">Desempenho Geral</h2>
-          </div>
-          <div class="desktop-performance-grid">
+          <!-- Performance Grid (Desktop) -->
+          <div class="desktop-performance-grid hidden md:grid grid-cols-4 gap-6">
             <div 
-              v-for="(perf, index) in performanceData" 
+              v-for="(perf, index) in sortedPerformanceData" 
               :key="index"
-              :id="`performance-card-${index + 1}`"
-              class="relative bg-gradient-to-br from-[#0E0E0E] to-[#0B0B0B] rounded-[20px] overflow-hidden desktop-no-shadow desktop-performance-card-border w-full h-auto transition-all duration-[250ms] ease-out hover:scale-[1.02] hover:bg-gradient-to-br hover:from-[#111111] hover:to-[#0A0A0A] group cursor-pointer"
-              :class="{ 'opacity-60 cursor-not-allowed': perf.disabled }"
+              class="performance-card relative rounded-2xl border border-[#22C55E]/20 bg-gradient-to-br from-[#0B0B0B] to-[#141414] shadow-[0_6px_24px_rgba(0,0,0,0.35)] transition-all duration-[250ms] hover:shadow-[0_12px_36px_rgba(34,197,94,0.25),0_0_42px_rgba(34,197,94,0.12)] hover:border-[#22C55E]/35 hover:scale-[1.006] group"
+              :class="{ 'opacity-60 cursor-not-allowed hover:scale-100 hover:shadow-[0_6px_24px_rgba(0,0,0,0.35)]': perf.disabled }"
               :title="perf.disabled ? perf.tooltip : ''"
               @click="!perf.disabled && handlePerformanceAction(perf)"
+              style="cursor: pointer;"
             >
               <div class="absolute -inset-4 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.12)_0%,transparent_70%)] blur-[80px] opacity-100 -z-10 transition-opacity duration-[250ms] group-hover:opacity-125"></div>
               <div class="p-6 flex flex-col gap-6">
@@ -319,7 +319,7 @@
                     <i :class="[perf.icon, 'text-[#22C55E] text-[37px] drop-shadow-[0_0_12px_rgba(34,197,94,0.32)]']"></i>
                   </div>
                   <div class="text-right">
-                    <div class="text-3xl font-bold text-[#22C55E]">{{ perf.percentage }}</div>
+                    <div class="text-3xl font-bold text-[#22C55E]">+{{ getPerformancePercentage(perf.id) }}%</div>
                     <div class="text-xs text-white/50 mt-1">esta semana</div>
                   </div>
                 </div>
@@ -385,7 +385,7 @@
           <!-- Mobile Performance Grid -->
           <div class="mobile-performance-grid">
             <div 
-              v-for="(perf, index) in performanceData" 
+              v-for="(perf, index) in sortedPerformanceData" 
               :key="index"
               class="mobile-performance-card"
               :class="{ 'opacity-60 cursor-not-allowed': perf.disabled }"
@@ -398,7 +398,7 @@
                 </div>
                 <h3 class="mobile-performance-title" v-html="formatTitleForMobile(perf.title)"></h3>
               </div>
-              <div class="mobile-performance-percentage">{{ perf.percentage }}</div>
+              <div class="mobile-performance-percentage">+{{ getPerformancePercentage(perf.id) }}%</div>
               <div class="mobile-performance-chart">
                 <svg viewBox="0 0 200 60" preserveAspectRatio="none" class="w-full h-full">
                   <path :d="perf.chartPathFull || perf.chartPath" fill="none" stroke="#22C55E" stroke-width="2"></path>
@@ -718,9 +718,9 @@ export default {
       ],
       performanceData: [
         {
+          id: 'ia',
           icon: 'fas fa-brain',
           title: "IA's de Investimento",
-          percentage: '+10.0%',
           usage: 32,
           buttonText: 'Ativar agora',
           chartPath: 'M0,20 L20,15 L40,18 L60,12 L80,14 L100,8',
@@ -728,9 +728,9 @@ export default {
           chartEndY: 15
         },
         {
+          id: 'copy',
           icon: 'fas fa-users',
           title: 'Copy Trading',
-          percentage: '+28.0%',
           usage: 0,
           buttonText: 'Em breve',
           chartPath: 'M0,22 L20,18 L40,20 L60,16 L80,17 L100,13',
@@ -740,9 +740,9 @@ export default {
           tooltip: 'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'
         },
         {
+          id: 'agent',
           icon: 'fas fa-atom',
           title: 'Agente Autônomo',
-          percentage: '+8.0%',
           usage: 0,
           buttonText: 'Em breve',
           chartPath: 'M0,18 L20,14 L40,16 L60,10 L80,12 L100,6',
@@ -752,9 +752,9 @@ export default {
           tooltip: 'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'
         },
         {
+          id: 'signals',
           icon: 'fas fa-chart-line',
           title: 'Operações com Sinais',
-          percentage: '+7.0%',
           usage: 0,
           buttonText: 'Em breve',
           chartPath: 'M0,19 L20,16 L40,17 L60,13 L80,14 L100,10',
@@ -798,6 +798,14 @@ export default {
       }
       // Caso contrário, usar o prefixo padrão
       return this.preferredCurrencyPrefix;
+    },
+    sortedPerformanceData() {
+      // Ordenar performance data pela porcentagem (da maior para menor)
+      return [...this.performanceData].sort((a, b) => {
+        const perfA = parseFloat(this.getPerformancePercentage(a.id));
+        const perfB = parseFloat(this.getPerformancePercentage(b.id));
+        return perfB - perfA; // Ordem decrescente
+      });
     },
     // Removidos balanceNumeric e formattedBalance para usar os do mixin
     balancesByCurrency() {
@@ -1749,6 +1757,41 @@ export default {
       const finalPerformance = basePerformance + dayModifier;
       
       return finalPerformance.toFixed(2);
+    },
+    getPerformancePercentage(performanceId) {
+      // Retorna performance baseada no ID do serviço e período do dia
+      const period = this.getCurrentTimePeriod();
+      const dayOfMonth = new Date().getDate(); // Pega o dia do mês (1-31)
+      const dayModifier = dayOfMonth / 100; // Converte para casas decimais (0.01 a 0.31)
+      
+      // Valores entre 1 e 6 (variando por período)
+      const performances = {
+        'ia': {
+          'morning': 3.2,
+          'afternoon': 4.5,
+          'night': 2.1
+        },
+        'copy': {
+          'morning': 5.3,
+          'afternoon': 4.8,
+          'night': 5.7
+        },
+        'agent': {
+          'morning': 2.8,
+          'afternoon': 3.9,
+          'night': 1.9
+        },
+        'signals': {
+          'morning': 2.3,
+          'afternoon': 3.1,
+          'night': 1.5
+        }
+      };
+      
+      const basePerformance = performances[performanceId]?.[period] || 0;
+      const finalPerformance = basePerformance + dayModifier;
+      
+      return finalPerformance.toFixed(1);
     },
     generateSparklinePoints(data) {
       if (!data || data.length === 0) return '';
