@@ -2,12 +2,7 @@
     <div class="zenix-layout">
 
         
-        <AppSidebar 
-            :is-open="isSidebarOpen" 
-            :is-collapsed="isSidebarCollapsed" 
-            @toggle-collapse="toggleSidebarCollapse"
-            @close-sidebar="closeSidebar"
-        />
+
 
         <div class="min-h-screen flex flex-col transition-all duration-300" :style="{ marginLeft: isMobile ? '0' : (isSidebarCollapsed ? '0' : '280px') }">
         <TopNavbar 
@@ -457,6 +452,12 @@
             :visible="showStrategyRequiredModal"
             @close="showStrategyRequiredModal = false"
             @confirm="handleStrategyRequiredConfirm"
+        />
+        <AppSidebar 
+            :is-open="isSidebarOpen" 
+            :is-collapsed="isSidebarCollapsed" 
+            @toggle-collapse="toggleSidebarCollapse"
+            @close-sidebar="closeSidebar"
         />
     </div>
     <DesktopBottomNav />
