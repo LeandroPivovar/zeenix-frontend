@@ -1636,13 +1636,16 @@ export default {
     color: #DFDFDF;
 }
 
-/* Main Content - Desktop (sem gradiente) */
+/* Main Content - Desktop & Mobile Adjustments */
 .main-content {
-    margin-top: 60px; /* Ajustado para mobile */
-    padding: 60px 15px; /* Ajustado conforme pedido */
+    margin-top: 60px; 
+    padding: 60px 15px !important; /* Force mobile padding */
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start !important; /* Ensure desktop starts from top */
     background-color: transparent;
 }
 

@@ -8532,11 +8532,13 @@ button i,
     }
 
     .investment-active-main {
-        padding: 1.5rem 2rem;
+        padding: 60px 15px !important;
         max-width: 100%;
         width: 100%;
         box-sizing: border-box;
-        justify-content: flex-start;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start !important;
     }
 }
 </style>
