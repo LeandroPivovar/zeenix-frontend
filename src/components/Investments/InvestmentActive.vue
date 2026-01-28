@@ -927,7 +927,7 @@ export default {
             isLoadingStats: true,
             statsUpdateInterval: null,
             balance: 18250,
-            balanceVisible: true,
+            balanceVisible: localStorage.getItem('balanceVisible') !== 'false', // Persistir estado
             profitVisible: true,
             winrateVisible: true,
             tradesVisible: true,

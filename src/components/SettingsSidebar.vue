@@ -207,7 +207,7 @@ export default {
   emits: ['close', 'account-type-changed'],
   data() {
     return {
-      balanceVisible: true,
+      balanceVisible: localStorage.getItem('balanceVisible') !== 'false', // Persistir estado
       showAccountsList: false,
       availableAccounts: [],
       loadingAccounts: false,
@@ -399,6 +399,7 @@ export default {
     },
     toggleBalanceVisibility() {
       this.balanceVisible = !this.balanceVisible;
+      localStorage.setItem('balanceVisible', this.balanceVisible.toString());
     },
     toggleAccountsList() {
       this.showAccountsList = !this.showAccountsList;

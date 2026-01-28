@@ -259,7 +259,7 @@ export default {
             accountCurrency: 'USD',
             accountLoginid: null,
             isDemo: false,
-            balanceVisible: true,
+            balanceVisible: localStorage.getItem('balanceVisible') !== 'false', // Persistir estado
             balanceUpdateInterval: null,
             balancesByCurrencyReal: {},
             balancesByCurrencyDemo: {},

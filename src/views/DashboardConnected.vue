@@ -777,7 +777,7 @@ export default {
       todayProfit: 0,
       todayProfitPercent: 0,
       loadingTodayProfit: true,
-      balanceVisible: true,
+      balanceVisible: localStorage.getItem('balanceVisible') !== 'false', // Persistir estado
       totalWeeklyPerformance: 0
     }
   },
@@ -1982,6 +1982,7 @@ export default {
     },
     toggleBalanceVisibility() {
       this.balanceVisible = !this.balanceVisible;
+      localStorage.setItem('balanceVisible', this.balanceVisible.toString());
     },
     formatBalance(value, currency = 'USD') {
       const prefix = this.getCurrencyPrefix(currency);
