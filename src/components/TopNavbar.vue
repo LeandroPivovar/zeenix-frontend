@@ -310,7 +310,7 @@ export default {
   },
   data() {
     return {
-      balanceHidden: false,
+      balanceHidden: localStorage.getItem('balanceVisible') === 'false', // Invertido: balanceHidden = !balanceVisible
       showProfileDropdown: false,
       showProfileModal: false,
       userProfilePictureUrl: null,
@@ -527,6 +527,8 @@ export default {
     },
     toggleBalance() {
       this.balanceHidden = !this.balanceHidden;
+      // Inverter para balanceVisible no localStorage
+      localStorage.setItem('balanceVisible', (!this.balanceHidden).toString());
     },
     toggleNotifications() {
       this.showNotificationsModal = !this.showNotificationsModal;

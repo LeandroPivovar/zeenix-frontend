@@ -11,7 +11,7 @@
                             <div class="relative z-10 h-full flex flex-col">
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Saldo Total</span>
-                                    <button class="eye-btn flex items-center" @click="balanceVisible = !balanceVisible">
+                                    <button class="eye-btn flex items-center" @click="toggleBalanceVisibility">
                                         <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[12px]"></i>
                                     </button>
                                 </div>
@@ -182,7 +182,7 @@
                             <div class="flex flex-col justify-between">
                                 <div class="flex items-center gap-1.5 mb-1">
                                     <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide">Saldo Total</span>
-                                    <button class="eye-btn-mobile" @click="balanceVisible = !balanceVisible">
+                                    <button class="eye-btn-mobile" @click="toggleBalanceVisibility">
                                         <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[10px]"></i>
                                     </button>
                                 </div>
@@ -3505,6 +3505,11 @@ export default {
                 console.error('[InvestmentActive] ❌ Erro ao obter userId:', error);
                 return null;
             }
+        },
+
+        toggleBalanceVisibility() {
+            this.balanceVisible = !this.balanceVisible;
+            localStorage.setItem('balanceVisible', this.balanceVisible.toString());
         },
 
         setChartType(type) {
