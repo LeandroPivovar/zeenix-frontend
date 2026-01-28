@@ -58,13 +58,20 @@
                     <button class="btn btn-search" @click="fetchData" style="height: 40px; margin-bottom: 0;">Buscar</button>
                 </div>
 
-                <div class="summary-info">
-                    <p>
-                        Comissão: {{ formatCurrency(totalCommissionDisplayed) }} |
-                        Transações: {{ totalTransactionsDisplayed.toLocaleString() }} |
-                        Clientes: {{ displayedClients.length }} |
-                        Saldo Real: {{ formatCurrency(totalRealAmountDisplayed) }}
-                    </p>
+                <!-- Cards de Resumo -->
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="summary-card-title">Saldo Total (Real)</div>
+                        <div class="summary-card-value">{{ formatCurrency(totalRealAmountDisplayed) }}</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-card-title">Usuários com Saldo</div>
+                        <div class="summary-card-value">{{ displayedClients.length }}</div>
+                    </div>
+                    <div class="summary-card highlight">
+                        <div class="summary-card-title">Comissão Hoje</div>
+                        <div class="summary-card-value">{{ formatCurrency(todayCommission) }}</div>
+                    </div>
                 </div>
 
             <!-- Barra de Progresso -->
@@ -230,6 +237,7 @@ export default {
             allUsers: [],
             isLoading: false,
             error: null,
+            todayCommission: 0, // Novo campo para comissão de hoje
             // Dados agregados por período
             periodData: {
                 today: 0,
@@ -317,6 +325,9 @@ export default {
                     console.warn('[MarkupView] Nenhum usuário encontrado na resposta');
                 }
 
+                // 2. Buscar dados de HOJE separadamente para o card "Comissão Hoje"
+                this.fetchTodayData(token, apiUrl);
+
                 this.isLoading = false;
                 this.loadingProgress = 100;
 
@@ -324,6 +335,36 @@ export default {
                 console.error('[MarkupView] Erro ao buscar dados:', error);
                 this.error = 'Erro ao carregar dados de markup: ' + error.message;
                 this.isLoading = false;
+            }
+        },
+
+        async fetchTodayData(token, apiUrl) {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const params = new URLSearchParams({
+                    startDate: today,
+                    endDate: today,
+                });
+
+                const response = await fetch(`${apiUrl}/trades/markup?${params}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Calcular comissão total de hoje
+                    if (data.summary && data.summary.totalCommission) {
+                        this.todayCommission = data.summary.totalCommission;
+                    } else {
+                         this.todayCommission = 0;
+                    }
+                }
+            } catch (error) {
+                console.warn('[MarkupView] Erro ao buscar dados de hoje:', error);
             }
         },
 
@@ -585,9 +626,63 @@ export default {
     font-weight: bold;
 }
 
-.btn-primary {
-    background-color: #00b862; /* Verde */
     color: #fff;
+}
+
+/* Novos Cards de Resumo */
+.summary-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+    width: 100%;
+}
+
+.summary-card {
+    background-color: #1E1E1E;
+    border-radius: 12px;
+    padding: 24px;
+    flex: 1;
+    min-width: 250px;
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    border-color: #444;
+}
+
+.summary-card.highlight {
+    border-left: 4px solid #00b862;
+    background: linear-gradient(145deg, #1E1E1E, #222);
+}
+
+.summary-card-title {
+    font-size: 14px;
+    color: #a0a0a0;
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-card-value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .summary-cards {
+        flex-direction: column;
+    }
+    .summary-card {
+        width: 100%;
+    }
 }
 
 /* Cards de Resumo */
