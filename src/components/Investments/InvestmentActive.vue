@@ -2176,11 +2176,10 @@ export default {
             
             console.log('[InvestmentActive] 🔍 Verificando logs para eventos de stop...', recentLogs.length, 'logs recentes');
             
-            // ✅ 1. VERIFICAR STOP BLINDADO ATINGIDO (Extreme Strict Mode)
+            // ✅ 1. VERIFICAR STOP BLINDADO ATINGIDO (Strict Mode)
             const hasBlindadoHit = recentLogs.some(log => 
                 log.message && (
-                    log.message.includes('STOP BLINDADO ATINGIDO') ||
-                    log.message.includes('STOP-LOSS BLINDADO ATIVADO')
+                    log.message.includes('STOP BLINDADO ATINGIDO')
                 )
             );
             
