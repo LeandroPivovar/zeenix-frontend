@@ -665,7 +665,7 @@
                                 </div>
                                 
                                 <div v-else class="text-left">
-                                    <div v-for="(log, index) in realtimeLogs" :key="log.id" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
+                                    <div v-for="log in realtimeLogs" :key="log.id" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
                                         <span class="text-gray-500">[{{ log.timestamp }}]</span>
                                         <span class="ml-1">{{ log.icon }}</span>
                                         <span class="ml-1 log-message">{{ log.message }}</span>
@@ -687,7 +687,7 @@
                                 </div>
                                 
                                 <div v-else class="mobile-register-cards-container">
-                                    <div v-for="(log, index) in realtimeLogs" :key="log.id" class="mobile-register-card">
+                                    <div v-for="log in realtimeLogs" :key="log.id" class="mobile-register-card">
                                         <span class="mobile-register-time">{{ log.timestamp }}</span>
                                         <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
                                     </div>
