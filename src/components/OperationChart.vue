@@ -147,7 +147,7 @@
                       <path d="M 132 25 A 75 75 0 0 1 172 85" stroke="#ef4444" stroke-width="12" fill="none" :stroke-dasharray="90.2" :stroke-dashoffset="dvxRedOffset"></path>
                     </svg>
                     <div class="absolute inset-0 flex flex-col items-center justify-end pb-2">
-                       <span class="text-3xl font-black text-white leading-none">{{ dvxValue }}</span>
+                       <span class="text-3xl font-black text-white leading-none">{{ dvxValueComputed }}</span>
                        <span class="text-[10px] font-bold uppercase tracking-widest mt-1" :class="dvxStatusClass + '-text'">{{ dvxStatusText }}</span>
                     </div>
                   </div>
@@ -872,7 +872,6 @@ export default {
       tradingMode: 'manual', // 'manual' ou 'ai'
       activeTab: 'chart', // 'chart' ou 'digits'
       digitFrequency: { digits: [], parity: { even: 0, odd: 0 } },
-      dvxValue: 0,
       frequencies25: [],
       frequencies50: [],
       frequencies100: [],
@@ -1169,8 +1168,6 @@ export default {
       });
       const stdDev = Math.sqrt(variance / 10);
       const val = Math.min(100, Math.round((stdDev / 25) * 100));
-      // Sincronizar com data property para watcher ou seletores
-      this.dvxValue = val;
       return val;
     },
     dvxStatusClass() {
