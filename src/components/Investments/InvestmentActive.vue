@@ -8532,7 +8532,7 @@ button i,
     }
 
     .investment-active-main {
-        padding: 0px 15px !important;
+        padding: 30px 15px !important;
         max-width: 100%;
         width: 100%;
         box-sizing: border-box;

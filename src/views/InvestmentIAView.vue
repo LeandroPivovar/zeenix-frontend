@@ -1639,7 +1639,7 @@ export default {
 /* Main Content - Desktop & Mobile Adjustments */
 .main-content {
     margin-top: 60px; 
-    padding: 0px 15px !important; /* Default desktop padding */
+    padding: 30px 15px !important; /* Default desktop padding adjusted to 30px */
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
