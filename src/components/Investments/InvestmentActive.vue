@@ -312,6 +312,7 @@
                             <!-- Botão Pause/Restart (100% largura) -->
                             <div class="flex justify-center mt-2">
                                 <button 
+                                    type="button"
                                     class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-[56px] w-full"
                                     @click="handleDeactivate"
                                     :disabled="isDeactivating"
