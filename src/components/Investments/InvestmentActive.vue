@@ -1094,9 +1094,8 @@ export default {
             const strategy = this.sessionConfig?.strategy || this.selectedStrategy || 'orion';
             const strategyLower = strategy.toLowerCase();
 
-            // ✅ Se ATLAS está ativa, preferir Volatility 100 (1s) Index
             if (strategyLower === 'atlas') {
-                return 'Volatility 100 (1s) Index';
+                return 'Volatility 50 Index';
             }
 
             // ✅ Se ORION/TITAN/NEXUS/APOLLO está ativa, retornar Volatility 100 Index
