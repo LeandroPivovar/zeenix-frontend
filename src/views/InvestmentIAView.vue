@@ -1,6 +1,5 @@
 <template>
-    <div class="layout">
-        <div class="sidebar-overlay" v-if="isSidebarOpen && isMobile" @click.stop="closeSidebar"></div>
+    <div class="zenix-layout">
 
         
         <AppSidebar 
@@ -163,10 +162,7 @@
                                     <div class="selector-content">
                                         <div class="selector-left">
                                             <div class="selector-icon-active">
-                                                <div v-if="selectedStrategyDerivIcons" class="flex gap-0.5 justify-center items-center">
-                                                    <img v-for="icon in selectedStrategyDerivIcons" :key="icon" :src="icon" class="w-4 h-4" />
-                                                </div>
-                                                <i v-else :class="getStrategyIcon(selectedStrategy)"></i>
+                                                <i :class="getStrategyIcon(selectedStrategy)"></i>
                                             </div>
                                             <span :class="{ 'placeholder': !selectedStrategy }">
                                                 {{ selectedStrategyName }}
@@ -181,10 +177,7 @@
                                     <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card mt-6">
                                         <div class="agent-desc-content">
                                             <div class="agent-desc-icon">
-                                                <template v-if="selectedStrategyDerivIcons">
-                                                    <img v-for="icon in selectedStrategyDerivIcons" :key="icon" :src="icon" class="w-8 h-8" />
-                                                </template>
-                                                <i v-else :class="getStrategyIcon(selectedStrategy)" style="color: white !important;"></i>
+                                                <i :class="getStrategyIcon(selectedStrategy)" style="color: white !important;"></i>
                                             </div>
                                             <div class="agent-desc-info">
                                                 <h3>{{ selectedStrategyName }}</h3>
@@ -195,7 +188,41 @@
                                 </transition>
                     </div>
 
-
+                    <!-- Strategy Selection Modal (Premium Style) -->
+                    <Teleport to="body">
+                        <div v-if="showStrategyModal" class="modal-overlay" @click.self="closeStrategyModal">
+                            <div class="modal-content categorized-modal">
+                                <div class="modal-header-premium">
+                                    <h3 class="modal-title">Selecionar Estratégia</h3>
+                                    <button @click="closeStrategyModal" class="modal-close-btn">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="agents-modal-list">
+                                        <div 
+                                            v-for="strategy in availableStrategies" 
+                                            :key="strategy.id"
+                                            class="agent-option-premium"
+                                            :class="{ 'active': selectedStrategy === strategy.id }"
+                                            @click="selectStrategy(strategy.id)"
+                                        >
+                                            <div class="agent-option-icon">
+                                                <i :class="strategy.icon"></i>
+                                            </div>
+                                            <div class="agent-option-info">
+                                                <h4 class="agent-option-title">{{ strategy.title }}</h4>
+                                                <p class="agent-option-desc" v-html="strategy.description"></p>
+                                            </div>
+                                            <div class="agent-option-check">
+                                                <i class="fas" :class="selectedStrategy === strategy.id ? 'fa-check-circle' : 'fa-circle'"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Teleport>
 
                             <div class="form-group">
                                 <label class="form-label">
@@ -431,43 +458,6 @@
             @confirm="handleStrategyRequiredConfirm"
         />
     </div>
-        <Teleport to="body">
-            <div v-if="showStrategyModal" class="modal-overlay" @click.self="closeStrategyModal">
-                <div class="modal-content categorized-modal">
-                    <div class="modal-header-premium">
-                        <h3 class="modal-title">Selecionar Estratégia</h3>
-                        <button @click="closeStrategyModal" class="modal-close-btn">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="agents-modal-list">
-                            <div 
-                                v-for="strategy in availableStrategies" 
-                                :key="strategy.id"
-                                class="agent-option-premium"
-                                :class="{ 'active': selectedStrategy === strategy.id }"
-                                @click.stop.prevent="selectStrategy(strategy.id)"
-                            >
-                                <div class="agent-option-icon">
-                                    <template v-if="strategy.derivIcons">
-                                        <img v-for="icon in strategy.derivIcons" :key="icon" :src="icon" class="w-6 h-6" />
-                                    </template>
-                                    <i v-else :class="strategy.icon"></i>
-                                </div>
-                                <div class="agent-option-info">
-                                    <h4 class="agent-option-title">{{ strategy.title }}</h4>
-                                    <p class="agent-option-desc" v-html="strategy.description"></p>
-                                </div>
-                                <div class="agent-option-check">
-                                    <i class="fas" :class="selectedStrategy === strategy.id ? 'fa-check-circle' : 'fa-circle'"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
     <DesktopBottomNav />
 </template>
 
@@ -528,11 +518,11 @@ export default {
             selectedStrategy: null,
             showStrategyModal: false,
             allStrategies: [
-                { id: 'atlas', title: 'IA Atlas', icon: 'fas fa-brain', derivIcons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%' },
-                { id: 'apollo', title: 'IA Apollo', icon: 'fas fa-rocket', derivIcons: ['/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg', '/deriv_icons/TradeTypesUpsAndDownsFallIcon.svg'], description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%' },
-                { id: 'nexus', title: 'IA Nexus', icon: 'fas fa-project-diagram', derivIcons: ['/deriv_icons/TradeTypesHighsAndLowsHigherIcon.svg', '/deriv_icons/TradeTypesHighsAndLowsLowerIcon.svg'], description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%' },
-                { id: 'orion', title: 'IA Orion', icon: 'fas fa-star', derivIcons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 54% a 61% - <strong>Retorno:</strong> 56% / 85%' },
-                { id: 'titan', title: 'IA Titan', icon: 'fas fa-shield-alt', derivIcons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'], description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-55% - <strong>Retorno:</strong> 85%' }
+                { id: 'atlas', title: 'IA Atlas', icon: 'fas fa-brain', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%' },
+                { id: 'apollo', title: 'IA Apollo', icon: 'fas fa-rocket', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%' },
+                { id: 'nexus', title: 'IA Nexus', icon: 'fas fa-project-diagram', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%' },
+                { id: 'orion', title: 'IA Orion', icon: 'fas fa-star', description: '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 54% a 61% - <strong>Retorno:</strong> 56% / 85%' },
+                { id: 'titan', title: 'IA Titan', icon: 'fas fa-shield-alt', description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-55% - <strong>Retorno:</strong> 85%' }
             ],
             
             dailyStats: {
@@ -582,11 +572,6 @@ export default {
         }
     },
     computed: {
-        selectedStrategyDerivIcons() {
-            const strategy = this.allStrategies.find(s => s.id === this.selectedStrategy);
-            return strategy ? strategy.derivIcons : null;
-        },
-        
         selectedStrategyName() {
             const strategyNames = {
                 'atlas': 'IA Atlas',
@@ -720,13 +705,6 @@ export default {
         }
     },
     methods: {
-        openStrategyModal() {
-            this.showStrategyModal = true;
-        },
-        closeStrategyModal() {
-            this.showStrategyModal = false;
-        },
-
         /**
          * ✅ ZENIX v3.5: Atualiza o saldo em tempo real vindo da IA (InvestmentActive)
          * Evita chamadas extras à API Deriv usando os dados de lucro já disponíveis
@@ -1041,27 +1019,38 @@ export default {
 
         handleStrategyRequiredConfirm() {
             this.showStrategyRequiredModal = false;
-            // Delay de 200ms para o aviso sumir antes do seletor aparecer
-                setTimeout(() => {
-                    this.showStrategyModal = true;
-                }, 200);
-            },
+            this.openStrategyModal();
+        },
 
-            selectStrategy(id) {
-                console.log('[InvestmentIAView] selectStrategy triggered:', id);
-                this.selectedStrategy = id;
-                // Sincronização de mercado (opcional conforme sua lógica)
-                const strategyLower = id.toLowerCase();
-                this.selectedMarket = strategyLower === 'atlas' ? 'vol100_1s' : 'vol100';
+        openStrategyModal() {
+            this.showStrategyModal = true;
+        },
 
-                // FECHA TUDO (com setTimeout para garantir que o evento de clique não interfira)
-                setTimeout(() => {
-                    this.showStrategyModal = false;
-                    this.showStrategyRequiredModal = false;
-                    console.log('[InvestmentIAView] Modal closed via setTimeout. showStrategyModal:', this.showStrategyModal);
-                }, 100);
-            },
+        closeStrategyModal() {
+            this.showStrategyModal = false;
+        },
         
+        selectStrategy(id) {
+            this.selectedStrategy = id;
+            
+            // ✅ Sincronização de Mercado Automática (ZENIX v2.0)
+            const strategyLower = id.toLowerCase();
+            if (strategyLower === 'atlas') {
+                this.selectedMarket = 'vol100_1s';
+                console.log('[InvestmentIAView] 🎯 Atlas selecionado: Alternando mercado para Volatility 100 (1s) Index');
+            } else if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
+                this.selectedMarket = 'vol100';
+                console.log(`[InvestmentIAView] 🎯 ${id.toUpperCase()} selecionado: Alternando mercado para Volatility 100 Index`);
+            } else {
+                this.selectedMarket = 'vol10';
+            }
+
+            // Delay closing to show visual feedback (check icon)
+            setTimeout(() => {
+                this.closeStrategyModal();
+            }, 300);
+        },
+
         getUserId() {
             try {
                 const token = localStorage.getItem('token');
@@ -1486,29 +1475,8 @@ export default {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999800!important;
+    z-index: 9998;
     backdrop-filter: blur(2px);
-}
-
-/* Garante que o container da sidebar no mobile tenha prioridade máxima */
-.sidebar.is-open {
-    z-index: 1000000 !important; /* Valor bem alto para vencer as animações da IA */
-}
-
-/* Se você estiver usando o SettingsSidebar (Configurações) */
-.settings-sidebar {
-    z-index: 1000100 !important;
-}
-
-/* Opcional: Diminuir a prioridade do painel da IA para não "saltar" para a frente */
-#ai-vision-panel {
-    position: relative;
-    z-index: 1; /* Valor baixo para ser facilmente sobreposto pela sidebar */
-}
-
-/* Garante que o overlay (fundo escuro) também fique atrás da sidebar mas à frente da IA */
-.sidebar-overlay.show {
-    z-index: 999900 !important;
 }
 
 /* Force Sidebar Background on Mobile */
@@ -4013,7 +3981,7 @@ export default {
 .agent-desc-icon {
     width: 2.5rem;
     height: 2.5rem;
-    background: transparent;
+    background: rgba(34, 197, 94, 0.1);
     border-radius: 0.5rem;
     display: flex;
     align-items: center;
@@ -4055,24 +4023,11 @@ export default {
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(4px);
-    z-index: 1000000001 !important; /* Maior que o StrategyRequiredModal */
-    z-index: 1000000001 !important; /* Maior que o StrategyRequiredModal */
+    z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
-}
-
-/* Garante que o conteúdo seja clicável */
-.agent-option-premium {
-    cursor: pointer !important;
-    pointer-events: auto !important;
-}
-
-/* Garante que o conteúdo seja clicável */
-.agent-option-premium {
-    cursor: pointer !important;
-    pointer-events: auto !important;
 }
 
 .categorized-modal {
@@ -4147,7 +4102,7 @@ export default {
 .agent-option-icon {
     width: 2.5rem;
     height: 2.5rem;
-    background: transparent;
+    background: rgba(34, 197, 94, 0.1);
     border-radius: 0.5rem;
     display: flex;
     align-items: center;
@@ -4228,8 +4183,7 @@ export default {
         position: fixed;
         width: 280px !important;
         height: 100vh;
-        z-index: 9990000;
-        z-index: 9990000;
+        z-index: 999;
         transform: translateX(-100%);
         transition: transform 0.3s ease-out;
     }
@@ -4237,8 +4191,7 @@ export default {
     /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
     :deep(.sidebar.is-open) {
         transform: translateX(0);
-        z-index: 999999 !important;
-        z-index: 999999 !important;
+        z-index: 10000 !important;
     }
     
     /* Modal de Settings deve sobrepor tudo no mobile, incluindo TopNavbar */
@@ -4462,39 +4415,5 @@ export default {
         text-transform: uppercase !important;
         color: #C5C5C5 !important;
     }
-
-    /* 4. Garantir que o painel da IA não "atropele" o Z-index */
-    #ai-vision-panel {
-        position: relative;
-        z-index: 10!important;
-    }
-
-    .ai-visualization-area {
-        isolation: isolate;
-    }
-}
-
-.layout {
-    background-color: #121212;
-    min-height: 100vh;
-    display: flex;
-}
-
-.sidebar-overlay {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    inset: 0 !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-    z-index: 9998 !important;
-    backdrop-filter: blur(2px);
-}
-
-.main-content {
-    justify-content: flex-start !important;
 }
 </style>
