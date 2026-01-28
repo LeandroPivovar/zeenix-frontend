@@ -3949,6 +3949,7 @@ export default {
 
   /* Signal area card mobile adjustments */
   .signal-area-card {
+    display: none !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
@@ -4845,6 +4846,7 @@ export default {
   }
   /* Gerador de Sinais Inline (Mobile) */
   .signal-generator-inline-mobile {
+    display: none !important;
     background: #080808;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;

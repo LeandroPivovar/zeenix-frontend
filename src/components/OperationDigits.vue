@@ -2586,4 +2586,10 @@ export default {
     align-items: center;
     justify-content: center;
 }
+
+/* Ocultar Gerador de Sinais */
+.signal-generator-wrapper-digits,
+.signal-generator-inline-mobile {
+    display: none !important;
+}
 </style>
