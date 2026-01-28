@@ -220,7 +220,7 @@
               class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
             >
               <div class="flex items-center gap-3">
-                <img v-if="selectedTradeTypeGroupIcon" :src="selectedTradeTypeGroupIcon" class="w-6 h-6 invert brightness-200" alt="" />
+                <img v-if="selectedTradeTypeGroupIcon" :src="selectedTradeTypeGroupIcon" class="w-6 h-6 contrast-[1.5] brightness-[1.5]" alt="" />
                 <span class="font-medium">{{ selectedTradeTypeGroupLabel }}</span>
               </div>
               <i class="fas fa-chevron-down text-xs opacity-40"></i>
@@ -524,24 +524,24 @@
                 <div class="category-card-header">
                   <div class="category-icon-wrapper">
                     <svg v-if="category === 'Índices Contínuos'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 11H22V17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <svg v-else-if="category === 'Criptomoedas'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="2.5"/>
-                      <path d="M9 12H15M12 9V15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                      <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
+                      <path d="M9 12H15M12 9V15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
                     </svg>
-                    <svg v-else-if="category === 'Forex Majors' || category === 'Forex Minors' || category === 'Forex Exotics'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="2.5"/>
-                        <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
-                        <path d="M12 2V22" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                    <svg v-else-if="category === 'Major Pairs' || category === 'Forex Minors' || category === 'Forex Exotics'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
+                        <path d="M15 9L9 15M9 9L15 15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M12 2V22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
                     </svg>
                     <svg v-else-if="category === 'Metais'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 4L18 4L21 9L12 21L3 9L6 4Z" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M3 9H21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 21V9" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6 4L18 4L21 9L12 21L3 9L6 4Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3 9H21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 21V9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <i v-else class="fas fa-ellipsis-h text-[#22C55E]"></i>
+                    <i v-else class="fas fa-ellipsis-h text-white"></i>
                   </div>
                   <h4 class="category-card-title">{{ category }}</h4>
                 </div>
@@ -583,23 +583,23 @@
                 <div class="category-card-header">
                   <div class="category-icon-wrapper">
                     <svg v-if="category.id === 'rising_falling'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 11H22V17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <svg v-else-if="category.id === 'digits'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M4 9H20" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M4 15H20" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M10 3L8 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M16 3L14 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M4 9H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M4 15H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M10 3L8 21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 3L14 21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <svg v-else-if="category.id === 'accumulators'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M2 17L12 22L22 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M2 12L12 17L22 12" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M2 17L12 22L22 17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <svg v-else-if="category.id === 'multipliers'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="2.5"/>
-                      <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                      <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
+                      <path d="M15 9L9 15M9 9L15 15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
                     </svg>
                     <i v-else :class="category.icon"></i>
                   </div>
@@ -613,7 +613,7 @@
                     :class="['category-item-btn', { 'active': selectedTradeTypeGroup === item.value }]"
                   >
                     <div class="flex items-center gap-2">
-                      <img v-if="item.icon" :src="`/deriv_icons/${item.icon}`" class="w-5 h-5 invert brightness-200" alt="" />
+                      <img v-if="item.icon" :src="`/deriv_icons/${item.icon}`" class="w-5 h-5 contrast-[1.5] brightness-[1.5]" alt="" />
                       <span>{{ item.label }}</span>
                     </div>
                   </button>
