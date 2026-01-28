@@ -80,7 +80,7 @@
         
         <!-- Signal Generator Card -->
         <!-- Desktop Signal Generator Card - Hidden on Mobile -->
-        <div class="bg-[#0D0D0D] border border-white/5 p-6 rounded-2xl signal-area-card md:block hidden">
+        <div v-if="tradingMode === 'manual'" class="bg-[#0D0D0D] border border-white/5 p-6 rounded-2xl signal-area-card md:block hidden">
           <!-- Header -->
           <div class="signal-generator-header flex items-center justify-between mb-8">
             <div class="flex items-center gap-4">
@@ -174,10 +174,30 @@
 
       <!-- Sidebar Panel -->
       <div class="max-w-[400px] w-[400px] flex-shrink-0 bg-[#0D0D0D] border border-white/5 p-8 overflow-y-auto sidebar-panel rounded-xl">
-        <div class="pb-8 mb-8 border-b border-white/5">
-          <h2 class="text-xl font-black text-white text-left leading-tight tracking-wide">
-            Painel de Negociação Manual
-          </h2>
+        <div class="pb-6 mb-6 border-b border-white/5">
+          <div class="flex flex-col gap-4">
+            <h2 class="text-xl font-black text-white text-left leading-tight tracking-wide">
+              Painel de Negociação
+            </h2>
+            
+            <!-- Mode Switcher -->
+            <div class="flex items-center p-1 bg-[#080808] border border-white/5 rounded-xl">
+              <button 
+                @click="tradingMode = 'manual'"
+                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
+                :class="tradingMode === 'manual' ? 'bg-zenix-green text-black' : 'text-white/40 hover:text-white'"
+              >
+                MANUAL
+              </button>
+              <button 
+                @click="tradingMode = 'ai'"
+                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
+                :class="tradingMode === 'ai' ? 'bg-zenix-green text-black' : 'text-white/40 hover:text-white'"
+              >
+                COM IA
+              </button>
+            </div>
+          </div>
         </div>
         
         <div class="space-y-6 px-1">
@@ -230,7 +250,7 @@
           </div>
 
           <!-- Gerador de Sinais Inline (Mobile Only) -->
-          <div class="signal-generator-inline-mobile md:hidden block">
+          <div v-if="tradingMode === 'manual'" class="signal-generator-inline-mobile md:hidden block">
             <div class="signal-generator-inline-header">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full border border-zenix-green bg-zenix-green/10 flex items-center justify-center">
@@ -391,7 +411,8 @@
           <!-- Action Buttons -->
           <div class="pt-3">
             <template v-if="!activeContract">
-              <div class="grid grid-cols-1 gap-3">
+              <!-- Manual Mode Buttons -->
+              <div v-if="tradingMode === 'manual'" class="grid grid-cols-1 gap-3">
                 <button 
                   v-for="dir in availableDirections"
                   :key="dir.value"
@@ -404,6 +425,64 @@
                 >
                   <i :class="getDirectionIcon(dir.value)"></i>
                   {{ dir.label }}
+                </button>
+              </div>
+              
+              <!-- AI Mode Display & Button -->
+              <div v-else class="space-y-4">
+                <!-- AI Signal Info -->
+                <div class="bg-zenix-green/5 border border-zenix-green/20 rounded-xl p-5 text-center transition-all duration-300 relative overflow-hidden group">
+                   <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   <div class="flex flex-col items-center gap-2 relative z-10">
+                     <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Sinal da IA</span>
+                     <div v-if="aiRecommendation" class="flex flex-col items-center gap-1">
+                        <div class="flex items-center gap-3">
+                           <i :class="aiRecommendation.action === 'CALL' || aiRecommendation.action === 'RISE' || aiRecommendation.action === 'CALLE' ? 'fas fa-arrow-up text-zenix-green text-2xl' : 'fas fa-arrow-down text-red-500 text-2xl'"></i>
+                           <span :class="aiRecommendation.action === 'CALL' || aiRecommendation.action === 'RISE' || aiRecommendation.action === 'CALLE' ? 'text-zenix-green' : 'text-red-500'" class="text-xl font-black">
+                             {{ getButtonLabel(aiRecommendation.action) }}
+                           </span>
+                        </div>
+                        <span class="text-[10px] text-white/60 font-bold tracking-wider">{{ aiRecommendation.confidence }}% CONFIABILIDADE</span>
+                     </div>
+                     <div v-else class="flex flex-col items-center gap-2 py-2">
+                        <button 
+                          @click="toggleAnalysis"
+                          :disabled="isAnalyzing"
+                          class="flex flex-col items-center gap-2 group hover:scale-105 transition-transform"
+                        >
+                          <div class="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center bg-white/5 group-hover:bg-zenix-green/10 group-hover:border-zenix-green/30 transition-all relative" :class="{ 'animate-pulse': isAnalyzing }">
+                            <i class="fas fa-robot text-xl" :class="isAnalyzing ? 'text-zenix-green' : 'text-white/20'"></i>
+                            <div v-if="isAnalyzing" class="absolute inset-0 rounded-full border border-zenix-green/50 animate-ping"></div>
+                          </div>
+                          <div class="flex flex-col items-center">
+                            <span class="text-xs font-bold transition-colors" :class="isAnalyzing ? 'text-zenix-green' : 'text-white/40 group-hover:text-white/60 uppercase tracking-tighter'">
+                              {{ isAnalyzing ? 'Analisando...' : 'Gerar Sinal de IA' }}
+                            </span>
+                            <span v-if="!isAnalyzing" class="text-[9px] text-white/20 uppercase tracking-widest font-medium">Toque para iniciar</span>
+                          </div>
+                        </button>
+                     </div>
+                   </div>
+                </div>
+
+                <!-- Timer Section -->
+                <div v-if="signalCountdown !== null" class="flex flex-col items-center justify-center p-4 bg-[#080808] border border-white/5 rounded-xl relative overflow-hidden">
+                    <div class="absolute bottom-0 left-0 h-0.5 bg-zenix-green transition-all duration-1000" :style="{ width: (signalCountdown / (aiRecommendation?.entry_time || 1) * 100) + '%' }"></div>
+                    <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Janela de Entrada</span>
+                    <span class="text-3xl font-black text-zenix-green tabular-nums leading-none">{{ signalCountdown }}s</span>
+                </div>
+
+                <!-- AI Execute Button -->
+                <button 
+                  @click="executeAIOrder"
+                  :disabled="!canExecuteAIOrder"
+                  class="w-full bg-zenix-green hover:bg-zenix-green-hover text-black font-bold py-5 rounded-xl transition-all text-base flex flex-col items-center justify-center gap-1 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed shadow-[0_0_20px_rgba(34,197,94,0.2)] active:scale-95"
+                >
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-bolt"></i>
+                    <span class="tracking-tighter">EXECUTAR OPERAÇÃO</span>
+                  </div>
+                  <span v-if="aiRecommendation" class="text-[10px] opacity-70 font-bold uppercase tracking-widest">Seguir inteligência artificial</span>
                 </button>
               </div>
             </template>
@@ -627,6 +706,7 @@ export default {
     return {
       isGlobalLoading: true, // Iniciar com loader bloqueante
       showChartPlaceholder: false,
+      tradingMode: 'manual', // 'manual' ou 'ai'
       chart: null,
       chartSeries: null,
       symbol: 'R_100',
@@ -1015,6 +1095,9 @@ export default {
       } catch (error) {
         return 0;
       }
+    },
+    canExecuteAIOrder() {
+      return this.aiRecommendation && this.canExecuteOrder;
     },
   },
   async mounted() {
@@ -2826,6 +2909,13 @@ export default {
       }, 1000);
 
       console.log('[Chart] Análise manual executada');
+    },
+    executeAIOrder() {
+      if (!this.aiRecommendation) return;
+      
+      // Registrar a decisão de usar a recomendação da IA
+      console.log('[Chart] Executar AI Order:', this.aiRecommendation.action);
+      this.executeTradeWithDirection(this.aiRecommendation.action);
     },
     collectInitialTicks() {
       // Coletar ticks dos últimos 10 minutos que já foram plotados
