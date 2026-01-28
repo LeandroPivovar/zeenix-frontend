@@ -668,8 +668,8 @@
                                     <div v-for="log in realtimeLogs" :key="log.id" class="mb-3 text-left log-entry flex flex-col">
                                         <!-- Renderização Especial para IA ATLAS -->
                                         <template v-if="sessionConfig.strategy === 'atlas'">
-                                            <span class="text-gray-500 text-[10px] mb-1">[{{ log.timestamp }}]</span>
                                             <div class="flex items-start">
+                                                <span class="text-gray-500 text-[10px] mr-2 mt-0.5">[{{ log.timestamp }}]</span>
                                                 <span class="mr-1 mt-0.5">{{ log.icon }}</span>
                                                 <div class="flex flex-col">
                                                     <div v-for="(line, idx) in log.message.split('\n')" :key="idx" 
@@ -708,8 +708,8 @@
                                     <div v-for="log in realtimeLogs" :key="log.id" class="mobile-register-card pb-3 border-b border-[#1C1C1C] last:border-0">
                                         <!-- Atlas Mobile Format -->
                                         <template v-if="sessionConfig.strategy === 'atlas'">
-                                            <span class="mobile-register-time text-[9px] mb-1">[{{ log.timestamp }}]</span>
                                             <div class="flex items-start">
+                                                <span class="mobile-register-time text-[9px] mr-2 mt-0.5">[{{ log.timestamp }}]</span>
                                                 <span class="mr-1 text-xs">{{ log.icon }}</span>
                                                 <div class="flex flex-col">
                                                     <div v-for="(line, idx) in log.message.split('\n')" :key="idx"
