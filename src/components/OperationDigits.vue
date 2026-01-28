@@ -370,6 +370,7 @@
                         </div>
                     </div>
                 </div>
+                </div>
             </div>
 
             <!-- Trade Result Modal -->
