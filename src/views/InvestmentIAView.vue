@@ -162,7 +162,10 @@
                                     <div class="selector-content">
                                         <div class="selector-left">
                                             <div class="selector-icon-active">
-                                                <i :class="getStrategyIcon(selectedStrategy)"></i>
+                                                <div v-if="selectedStrategyDerivIcons" class="flex gap-0.5 justify-center items-center">
+                                                    <img v-for="icon in selectedStrategyDerivIcons" :key="icon" :src="icon" class="w-4 h-4" />
+                                                </div>
+                                                <i v-else :class="getStrategyIcon(selectedStrategy)"></i>
                                             </div>
                                             <span :class="{ 'placeholder': !selectedStrategy }">
                                                 {{ selectedStrategyName }}
@@ -177,7 +180,8 @@
                                     <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card mt-6">
                                         <div class="agent-desc-content">
                                             <div class="agent-desc-icon">
-                                                <i :class="getStrategyIcon(selectedStrategy)" style="color: white !important;"></i>
+                                                <img v-if="selectedStrategyDerivIcons" v-for="icon in selectedStrategyDerivIcons" :key="icon" :src="icon" class="w-8 h-8" />
+                                                <i v-else :class="getStrategyIcon(selectedStrategy)" style="color: white !important;"></i>
                                             </div>
                                             <div class="agent-desc-info">
                                                 <h3>{{ selectedStrategyName }}</h3>
@@ -208,7 +212,10 @@
                                             @click="selectStrategy(strategy.id)"
                                         >
                                             <div class="agent-option-icon">
-                                                <i :class="strategy.icon"></i>
+                                                <div v-if="strategy.derivIcons" class="flex gap-1 justify-center">
+                                                    <img v-for="icon in strategy.derivIcons" :key="icon" :src="icon" class="w-6 h-6" />
+                                                </div>
+                                                <i v-else :class="strategy.icon"></i>
                                             </div>
                                             <div class="agent-option-info">
                                                 <h4 class="agent-option-title">{{ strategy.title }}</h4>
@@ -518,11 +525,11 @@ export default {
             selectedStrategy: null,
             showStrategyModal: false,
             allStrategies: [
-                { id: 'atlas', title: 'IA Atlas', icon: 'fas fa-brain', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%' },
-                { id: 'apollo', title: 'IA Apollo', icon: 'fas fa-rocket', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%' },
-                { id: 'nexus', title: 'IA Nexus', icon: 'fas fa-project-diagram', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%' },
-                { id: 'orion', title: 'IA Orion', icon: 'fas fa-star', description: '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 54% a 61% - <strong>Retorno:</strong> 56% / 85%' },
-                { id: 'titan', title: 'IA Titan', icon: 'fas fa-shield-alt', description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-55% - <strong>Retorno:</strong> 85%' }
+                { id: 'atlas', title: 'IA Atlas', icon: 'fas fa-brain', derivIcons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%' },
+                { id: 'apollo', title: 'IA Apollo', icon: 'fas fa-rocket', derivIcons: ['/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg', '/deriv_icons/TradeTypesUpsAndDownsFallIcon.svg'], description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%' },
+                { id: 'nexus', title: 'IA Nexus', icon: 'fas fa-project-diagram', derivIcons: ['/deriv_icons/TradeTypesHighsAndLowsHigherIcon.svg', '/deriv_icons/TradeTypesHighsAndLowsLowerIcon.svg'], description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%' },
+                { id: 'orion', title: 'IA Orion', icon: 'fas fa-star', derivIcons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 54% a 61% - <strong>Retorno:</strong> 56% / 85%' },
+                { id: 'titan', title: 'IA Titan', icon: 'fas fa-shield-alt', derivIcons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'], description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-55% - <strong>Retorno:</strong> 85%' }
             ],
             
             dailyStats: {
@@ -572,6 +579,11 @@ export default {
         }
     },
     computed: {
+        selectedStrategyDerivIcons() {
+            const strategy = this.allStrategies.find(s => s.id === this.selectedStrategy);
+            return strategy ? strategy.derivIcons : null;
+        },
+        
         selectedStrategyName() {
             const strategyNames = {
                 'atlas': 'IA Atlas',
