@@ -1415,6 +1415,9 @@ export default {
                 }, 50);
             };
 
+            // Adicionado: Carregar mercados do backend
+            this.fetchMarkets();
+
             this.ws.onmessage = (event) => {
                 try {
                     const msg = JSON.parse(event.data);
@@ -1505,97 +1508,10 @@ export default {
             this.retryCount = 0;
             this.connectionCurrency = authorizeData.currency?.toUpperCase() || this.accountCurrency;
             
-            // Solicitar lista de símbolos ativos
-            this.send({
-                active_symbols: 'brief',
-                product_type: 'basic'
-            });
-
             this.subscribeToSymbol();
             setTimeout(() => {
                 this.subscribeToProposal();
             }, 500);
-        },
-        processWSActiveSymbols(symbols) {
-            console.log('[OperationDigits] Símbolos ativos recebidos:', symbols?.length);
-            if (symbols && Array.isArray(symbols)) {
-                this.processActiveSymbols(symbols);
-            }
-        },
-        processActiveSymbols(symbols) {
-            if (!symbols || !Array.isArray(symbols)) {
-                return;
-            }
-
-            // Mapear símbolos para o formato esperado
-            const mappedMarkets = symbols
-                .map(symbol => {
-                    const symbolData = typeof symbol === 'string' ? { symbol } : symbol;
-                    const symbolValue = symbolData.symbol || symbolData.market || symbol;
-                    const displayName = symbolData.display_name || symbolData.name || symbolValue;
-                    
-                    // Determinar categoria baseado no prefixo do símbolo ou metadados da API
-                    let category = symbolData.market_display_name || symbolData.market || 'Outros';
-                    
-                    // Normalização de nomes de categorias comuns
-                    if (category === 'synthetic_index') category = 'Índices Sintéticos';
-                    if (category === 'forex') category = 'Forex';
-                    if (category === 'cryptocurrency') category = 'Criptomoedas';
-                    if (category === 'indices') category = 'Índices';
-                    if (category === 'commodities') category = 'Commodities';
-
-                    // Refinar categoria se for prefixo conhecido
-                    if (symbolValue.startsWith('R_') || symbolValue.startsWith('1HZ')) {
-                        category = 'Índices Contínuos';
-                    } else if (symbolValue.startsWith('cry')) {
-                        category = 'Criptomoedas';
-                    } else if (symbolValue.startsWith('frx')) {
-                        if (symbolValue.includes('XAU') || symbolValue.includes('XAG') || symbolValue.includes('XPT') || symbolValue.includes('XPD')) {
-                            category = 'Metais';
-                        } else {
-                            // Listas de categorização de Forex
-                            const minors = ['frxEURGBP', 'frxEURJPY', 'frxGBPJPY', 'frxAUDCAD', 'frxAUDJPY', 'frxCHFJPY', 'frxEURAUD', 'frxGBPAUD'];
-                            const exotics = ['frxUSDMXN'];
-                            
-                            if (minors.includes(symbolValue)) {
-                                category = 'Forex Minors';
-                            } else if (exotics.includes(symbolValue)) {
-                                category = 'Forex Exotics';
-                            } else {
-                                category = 'Forex Majors';
-                            }
-                        }
-                    }
-
-                    return {
-                        value: symbolValue,
-                        label: displayName,
-                        category: category,
-                    };
-                });
-
-            // Ordenar por categoria (usando prioridade definida) e depois por label
-            const categoryPriority = {
-                'Índices Contínuos': 1,
-                'Forex Minors': 2,
-                'Forex Majors': 3,
-                'Criptomoedas': 4,
-                'Metais': 5,
-                'Forex Exotics': 6
-            };
-
-            mappedMarkets.sort((a, b) => {
-                const priorityA = categoryPriority[a.category] || 99;
-                const priorityB = categoryPriority[b.category] || 99;
-                
-                if (priorityA !== priorityB) {
-                    return priorityA - priorityB;
-                }
-                return a.label.localeCompare(b.label);
-            });
-
-            this.markets = mappedMarkets;
-            console.log('[OperationDigits] Todos os mercados carregados dinamicamente:', this.markets.length);
         },
         openMarketModal() {
             console.log('[OperationDigits] openMarketModal chamado, showMarketModal:', this.showMarketModal);

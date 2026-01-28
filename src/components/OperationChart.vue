@@ -634,6 +634,8 @@ export default {
         duration: 1,
         durationUnit: 'm',
       amount: 10,
+      currency: 'USD', // Moeda da conta
+      accountInfo: null,
       showMarketModal: false,
       showTradeTypeModal: false,
       showTradeResultModal: false,
@@ -1167,7 +1169,11 @@ export default {
         switch (msg.msg_type) {
             case 'authorize':
                 this.wsAuthorized = true;
-                console.log('[Chart] WS Autorizado');
+                if (msg.authorize) {
+                  this.currency = msg.authorize.currency || 'USD';
+                  this.accountInfo = msg.authorize;
+                  console.log('[Chart] WS Autorizado. Moeda:', this.currency);
+                }
                 this.onWSConnected();
                 break;
             case 'history':
@@ -2058,27 +2064,43 @@ export default {
       try {
         this.isLoadingContracts = true;
         
-        // Find market in local list
-        const market = this.markets.find(m => m.value === symbol);
+        const token = localStorage.getItem('token');
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
         
-        if (market && market.operations && market.operations.length > 0) {
-             // operations is array of strings: ['CALL', 'PUT', 'DIGITMATCH', ...]
-             this.availableContracts = market.operations;
-             console.log('[Chart] Contratos disponíveis (cache local):', this.availableContracts);
+        const res = await fetch(`${apiBaseUrl}/markets/${symbol}/contracts`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) throw new Error('Falha ao buscar contratos');
+
+        const contracts = await res.json();
+        
+        if (contracts && contracts.length > 0) {
+             this.availableContracts = contracts.map(c => ({
+               ...c.payload, // Spread raw data from Deriv
+               contract_type: c.contractType,
+               contract_category: c.contractCategory,
+               contract_display: c.contractDisplay,
+               min_contract_duration: c.minContractDuration,
+               max_contract_duration: c.maxContractDuration,
+               barriers: c.barriers
+             }));
+             console.log('[Chart] Contratos detalhados carregados do backend:', this.availableContracts.length);
         } else {
-             // Fallback if no operations data? Or just empty
-             console.warn('[Chart] Sem operações definidas para este mercado na tabela.');
+             console.warn('[Chart] Sem contratos detalhados na tabela market_contracts para:', symbol);
              this.availableContracts = [];
         }
 
         // Validate current trade type
         if (this.tradeType) {
-             const isAvailable = this.availableContracts.includes(this.tradeType) || 
-                                 this.availableContracts.some(op => op === this.tradeType);
+             const availableTypes = this.availableContracts.map(c => c.contract_type.toUpperCase());
+             const isAvailable = availableTypes.includes(this.tradeType.toUpperCase());
              
              if (!isAvailable) {
-                 this.tradeType = '';
-                 console.log('[Chart] Tipo de negociação anterior não está disponível, limpo');
+                  this.tradeType = '';
+                  console.log('[Chart] Tipo de negociação anterior não está disponível, limpo');
              }
         }
         
@@ -2257,7 +2279,7 @@ export default {
           amount: Number(this.amount),
           basis: 'stake',
           contract_type: this.tradeType,
-          currency: this.currency || localStorage.getItem('trade_currency') || 'USD',
+          currency: this.currency || 'USD',
           symbol: this.symbol,
           duration: Number(this.duration),
           duration_unit: this.durationUnit,
