@@ -1033,7 +1033,9 @@ export default {
 
         handleStrategyRequiredConfirm() {
             this.showStrategyRequiredModal = false;
-            this.openStrategyModal();
+            this.$nextTick(() => {
+                this.openStrategyModal();
+            });
         },
 
         openStrategyModal() {

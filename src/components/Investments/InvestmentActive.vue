@@ -105,7 +105,10 @@
                             <div class="relative z-10 h-full flex items-center justify-between gap-8">
                                 <div class="flex items-center space-x-5 flex-shrink-0">
                                     <div id="status-icon-container" class="w-16 h-16 bg-zenix-green/15 border-2 border-zenix-green/30 rounded-xl flex items-center justify-center transition-all duration-700">
-                                        <i id="status-icon" class="fas fa-chart-line text-zenix-green text-2xl ai-pulse"></i>
+                                        <div v-if="strategyDerivIcons" class="flex gap-1">
+                                            <img v-for="icon in strategyDerivIcons" :key="icon" :src="icon" class="w-8 h-8 ai-pulse" />
+                                        </div>
+                                        <i v-else id="status-icon" class="fas fa-chart-line text-zenix-green text-2xl ai-pulse"></i>
                                     </div>
                                     <div class="text-left">
                                         <h3 id="status-title" class="text-xl font-bold text-zenix-text leading-tight transition-all duration-700 text-left">
@@ -134,8 +137,11 @@
                                         <!-- Inner Pulsing Core -->
                                         <div class="absolute w-16 h-16 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
                                         <!-- Central Robot Icon -->
-                                        <div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center; animation: brainPulse 2s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.4));">
-                                            <i class="fas fa-atom text-zenix-green text-4xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 2.5rem !important;"></i>
+                                        <div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-center; animation: brainPulse 2s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.4));">
+                                            <div v-if="strategyDerivIcons" class="flex gap-2">
+                                                <img v-for="icon in strategyDerivIcons" :key="icon" :src="icon" class="w-10 h-10" />
+                                            </div>
+                                            <i v-else class="fas fa-atom text-zenix-green text-4xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 2.5rem !important;"></i>
                                         </div>
                                         <!-- Orbiting Data Nodes -->
                                         <div class="absolute w-2 h-2 bg-zenix-green rounded-full orbit-node" style="opacity: 1; animation: orbit1 4s linear infinite;"></div>
@@ -169,9 +175,12 @@
                     <div class="relative z-10">
                         <!-- Header -->
                         <div class="mobile-ia-header mb-3">
-                            <h1 class="mobile-ia-title">
+                            <h1 class="mobile-ia-title flex items-center">
                                 <span class="text-zenix-green">IA</span> 
                                 <span class="text-[#DFDFDF] ml-1">{{ strategyName.replace('IA ', '') }}</span>
+                                <div v-if="strategyDerivIcons" class="flex gap-1 ml-2">
+                                    <img v-for="icon in strategyDerivIcons" :key="icon" :src="icon" class="w-5 h-5" />
+                                </div>
                             </h1>
                             <div class="mobile-separator"></div>
                         </div>
@@ -1204,6 +1213,18 @@ export default {
                 'apollo_v3': '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 55% a 65% - <strong>Retorno:</strong> 90%',
             };
             return descriptions[strategyLower] || descriptions.orion;
+        },
+        
+        strategyDerivIcons() {
+            const strategy = (this.sessionConfig?.strategy || this.selectedStrategy || 'orion').toLowerCase();
+            const iconMap = {
+                'atlas': ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'],
+                'apollo': ['/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg', '/deriv_icons/TradeTypesUpsAndDownsFallIcon.svg'],
+                'nexus': ['/deriv_icons/TradeTypesHighsAndLowsHigherIcon.svg', '/deriv_icons/TradeTypesHighsAndLowsLowerIcon.svg'],
+                'orion': ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'],
+                'titan': ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg']
+            };
+            return iconMap[strategy] || null;
         },
         
         realRiskDescription() {

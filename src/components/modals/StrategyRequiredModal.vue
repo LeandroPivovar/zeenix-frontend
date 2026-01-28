@@ -46,6 +46,7 @@ export default {
       default: false
     }
   },
+  emits: ['close', 'confirm'],
   methods: {
     handleClose() {
       this.$emit('close');
@@ -68,7 +69,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: 10000000;
   padding: 20px;
 }
 
@@ -176,7 +177,7 @@ export default {
   transition: opacity 0.3s ease;
 }
 
-.modal-fade-enter,
+.modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
 }
