@@ -1326,16 +1326,15 @@
 						vertLines: { visible: false },
 						horzLines: { color: 'rgba(42, 46, 57, 0.2)' },
 					},
-					rightPriceScale: {
-						visible: false,
+					localization: {
+						priceFormatter: price => '$' + price.toFixed(2),
 					},
 					leftPriceScale: {
 						visible: true,
 						borderColor: 'rgba(197, 203, 206, 0.2)',
-						// ✅ ADICIONA O $ NA LEGENDA DO EIXO Y
-						localization: {
-							priceFormatter: price => '$' + price.toFixed(2),
-						},
+					},
+					rightPriceScale: {
+						visible: false,
 					},
 					width: this.$refs.performanceChartContainer.clientWidth,
 					height: 300,
