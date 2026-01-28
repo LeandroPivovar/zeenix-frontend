@@ -5,11 +5,11 @@
         <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="isSidebarCollapsed" 
-            :is-mobile="isMobile"
             @toggle-collapse="toggleSidebarCollapse"
             @close-sidebar="closeSidebar"
         />
 
+        <div class="min-h-screen flex flex-col transition-all duration-300" :style="{ marginLeft: isMobile ? '0' : (isSidebarCollapsed ? '0' : '280px') }">
         <TopNavbar 
             :is-sidebar-collapsed="isSidebarCollapsed"
             :balance="info?.balance"
@@ -36,7 +36,6 @@
             @account-type-changed="handleAccountTypeChange"
         />
 
-        <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <main class="main-content" style="margin-top: 0px;">
                 <!-- AI Vision Panel - Only show when IA is inactive -->
                 <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
@@ -1523,38 +1522,7 @@ export default {
     }
 }
 
-.content-wrapper {
-    margin-left: 280px;
-    min-height: 100vh;
-    transition: margin-left 0.3s ease, width 0.3s ease;
-    width: calc(100% - 280px);
-    box-sizing: border-box;
-}
-
-.content-wrapper.sidebar-collapsed {
-    margin-left: 0;
-    width: 100%;
-}
-
-/* Top Header */
-.top-header {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 350px;
-    z-index: 40;
-    background-color: #0E0E0E;
-    border-bottom: 1px solid #1C1C1C;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    transition: left 0.3s ease;
-    width: calc(100% - 350px);
-    box-sizing: border-box;
-}
-
-.content-wrapper.sidebar-collapsed .top-header {
-    left: 0;
-    width: 100%;
-}
+/* Obsolete styles removed: .content-wrapper, .top-header */
 
 .header-content {
     padding: 1rem 20px;
