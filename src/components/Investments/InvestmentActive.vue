@@ -5513,7 +5513,7 @@ button i,
 
 @media (max-width: 768px) {
     .investment-active-main {
-        padding: 1rem!important;
+        padding: 60px 15px !important;
     }
     
     /* Mobile: Esconder layout desktop, mostrar mobile */
@@ -8532,7 +8532,7 @@ button i,
     }
 
     .investment-active-main {
-        padding: 60px 15px !important;
+        padding: 0px 15px !important;
         max-width: 100%;
         width: 100%;
         box-sizing: border-box;

@@ -1639,14 +1639,20 @@ export default {
 /* Main Content - Desktop & Mobile Adjustments */
 .main-content {
     margin-top: 60px; 
-    padding: 60px 15px !important; /* Force mobile padding */
+    padding: 0px 15px !important; /* Default desktop padding */
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start !important; /* Ensure desktop starts from top */
+    justify-content: flex-start !important;
     background-color: transparent;
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        padding: 60px 15px !important; /* Mobile padding */
+    }
 }
 
 /* AI Vision Panel */
