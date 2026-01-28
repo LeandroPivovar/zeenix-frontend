@@ -7,14 +7,6 @@
 
 				<div class="box">
 					<div class="search-add-bar">
-						<input
-							type="text"
-							class="input-token"
-							v-model="newToken"
-						/>
-						<button class="btn-adicionar" @click="addCopier">
-							<span class="btn-plus">+</span> Adicionar
-						</button>
 						
 						<div class="search-input-container">
 							<span class="search-icon">
@@ -276,7 +268,6 @@
 import { ref, computed, watch, onMounted } from 'vue';
 
 // Dados reativos
-const newToken = ref('');
 const searchTerm = ref('');
 
 // Novos toggles para os controles globais
@@ -325,14 +316,6 @@ const loadCopiers = async () => {
 };
 
 // Funções de manipulação
-const addCopier = () => {
-	if (newToken.value.trim() !== '') {
-		console.log('Adicionar copiador com token:', newToken.value);
-		// TODO: Implementar adição de copiador via API
-		newToken.value = ''; // Limpa o campo
-	}
-};
-
 const deleteCopier = async (id) => {
 	if (await confirm('Tem certeza que deseja remover este copiador?')) {
 		copiers.value = copiers.value.filter(copier => copier.id !== id);
@@ -536,11 +519,6 @@ onMounted(() => {
 	border-color: #3a3a3a;
 }
 
-.input-token {
-	flex: 1;
-	max-width: 500px;
-	min-width: 200px;
-}
 
 /* ESTILO: Container e Ícone de Pesquisa */
 .search-input-container { 
@@ -575,31 +553,6 @@ onMounted(() => {
 /* ... (Restante dos estilos) ... */
 
 
-.btn-adicionar {
-	background-color: #22c55e;
-	color: white;
-	padding: 12px 28px;
-	border: none;
-	border-radius: 6px;
-	cursor: pointer;
-	font-weight: 600;
-	font-size: 14px;
-	transition: background-color 0.2s;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 6px;
-}
-
-.btn-plus {
-	font-size: 18px;
-	font-weight: 700;
-	line-height: 1;
-}
-
-.btn-adicionar:hover {
-	background-color: #00b872;
-}
 
 /* Controls Bar - ESTILO COM SLIDERS */
 .controls-bar {
@@ -984,17 +937,6 @@ input:checked + .slider:before {
 	.search-add-bar {
 		flex-direction: column;
 		gap: 12px;
-	}
-
-	.input-token,
-	.input-search {
-		width: 100%;
-		max-width: 100%;
-		min-width: auto;
-	}
-
-	.btn-adicionar {
-		width: 100%;
 	}
 
 	.search-input-container {

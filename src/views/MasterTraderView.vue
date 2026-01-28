@@ -37,13 +37,6 @@
             <section class="master-trader-status-nav desktop-layout">
                 <div class="top-status-bar">
                     <div class="status-cards-container">
-                        <div class="status-card active-copy-trading">
-                            <div class="status-icon-wrapper active">
-                                <i class="fas fa-copy"></i>
-                                <span class="status-label">Copy Trading</span>
-                                <span class="status-value active-label">Ativo</span>
-                            </div>
-                        </div>
 
                         <div class="status-card">
                             <div class="status-header">
