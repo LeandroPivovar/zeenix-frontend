@@ -328,10 +328,16 @@
 							<button 
 								class="start-agent-btn" 
 								@click="iniciarAgente"
-								:disabled="!selectedAgent"
-								:class="{ 'disabled': !selectedAgent }"
+								:disabled="!selectedAgent || isStarting"
+								:class="{ 'disabled': !selectedAgent || isStarting, 'loading': isStarting }"
 							>
-								Iniciar Agente Autônomo
+								<template v-if="isStarting">
+									<i class="fas fa-spinner fa-spin mr-2"></i>
+									Iniciando Agente...
+								</template>
+								<template v-else>
+									Iniciar Agente Autônomo
+								</template>
 							</button>
 						</div>
 					</div>
@@ -416,6 +422,7 @@ export default {
 			metaLucro: 100.00,
 			limitePerda: 100.00,
 			showAgentSelectorModal: false,
+			isStarting: false,
 			allAgents: [
 				{
 					id: 'zeus',
@@ -507,13 +514,15 @@ export default {
 				}
 				return;
 			}
+
+			if (this.isStarting) return;
+			this.isStarting = true;
+
 			// 1. Coleta os dados configurados
 			const configData = {
-				// ✅ Novo: Tipo de agente selecionado
-				agentType: this.selectedAgent, // 'sentinel' ou 'falcon'
-				// Usa os nomes de prop que o PAI espera
-				mercado: this.selectedMarket, // Enviar o ID, não o título
-				risco: this.selectedRisk, // Enviar o ID, não o título
+				agentType: this.selectedAgent,
+				mercado: this.selectedMarket,
+				risco: this.selectedRisk,
 				goalValue: this.metaLucroNumero,
 				stopValue: this.limitePerdaNumero,
 				initialStake: this.valorOperacaoNumero,
@@ -527,11 +536,23 @@ export default {
 				this.$parent.stopValue = this.limitePerdaNumero;
 			}
 
-			// 3. Emite o evento 'iniciar-agente' COM o objeto de dados (o payload)
-			this.$emit('iniciar-agente', configData);
+			// Simular delay para feedback visual e então iniciar
+			setTimeout(() => {
+				if (this.$root && this.$root.$toast) {
+					this.$root.$toast.success('Agente configurado com sucesso! Iniciando operações...');
+				}
 
-			// Rolar para o topo
-			window.scrollTo({ top: 0, behavior: 'smooth' });
+				// 3. Emite o evento 'iniciar-agente' COM o objeto de dados
+				this.$emit('iniciar-agente', configData);
+
+				// Rolar para o topo
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+				
+				// Resetar loader após emissão (o componente provavelmente será destruído ou escondido pelo pai)
+				setTimeout(() => {
+					this.isStarting = false;
+				}, 1000);
+			}, 800);
 		},
 
 		openAgentSelectorModal() {
@@ -1530,6 +1551,17 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     background-color: #1eb352;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.start-agent-btn.loading {
+    opacity: 0.8;
+    cursor: wait;
+    transform: none;
+    background-color: #1eb352;
+}
+
+.mr-2 {
+    margin-right: 0.5rem;
 }
 
 .ai-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
