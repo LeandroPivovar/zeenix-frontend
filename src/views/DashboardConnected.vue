@@ -849,8 +849,16 @@ export default {
       return value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     },
     displayedIAs() {
-      // Mostrar todas as 5 IAs
-      return this.bestIAs.slice(0, 5);
+      // Ordenar IAs pela porcentagem (maior para menor) e mostrar todas as 5 IAs
+      return this.sortedBestIAs.slice(0, 5);
+    },
+    sortedBestIAs() {
+      // Ordenar IAs pela porcentagem (da maior para menor)
+      return [...this.bestIAs].sort((a, b) => {
+        const perfA = parseFloat(this.getIAPerformance(a.id));
+        const perfB = parseFloat(this.getIAPerformance(b.id));
+        return perfB - perfA; // Ordem decrescente
+      });
     },
     userProfilePicture() {
       if (!this.userProfilePictureUrl) return null;
@@ -1682,16 +1690,57 @@ export default {
         await alert('Erro ao trocar de conta. Tente novamente.');
       }
     },
+    getCurrentTimePeriod() {
+      // Determina o período do dia (manhã, tarde, noite)
+      const hour = new Date().getHours();
+      
+      if (hour >= 6 && hour < 12) {
+        return 'morning'; // Manhã: 6:00 - 11:59
+      } else if (hour >= 12 && hour < 18) {
+        return 'afternoon'; // Tarde: 12:00 - 17:59
+      } else {
+        return 'night'; // Noite: 18:00 - 5:59
+      }
+    },
     getIAPerformance(iaId) {
-      // Retorna performance baseada no ID da IA
+      // Retorna performance baseada no ID da IA e período do dia
+      const period = this.getCurrentTimePeriod();
+      const dayOfMonth = new Date().getDate(); // Pega o dia do mês (1-31)
+      const dayModifier = dayOfMonth / 100; // Converte para casas decimais (0.01 a 0.31)
+      
+      // Valores entre 1 e 5 (valores quebrados) variando por período
       const performances = {
-        'orion': '12.4',
-        'atlas': '18.7',
-        'apollo': '15.2',
-        'nexus': '14.8',
-        'titan': '15.2'
+        'orion': {
+          'morning': 3.7,
+          'afternoon': 4.2,
+          'night': 2.8
+        },
+        'atlas': {
+          'morning': 4.5,
+          'afternoon': 3.1,
+          'night': 4.9
+        },
+        'apollo': {
+          'morning': 2.3,
+          'afternoon': 4.8,
+          'night': 3.6
+        },
+        'nexus': {
+          'morning': 3.9,
+          'afternoon': 2.6,
+          'night': 4.4
+        },
+        'titan': {
+          'morning': 4.1,
+          'afternoon': 3.8,
+          'night': 2.2
+        }
       };
-      return performances[iaId] || '0.0';
+      
+      const basePerformance = performances[iaId]?.[period] || 0;
+      const finalPerformance = basePerformance + dayModifier;
+      
+      return finalPerformance.toFixed(2);
     },
     generateSparklinePoints(data) {
       if (!data || data.length === 0) return '';
