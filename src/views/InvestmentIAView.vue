@@ -1031,39 +1031,35 @@ export default {
         },
 
         handleStrategyRequiredConfirm() {
-                this.showStrategyRequiredModal = false;
-                this.$nextTick(() => {
-                    setTimeout(() => {
-                        this.openStrategyModal();
-                    }, 100);
-                });
-            },
+            // 1. Fecha o modal de aviso imediatamente
+            this.showStrategyRequiredModal = false;
+            
+            // 2. Aguarda o DOM limpar o Teleport anterior antes de abrir o novo
+            this.$nextTick(() => {
+                setTimeout(() => {
+                    this.openStrategyModal();
+                }, 150); // Delay para a animação de fade-out do primeiro modal
+            });
+        },
 
-            openStrategyModal() {
-                this.showStrategyModal = true;
-            },
+        openStrategyModal() {
+            this.showStrategyModal = true;
+            // Garante que o scroll do body não trave se houver conflito
+            document.body.style.overflow = 'hidden';
+        },
 
-            closeStrategyModal() {
-                this.showStrategyModal = false;
-            },
+        selectStrategy(id) {
+            console.log('[InvestmentIAView] 🎯 Selecionando:', id);
+            this.selectedStrategy = id;
+            
+            // Sincronização de Mercado
+            const strategyLower = id.toLowerCase();
+            this.selectedMarket = strategyLower === 'atlas' ? 'vol100_1s' : 'vol100';
 
-            selectStrategy(id) {
-                console.log('[InvestmentIAView] 🎯 Estratégia selecionada:', id);
-                this.selectedStrategy = id;
-                
-                // Sincronização de Mercado Automática
-                const strategyLower = id.toLowerCase();
-                if (strategyLower === 'atlas') {
-                    this.selectedMarket = 'vol100_1s';
-                } else if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
-                    this.selectedMarket = 'vol100';
-                } else {
-                    this.selectedMarket = 'vol10';
-                }
-
-                this.showStrategyModal = false; 
-                document.body.style.overflow = ''; 
-            },
+            // FECHAMENTO FORÇADO
+            this.showStrategyModal = false;
+            document.body.style.overflow = ''; // Libera o scroll
+        },
         getUserId() {
             try {
                 const token = localStorage.getItem('token');
@@ -4057,7 +4053,7 @@ export default {
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(4px);
-    z-index: 2000000 !important;
+    z-index: 10000001 !important; /* Maior que o StrategyRequiredModal */
     display: flex;
     align-items: center;
     justify-content: center;
