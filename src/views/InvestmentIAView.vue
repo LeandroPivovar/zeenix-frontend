@@ -1488,6 +1488,9 @@ export default {
 
     .main-content {
         margin-top: 60px!important;
+        justify-content: flex-start !important;
+        display: flex;
+        flex-direction: column;
     }
 
     .bg-zenix-card {
@@ -1635,8 +1638,8 @@ export default {
 
 /* Main Content - Desktop (sem gradiente) */
 .main-content {
-    margin-top: 90px; /* Margem pequena entre conteúdo e header */
-    padding: 1rem 20px; /* Padding reduzido */
+    margin-top: 60px; /* Ajustado para mobile */
+    padding: 60px 15px; /* Ajustado conforme pedido */
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
