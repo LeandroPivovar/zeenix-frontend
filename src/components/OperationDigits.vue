@@ -275,8 +275,6 @@
                         <div v-if="recentDigits.length === 0" class="text-white/20 text-xs italic">Aguardando dados...</div>
                     </div>
                 </div>
-                </div>
-                </div>
 
                 <!-- Signal Generator Card -->
                 <div class="signal-generator-wrapper-digits bg-[#0D0D0D] border border-white/5 p-8 rounded-2xl shadow-xl">

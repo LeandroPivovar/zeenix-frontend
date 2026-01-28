@@ -6,24 +6,9 @@
       <div class="col-chart flex-1 flex flex-col gap-5">
         <!-- Chart Container -->
         <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card h-full">
-          <div class="flex items-center justify-between px-6 py-4 flex-shrink-0 border-b border-white/5">
-            <div class="flex items-center gap-6">
-              <button 
-                @click="setTab('chart')"
-                :class="['text-sm font-bold tracking-wider uppercase transition-all duration-300', activeTab === 'chart' ? 'text-zenix-green' : 'text-white/30 hover:text-white/60']"
-              >
-                Análise Gráfica
-              </button>
-              <div class="h-4 w-[1px] bg-white/10"></div>
-              <button 
-                @click="setTab('digits')"
-                :class="['text-sm font-bold tracking-wider uppercase transition-all duration-300', activeTab === 'digits' ? 'text-zenix-green' : 'text-white/30 hover:text-white/60']"
-              >
-                Análise de Dígitos
-              </button>
-            </div>
-
-            <div v-if="activeTab === 'chart'" class="flex items-center gap-2">
+          <!-- Card Header for Chart Controls -->
+          <div v-if="activeTab === 'chart'" class="flex items-center justify-end px-6 py-4 flex-shrink-0 border-b border-white/5">
+            <div class="flex items-center gap-2">
               <!-- Botões de Zoom -->
               <div class="flex items-center gap-1 border border-zenix-border rounded-lg overflow-hidden">
                 <button
@@ -98,7 +83,7 @@
               <!-- 1. FREQUÊNCIA GERAL POR DÍGITO (Heatmap) -->
               <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl">
                 <div class="flex items-center justify-between mb-6">
-                  <h3 class="text-sm font-bold tracking-wider uppercase text-white/90">FREQUÊNCIA GERAL POR DÍGITO</h3>
+                  <h3 class="text-sm font-bold tracking-wider uppercase text-white/90">FREQUÊNCIA GERAL</h3>
                   <div class="relative group">
                     <i class="far fa-question-circle text-sm text-zenix-green cursor-help"></i>
                   </div>
@@ -125,63 +110,106 @@
 
                 <div class="flex items-center justify-center gap-4 pt-4 border-t border-white/5">
                   <div class="flex items-center gap-2 text-[10px] uppercase font-bold text-white/20">
-                    <div class="w-2 h-2 rounded-full bg-[#10b981]"></div> Baixo
+                    <div class="w-2 h-2 rounded-full bg-[#10b981]"></div> BAIXO
                   </div>
                   <div class="flex items-center gap-2 text-[10px] uppercase font-bold text-white/20">
-                    <div class="w-2 h-2 rounded-full bg-[#eab308]"></div> Médio
+                    <div class="w-2 h-2 rounded-full bg-[#eab308]"></div> MÉDIO
                   </div>
                   <div class="flex items-center gap-2 text-[10px] uppercase font-bold text-white/20">
-                    <div class="w-2 h-2 rounded-full bg-[#f97316]"></div> Alto
+                    <div class="w-2 h-2 rounded-full bg-[#f97316]"></div> ALTO
                   </div>
                   <div class="flex items-center gap-2 text-[10px] uppercase font-bold text-white/20">
-                    <div class="w-2 h-2 rounded-full bg-[#ef4444]"></div> Crítico
+                    <div class="w-2 h-2 rounded-full bg-[#ef4444]"></div> CRÍTICO
                   </div>
                 </div>
               </div>
 
-              <!-- 2. RESUMO POR CATEGORIA (Paridade + Alto/Baixo) -->
-              <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl">
-                <h3 class="text-sm font-bold tracking-wider uppercase text-white/90 mb-6">RESUMO POR CATEGORIA</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <!-- Paridade -->
-                  <div class="space-y-4">
-                    <div class="space-y-2">
-                      <div class="flex justify-between text-[10px] font-bold uppercase">
-                        <span class="text-white/40">Par (0,2,4,6,8)</span>
-                        <span class="text-zenix-green">{{ evenPercentage }}%</span>
-                      </div>
-                      <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div class="h-full bg-zenix-green transition-all duration-700" :style="{ width: evenPercentage + '%' }"></div>
-                      </div>
-                    </div>
-                    <div class="space-y-2">
-                      <div class="flex justify-between text-[10px] font-bold uppercase">
-                        <span class="text-white/40">Ímpar (1,3,5,7,9)</span>
-                        <span class="text-orange-500">{{ oddPercentage }}%</span>
-                      </div>
-                      <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div class="h-full bg-orange-500 transition-all duration-700" :style="{ width: oddPercentage + '%' }"></div>
-                      </div>
+              <!-- 2. VOLATILIDADE (DVX) + RESUMO POR CATEGORIA -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- DVX Gauge -->
+                <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl flex flex-col items-center justify-center min-h-[200px]">
+                  <h3 class="text-sm font-bold tracking-wider uppercase text-white/90 mb-4 w-full">VOLATILIDADE (DVX)</h3>
+                  <div class="relative w-32 h-32 flex items-center justify-center">
+                    <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                      <!-- Trilhas de fundo -->
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8" stroke-dasharray="251.2" />
+                      
+                      <!-- Segmento Verde (0-30) -->
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="#22C55E" stroke-width="8" 
+                        stroke-dasharray="90.2 251.2" 
+                        :stroke-dashoffset="dvxGreenOffset" 
+                        stroke-linecap="round"
+                        class="transition-all duration-1000" />
+                      
+                      <!-- Segmento Amarelo (30-60) -->
+                      <circle cx="50" cy="50" r="45" fill="none" stroke="#FFD058" stroke-width="8" 
+                        stroke-dasharray="102.4 282.6" 
+                        :stroke-dashoffset="dvxYellowOffset" 
+                        stroke-linecap="round"
+                        class="transition-all duration-1000" />
+                      
+                      <!-- Segmento Vermelho (60-100) -->
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="#FF4747" stroke-width="8" 
+                        stroke-dasharray="90.2 251.2" 
+                        :stroke-dashoffset="dvxRedOffset" 
+                        stroke-linecap="round"
+                        class="transition-all duration-1000" />
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                      <span class="text-2xl font-black text-white leading-none">{{ dvxValueComputed }}</span>
+                      <span class="text-[8px] font-bold uppercase tracking-widest text-white/40 mt-1">Pontos</span>
                     </div>
                   </div>
-                  <!-- Alto/Baixo (Summary) -->
-                  <div class="space-y-4">
-                    <div class="space-y-2">
-                      <div class="flex justify-between text-[10px] font-bold uppercase">
-                        <span class="text-white/40">Baixo (0-4)</span>
-                        <span class="text-zenix-green">{{ lowPercentage || 50 }}%</span>
+                  <div class="mt-4 text-center">
+                    <span class="text-xs font-bold uppercase tracking-widest" :class="dvxStatusClass + '-text'">{{ dvxStatusText }}</span>
+                    <p class="text-[10px] text-white/20 uppercase mt-1">Ambiente {{ dvxEnvironmentText }}</p>
+                  </div>
+                </div>
+
+                <!-- Resumo por Categoria -->
+                <div class="md:col-span-2 bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl">
+                  <h3 class="text-sm font-bold tracking-wider uppercase text-white/90 mb-6 font-primary">RESUMO POR CATEGORIA</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Paridade -->
+                    <div class="space-y-4">
+                      <div class="space-y-2">
+                        <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                          <span class="text-white/40">PAR</span>
+                          <span class="text-[#22C55E]">{{ evenPercentage }}%</span>
+                        </div>
+                        <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                          <div class="h-full bg-[#22C55E] transition-all duration-700 shadow-[0_0_10px_rgba(34,197,94,0.3)]" :style="{ width: evenPercentage + '%' }"></div>
+                        </div>
                       </div>
-                      <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div class="h-full bg-zenix-green transition-all duration-700" :style="{ width: (lowPercentage || 50) + '%' }"></div>
+                      <div class="space-y-2">
+                        <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                          <span class="text-white/40">ÍMPAR</span>
+                          <span class="text-[#FF8A00]">{{ oddPercentage }}%</span>
+                        </div>
+                        <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                          <div class="h-full bg-[#FF8A00] transition-all duration-700 shadow-[0_0_10px_rgba(255,138,0,0.3)]" :style="{ width: oddPercentage + '%' }"></div>
+                        </div>
                       </div>
                     </div>
-                    <div class="space-y-2">
-                      <div class="flex justify-between text-[10px] font-bold uppercase">
-                        <span class="text-white/40">Alto (5-9)</span>
-                        <span class="text-blue-500">{{ highPercentage || 50 }}%</span>
+                    <!-- Alto/Baixo (Summary) -->
+                    <div class="space-y-4">
+                      <div class="space-y-2">
+                        <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                          <span class="text-white/40">BAIXO</span>
+                          <span class="text-[#22C55E]">{{ lowPercentage }}%</span>
+                        </div>
+                        <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                          <div class="h-full bg-[#22C55E] transition-all duration-700 shadow-[0_0_10px_rgba(34,197,94,0.3)]" :style="{ width: lowPercentage + '%' }"></div>
+                        </div>
                       </div>
-                      <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div class="h-full bg-blue-500 transition-all duration-700" :style="{ width: (highPercentage || 50) + '%' }"></div>
+                      <div class="space-y-2">
+                        <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                          <span class="text-white/40">ALTO</span>
+                          <span class="text-[#7C3AED]">{{ highPercentage }}%</span>
+                        </div>
+                        <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                          <div class="h-full bg-[#7C3AED] transition-all duration-700 shadow-[0_0_10px_rgba(124,58,237,0.3)]" :style="{ width: highPercentage + '%' }"></div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1201,6 +1229,11 @@ export default {
       if (diff < 5) return 'Distribuição equilibrada — sem vantagem clara';
       return low > 55 ? 'Próximo tick: maior probabilidade de ALTO (OVER 4)' : 'Próximo tick: maior probabilidade de BAIXO (UNDER 5)';
     },
+    // Histórico Recente de Dígitos
+    recentDigits() {
+        if (!this.digitFrequency || !this.digitFrequency.digits) return [];
+        return this.digitFrequency.digits.slice(-30).reverse();
+    },
     dvxGreenOffset() {
       const len = 90.2;
       const fill = Math.min(30, this.dvxValueComputed) / 30;
@@ -1698,6 +1731,18 @@ export default {
 
         // Adicionar ao gráfico e processar
         this.handleNewTick(tickData);
+        
+        // Determinar precisão se ainda não tiver (dinâmico)
+        if (tick.quote) {
+          const str = String(tick.quote);
+          if (str.includes('.')) {
+            const precision = str.split('.')[1].length;
+            if (precision !== this.pricePrecision) {
+              console.log(`[Chart] Ajustando precisão para ${this.symbol}: ${precision}`);
+              this.pricePrecision = precision;
+            }
+          }
+        }
     },
 
 
@@ -2353,8 +2398,8 @@ export default {
       }
     },
     calculateDigitFrequency() {
-      // Usar storedTicks (máximo 1000)
-      const last100Ticks = this.storedTicks.slice(-100);
+      // Usar uma amostra maior para a frequência geral (500 ticks)
+      const lastSample = this.allHistoricalTicks.slice(-500);
       const digits = [];
       const frequency = {};
       
@@ -2364,7 +2409,7 @@ export default {
       
       lastSample.forEach(tick => {
         const val = Number(tick.value || tick.price || tick.quote);
-        const valStr = val.toFixed(5); // Usar 5 casas decimais para garantir precisão
+        const valStr = val.toFixed(this.pricePrecision);
         const lastDigit = parseInt(valStr.charAt(valStr.length - 1));
         if (!isNaN(lastDigit)) {
           digits.push(lastDigit);
@@ -2388,20 +2433,6 @@ export default {
           odd: total > 0 ? Math.round((oddCount / total) * 100) : 0,
         },
       };
-    },
-    // Categorias de Dígitos
-    lowPercentage() {
-        if (!this.digitFrequency || !this.digitFrequency.digits || this.digitFrequency.digits.length === 0) return 50;
-        const low = this.digitFrequency.digits.filter(d => d <= 4).length;
-        return Math.round((low / this.digitFrequency.digits.length) * 100);
-    },
-    highPercentage() {
-        return 100 - this.lowPercentage;
-    },
-    // Histórico Recente de Dígitos
-    recentDigits() {
-        if (!this.digitFrequency || !this.digitFrequency.digits) return [];
-        return this.digitFrequency.digits.slice(-30).reverse();
     },
     setTab(tab) {
         this.activeTab = tab;
@@ -2722,8 +2753,10 @@ export default {
       }
     },
     updateDigitInfo(value) {
-      // Extrair último dígito do valor
-      const valueStr = value.toFixed(5); // Usar 5 casas decimais para garantir precisão
+      if (value === null || value === undefined) return;
+      
+      // Extrair último dígito do valor baseado na precisão do mercado
+      const valueStr = value.toFixed(this.pricePrecision);
       const lastChar = valueStr[valueStr.length - 1];
       const digit = parseInt(lastChar, 10);
       
@@ -5412,6 +5445,11 @@ export default {
   .status-normal-text { color: #eab308; }
   .status-heated-text { color: #f97316; }
   .status-overheated-text { color: #ef4444; }
+
+  .status-underheated-bar { background-color: #10b981; }
+  .status-normal-bar { background-color: #eab308; }
+  .status-heated-bar { background-color: #f97316; }
+  .status-overheated-bar { background-color: #ef4444; }
 
   .bar-rank-highest { background-color: #22C55E !important; }
   .bar-rank-lowest { background-color: #EF4444 !important; }
