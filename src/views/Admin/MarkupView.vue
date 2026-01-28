@@ -17,8 +17,7 @@
                 <div class="main-header-left">
                     <h1 style="font-size: 20px;">Markup - Comissões</h1>
                     <p style="font-size: 14px;">
-                        Comissão de 3% sobre o payout de cada operação realizada na Deriv
-                        <span v-if="selectedUserName" style="color: #22C55E; font-weight: 500;"> • {{ selectedUserName }}</span>
+                        Comissão de 3% sobre o payout de cada operação realizada
                     </p>
                 </div>
                 <div class="main-header-right">
@@ -29,12 +28,6 @@
             <div class="main-content">
                 <!-- Summary Cards -->
                 <div class="summary-cards">
-                    <div class="card total">
-                        <h3>Comissão Total</h3>
-                        <p class="value" v-if="!derivMarkupLoading">{{ formatCurrency(derivMarkupTotal) }}</p>
-                        <p class="value" v-else style="font-size: 14px; color: #999;">Carregando...</p>
-                        <p v-if="derivMarkupError" style="font-size: 12px; color: #ff4444; margin-top: 5px;">{{ derivMarkupError }}</p>
-                    </div>
                     <div class="card total">
                         <h3>Saldo Total (Real)</h3>
                         <p class="value">{{ formatCurrency(summaryCards.totalRealAmount) }}</p>
@@ -198,16 +191,7 @@
             @close="showSettingsModal = false"
         />
 
-        <!-- User Selection Modal -->
-        <SelectionModal
-            :show="showUserModal"
-            title="Selecionar Usuário"
-            :items="userItems"
-            :selected-value="selectedUserId"
-            search-placeholder="Buscar usuário..."
-            @select="selectUser"
-            @close="showUserModal = false"
-        />
+
 
     </div>
 </template>
@@ -216,7 +200,7 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
-import SelectionModal from '../../components/SelectionModal.vue';
+
 
 // NOTA: DESCOMENTE AS LINHAS ABAIXO APÓS INSTALAR AS DEPENDÊNCIAS (npm install jspdf html2canvas)
 // import jsPDF from 'jspdf';
@@ -228,7 +212,6 @@ export default {
         AppSidebar,
         TopNavbar,
         SettingsSidebar,
-        SelectionModal,
     },
     data() {
         const currentDate = new Date().toISOString().split('T')[0];
@@ -256,28 +239,16 @@ export default {
             },
             loadingProgress: 0,
             totalToLoad: 0,
-            // Dados do markup da Deriv API
-            derivMarkupTotal: 0,
-            derivMarkupLoading: false,
-            derivMarkupError: null,
-            // Modal de seleção de usuário
-            showUserModal: false,
-            selectedUserId: null,
-            selectedUserName: '',
-            users: [],
         };
     },
     watch: {
     },
     created() {
-        // Não buscar dados automaticamente, esperar seleção de usuário
     },
     mounted() {
         this.handleResize();
         window.addEventListener('resize', this.handleResize);
-        // Buscar lista de usuários e mostrar modal
-        this.fetchUsers();
-        this.showUserModal = true;
+        this.fetchData();
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
@@ -366,9 +337,6 @@ export default {
                 // os "cards" de períodos carregarem via request normal em background
                 // TEMPORARIAMENTE DESABILITADO - endpoint /trades/markup não implementado
                 // this.fetchPeriodData(token, apiUrl);
-                
-                // Buscar dados de markup da Deriv API
-                this.fetchDerivMarkupStatistics();
 
             } catch (error) {
                 console.error('Erro ao buscar dados (stream):', error);
@@ -456,90 +424,7 @@ export default {
             }
         },
         
-        async fetchDerivMarkupStatistics() {
-            if (!this.selectedUserId) {
-                console.warn('[MarkupView] Nenhum usuário selecionado');
-                return;
-            }
-            
-            this.derivMarkupLoading = true;
-            this.derivMarkupError = null;
-            
-            try {
-                const token = localStorage.getItem('token');
-                const apiUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-                
-                const params = new URLSearchParams({
-                    userId: this.selectedUserId,
-                    dateFrom: this.filterStartDate,
-                    dateTo: this.filterEndDate,
-                });
-                
-                const response = await fetch(`${apiUrl}/markup/statistics?${params}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0',
-                    },
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Erro ao buscar estatísticas de markup: ${response.statusText}`);
-                }
-                
-                const result = await response.json();
-                
-                if (result.success && result.data) {
-                    this.derivMarkupTotal = result.data.total_app_markup_usd || 0;
-                    console.log('[MarkupView] Markup total da Deriv API:', this.derivMarkupTotal);
-                } else {
-                    this.derivMarkupTotal = 0;
-                }
-                
-            } catch (error) {
-                console.error('Erro ao buscar estatísticas de markup da Deriv:', error);
-                this.derivMarkupError = error.message;
-                this.derivMarkupTotal = 0;
-            } finally {
-                this.derivMarkupLoading = false;
-            }
-        },
 
-        async fetchUsers() {
-            try {
-                const token = localStorage.getItem('token');
-                const apiUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-                
-                const response = await fetch(`${apiUrl}/users`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Erro ao buscar usuários');
-                }
-                
-                const result = await response.json();
-                this.users = result.data || result || [];
-                console.log('[MarkupView] Usuários carregados:', this.users.length);
-                
-            } catch (error) {
-                console.error('Erro ao buscar usuários:', error);
-                this.$root.$toast.error('Erro ao carregar lista de usuários');
-            }
-        },
-
-        selectUser(user) {
-            this.selectedUserId = user.value;
-            this.selectedUserName = user.label;
-            console.log('[MarkupView] Usuário selecionado:', user.label, '(ID:', user.value, ')');
-            
-            // Buscar dados do markup para o usuário selecionado
-            this.fetchData();
-            this.fetchDerivMarkupStatistics();
-        },
 
         calculateTotalCommission(users) {
             return users.reduce((sum, user) => sum + user.commission, 0);
@@ -600,13 +485,6 @@ export default {
         }
     },
     computed: {
-        userItems() {
-            return this.users.map(user => ({
-                value: user.id.toString(),
-                label: user.name || user.email,
-                description: user.email
-            }));
-        },
         
         totalCommissionDisplayed() {
             // Agora "commission" vem calculado do backend (markup 3%)
