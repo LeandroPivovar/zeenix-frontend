@@ -324,8 +324,8 @@
             />
           </div>
           
-          <!-- Card de Dígitos de Previsão (apenas para contratos de dígitos) -->
-          <div v-if="isDigitContract && latestTick" class="bg-zenix-bg border border-zenix-border rounded-lg p-4">
+          <!-- Card de Dígitos de Previsão (apenas para certos contratos de dígitos) -->
+          <div v-if="showDigitsPredictionCard" class="bg-zenix-bg border border-zenix-border rounded-lg p-4">
             <div class="text-xs font-medium text-zenix-secondary mb-3">
               <i class="fas fa-calculator text-zenix-green mr-2"></i>Dígitos de Previsão
             </div>
@@ -347,10 +347,10 @@
               </div>
             </div>
             
-            <!-- Seleção de Dígito (0-9) para DIGITMATCH -->
-            <div v-if="tradeType === 'DIGITMATCH'" class="mt-3 pt-3 border-t border-zenix-border">
+            <!-- Seleção de Dígito (0-9) para Match, Diff, Over, Under -->
+            <div v-if="['DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(tradeType)" class="mt-3 pt-3 border-t border-zenix-border">
               <label class="block text-xs font-medium text-[#DFDFDF88] mb-3">
-                <i class="fas fa-bullseye text-zenix-green mr-2"></i>Selecione o Dígito para Match
+                <i class="fas fa-bullseye text-zenix-green mr-2"></i>Selecione o Dígito de Previsão
               </label>
               <div class="grid grid-cols-5 gap-2">
                 <button
@@ -1067,6 +1067,10 @@ export default {
     isDigitContract() {
       const digitTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
       return digitTypes.includes(this.tradeType);
+    },
+    showDigitsPredictionCard() {
+      const excludedTypes = ['DIGITEVEN', 'DIGITODD'];
+      return this.isDigitContract && !excludedTypes.includes(this.tradeType) && this.latestTick;
     },
     canExecuteOrder() {
       return this.symbol && this.duration && this.amount && !this.isTrading && !this.activeContract;
@@ -2434,10 +2438,9 @@ export default {
 
         // Adicionar barrier se necessário
         if (this.isDigitContract && this.tradeType.includes('DIGIT')) {
-           if (this.tradeType === 'DIGITMATCH' || this.tradeType === 'DIGITDIFF') {
+           const needsBarrier = ['DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(this.tradeType);
+           if (needsBarrier) {
              parameters.barrier = String(this.digitMatchValue !== null ? this.digitMatchValue : (this.lastDigit !== null ? this.lastDigit : 5));
-           } else if (this.tradeType === 'DIGITOVER' || this.tradeType === 'DIGITUNDER') {
-             parameters.barrier = "5";
            }
         }
         
@@ -2982,8 +2985,12 @@ export default {
     executeAIOrder() {
       if (!this.aiRecommendation) return;
       
-      // Registrar a decisão de usar a recomendação da IA
-      console.log('[Chart] Executar AI Order:', this.aiRecommendation.action);
+      // Se a recomendação incluir uma barreira (ex: para Match/Diff/Over/Under), usar ela
+      if (this.aiRecommendation.barrier !== undefined && this.aiRecommendation.barrier !== null) {
+          this.digitMatchValue = Number(this.aiRecommendation.barrier);
+      }
+      
+      console.log('[Chart] Executar AI Order:', this.aiRecommendation.action, 'Barrier:', this.digitMatchValue);
       this.executeTradeWithDirection(this.aiRecommendation.action);
     },
     collectInitialTicks() {
