@@ -1031,11 +1031,14 @@ export default {
             }
         },
 
+        // Localize esta função no seu InvestmentIAView.vue
         handleStrategyRequiredConfirm() {
-            this.showStrategyRequiredModal = false;
-            this.$nextTick(() => {
+            this.showStrategyRequiredModal = false; // Primeiro fecha
+            
+            // Aguarda um pequeno delay (tempo da transição) para abrir o próximo
+            setTimeout(() => {
                 this.openStrategyModal();
-            });
+            }, 100); 
         },
 
         openStrategyModal() {
