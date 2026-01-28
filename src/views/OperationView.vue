@@ -82,6 +82,7 @@
           <component
             v-if="!isMobile || currentView !== 'OperationChart'"
             :is="currentView"
+            ref="operationComponent"
             :account-balance="accountBalanceFormatted"
             :account-balance-value="accountBalanceValue"
             :account-currency="accountCurrency"
@@ -390,6 +391,44 @@ export default {
       if (!this.isComponentMounted()) {
         return;
       }
+
+      // Se o usuário quer análise de dígitos, garantir que estamos no OperationChart e mudar aba
+      if (componentName === 'OperationDigits') {
+        if (this.currentView === 'OperationChart') {
+          if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
+            this.$refs.operationComponent.setTab('digits');
+          }
+          return;
+        } else {
+          // Mudar para chart e depois setar aba
+          this.currentView = 'OperationChart';
+          this.$nextTick(() => {
+            if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
+              this.$refs.operationComponent.setTab('digits');
+            }
+          });
+          return;
+        }
+      }
+
+      // Se mudar explicitamente para Chart, garantir que a aba correta esteja ativa
+      if (componentName === 'OperationChart') {
+        if (this.currentView === 'OperationChart') {
+          if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
+            this.$refs.operationComponent.setTab('chart');
+          }
+          return;
+        } else {
+          this.currentView = 'OperationChart';
+          this.$nextTick(() => {
+            if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
+              this.$refs.operationComponent.setTab('chart');
+            }
+          });
+          return;
+        }
+      }
+
       try {
         this.currentView = componentName;
       } catch (error) {

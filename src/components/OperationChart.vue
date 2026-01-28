@@ -6,9 +6,24 @@
       <div class="col-chart flex-1 flex flex-col gap-5">
         <!-- Chart Container -->
         <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card h-full">
-          <div class="flex items-center justify-between px-6 py-4 flex-shrink-0">
-            <h3 class="text-base font-semibold text-zenix-text" style="text-align: left;">Gráfico</h3>
-            <div class="flex items-center gap-2">
+          <div class="flex items-center justify-between px-6 py-4 flex-shrink-0 border-b border-white/5">
+            <div class="flex items-center gap-6">
+              <button 
+                @click="setTab('chart')"
+                :class="['text-sm font-bold tracking-wider uppercase transition-all duration-300', activeTab === 'chart' ? 'text-zenix-green' : 'text-white/30 hover:text-white/60']"
+              >
+                Análise Gráfica
+              </button>
+              <div class="h-4 w-[1px] bg-white/10"></div>
+              <button 
+                @click="setTab('digits')"
+                :class="['text-sm font-bold tracking-wider uppercase transition-all duration-300', activeTab === 'digits' ? 'text-zenix-green' : 'text-white/30 hover:text-white/60']"
+              >
+                Análise de Dígitos
+              </button>
+            </div>
+
+            <div v-if="activeTab === 'chart'" class="flex items-center gap-2">
               <!-- Botões de Zoom -->
               <div class="flex items-center gap-1 border border-zenix-border rounded-lg overflow-hidden">
                 <button
@@ -61,7 +76,7 @@
           </div>
 
           <!-- Gráfico -->
-          <div id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%; margin: 0; padding: 0;">
+          <div v-show="activeTab === 'chart'" id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%; margin: 0; padding: 0;">
             <!-- Blocking Loader Overlay -->
             <div v-if="isGlobalLoading" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0B0B0B]" style="z-index: 50;">
               <div class="relative w-16 h-16 mb-4">
@@ -75,6 +90,149 @@
             <!-- <div v-else-if="showChartPlaceholder || isLoading" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
               <p class="text-zenix-secondary">Atualizando gráfico...</p>
             </div> -->
+          </div>
+
+          <!-- Digit Analysis Tab -->
+          <div v-if="activeTab === 'digits'" class="flex-1 overflow-y-auto bg-[#0B0B0B] custom-scrollbar">
+            <div class="p-6 space-y-6">
+              <!-- Heatmap Card -->
+              <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="text-sm font-bold tracking-wider uppercase text-white/90">Heatmap Estatístico (0-9)</h3>
+                  <div class="relative group">
+                    <i class="far fa-question-circle text-sm text-zenix-green cursor-help"></i>
+                  </div>
+                </div>
+                
+                <div class="grid grid-cols-5 md:grid-cols-10 gap-2 mb-6">
+                  <div 
+                    v-for="item in digitFrequenciesWithStats" 
+                    :key="'heat-'+item.digit" 
+                    class="flex flex-col items-center gap-2 p-2 rounded-lg transition-all duration-300"
+                    :class="[item.statusClass, item.isHighlighted ? 'ring-1 ring-zenix-green bg-zenix-green/5' : 'bg-white/5']"
+                  >
+                    <span class="text-[10px] font-bold text-white/40">{{ item.percentage }}%</span>
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" :class="item.statusClass + '-pill'">
+                      {{ item.digit }}
+                    </div>
+                    <span class="text-[8px] uppercase tracking-tighter" :class="item.statusClass + '-text'">{{ item.statusText }}</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-center gap-4 pt-4 border-t border-white/5">
+                  <div class="flex items-center gap-2 text-[10px] uppercase font-bold text-white/20">
+                    <div class="w-2 h-2 rounded-full bg-[#10b981]"></div> Baixo
+                  </div>
+                  <div class="flex items-center gap-2 text-[10px] uppercase font-bold text-white/20">
+                    <div class="w-2 h-2 rounded-full bg-[#eab308]"></div> Médio
+                  </div>
+                  <div class="flex items-center gap-2 text-[10px] uppercase font-bold text-white/20">
+                    <div class="w-2 h-2 rounded-full bg-[#f97316]"></div> Alto
+                  </div>
+                  <div class="flex items-center gap-2 text-[10px] uppercase font-bold text-white/20">
+                    <div class="w-2 h-2 rounded-full bg-[#ef4444]"></div> Crítico
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- DVX Gauge -->
+                <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl flex flex-col items-center">
+                  <h3 class="text-sm font-bold tracking-wider uppercase text-white/90 mb-6 self-start">Volatilidade (DVX)</h3>
+                  <div class="relative w-48 h-24 mb-4">
+                    <svg width="192" height="96" class="transform -rotate-1">
+                      <path d="M 20 85 A 75 75 0 0 1 172 85" stroke="rgba(255,255,255,0.05)" stroke-width="12" fill="none"></path>
+                      <path d="M 20 85 A 75 75 0 0 1 60 25" stroke="#10b981" stroke-width="12" fill="none" :stroke-dasharray="90.2" :stroke-dashoffset="dvxGreenOffset"></path>
+                      <path d="M 60 25 A 75 75 0 0 1 132 25" stroke="#eab308" stroke-width="12" fill="none" :stroke-dasharray="102.4" :stroke-dashoffset="dvxYellowOffset"></path>
+                      <path d="M 132 25 A 75 75 0 0 1 172 85" stroke="#ef4444" stroke-width="12" fill="none" :stroke-dasharray="90.2" :stroke-dashoffset="dvxRedOffset"></path>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-end pb-2">
+                       <span class="text-3xl font-black text-white leading-none">{{ dvxValue }}</span>
+                       <span class="text-[10px] font-bold uppercase tracking-widest mt-1" :class="dvxStatusClass + '-text'">{{ dvxStatusText }}</span>
+                    </div>
+                  </div>
+                  <p class="text-[10px] text-white/40 font-medium">Ambiente {{ dvxEnvironmentText }} para operações</p>
+                </div>
+
+                <!-- Parity Meter -->
+                <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl lg:col-span-2">
+                  <h3 class="text-sm font-bold tracking-wider uppercase text-white/90 mb-6">Medidor de Paridade</h3>
+                  <div class="space-y-6">
+                    <div class="space-y-2">
+                      <div class="flex justify-between text-xs font-bold uppercase">
+                        <span class="text-white/40">Par (0,2,4,6,8)</span>
+                        <span class="text-zenix-green">{{ evenPercentage }}%</span>
+                      </div>
+                      <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full bg-zenix-green transition-all duration-700" :style="{ width: evenPercentage + '%' }"></div>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <div class="flex justify-between text-xs font-bold uppercase">
+                        <span class="text-white/40">Ímpar (1,3,5,7,9)</span>
+                        <span class="text-orange-500">{{ oddPercentage }}%</span>
+                      </div>
+                      <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full bg-orange-500 transition-all duration-700" :style="{ width: oddPercentage + '%' }"></div>
+                      </div>
+                    </div>
+                    <div class="pt-4 border-t border-white/5 flex items-center gap-2">
+                      <i class="fas fa-info-circle text-[10px] text-zenix-green"></i>
+                      <span class="text-[10px] font-bold text-white/60 uppercase tracking-tighter">{{ parityRecommendationText }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Frequency Histograms -->
+              <div class="bg-zenix-card border border-white/5 rounded-xl p-6 shadow-xl">
+                 <h3 class="text-sm font-bold tracking-wider uppercase text-white/90 mb-8 text-center">Frequência por Período</h3>
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                   <!-- 25 Ticks -->
+                   <div class="space-y-4">
+                     <p class="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center">Últimos 25 Ticks</p>
+                     <div class="flex items-end justify-between h-32 gap-1 px-2">
+                       <div v-for="item in frequencies25" :key="'h25-'+item.digit" class="flex-1 flex flex-col items-center gap-2">
+                          <div class="w-full bg-white/5 rounded-t-sm relative group" :style="{ height: (item.percentage * 3) + 'px' }" :class="getHistogramBarClass(item.digit, item.percentage, frequencies25)">
+                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-white text-black text-[8px] font-black px-1 rounded transition-opacity">
+                               {{ Math.round(item.percentage) }}%
+                             </div>
+                          </div>
+                          <span class="text-[10px] font-bold text-white/40">{{ item.digit }}</span>
+                       </div>
+                     </div>
+                   </div>
+                   <!-- 50 Ticks -->
+                   <div class="space-y-4">
+                     <p class="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center">Últimos 50 Ticks</p>
+                     <div class="flex items-end justify-between h-32 gap-1 px-2">
+                       <div v-for="item in frequencies50" :key="'h50-'+item.digit" class="flex-1 flex flex-col items-center gap-2">
+                          <div class="w-full bg-white/5 rounded-t-sm relative group" :style="{ height: (item.percentage * 3) + 'px' }" :class="getHistogramBarClass(item.digit, item.percentage, frequencies50)">
+                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-white text-black text-[8px] font-black px-1 rounded transition-opacity">
+                               {{ Math.round(item.percentage) }}%
+                             </div>
+                          </div>
+                          <span class="text-[10px] font-bold text-white/40">{{ item.digit }}</span>
+                       </div>
+                     </div>
+                   </div>
+                   <!-- 100 Ticks -->
+                   <div class="space-y-4">
+                     <p class="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center">Últimos 100 Ticks</p>
+                     <div class="flex items-end justify-between h-32 gap-1 px-2">
+                       <div v-for="item in frequencies100" :key="'h100-'+item.digit" class="flex-1 flex flex-col items-center gap-2">
+                          <div class="w-full bg-white/5 rounded-t-sm relative group" :style="{ height: (item.percentage * 3) + 'px' }" :class="getHistogramBarClass(item.digit, item.percentage, frequencies100)">
+                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-white text-black text-[8px] font-black px-1 rounded transition-opacity">
+                               {{ Math.round(item.percentage) }}%
+                             </div>
+                          </div>
+                          <span class="text-[10px] font-bold text-white/40">{{ item.digit }}</span>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -712,6 +870,12 @@ export default {
       isGlobalLoading: true, // Iniciar com loader bloqueante
       showChartPlaceholder: false,
       tradingMode: 'manual', // 'manual' ou 'ai'
+      activeTab: 'chart', // 'chart' ou 'digits'
+      digitFrequency: { digits: [], parity: { even: 0, odd: 0 } },
+      dvxValue: 0,
+      frequencies25: [],
+      frequencies50: [],
+      frequencies100: [],
       chart: null,
       chartSeries: null,
       symbol: 'R_100',
@@ -919,6 +1083,167 @@ export default {
   computed: {
     isLoading() {
       return this.isLoadingMarkets || this.isLoadingContracts || this.isLoadingTicks;
+    },
+    digitFrequencies() {
+      const counts = new Array(10).fill(0);
+      const totalDigits = this.digitFrequency.digits.length;
+
+      this.digitFrequency.digits.forEach(digit => {
+        if (digit >= 0 && digit <= 9) {
+          counts[digit]++;
+        }
+      });
+
+      return counts.map((count, index) => {
+        const percentage = totalDigits > 0 ? (count / totalDigits) * 100 : 0;
+        return {
+          digit: index,
+          count,
+          percentage: Math.round(percentage * 10) / 10
+        };
+      });
+    },
+    digitFrequenciesWithStats() {
+      const totalDigits = this.digitFrequency.digits.length;
+      if (totalDigits === 0) {
+        return Array.from({ length: 10 }, (_, i) => ({
+          digit: i,
+          percentage: 0,
+          zScore: 0,
+          statusClass: 'status-normal',
+          statusText: 'Normal',
+          barHeight: 42,
+          isHighlighted: false
+        }));
+      }
+      
+      const expected = totalDigits / 10;
+      const frequencies = this.digitFrequencies;
+      
+      return frequencies.map(item => {
+        const count = (item.percentage / 100) * totalDigits;
+        const zScore = expected > 0 ? ((count - expected) / Math.sqrt(expected)).toFixed(1) : 0;
+        const z = parseFloat(zScore);
+        
+        let statusClass, statusText, barHeight;
+        if (z < -1.5) {
+          statusClass = 'status-underheated';
+          statusText = 'Subaquec.';
+          barHeight = 42;
+        } else if (z < -0.5) {
+          statusClass = 'status-normal';
+          statusText = 'Normal';
+          barHeight = 81;
+        } else if (z < 1.5) {
+          statusClass = 'status-heated';
+          statusText = z < 0.5 ? 'Lev. aquec.' : 'Aquecido';
+          barHeight = z < 0.5 ? 93 : 106;
+        } else {
+          statusClass = 'status-overheated';
+          statusText = 'Sobreaquec.';
+          barHeight = 110;
+        }
+        
+        const isHighlighted = item.digit === 7 && z < -1.5;
+        
+        return {
+          digit: item.digit,
+          percentage: item.percentage.toFixed(1),
+          zScore: zScore,
+          statusClass,
+          statusText,
+          barHeight,
+          isHighlighted
+        };
+      });
+    },
+    dvxValueComputed() {
+      if (this.digitFrequency.digits.length < 20) {
+        return 0;
+      }
+      const frequencies = this.digitFrequencies;
+      const expected = 10;
+      let variance = 0;
+      frequencies.forEach(f => {
+        variance += Math.pow(f.percentage - expected, 2);
+      });
+      const stdDev = Math.sqrt(variance / 10);
+      const val = Math.min(100, Math.round((stdDev / 25) * 100));
+      // Sincronizar com data property para watcher ou seletores
+      this.dvxValue = val;
+      return val;
+    },
+    dvxStatusClass() {
+      const val = this.dvxValueComputed;
+      if (val <= 30) return 'dvx-status-green';
+      if (val <= 60) return 'dvx-status-yellow';
+      return 'dvx-status-red';
+    },
+    dvxStatusText() {
+      const val = this.dvxValueComputed;
+      if (val <= 30) return 'Volatilidade Baixa';
+      if (val <= 60) return 'Volatilidade Moderada';
+      return 'Volatilidade Alta';
+    },
+    dvxEnvironmentText() {
+      const val = this.dvxValueComputed;
+      if (val <= 30) return 'estável';
+      if (val <= 60) return 'moderado';
+      return 'arriscado';
+    },
+    evenPercentage() {
+      const total = this.digitFrequency.digits.length;
+      if (total === 0) return 0;
+      const evenCount = this.digitFrequency.digits.filter(d => d % 2 === 0).length;
+      return Math.round((evenCount / total) * 100);
+    },
+    oddPercentage() {
+      return 100 - this.evenPercentage;
+    },
+    parityRecommendationText() {
+      const even = this.evenPercentage;
+      const odd = this.oddPercentage;
+      const diff = Math.abs(even - odd);
+      if (diff < 5) return 'Distribuição equilibrada — sem vantagem clara';
+      return even > 55 ? 'Próximo tick: maior probabilidade de ÍMPAR (ODD)' : 'Próximo tick: maior probabilidade de PAR (EVEN)';
+    },
+    lowCount() {
+      return this.digitFrequency.digits.filter(d => d >= 0 && d <= 4).length;
+    },
+    highCount() {
+      return this.digitFrequency.digits.filter(d => d >= 5 && d <= 9).length;
+    },
+    lowPercentage() {
+      const total = this.digitFrequency.digits.length;
+      return total > 0 ? Math.round((this.lowCount / total) * 100 * 10) / 10 : 0;
+    },
+    highPercentage() {
+      const total = this.digitFrequency.digits.length;
+      return total > 0 ? Math.round((this.highCount / total) * 100 * 10) / 10 : 0;
+    },
+    highLowRecommendationText() {
+      const low = this.lowPercentage;
+      const high = this.highPercentage;
+      const diff = Math.abs(low - high);
+      if (diff < 5) return 'Distribuição equilibrada — sem vantagem clara';
+      return low > 55 ? 'Próximo tick: maior probabilidade de ALTO (OVER 4)' : 'Próximo tick: maior probabilidade de BAIXO (UNDER 5)';
+    },
+    dvxGreenOffset() {
+      const len = 90.2;
+      const fill = Math.min(30, this.dvxValueComputed) / 30;
+      return len * (1 - fill);
+    },
+    dvxYellowOffset() {
+      const len = 102.4;
+      const val = Math.max(0, this.dvxValueComputed - 30);
+      const fill = Math.min(30, val) / 30;
+      return len * (1 - fill);
+    },
+    dvxRedOffset() {
+      const len = 90.2;
+      const val = Math.max(0, this.dvxValueComputed - 60);
+      const fill = Math.min(40, val) / 40;
+      return len * (1 - fill);
     },
     marketsByCategory() {
       const grouped = {};
@@ -2047,9 +2372,101 @@ export default {
           value: value,
           epoch: Math.floor(time)
         };
+
+        // Recalcular frequências de dígitos
+        this.calculateDigitFrequency();
       } catch (error) {
         console.warn('[Chart] Erro ao adicionar tick ao gráfico:', error);
       }
+    },
+    calculateDigitFrequency() {
+      // Usar storedTicks (máximo 1000)
+      const last100Ticks = this.storedTicks.slice(-100);
+      const digits = [];
+      const frequency = {};
+      
+      for (let i = 0; i <= 9; i++) {
+        frequency[i] = 0;
+      }
+      
+      last100Ticks.forEach(tick => {
+        // Extrair dígito usando a mesma lógica de updateDigitInfo para precisão
+        const valueStr = tick.value.toFixed(5);
+        const lastChar = valueStr[valueStr.length - 1];
+        const digit = parseInt(lastChar, 10);
+        
+        if (!isNaN(digit)) {
+          digits.push(digit);
+          frequency[digit] = (frequency[digit] || 0) + 1;
+        }
+      });
+      
+      let evenCount = 0;
+      let oddCount = 0;
+      digits.forEach(d => {
+        if (d % 2 === 0) evenCount++;
+        else oddCount++;
+      });
+      
+      const total = digits.length;
+      this.digitFrequency = {
+        digits,
+        frequency,
+        parity: {
+          even: total > 0 ? Math.round((evenCount / total) * 100) : 0,
+          odd: total > 0 ? Math.round((oddCount / total) * 100) : 0,
+        },
+      };
+
+      // Atualizar frequências para histogramas
+      this.frequencies25 = this.getFrequenciesForCount(25);
+      this.frequencies50 = this.getFrequenciesForCount(50);
+      this.frequencies100 = this.getFrequenciesForCount(100);
+    },
+    getFrequenciesForCount(count) {
+      const digits = this.storedTicks.slice(-count).map(tick => {
+        const valueStr = tick.value.toFixed(5);
+        return parseInt(valueStr[valueStr.length - 1], 10);
+      }).filter(d => !isNaN(d));
+
+      const total = digits.length;
+      const counts = new Array(10).fill(0);
+      
+      digits.forEach(d => {
+        if (d >= 0 && d <= 9) counts[d]++;
+      });
+
+      return counts.map((c, i) => ({
+        digit: i,
+        count: c,
+        percentage: total > 0 ? (c / total) * 100 : 0
+      }));
+    },
+    getHistogramBarClass(digit, percentage, frequencies) {
+      if (!frequencies || frequencies.length === 0) return '';
+      
+      let max = -1;
+      let min = 101;
+      
+      frequencies.forEach(f => {
+        if (f.percentage > max) max = f.percentage;
+        if (f.percentage < min) min = f.percentage;
+      });
+
+      if (percentage === max && max > min) return 'bar-rank-highest';
+      if (percentage === min && min < max) return 'bar-rank-lowest';
+      return 'bar-rank-normal';
+    },
+    setTab(tab) {
+        this.activeTab = tab;
+        // Se voltar para o gráfico, garantir que ele redimensione
+        if (tab === 'chart') {
+            setTimeout(() => {
+                if (this.chart) {
+                    this.chart.resize(this.$refs.chartContainer.clientWidth, this.$refs.chartContainer.clientHeight);
+                }
+            }, 100);
+        }
     },
     openMarketModal() {
       this.showMarketModal = true;
@@ -5038,5 +5455,37 @@ export default {
     100% { opacity: 1; }
   }
 
+  /* Digit Analysis Styles */
+  .status-underheated-pill { background-color: #10b981; color: white; }
+  .status-normal-pill { background-color: #eab308; color: black; }
+  .status-heated-pill { background-color: #f97316; color: white; }
+  .status-overheated-pill { background-color: #ef4444; color: white; }
+
+  .status-underheated-text { color: #10b981; }
+  .status-normal-text { color: #eab308; }
+  .status-heated-text { color: #f97316; }
+  .status-overheated-text { color: #ef4444; }
+
+  .bar-rank-highest { background-color: #22C55E !important; }
+  .bar-rank-lowest { background-color: #EF4444 !important; }
+  .bar-rank-normal { background-color: rgba(255, 255, 255, 0.1) !important; }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .dvx-status-green-text { color: #22C55E; }
+  .dvx-status-yellow-text { color: #FFD058; }
+  .dvx-status-red-text { color: #FF4747; }
 </style>
 
