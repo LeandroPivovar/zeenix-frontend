@@ -202,6 +202,17 @@
                 <a
                     href="#"
                     class="menu-item"
+                    :class="{ active: isMarketsActive }"
+                    @click.prevent="navigateAndClose('/admin/markets')"
+                    data-text="Mercados"
+                >
+                    <i class="fa-solid fa-layer-group w-5 opacity-85"></i>
+                    <span>Mercados</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
                     :class="{ active: isAcademyManagementActive }"
                     @click.prevent="navigateAndClose('/AcademyManagement')"
                     data-text="Gerenciar Academia"
@@ -322,7 +333,8 @@ export default {
                 '/AcademyManagement', 
                 '/SupportItems', 
                 '/markup', 
-                '/PlansManagement'
+                '/PlansManagement',
+                '/admin/markets'
             ];
             const currentPath = this.$route?.path;
             
@@ -343,6 +355,7 @@ export default {
         isExpertsActive() { return this.$route?.path === '/Experts'; },
         isClientesActive() { return this.$route?.path === '/Clientes'; },
         isWebhooksActive() { return this.$route?.path === '/Webhooks'; },
+        isMarketsActive() { return this.$route?.path === '/admin/markets'; },
         isAcademyManagementActive() { 
             return this.$route?.path === '/AcademyManagement' || 
                    this.$route?.path?.startsWith('/AcademyManagement/'); 

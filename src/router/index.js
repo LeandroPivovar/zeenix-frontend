@@ -219,6 +219,12 @@ const routes = [
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
+    path: '/admin/markets',
+    name: 'MarketsAdmin',
+    component: () => import('../views/Admin/MarketsAdminView.vue'),
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
+  },
+  {
     path: '/admin/notifications',
     name: 'NotificationsAdmin',
     component: () => import('../views/Admin/NotificationsAdminView.vue'),
