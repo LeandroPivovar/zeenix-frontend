@@ -549,10 +549,7 @@ export default {
 				// Rolar para o topo
 				window.scrollTo({ top: 0, behavior: 'smooth' });
 				
-				// Resetar loader após emissão (o componente provavelmente será destruído ou escondido pelo pai)
-				setTimeout(() => {
-					this.isStarting = false;
-				}, 1000);
+				// Omitindo reset de isStarting para manter o loader até a transição de componente
 			}, 800);
 		},
 
