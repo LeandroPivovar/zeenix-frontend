@@ -2260,10 +2260,10 @@ export default {
                     this.processingStopEvent = true;
                     window.zenixStopModalActive = true;
                     console.log('[InvestmentActive] 🛡️ [Logs] Triggering Stop Blindado Modal...');
-                    this.loadSessionResult().then(() => {
+                    this.loadSessionResult().finally(() => {
                         this.showStopBlindadoModal = true;
                         this.processingStopEvent = false;
-                    }).catch(() => { this.processingStopEvent = false; });
+                    });
                     return; // Interromper para não mostrar dois modais
                 }
             }
@@ -2283,10 +2283,10 @@ export default {
                     this.processingStopEvent = true;
                     window.zenixStopModalActive = true;
                     console.log('[InvestmentActive] 🛑 [Logs] Stop loss normal detectado nos logs! Mostrando modal...');
-                    this.loadSessionResult().then(() => {
+                    this.loadSessionResult().finally(() => {
                         this.showStopLossModal = true;
                          this.processingStopEvent = false;
-                    }).catch(() => { this.processingStopEvent = false; });
+                    });
                     return; // Interromper
                 }
             }
@@ -2298,6 +2298,7 @@ export default {
                     log.message.includes('Meta de lucro atingida') ||
                     log.message.includes('[META APOLLO]') || 
                     log.message.includes('META ATINGIDA') ||
+                    log.message.includes('Status: Meta Alcançada') || // ✅ Apollo specific
                     log.message.includes('TARGET PROFIT REACHED')
                 )
             );
@@ -2308,10 +2309,10 @@ export default {
                     this.processingStopEvent = true; // Trava para evitar duplo trigger durante o loadSessionResult
                     window.zenixStopModalActive = true;
                     console.log('[InvestmentActive] 🎯 [Logs] Mostrando modal de Meta de Lucro...');
-                    this.loadSessionResult().then(() => {
+                    this.loadSessionResult().finally(() => {
                         this.showTargetProfitModal = true;
                         this.processingStopEvent = false;
-                    }).catch(() => { this.processingStopEvent = false; });
+                    });
                     return; // Interromper
                 }
             }
@@ -2599,10 +2600,10 @@ export default {
                         if (!this.showStopLossModal && !this.showStopBlindadoModal && !this.showTargetProfitModal && !this.processingStopEvent && !window.zenixStopModalActive) {
                              this.processingStopEvent = true;
                              window.zenixStopModalActive = true;
-                             this.loadSessionResult().then(() => {
+                             this.loadSessionResult().finally(() => {
                                 this.showStopLossModal = true;
                                 this.processingStopEvent = false;
-                            }).catch(() => { this.processingStopEvent = false; });
+                            });
                         }
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
@@ -2613,10 +2614,10 @@ export default {
                         if (!this.showStopBlindadoModal && !this.showStopLossModal && !this.showTargetProfitModal && !this.processingStopEvent && !window.zenixStopModalActive) {
                             this.processingStopEvent = true;
                             window.zenixStopModalActive = true;
-                            this.loadSessionResult().then(() => {
+                            this.loadSessionResult().finally(() => {
                                 this.showStopBlindadoModal = true;
                                 this.processingStopEvent = false;
-                            }).catch(() => { this.processingStopEvent = false; });
+                            });
                         }
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
@@ -2627,10 +2628,10 @@ export default {
                         if (!this.showTargetProfitModal && !this.showStopLossModal && !this.showStopBlindadoModal && !this.processingStopEvent && !window.zenixStopModalActive) {
                             this.processingStopEvent = true;
                             window.zenixStopModalActive = true;
-                            this.loadSessionResult().then(() => {
+                            this.loadSessionResult().finally(() => {
                                 this.showTargetProfitModal = true;
                                 this.processingStopEvent = false;
-                            }).catch(() => { this.processingStopEvent = false; });
+                            });
                         }
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
