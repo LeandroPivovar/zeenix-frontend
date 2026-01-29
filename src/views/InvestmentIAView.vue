@@ -3898,8 +3898,11 @@ export default {
     color: #fff;
     cursor: pointer;
     transition: all 0.2s ease;
-    height: 45px;
+    min-height: 64px; /* increased to fit 48px icon */
+    height: auto;
     box-sizing: border-box;
+    display: flex; /* Ensure flex behavior for centering */
+    align-items: center;
 }
 
 .premium-selector-btn:hover {
