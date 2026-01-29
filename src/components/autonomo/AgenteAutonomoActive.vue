@@ -164,17 +164,11 @@
 								</div>
 									<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
 								</div>
-								<div class="text-sm font-bold flex items-center gap-1.5 text-green-500 text-left uppercase">
-									<div class="strategy-icons-inline mr-1" v-if="currentAgentId">
-										<img 
-											v-for="icon in runningAgents.find(a => a.id === currentAgentId)?.icons" 
-											:key="icon" 
-											:src="icon" 
-											class="deriv-svg-icon-small"
-										/>
+								<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
+									<div class="strategy-icons-inline mr-1 text-lg">
+										{{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}
 									</div>
-									<span v-else class="text-lg">{{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}</span>
-									<span>{{ agenteData.estrategia ? agenteData.estrategia.replace('IA ', '') : 'Agente' }}</span>
+									<span class="text-white">{{ agenteData.estrategia ? agenteData.estrategia.replace('IA ', '') : 'Agente' }}</span>
 							</div>
 						</div>
 					</div>
@@ -197,17 +191,16 @@
 								:class="{ 'bg-[#092012]/35': agenteData.id === agent.id }"
 							>
 								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
-									<div class="strategy-icons-inline" v-if="agent.icons">
-										<img v-for="icon in agent.icons" :key="icon" :src="icon" class="deriv-svg-icon-small" />
+									<div class="strategy-icons-inline text-2xl">
+										{{ agent.emoji }}
 									</div>
-									<span v-else>{{ agent.emoji }}</span>
 									<div v-if="agenteData.id === agent.id" class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0c0c0c] flex items-center justify-center">
 										<i class="fas fa-check text-[8px] text-black"></i>
 									</div>
 								</div>
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center justify-between gap-2">
-										<h5 class="text-xs font-bold text-white truncate text-left">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
+										<h5 class="text-xs font-bold text-[#dbdbdb] truncate text-left">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
 										<span v-if="currentAgentId === agent.id" class="text-[8px] text-[#22c55e] font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
 									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line" v-html="formatAgentDescription(agent.description)"></p>
