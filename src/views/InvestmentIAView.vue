@@ -523,11 +523,11 @@ export default {
             selectedStrategy: null,
             showStrategyModal: false,
             allStrategies: [
-                { id: 'atlas', title: 'ATLAS - VOL 50', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%' },
-                { id: 'apollo', title: 'APOLLO - RISE/FALL', marketType: 'Ups e Downs', icons: ['/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg', '/deriv_icons/TradeTypesUpsAndDownsFallIcon.svg'], description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%' },
-                { id: 'nexus', title: 'NEXUS - BARREIRA', marketType: 'Ups e Downs', icons: ['/deriv_icons/TradeTypesHighsAndLowsHigherIcon.svg', '/deriv_icons/TradeTypesHighsAndLowsLowerIcon.svg'], description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%' },
-                { id: 'orion', title: 'ORION - OVER 3', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 54% a 61% - <strong>Retorno:</strong> 56% / 85%' },
-                { id: 'titan', title: 'TITAN - PAR/ÍMPAR', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'], description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-55% - <strong>Retorno:</strong> 85%' }
+                { id: 'atlas', title: 'ATLAS - VOL 50', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%' },
+                { id: 'apollo', title: 'APOLLO - RISE/FALL', marketType: 'Ups e Downs', icons: ['/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg', '/deriv_icons/TradeTypesUpsAndDownsFallIcon.svg'], description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 90% a 95% - <strong>Retorno:</strong> 99%' },
+                { id: 'nexus', title: 'NEXUS - BARREIRA', marketType: 'Ups e Downs', icons: ['/deriv_icons/TradeTypesHighsAndLowsHigherIcon.svg', '/deriv_icons/TradeTypesHighsAndLowsLowerIcon.svg'], description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%' },
+                { id: 'orion', title: 'ORION - OVER 2', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%' },
+                { id: 'titan', title: 'TITAN - PAR/ÍMPAR', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'], description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%' }
             ],
             
             dailyStats: {
@@ -647,11 +647,11 @@ export default {
         
         strategyDescription() {
             const descriptions = {
-                'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%',
-                'apollo': '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%',
-                'nexus': '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%',
-                'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 54% a 61% - <strong>Retorno:</strong> 56% / 85%',
-                'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-55% - <strong>Retorno:</strong> 85%'
+                'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%',
+                'apollo': '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 90% a 95% - <strong>Retorno:</strong> 99%',
+                'nexus': '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%',
+                'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%',
+                'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%'
             };
             return descriptions[this.selectedStrategy] || descriptions.atlas;
         },

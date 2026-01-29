@@ -435,14 +435,14 @@ export default {
 					id: 'zeus',
 					title: 'Agente Zeus',
 					marketType: 'Digits',
-					icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'],
+					icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg', '/deriv_icons/TradeTypesTurboShortIcon.svg'],
 					description: 'Análise: Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação\nAssertividade: 56% a 90%\nRetorno: 56% / 85%'
 				},
 				{
 					id: 'falcon',
 					title: 'Agente Falcon',
 					marketType: 'Digits',
-					icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'],
+					icons: ['/deriv_icons/TradeTypesHighsAndLowsHighIcon.svg', '/deriv_icons/TradeTypesHighsAndLowsLowIcon.svg'],
 					description: 'Análise: Padrão Estatístico (Entropia + Força + Assertividade)\nAssertividade: 60% a 70%\nRetorno: 63.5%'
 				}
 			]
