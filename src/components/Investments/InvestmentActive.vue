@@ -3302,8 +3302,8 @@ export default {
                     const payload = JSON.parse(event.data);
                     console.log('[InvestmentActive] 📡 Evento de trade recebido:', payload);
                     
-                    // ✅ PRIORIDADE MÁXIMA: EVENTOS DE PARADA (Stop Loss, Stop Blindado, Meta Atingida)
-                    if (payload.type === 'stopped_blindado' || payload.type === 'stopped_loss' || payload.type === 'stopped_profit') {
+                    // ✅ PRIORIDADE MÁXIMA: EVENTOS DE PARADA (Stop Loss, Stop Blindado, Meta Atingida, Saldo Insuficiente)
+                    if (payload.type === 'stopped_blindado' || payload.type === 'stopped_loss' || payload.type === 'stopped_profit' || payload.type === 'stopped_insufficient_balance') {
                         console.log(`[InvestmentActive] 🛑 Evento de parada detectado: ${payload.type}`);
                         
                         // Buscar configuração imediatamente para obter session_status atualizado
