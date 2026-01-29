@@ -667,7 +667,7 @@
                                 <div v-else class="text-left">
                                     <div v-for="log in realtimeLogs" :key="log.id" class="mb-3 text-left log-entry flex flex-col">
                                         <!-- Renderização Especial para IAs Selecionadas (Atlas, Titan, Nexus) -->
-                                        <template v-if="['atlas', 'titan', 'nexus'].includes(sessionConfig.strategy)">
+                                        <template v-if="['atlas', 'titan', 'nexus', 'orion'].includes(sessionConfig.strategy)">
                                             <div class="flex items-start">
                                                 <span class="text-gray-500 text-[10px] mr-2 mt-0.5">[{{ log.timestamp }}]</span>
                                                 <span class="mr-1 mt-0.5">{{ log.icon }}</span>
