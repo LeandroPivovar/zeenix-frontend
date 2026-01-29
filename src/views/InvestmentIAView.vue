@@ -526,7 +526,7 @@ export default {
             selectedStrategy: null,
             showStrategyModal: false,
             allStrategies: [
-            allStrategies: [
+
                 { id: 'atlas', title: 'IA Atlas', marketType: 'Digits', icon: '/deriv_icons/TradeTypesDigitsOverIcon.svg', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%' },
                 { id: 'apollo', title: 'IA Apollo', marketType: 'Ups e Downs', icon: '/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 90% a 95% - <strong>Retorno:</strong> 99%' },
                 { id: 'nexus', title: 'IA Nexus', marketType: 'Ups e Downs', icon: '/deriv_icons/TradeTypesHighsAndLowsHigherIcon.svg', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%' },
