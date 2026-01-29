@@ -175,7 +175,7 @@
                                 
                                 <!-- Strategy Description Card (appears when selected) -->
                                 <transition name="slide-fade" mode="out-in">
-                                    <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card mt-6">
+                                    <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card">
                                         <div class="agent-desc-content">
                                             <div class="agent-desc-info">
                                                 <p v-html="strategyDescription"></p>
@@ -3891,14 +3891,14 @@ export default {
 /* Premium Selector Button */
 .premium-selector-btn {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 1rem;
     background-color: #0B0B0B;
     border: 1px solid #1C1C1C;
     border-radius: 0.5rem;
     color: #fff;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 64px; /* increased to fit 48px icon */
+    min-height: 48px; /* Reduced from 64px */
     height: auto;
     box-sizing: border-box;
     display: flex; /* Ensure flex behavior for centering */
@@ -3945,6 +3945,7 @@ export default {
     border-radius: 0.75rem;
     padding: 1rem;
     animation: fadeIn 0.3s ease-out;
+    margin-top: 1rem;
 }
 
 .agent-desc-content {
@@ -4045,7 +4046,7 @@ export default {
     background: #111;
     border: 1px solid #1C1C1C;
     border-radius: 1rem;
-    gap: 1.25rem;
+    gap: 0;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -4093,11 +4094,11 @@ export default {
     font-size: 1.05rem;
     font-weight: 700;
     color: #fff;
-    margin: 0 0 0.35rem 0;
+    margin: 0;
 }
 
 .agent-option-desc {
-    font-size: 0.85rem;
+    font-size: 12px;
     color: #A1A1A1;
     margin: 0;
     line-height: 1.4;
@@ -4107,12 +4108,12 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
+    width: 32px; /* Reduced from 48px */
+    height: 32px; /* Reduced from 48px */
     background-color: rgba(34, 197, 94, 0.15); /* zenix-green with opacity */
-    border-radius: 10px;
+    border-radius: 8px; /* Slightly reduced radius */
     color: #FFFFFF;
-    font-size: 1.5rem;
+    font-size: 1rem; /* Reduced from 1.5rem */
 }
 
 .agent-option-text-col {
