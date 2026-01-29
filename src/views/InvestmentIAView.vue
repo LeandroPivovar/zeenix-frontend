@@ -434,6 +434,7 @@
                     :stoploss-blindado-config="stoplossBlindado"
                     :is-fictitious-balance-active="isFictitiousBalanceActive"
                     :fictitious-balance="fictitiousBalance"
+                    :is-mobile="isMobile"
                         @deactivate="deactivateIA"
                         @reactivate="activateIA"
                         @update-balance="handleLiveBalanceUpdate"
@@ -1421,6 +1422,10 @@ export default {
             } catch (error) {
                 console.error('[InvestmentIAView] Erro ao verificar status da IA:', error);
             }
+        },
+        
+        checkMobile() {
+            this.isMobile = window.innerWidth <= 1024;
         }
     },
     created() {

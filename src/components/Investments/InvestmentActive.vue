@@ -932,6 +932,10 @@ export default {
         fictitiousBalance: {
             type: Number,
             default: 0
+        },
+        isMobile: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
