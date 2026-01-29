@@ -156,7 +156,7 @@
                                     <div class="selector-content">
                                         <div class="selector-left">
                                             <div v-if="selectedStrategyObject" class="strategy-icons-inline mr-2">
-                                                <img :src="selectedStrategyObject.icon" class="deriv-svg-icon-small" />
+                                                <i :class="[selectedStrategyObject.icon, 'text-zenix-green text-lg']"></i>
                                             </div>
                                             <span :class="{ 'placeholder': !selectedStrategy }">
                                                 <template v-if="selectedStrategyObject">
@@ -205,7 +205,7 @@
                                             <div class="agent-option-info">
                                                 <div class="agent-option-simple-row">
                                                     <div class="strategy-icons-inline">
-                                                        <img :src="strategy.icon" class="deriv-svg-icon" />
+                                                        <i :class="[strategy.icon, 'text-zenix-green text-xl']"></i>
                                                     </div>
                                                     <div class="agent-option-text-col">
                                                         <h4 class="agent-option-title">{{ strategy.title }}</h4>
@@ -527,11 +527,12 @@ export default {
             showStrategyModal: false,
             allStrategies: [
 
-                { id: 'atlas', title: 'IA Atlas', marketType: 'Digits', icon: '/deriv_icons/TradeTypesDigitsOverIcon.svg', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%' },
-                { id: 'apollo', title: 'IA Apollo', marketType: 'Ups e Downs', icon: '/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 90% a 95% - <strong>Retorno:</strong> 99%' },
-                { id: 'nexus', title: 'IA Nexus', marketType: 'Ups e Downs', icon: '/deriv_icons/TradeTypesHighsAndLowsHigherIcon.svg', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%' },
-                { id: 'orion', title: 'IA Orion', marketType: 'Digits', icon: '/deriv_icons/TradeTypesDigitsOverIcon.svg', description: '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%' },
-                { id: 'titan', title: 'IA Titan', marketType: 'Digits', icon: '/deriv_icons/TradeTypesDigitsEvenIcon.svg', description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%' }
+            allStrategies: [
+                { id: 'atlas', title: 'IA Atlas', marketType: 'Digits', icon: 'fas fa-brain', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%' },
+                { id: 'apollo', title: 'IA Apollo', marketType: 'Ups e Downs', icon: 'fas fa-rocket', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 90% a 95% - <strong>Retorno:</strong> 99%' },
+                { id: 'nexus', title: 'IA Nexus', marketType: 'Ups e Downs', icon: 'fas fa-share-alt', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%' },
+                { id: 'orion', title: 'IA Orion', marketType: 'Digits', icon: 'fas fa-star', description: '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%' },
+                { id: 'titan', title: 'IA Titan', marketType: 'Digits', icon: 'fas fa-shield-alt', description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%' }
             ],
             
             dailyStats: {
