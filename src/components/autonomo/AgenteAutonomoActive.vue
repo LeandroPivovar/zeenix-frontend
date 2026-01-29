@@ -200,7 +200,7 @@
 								</div>
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center justify-between gap-2">
-										<h5 class="text-xs font-bold text-[#dbdbdb] truncate text-left">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
+										<h5 class="text-xs font-bold truncate text-left" :class="agenteData.id === agent.id ? 'text-green-500' : 'text-[#dbdbdb]'">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
 										<span v-if="currentAgentId === agent.id" class="text-[8px] text-[#22c55e] font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
 									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line" v-html="formatAgentDescription(agent.description)"></p>
@@ -670,9 +670,9 @@
 
 	<!-- Modal de Stop (Novos) -->
 	<!-- Modal de Stop (Novos) -->
-	<StopLossModal v-if="showNewStopLossModal" :visible="true" @confirm="handleCloseNewStopModal('showNewStopLossModal')" @close="handleCloseNewStopModal('showNewStopLossModal')" />
-	<TargetProfitModal v-if="showNewTargetProfitModal" :visible="true" @confirm="handleCloseNewStopModal('showNewTargetProfitModal')" @close="handleCloseNewStopModal('showNewTargetProfitModal')" />
-	<StopBlindadoModal v-if="showNewStopBlindadoModal" :visible="true" @confirm="handleCloseNewStopModal('showNewStopBlindadoModal')" @close="handleCloseNewStopModal('showNewStopBlindadoModal')" />
+	<StopLossModal v-if="showNewStopLossModal" :visible="true" :result="sessionStats?.netProfit || 0" @confirm="handleCloseNewStopModal('showNewStopLossModal')" @close="handleCloseNewStopModal('showNewStopLossModal')" />
+	<TargetProfitModal v-if="showNewTargetProfitModal" :visible="true" :result="sessionStats?.netProfit || 0" @confirm="handleCloseNewStopModal('showNewTargetProfitModal')" @close="handleCloseNewStopModal('showNewTargetProfitModal')" />
+	<StopBlindadoModal v-if="showNewStopBlindadoModal" :visible="true" :result="sessionStats?.netProfit || 0" @confirm="handleCloseNewStopModal('showNewStopBlindadoModal')" @close="handleCloseNewStopModal('showNewStopBlindadoModal')" />
 	
 	<!-- Novos Modais de Ajuste de Precisão -->
 	<StopLossAjusteModal 
@@ -872,7 +872,12 @@
 					}
 				],
 				hideValues: false,
-				pollingInterval: null
+				pollingInterval: null,
+                
+                // Flags para evitar reabertura de modais já vistos na sessão
+                stopLossAcknowledged: false,
+                targetProfitAcknowledged: false,
+                stopBlindadoAcknowledged: false
 			};
 		},
 		mounted() {
@@ -1883,7 +1888,7 @@
                 );
                 
                 if (hasNormalStopLossMessage) {
-                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !window.zenixStopModalActive) {
+                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !window.zenixStopModalActive && !this.stopLossAcknowledged) {
                         window.zenixStopModalActive = true;
                         console.log('[AgenteAutonomo] 🛑 [Logs] Stop Loss Detected!');
                         
@@ -1910,7 +1915,7 @@
                 );
 
                 if (hasProfitMessage) {
-                    if (!this.showNewTargetProfitModal && !this.showNewStopLossModal && !this.showNewStopBlindadoModal && !window.zenixStopModalActive) {
+                    if (!this.showNewTargetProfitModal && !this.showNewStopLossModal && !this.showNewStopBlindadoModal && !window.zenixStopModalActive && !this.targetProfitAcknowledged) {
                         window.zenixStopModalActive = true;
                         console.log('[AgenteAutonomo] 🎯 [Logs] Profit Goal Detected!');
                         this.showNewTargetProfitModal = true;
@@ -1929,6 +1934,11 @@
 			handleCloseNewStopModal(modalVar) {
 				this[modalVar] = false;
 				window.zenixStopModalActive = false;
+                
+                // Marcar como reconhecido para não abrir novamente nesta sessão
+                if (modalVar === 'showNewStopLossModal') this.stopLossAcknowledged = true;
+                if (modalVar === 'showNewTargetProfitModal') this.targetProfitAcknowledged = true;
+                if (modalVar === 'showNewStopBlindadoModal') this.stopBlindadoAcknowledged = true;
 			},
 			fetchAllStats() {
 				this.fetchAgentConfig(); 
