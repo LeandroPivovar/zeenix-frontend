@@ -4133,6 +4133,12 @@ export default {
     color: #22C55E;
 }
 
+.agent-option-premium .strategy-icon-box {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+}
+
 /* Animations */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
@@ -4151,7 +4157,7 @@ export default {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;
-        justify-content: center !important;
+        justify-content: flex-start !important;
         gap: 1.25rem !important;
     }
     
