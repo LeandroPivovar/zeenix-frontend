@@ -1133,7 +1133,7 @@ export default {
             const strategyLower = strategy.toLowerCase();
 
             if (strategyLower === 'atlas') {
-                return 'Volatility 100 Index';
+                return 'Volatility 50 Index';
             }
 
             // ✅ Se ORION/TITAN/NEXUS/APOLLO está ativa, retornar Volatility 100 Index
