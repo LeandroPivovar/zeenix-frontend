@@ -358,18 +358,41 @@
 							<div 
 								v-for="agent in availableAgents" 
 								:key="agent.id"
-								class="agent-option-simple-row"
+								class="agent-card-premium"
 								:class="{ 'active': selectedAgent === agent.id }"
 								@click="selectAgent(agent.id)"
 							>
-								<div class="strategy-icons-inline">
-									<img v-for="icon in agent.icons" :key="icon" :src="icon" class="deriv-svg-icon" />
+								<!-- Left: Avatar/Video -->
+								<div class="agent-avatar-container">
+									<div class="agent-avatar-mask">
+										<video 
+											v-if="agent.video" 
+											:src="agent.video" 
+											class="agent-video-avatar" 
+											autoplay 
+											loop 
+											muted 
+											playsinline
+										></video>
+										<div v-else class="agent-image-avatar">
+											<img :src="agent.icons[0]" class="deriv-svg-icon" />
+										</div>
+									</div>
 								</div>
-								<div class="agent-option-info">
-									<h4 class="agent-option-title">{{ agent.title.toUpperCase() }} - {{ agent.marketType }}</h4>
+
+								<!-- Middle: Info -->
+								<div class="agent-info-premium">
+									<h4 class="agent-title-premium">{{ agent.title.replace('Agente ', '') }}</h4>
+									<p class="agent-subtitle-premium">{{ agent.subtitle }}</p>
 								</div>
-								<div class="agent-option-check">
-									<i class="fas" :class="selectedAgent === agent.id ? 'fa-check-circle' : 'fa-circle'"></i>
+
+								<!-- Right: Stats & Graph -->
+								<div class="agent-stats-premium">
+									<!-- Mini Graph SVG -->
+									<svg class="agent-mini-graph" width="60" height="24" viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+										<path d="M2 22L12 16L22 19L32 10L42 14L58 2" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+									</svg>
+									<span class="agent-percentage-premium">{{ agent.percentage }}</span>
 								</div>
 							</div>
 						</div>
@@ -434,15 +457,22 @@ export default {
 				{
 					id: 'zeus',
 					title: 'Agente Zeus',
+					subtitle: 'Análise de Fluxo',
+					percentage: '+3.15%',
+					graphColor: '#22c55e',
 					marketType: 'Digits',
-					icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg', '/deriv_icons/TradeTypesTurboShortIcon.svg'],
+					icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg'],
 					description: 'Análise: Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação\nAssertividade: 56% a 90%\nRetorno: 56% / 85%'
 				},
 				{
 					id: 'falcon',
 					title: 'Agente Falcon',
+					subtitle: 'Barreira de segurança',
+					percentage: '+2.89%',
+					graphColor: '#22c55e',
+					video: '/Animação_de_Voo_Gerada.mp4',
 					marketType: 'Digits',
-					icons: ['/deriv_icons/TradeTypesHighsAndLowsHighIcon.svg', '/deriv_icons/TradeTypesHighsAndLowsLowIcon.svg'],
+					icons: ['/deriv_icons/TradeTypesHighsAndLowsHighIcon.svg'],
 					description: 'Análise: Padrão Estatístico (Entropia + Força + Assertividade)\nAssertividade: 60% a 70%\nRetorno: 63.5%'
 				}
 			]
@@ -1711,5 +1741,105 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     cursor: not-allowed;
     opacity: 0.6;
     border-color: #1c1c1c !important;
+}
+
+/* --- PREMIUM AGENT CARD STYLES --- */
+.agent-card-premium {
+    display: flex;
+    align-items: center;
+    background: #000000;
+    border: 1px solid #1C1C1C;
+    border-radius: 24px;
+    padding: 16px 24px;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 80px;
+}
+
+.agent-card-premium:hover {
+    border-color: #333;
+    background: #050505;
+}
+
+.agent-card-premium.active {
+    border-color: #22C55E;
+    box-shadow: 0 0 0 1px #22C55E;
+}
+
+/* Avatar Section */
+.agent-avatar-container {
+    flex-shrink: 0;
+}
+
+.agent-avatar-mask {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #333;
+}
+
+.agent-video-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.agent-image-avatar {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px; /* Espaço para o ícone não tocar as bordas */
+}
+
+/* Info Section */
+.agent-info-premium {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.agent-title-premium {
+    font-size: 18px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.agent-subtitle-premium {
+    font-size: 13px;
+    color: #666666;
+    margin: 2px 0 0 0;
+    font-weight: 400;
+}
+
+/* Stats Section */
+.agent-stats-premium {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.agent-mini-graph {
+    opacity: 0.8;
+}
+
+.agent-percentage-premium {
+    color: #22C55E;
+    font-size: 16px;
+    font-weight: 700;
 }
 </style>
