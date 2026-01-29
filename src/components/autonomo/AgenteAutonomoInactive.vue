@@ -377,15 +377,24 @@
 				</div>
 			</div>
 		</Teleport>
+
+		<!-- Invalid Params Modal -->
+		<InvalidParamsModal 
+			:visible="showInvalidParamsModal"
+			:message="invalidParamsMessage"
+			@confirm="showInvalidParamsModal = false"
+		/>
 	</div> <!-- End of layout-content-agent-autonomo -->
 </template>
 
 <script>
+import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 
 export default {
 	// *** MODIFICAÇÃO 2: Nome do componente corrigido ***
 	name: 'AgenteAutonomoInactive',
 	components: {
+		InvalidParamsModal
 	},
 	props: {
 		accountBalance: {
@@ -419,6 +428,8 @@ export default {
 			limitePerda: 100.00,
 			showAgentSelectorModal: false,
 			isStarting: false,
+			showInvalidParamsModal: false,
+			invalidParamsMessage: '',
 			allAgents: [
 				{
 					id: 'zeus',
@@ -526,6 +537,28 @@ export default {
 				initialStake: this.valorOperacaoNumero,
 				stopLossType: this.stopLossBlindado ? 'blindado' : 'normal', // ✅ FIX: Send stop type
 			};
+
+			// 1.5. Validação de parâmetros
+			if (configData.initialStake <= 0) {
+				this.isStarting = false;
+				this.invalidParamsMessage = 'O valor de entrada (stake base) não pode ser zero.';
+				this.showInvalidParamsModal = true;
+				return;
+			}
+
+			if (configData.initialStake > configData.goalValue) {
+				this.isStarting = false;
+				this.invalidParamsMessage = 'O valor de entrada não pode ser maior que a Meta de Lucro (Stop Win).';
+				this.showInvalidParamsModal = true;
+				return;
+			}
+
+			if (configData.initialStake > configData.stopValue) {
+				this.isStarting = false;
+				this.invalidParamsMessage = 'O valor de entrada não pode ser maior que o Limite de Perda (Stop Loss).';
+				this.showInvalidParamsModal = true;
+				return;
+			}
 
 			// 2. Atualiza os valores no componente pai antes de iniciar
 			if (this.$parent.goalValue !== undefined) {
