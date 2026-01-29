@@ -1058,7 +1058,7 @@ export default {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.8);
-  z-index: 9999;
+  z-index: 20000;
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
