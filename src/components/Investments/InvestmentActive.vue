@@ -1136,9 +1136,14 @@ export default {
                 return 'Volatility 50 Index';
             }
 
-            // ✅ Se ORION/TITAN/NEXUS/APOLLO está ativa, retornar Volatility 100 Index
-            if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
+            // ✅ Se ORION/TITAN/NEXUS está ativa, retornar Volatility 100 Index
+            if (['orion', 'titan', 'nexus'].includes(strategyLower)) {
                 return 'Volatility 100 Index';
+            }
+
+            // ✅ Se APOLLO está ativa, retornar Volatility 10 Index
+            if (strategyLower === 'apollo') {
+                return 'Volatility 10 Index';
             }
             
             // Se Trinity está ativa, retornar mercado Trinity
