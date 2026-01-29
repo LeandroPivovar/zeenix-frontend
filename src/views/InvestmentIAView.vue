@@ -36,14 +36,14 @@
                 <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
                     <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
                         <!-- Header Desktop -->
-                        <div class="mb-6 ai-vision-header-desktop">
+                        <div v-if="!isMobile" class="mb-6 ai-vision-header-desktop">
                             <div class="text-left">
                                 <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração da IA</h1>
                                 <p class="text-sm text-zenix-secondary">Escolha um dos Agentes de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
                             </div>
                         </div>
                         <!-- Header Mobile -->
-                        <div class="mb-6 ai-vision-header-mobile">
+                        <div v-if="isMobile" class="mb-6 ai-vision-header-mobile">
                             <div class="flex items-center justify-between">
                                 <div class="text-left">
                                     <h1 class="text-xl font-bold text-zenix-text mb-1">Configuração da IA</h1>
@@ -56,7 +56,7 @@
                         </div>
                         <div class="grid grid-cols-12 gap-5">
                             <!-- AI Visualization Area -->
-                            <div class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border-2 border-zenix-green/30 flex items-center justify-center relative ai-visualization-area">
+                            <div v-if="!isMobile" class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border-2 border-zenix-green/30 flex items-center justify-center relative ai-visualization-area">
                                 <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/5 via-transparent to-zenix-green/10"></div>
                                 <!-- Animated Grid Background -->
                                 <div class="absolute inset-0 opacity-20">
@@ -94,7 +94,7 @@
                                 </div>
                             </div>
                             <!-- Status Cards -->
-                            <div class="col-span-7 grid grid-cols-2 gap-4 status-cards-container">
+                            <div :class="isMobile ? 'col-span-12' : 'col-span-7'" class="grid grid-cols-2 gap-4 status-cards-container">
                                 <!-- Card 1: ESTRATÉGIAS -->
                                 <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
                                     <div class="flex items-center justify-center gap-2 mb-2">
@@ -102,7 +102,7 @@
                                         <p class="text-[10px] text-white uppercase font-bold status-label">ESTRATÉGIAS</p>
                                     </div>
                                     <p class="text-xs text-white status-value">5 IAs Especializadas</p>
-                                    <p class="text-xs text-zenix-label mt-1 status-description">IAs para diferentes perfis</p>
+                                    <p v-if="!isMobile" class="text-xs text-zenix-label mt-1 status-description">IAs para diferentes perfis</p>
                                 </div>
                                 <!-- Card 2: DESEMPENHO -->
                                 <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
@@ -111,7 +111,7 @@
                                         <p class="text-[10px] text-white uppercase font-bold status-label">DESEMPENHO</p>
                                     </div>
                                     <p class="text-xs text-white status-value">60% a 75%</p>
-                                    <p class="text-xs text-zenix-label mt-1 status-description">Varia por estratégia e modo</p>
+                                    <p v-if="!isMobile" class="text-xs text-zenix-label mt-1 status-description">Varia por estratégia e modo</p>
                                 </div>
                                 <!-- Card 3: CONTROLE -->
                                 <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
@@ -120,7 +120,7 @@
                                         <p class="text-[10px] text-white uppercase font-bold status-label">CONTROLE</p>
                                     </div>
                                     <p class="text-xs text-white status-value">Parcial com Supervisão</p>
-                                    <p class="text-xs text-zenix-label mt-1 status-description">Você decide quando operar</p>
+                                    <p v-if="!isMobile" class="text-xs text-zenix-label mt-1 status-description">Você decide quando operar</p>
                                 </div>
                                 <!-- Card 4: SEGURANÇA -->
                                 <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
@@ -129,7 +129,7 @@
                                         <p class="text-[10px] text-white uppercase font-bold status-label">SEGURANÇA</p>
                                     </div>
                                     <p class="text-xs text-white status-value">Stop Loss Duplo</p>
-                                    <p class="text-xs text-zenix-label mt-1 status-description">Normal + Blindado automáticos</p>
+                                    <p v-if="!isMobile" class="text-xs text-zenix-label mt-1 status-description">Normal + Blindado automáticos</p>
                                 </div>
                             </div>
                         </div>
@@ -3882,8 +3882,7 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(2px);
+    background-color: rgba(0, 0, 0, 0.85); /* Increased opacity instead of blur */
     z-index: 10001;
     cursor: pointer;
 }
@@ -3983,8 +3982,7 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.85); /* Increased opacity instead of blur */
     z-index: 10000;
     display: flex;
     align-items: center;

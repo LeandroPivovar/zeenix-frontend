@@ -2,7 +2,7 @@
     <div class="investment-active-wrapper">
         <main class="investment-active-main">
             <!-- Desktop: Layout Original - Performance Summary Cards -->
-            <section id="compact-performance-panel" class="mb-6 desktop-performance-panel">
+            <section v-if="!isMobile" id="compact-performance-panel" class="mb-6 desktop-performance-panel">
                 <div id="iya1j" class="grid grid-cols-12 gap-3" style="width: 100%; box-sizing: border-box;">
                     <!-- Card 1 - Saldo Total -->
                     <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
@@ -163,7 +163,7 @@
             </section>
             
             <!-- Mobile: Card Unificado: Header + Saldo + Resultado + Trades + Ordem -->
-            <section id="mobile-compact-performance-panel" class="mb-6 mobile-performance-panel">
+            <section v-if="isMobile" id="mobile-compact-performance-panel" class="mb-6 mobile-performance-panel">
                 <div class="bg-[#0B0B0B]/80 border-2 border-[#1C1C1C] rounded-2xl p-4 premium-card relative overflow-hidden">
                     <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                     <div class="relative z-10">
