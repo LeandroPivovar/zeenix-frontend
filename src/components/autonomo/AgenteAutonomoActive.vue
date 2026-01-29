@@ -669,9 +669,10 @@
     </Teleport>
 
 	<!-- Modal de Stop (Novos) -->
-	<StopLossModal v-if="showNewStopLossModal" @close="handleCloseNewStopModal('showNewStopLossModal')" />
-	<TargetProfitModal v-if="showNewTargetProfitModal" @close="handleCloseNewStopModal('showNewTargetProfitModal')" />
-	<StopBlindadoModal v-if="showNewStopBlindadoModal" @close="handleCloseNewStopModal('showNewStopBlindadoModal')" />
+	<!-- Modal de Stop (Novos) -->
+	<StopLossModal v-if="showNewStopLossModal" :visible="true" @confirm="handleCloseNewStopModal('showNewStopLossModal')" @close="handleCloseNewStopModal('showNewStopLossModal')" />
+	<TargetProfitModal v-if="showNewTargetProfitModal" :visible="true" @confirm="handleCloseNewStopModal('showNewTargetProfitModal')" @close="handleCloseNewStopModal('showNewTargetProfitModal')" />
+	<StopBlindadoModal v-if="showNewStopBlindadoModal" :visible="true" @confirm="handleCloseNewStopModal('showNewStopBlindadoModal')" @close="handleCloseNewStopModal('showNewStopBlindadoModal')" />
 	
 	<!-- Novos Modais de Ajuste de Precisão -->
 	<StopLossAjusteModal 
