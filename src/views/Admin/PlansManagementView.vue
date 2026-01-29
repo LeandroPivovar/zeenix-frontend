@@ -942,6 +942,8 @@ body {
 
 .dashboard-content-wrapper {
     flex-grow: 1;
+    margin-left: 280px;
+    width: calc(100% - 280px);
     transition: margin-left 0.3s ease;
     min-height: 100vh;
     display: flex;
@@ -1072,6 +1074,13 @@ body {
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease-out forwards; 
     padding-right: 15px;
+}
+
+@media (min-width: 1025px) {
+    .form-plan {
+        margin-left: 280px;
+        width: calc(100% - 280px);
+    }
 }
 
 .form-plan::-webkit-scrollbar { width: 8px; }
@@ -1353,6 +1362,7 @@ body {
     background-color: #1f1f1f;
     border-radius: 8px;
     padding: 0 20px 20px 20px;
+    margin-top: 1rem;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     width: 100%;
     overflow-x: scroll; 
@@ -1649,6 +1659,13 @@ body {
 .features-modal {
     max-width: 600px !important;
     width: 90% !important;
+}
+
+@media (min-width: 1025px) {
+    .features-modal {
+        margin-left: 280px;
+        width: calc(90% - 280px) !important;
+    }
 }
 
 .features-section {

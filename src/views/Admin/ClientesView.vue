@@ -826,7 +826,7 @@ export default {
 /* Container principal com o cabeçalho */
 .container {
 	width: 100%; /* Garante que o container utilize o espaço disponível */
-	margin: 0 auto;
+	margin: 2rem auto;
 }
 
 h1 {
@@ -1357,6 +1357,13 @@ p {
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
+}
+
+@media (min-width: 1025px) {
+    .modal-content {
+        margin-left: 280px;
+        width: calc(100% - 280px);
+    }
 }
 
 .modal-content.small-modal {
