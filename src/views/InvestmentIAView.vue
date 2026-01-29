@@ -1422,10 +1422,6 @@ export default {
             } catch (error) {
                 console.error('[InvestmentIAView] Erro ao verificar status da IA:', error);
             }
-        },
-        
-        checkMobile() {
-            this.isMobile = window.innerWidth <= 1024;
         }
     },
     created() {
