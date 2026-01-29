@@ -666,8 +666,8 @@
                                 
                                 <div v-else class="text-left">
                                     <div v-for="log in realtimeLogs" :key="log.id" class="mb-3 text-left log-entry flex flex-col">
-                                        <!-- Renderização Especial para IAs Selecionadas (Atlas, Titan) -->
-                                        <template v-if="['atlas', 'titan'].includes(sessionConfig.strategy)">
+                                        <!-- Renderização Especial para IAs Selecionadas (Atlas, Titan, Nexus) -->
+                                        <template v-if="['atlas', 'titan', 'nexus'].includes(sessionConfig.strategy)">
                                             <div class="flex items-start">
                                                 <span class="text-gray-500 text-[10px] mr-2 mt-0.5">[{{ log.timestamp }}]</span>
                                                 <span class="mr-1 mt-0.5">{{ log.icon }}</span>
@@ -706,8 +706,8 @@
                                 
                                 <div v-else class="mobile-register-cards-container">
                                     <div v-for="log in realtimeLogs" :key="log.id" class="mobile-register-card pb-3 border-b border-[#1C1C1C] last:border-0">
-                                        <!-- Refined Mobile Format (Atlas, Titan) -->
-                                        <template v-if="['atlas', 'titan'].includes(sessionConfig.strategy)">
+                                        <!-- Refined Mobile Format (Atlas, Titan, Nexus) -->
+                                        <template v-if="['atlas', 'titan', 'nexus'].includes(sessionConfig.strategy)">
                                             <div class="flex items-start">
                                                 <span class="mobile-register-time text-[9px] mr-2 mt-0.5">[{{ log.timestamp }}]</span>
                                                 <span class="mr-1 text-xs">{{ log.icon }}</span>
