@@ -156,7 +156,9 @@
                                     <div class="selector-content">
                                         <div class="selector-left">
                                             <div v-if="selectedStrategyObject" class="strategy-icons-inline mr-2">
-                                                <i :class="[selectedStrategyObject.icon, 'text-zenix-green text-lg']"></i>
+                                                <div class="strategy-icon-box">
+                                                    <i :class="selectedStrategyObject.icon"></i>
+                                                </div>
                                             </div>
                                             <span :class="{ 'placeholder': !selectedStrategy }">
                                                 <template v-if="selectedStrategyObject">
@@ -205,7 +207,9 @@
                                             <div class="agent-option-info">
                                                 <div class="agent-option-simple-row">
                                                     <div class="strategy-icons-inline">
-                                                        <i :class="[strategy.icon, 'text-zenix-green text-xl']"></i>
+                                                        <div class="strategy-icon-box">
+                                                            <i :class="strategy.icon"></i>
+                                                        </div>
                                                     </div>
                                                     <div class="agent-option-text-col">
                                                         <h4 class="agent-option-title">{{ strategy.title }}</h4>
@@ -4093,6 +4097,18 @@ export default {
     color: #A1A1A1;
     margin: 0;
     line-height: 1.3;
+}
+
+.strategy-icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background-color: rgba(34, 197, 94, 0.2); /* zenix-green with opacity */
+    border-radius: 8px;
+    color: #FFFFFF;
+    font-size: 1rem;
 }
 
 .agent-option-text-col {
