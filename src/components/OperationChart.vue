@@ -687,20 +687,20 @@
                   <div class="category-icon-wrapper">
                     <svg v-if="category === 'Índices Contínuos'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 11H22V17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <svg v-else-if="category === 'Criptomoedas'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
-                      <path d="M9 12H15M12 9V15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                      <path d="M9 12H15M12 9V15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
                     </svg>
                     <svg v-else-if="category === 'Major Pairs' || category === 'Forex Minors' || category === 'Forex Exotics'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
-                        <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M15 9L9 15M9 9L15 15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
                         <path d="M12 2V22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
                     </svg>
                     <svg v-else-if="category === 'Metais'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M6 4L18 4L21 9L12 21L3 9L6 4Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M3 9H21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3 9H21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                         <path d="M12 21V9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <i v-else class="fas fa-ellipsis-h text-white"></i>
@@ -746,22 +746,22 @@
                   <div class="category-icon-wrapper">
                     <svg v-if="category.id === 'rising_falling'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 11H22V17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <svg v-else-if="category.id === 'digits'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M4 9H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                       <path d="M4 15H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M10 3L8 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M16 3L14 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M10 3L8 21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 3L14 21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <svg v-else-if="category.id === 'accumulators'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M2 17L12 22L22 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M2 17L12 22L22 17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                       <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <svg v-else-if="category.id === 'multipliers'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
-                      <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                      <path d="M15 9L9 15M9 9L15 15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
                     </svg>
                     <i v-else :class="category.icon"></i>
                   </div>
@@ -775,7 +775,7 @@
                     :class="['category-item-btn', { 'active': selectedTradeTypeGroup === item.value }]"
                   >
                     <div class="flex items-center gap-2">
-                      <img v-if="item.icon" :src="`/deriv_icons/${item.icon}`" class="w-5 h-5 trade-type-icon-green" alt="" />
+                      <img v-if="item.icon" :src="`/deriv_icons/${item.icon}`" class="w-5 h-5 contrast-[1.5] brightness-[1.5]" alt="" />
                       <span>{{ item.label }}</span>
                     </div>
                   </button>
@@ -1006,9 +1006,47 @@ export default {
           label: 'Uma Barreira',
           icon: 'fas fa-bullseye',
           items: [
+            { value: 'touch_no_touch', label: 'Toca / Não Toca', icon: 'TradeTypesHighsAndLowsTouchIcon.svg', directions: [
+                { value: 'ONETOUCH', label: 'Toca' },
+                { value: 'NOTOUCH', label: 'Não Toca' }
+              ]
+            },
             { value: 'higher_lower', label: 'Maior / Menor', icon: 'TradeTypesHighsAndLowsHigherIcon.svg', directions: [
                 { value: 'HIGHER', label: 'Maior' },
                 { value: 'LOWER', label: 'Menor' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'two_barriers',
+          label: 'Duas Barreiras',
+          icon: 'fas fa-shield-alt',
+          items: [
+            { value: 'in_out', label: 'Permanece Dentro / Sai Fora', icon: 'TradeTypesInsAndOutsStaysInIcon.svg', directions: [
+                { value: 'RANGE', label: 'Permanece Dentro' },
+                { value: 'UPORDOWN', label: 'Sai Fora' }
+              ]
+            },
+            { value: 'ends_in_out', label: 'Termina Dentro / Termina Fora', icon: 'TradeTypesInsAndOutsEndsInIcon.svg', directions: [
+                { value: 'EXPIRYRANGE', label: 'Termina Dentro' },
+                { value: 'EXPIRYMISS', label: 'Termina Fora' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'no_expiry',
+          label: 'Sem Vencimento',
+          icon: 'fas fa-bolt',
+          items: [
+            { value: 'multipliers_mult', label: 'Multiplicadores', icon: 'TradeTypesMultipliersUpIcon.svg', directions: [
+                { value: 'MULTUP', label: 'Alta' },
+                { value: 'MULTDOWN', label: 'Baixa' }
+              ]
+            },
+            { value: 'accumulators_accu', label: 'Acumuladores', icon: 'TradeTypesAccumulatorStayInIcon.svg', directions: [
+                { value: 'ACCU', label: 'Acumuladores' }
               ]
             }
           ]
@@ -5450,14 +5488,4 @@ export default {
   .dvx-status-green-text { color: #22C55E; }
   .dvx-status-yellow-text { color: #FFD058; }
   .dvx-status-red-text { color: #FF4747; }
-
-  /* Corrigir ícones do tipo de negociação para verde */
-  .trade-type-icon-green {
-    filter: invert(56%) sepia(85%) saturate(417%) hue-rotate(94deg) brightness(96%) contrast(92%);
-    /* Ajuste fino para o verde #22C55E */
-    filter: brightness(0) saturate(100%) invert(64%) sepia(35%) saturate(1518%) hue-rotate(91deg) brightness(96%) contrast(92%);
-    contrast: 1.5;
-    brightness: 1.5;
-  }
 </style>
-
