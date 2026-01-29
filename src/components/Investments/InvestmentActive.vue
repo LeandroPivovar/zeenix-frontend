@@ -1014,6 +1014,7 @@ export default {
             historyPollingInterval: null, // Polling para histórico de operações
             lastLogTimestamp: null, // Timestamp do último log recebido (para detectar novos)
             tradeEventsSource: null,
+            sessionConfigPollingTimeout: null, // Timeout para polling de config
             
             // Estado de desativação
             isDeactivating: false,
@@ -2520,18 +2521,47 @@ export default {
         },
         
         startStatsUpdates() {
-            // Executar apenas uma atualização inicial; pooling desativado
+            // Executar apenas uma atualização inicial; pooling desativado para stats
             this.fetchDailyStats();
-            this.fetchSessionConfig();
-            console.log('[InvestmentActive] ⏰ Atualizações de stats executadas uma vez (sem intervalo)');
+            // Começar polling de configuração (session_status)
+            this.startSessionConfigPolling();
+            console.log('[InvestmentActive] ⏰ Atualizações de stats executadas uma vez; Polling de config iniciado');
         },
         
         stopStatsUpdates() {
             if (this.statsUpdateInterval) {
                 clearInterval(this.statsUpdateInterval);
                 this.statsUpdateInterval = null;
-                console.log('[InvestmentActive] ⏹️ Atualizações de stats paradas');
             }
+            // Parar polling de configuração
+            if (this.sessionConfigPollingTimeout) {
+                clearTimeout(this.sessionConfigPollingTimeout);
+                this.sessionConfigPollingTimeout = null;
+            }
+            console.log('[InvestmentActive] ⏹️ Atualizações paradas');
+        },
+
+        startSessionConfigPolling() {
+            // Limpar timeout anterior se existir
+            if (this.sessionConfigPollingTimeout) {
+                clearTimeout(this.sessionConfigPollingTimeout);
+            }
+
+            // Agendar próxima execução
+            this.sessionConfigPollingTimeout = setTimeout(async () => {
+                // Verificar se componente ainda está ativo
+                if (!this.aiActive && !this.sessionConfig?.isActive) {
+                     // Se IA não estiver ativa, talvez não precise pollar tão frequente, ou parar?
+                     // Por enquanto mantemos para detectar mudanças externas
+                }
+
+                await this.fetchSessionConfig();
+                
+                // Recursão para manter o loop apenas após a resposta (prevent overlap)
+                if (this.aiActive || (this.sessionConfig && this.sessionConfig.isActive)) {
+                    this.startSessionConfigPolling();
+                }
+            }, 5000); // 5 segundos
         },
         
         toggleAI() {
@@ -3320,7 +3350,7 @@ export default {
                     }
                     
                     // ✅ TRATAMENTO ESPECÍFICO PARA EVENTOS DE LOG
-                    if (payload.status === 'LOG') {
+                    if (payload.type === 'log' || payload.status === 'LOG') {
                         // Evento de log: atualizar apenas logs imediatamente
                         console.log('[InvestmentActive] 📝 Evento de LOG detectado, atualizando logs...');
                         await this.fetchRealtimeLogs();
