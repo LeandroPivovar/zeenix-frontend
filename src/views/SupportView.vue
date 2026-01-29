@@ -44,7 +44,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Chat Card -->
             <div class="support-card bg-zenix-card border border-zenix-border rounded-2xl p-8 min-h-[160px] flex flex-col mobile-card-gradient mobile-ticket-card">
-              <div class="flex-1 flex flex-col desktop-layout">
+              <div v-if="!isMobile" class="flex-1 flex flex-col desktop-layout">
                 <div class="flex items-center space-x-3 mb-2">
                   <i class="far fa-comment-dots text-white text-2xl"></i>
                   <span class="px-2 py-1 bg-zenix-green/20 text-zenix-green text-[10px] font-bold rounded">Online agora</span>
@@ -52,7 +52,7 @@
                 <h3 class="text-white text-xl font-bold mb-1">Chat ao Vivo</h3>
                 <p class="text-zenix-secondary text-sm mb-4">Suporte imediato com um atendente real.</p>
               </div>
-              <div class="flex-1 flex flex-row items-center space-x-2.5 mobile-layout mobile-ticket-content">
+              <div v-if="isMobile" class="flex-1 flex flex-row items-center space-x-2.5 mobile-layout mobile-ticket-content">
                 <div class="flex flex-col items-center">
                   <i class="far fa-comment-dots text-white text-3xl"></i>
                 </div>

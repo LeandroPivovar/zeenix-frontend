@@ -194,7 +194,7 @@
             </div>
             
             <!-- Tabela Desktop -->
-            <div class="plans-table desktop-table">
+            <div v-if="!isMobile" class="plans-table desktop-table">
                 <div class="table-content-wrapper">
                     <div class="table-header">
                         <div class="th name">Nome</div>
@@ -251,7 +251,7 @@
             </div>
 
             <!-- Cards Mobile -->
-            <div class="mobile-plans-cards">
+            <div v-if="isMobile" class="mobile-plans-cards">
                 <div v-if="isLoading" class="mobile-plan-card empty-state">
                     <p>Carregando planos...</p>
                 </div>

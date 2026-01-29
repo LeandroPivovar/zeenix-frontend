@@ -33,30 +33,32 @@
       <section id="hero-section" class="w-full mt-16 py-12 relative overflow-visible group h-[560px]">
       <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent" style="left: -32px; width: calc(100% + 64px);">
         <!-- Video Background - Desktop Only (Dual Video for Seamless Loop) -->
-        <video 
-          ref="heroVideo1"
-          class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-1"
-          autoplay 
-          muted 
-          playsinline
-          preload="auto"
-        >
-          <source src="@/assets/video/hero_background.mp4" type="video/mp4">
-        </video>
-        <video 
-          ref="heroVideo2"
-          class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-2"
-          muted 
-          playsinline
-          preload="auto"
-        >
-          <source src="@/assets/video/hero_background.mp4" type="video/mp4">
-        </video>
+        <template v-if="!isMobile">
+          <video 
+            ref="heroVideo1"
+            class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-1"
+            autoplay 
+            muted 
+            playsinline
+            preload="auto"
+          >
+            <source src="@/assets/video/hero_background.mp4" type="video/mp4">
+          </video>
+          <video 
+            ref="heroVideo2"
+            class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-2"
+            muted 
+            playsinline
+            preload="auto"
+          >
+            <source src="@/assets/video/hero_background.mp4" type="video/mp4">
+          </video>
+        </template>
         <!-- Fallback Background for Mobile -->
-        <div class="md:hidden absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
+        <div v-else class="md:hidden absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
         </div>
         <!-- Overlay for Desktop - desaparece quando sidebar está colapsada -->
-        <div v-if="!localSidebarCollapsed" class="hidden md:block absolute inset-0 bg-gradient-to-r from-[rgb(20_17_17/0.35)] to-transparent">
+        <div v-if="!isMobile && !localSidebarCollapsed" class="hidden md:block absolute inset-0 bg-gradient-to-r from-[rgb(20_17_17/0.35)] to-transparent">
         </div>
       </div>
       <div class="relative z-10 h-full w-full">
@@ -211,7 +213,7 @@
             
             
             <!-- Desktop Grid -->
-            <div class="grid grid-cols-5 gap-6 mb-0 desktop-grid-ias">
+            <div v-if="!isMobile" class="grid grid-cols-5 gap-6 mb-0 desktop-grid-ias">
             <div 
               v-for="(ia, index) in bestIAs" 
               :key="index"
@@ -249,7 +251,7 @@
           </div>
           
           <!-- Mobile Grid - Lista vertical de 4 IAs -->
-          <div class="mobile-grid-ias">
+          <div v-else class="mobile-grid-ias">
             <div 
               v-for="(ia, index) in displayedIAs" 
               :key="index"
@@ -300,7 +302,7 @@
           </div>
           
           <!-- Performance Grid (Desktop) -->
-          <div class="desktop-performance-grid hidden md:grid grid-cols-4 gap-6">
+          <div v-if="!isMobile" class="desktop-performance-grid hidden md:grid grid-cols-4 gap-6">
             <div 
               v-for="(perf, index) in sortedPerformanceData" 
               :key="index"
@@ -381,7 +383,7 @@
           </div>
           
           <!-- Mobile Performance Grid -->
-          <div class="mobile-performance-grid">
+          <div v-else class="mobile-performance-grid">
             <div 
               v-for="(perf, index) in sortedPerformanceData" 
               :key="index"

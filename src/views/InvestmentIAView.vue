@@ -55,7 +55,7 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-12 gap-5">
-                            <!-- AI Visualization Area -->
+                            <!-- AI Visualization Area (Desktop Only) -->
                             <div v-if="!isMobile" class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border-2 border-zenix-green/30 flex items-center justify-center relative ai-visualization-area">
                                 <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/5 via-transparent to-zenix-green/10"></div>
                                 <!-- Animated Grid Background -->
