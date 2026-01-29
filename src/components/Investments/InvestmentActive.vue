@@ -2520,28 +2520,17 @@ export default {
         },
         
         startStatsUpdates() {
-            // Executar uma atualização inicial
+            // Executar apenas uma atualização inicial; pooling desativado
             this.fetchDailyStats();
             this.fetchSessionConfig();
-            
-            // ✅ POLLING DE STATUS (Backup do SSE): Verificar status a cada 5 segundos
-            // Isso garante que os modais abram mesmo se o evento SSE for perdido
-            if (this.statsUpdateInterval) clearInterval(this.statsUpdateInterval);
-            
-            this.statsUpdateInterval = setInterval(() => {
-                this.fetchSessionConfig();
-                // Opcional: stats também se quiser manter atualizado sem depender só de eventos
-                // this.fetchDailyStats(); 
-            }, 5000);
-            
-            console.log('[InvestmentActive] ⏰ Polling de status (backup) iniciado: 5s');
+            console.log('[InvestmentActive] ⏰ Atualizações de stats executadas uma vez (sem intervalo)');
         },
         
         stopStatsUpdates() {
             if (this.statsUpdateInterval) {
                 clearInterval(this.statsUpdateInterval);
                 this.statsUpdateInterval = null;
-                console.log('[InvestmentActive] ⏹️ Polling de status parado');
+                console.log('[InvestmentActive] ⏹️ Atualizações de stats paradas');
             }
         },
         
