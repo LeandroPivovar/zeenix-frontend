@@ -523,7 +523,7 @@ export default {
             selectedStrategy: null,
             showStrategyModal: false,
             allStrategies: [
-                { id: 'atlas', title: 'ATLAS - OVER 2', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%' },
+                { id: 'atlas', title: 'ATLAS - VOL 50', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%' },
                 { id: 'apollo', title: 'APOLLO - RISE/FALL', marketType: 'Ups e Downs', icons: ['/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg', '/deriv_icons/TradeTypesUpsAndDownsFallIcon.svg'], description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%' },
                 { id: 'nexus', title: 'NEXUS - BARREIRA', marketType: 'Ups e Downs', icons: ['/deriv_icons/TradeTypesHighsAndLowsHigherIcon.svg', '/deriv_icons/TradeTypesHighsAndLowsLowerIcon.svg'], description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%' },
                 { id: 'orion', title: 'ORION - OVER 3', marketType: 'Digits', icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'], description: '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 54% a 61% - <strong>Retorno:</strong> 56% / 85%' },
@@ -1036,8 +1036,8 @@ export default {
             // ✅ Sincronização de Mercado Automática (ZENIX v2.0)
             const strategyLower = id.toLowerCase();
             if (strategyLower === 'atlas') {
-                this.selectedMarket = 'vol100_1s';
-                console.log('[InvestmentIAView] 🎯 Atlas selecionado: Alternando mercado para Volatility 100 (1s) Index');
+                this.selectedMarket = 'vol100';
+                console.log('[InvestmentIAView] 🎯 Atlas selecionado: Alternando mercado para Volatility 100 Index');
             } else if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
                 this.selectedMarket = 'vol100';
                 console.log(`[InvestmentIAView] 🎯 ${id.toUpperCase()} selecionado: Alternando mercado para Volatility 100 Index`);

@@ -110,6 +110,15 @@
 					>
 						{{ hideValues ? '••••' : (periodProfit >= 0 ? '+' : '') + '$' + periodProfit.toFixed(2) }}
 					</div>
+					<!-- ✅ Formatação Dual: Mostrar Percentual -->
+					<div class="text-xs font-medium tabular-nums relative z-10 text-left opacity-80"
+						:class= "periodProfit >= 0 ? 'text-green-400' : 'text-red-400'"
+					>
+						<span v-if="!hideValues && initialCapital > 0">
+							{{ (periodProfit >= 0 ? '+' : '') + ((periodProfit / initialCapital) * 100).toFixed(2) }}%
+						</span>
+						<span v-else-if="hideValues">••••</span>
+					</div>
 					<!-- Percentage Badge Removed -->
 				</div>
 
@@ -153,18 +162,12 @@
 									AGENTE ATIVO
 									<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
 								</div>
+								
 								<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
-									<div class="strategy-icons-inline mr-1" v-if="agenteData.id">
-										<img 
-											v-for="icon in runningAgents.find(a => a.id === agenteData.id)?.icons" 
-											:key="icon" 
-											:src="icon" 
-											class="deriv-svg-icon-small"
-										/>
+									<div class="strategy-icons-inline text-lg">
+										{{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}
 									</div>
-									<span v-else class="text-lg">{{ runningAgents.find(a => a.id === agenteData.id)?.emoji || '⚡' }}</span>
-									<span>{{ agenteData.estrategia.replace('IA ', '').charAt(0).toUpperCase() + agenteData.estrategia.replace('IA ', '').slice(1) }}</span>
-									<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
+									<span class="text-white font-bold">{{ agenteData.estrategia ? agenteData.estrategia.replace('IA ', '') : 'Agente' }}</span>
 								</div>
 							</div>
 						</div>
@@ -188,18 +191,17 @@
 								:class="{ 'bg-[#092012]/35': agenteData.id === agent.id }"
 							>
 								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
-									<div class="strategy-icons-inline" v-if="agent.icons">
-										<img v-for="icon in agent.icons" :key="icon" :src="icon" class="deriv-svg-icon-small" />
+									<div class="strategy-icons-inline text-2xl">
+										{{ agent.emoji }}
 									</div>
-									<span v-else>{{ agent.emoji }}</span>
 									<div v-if="agenteData.id === agent.id" class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0c0c0c] flex items-center justify-center">
 										<i class="fas fa-check text-[8px] text-black"></i>
 									</div>
 								</div>
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center justify-between gap-2">
-										<h5 class="text-xs font-bold text-white truncate text-left">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
-										<span v-if="agenteData.id === agent.id" class="text-[8px] text-[#22c55e] font-bold uppercase tracking-tighter shrink-0">Ativo</span>
+										<h5 class="text-xs font-bold truncate text-left" :class="agenteData.id === agent.id ? 'text-green-500' : 'text-[#dbdbdb]'">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
+										<span v-if="currentAgentId === agent.id" class="text-[8px] text-[#22c55e] font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
 									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line" v-html="formatAgentDescription(agent.description)"></p>
 								</div>
@@ -553,11 +555,11 @@
 			<div class="mt-4">
 				<h4 class="text-sm font-semibold mb-3 uppercase tracking-wide flex items-center gap-2 text-left text-[#FAFAFA]">
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity w-4 h-4 text-green-500"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
-					Operações Intraday
+					OPERAÇÕES DIÁRIAS
 				</h4>
 				<div class="overflow-x-auto max-h-[300px] overflow-y-auto custom-scrollbar">
 					<table class="w-full text-[10px] sm:text-xs">
-						<thead class="sticky top-0 bg-[#09090b] shadow-sm">
+						<thead class="sticky top-0 bg-[#09090b] shadow-sm z-10">
 							<tr class="border-b border-[#27272a]">
 								<th class="text-left py-2 text-[#A1A1AA] font-medium px-1">Hora</th>
 								<th class="text-left py-2 text-[#A1A1AA] font-medium px-1">Mercado</th>
@@ -570,26 +572,41 @@
 						</thead>
 						<tbody>
                             <!-- Session grouping logic -->
-                            <template v-for="(session, sIdx) in tradesBySession" :key="sIdx">
-                                <tr v-if="tradesBySession.length > 1" class="bg-[#1a1a1a]/50">
-                                    <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-green-500 uppercase tracking-wider border-y border-[#27272a]">
-                                         Sessão #{{ tradesBySession.length - sIdx }} • Início {{ formatToSPTime(session.trades[session.trades.length-1].createdAt) }}
+                            <template v-for="(item, idx) in formattedSessionItems" :key="item.id || idx">
+                                <!-- SESSION HEADER: INICIO -->
+                                <tr v-if="item.type === 'header'" class="bg-[#1a1a1a]">
+                                    <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-yellow-500 uppercase tracking-wider border-y border-[#27272a] text-left">
+                                         SESSÃO {{ item.sessionNumber }} - INÍCIO {{ item.startTime }}
                                     </td>
                                 </tr>
-                                <tr v-for="(op, idx) in session.trades" :key="op.id || idx" class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
-                                    <td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{ formatToSPTime(op.createdAt) }}</td>
-                                    <td class="py-2 px-1 text-[#FAFAFA] text-left truncate max-w-[50px] sm:max-w-none">{{op.market}}</td>
+
+                                <!-- TRADE ROW -->
+                                <tr v-else-if="item.type === 'trade'" class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
+                                    <td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{ formatToSPTime(item.data.createdAt) }}</td>
+                                    <td class="py-2 px-1 text-[#FAFAFA] text-left truncate max-w-[50px] sm:max-w-none">{{item.data.market}}</td>
                                     <td class="py-2 px-1 text-left">
                                         <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold"
-                                            :class="op.contract === 'DIGITMATCH' ? 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'">
-                                            {{ op.contract }}
+                                            :class="item.data.contract === 'DIGITMATCH' ? 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'">
+                                            {{ item.data.contract }}
                                         </span>
                                     </td>
-                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.entry}}</td>
-                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.exit}}</td>
-                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{parseFloat(op.stake).toFixed(2)}}</td>
-                                    <td class="py-2 px-1 text-right tabular-nums font-semibold" :class="parseFloat(op.profit) >= 0 ? 'text-green-500' : 'text-red-500'">
-                                        {{ parseFloat(op.profit) >= 0 ? '+' : '' }}{{ parseFloat(op.profit).toFixed(2) }}
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">${{item.data.entry}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">${{item.data.exit}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">${{parseFloat(item.data.stake).toFixed(2)}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums font-semibold" :class="parseFloat(item.data.profit) >= 0 ? 'text-green-500' : 'text-red-500'">
+                                        {{ parseFloat(item.data.profit) >= 0 ? '+' : '' }}${{parseFloat(item.data.profit).toFixed(2)}}
+                                    </td>
+                                </tr>
+
+                                <!-- SESSION FOOTER: FIM/PAUSA -->
+                                <tr v-else-if="item.type === 'footer'" class="bg-[#0c0c0c]">
+                                    <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider border-b border-[#27272a] text-left">
+                                        <div class="flex items-center justify-between">
+                                            <span>FIM DA SESSÃO - {{ item.endTime }}</span>
+                                            <span :class="item.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'">
+                                                RESULTADO: {{ item.totalProfit >= 0 ? '+' : '' }}${{ item.totalProfit.toFixed(2) }}
+                                            </span>
+                                        </div>
                                     </td>
                                 </tr>
                             </template>
@@ -652,9 +669,10 @@
     </Teleport>
 
 	<!-- Modal de Stop (Novos) -->
-	<StopLossModal v-if="showNewStopLossModal" @close="handleCloseNewStopModal('showNewStopLossModal')" />
-	<TargetProfitModal v-if="showNewTargetProfitModal" @close="handleCloseNewStopModal('showNewTargetProfitModal')" />
-	<StopBlindadoModal v-if="showNewStopBlindadoModal" @close="handleCloseNewStopModal('showNewStopBlindadoModal')" />
+	<!-- Modal de Stop (Novos) -->
+	<StopLossModal v-if="showNewStopLossModal" :visible="true" :result="sessionStats?.netProfit || 0" @confirm="handleCloseNewStopModal('showNewStopLossModal')" @close="handleCloseNewStopModal('showNewStopLossModal')" />
+	<TargetProfitModal v-if="showNewTargetProfitModal" :visible="true" :result="sessionStats?.netProfit || 0" @confirm="handleCloseNewStopModal('showNewTargetProfitModal')" @close="handleCloseNewStopModal('showNewTargetProfitModal')" />
+	<StopBlindadoModal v-if="showNewStopBlindadoModal" :visible="true" :result="sessionStats?.netProfit || 0" @confirm="handleCloseNewStopModal('showNewStopBlindadoModal')" @close="handleCloseNewStopModal('showNewStopBlindadoModal')" />
 	
 	<!-- Novos Modais de Ajuste de Precisão -->
 	<StopLossAjusteModal 
@@ -832,7 +850,6 @@
 				// Agent Switcher
 				showAgentSwitcher: false,
 				runningAgents: [
-                    { id: 'all', title: 'Todos os Agentes', emoji: '🤖' },
 					{ 
 						id: 'zeus', 
 						title: 'Agente Zeus',
@@ -855,12 +872,24 @@
 					}
 				],
 				hideValues: false,
-				pollingInterval: null
+				pollingInterval: null,
+                
+                // Flags para evitar reabertura de modais já vistos na sessão
+                stopLossAcknowledged: false,
+                targetProfitAcknowledged: false,
+                stopBlindadoAcknowledged: false
 			};
 		},
 		mounted() {
+            // Resetar flag global de modal no início
+            window.zenixStopModalActive = false;
+
 			window.addEventListener('click', this.closeDropdownsOnClickOutside);
 			
+            if (this.logs && this.logs.length > 0) {
+                 this.checkLogsForStopEvents(this.logs);
+            }
+            
 			if (this.abaAtiva === 'grafico') {
 				this.$nextTick(() => {
 					this.initIndexChart();
@@ -881,6 +910,15 @@
 			}
 		},
 		computed: {
+			currentAgentId() {
+				// Normalizar ID do agente se não vier explícito
+				// Se agenteData.id existir, usa. Senão, tenta inferir da estratégia.
+				if (this.agenteData && this.agenteData.id) return this.agenteData.id;
+				const strategy = this.agenteData?.estrategia?.toLowerCase() || '';
+				if (strategy.includes('zeus')) return 'zeus';
+				if (strategy.includes('falcon')) return 'falcon';
+				return 'zeus'; // Fallback default
+			},
 			dateRangeText() {
 				const option = this.dateOptions.find(o => o.value === this.selectedPeriod);
 				if (option) return option.label;
@@ -932,15 +970,13 @@
                 return this.dailyData.reduce((sum, day) => sum + (day.profit || 0), 0);
             },
 			periodProfitPercent() {
-				// Para período, calculamos % sobre o capital inicial (ou saldo atual estimado se não tiver inicial guardado)
-                // Se for session, usa logica existente.
-                // Se for filtro (ex: 30 dias), calcular sobre o capital NO INICIO do periodo?
-                // Simplificação: (LucroPeriodo / (CapitalFinal - LucroPeriodo)) * 100
-                const profit = this.periodProfit;
-                const finalCap = this.finalCapital; // Computed
-                const startCap = finalCap - profit;
-                if (startCap <= 0) return 0;
-                return (profit / startCap) * 100;
+				// ✅ FIX: Calcular percentual baseado no CAPITAL INICIAL configurado
+				// Isso evita distorções quando o lucro é alto e o capital inicial "estimado" fica flutuando
+				const profit = this.periodProfit;
+                const baseCapital = this.agentConfig?.initialStake || this.agentConfig?.initialBalance || this.initialCapital;
+                
+                if (!baseCapital || baseCapital <= 0) return 0;
+                return (profit / baseCapital) * 100;
 			},
 			avgDailyProfitPercent() {
 				// Média percentual diária
@@ -1138,42 +1174,109 @@
                 // Retorna 'Semanal', 'Mensal' etc baseado na range geral se quiser, por padrão 'Semanal' baseada na tabela
 				return 'Semanal';
 			},
-            tradesBySession() {
+            formattedSessionItems() {
                 if (!this.dailyTrades || this.dailyTrades.length === 0) return [];
                 
-                // Agrupar por "sessão" (gap > 30 min)
+                // 1. Agrupar trades em sessões (gap de 30 min)
                 const sessions = [];
-                let currentSession = [];
+                let currentSessionTrades = [];
                 
-                // Trades vem ordenados DESC do backend (mais recente primeiro)
-                // Para agrupar cronologicamente, talvez seja melhor iterar.
-                // Mas a exibição suele ser DESC tambem.
-                
-                // Vamos usar gaps. Se diff > 30min entre Trade[i] e Trade[i+1], i+1 pertence a outra sessão (anterior).
-                
-                let trades = [...this.dailyTrades]; // Clone
-                // Order is DESC. So trades[0] is 14:00, trades[1] is 13:58...
+                // Clone e order DESC (mais recente primeiro)
+                const trades = [...this.dailyTrades].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 
                 if (trades.length > 0) {
-                     currentSession.push(trades[0]);
+                     currentSessionTrades.push(trades[0]);
                      
                      for (let i = 1; i < trades.length; i++) {
                          const prevTradeTime = new Date(trades[i-1].createdAt).getTime();
                          const currTradeTime = new Date(trades[i].createdAt).getTime();
                          
+                         // Gap check: se trade atual é muito mais antigo que o anterior (pois a ordem é DESC)
+                         // Então houve um intervalo GRANDE antes do trade[i-1]. 
+                         // Ou seja, trade[i-1] foi o ÚLTIMO de uma sessão, e trade[i] é o PRIMEIRO da sessão anterior.
                          const diffMinutes = (prevTradeTime - currTradeTime) / (1000 * 60);
                          
                          if (diffMinutes > 30) {
-                             // Gap detectado, fecha sessão atual
-                             sessions.push({ trades: currentSession });
-                             currentSession = [];
+                             sessions.push(currentSessionTrades);
+                             currentSessionTrades = [];
                          }
-                         currentSession.push(trades[i]);
+                         currentSessionTrades.push(trades[i]);
                      }
-                     sessions.push({ trades: currentSession });
+                     sessions.push(currentSessionTrades);
                 }
                 
-                return sessions;
+                // 2. Criar lista flat com Header(Início) -> Trades -> Footer(Fim)
+                // Como trades estão DESC, sessions[0] é a mais recente.
+                // Mas dentro da sessão, trades[0] é o mais recente (FIM), trades[last] é INICIO.
+                // Na tabela queremos mostrar DESC? Geralmente sim (mais recente no topo).
+                // MAS o user pediu "Inicio a sessão ... Trades ... Fim".
+                // Se a ordem for DESC visualmente (topo->baixo), o "Fim" (mais recente) deveria estar em cima?
+                // Visualmente Logs costumam ser mais recentes em cima.
+                // Mas o pedido "Inicio... Trades... Fim" sugere ordem CRONOLÓGICA (ASC) dentro da sessão ou visualização de bloco.
+                // "Sessão 1 - Inicio 11:14" (Yellow).
+                // Se mostrar DESC, o Inicio fica EM BAIXO.
+                // A imagem mostra "Sessão 01 - Inicio" no TOPO da lista de trades dessa sessão.
+                // E os trades abaixo parecem ser os daquela sessão.
+                // Assumindo ordem DESC global (sessão mais recente em cima),
+                // Mas dentro da sessão, os trades devem estar DESC também?
+                // Se o header é "Inicio", ele deveria marcar o começo do bloco visual.
+                
+                const items = [];
+                
+                sessions.forEach((sessionTrades, idx) => {
+                    const sessionNum = sessions.length - idx; // Sessão 1 é a mais antiga
+                    
+                    // Calcular dados da sessão
+                    const startTime = this.formatToSPTime(sessionTrades[sessionTrades.length - 1].createdAt);
+                    const endTime = this.formatToSPTime(sessionTrades[0].createdAt);
+                    const totalProfit = sessionTrades.reduce((acc, t) => acc + t.profit, 0);
+                    
+                    // Header: INICIO (Visualmente topo do bloco)
+                    items.push({
+                        type: 'header',
+                        id: `header-${idx}`,
+                        sessionNumber: sessionNum,
+                        startTime: startTime
+                    });
+                    
+                    // Trades (Mantendo DESC: mais recentes primeiro, logo abaixo do header?)
+                    // Se o header diz "Inicio XX", e logo abaixo vem um trade das YY (onde YY > XX), faz sentido.
+                    sessionTrades.forEach(trade => {
+                        items.push({
+                            type: 'trade',
+                            id: trade.id,
+                            data: trade
+                        });
+                    });
+                    
+                    // Footer: FIM (Visualmente base do bloco)
+                    // ✅ FIX: Adicionar motivo do término se for a sessão atual e estiver pausado/stop
+                    let footerText = `FIM DA SESSÃO - ${endTime}`;
+                    
+                    // Se for a sessão mais recente (idx=0) e o agente não estiver ativo, mostrar motivo
+                    if (idx === 0 && this.agenteData.sessionStatus !== 'active' && this.agenteData.sessionStatus) {
+                        const statusMap = {
+                            'paused': 'AGENTE PAUSADO',
+                            'stopped_loss': 'STOP LOSS ATINGIDO',
+                            'stopped_profit': 'META ATINGIDA',
+                            'stopped_blindado': 'STOP BLINDADO ATINGIDO',
+                            'error': 'ERRO NO SISTEMA',
+                            'inactive': 'SESSÃO ENCERRADA'
+                        };
+                         // Tenta pegar do status do agente ou do último status processado
+                        const reason = statusMap[this.agenteData.sessionStatus] || statusMap[this.lastProcessedStatus] || this.agenteData.sessionStatus.toUpperCase();
+                        footerText += ` (${reason})`;
+                    }
+
+                    items.push({
+                        type: 'footer',
+                        id: `footer-${idx}`,
+                        endTime: footerText,
+                        totalProfit: totalProfit
+                    });
+                });
+                
+                return items;
             },
 		},
 		watch: {
@@ -1205,8 +1308,17 @@
                         this.$emit('live-balance-update', newVal);
                     }
                 }
+            },
+            logs: {
+                deep: true,
+                handler(newLogs) {
+                   if (newLogs && newLogs.length > 0) {
+                       this.checkLogsForStopEvents(newLogs);
+                   }
+                }
             }
 		},
+
 		methods: {
 			checkStopStatus(status) {
 				if (!status || status === 'active' || status === this.lastProcessedStatus) return;
@@ -1396,9 +1508,7 @@
                 const userId = this.getUserId();
                 if (!userId || !day) return;
                 
-                // Limpar trades anteriores enquanto carrega
-                this.dailyTrades = [];
-
+                
                 try {
                     // Use fullDate if available (YYYY-MM-DD), otherwise fallback (might fail if not standard)
                     const dateQuery = day.fullDate || 'today';
@@ -1734,24 +1844,29 @@
             checkLogsForStopEvents(logs) {
                 if (!logs || logs.length === 0) return;
                 
-                // Verificar os últimos 10 logs (mais recentes)
-                const recentLogs = logs.slice(0, 10);
+                // Verificar TODOS os logs para garantir que não perdemos o evento
+                const recentLogs = logs;
                 
-                // 1. STOP BLINDADO ATINGIDO (Extreme Strict Mode)
+                // Log de debug para ver o que está chegando
+                // console.log('[AgenteAutonomo] Checking Logs:', recentLogs.length, 'entries');
+
+                // 1. STOP BLINDADO ATINGIDO
                 const hasBlindadoHit = recentLogs.some(log => 
                     log.message && (
-                        log.message.trim().includes('🛡️ STOP BLINDADO ATINGIDO!')
+                        log.message.toUpperCase().includes('STOP BLINDADO ATINGIDO') || 
+                        log.message.toUpperCase().includes('BLINDADO ATINGIDO')
                     )
                 );
                 
                 if (hasBlindadoHit) {
+                     // Check "zenixStopModalActive" to prevent duplicate opening, but ensure it opens if not yet open
                     if (!this.showNewStopBlindadoModal && !this.showNewStopLossModal && !this.showStopBlindadoAjusteModal && !window.zenixStopModalActive) {
                         window.zenixStopModalActive = true;
-                        console.log('[AgenteAutonomo] 🛡️ [Logs] Exact Hit detected!');
+                        console.log('[AgenteAutonomo] 🛡️ [Logs] Stop Blindado Detected!');
                         
                         // Verificar se é por ajuste de entrada
                         const isAjuste = recentLogs.some(log => 
-                            log.message && log.message.includes('STOP BLINDADO ATINGIDO POR AJUSTE DE ENTRADA!')
+                            log.message && log.message.toUpperCase().includes('STOP BLINDADO ATINGIDO POR AJUSTE DE ENTRADA')
                         );
                         
                         if (isAjuste) {
@@ -1762,23 +1877,24 @@
                     }
                 }
                 
-                // 2. STOP LOSS NORMAL (Avoiding collision with Blindado)
+                // 2. STOP LOSS NORMAL
+                // Pattern from screenshot: "STOP LOSS ATINGIDO! DAILY_LOSS=..."
                 const hasNormalStopLossMessage = recentLogs.some(log => 
                     log.message && (
-                        log.message.includes('STOP LOSS ATINGIDO') ||
-                        log.message.includes('STOP LOSS REACHED') ||
-                        (log.message.includes('STOP LOSS') && !log.message.includes('BLINDADO') && log.message.includes('ATINGIDO'))
+                        log.message.toUpperCase().includes('STOP LOSS ATINGIDO') ||
+                        log.message.toUpperCase().includes('STOP LOSS REACHED') ||
+                        (log.message.toUpperCase().includes('STOP LOSS') && log.message.toUpperCase().includes('ATINGIDO') && !log.message.toUpperCase().includes('BLINDADO'))
                     )
                 );
                 
                 if (hasNormalStopLossMessage) {
-                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !window.zenixStopModalActive) {
+                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !window.zenixStopModalActive && !this.stopLossAcknowledged) {
                         window.zenixStopModalActive = true;
-                        console.log('[AgenteAutonomo] 🛑 [Logs] Stop Loss detectado!');
+                        console.log('[AgenteAutonomo] 🛑 [Logs] Stop Loss Detected!');
                         
                         // Verificar se é por ajuste de entrada
                         const isAjuste = recentLogs.some(log => 
-                            log.message && log.message.includes('STOP LOSS ATINGIDO POR AJUSTE DE ENTRADA!')
+                            log.message && log.message.toUpperCase().includes('STOP LOSS ATINGIDO POR AJUSTE DE ENTRADA')
                         );
                         
                         if (isAjuste) {
@@ -1792,17 +1908,18 @@
                 // 3. META DE LUCRO ATINGIDA
                 const hasProfitMessage = recentLogs.some(log => 
                     log.message && (
-                        log.message.includes('META DE LUCRO ATINGIDA') ||
-                        log.message.includes('META ATINGIDA')
+                        log.message.toUpperCase().includes('META DE LUCRO ATINGIDA') ||
+                        log.message.toUpperCase().includes('META ATINGIDA') ||
+                        log.message.toUpperCase().includes('LUCRO ATINGIDO')
                     )
                 );
 
                 if (hasProfitMessage) {
-                    if (!this.showNewTargetProfitModal && !this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !this.showStopBlindadoAjusteModal && !window.zenixStopModalActive) {
+                    if (!this.showNewTargetProfitModal && !this.showNewStopLossModal && !this.showNewStopBlindadoModal && !window.zenixStopModalActive && !this.targetProfitAcknowledged) {
                         window.zenixStopModalActive = true;
-                        console.log('[AgenteAutonomo] 🎯 [Logs] Meta de Lucro detectada!');
+                        console.log('[AgenteAutonomo] 🎯 [Logs] Profit Goal Detected!');
                         this.showNewTargetProfitModal = true;
-                        // Forçar atualização imediata do saldo após trade
+                        // Forçar atualização imediata do saldo
                         window.dispatchEvent(new CustomEvent('refreshBalance'));
                         return;
                     }
@@ -1817,6 +1934,11 @@
 			handleCloseNewStopModal(modalVar) {
 				this[modalVar] = false;
 				window.zenixStopModalActive = false;
+                
+                // Marcar como reconhecido para não abrir novamente nesta sessão
+                if (modalVar === 'showNewStopLossModal') this.stopLossAcknowledged = true;
+                if (modalVar === 'showNewTargetProfitModal') this.targetProfitAcknowledged = true;
+                if (modalVar === 'showNewStopBlindadoModal') this.stopBlindadoAcknowledged = true;
 			},
 			fetchAllStats() {
 				this.fetchAgentConfig(); 

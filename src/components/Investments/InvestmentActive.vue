@@ -312,6 +312,7 @@
                             <!-- Botão Pause/Restart (100% largura) -->
                             <div class="flex justify-center mt-2">
                                 <button 
+                                    type="button"
                                     class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-[56px] w-full"
                                     @click="handleDeactivate"
                                     :disabled="isDeactivating"
@@ -542,8 +543,8 @@
                                 <h3 class="mobile-logs-title-text">Histórico de Operações</h3>
                             </div>
                             
-                            <div v-if="isLoadingLogs" class="loading-logs">
-                                <p>Carregando histórico de operações...</p>
+                            <div v-if="isLoadingLogs" class="loading-logs hidden">
+                                <!-- Loading oculto conforme solicitado para fluidez -->
                             </div>
                             
                             <div v-else-if="logOperations.length === 0" class="no-logs">
@@ -567,7 +568,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr v-for="(op, index) in logOperations" :key="index" :class="['log-row', index % 2 === 0 ? 'log-row-even' : 'log-row-odd']">
+                                            <tr v-for="(op, index) in logOperations" :key="op.id || op.created_at || op.timestamp || `log-${index}`" :class="['log-row', index % 2 === 0 ? 'log-row-even' : 'log-row-odd']">
                                                 <td>{{ op.time }}</td>
                                                 <td>{{ getMarketDisplayName(op.pair) }}</td>
                                                 <td>
@@ -602,7 +603,7 @@
                                 
                                 <!-- Mobile: Cards -->
                                 <div class="mobile-logs-cards custom-scrollbar">
-                                    <div v-for="(op, index) in logOperations" :key="index" class="mobile-log-card">
+                                    <div v-for="(op, index) in logOperations" :key="op.id || op.created_at || op.timestamp || `mob-log-${index}`" class="mobile-log-card">
                                         <div class="mobile-log-time">{{ op.time }}</div>
                                         <div class="mobile-log-type">
                                             <span v-if="op.pair">{{ getMarketDisplayName(op.pair) }}</span>
@@ -664,10 +665,28 @@
                                 </div>
                                 
                                 <div v-else class="text-left">
-                                    <div v-for="(log, index) in realtimeLogs" :key="index" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
-                                        <span class="text-gray-500">[{{ log.timestamp }}]</span>
-                                        <span class="ml-1">{{ log.icon }}</span>
-                                        <span class="ml-1 log-message">{{ log.message }}</span>
+                                    <div v-for="log in realtimeLogs" :key="log.id" class="mb-3 text-left log-entry flex flex-col">
+                                        <!-- Renderização Especial para IAs Selecionadas (Atlas, Titan, Nexus) -->
+                                        <template v-if="['atlas', 'titan', 'nexus', 'orion'].includes(sessionConfig.strategy)">
+                                            <div class="flex items-start">
+                                                <span class="text-gray-500 text-[10px] mr-2 mt-0.5">[{{ log.timestamp }}]</span>
+                                                <span class="mr-1 mt-0.5">{{ log.icon }}</span>
+                                                <div class="flex flex-col">
+                                                    <div v-for="(line, idx) in log.message.split('\n')" :key="idx" 
+                                                         :class="[idx === 0 ? getLogClass(log) + ' font-bold uppercase text-[11px]' : 'text-gray-300 text-[10px] ml-1.5 opacity-90']">
+                                                        <span v-if="idx > 0" class="mr-1 opacity-60">•</span>
+                                                        {{ line }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        
+                                        <!-- Renderização Padrão para outras IAs -->
+                                        <div v-else class="flex items-center">
+                                            <span class="text-gray-500 mr-1">[{{ log.timestamp }}]</span>
+                                            <span class="mr-1">{{ log.icon }}</span>
+                                            <span class="log-message" :class="getLogClass(log)">{{ log.message }}</span>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -686,9 +705,29 @@
                                 </div>
                                 
                                 <div v-else class="mobile-register-cards-container">
-                                    <div v-for="(log, index) in realtimeLogs" :key="index" class="mobile-register-card">
-                                        <span class="mobile-register-time">{{ log.timestamp }}</span>
-                                        <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
+                                    <div v-for="log in realtimeLogs" :key="log.id" class="mobile-register-card pb-3 border-b border-[#1C1C1C] last:border-0">
+                                        <!-- Refined Mobile Format (Atlas, Titan, Nexus) -->
+                                        <template v-if="['atlas', 'titan', 'nexus', 'orion'].includes(sessionConfig.strategy)">
+                                            <div class="flex items-start">
+                                                <span class="mobile-register-time text-[9px] mr-2 mt-0.5">[{{ log.timestamp }}]</span>
+                                                <span class="mr-1 text-xs">{{ log.icon }}</span>
+                                                <div class="flex flex-col">
+                                                    <div v-for="(line, idx) in log.message.split('\n')" :key="idx"
+                                                         :class="[idx === 0 ? getLogClass(log) + ' font-bold uppercase text-[10px]' : 'text-gray-300 text-[9px] ml-1 opacity-80']">
+                                                        <span v-if="idx > 0" class="mr-1 opacity-60">•</span>
+                                                        {{ line }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        
+                                        <!-- Standard Mobile Format -->
+                                        <div v-else class="flex items-center">
+                                            <span class="mobile-register-time mr-2">[{{ log.timestamp }}]</span>
+                                            <span class="mobile-register-message log-message" :class="getLogClass(log)">
+                                                {{ log.icon }} {{ log.message }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -776,6 +815,7 @@
                                         <p class="text-[11px] text-zenix-secondary mt-1 text-left leading-snug">Meta atingida ou limite de proteção alcançado.</p>
                                     </div>
                                     <button 
+                                        type="button"
                                         class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
                                         @click="handleDeactivate"
                                         :disabled="isDeactivating"
@@ -1092,9 +1132,8 @@ export default {
             const strategy = this.sessionConfig?.strategy || this.selectedStrategy || 'orion';
             const strategyLower = strategy.toLowerCase();
 
-            // ✅ Se ATLAS está ativa, preferir Volatility 100 (1s) Index
             if (strategyLower === 'atlas') {
-                return 'Volatility 100 (1s) Index';
+                return 'Volatility 50 Index';
             }
 
             // ✅ Se ORION/TITAN/NEXUS/APOLLO está ativa, retornar Volatility 100 Index
@@ -1145,9 +1184,9 @@ export default {
                 return 'R_100';
             }
 
-            // ✅ Se ATLAS está ativa, forçar 1HZ100V (Vol 100 1s)
+            // ✅ Se ATLAS está ativa, forçar R_50 (Index 50)
             if (strategyLower === 'atlas') {
-                return '1HZ100V';
+                return 'R_50';
             }
 
             // Usar o prop ou data local
@@ -1725,12 +1764,29 @@ export default {
                 return 'text-blue-400';
             }
 
+            // ATLAS SPECIFIC TITLES & CATEGORIES
+            if (this.sessionConfig.strategy === 'atlas') {
+                if (firstLine.includes('INÍCIO') || firstLine.includes('COLETA') || firstLine.includes('ANÁLISE') || 
+                    firstLine.includes('AVALIAÇÃO') || firstLine.includes('CONTRATO CRIADO') || firstLine.includes('EXECUÇÃO') ||
+                    firstLine.includes('RESET') || firstLine.includes('ENCERRAMENTO')) {
+                    return 'text-blue-500';
+                }
+                if (firstLine.includes('BLOQUEADA') || firstLine.includes('TROCA') || firstLine.includes('RECUPERAÇÃO') ||
+                    firstLine.includes('MARTINGALE') || firstLine.includes('PAUSA')) {
+                    return 'text-yellow-400';
+                }
+                if (firstLine.includes('SINAL') || firstLine.includes('RESULTADO') || firstLine.includes('SOROS') ||
+                    firstLine.includes('SEQUÊNCIA') || firstLine.includes('CONCLUÍDA')) {
+                    return 'text-green-500';
+                }
+            }
+
             // General keyword checks (only if not caught above)
             if (lowerMessage.includes('vitória') || 
                 lowerMessage.includes('vitoria') ||
                 lowerMessage.includes('ganhou') || 
                 lowerMessage.includes('win')) {
-                return 'text-green-400';
+                return 'text-green-500';
             }
             
             if (lowerMessage.includes('derrota') || 
@@ -1742,13 +1798,14 @@ export default {
             
             // Fallback to type-based colors
             const colors = {
-                info: 'text-blue-400',
+                info: 'text-blue-500',
                 tick: 'text-gray-400',
-                analise: 'text-blue-400',
-                vitoria: 'text-green-400',
-                sinal: 'text-yellow-400',
+                analise: 'text-blue-500',
+                vitoria: 'text-green-500',
+                derrota: 'text-red-500',
+                sinal: 'text-green-500',
                 operacao: 'text-cyan-400',
-                resultado: 'text-green-400',
+                resultado: 'text-green-500',
                 alerta: 'text-yellow-400',
                 erro: 'text-red-500'
             };
@@ -2108,13 +2165,24 @@ export default {
                             }
                         });
                     } else {
-                        // ✅ Adicionar apenas logs novos (comparar por ID ou created_at)
-                        // Usar ID se disponível, senão usar created_at
-                        const existingIds = new Set(this.realtimeLogs.map(log => log.id || log.created_at || log.timestamp));
-                        const logsToAdd = newLogs.filter(log => {
-                            const logId = log.id || log.created_at || log.timestamp;
-                            return !existingIds.has(logId);
+                        // ✅ Garantir que todos os novos logs tenham ID único para evitar re-render da tabela
+                        newLogs.forEach(log => {
+                            if (!log.id) {
+                                // Criar ID composto estável se não vier do backend
+                                const uniqueStr = `${log.timestamp || Date.now()}-${log.message || ''}-${log.icon || ''}`;
+                                // Simple hash string
+                                let hash = 0;
+                                for (let i = 0; i < uniqueStr.length; i++) {
+                                    hash = ((hash << 5) - hash) + uniqueStr.charCodeAt(i);
+                                    hash |= 0;
+                                }
+                                log.id = `gen-${Math.abs(hash)}`;
+                            }
                         });
+
+                        // ✅ Adicionar apenas logs novos (comparar por ID garantido)
+                        const existingIds = new Set(this.realtimeLogs.map(log => log.id));
+                        const logsToAdd = newLogs.filter(log => !existingIds.has(log.id));
                         
                         console.log('[InvestmentActive] 🔍 Verificando novos logs:', {
                             totalRecebidos: newLogs.length,
@@ -2131,11 +2199,13 @@ export default {
                             const isAtTop = container && container.scrollTop <= 50;
                             const isAtTopMobile = containerMobile && containerMobile.scrollTop <= 50;
                             
-                            // ✅ FORÇAR REATIVIDADE DO VUE: Criar novo array
-                            // Adicionar novos logs no INÍCIO do array (topo)
-                            // Backend já retorna mais novos primeiro, então usar direto
-                            // Vue 3: reatividade automática, não precisa de $set
-                            this.realtimeLogs = [...logsToAdd, ...this.realtimeLogs];
+                            // ✅ [FIX CRÍTICO] EVITAR RE-RENDER COMPLETO
+                            // ANTES: this.realtimeLogs = [...logsToAdd, ...this.realtimeLogs]
+                            // Isso substitui o array inteiro → Vue detecta nova referência → re-cria TODO o DOM
+                            // 
+                            // AGORA: Usar .unshift() para modificar array in-place
+                            // → Vue detecta apenas novos itens → adiciona apenas os novos no DOM
+                            this.realtimeLogs.unshift(...logsToAdd);
                             
                             // Atualizar timestamp do último log (usar created_at se disponível)
                             this.lastLogTimestamp = this.realtimeLogs[0].created_at || this.realtimeLogs[0].timestamp;
@@ -2524,6 +2594,7 @@ export default {
                     // (independentemente do estado anterior, desde que o modal não esteja já aberto)
                     if (currentSessionStatus === 'stopped_loss') {
                         console.log('[InvestmentActive] 🛑 Stop Loss status detectado!');
+                        
                         // ✅ [FIX] Abrir modal de Stop Loss com travas
                         if (!this.showStopLossModal && !this.showStopBlindadoModal && !this.showTargetProfitModal && !this.processingStopEvent && !window.zenixStopModalActive) {
                              this.processingStopEvent = true;
@@ -2564,7 +2635,8 @@ export default {
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
-                    } else if (currentSessionStatus === 'stopped_insufficient_balance') {
+                    }
+ else if (currentSessionStatus === 'stopped_insufficient_balance') {
                         // ✅ [ZENIX v3.4] Suporte para saldo insuficiente
                         if (!this.showInsufficientBalanceModal) {
                             console.log('[InvestmentActive] ❌ Saldo insuficiente detectado na session_status!');
@@ -2578,11 +2650,9 @@ export default {
                         this.previousSessionStatus = currentSessionStatus;
                     }
                     
-                    // ✅ Verificar também nos logs recentes para garantir detecção imediata
-                    // Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
-                    if (!this.showTargetProfitModal && !this.showStopLossModal && !this.showStopBlindadoModal && this.realtimeLogs.length > 0) {
-                        this.checkLogsForStopEvents();
-                    }
+                    // ✅ [ZENIX v3.5] Detecção 100% via session_status do banco
+                    // Removida verificação via logs para evitar falsos positivos
+                    // O backend já atualiza session_status corretamente e emite eventos SSE
                     
                     this.sessionConfig = {
                         isActive: result.data.isActive || false,
@@ -2819,7 +2889,10 @@ export default {
         // 📊 Buscar histórico de operações reais
         async fetchTradeHistory() {
             try {
-                this.isLoadingLogs = true;
+                // ✅ EVITAR PISCADA: Só mostrar loading se não tiver dados anteriores
+                if (this.logOperations.length === 0) {
+                    this.isLoadingLogs = true;
+                }
                 console.log('[InvestmentActive] 📊 Buscando histórico de operações...');
                 
                 // Obter userId
@@ -3228,6 +3301,23 @@ export default {
                 try {
                     const payload = JSON.parse(event.data);
                     console.log('[InvestmentActive] 📡 Evento de trade recebido:', payload);
+                    
+                    // ✅ PRIORIDADE MÁXIMA: EVENTOS DE PARADA (Stop Loss, Stop Blindado, Meta Atingida)
+                    if (payload.type === 'stopped_blindado' || payload.type === 'stopped_loss' || payload.type === 'stopped_profit') {
+                        console.log(`[InvestmentActive] 🛑 Evento de parada detectado: ${payload.type}`);
+                        
+                        // Buscar configuração imediatamente para obter session_status atualizado
+                        await this.fetchSessionConfig();
+                        
+                        // Buscar também stats e logs para ter informações completas
+                        await Promise.all([
+                            this.fetchDailyStats(),
+                            this.fetchRealtimeLogs()
+                        ]);
+                        
+                        // O modal será aberto pelo fetchSessionConfig quando detectar o session_status
+                        return;
+                    }
                     
                     // ✅ TRATAMENTO ESPECÍFICO PARA EVENTOS DE LOG
                     if (payload.status === 'LOG') {
