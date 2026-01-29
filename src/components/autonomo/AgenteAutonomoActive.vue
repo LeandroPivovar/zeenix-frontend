@@ -1828,18 +1828,20 @@
                 // 1. STOP BLINDADO ATINGIDO (Extreme Strict Mode)
                 const hasBlindadoHit = recentLogs.some(log => 
                     log.message && (
-                        log.message.trim().includes('🛡️ STOP BLINDADO ATINGIDO!')
+                        log.message.includes('STOP BLINDADO ATINGIDO') || 
+                        log.message.includes('BLINDADO ATINGIDO')
                     )
                 );
                 
                 if (hasBlindadoHit) {
+                     // Check "zenixStopModalActive" to prevent duplicate opening, but ensure it opens if not yet open
                     if (!this.showNewStopBlindadoModal && !this.showNewStopLossModal && !this.showStopBlindadoAjusteModal && !window.zenixStopModalActive) {
                         window.zenixStopModalActive = true;
-                        console.log('[AgenteAutonomo] 🛡️ [Logs] Exact Hit detected!');
+                        console.log('[AgenteAutonomo] 🛡️ [Logs] Stop Blindado Detected!');
                         
                         // Verificar se é por ajuste de entrada
                         const isAjuste = recentLogs.some(log => 
-                            log.message && log.message.includes('STOP BLINDADO ATINGIDO POR AJUSTE DE ENTRADA!')
+                            log.message && log.message.includes('STOP BLINDADO ATINGIDO POR AJUSTE DE ENTRADA')
                         );
                         
                         if (isAjuste) {
@@ -1850,23 +1852,24 @@
                     }
                 }
                 
-                // 2. STOP LOSS NORMAL (Avoiding collision with Blindado)
+                // 2. STOP LOSS NORMAL
+                // Pattern from screenshot: "STOP LOSS ATINGIDO! DAILY_LOSS=..."
                 const hasNormalStopLossMessage = recentLogs.some(log => 
                     log.message && (
                         log.message.includes('STOP LOSS ATINGIDO') ||
                         log.message.includes('STOP LOSS REACHED') ||
-                        (log.message.includes('STOP LOSS') && !log.message.includes('BLINDADO') && log.message.includes('ATINGIDO'))
+                        (log.message.includes('STOP LOSS') && log.message.includes('ATINGIDO') && !log.message.includes('BLINDADO'))
                     )
                 );
                 
                 if (hasNormalStopLossMessage) {
                     if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !window.zenixStopModalActive) {
                         window.zenixStopModalActive = true;
-                        console.log('[AgenteAutonomo] 🛑 [Logs] Stop Loss detectado!');
+                        console.log('[AgenteAutonomo] 🛑 [Logs] Stop Loss Detected!');
                         
                         // Verificar se é por ajuste de entrada
                         const isAjuste = recentLogs.some(log => 
-                            log.message && log.message.includes('STOP LOSS ATINGIDO POR AJUSTE DE ENTRADA!')
+                            log.message && log.message.includes('STOP LOSS ATINGIDO POR AJUSTE DE ENTRADA')
                         );
                         
                         if (isAjuste) {
@@ -1881,16 +1884,17 @@
                 const hasProfitMessage = recentLogs.some(log => 
                     log.message && (
                         log.message.includes('META DE LUCRO ATINGIDA') ||
-                        log.message.includes('META ATINGIDA')
+                        log.message.includes('META ATINGIDA') ||
+						log.message.includes('LUCRO ATINGIDO')
                     )
                 );
 
                 if (hasProfitMessage) {
-                    if (!this.showNewTargetProfitModal && !this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !this.showStopBlindadoAjusteModal && !window.zenixStopModalActive) {
+                    if (!this.showNewTargetProfitModal && !this.showNewStopLossModal && !this.showNewStopBlindadoModal && !window.zenixStopModalActive) {
                         window.zenixStopModalActive = true;
-                        console.log('[AgenteAutonomo] 🎯 [Logs] Meta de Lucro detectada!');
+                        console.log('[AgenteAutonomo] 🎯 [Logs] Profit Goal Detected!');
                         this.showNewTargetProfitModal = true;
-                        // Forçar atualização imediata do saldo após trade
+                        // Forçar atualização imediata do saldo
                         window.dispatchEvent(new CustomEvent('refreshBalance'));
                         return;
                     }
