@@ -156,7 +156,7 @@
                                     <div class="selector-content">
                                         <div class="selector-left">
                                             <div v-if="selectedStrategyObject" class="strategy-icons-inline mr-2">
-                                                <i :class="[selectedStrategyObject.icon, 'text-zenix-green text-lg']"></i>
+                                                <img :src="selectedStrategyObject.icon" class="deriv-svg-icon-small" />
                                             </div>
                                             <span :class="{ 'placeholder': !selectedStrategy }">
                                                 <template v-if="selectedStrategyObject">
@@ -205,9 +205,12 @@
                                             <div class="agent-option-info">
                                                 <div class="agent-option-simple-row">
                                                     <div class="strategy-icons-inline">
-                                                        <i :class="[strategy.icon, 'text-zenix-green text-xl']"></i>
+                                                        <img :src="strategy.icon" class="deriv-svg-icon" />
                                                     </div>
-                                                    <h4 class="agent-option-title">{{ strategy.title }}</h4>
+                                                    <div class="agent-option-text-col">
+                                                        <h4 class="agent-option-title">{{ strategy.title }}</h4>
+                                                        <p class="agent-option-desc" v-html="strategy.description"></p>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="agent-option-check">
@@ -523,11 +526,12 @@ export default {
             selectedStrategy: null,
             showStrategyModal: false,
             allStrategies: [
-                { id: 'atlas', title: 'IA Atlas', marketType: 'Digits', icon: 'fas fa-brain', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%' },
-                { id: 'apollo', title: 'IA Apollo', marketType: 'Ups e Downs', icon: 'fas fa-rocket', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 90% a 95% - <strong>Retorno:</strong> 99%' },
-                { id: 'nexus', title: 'IA Nexus', marketType: 'Ups e Downs', icon: 'fas fa-share-alt', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%' },
-                { id: 'orion', title: 'IA Orion', marketType: 'Digits', icon: 'fas fa-star', description: '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%' },
-                { id: 'titan', title: 'IA Titan', marketType: 'Digits', icon: 'fas fa-shield-alt', description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%' }
+            allStrategies: [
+                { id: 'atlas', title: 'IA Atlas', marketType: 'Digits', icon: '/deriv_icons/TradeTypesDigitsOverIcon.svg', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%' },
+                { id: 'apollo', title: 'IA Apollo', marketType: 'Ups e Downs', icon: '/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 90% a 95% - <strong>Retorno:</strong> 99%' },
+                { id: 'nexus', title: 'IA Nexus', marketType: 'Ups e Downs', icon: '/deriv_icons/TradeTypesHighsAndLowsHigherIcon.svg', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%' },
+                { id: 'orion', title: 'IA Orion', marketType: 'Digits', icon: '/deriv_icons/TradeTypesDigitsOverIcon.svg', description: '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%' },
+                { id: 'titan', title: 'IA Titan', marketType: 'Digits', icon: '/deriv_icons/TradeTypesDigitsEvenIcon.svg', description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%' }
             ],
             
             dailyStats: {
@@ -4088,6 +4092,13 @@ export default {
     color: #A1A1A1;
     margin: 0;
     line-height: 1.3;
+}
+
+.agent-option-text-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
 }
 
 .agent-option-check {
