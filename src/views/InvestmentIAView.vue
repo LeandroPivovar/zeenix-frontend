@@ -4103,12 +4103,12 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 38px;
+    height: 38px;
     background-color: rgba(34, 197, 94, 0.2); /* zenix-green with opacity */
     border-radius: 8px;
     color: #FFFFFF;
-    font-size: 1rem;
+    font-size: 1.25rem;
 }
 
 .agent-option-text-col {
