@@ -1764,8 +1764,8 @@ export default {
                 return 'text-blue-400';
             }
 
-            // ATLAS SPECIFIC TITLES & CATEGORIES
-            if (this.sessionConfig.strategy === 'atlas') {
+            // ATLAS/APOLLO SPECIFIC TITLES & CATEGORIES
+            if (this.sessionConfig.strategy === 'atlas' || this.sessionConfig.strategy === 'apollo') {
                 if (firstLine.includes('INÍCIO') || firstLine.includes('COLETA') || firstLine.includes('ANÁLISE') || 
                     firstLine.includes('AVALIAÇÃO') || firstLine.includes('CONTRATO CRIADO') || firstLine.includes('EXECUÇÃO') ||
                     firstLine.includes('RESET') || firstLine.includes('ENCERRAMENTO')) {
