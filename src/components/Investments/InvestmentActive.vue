@@ -667,7 +667,7 @@
                                 <div v-else class="text-left">
                                     <div v-for="log in realtimeLogs" :key="log.id" class="mb-3 text-left log-entry flex flex-col">
                                         <!-- Renderização Especial para IAs Selecionadas (Atlas, Titan, Nexus) -->
-                                        <template v-if="['atlas', 'titan', 'nexus', 'orion', 'apollo'].includes(sessionConfig.strategy)">
+                                        <template v-if="['atlas', 'titan', 'nexus', 'orion'].includes(sessionConfig.strategy)">
                                             <div class="flex items-start">
                                                 <span class="text-gray-500 text-[10px] mr-2 mt-0.5">[{{ log.timestamp }}]</span>
                                                 <span class="mr-1 mt-0.5">{{ log.icon }}</span>
@@ -707,7 +707,7 @@
                                 <div v-else class="mobile-register-cards-container">
                                     <div v-for="log in realtimeLogs" :key="log.id" class="mobile-register-card pb-3 border-b border-[#1C1C1C] last:border-0">
                                         <!-- Refined Mobile Format (Atlas, Titan, Nexus) -->
-                                        <template v-if="['atlas', 'titan', 'nexus', 'orion', 'apollo'].includes(sessionConfig.strategy)">
+                                        <template v-if="['atlas', 'titan', 'nexus', 'orion'].includes(sessionConfig.strategy)">
                                             <div class="flex items-start">
                                                 <span class="mobile-register-time text-[9px] mr-2 mt-0.5">[{{ log.timestamp }}]</span>
                                                 <span class="mr-1 text-xs">{{ log.icon }}</span>
@@ -1014,7 +1014,6 @@ export default {
             historyPollingInterval: null, // Polling para histórico de operações
             lastLogTimestamp: null, // Timestamp do último log recebido (para detectar novos)
             tradeEventsSource: null,
-            sessionConfigPollingTimeout: null, // Timeout para polling de config
             
             // Estado de desativação
             isDeactivating: false,
@@ -1765,8 +1764,8 @@ export default {
                 return 'text-blue-400';
             }
 
-            // ATLAS/APOLLO SPECIFIC TITLES & CATEGORIES
-            if (this.sessionConfig.strategy === 'atlas' || this.sessionConfig.strategy === 'apollo') {
+            // ATLAS SPECIFIC TITLES & CATEGORIES
+            if (this.sessionConfig.strategy === 'atlas') {
                 if (firstLine.includes('INÍCIO') || firstLine.includes('COLETA') || firstLine.includes('ANÁLISE') || 
                     firstLine.includes('AVALIAÇÃO') || firstLine.includes('CONTRATO CRIADO') || firstLine.includes('EXECUÇÃO') ||
                     firstLine.includes('RESET') || firstLine.includes('ENCERRAMENTO')) {
@@ -2521,47 +2520,29 @@ export default {
         },
         
         startStatsUpdates() {
-            // Executar apenas uma atualização inicial; pooling desativado para stats
+            // Executar uma atualização inicial
             this.fetchDailyStats();
-            // Começar polling de configuração (session_status)
-            this.startSessionConfigPolling();
-            console.log('[InvestmentActive] ⏰ Atualizações de stats executadas uma vez; Polling de config iniciado');
+            this.fetchSessionConfig();
+            
+            // ✅ POLLING DE STATUS (Backup do SSE): Verificar status a cada 5 segundos
+            // Isso garante que os modais abram mesmo se o evento SSE for perdido
+            if (this.statsUpdateInterval) clearInterval(this.statsUpdateInterval);
+            
+            this.statsUpdateInterval = setInterval(() => {
+                this.fetchSessionConfig();
+                // Opcional: stats também se quiser manter atualizado sem depender só de eventos
+                // this.fetchDailyStats(); 
+            }, 5000);
+            
+            console.log('[InvestmentActive] ⏰ Polling de status (backup) iniciado: 5s');
         },
         
         stopStatsUpdates() {
             if (this.statsUpdateInterval) {
                 clearInterval(this.statsUpdateInterval);
                 this.statsUpdateInterval = null;
+                console.log('[InvestmentActive] ⏹️ Polling de status parado');
             }
-            // Parar polling de configuração
-            if (this.sessionConfigPollingTimeout) {
-                clearTimeout(this.sessionConfigPollingTimeout);
-                this.sessionConfigPollingTimeout = null;
-            }
-            console.log('[InvestmentActive] ⏹️ Atualizações paradas');
-        },
-
-        startSessionConfigPolling() {
-            // Limpar timeout anterior se existir
-            if (this.sessionConfigPollingTimeout) {
-                clearTimeout(this.sessionConfigPollingTimeout);
-            }
-
-            // Agendar próxima execução
-            this.sessionConfigPollingTimeout = setTimeout(async () => {
-                // Verificar se componente ainda está ativo
-                if (!this.aiActive && !this.sessionConfig?.isActive) {
-                     // Se IA não estiver ativa, talvez não precise pollar tão frequente, ou parar?
-                     // Por enquanto mantemos para detectar mudanças externas
-                }
-
-                await this.fetchSessionConfig();
-                
-                // Recursão para manter o loop apenas após a resposta (prevent overlap)
-                if (this.aiActive || (this.sessionConfig && this.sessionConfig.isActive)) {
-                    this.startSessionConfigPolling();
-                }
-            }, 5000); // 5 segundos
         },
         
         toggleAI() {
