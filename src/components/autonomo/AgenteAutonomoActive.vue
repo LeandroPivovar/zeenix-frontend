@@ -157,7 +157,7 @@
 							<div class="p-2 bg-[#1a1a1a] rounded-md">
 								<i class="fas fa-microchip text-green-500 text-base"></i>
 							</div>
-							<div class="flex items-center gap-3">
+							<div class="text-left">
 								<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide flex items-center gap-1">
 									AGENTE ATIVO
 									<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
