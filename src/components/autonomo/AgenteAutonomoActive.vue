@@ -162,19 +162,19 @@
 									AGENTE ATIVO
 									<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
 								</div>
-								<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
-									<div class="strategy-icons-inline mr-1" v-if="agenteData.id">
+									<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
+								</div>
+								<div class="text-sm font-bold flex items-center gap-1.5 text-green-500 text-left uppercase">
+									<div class="strategy-icons-inline mr-1" v-if="currentAgentId">
 										<img 
-											v-for="icon in runningAgents.find(a => a.id === agenteData.id)?.icons" 
+											v-for="icon in runningAgents.find(a => a.id === currentAgentId)?.icons" 
 											:key="icon" 
 											:src="icon" 
 											class="deriv-svg-icon-small"
 										/>
 									</div>
-									<span v-else class="text-lg">{{ runningAgents.find(a => a.id === agenteData.id)?.emoji || '⚡' }}</span>
-									<span>{{ agenteData.estrategia.replace('IA ', '').charAt(0).toUpperCase() + agenteData.estrategia.replace('IA ', '').slice(1) }}</span>
-									<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
-								</div>
+									<span v-else class="text-lg">{{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}</span>
+									<span>{{ agenteData.estrategia ? agenteData.estrategia.replace('IA ', '') : 'Agente' }}</span>
 							</div>
 						</div>
 					</div>
@@ -208,7 +208,7 @@
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center justify-between gap-2">
 										<h5 class="text-xs font-bold text-white truncate text-left">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
-										<span v-if="agenteData.id === agent.id" class="text-[8px] text-[#22c55e] font-bold uppercase tracking-tighter shrink-0">Ativo</span>
+										<span v-if="currentAgentId === agent.id" class="text-[8px] text-[#22c55e] font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
 									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line" v-html="formatAgentDescription(agent.description)"></p>
 								</div>
@@ -904,6 +904,15 @@
 			}
 		},
 		computed: {
+			currentAgentId() {
+				// Normalizar ID do agente se não vier explícito
+				// Se agenteData.id existir, usa. Senão, tenta inferir da estratégia.
+				if (this.agenteData && this.agenteData.id) return this.agenteData.id;
+				const strategy = this.agenteData?.estrategia?.toLowerCase() || '';
+				if (strategy.includes('zeus')) return 'zeus';
+				if (strategy.includes('falcon')) return 'falcon';
+				return 'zeus'; // Fallback default
+			},
 			dateRangeText() {
 				const option = this.dateOptions.find(o => o.value === this.selectedPeriod);
 				if (option) return option.label;
@@ -955,15 +964,13 @@
                 return this.dailyData.reduce((sum, day) => sum + (day.profit || 0), 0);
             },
 			periodProfitPercent() {
-				// Para período, calculamos % sobre o capital inicial (ou saldo atual estimado se não tiver inicial guardado)
-                // Se for session, usa logica existente.
-                // Se for filtro (ex: 30 dias), calcular sobre o capital NO INICIO do periodo?
-                // Simplificação: (LucroPeriodo / (CapitalFinal - LucroPeriodo)) * 100
-                const profit = this.periodProfit;
-                const finalCap = this.finalCapital; // Computed
-                const startCap = finalCap - profit;
-                if (startCap <= 0) return 0;
-                return (profit / startCap) * 100;
+				// ✅ FIX: Calcular percentual baseado no CAPITAL INICIAL configurado
+				// Isso evita distorções quando o lucro é alto e o capital inicial "estimado" fica flutuando
+				const profit = this.periodProfit;
+                const baseCapital = this.agentConfig?.initialStake || this.agentConfig?.initialBalance || this.initialCapital;
+                
+                if (!baseCapital || baseCapital <= 0) return 0;
+                return (profit / baseCapital) * 100;
 			},
 			avgDailyProfitPercent() {
 				// Média percentual diária
@@ -1237,13 +1244,28 @@
                     });
                     
                     // Footer: FIM (Visualmente base do bloco)
-                    // Se é DESC, o fim (mais recente) já passou (foi o primeiro trade).
-                    // Talvez o user queira ver o bloco fechado.
-                    // Adicionamos footer após os trades.
+                    // ✅ FIX: Adicionar motivo do término se for a sessão atual e estiver pausado/stop
+                    let footerText = `FIM DA SESSÃO - ${endTime}`;
+                    
+                    // Se for a sessão mais recente (idx=0) e o agente não estiver ativo, mostrar motivo
+                    if (idx === 0 && this.agenteData.sessionStatus !== 'active' && this.agenteData.sessionStatus) {
+                        const statusMap = {
+                            'paused': 'AGENTE PAUSADO',
+                            'stopped_loss': 'STOP LOSS ATINGIDO',
+                            'stopped_profit': 'META ATINGIDA',
+                            'stopped_blindado': 'STOP BLINDADO ATINGIDO',
+                            'error': 'ERRO NO SISTEMA',
+                            'inactive': 'SESSÃO ENCERRADA'
+                        };
+                         // Tenta pegar do status do agente ou do último status processado
+                        const reason = statusMap[this.agenteData.sessionStatus] || statusMap[this.lastProcessedStatus] || this.agenteData.sessionStatus.toUpperCase();
+                        footerText += ` (${reason})`;
+                    }
+
                     items.push({
                         type: 'footer',
                         id: `footer-${idx}`,
-                        endTime: endTime,
+                        endTime: footerText,
                         totalProfit: totalProfit
                     });
                 });
@@ -1807,8 +1829,8 @@
             checkLogsForStopEvents(logs) {
                 if (!logs || logs.length === 0) return;
                 
-                // Verificar os últimos 10 logs (mais recentes)
-                const recentLogs = logs.slice(0, 10);
+                // Verificar TODOS os logs para garantir que não perdemos o evento
+                const recentLogs = logs;
                 
                 // 1. STOP BLINDADO ATINGIDO (Extreme Strict Mode)
                 const hasBlindadoHit = recentLogs.some(log => 
