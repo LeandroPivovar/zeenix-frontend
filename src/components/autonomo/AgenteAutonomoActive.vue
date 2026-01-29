@@ -157,18 +157,18 @@
 							<div class="p-2 bg-[#1a1a1a] rounded-md">
 								<i class="fas fa-microchip text-green-500 text-base"></i>
 							</div>
-							<div class="text-left">
+							<div class="flex items-center gap-3">
 								<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide flex items-center gap-1">
 									AGENTE ATIVO
 									<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
 								</div>
-									<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
-								</div>
+								
 								<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
-									<div class="strategy-icons-inline mr-1 text-lg">
+									<div class="strategy-icons-inline text-lg">
 										{{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}
 									</div>
-									<span class="text-white">{{ agenteData.estrategia ? agenteData.estrategia.replace('IA ', '') : 'Agente' }}</span>
+									<span class="text-white font-bold">{{ agenteData.estrategia ? agenteData.estrategia.replace('IA ', '') : 'Agente' }}</span>
+								</div>
 							</div>
 						</div>
 					</div>
