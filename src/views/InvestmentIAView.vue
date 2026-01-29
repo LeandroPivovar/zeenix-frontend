@@ -3990,7 +3990,7 @@ export default {
 
 .categorized-modal {
     width: 100%;
-    max-width: 800px;
+    max-width: 850px;
     background: #0D0D0D;
     border: 1px solid #22C55E33;
     padding: 1.5rem;
@@ -4004,13 +4004,13 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .modal-title {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: #fff;
     margin: 0;
@@ -4032,17 +4032,17 @@ export default {
 .agents-modal-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
 .agent-option-premium {
     display: flex;
     align-items: center;
-    padding: 1rem;
+    padding: 1.5rem;
     background: #111;
     border: 1px solid #1C1C1C;
-    border-radius: 0.75rem;
-    gap: 1rem;
+    border-radius: 1rem;
+    gap: 1.25rem;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -4050,6 +4050,7 @@ export default {
 .agent-option-premium:hover {
     border-color: #22C55E66;
     background: #161616;
+    transform: translateY(-2px);
 }
 
 .agent-option-premium.active {
@@ -4060,7 +4061,7 @@ export default {
 .agent-option-simple-row {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.25rem;
 }
 
 .strategy-icons-inline {
@@ -4086,29 +4087,29 @@ export default {
 }
 
 .agent-option-title {
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: #fff;
-    margin: 0 0 0.125rem 0;
+    margin: 0 0 0.35rem 0;
 }
 
 .agent-option-desc {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: #A1A1A1;
     margin: 0;
-    line-height: 1.3;
+    line-height: 1.4;
 }
 
 .strategy-icon-box {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
-    background-color: rgba(34, 197, 94, 0.2); /* zenix-green with opacity */
-    border-radius: 8px;
+    width: 48px;
+    height: 48px;
+    background-color: rgba(34, 197, 94, 0.15); /* zenix-green with opacity */
+    border-radius: 10px;
     color: #FFFFFF;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
 }
 
 .agent-option-text-col {
@@ -4120,7 +4121,8 @@ export default {
 
 .agent-option-check {
     color: #333;
-    font-size: 1rem;
+    font-size: 1.25rem;
+    margin-left: 0.5rem;
 }
 
 .agent-option-premium.active .agent-option-check {
@@ -4142,9 +4144,17 @@ export default {
 /* Responsive */
 @media (min-width: 769px) {
     .agents-modal-list {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 1rem !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 1.25rem !important;
+    }
+    
+    .agent-option-premium {
+        width: calc(50% - 0.7rem);
+        flex-grow: 1;
+        max-width: 48%; /* Ensure 2 per row mostly */
     }
 }
 
