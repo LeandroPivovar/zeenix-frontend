@@ -47,6 +47,7 @@
             :trade-history="tradeHistoryData"
             :user-id="currentUserId"
             :plan-features="planFeatures"
+            :is-mobile="isMobile"
             @pausar-agente="toggleAgenteStatus('componenteAtivo')"
             @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
             @change-agent="handleChangeAgent"

@@ -1,5 +1,5 @@
 <template>
-  <nav class="desktop-bottom-nav">
+  <nav v-if="isMobile" class="desktop-bottom-nav">
     <router-link 
       to="/dashboard" 
       class="nav-item"
@@ -142,8 +142,16 @@ export default {
   name: 'DesktopBottomNav',
   data() {
     return {
-      showDevModal: false
+      showDevModal: false,
+      isMobile: false
     }
+  },
+  mounted() {
+    this.checkMobile();
+    window.addEventListener('resize', this.checkMobile);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.checkMobile);
   },
   computed: {
     isAdmin() {
@@ -182,6 +190,9 @@ export default {
     },
     openDevModal() {
       this.showDevModal = true;
+    },
+    checkMobile() {
+      this.isMobile = window.innerWidth <= 1024;
     }
   }
 }

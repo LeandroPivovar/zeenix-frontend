@@ -295,7 +295,7 @@
 <script>
 export default {
     name: 'CopyTradingComponent',
-    props: ['performanceData'],
+    props: ['performanceData', 'isMobile'],
     data() {
         return {
             selectedPeriod: '7',

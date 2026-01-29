@@ -553,7 +553,7 @@
                             
                             <template v-else>
                                 <!-- Desktop: Tabela -->
-                                <div class="logs-table-wrapper desktop-logs-table custom-scrollbar">
+                                <div v-if="!isMobile" class="logs-table-wrapper desktop-logs-table custom-scrollbar">
                                     <table class="logs-table">
                                         <thead>
                                             <tr>
@@ -602,7 +602,7 @@
                                 </div>
                                 
                                 <!-- Mobile: Cards -->
-                                <div class="mobile-logs-cards custom-scrollbar">
+                                <div v-if="isMobile" class="mobile-logs-cards custom-scrollbar">
                                     <div v-for="(op, index) in logOperations" :key="op.id || op.created_at || op.timestamp || `mob-log-${index}`" class="mobile-log-card">
                                         <div class="mobile-log-time">{{ op.time }}</div>
                                         <div class="mobile-log-type">
@@ -654,6 +654,7 @@
                             
                             <!-- Desktop Logs List -->
                             <div 
+                                v-if="!isMobile"
                                 ref="logsContainer" 
                                 class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar relative desktop-register-list" 
                                 style="scroll-behavior: smooth;"
@@ -694,6 +695,7 @@
                             
                             <!-- Mobile: Cards de Registro -->
                             <div 
+                                v-if="isMobile"
                                 ref="logsContainerMobile" 
                                 class="flex-1 overflow-y-auto custom-scrollbar relative mobile-register-cards" 
                                 style="scroll-behavior: smooth; max-height: 500px;"
@@ -8633,7 +8635,7 @@ button i,
     }
 
     .investment-active-main {
-        padding: 30px 15px !important;
+        padding: 20px 15px !important;
         max-width: 100%;
         width: 100%;
         box-sizing: border-box;

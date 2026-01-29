@@ -188,6 +188,10 @@ export default {
         accountPerformance: {
             type: Object,
             default: () => ({})
+        },
+        isMobile: {
+            type: Boolean,
+            default: false
         }
     },
     methods: {

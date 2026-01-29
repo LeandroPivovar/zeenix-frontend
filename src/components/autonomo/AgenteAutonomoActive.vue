@@ -1,5 +1,5 @@
 ﻿<template>
-	<div class="min-h-screen text-[#FAFAFA] font-sans" style="padding-top: 2rem;">
+	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ paddingTop: isMobile ? '20px' : '2rem' }">
 		<!-- Header -->
 		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 md:mt-8 mt-0">
 			<!-- Title Section -->
@@ -61,7 +61,7 @@
 			<!-- Metric Cards -->
 			<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
 				<!-- Capital Inicial -->
-				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212] hidden md:block">
+				<div v-if="!isMobile" class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
 					<div class="flex items-center mb-4 gap-2">
 						<div class="text-green-500">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
@@ -124,7 +124,8 @@
 
 				<!-- Lucro Medio/Dia -->
 				<div 
-					class="rounded-lg border bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212] hidden md:block"
+					v-if="!isMobile"
+					class="rounded-lg border bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]"
 					:class="avgDailyProfit >= 0 ? 'border-[#27272a]' : 'border-red-500/20'"
 				>
 					<div class="flex items-center gap-2 mb-3">
@@ -269,7 +270,7 @@
                             {{ type.label }}
                         </button>
                     </div>
-                    <span class="text-[#A1A1AA] text-xs font-medium uppercase tracking-tight hidden md:block">{{ dateRangeText }}</span>
+                    <span v-if="!isMobile" class="text-[#A1A1AA] text-xs font-medium uppercase tracking-tight">{{ dateRangeText }}</span>
                 </div>
 			</div>
 			
@@ -755,6 +756,10 @@
 				default: null
 			},
 			shouldTeleport: {
+				type: Boolean,
+				default: false
+			},
+			isMobile: {
 				type: Boolean,
 				default: false
 			}
