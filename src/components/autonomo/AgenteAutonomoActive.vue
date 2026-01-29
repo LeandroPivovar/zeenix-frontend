@@ -875,8 +875,15 @@
 			};
 		},
 		mounted() {
+            // Resetar flag global de modal no início
+            window.zenixStopModalActive = false;
+
 			window.addEventListener('click', this.closeDropdownsOnClickOutside);
 			
+            if (this.logs && this.logs.length > 0) {
+                 this.checkLogsForStopEvents(this.logs);
+            }
+            
 			if (this.abaAtiva === 'grafico') {
 				this.$nextTick(() => {
 					this.initIndexChart();
@@ -1295,8 +1302,17 @@
                         this.$emit('live-balance-update', newVal);
                     }
                 }
+            },
+            logs: {
+                deep: true,
+                handler(newLogs) {
+                   if (newLogs && newLogs.length > 0) {
+                       this.checkLogsForStopEvents(newLogs);
+                   }
+                }
             }
 		},
+
 		methods: {
 			checkStopStatus(status) {
 				if (!status || status === 'active' || status === this.lastProcessedStatus) return;
@@ -1825,11 +1841,14 @@
                 // Verificar TODOS os logs para garantir que não perdemos o evento
                 const recentLogs = logs;
                 
-                // 1. STOP BLINDADO ATINGIDO (Extreme Strict Mode)
+                // Log de debug para ver o que está chegando
+                // console.log('[AgenteAutonomo] Checking Logs:', recentLogs.length, 'entries');
+
+                // 1. STOP BLINDADO ATINGIDO
                 const hasBlindadoHit = recentLogs.some(log => 
                     log.message && (
-                        log.message.includes('STOP BLINDADO ATINGIDO') || 
-                        log.message.includes('BLINDADO ATINGIDO')
+                        log.message.toUpperCase().includes('STOP BLINDADO ATINGIDO') || 
+                        log.message.toUpperCase().includes('BLINDADO ATINGIDO')
                     )
                 );
                 
@@ -1841,7 +1860,7 @@
                         
                         // Verificar se é por ajuste de entrada
                         const isAjuste = recentLogs.some(log => 
-                            log.message && log.message.includes('STOP BLINDADO ATINGIDO POR AJUSTE DE ENTRADA')
+                            log.message && log.message.toUpperCase().includes('STOP BLINDADO ATINGIDO POR AJUSTE DE ENTRADA')
                         );
                         
                         if (isAjuste) {
@@ -1856,9 +1875,9 @@
                 // Pattern from screenshot: "STOP LOSS ATINGIDO! DAILY_LOSS=..."
                 const hasNormalStopLossMessage = recentLogs.some(log => 
                     log.message && (
-                        log.message.includes('STOP LOSS ATINGIDO') ||
-                        log.message.includes('STOP LOSS REACHED') ||
-                        (log.message.includes('STOP LOSS') && log.message.includes('ATINGIDO') && !log.message.includes('BLINDADO'))
+                        log.message.toUpperCase().includes('STOP LOSS ATINGIDO') ||
+                        log.message.toUpperCase().includes('STOP LOSS REACHED') ||
+                        (log.message.toUpperCase().includes('STOP LOSS') && log.message.toUpperCase().includes('ATINGIDO') && !log.message.toUpperCase().includes('BLINDADO'))
                     )
                 );
                 
@@ -1869,7 +1888,7 @@
                         
                         // Verificar se é por ajuste de entrada
                         const isAjuste = recentLogs.some(log => 
-                            log.message && log.message.includes('STOP LOSS ATINGIDO POR AJUSTE DE ENTRADA')
+                            log.message && log.message.toUpperCase().includes('STOP LOSS ATINGIDO POR AJUSTE DE ENTRADA')
                         );
                         
                         if (isAjuste) {
@@ -1883,9 +1902,9 @@
                 // 3. META DE LUCRO ATINGIDA
                 const hasProfitMessage = recentLogs.some(log => 
                     log.message && (
-                        log.message.includes('META DE LUCRO ATINGIDA') ||
-                        log.message.includes('META ATINGIDA') ||
-						log.message.includes('LUCRO ATINGIDO')
+                        log.message.toUpperCase().includes('META DE LUCRO ATINGIDA') ||
+                        log.message.toUpperCase().includes('META ATINGIDA') ||
+                        log.message.toUpperCase().includes('LUCRO ATINGIDO')
                     )
                 );
 
