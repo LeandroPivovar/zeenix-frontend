@@ -1,0 +1,238 @@
+[
+    {
+        "id": "apollo",
+        "name": "Apollo",
+        "config": {
+            "form": {
+                "market": "R_100",
+                "tradeType": "DIGITUNDER",
+                "duration": 1,
+                "durationUnit": "t",
+                "prediction": 8,
+                "attackFilters": [
+                    {
+                        "id": "digit_density",
+                        "name": "Densidade de Dígitos 8 e 9",
+                        "active": true,
+                        "config": {
+                            "window": 20,
+                            "digits": "8, 9",
+                            "operator": "<",
+                            "threshold": 5
+                        }
+                    }
+                ],
+                "initialStake": 1,
+                "profitTarget": 100,
+                "stopLoss": 100,
+                "useBlindado": false
+            },
+            "recoveryConfig": {
+                "enabled": true,
+                "market": "R_100",
+                "tradeType": "DIGITUNDER",
+                "prediction": 4,
+                "lossesToActivate": 1,
+                "attackFilters": [
+                    {
+                        "id": "digit_density",
+                        "name": "Densidade de Dígitos < 4",
+                        "active": true,
+                        "config": {
+                            "window": 20,
+                            "digits": "0, 1, 2, 3",
+                            "operator": ">",
+                            "threshold": 4
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "id": "atlas",
+        "name": "Atlas",
+        "config": {
+            "form": {
+                "market": "R_100",
+                "tradeType": "DIGITOVER",
+                "duration": 1,
+                "durationUnit": "t",
+                "prediction": 2,
+                "attackFilters": [
+                    {
+                        "id": "digit_density",
+                        "name": "Densidade Baixa de Dígitos 0, 1, 2",
+                        "active": true,
+                        "config": {
+                            "window": 10,
+                            "digits": "0, 1, 2",
+                            "operator": "<",
+                            "threshold": 2
+                        }
+                    }
+                ],
+                "initialStake": 1,
+                "profitTarget": 100,
+                "stopLoss": 100,
+                "useBlindado": false
+            },
+            "recoveryConfig": {
+                "enabled": true,
+                "market": "R_100",
+                "tradeType": "CALL",
+                "lossesToActivate": 1,
+                "attackFilters": [
+                    {
+                        "id": "price_momentum",
+                        "name": "Tendência de Preço (Alta)",
+                        "active": true,
+                        "config": {
+                            "window": 5,
+                            "ticksToConfirm": 3,
+                            "minDelta": 0.021
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "id": "nexus",
+        "name": "Nexus",
+        "config": {
+            "form": {
+                "market": "R_100",
+                "tradeType": "CALL",
+                "duration": 5,
+                "durationUnit": "t",
+                "attackFilters": [
+                    {
+                        "id": "price_momentum",
+                        "name": "Momentum de Preço",
+                        "active": true,
+                        "config": {
+                            "window": 20,
+                            "ticksToConfirm": 1,
+                            "minDelta": 0.05
+                        }
+                    }
+                ],
+                "initialStake": 1,
+                "profitTarget": 100,
+                "stopLoss": 100,
+                "useBlindado": true
+            },
+            "recoveryConfig": {
+                "enabled": true,
+                "market": "R_100",
+                "tradeType": "CALL",
+                "lossesToActivate": 2,
+                "attackFilters": [
+                    {
+                        "id": "price_momentum",
+                        "name": "Recuperação Momentum",
+                        "active": true,
+                        "config": {
+                            "window": 5,
+                            "ticksToConfirm": 1,
+                            "minDelta": 0.03
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "id": "orion",
+        "name": "Orion",
+        "config": {
+            "form": {
+                "market": "R_100",
+                "tradeType": "DIGITOVER",
+                "duration": 1,
+                "durationUnit": "t",
+                "prediction": 3,
+                "attackFilters": [
+                    {
+                        "id": "digit_sequence",
+                        "name": "Sequência de Dígitos < 4",
+                        "active": true,
+                        "config": {
+                            "length": 3,
+                            "target": "under_4"
+                        }
+                    }
+                ],
+                "initialStake": 1,
+                "profitTarget": 100,
+                "stopLoss": 100,
+                "useBlindado": false
+            },
+            "recoveryConfig": {
+                "enabled": true,
+                "market": "R_100",
+                "tradeType": "CALL",
+                "lossesToActivate": 2,
+                "attackFilters": [
+                    {
+                        "id": "price_momentum",
+                        "name": "Recuperação Orion (Tendência)",
+                        "active": true,
+                        "config": {
+                            "window": 3,
+                            "ticksToConfirm": 2,
+                            "minDelta": 0.5
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "id": "titan",
+        "name": "Titan",
+        "config": {
+            "form": {
+                "market": "R_100",
+                "tradeType": "DIGITEVEN",
+                "duration": 1,
+                "durationUnit": "t",
+                "attackFilters": [
+                    {
+                        "id": "parity_majority",
+                        "name": "Maioria Par",
+                        "active": true,
+                        "config": {
+                            "window": 24,
+                            "percentage": 60,
+                            "maxNoise": 8
+                        }
+                    }
+                ],
+                "initialStake": 1,
+                "profitTarget": 100,
+                "stopLoss": 100,
+                "useBlindado": false
+            },
+            "recoveryConfig": {
+                "enabled": true,
+                "market": "R_100",
+                "tradeType": "DIGITEVEN",
+                "lossesToActivate": 4,
+                "attackFilters": [
+                    {
+                        "id": "parity_majority",
+                        "name": "Persistência Par",
+                        "active": true,
+                        "config": {
+                            "window": 10,
+                            "percentage": 70,
+                            "maxNoise": 2
+                        }
+                    }
+                ]
+            }
+        }
+    }
+]

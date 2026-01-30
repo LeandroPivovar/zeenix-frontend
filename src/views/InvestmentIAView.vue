@@ -447,6 +447,8 @@
                     :is-fictitious-balance-active="isFictitiousBalanceActive"
                     :fictitious-balance="fictitiousBalance"
                     :is-mobile="isMobile"
+                    :realtime-logs-prop="realtimeLogs"
+                    :log-operations-prop="logOperations"
                         @deactivate="deactivateIA"
                         @reactivate="activateIA"
                         @update-balance="handleLiveBalanceUpdate"
@@ -498,6 +500,8 @@ import { loadAvailableAccounts } from '../utils/accountsLoader';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal.vue';
 import MinimumStakeModal from '../components/modals/MinimumStakeModal.vue';
 import StrategyRequiredModal from '../components/modals/StrategyRequiredModal.vue';
+import StrategyAnalysis from '@/utils/StrategyAnalysis';
+import strategiesPresets from '@/utils/strategies_presets.json';
 
 export default {
     name: 'InvestmentIAView',
@@ -621,7 +625,20 @@ export default {
                 jump50: 'Volatilidade de 50% com saltos ocasionais de aproximadamente 100%',
                 jump75: 'Volatilidade de 75% com saltos ocasionais de aproximadamente 150%',
                 jump100: 'Volatilidade de 100% com saltos ocasionais de aproximadamente 200%'
-            }
+            },
+
+            // Frontend AI Operation Properties
+            isMonitoring: false,
+            tickHistory: [],
+            digitHistory: [],
+            activeFilters: [],
+            realtimeLogs: [],
+            logOperations: [],
+            currentActiveTrade: null,
+            consecutiveLosses: 0,
+            isRecoveryActive: false,
+            lastAnalysisResult: null,
+            isDeactivating: false
         }
     },
     watch: {
@@ -945,38 +962,18 @@ export default {
         async activateIA() {
             this.isActivating = true;
             try {
-                // ✅ Validação de Estratégia (User Story: Modal de Aviso)
+                // ✅ Validação de Estratégia
                 if (!this.selectedStrategy) {
                     console.warn('[InvestmentIAView] ⚠️ Nenhuma estratégia selecionada. Exibindo modal.');
                     this.showStrategyRequiredModal = true;
                     return;
                 }
 
-                console.log('[InvestmentIAView] ===== ATIVANDO IA =====');
-                console.log('[InvestmentIAView] 💰 VALOR DE ENTRADA:', this.entryValue);
-                console.log('[InvestmentIAView] Parâmetros configurados:', {
-                    entryValue: this.entryValue,
-                    profitTarget: this.profitTarget,
-                    lossLimit: this.lossLimit,
-                    mode: this.mode
-                });
-
-                if (!this.entryValue || this.entryValue < 0.35) {
-                    console.warn('[InvestmentIAView] ⚠️ Valor de entrada inválido:', this.entryValue);
-                    this.showMinimumStakeModal = true;
-                    this.isActivating = false;
-                    return;
-                }
-
-                // ✅ [NOVO] Validação de saldo mínimo (pelo menos 1 entrada)
+                console.log('[InvestmentIAView] ===== ATIVANDO IA (FRONTEND MODE) =====');
+                
+                // Validação de saldo mínimo
                 const currentBalance = this.balanceNumeric || 0;
                 const requiredBalance = this.entryValue;
-
-                console.log('[InvestmentIAView] 🔍 Verificando saldo mínimo:', {
-                    current: currentBalance,
-                    required: requiredBalance,
-                    accountType: this.accountType
-                });
 
                 if (currentBalance < requiredBalance) {
                     console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente para iniciar:', currentBalance, '<', requiredBalance);
@@ -985,61 +982,26 @@ export default {
                     return;
                 }
 
-                const userId = this.getUserId();
-                if (!userId) {
-                    console.error('[InvestmentIAView] ❌ Usuário não identificado');
+                // Carregar Configuração da Estratégia do Preset
+                const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
+                if (!strategyPreset) {
+                    this.$root.$toast.error('Configuração da estratégia não encontrada!');
                     return;
                 }
 
-                const derivToken = this.getDerivToken();
-                if (!derivToken) {
-                    console.error('[InvestmentIAView] ❌ Token Deriv não encontrado');
-                    return;
-                }
+                // Configurar filtros ativos baseados no preset
+                this.activeFilters = JSON.parse(JSON.stringify(strategyPreset.config.form.attackFilters));
+                this.isRecoveryActive = false;
+                this.consecutiveLosses = 0;
 
-                const preferredCurrency = (this.tradeCurrency === 'DEMO' || !this.tradeCurrency) ? 'USD' : this.tradeCurrency;
+                // Iniciar Conexão WebSocket Local
+                this.isInvestmentActive = true;
+                this.isMonitoring = true;
+                this.initTickConnection();
                 
-                // O saldo agora vem do mixin centralizado (balanceNumeric)
-                const accountBalanceReal = this.balanceNumeric || 0;
+                this.addLog(`🚀 IA ${strategyPreset.name} Iniciada com sucesso!`, 'success');
+                this.$root.$toast.success('IA iniciada com sucesso (Frontend Mode)!');
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-                const capitalInicial = accountBalanceReal > 0 ? accountBalanceReal : (this.balanceNumeric || this.entryValue || 1);
-                
-                console.log('[InvestmentIAView] 💰 Capital inicial para IA:', capitalInicial, '| Valor de entrada por operação:', this.entryValue);
-                
-                const response = await fetch(`${apiBase}/ai/activate`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({
-                        userId: userId,
-                        stakeAmount: capitalInicial, // ✅ Capital inicial = saldo real da conta ($9k)
-                        entryValue: this.entryValue || 1, // ✅ Valor de entrada por operação ($1.00)
-                        derivToken: derivToken,
-                        currency: preferredCurrency,
-                        mode: this.mode.toLowerCase(),
-                        profitTarget: this.profitTarget,
-                        lossLimit: this.lossLimit,
-                        modoMartingale: this.modoMartingale || 'conservador',
-                        strategy: this.selectedStrategy || 'orion',
-                        stopLossBlindado: this.stoplossBlindado, // ✅ ZENIX v2.0: Stop-Loss Blindado
-                        selectedMarket: this.selectedMarket, // ✅ Sincronização de Mercado (ZENIX v2.0)
-                    }),
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    this.isInvestmentActive = true;
-                    console.log('[InvestmentIAView] ✅ IA ativada com sucesso!');
-                    
-                    // Buscar histórico de ticks para construir o gráfico
-                    await this.fetchTicksHistory(1000);
-                } else {
-                    console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', result.message);
-                }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', error);
             } finally {
@@ -1049,36 +1011,20 @@ export default {
 
         async deactivateIA() {
             try {
-                console.log('[InvestmentIAView] Desativando IA...');
+                console.log('[InvestmentIAView] 🛑 Desativando IA (Frontend Mode)...');
+                this.isDeactivating = true;
+                
+                this.stopTickConnection();
+                this.isMonitoring = false;
+                this.isInvestmentActive = false;
+                
+                this.addLog('⏹️ IA Desativada pelo usuário.', 'info');
+                this.$root.$toast.info('IA desativada com sucesso.');
 
-                const userId = this.getUserId();
-                if (!userId) {
-                    console.error('[InvestmentIAView] ❌ Usuário não identificado');
-                    return;
-                }
-
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-                const response = await fetch(`${apiBase}/ai/deactivate`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({
-                        userId: userId,
-                    }),
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    this.isInvestmentActive = false;
-                    console.log('[InvestmentIAView] ✅ IA desativada com sucesso!');
-                } else {
-                    console.error('[InvestmentIAView] ❌ Erro ao desativar IA:', result.message);
-                }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao desativar IA:', error);
+            } finally {
+                this.isDeactivating = false;
             }
         },
 
@@ -1400,6 +1346,7 @@ export default {
         },
 
         async fetchTicks() {
+            if (this.isMonitoring) return; // Skip polling if local WebSocket is active
             try {
                 console.log('[InvestmentIAView] Buscando novos ticks...');
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
@@ -1477,7 +1424,235 @@ export default {
             } catch (error) {
                 console.error('[InvestmentIAView] Erro ao verificar status da IA:', error);
             }
-        }
+        },
+
+        // --- FRONTEND AI ENGINE METHODS ---
+
+        initTickConnection() {
+            const marketSymbol = this.getMarketSymbol(this.selectedMarket);
+            console.log(`[InvestmentIAView] 🔌 Conectando ao mercado: ${marketSymbol}`);
+
+            this.stopTickConnection();
+
+            const appId = localStorage.getItem('deriv_app_id') || '1089';
+            const endpoint = `wss://ws.derivws.com/websockets/v3?app_id=${appId}`;
+            
+            this.ws = new WebSocket(endpoint);
+
+            this.ws.onopen = () => {
+                this.addLog(`🔌 Conectado ao Deriv. Autorizando...`, 'info');
+                const token = this.getDerivToken();
+                
+                if (token) {
+                    this.ws.send(JSON.stringify({ authorize: token }));
+                } else {
+                    this.addLog('⚠️ Token Deriv não encontrado. Operações reais desativadas.', 'warning');
+                    this.subscribeTicks(marketSymbol);
+                }
+            };
+
+            this.ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    
+                    if (msg.msg_type === 'authorize') {
+                        if (msg.error) {
+                            this.addLog(`❌ Falha na autorização: ${msg.error.message}`, 'error');
+                        } else {
+                            this.addLog(`✅ Autorizado! Saldo: $${msg.authorize.balance}`, 'success');
+                            this.subscribeTicks(marketSymbol);
+                        }
+                    }
+
+                    if (msg.msg_type === 'tick') {
+                        this.handleTickMessage(msg);
+                    }
+
+                    if (msg.msg_type === 'buy') {
+                        if (msg.error) {
+                            this.addLog(`❌ ERRO NA COMPRA: ${msg.error.message}`, 'error');
+                        } else {
+                            this.addLog(`🚀 COMPRA REALIZADA! ID: ${msg.buy.contract_id}`, 'success');
+                            this.ws.send(JSON.stringify({
+                                proposal_open_contract: 1,
+                                contract_id: msg.buy.contract_id,
+                                subscribe: 1
+                            }));
+                        }
+                    }
+
+                    if (msg.msg_type === 'proposal_open_contract') {
+                        this.handleContractUpdate(msg.proposal_open_contract);
+                    }
+
+                } catch (e) {
+                    console.error('[WS] Erro JSON:', e);
+                }
+            };
+        },
+
+        stopTickConnection() {
+            if (this.ws) {
+                this.ws.close();
+                this.ws = null;
+            }
+        },
+
+        subscribeTicks(symbol) {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(JSON.stringify({
+                    ticks: symbol,
+                    subscribe: 1
+                }));
+                this.addLog(`📡 Monitorando ticks de ${symbol}...`, 'info');
+            }
+        },
+
+        handleTickMessage(msg) {
+            const tick = msg.tick;
+            const price = tick.quote;
+            this.currentPrice = price;
+
+            // Atualizar histórico de ticks
+            this.tickHistory.push({
+                time: tick.epoch,
+                value: price
+            });
+            if (this.tickHistory.length > 500) this.tickHistory.shift();
+            
+            this.ticks = [...this.tickHistory];
+
+            // Atualizar histórico de dígitos
+            const digit = parseInt(price.toString().slice(-1));
+            this.digitHistory.push(digit);
+            if (this.digitHistory.length > 200) this.digitHistory.shift();
+
+            // EXECUTAR ANÁLISE
+            if (this.isMonitoring) {
+                this.runAnalysis();
+            }
+        },
+
+        runAnalysis() {
+            if (this.currentActiveTrade) return;
+
+            const strategy = this.isRecoveryActive ? 'recovery' : 'main';
+            const data = {
+                tickHistory: this.tickHistory.map(t => t.value),
+                digitHistory: this.digitHistory
+            };
+
+            let allPassed = true;
+            for (const filter of this.activeFilters) {
+                if (!filter.active) continue;
+                
+                const result = StrategyAnalysis.evaluate(filter, data);
+                if (!result.pass) {
+                    allPassed = false;
+                    break;
+                }
+            }
+
+            if (allPassed && this.activeFilters.length > 0) {
+                this.addLog(`🎯 Sinal detectado (${strategy})! Executando trade...`, 'success');
+                this.executeRealTrade();
+            }
+        },
+
+        async executeRealTrade() {
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
+            const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
+            const tradeConfig = this.isRecoveryActive ? strategyPreset.config.recoveryConfig : strategyPreset.config.form;
+
+            const buyRequest = {
+                buy: '1',
+                price: Number(this.entryValue),
+                parameters: {
+                    amount: Number(this.entryValue),
+                    basis: 'stake',
+                    contract_type: tradeConfig.tradeType,
+                    currency: 'USD',
+                    duration: tradeConfig.duration || 1,
+                    duration_unit: tradeConfig.durationUnit || 't',
+                    symbol: this.getMarketSymbol(this.selectedMarket)
+                }
+            };
+
+            if (tradeConfig.prediction !== undefined) {
+                buyRequest.parameters.barrier = tradeConfig.prediction.toString();
+            }
+
+            this.currentActiveTrade = { status: 'PENDING' };
+            this.ws.send(JSON.stringify(buyRequest));
+        },
+
+        handleContractUpdate(contract) {
+            if (contract.is_sold) {
+                const profit = contract.profit;
+                const win = profit > 0;
+                
+                this.addLog(`🏁 Contrato finalizado: ${win ? 'VITORIA' : 'DERROTA'} ($${profit})`, win ? 'success' : 'error');
+
+                this.dailyStats.totalTrades++;
+                if (win) {
+                    this.dailyStats.wins++;
+                    this.consecutiveLosses = 0;
+                    this.isRecoveryActive = false;
+                    const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
+                    this.activeFilters = JSON.parse(JSON.stringify(strategyPreset.config.form.attackFilters));
+                } else {
+                    this.dailyStats.losses++;
+                    this.consecutiveLosses++;
+                    
+                    const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
+                    if (strategyPreset.config.recoveryConfig.enabled && 
+                        this.consecutiveLosses >= strategyPreset.config.recoveryConfig.lossesToActivate) {
+                        this.isRecoveryActive = true;
+                        this.activeFilters = JSON.parse(JSON.stringify(strategyPreset.config.recoveryConfig.attackFilters));
+                        this.addLog('🛡️ MODO RECUPERAÇÃO ATIVADO!', 'warning');
+                    }
+                }
+                
+                this.dailyStats.profitLoss += profit;
+                this.dailyStats.winrate = (this.dailyStats.wins / this.dailyStats.totalTrades) * 100;
+
+                this.logOperations.unshift({
+                    time: new Date().toLocaleTimeString(),
+                    pair: contract.display_name,
+                    direction: contract.contract_type,
+                    entryPrice: contract.entry_tick,
+                    exitPrice: contract.exit_tick,
+                    investment: `$${contract.buy_price}`,
+                    pnl: `${win ? '+' : ''}$${profit}`
+                });
+
+                this.currentActiveTrade = null;
+            }
+        },
+
+        addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+            
+            this.realtimeLogs.unshift({
+                id: Date.now() + Math.random(),
+                timestamp,
+                message,
+                type,
+                icon
+            });
+
+            if (this.realtimeLogs.length > 50) this.realtimeLogs.pop();
+        },
+
+        getMarketSymbol(market) {
+            const map = {
+                vol10: 'R_10', vol25: 'R_25', vol50: 'R_50', vol75: 'R_75', vol100: 'R_100',
+                vol10_1s: '1HZ10V', vol25_1s: '1HZ25V', vol50_1s: '1HZ50V', vol75_1s: '1HZ75V', vol100_1s: '1HZ100V'
+            };
+            return map[market] || 'R_100';
+        },
     },
     created() {
         this.checkMobile();

@@ -959,6 +959,14 @@ export default {
         isMobile: {
             type: Boolean,
             default: false
+        },
+        realtimeLogsProp: {
+            type: Array,
+            default: () => []
+        },
+        logOperationsProp: {
+            type: Array,
+            default: () => []
         }
     },
     data() {
@@ -4368,6 +4376,24 @@ export default {
     },
 
     watch: {
+        realtimeLogsProp: {
+            handler(newLogs) {
+                if (newLogs && newLogs.length > 0) {
+                    this.realtimeLogs = [...newLogs];
+                }
+            },
+            immediate: true,
+            deep: true
+        },
+        logOperationsProp: {
+            handler(newOps) {
+                if (newOps && newOps.length > 0) {
+                    this.logOperations = [...newOps];
+                }
+            },
+            immediate: true,
+            deep: true
+        },
         ticks: {
             handler(newTicks) {
                 console.log('[InvestmentActive] Ticks atualizados:', newTicks.length);
