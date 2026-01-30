@@ -163,8 +163,9 @@
 
                 <!-- CONFIGURATION FORM -->
                 <div v-else class="strategy-creator-form-container px-4">
-                    <div class="grid grid-cols-12 gap-6">
-                        <div class="col-span-12">
+                    <form @submit.prevent="submitForm" class="space-y-8">
+                        <div class="grid grid-cols-12 gap-6">
+                            <div class="col-span-12">
                             <!-- Mercado Section (Fixed) -->
                             <div class="form-group mb-6">
                                 <label class="block text-white font-bold mb-2">Mercado</label>
@@ -431,8 +432,9 @@
                                 <span>Iniciar Robô</span>
                             </button>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
+            </div>
             </main>
         </div>
 
