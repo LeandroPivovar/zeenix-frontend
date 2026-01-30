@@ -19,7 +19,7 @@
                 @open-settings="showSettingsModal = true"
             />
 
-            <main class="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
+            <main class="flex-1 p-2 md:p-4 lg:p-6 overflow-auto flex flex-col justify-start">
                 <!-- Header Stats Card -->
                 <div class="bg-gradient-to-br from-secondary/60 via-secondary/40 to-secondary/20 rounded-2xl border border-border/30 p-4 md:p-6 lg:p-8 relative overflow-hidden fade-in shadow-2xl shadow-black/40">
                     <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
@@ -732,7 +732,8 @@ export default {
 .dashboard-content-wrapper {
 	flex-grow: 1;
 	margin-left: 280px;
-	transition: margin-left 0.3s ease;
+	width: calc(100% - 280px);
+	transition: all 0.3s ease;
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
@@ -740,10 +741,14 @@ export default {
 
 .dashboard-content-wrapper.sidebar-collapsed {
 	margin-left: 0;
+	width: 100%;
 }
 
 @media (max-width: 1024px) {
-	.dashboard-content-wrapper { margin-left: 0; }
+	.dashboard-content-wrapper { 
+		margin-left: 0; 
+		width: 100%;
+	}
 	.dashboard-content-wrapper.sidebar-collapsed { margin-left: 0; }
 }
 
