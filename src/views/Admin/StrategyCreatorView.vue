@@ -1378,15 +1378,10 @@ export default {
         },
         selectTradeType(item) {
             if (this.modalContext === 'main') {
-                this.form.selectedTradeTypeGroup = item.value;
-                if (item.directions && item.directions.length > 0) {
-                     this.form.tradeType = item.directions[0].value;
-                }
+                this.form.tradeType = item.value;
+                // Clear group if needed or set it based on category lookup if we want to reverse track
             } else {
-                this.recoveryConfig.selectedTradeTypeGroup = item.value;
-                if (item.directions && item.directions.length > 0) {
-                     this.recoveryConfig.tradeType = item.directions[0].value;
-                }
+                this.recoveryConfig.tradeType = item.value;
             }
             
             this.$root.$toast.success(`Tipo de contrato selecionado: ${item.label}`);
