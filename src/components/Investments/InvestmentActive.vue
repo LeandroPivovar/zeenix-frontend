@@ -837,36 +837,6 @@
                         </div>
 
                     </div>
-                </div>                                    </div>
-                                </div>
-
-                            </div>
-
-                                <!-- Divisor Sutil -->
-                                <div class="h-0 w-full border-t border-dashed border-[#383838] my-6"></div>
-
-                                <!-- Botão Pausar/Reiniciar (100% largura) -->
-                                <div class="flex flex-col items-start mt-0">
-                                    <div class="mb-3 text-left" v-if="!aiStoppedAutomatically">
-                                        <p class="text-white font-bold text-sm text-left">IA em Funcionamento</p>
-                                        <p class="text-[11px] text-zenix-secondary mt-1 text-left leading-snug">Monitorando o mercado e executando a estratégia automaticamente.</p>
-                                    </div>
-                                    <div class="mb-3 text-left" v-else>
-                                        <p class="text-white font-bold text-sm text-left">IA Pausada Automaticamente</p>
-                                        <p class="text-[11px] text-zenix-secondary mt-1 text-left leading-snug">Meta atingida ou limite de proteção alcançado.</p>
-                                    </div>
-                                    <button 
-                                        type="button"
-                                        class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
-                                        @click="handleDeactivate"
-                                        :disabled="isDeactivating"
-                                    >
-                                        <i :class="['fas text-sm mr-2', pauseButtonIcon]"></i>
-                                        <span>{{ isDeactivating ? 'Processando...' : pauseButtonText }}</span>
-                                    </button>
-                                </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
