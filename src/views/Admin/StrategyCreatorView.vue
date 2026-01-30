@@ -528,7 +528,8 @@
                         <!-- Submit Button -->
                         <div class="col-span-12 pt-6">
                             <button 
-                                type="submit" 
+                                type="button" 
+                                @click="handleStartClick"
                                 class="w-full bg-zenix-green hover:bg-green-600 text-black font-bold text-lg py-4 rounded-lg flex justify-center items-center gap-3 transition-colors shadow-lg hover:shadow-zenix-green/20"
                             >
                                 <i class="fa-solid fa-play"></i>
@@ -545,6 +546,63 @@
             :is-open="showSettingsModal" 
             @close="showSettingsModal = false" 
         />
+
+        <!-- Account Selection Modal -->
+        <Teleport to="body">
+            <div 
+                v-if="showAccountModal" 
+                class="modal-overlay" 
+                @click.self="showAccountModal = false"
+            >
+                <div class="modal-content" style="max-width: 500px">
+                    <div class="modal-header">
+                        <h3 class="modal-title font-bold text-white">Selecionar Conta</h3>
+                        <button @click="showAccountModal = false" class="modal-close-btn">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-if="isLoadingAccounts" class="flex flex-col items-center justify-center py-10 gap-4">
+                            <div class="w-10 h-10 border-4 border-zenix-green/30 border-t-zenix-green rounded-full animate-spin"></div>
+                            <p class="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Carregando contas disponíveis...</p>
+                        </div>
+                        <div v-else-if="availableAccounts.length === 0" class="text-center py-10">
+                            <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-3xl mb-4"></i>
+                            <p class="text-white font-bold uppercase">Nenhuma conta encontrada</p>
+                            <p class="text-gray-400 text-xs mt-2 font-bold uppercase">Certifique-se de que você está conectado à Deriv.</p>
+                        </div>
+                        <div v-else class="space-y-3">
+                            <p class="text-xs text-gray-500 mb-4 font-bold uppercase tracking-widest">Escolha a conta para iniciar as operações:</p>
+                            <div 
+                                v-for="account in availableAccounts" 
+                                :key="account.loginid"
+                                @click="selectAccount(account)"
+                                class="p-4 rounded-xl border border-[#333] bg-[#111] hover:border-zenix-green hover:bg-zenix-green/5 transition-all cursor-pointer group flex items-center justify-between"
+                            >
+                                <div class="flex items-center gap-4">
+                                    <div 
+                                        class="w-10 h-10 rounded-full flex items-center justify-center border border-[#333]"
+                                        :class="account.isDemo ? 'bg-orange-500/10 text-orange-500' : 'bg-zenix-green/10 text-zenix-green'"
+                                    >
+                                        <i class="fa-solid" :class="account.isDemo ? 'fa-vial' : 'fa-dollar-sign'"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-white font-bold">{{ account.loginid }}</div>
+                                        <div class="text-[10px] uppercase font-bold" :class="account.isDemo ? 'text-orange-500' : 'text-zenix-green'">
+                                            {{ account.isDemo ? 'Conta Demo' : 'Conta Real' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-white font-bold tracking-tight">{{ account.currency }} {{ account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
+                                    <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Saldo Disponível</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
 
         <!-- Market Selection Modal -->
         <Teleport to="body">
@@ -889,6 +947,8 @@ import atlasConfig from '@/utils/strategies/atlas.json';
 import nexusConfig from '@/utils/strategies/nexus.json';
 import orionConfig from '@/utils/strategies/orion.json';
 import titanConfig from '@/utils/strategies/titan.json';
+import { RiskManager } from '../../utils/RiskManager';
+import { loadAvailableAccounts } from '@/utils/accountsLoader';
 
 const defaultStrategies = [apolloConfig, atlasConfig, nexusConfig, orionConfig, titanConfig];
 
@@ -911,6 +971,10 @@ export default {
             showTradeTypeModal: false,
             showFilterModal: false,
             showPauseModal: false,
+            showAccountModal: false,
+            isLoadingAccounts: false,
+            availableAccounts: [],
+            selectedToken: null,
             savedStrategies: [],
             selectedSavedStrategyId: '',
             recoveryFilters: [],
@@ -937,11 +1001,17 @@ export default {
 
             // Strategy Execution State
             sessionState: {
-                isRecoveryMode: false,
+                analysisType: 'PRINCIPAL', // 'PRINCIPAL' | 'RECUPERACAO'
+                isRecoveryMode: false, // Legacy support, synced with analysisType
                 consecutiveLosses: 0,
+                consecutiveWins: 0,
                 totalLossAccumulated: 0,
                 recoveredAmount: 0,
-                lastPayoutRate: 0.95, // Default for estimation
+                lastPayoutRate: 0.95, 
+                lastProfit: 0,
+                lastResultWin: false,
+                skipSorosNext: false,
+                lossStreakRecovery: 0,
                 peakProfit: 0,
                 stopBlindadoActive: false,
                 stopBlindadoFloor: 0,
@@ -1511,7 +1581,31 @@ export default {
                 return null;
             }
         },
+        async handleStartClick() {
+             this.isLoadingAccounts = true;
+             this.showAccountModal = true;
+             
+             try {
+                 this.availableAccounts = await loadAvailableAccounts(true);
+             } catch (error) {
+                 console.error('[StrategyCreator] Erro ao carregar contas:', error);
+                 this.$root.$toast.error('Erro ao carregar contas. Tente novamente.');
+             } finally {
+                 this.isLoadingAccounts = false;
+             }
+        },
+        selectAccount(account) {
+            this.selectedToken = account.token;
+            this.balance = account.balance;
+            this.monitoringStats.balance = account.balance;
+            this.showAccountModal = false;
+            this.submitForm();
+        },
         submitForm() {
+            if (!this.selectedToken) {
+                this.handleStartClick();
+                return;
+            }
             this.isMonitoring = true;
             this.startSimulation();
             this.$root.$toast.success('Estratégia iniciada com sucesso!');
@@ -1692,7 +1786,7 @@ export default {
 
             this.ws.onopen = () => {
                 this.addLog(`🔌 Conectado. Autorizando...`, 'info');
-                const token = this.getDerivToken();
+                const token = this.selectedToken || this.getDerivToken();
                 
                 if (token) {
                     console.log('[WS] Enviando token de autorização Deriv...');
@@ -1840,26 +1934,20 @@ export default {
                     }
 
                     // Update stats immediately to allow next trade
-                    if (win) {
-                        this.monitoringStats.wins++;
-                        this.sessionState.consecutiveLosses = 0;
-                        if (this.sessionState.isRecoveryMode) {
-                            // Payout is estimative here, will be exact in handleContractUpdate
-                            const estimatedProfit = stake * (this.sessionState.lastPayoutRate || 0.95);
-                            this.sessionState.recoveredAmount += estimatedProfit;
-                        }
-                    } else {
-                        this.monitoringStats.losses++;
-                        this.sessionState.consecutiveLosses++;
-                        this.sessionState.totalLossAccumulated += stake;
+                    const estimatedProfit = win 
+                        ? stake * (this.sessionState.lastPayoutRate || 0.95)
+                        : -stake;
 
-                        if (!this.sessionState.isRecoveryMode && 
-                            this.recoveryConfig.enabled && 
-                            this.sessionState.consecutiveLosses >= this.recoveryConfig.lossesToActivate) {
-                            this.addLog('🔄 ATIVANDO MODO RECUPERAÇÃO (RÁPIDO)...', 'warning');
-                            this.sessionState.isRecoveryMode = true;
-                            this.sessionState.recoveredAmount = 0;
-                        }
+                    if (win) this.monitoringStats.wins++;
+                    else this.monitoringStats.losses++;
+
+                    RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake);
+                    
+                    // Keep isRecoveryMode sync for legacy UI if needed
+                    this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
+
+                    if (!win && this.sessionState.analysisType === 'RECUPERACAO' && this.sessionState.lossStreakRecovery === 1) {
+                         this.addLog('🔄 MODO RECUPERAÇÃO ATIVADO (RÁPIDO)...', 'warning');
                     }
 
                     // CRITICAL: Remove from activeContracts to allow next trade analysis immediately!
@@ -1957,32 +2045,15 @@ export default {
             return false;
         },
         calculateNextStake() {
-            if (!this.sessionState.isRecoveryMode) {
-                return this.form.initialStake;
+            const config = this.sessionState.analysisType === 'RECUPERACAO' ? this.recoveryConfig : this.form;
+            const stake = RiskManager.calculateNextStake(this.sessionState, config);
+            
+            // Log if Soros is active
+            if (this.sessionState.analysisType === 'PRINCIPAL' && this.sessionState.consecutiveWins === 1 && this.sessionState.lastResultWin) {
+                this.addLog(`🚀 SOROS N1 ATIVADO: $${stake}`, 'info');
             }
 
-            // Dynamic Martingale (Apollo Style)
-            // Stake = (LossToRecover * (1 + ProfitRate)) / PayoutRate
-            const lossToRecover = this.sessionState.totalLossAccumulated - this.sessionState.recoveredAmount;
-            
-            let profitFactor = 0.15; // Moderate
-            if (this.form.riskProfile === 'conservador') profitFactor = 0;
-            else if (this.form.riskProfile === 'agressivo') profitFactor = 0.30;
-
-            const config = this.recoveryConfig;
-            let payoutRate = this.sessionState.lastPayoutRate;
-
-            // Use defaults if first recovery or payout rate seems outdated for the contract type
-            if (!payoutRate || payoutRate < 0.10) {
-                if (config.tradeType === 'DIGITUNDER' && config.prediction === 8) payoutRate = 0.19;
-                else if (config.tradeType === 'DIGITUNDER' && config.prediction === 4) payoutRate = 1.25;
-                else if (config.tradeType === 'DIGITEVEN' || config.tradeType === 'DIGITODD') payoutRate = 0.95;
-                else payoutRate = 0.95; // Safe generic default
-            }
-            
-            const stake = (lossToRecover * (1 + profitFactor)) / payoutRate;
-            
-            return Math.max(0.35, parseFloat(stake.toFixed(2)));
+            return stake;
         },
         stopMonitoring(reason = 'Finalizado pelo usuário') {
             // Handle PointerEvents if called from @click
@@ -2079,54 +2150,32 @@ export default {
                 trade.pnl = parseFloat(contract.profit || 0);
 
                 if (trade.result === 'WON') {
-                    // Only increment if not already processed by fast result
-                    if (!trade.fastResultApplied) {
-                        this.monitoringStats.wins++;
-                        if (this.sessionState.isRecoveryMode) {
-                            this.sessionState.recoveredAmount += trade.pnl;
-                        } else {
-                            this.sessionState.consecutiveLosses = 0;
-                            this.sessionState.totalLossAccumulated = 0;
-                        }
-                    }
-
                     this.addLog(`💰 WIN! Resultado: +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
-                    
-                    // Update Payout Rate for next dynamic martingale
-                    if (trade.stake > 0) {
-                        this.sessionState.lastPayoutRate = trade.pnl / trade.stake;
-                    }
-
-                    if (this.sessionState.isRecoveryMode) {
-                        this.sessionState.recoveredAmount += trade.pnl;
-                        if (this.sessionState.recoveredAmount >= this.sessionState.totalLossAccumulated) {
-                            this.addLog('✅ RECUPERAÇÃO CONCLUÍDA!', 'success');
-                            this.sessionState.isRecoveryMode = false;
-                            this.sessionState.consecutiveLosses = 0;
-                            this.sessionState.totalLossAccumulated = 0;
-                            this.sessionState.recoveredAmount = 0;
-                        }
-                    } else {
-                        this.sessionState.consecutiveLosses = 0;
-                        this.sessionState.totalLossAccumulated = 0;
-                    }
                 } else {
-                    // Only increment if not already processed by fast result
-                    if (!trade.fastResultApplied) {
-                        this.monitoringStats.losses++;
-                        this.sessionState.consecutiveLosses++;
-                        this.sessionState.totalLossAccumulated += Math.abs(trade.pnl);
-
-                        if (!this.sessionState.isRecoveryMode && 
-                            this.recoveryConfig.enabled && 
-                            this.sessionState.consecutiveLosses >= this.recoveryConfig.lossesToActivate) {
-                            this.addLog('🔄 ATIVANDO MODO RECUPERAÇÃO...', 'warning');
-                            this.sessionState.isRecoveryMode = true;
-                            this.sessionState.recoveredAmount = 0;
-                        }
-                    }
-
                     this.addLog(`🔴 LOSS! Prejuízo: -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
+                }
+
+                // Update Risk Logic (Only if not already processed by fast result)
+                if (!trade.fastResultApplied) {
+                    if (trade.result === 'WON') this.monitoringStats.wins++;
+                    else this.monitoringStats.losses++;
+
+                    const oldMode = this.sessionState.analysisType;
+                    RiskManager.processTradeResult(this.sessionState, trade.result === 'WON', trade.pnl, trade.stake);
+                    
+                    // Sync legacy mode
+                    this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
+
+                    if (oldMode === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
+                        this.addLog('🔄 MODO RECUPERAÇÃO ATIVADO!', 'warning');
+                    } else if (oldMode === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
+                        this.addLog('✅ RECUPERAÇÃO CONCLUÍDA!', 'success');
+                    }
+                }
+
+                // Update Payout Rate for next dynamic martingale
+                if (trade.result === 'WON' && trade.stake > 0) {
+                    this.sessionState.lastPayoutRate = trade.pnl / trade.stake;
                 }
                 
                 // Only subtract profit if not already handled by fast result logic (which doesn't subtract yet to avoid double counting pnl)
