@@ -1804,6 +1804,7 @@ export default {
 	padding: 10px;
 	border-radius: 1rem;
 	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    z-index: 10000000;
 }
 
 .modal-body {
@@ -1815,9 +1816,9 @@ export default {
 .modal-header-premium {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
+    padding: 0rem 0 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
