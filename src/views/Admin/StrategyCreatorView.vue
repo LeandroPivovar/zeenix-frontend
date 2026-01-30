@@ -1611,7 +1611,7 @@ export default {
                      accounts.push({
                          loginid: data.idRealAccount || 'Conta Real',
                          token: data.tokenReal,
-                         balance: data.realAmount || 0,
+                         balance: Number(data.realAmount) || 0,
                          currency: data.tokenRealCurrency || 'USD',
                          isDemo: false
                      });
@@ -1622,7 +1622,7 @@ export default {
                      accounts.push({
                          loginid: data.idDemoAccount || 'Conta Demo',
                          token: data.tokenDemo,
-                         balance: data.demoAmount || 0,
+                         balance: Number(data.demoAmount) || 0,
                          currency: data.tokenDemoCurrency || 'USD',
                          isDemo: true
                      });
@@ -1642,8 +1642,9 @@ export default {
         },
         selectAccount(account) {
             this.selectedToken = account.token;
-            this.balance = account.balance;
-            this.monitoringStats.balance = account.balance;
+            const balanceValue = Number(account.balance);
+            this.balance = balanceValue;
+            this.monitoringStats.balance = balanceValue;
             this.showAccountModal = false;
             this.submitForm();
         },
@@ -1859,9 +1860,11 @@ export default {
                             this.addLog(`❌ Falha na autorização: ${msg.error.message}`, 'error');
                         } else {
                             this.isAuthorized = true;
-                            this.balance = msg.authorize.balance;
+                            const balanceValue = Number(msg.authorize.balance);
+                            this.balance = balanceValue;
+                            this.monitoringStats.balance = balanceValue;
                             console.log('[WS] Autorizado com sucesso! Dados:', msg.authorize);
-                            this.addLog(`✅ Autorizado! Saldo: $${this.balance}`, 'success');
+                            this.addLog(`✅ Autorizado! Saldo: $${balanceValue.toFixed(2)}`, 'success');
                             this.subscribeTicks();
                         }
                     }
