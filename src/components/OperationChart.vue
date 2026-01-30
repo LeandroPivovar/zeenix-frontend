@@ -96,7 +96,7 @@
                     <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: getStatusColor(item.statusClass) }">{{ item.digit }}</span>
                     <span class="meta-digit-percentage text-[11px] font-bold text-white/60 mb-4">{{ item.percentage }}%</span>
                     
-                    <div class="meta-vertical-meter-container w-1.5 h-20 bg-white/5 rounded-full relative overflow-hidden">
+                    <div class="meta-vertical-meter-container w-3 h-20 bg-white/5 rounded-full relative overflow-hidden">
                       <div 
                         class="meta-vertical-meter-fill absolute bottom-0 left-0 w-full transition-all duration-1000 ease-out"
                         :style="{ height: item.percentage + '%', backgroundColor: getStatusColor(item.statusClass) }"
@@ -120,23 +120,23 @@
                   </div>
                   
                   <div class="flex items-center gap-6 py-4">
-                    <div class="flex flex-col items-center">
+                    <div class="flex flex-col items-center mr-8">
                       <span class="text-7xl font-black text-zenix-green leading-none">{{ dvxValueComputed }}</span>
-                      <span class="text-base font-bold text-white/40 uppercase mt-2">DVX</span>
+                      <span class="text-sm font-bold text-white/40 uppercase mt-2">DVX</span>
                     </div>
                     
                     <div class="flex-1">
                       <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-bold text-zenix-green">Volatilidade {{ dvxStatusText }}</span>
                       </div>
-                      <div class="relative h-4 bg-white/5 rounded-full mb-2">
+                      <div class="relative h-5 bg-white/5 rounded-full mb-2">
                         <div 
                           class="absolute inset-y-0 left-0 bg-gradient-to-r from-zenix-green/20 to-zenix-green rounded-full transition-all duration-1000"
                           :style="{ width: dvxValueComputed + '%' }"
                         ></div>
                         <div 
-                          class="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all duration-1000"
-                          :style="{ left: dvxValueComputed + '%' }"
+                          class="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all duration-1000 z-10"
+                          :style="{ left: dvxValueComputed + '%', transform: 'translate(-50%, -50%)' }"
                         ></div>
                       </div>
                       <div class="flex justify-between items-center text-[9px] font-bold text-white/10 uppercase">
@@ -166,7 +166,7 @@
                           <span class="text-xs font-bold text-white">Par</span>
                           <span class="text-xs font-black text-zenix-green">{{ evenPercentage }}%</span>
                         </div>
-                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-3 bg-white/5 rounded-full overflow-hidden">
                           <div class="h-full bg-zenix-green transition-all duration-1000" :style="{ width: evenPercentage + '%' }"></div>
                         </div>
                       </div>
@@ -175,7 +175,7 @@
                           <span class="text-xs font-bold text-white/40">Ímpar</span>
                           <span class="text-xs font-black text-white/20">{{ oddPercentage }}%</span>
                         </div>
-                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-3 bg-white/5 rounded-full overflow-hidden">
                           <div class="h-full bg-white/5 transition-all duration-1000" :style="{ width: oddPercentage + '%' }"></div>
                         </div>
                       </div>
@@ -186,7 +186,7 @@
                         <span class="text-sm font-black text-white">8</span>
                         <span class="text-[10px] font-black text-red-500">7.8%</span>
                       </div>
-                      <div class="h-1.5 bg-white/5 rounded-full overflow-hidden mb-4">
+                      <div class="h-3 bg-white/5 rounded-full overflow-hidden mb-4">
                         <div class="h-full bg-red-500 w-[15%] transition-all duration-1000"></div>
                       </div>
                       <div class="flex items-center justify-between mb-1">
@@ -5479,8 +5479,9 @@ export default {
 
   .digits-tab-container {
     height: auto !important;
-    max-height: 1200px !important;
+    max-height: none !important;
     min-height: 600px;
+    overflow: visible !important;
   }
 
   .dvx-status-green-text { color: #22C55E; }
