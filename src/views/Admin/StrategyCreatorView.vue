@@ -938,23 +938,47 @@ export default {
                     config: { window: 10, ticksToConfirm: 2, minDelta: 0.1 }
                 }
             ],
-            // Hardcoded Category Data (from OperationChart.vue)
+            // Hardcoded Category Data (Expanded for Specific Contracts)
             tradeTypeCategories: [
                 {
                     id: 'rising_falling',
                     label: 'Sobe / Desce',
                     icon: 'fas fa-chart-line',
                     items: [
-                        { value: 'rise_fall', label: 'Sobe / Desce', icon: 'TradeTypesRiseFallIcon.svg', directions: [
-                            { value: 'CALL', label: 'Sobe' },
-                            { value: 'PUT', label: 'Desce' }
-                        ]},
-                        { value: 'rise_fall_equal', label: 'Sobe / Desce Igual', icon: 'TradeTypesRiseFallEqualIcon.svg', directions: [
-                            { value: 'CALLE', label: 'Sobe Igual' },
-                            { value: 'PUTE', label: 'Desce Igual' }
-                        ]}
+                        { value: 'CALL', label: 'Sobe (Call)', icon: 'TradeTypesRiseFallIcon.svg' },
+                        { value: 'PUT', label: 'Desce (Put)', icon: 'TradeTypesRiseFallIcon.svg' },
+                        { value: 'CALLE', label: 'Sobe Igual (CallE)', icon: 'TradeTypesRiseFallEqualIcon.svg' },
+                        { value: 'PUTE', label: 'Desce Igual (PutE)', icon: 'TradeTypesRiseFallEqualIcon.svg' }
                     ]
                 },
+                {
+                    id: 'even_odd',
+                    label: 'Par / Ímpar',
+                    icon: 'fas fa-sort-numeric-up',
+                    items: [
+                        { value: 'DIGITEVEN', label: 'Par', icon: 'TradeTypesEvenOddIcon.svg' },
+                        { value: 'DIGITODD', label: 'Ímpar', icon: 'TradeTypesEvenOddIcon.svg' }
+                    ]
+                },
+                {
+                    id: 'over_under',
+                    label: 'Acima / Abaixo',
+                    icon: 'fas fa-arrow-up',
+                    items: [
+                        { value: 'DIGITOVER', label: 'Acima (Over)', icon: 'TradeTypesOverUnderIcon.svg' },
+                        { value: 'DIGITUNDER', label: 'Abaixo (Under)', icon: 'TradeTypesOverUnderIcon.svg' }
+                    ]
+                },
+                {
+                    id: 'match_diff',
+                    label: 'Combina / Difere',
+                    icon: 'fas fa-check-double',
+                    items: [
+                        { value: 'DIGITMATCH', label: 'Combina (Match)', icon: 'TradeTypesMatchDiffIcon.svg' },
+                        { value: 'DIGITDIFF', label: 'Difere (Diff)', icon: 'TradeTypesMatchDiffIcon.svg' }
+                    ]
+                }
+            ],
                 {
                     id: 'digits',
                     label: 'Dígitos',
@@ -1105,6 +1129,18 @@ export default {
                 if (item) return item.label;
             }
             return 'Selecionar Tipo';
+        },
+        selectedTradeTypeLabel() {
+            if (!this.form.tradeType) return 'Selecionar';
+            // Search manually since flatMap might not be available or compatible in all envs without polyfill
+            for (const cat of this.tradeTypeCategories) {
+                for (const item of cat.items) {
+                    if (item.value === this.form.tradeType) {
+                        return `${cat.label} - ${item.label}`;
+                    }
+                }
+            }
+            return this.form.tradeType;
         },
         selectedTradeTypeGroupIcon() {
             if (!this.form.selectedTradeTypeGroup) return null;
