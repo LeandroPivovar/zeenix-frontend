@@ -101,7 +101,7 @@
                     <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : 'rgba(255,255,255,0.4)') }">{{ item.digit }}</span>
                     <span class="meta-digit-percentage text-[11px] font-bold text-white/60 mb-4">{{ item.percentage }}%</span>
                     
-                    <div class="meta-vertical-meter-container w-3 h-20 bg-white/5 rounded-full relative overflow-hidden">
+                    <div class="meta-vertical-meter-container w-5 h-20 bg-white/5 rounded-full relative overflow-hidden">
                       <div 
                         class="meta-vertical-meter-fill absolute bottom-0 left-0 w-full transition-all duration-1000 ease-out"
                         :style="{ height: item.percentage + '%', backgroundColor: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : 'rgba(255,255,255,0.1)') }"
@@ -134,7 +134,7 @@
                       <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-bold text-zenix-green">Volatilidade {{ dvxStatusText }}</span>
                       </div>
-                      <div class="relative h-5 bg-white/5 rounded-full mb-2">
+                      <div class="relative h-5 bg-white/5 rounded-full mb-4">
                         <div 
                           class="absolute inset-y-0 left-0 bg-gradient-to-r from-zenix-green/20 to-zenix-green rounded-full transition-all duration-1000"
                           :style="{ width: dvxValueComputed + '%' }"
@@ -171,7 +171,7 @@
                           <span class="text-xs font-bold text-white">Par</span>
                           <span class="text-xs font-black text-zenix-green">{{ evenPercentage }}%</span>
                         </div>
-                        <div class="h-3 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-5 bg-white/5 rounded-full overflow-hidden">
                           <div class="h-full bg-zenix-green transition-all duration-1000" :style="{ width: evenPercentage + '%' }"></div>
                         </div>
                       </div>
@@ -180,7 +180,7 @@
                           <span class="text-xs font-bold text-white/40">Ímpar</span>
                           <span class="text-xs font-black text-white/20">{{ oddPercentage }}%</span>
                         </div>
-                        <div class="h-3 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-5 bg-white/5 rounded-full overflow-hidden">
                           <div class="h-full bg-white/5 transition-all duration-1000" :style="{ width: oddPercentage + '%' }"></div>
                         </div>
                       </div>
@@ -191,7 +191,7 @@
                         <span class="text-sm font-black text-white">8</span>
                         <span class="text-[10px] font-black text-red-500">7.8%</span>
                       </div>
-                      <div class="h-3 bg-white/5 rounded-full overflow-hidden mb-4">
+                      <div class="h-5 bg-white/5 rounded-full overflow-hidden mb-4">
                         <div class="h-full bg-red-500 w-[15%] transition-all duration-1000"></div>
                       </div>
                       <div class="flex items-center justify-between mb-1">
