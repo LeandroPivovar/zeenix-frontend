@@ -144,13 +144,13 @@
                                     item.isHighlighted ? 'meta-highlight' : ''
                                 ]"
                             >
-                                <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : (item.statusClass === 'status-heated' ? '#F59E0B' : 'rgba(255,255,255,0.4)')) }">{{ item.digit }}</span>
+                                <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: item.statusClass === 'status-max' ? '#22C55E' : (item.statusClass === 'status-heated' ? '#F59E0B' : (item.statusClass === 'status-min' ? '#EF4444' : 'rgba(255,255,255,0.4)')) }">{{ item.digit }}</span>
                                 <span class="meta-digit-percentage text-[11px] font-bold text-white/60 mb-4">{{ item.percentage }}%</span>
                                 
                                 <div class="meta-vertical-meter-container w-5 h-20 bg-white/5 rounded-full relative overflow-hidden">
                                     <div 
                                         class="meta-vertical-meter-fill absolute bottom-0 left-0 w-full transition-all duration-1000 ease-out"
-                                        :style="{ height: item.percentage + '%', backgroundColor: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : (item.statusClass === 'status-heated' ? '#F59E0B' : 'rgba(255,255,255,0.1)')) }"
+                                        :style="{ height: item.percentage + '%', backgroundColor: item.statusClass === 'status-max' ? '#22C55E' : (item.statusClass === 'status-heated' ? '#F59E0B' : (item.statusClass === 'status-min' ? '#EF4444' : 'rgba(255,255,255,0.1)')) }"
                                     ></div>
                                 </div>
                                 <span class="text-[9px] font-bold text-white/20 mt-4 uppercase">{{ item.percentage }}%</span>
@@ -233,38 +233,49 @@
                                 </div>
 
                                 <div class="border-l border-white/5 pl-6 flex flex-col justify-center">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-sm font-black text-white">8</span>
-                                        <span class="text-[10px] font-black text-red-500">7.8%</span>
+                                    <div class="mb-4">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-sm font-black text-white">{{ mostFrequentDigit ? mostFrequentDigit.digit : '-' }}</span>
+                                            <span class="text-[10px] font-black text-white/20">{{ mostFrequentDigit ? mostFrequentDigit.percentage : '0' }}%</span>
+                                        </div>
+                                        <div class="h-3 bg-white/5 rounded-full overflow-hidden mb-1.5">
+                                            <div class="h-full bg-zenix-green w-[15%] transition-all duration-1000" :style="{ width: mostFrequentDigit ? mostFrequentDigit.percentage + '%' : '0%' }"></div>
+                                        </div>
+                                        <span class="text-[9px] font-bold text-white/20 uppercase tracking-wider">Mais Frequente</span>
                                     </div>
-                                    <div class="h-4 bg-white/5 rounded-full overflow-hidden mb-4">
-                                        <div class="h-full bg-red-500 w-[15%] transition-all duration-1000"></div>
+                                    
+                                    <div>
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-sm font-black text-white/40">{{ leastFrequentDigit ? leastFrequentDigit.digit : '-' }}</span>
+                                            <span class="text-[10px] font-black text-white/20">{{ leastFrequentDigit ? leastFrequentDigit.percentage : '0' }}%</span>
+                                        </div>
+                                        <div class="h-3 bg-white/5 rounded-full overflow-hidden mb-1.5">
+                                           <div class="h-full bg-red-500 w-[15%] transition-all duration-1000" :style="{ width: leastFrequentDigit ? leastFrequentDigit.percentage + '%' : '0%' }"></div>
+                                        </div>
+                                        <span class="text-[9px] font-bold text-white/20 uppercase tracking-wider">Menos Frequentes</span>
                                     </div>
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="text-sm font-black text-white/40">0</span>
-                                        <span class="text-[10px] font-black text-white/20">9.8%</span>
-                                    </div>
-                                    <span class="text-[9px] font-bold text-white/20 uppercase tracking-wider">Menos Frequentes</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Linha 3: Histórico Recente -->
                 <div class="recent-history-card bg-[#0D0D0D] border border-white/5 p-6 rounded-2xl mb-4">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xs font-bold text-white/90 uppercase tracking-widest px-1">3. Histórico Recente (Últimos 30 Ticks)</h3>
+                        <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Histórico Recente</h3>
+                        <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
+                            <i class="far fa-clock text-[10px] text-white/40"></i>
+                            <span class="text-[10px] font-bold text-white/60">Últimos 15</span>
+                        </div>
                     </div>
                     
-                    <div class="flex flex-wrap gap-2.5">
+                    <div class="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-2">
                         <div 
-                            v-for="(digit, index) in recentDigits" 
+                            v-for="(digit, index) in recentDigits.slice(0, 15)" 
                             :key="'recent-'+index"
-                            class="recent-digit-badge w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm transition-all duration-300"
+                            class="h-9 w-9 bg-[#080808] border border-white/5 rounded-xl flex items-center justify-center font-black text-sm transition-all duration-300 mx-auto"
                             :class="[
-                                digit % 2 === 0 ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
-                                index === 0 ? 'active-digit' : ''
+                                index === 0 ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/50 shadow-[0_0_15px_#22C55E33]' : 'text-white/40'
                             ]"
                         >
                             {{ digit }}
@@ -783,7 +794,8 @@ export default {
         },
         // Histórico Recente de Dígitos
         recentDigits() {
-            return this.digitFrequency.digits.slice(-30).reverse();
+            if (!this.digitFrequency || !this.digitFrequency.digits) return [];
+            return this.digitFrequency.digits.slice(-15).reverse();
         },
         // Estatísticas de dígitos com Z-score
         digitFrequenciesWithStats() {
@@ -792,57 +804,46 @@ export default {
                 return Array.from({ length: 10 }, (_, i) => ({
                     digit: i,
                     percentage: 0,
-                    zScore: 0,
                     statusClass: 'status-normal',
-                    statusText: 'Normal',
-                    barHeight: 42,
+                    isMax: false,
+                    isMin: false,
                     isHighlighted: false
                 }));
             }
             
-            const expected = totalDigits / 10;
             const frequencies = this.digitFrequencies;
             
             return frequencies.map(item => {
-                const count = (item.percentage / 100) * totalDigits;
                 const p = item.percentage;
-                const zScore = expected > 0 ? ((count - expected) / Math.sqrt(expected)).toFixed(1) : 0;
-                
-                let statusClass, statusText, barHeight;
+                let statusClass = 'status-normal';
 
-                if (p >= 11.5) {
+                if (p > 10) {
                     statusClass = 'status-max';
-                    statusText = 'Sobreaquec.';
-                    barHeight = 110;
-                } else if (p >= 10.0) {
+                } else if (p >= 5) {
                     statusClass = 'status-heated';
-                    statusText = 'Aquecido';
-                    barHeight = 93;
-                } else if (p <= 9.0) {
-                    statusClass = 'status-min';
-                    statusText = 'Subaquec.';
-                    barHeight = 42;
                 } else {
-                    statusClass = 'status-underheated'; // Using underheated as Gray/Normal visual
-                    statusText = 'Normal';
-                    barHeight = 81;
+                    statusClass = 'status-min';
                 }
-                
-                // Manter logica de destaque para interatividade se necessario
-                const isHighlighted = false;
                 
                 return {
                     digit: item.digit,
                     percentage: item.percentage.toFixed(1),
-                    zScore: zScore,
                     statusClass,
-                    statusText,
-                    barHeight,
-                    isHighlighted,
-                    isMax: statusClass === 'status-max',
-                    isMin: statusClass === 'status-min'
+                    isMax: p > 10,
+                    isMin: p < 5,
+                    isHighlighted: false
                 };
             });
+        },
+        mostFrequentDigit() {
+            if (!this.digitFrequenciesWithStats || this.digitFrequenciesWithStats.length === 0) return null;
+            const sorted = [...this.digitFrequenciesWithStats].sort((a, b) => parseFloat(b.percentage) - parseFloat(a.percentage));
+            return sorted[0];
+        },
+        leastFrequentDigit() {
+            if (!this.digitFrequenciesWithStats || this.digitFrequenciesWithStats.length === 0) return null;
+            const sorted = [...this.digitFrequenciesWithStats].sort((a, b) => parseFloat(a.percentage) - parseFloat(b.percentage));
+            return sorted[0];
         },
         // Contadores para paridade
         evenCount() {
@@ -2352,4 +2353,38 @@ export default {
 .signal-generator-inline-mobile {
     display: none !important;
 }
+
+  /* --- META DESIGN STYLES --- */
+  .digit-meta-item {
+    background-color: #080808 !important;
+    border: 1px solid rgba(255, 255, 255, 0.03) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .digit-meta-item:hover {
+    transform: translateY(-5px);
+    background-color: #0F0F0F !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .meta-highest-freq {
+    border-color: rgba(34, 197, 94, 0.4) !important;
+    background: radial-gradient(circle at top, rgba(34, 197, 94, 0.2), transparent) !important;
+    box-shadow: 0 15px 30px -10px rgba(34, 197, 94, 0.3);
+  }
+
+  .meta-lowest-freq {
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    background: radial-gradient(circle at top, rgba(239, 68, 68, 0.1), transparent) !important;
+  }
+
+  .meta-digit-number {
+    text-shadow: 0 0 8px currentColor;
+    letter-spacing: -0.05em;
+  }
+
+  .meta-vertical-meter-fill {
+    border-radius: 10px;
+    box-shadow: 0 0 15px currentColor;
+  }
 </style>

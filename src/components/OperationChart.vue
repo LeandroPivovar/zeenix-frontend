@@ -96,8 +96,8 @@
                     class="digit-meta-item flex flex-col items-center p-2 rounded-xl transition-all duration-500 bg-[#0F0F0F] border border-white/5"
                     :class="[
                       item.statusClass, 
-                      item.isMax ? 'meta-highest-freq' : '',
-                      item.isMin ? 'meta-lowest-freq' : '',
+                      item.percentage > 10 ? 'meta-highest-freq' : '',
+                      item.percentage < 5 ? 'meta-lowest-freq' : '',
                       item.isHighlighted ? 'meta-highlight' : ''
                     ]"
                   >
@@ -189,37 +189,47 @@
                     </div>
 
                     <div class="border-l border-white/5 pl-6 flex flex-col justify-center">
-                      <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-black text-white">{{ mostFrequentDigit ? mostFrequentDigit.digit : '-' }}</span>
-                        <span class="text-[10px] font-black text-white/20">{{ mostFrequentDigit ? mostFrequentDigit.percentage : '0' }}%</span>
+                      <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                          <span class="text-sm font-black text-white">{{ mostFrequentDigit ? mostFrequentDigit.digit : '-' }}</span>
+                          <span class="text-[10px] font-black text-white/20">{{ mostFrequentDigit ? mostFrequentDigit.percentage : '0' }}%</span>
+                        </div>
+                        <div class="h-3 bg-white/5 rounded-full overflow-hidden mb-1.5">
+                          <div class="h-full bg-zenix-green w-[15%] transition-all duration-1000" :style="{ width: mostFrequentDigit ? mostFrequentDigit.percentage + '%' : '0%' }"></div>
+                        </div>
+                        <span class="text-[9px] font-bold text-white/20 uppercase tracking-wider">Mais Frequente</span>
                       </div>
-                      <div class="h-3 bg-white/5 rounded-full overflow-hidden mb-4">
-                        <div class="h-full bg-zenix-green w-[15%] transition-all duration-1000" :style="{ width: mostFrequentDigit ? mostFrequentDigit.percentage + '%' : '0%' }"></div>
+                      
+                      <div>
+                        <div class="flex items-center justify-between mb-1">
+                          <span class="text-sm font-black text-white/40">{{ leastFrequentDigit ? leastFrequentDigit.digit : '-' }}</span>
+                          <span class="text-[10px] font-black text-white/20">{{ leastFrequentDigit ? leastFrequentDigit.percentage : '0' }}%</span>
+                        </div>
+                        <div class="h-3 bg-white/5 rounded-full overflow-hidden mb-1.5">
+                           <div class="h-full bg-red-500 w-[15%] transition-all duration-1000" :style="{ width: leastFrequentDigit ? leastFrequentDigit.percentage + '%' : '0%' }"></div>
+                        </div>
+                        <span class="text-[9px] font-bold text-white/20 uppercase tracking-wider">Menos Frequentes</span>
                       </div>
-                      <div class="flex items-center justify-between mb-1">
-                        <span class="text-sm font-black text-white/40">{{ leastFrequentDigit ? leastFrequentDigit.digit : '-' }}</span>
-                        <span class="text-[10px] font-black text-white/20">{{ leastFrequentDigit ? leastFrequentDigit.percentage : '0' }}%</span>
-                      </div>
-                      <div class="h-1 bg-white/5 rounded-full overflow-hidden mb-1">
-                         <div class="h-full bg-red-500 w-[15%] transition-all duration-1000" :style="{ width: leastFrequentDigit ? leastFrequentDigit.percentage + '%' : '0%' }"></div>
-                      </div>
-                      <span class="text-[9px] font-bold text-white/20 uppercase tracking-wider">Menos Frequentes</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- 3. HISTÓRICO RECENTE (Meta Style) -->
               <div class="border border-white/5 rounded-xl p-6">
-                 <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mb-6">Histórico Recente</h3>
-                  <div v-if="recentDigits.length > 0" class="recent-digits-grid grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1.5">
+                 <div class="flex items-center justify-between mb-6">
+                   <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Histórico Recente</h3>
+                   <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
+                     <i class="far fa-clock text-[10px] text-white/40"></i>
+                     <span class="text-[10px] font-bold text-white/60">Últimos 15</span>
+                   </div>
+                 </div>
+                  <div v-if="recentDigits.length > 0" class="recent-digits-grid grid grid-cols-[repeat(15,minmax(0,1fr))] gap-2">
                     <div 
-                     v-for="(digit, idx) in recentDigits.slice(0, 30)" 
+                     v-for="(digit, idx) in recentDigits.slice(0, 15)" 
                      :key="'recent-'+idx"
-                     class="h-7 w-7 rounded-lg flex items-center justify-center font-black text-xs transition-all duration-300 mx-auto"
+                     class="h-9 w-9 bg-[#080808] border border-white/5 rounded-xl flex items-center justify-center font-black text-sm transition-all duration-300 mx-auto"
                     :class="[
-                      idx === 0 ? 'bg-zenix-green text-black scale-110 shadow-[0_0_15px_#22C55E]' : 'bg-white/5 text-white/40',
-                      digit % 2 === 0 ? 'border border-blue-500/20' : 'border border-orange-500/20'
+                      idx === 0 ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/50 shadow-[0_0_15px_#22C55E33]' : 'text-white/40'
                     ]"
                    >
                      {{ digit }}
@@ -1120,7 +1130,7 @@ export default {
     // Histórico Recente de Dígitos
     recentDigits() {
         if (!this.digitFrequency || !this.digitFrequency.digits) return [];
-        return this.digitFrequency.digits.slice(-30).reverse();
+        return this.digitFrequency.digits.slice(-15).reverse();
     },
     dvxGreenOffset() {
       const len = 90.2;
