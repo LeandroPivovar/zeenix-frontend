@@ -1104,7 +1104,7 @@ export default {
                 const res = await fetch(`${apiBaseUrl}/markets/${market}/contracts`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-+
+
                 if (res.ok) {
                     const contracts = await res.json();
                     if (context === 'main') {
