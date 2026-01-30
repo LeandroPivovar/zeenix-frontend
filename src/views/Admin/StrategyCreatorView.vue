@@ -1890,6 +1890,7 @@ export default {
                             // Activate fast result calculation if it's 1-tick
                             if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
                                 this.pendingFastResult.contractId = msg.buy.contract_id;
+                                this.pendingFastResult.payout = payout; // Store real payout for fast result estimation
                                 this.pendingFastResult.active = true;
                                 console.log('[FastResult] Monitoramento rápido ativado para o próximo tick.');
                             }
@@ -1984,8 +1985,9 @@ export default {
                     }
 
                     // Update stats immediately to allow next trade
+                    const realPayout = this.pendingFastResult.payout || (stake * (this.sessionState.lastPayoutRate || 0.95) + stake);
                     const estimatedProfit = win 
-                        ? stake * (this.sessionState.lastPayoutRate || 0.95)
+                        ? (realPayout - stake)
                         : -stake;
 
                     if (win) this.monitoringStats.wins++;
@@ -2160,6 +2162,7 @@ export default {
                 contractType: config.tradeType,
                 active: false, // Will be activated when contractId is received
                 stake: stake,
+                payout: null, // Will be updated on 'buy' response
                 duration: this.form.duration,
                 durationUnit: this.form.durationUnit
             };
@@ -2221,6 +2224,9 @@ export default {
                     } else if (oldMode === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
                         this.addLog('✅ RECUPERAÇÃO CONCLUÍDA!', 'success');
                     }
+                } else {
+                    // Refine result from Fast Result logic with official data
+                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake);
                 }
 
                 // Update Payout Rate for next dynamic martingale

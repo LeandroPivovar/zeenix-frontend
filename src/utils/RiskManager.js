@@ -83,11 +83,42 @@ export const RiskManager = {
                 state.lossStreakRecovery++;
             } else {
                 state.consecutiveLosses++;
-                // Transition to Recovery Mode immediately after 1 loss (Apollo Pattern)
+                // Transition to Recovery Mode immediately after 1 loss (Standard Pattern)
                 state.analysisType = 'RECUPERACAO';
                 state.recoveredAmount = 0;
                 state.lossStreakRecovery = 0;
             }
+        }
+    },
+
+    /**
+     * Refines the result of a trade that was previously processed by Fast Result.
+     * Ensures financial accuracy without double-counting wins/losses.
+     */
+    refineTradeResult(state, realProfit, stakeUsed) {
+        const estimatedProfit = state.lastProfit;
+        const win = realProfit > 0;
+
+        // 1. Correct the general profit tracking in state if needed
+        // (RiskManager focuses on sessionState, so we update recoveredAmount and lastProfit)
+        state.lastProfit = realProfit;
+
+        if (state.analysisType === 'RECUPERACAO') {
+            // Deduct the estimated profit and add the real one
+            state.recoveredAmount = state.recoveredAmount - estimatedProfit + realProfit;
+
+            // Re-check if recovery is now complete or needs more
+            if (state.recoveredAmount >= state.totalLossAccumulated) {
+                state.analysisType = 'PRINCIPAL';
+                state.consecutiveLosses = 0;
+                state.totalLossAccumulated = 0;
+                state.recoveredAmount = 0;
+            }
+        }
+
+        // 2. Update payout rate with official data
+        if (win) {
+            state.lastPayoutRate = realProfit / stakeUsed;
         }
     }
 };
