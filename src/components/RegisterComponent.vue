@@ -785,14 +785,8 @@ export default {
   animation-delay: 0.3s;
 }
 
-@keyframes fadeInLeft {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+/* Animations moved to animations.css */
+@import '../assets/css/animations.css';
 
 /* Animação dos benefícios da esquerda para direita */
 .benefit-item {
