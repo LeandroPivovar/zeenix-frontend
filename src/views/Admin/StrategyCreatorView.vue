@@ -1444,9 +1444,15 @@ export default {
 
             this.ws.onopen = () => {
                 this.addLog(`🔌 Conectado. Autorizando...`, 'info');
-                const token = localStorage.getItem('token');
-                console.log('[WS] Tentando autorizar com token:', token ? 'Token presente (mascarado)' : 'Token não encontrado');
+                let token = localStorage.getItem('token');
+                
                 if (token) {
+                    // Sanitize token: remove whitespace and surrounding quotes if present
+                    token = token.trim();
+                    if ((token.startsWith('"') && token.endsWith('"')) || (token.startsWith("'") && token.endsWith("'"))) {
+                        token = token.slice(1, -1);
+                    }
+                    console.log('[WS] Token sanitizado enviado:', token.substring(0, 4) + '...');
                     this.ws.send(JSON.stringify({ authorize: token }));
                 } else {
                     console.warn('[WS] Token ausente no localStorage');
