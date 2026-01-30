@@ -20,7 +20,7 @@
             />
 
             <main class="layout-content">
-                <div class="content-header mb-6 flex justify-between items-center px-4">
+                <div class="content-header mb-6 flex justify-between items-center px-4 w-full">
                     <div>
                         <h1 class="text-2xl font-bold text-white">{{ isMonitoring ? 'Acompanhamento de Estratégia [BETA]' : 'Criador de Estratégias [BETA]' }}</h1>
                         <p class="text-sm text-[#7D7D7D]">{{ isMonitoring ? 'Acompanhe a atividade do robô em tempo real.' : 'Configure sua estratégia automatizada para execução no mercado.' }}</p>
@@ -33,10 +33,10 @@
                             <select 
                                 v-model="selectedSavedStrategyId" 
                                 @change="loadSavedStrategy"
-                                class="bg-transparent text-white text-xs border-none focus:ring-0 min-w-[150px]"
+                                class="bg-[#141414] text-white text-xs border-none focus:ring-0 min-w-[150px] cursor-pointer hover:text-zenix-green transition-colors"
                             >
-                                <option value="" disabled>Estratégias Salvas</option>
-                                <option v-for="s in savedStrategies" :key="s.id" :value="s.id">{{ s.name }}</option>
+                                <option value="" disabled class="bg-[#141414] text-gray-500">Selecionar Estratégia</option>
+                                <option v-for="s in savedStrategies" :key="s.id" :value="s.id" class="bg-[#141414] text-white">{{ s.name }}</option>
                             </select>
                             <button 
                                 v-if="selectedSavedStrategyId"
@@ -76,11 +76,6 @@
                                 <i class="fas fa-file-import"></i>
                                 <input type="file" ref="importInput" class="hidden" accept=".json" @change="handleImportJSON">
                             </button>
-                        </div>
-
-                        <div class="balance-card">
-                            <span class="text-[10px] uppercase text-[#7D7D7D] font-bold">Saldo Disponível</span>
-                            <span class="text-lg font-bold text-white block">$ {{ balance.toLocaleString() }}</span>
                         </div>
                     </div>
                 </div>
@@ -144,9 +139,6 @@
                     <!-- Tabs -->
                     <div class="monitoring-tabs-container mb-4">
                         <div class="monitoring-tabs flex gap-4 border-b border-[#333]">
-                            <button @click="activeMonitoringTab = 'chart'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeMonitoringTab === 'chart' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
-                                <i class="fas fa-chart-area mr-2"></i> Gráfico
-                            </button>
                             <button @click="activeMonitoringTab = 'logs'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeMonitoringTab === 'logs' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
                                 <i class="fas fa-list-ul mr-2"></i> Registros
                             </button>
@@ -158,13 +150,6 @@
 
                     <!-- Tab Content -->
                     <div class="tab-content-container bg-[#141414] border border-[#333] rounded-xl p-6 min-h-[400px]">
-                        <!-- Chart Placeholder -->
-                        <div v-show="activeMonitoringTab === 'chart'" class="chart-tab-content flex items-center justify-center h-full min-h-[300px]">
-                            <div class="text-center">
-                                <i class="fas fa-chart-line text-6xl text-zenix-green/20 mb-4 block"></i>
-                                <p class="text-[#7A7A7A]">Aguardando conexão com o mercado...</p>
-                            </div>
-                        </div>
 
                         <!-- Logs Tab -->
                         <div v-if="activeMonitoringTab === 'logs'" class="logs-tab-content h-full">
@@ -260,9 +245,9 @@
                                 </div>
                             </div>
 
-                        <!-- Duração, Unidade, Multiplicador -->
+                        <!-- Parâmetros de Execução -->
                         <div class="col-span-12">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div>
                                     <label class="block text-white font-bold mb-2">Duração</label>
                                     <input 
@@ -298,15 +283,7 @@
                                         class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
                                     />
                                 </div>
-                            </div>
-                        </div>
-
-
-
-                        <!-- Digit Prediction/Barrier (Conditional) -->
-                        <div class="col-span-12" v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
+                                <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)">
                                     <label class="block text-white font-bold mb-2">Dígito Alvo (Previsão)</label>
                                     <div class="relative">
                                         <select 
@@ -415,13 +392,13 @@
                                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
                                         </button>
                                     </div>
-                                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div>
-                                            <label class="block text-white font-bold mb-2">Perfil de Risco</label>
+                                            <label class="block text-white font-bold mb-2 text-sm">Perfil de Risco</label>
                                             <div class="relative">
                                                 <select 
                                                     v-model="form.riskProfile" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
                                                 >
                                                     <option value="conservador">Conservador (0%)</option>
                                                     <option value="moderado">Moderado (15%)</option>
@@ -433,11 +410,11 @@
                                             </div>
                                         </div>
                                         <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(recoveryConfig.tradeType)">
-                                            <label class="block text-white font-bold mb-2">Dígito Alvo Rec.</label>
+                                            <label class="block text-white font-bold mb-2 text-sm">Dígito Alvo Rec.</label>
                                             <div class="relative">
                                                 <select 
                                                     v-model.number="recoveryConfig.prediction" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
                                                 >
                                                     <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
                                                 </select>
@@ -447,30 +424,30 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <label class="block text-white font-bold mb-2">Perdas para Rec.</label>
+                                            <label class="block text-white font-bold mb-2 text-sm">Perdas para Rec.</label>
                                             <input 
                                                 type="number" 
                                                 v-model.number="recoveryConfig.lossesToActivate" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
                                                 min="1"
                                             />
                                         </div>
-                                    </div>
-                                    <div class="md:col-span-2 flex gap-4">
-                                         <button 
-                                            type="button" 
-                                            @click="openFilterModal('recovery')"
-                                            class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <i class="fa-solid fa-filter"></i> Filtros
-                                        </button>
-                                         <button 
-                                            type="button" 
-                                            @click="showPauseModal = true"
-                                            class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <i class="fa-solid fa-pause"></i> Pausa Estratégia
-                                        </button>
+                                        <div class="flex items-end gap-2">
+                                             <button 
+                                                type="button" 
+                                                @click="openFilterModal('recovery')"
+                                                class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white h-[46px] rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2 text-xs"
+                                            >
+                                                <i class="fa-solid fa-filter"></i> Filtros
+                                            </button>
+                                             <button 
+                                                type="button" 
+                                                @click="showPauseModal = true"
+                                                class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white h-[46px] rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2 text-xs"
+                                            >
+                                                <i class="fa-solid fa-pause"></i> Pausa
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -478,7 +455,7 @@
 
                         <!-- Valores Monetários -->
                         <div class="col-span-12">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div>
                                     <label class="block text-white font-bold mb-2">Quantia inicial</label>
                                     <div class="relative">
@@ -508,19 +485,6 @@
                                 <div>
                                     <div class="flex justify-between items-center mb-2">
                                         <label class="block text-white font-bold">Limite de perda</label>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xs text-gray-400">Stop Blindado</span>
-                                            <div 
-                                                class="w-10 h-5 rounded-full relative cursor-pointer transition-colors duration-300"
-                                                :class="form.useBlindado ? 'bg-zenix-green' : 'bg-gray-600'"
-                                                @click="form.useBlindado = !form.useBlindado"
-                                            >
-                                                <div 
-                                                    class="w-3 h-3 rounded-full bg-white absolute top-1 transition-all duration-300"
-                                                    :style="{ left: form.useBlindado ? 'calc(100% - 1rem)' : '0.25rem' }"
-                                                ></div>
-                                            </div>
-                                        </div>
                                     </div>
                                     <div class="relative">
                                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
@@ -531,15 +495,32 @@
                                             step="0.01"
                                         />
                                     </div>
-                                    <div v-if="form.useBlindado" class="mt-2 flex items-center gap-2">
-                                        <label class="text-xs text-gray-400">Piso Proteção:</label>
-                                        <select v-model.number="form.stopBlindadoPercent" class="bg-transparent text-zenix-green text-xs font-bold border-none p-0 focus:ring-0">
-                                            <option value="30">30%</option>
-                                            <option value="50">50%</option>
-                                            <option value="70">70%</option>
-                                        </select>
+                                    <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.stopLoss) }}% do saldo</p>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="block text-white font-bold">Stop Blindado</label>
                                     </div>
-                                    <p v-else class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.stopLoss) }}% do saldo</p>
+                                    <div class="flex items-center gap-4 bg-[#1E1E1E] border border-[#333] rounded-lg p-2 h-[50px]">
+                                        <div 
+                                            class="w-10 h-5 rounded-full relative cursor-pointer transition-colors duration-300"
+                                            :class="form.useBlindado ? 'bg-zenix-green' : 'bg-gray-600'"
+                                            @click="form.useBlindado = !form.useBlindado"
+                                        >
+                                            <div 
+                                                class="w-3 h-3 rounded-full bg-white absolute top-1 transition-all duration-300"
+                                                :style="{ left: form.useBlindado ? 'calc(100% - 1rem)' : '0.25rem' }"
+                                            ></div>
+                                        </div>
+                                        <div v-if="form.useBlindado" class="flex flex-1 items-center gap-2">
+                                            <select v-model.number="form.stopBlindadoPercent" class="bg-transparent text-zenix-green text-sm font-bold border-none p-0 focus:ring-0">
+                                                <option value="30">30%</option>
+                                                <option value="50">50%</option>
+                                                <option value="70">70%</option>
+                                            </select>
+                                            <span class="text-[10px] text-gray-500 uppercase">Piso</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -997,7 +978,7 @@ export default {
 
             balance: 5889.28, // Mock implementation or fetch from store
             isMonitoring: false,
-            activeMonitoringTab: 'chart',
+            activeMonitoringTab: 'logs',
             monitoringStats: {
                 balance: 5889.28,
                 profit: 0,
