@@ -1002,51 +1002,6 @@ export default {
                     ]
                 }
             ],
-                {
-                    id: 'one_barrier',
-                    label: 'Uma Barreira',
-                    icon: 'fas fa-bullseye',
-                    items: [
-                        { value: 'touch_no_touch', label: 'Toca / Não Toca', icon: 'TradeTypesHighsAndLowsTouchIcon.svg', directions: [
-                            { value: 'ONETOUCH', label: 'Toca' },
-                            { value: 'NOTOUCH', label: 'Não Toca' }
-                        ]},
-                        { value: 'higher_lower', label: 'Maior / Menor', icon: 'TradeTypesHighsAndLowsHigherIcon.svg', directions: [
-                            { value: 'HIGHER', label: 'Maior' },
-                            { value: 'LOWER', label: 'Menor' }
-                        ]}
-                    ]
-                },
-                {
-                    id: 'two_barriers',
-                    label: 'Duas Barreiras',
-                    icon: 'fas fa-shield-alt',
-                    items: [
-                        { value: 'in_out', label: 'Permanece Dentro / Sai Fora', icon: 'TradeTypesInsAndOutsStaysInIcon.svg', directions: [
-                            { value: 'RANGE', label: 'Permanece Dentro' },
-                            { value: 'UPORDOWN', label: 'Sai Fora' }
-                        ]},
-                        { value: 'ends_in_out', label: 'Termina Dentro / Termina Fora', icon: 'TradeTypesInsAndOutsEndsInIcon.svg', directions: [
-                            { value: 'EXPIRYRANGE', label: 'Termina Dentro' },
-                            { value: 'EXPIRYMISS', label: 'Termina Fora' }
-                        ]}
-                    ]
-                },
-                {
-                    id: 'no_expiry',
-                    label: 'Sem Vencimento',
-                    icon: 'fas fa-bolt',
-                    items: [
-                        { value: 'multipliers_mult', label: 'Multiplicadores', icon: 'TradeTypesMultipliersUpIcon.svg', directions: [
-                            { value: 'MULTUP', label: 'Alta' },
-                            { value: 'MULTDOWN', label: 'Baixa' }
-                        ]},
-                        { value: 'accumulators_accu', label: 'Acumuladores', icon: 'TradeTypesAccumulatorStayInIcon.svg', directions: [
-                            { value: 'ACCU', label: 'Acumuladores' }
-                        ]}
-                    ]
-                }
-            ],
             allTradeTypes: [
                 { value: 'CALL', label: 'Subida' }, { value: 'PUT', label: 'Queda' },
                 { value: 'DIGITMATCH', label: 'Combina' }, { value: 'DIGITDIFF', label: 'Difere' },
