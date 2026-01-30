@@ -224,40 +224,41 @@
                 <div v-else class="strategy-creator-form-container px-4">
                     <form @submit.prevent="submitForm" class="space-y-8">
                         <div class="grid grid-cols-12 gap-6">
-                            <div class="col-span-12">
-                            <!-- Mercado Section (Fixed) -->
-                            <div class="form-group mb-6">
-                                <label class="block text-white font-bold mb-2">Mercado</label>
-                                <button
-                                    type="button"
-                                    @click="openMarketModal('main')"
-                                    class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
-                                >
-                                    <span class="font-medium text-lg">{{ selectedMarketLabel }}</span>
-                                    <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                </button>
+                            <!-- Mercado e Tipo de Negociação -->
+                            <div class="col-span-12 md:col-span-6">
+                                <div class="form-group">
+                                    <label class="block text-white font-bold mb-2">Mercado</label>
+                                    <button
+                                        type="button"
+                                        @click="openMarketModal('main')"
+                                        class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
+                                    >
+                                        <span class="font-medium text-lg">{{ selectedMarketLabel }}</span>
+                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- <p v-if="selectedMarketDescription" class="mt-2 text-zenix-green text-sm">
-                                {{ selectedMarketDescription }}
-                            </p> -->
-                        </div>
-
-                        <!-- Tipo de Negociação -->
-                        <div class="form-group col-span-12">
-                            <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
-                            <button
-                                type="button"
-                                @click="openTradeTypeModal('main')"
-                                :disabled="!contracts.length && !form.market"
-                                class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <img v-if="selectedTradeTypeIcon" :src="selectedTradeTypeIcon" class="w-6 h-6 contrast-[1.5] brightness-[1.5]" alt="" />
-                                    <span class="font-medium text-lg">{{ selectedTradeTypeLabel }}</span>
+                            <div class="col-span-12 md:col-span-6">
+                                <div class="form-group">
+                                    <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
+                                    <button
+                                        type="button"
+                                        @click="openTradeTypeModal('main')"
+                                        :disabled="!contracts.length && !form.market"
+                                        class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <div class="flex items-center gap-3">
+                                            <div v-if="selectedTradeTypeIcon" class="w-6 h-6 flex items-center justify-center text-zenix-green">
+                                                <i class="fa-solid fa-chart-line" v-if="form.tradeType === 'CALL' || form.tradeType === 'PUT'"></i>
+                                                <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11L13.5 15.5L8.5 10.5L2 14"/><path d="M16 11H22V17"/></svg>
+                                            </div>
+                                            <span class="font-medium text-lg">{{ selectedTradeTypeLabel }}</span>
+                                        </div>
+                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                    </button>
                                 </div>
-                                <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                            </button>
+                            </div>
                         </div>
 
                         <!-- Duração, Unidade, Multiplicador -->
@@ -585,22 +586,21 @@
                             <div v-for="(marketsList, category) in marketsByCategory" :key="category" class="category-card">
                                 <div class="category-card-header">
                                     <div class="category-icon-wrapper">
-                                        <svg v-if="category === 'Índices Contínuos'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <svg v-if="category === 'Índices Contínuos' || category === 'Continuous Indices'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M16 11H22V17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                         <svg v-else-if="category === 'Criptomoedas'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
                                             <path d="M9 12H15M12 9V15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
                                         </svg>
-                                        <svg v-else-if="category === 'Major Pairs' || category === 'Forex Minors' || category === 'Forex Exotics'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <svg v-else-if="category === 'Forex Majors' || category === 'Minor Pairs' || category === 'Major Pairs'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
-                                            <path d="M15 9L9 15M9 9L15 15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
-                                            <path d="M12 2V22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                                            <path d="M12 7V17M15 12H9" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
                                         </svg>
                                         <svg v-else-if="category === 'Metais'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M6 4L18 4L21 9L12 21L3 9L6 4Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M3 9H21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M3 9H21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                             <path d="M12 21V9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                         <i v-else class="fa-solid fa-bars text-white"></i>
@@ -646,22 +646,27 @@
                                     <div class="category-icon-wrapper">
                                         <svg v-if="category.id === 'rising_falling'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M16 11H22V17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category.id === 'daily_reset_indices' || category.id === 'Índices Daily Reset'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 2V22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                                            <path d="M17 7L12 2L7 7" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M17 17L12 22L7 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                         <svg v-else-if="category.id === 'digits'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M4 9H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                             <path d="M4 15H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M10 3L8 21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M16 3L14 21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M10 3L8 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 3L14 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                         <svg v-else-if="category.id === 'accumulators'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M2 17L12 22L22 17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M2 17L12 22L22 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                             <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                         <svg v-else-if="category.id === 'multipliers'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
-                                            <path d="M15 9L9 15M9 9L15 15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
+                                            <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
                                         </svg>
                                         <i v-else :class="category.icon"></i>
                                     </div>
@@ -675,7 +680,12 @@
                                         :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.tradeType : recoveryConfig.tradeType) === item.value }]"
                                     >
                                         <div class="flex items-center gap-2">
-                                            <img v-if="item.icon" :src="`/deriv_icons/${item.icon}`" class="w-5 h-5 contrast-[1.5] brightness-[1.5]" alt="" />
+                                            <div class="w-5 h-5 flex items-center justify-center text-zenix-green">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M22 11L13.5 15.5L8.5 10.5L2 14"/>
+                                                    <path d="M16 11H22V17"/>
+                                                </svg>
+                                            </div>
                                             <span>{{ item.label }}</span>
                                         </div>
                                     </button>
@@ -2117,10 +2127,11 @@ export default {
 .layout-content {
     flex-grow: 1;
     padding: 20px;
-    padding-top: 50px;
+    padding-top: 80px;
     padding-bottom: 40px;
     background-color: #0B0B0B;
     width: 100%;
+    max-width: 100% !important;
     overflow-y: auto;
 }
 
