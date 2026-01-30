@@ -208,7 +208,8 @@
                                             <div class="agent-option-content">
                                                 <div class="agent-option-header-row">
                                                     <div class="strategy-icon-box-large" :class="strategy.id">
-                                                        <i :class="strategy.icon"></i>
+                                                        <img v-if="strategy.icons && strategy.icons.length > 0" :src="strategy.icons[0]" class="deriv-svg-icon" alt="strategy icon" />
+                                                        <i v-else :class="strategy.icon"></i>
                                                         <i v-if="strategy.id === 'nexus'" class="fas fa-shield-alt mini-shield"></i>
                                                     </div>
                                                     <div class="agent-option-main-info">
@@ -547,7 +548,7 @@ export default {
                     title: 'IA Atlas', 
                     marketType: 'Digits', 
                     icon: 'fas fa-shield-alt', 
-                    icons: [], // Removed SVG icons to use FontAwesome as per request for consistency with Image 1
+                    icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg'], 
                     description: 'Híbrida (Fluxo de Dígitos + Price Action → Tendência)',
                     assertividade: '92 a 96%',
                     retorno: '95% / 99%'
@@ -557,7 +558,7 @@ export default {
                     title: 'IA Apollo', 
                     marketType: 'Ups e Downs', 
                     icon: 'fas fa-rocket', 
-                    icons: [],
+                    icons: ['/deriv_icons/TradeTypesHighsAndLowsHighIcon.svg'],
                     description: 'Price Action Puro (Inércia + Força + Tendência)',
                     assertividade: '90% a 95%',
                     retorno: '99%'
@@ -567,7 +568,7 @@ export default {
                     title: 'IA Nexus', 
                     marketType: 'Ups e Downs', 
                     icon: 'fas fa-chart-line', // Will use CSS for the shield overlay
-                    icons: [],
+                    icons: ['/deriv_icons/TradeTypesDigitsMatchIcon.svg'],
                     description: 'Price Action Barreira de Segurança com Troca de Contrato',
                     assertividade: '91% a 95%',
                     retorno: '91% / 95%'
@@ -577,7 +578,7 @@ export default {
                     title: 'IA Orion', 
                     marketType: 'Digits', 
                     icon: 'fas fa-star', 
-                    icons: [],
+                    icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg'],
                     description: 'Estatística de Dígitos + (Over 2) com Price Action na Recuperação',
                     assertividade: '94% a 97%',
                     retorno: '95% / 99%'
@@ -587,7 +588,7 @@ export default {
                     title: 'IA Titan', 
                     marketType: 'Digits', 
                     icon: 'fas fa-yin-yang', 
-                    icons: [],
+                    icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg'],
                     description: 'Dígitos Par/Ímpar com persistência direcional',
                     assertividade: '90% - 95%',
                     retorno: '95%'

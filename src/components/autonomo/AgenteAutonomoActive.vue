@@ -160,8 +160,17 @@
 						@click.stop="toggleAgentSwitcher"
 					>
 						<div class="flex items-center gap-3">
-							<div class="p-2 bg-[#1a1a1a] rounded-md">
-                                <div class="strategy-icons-inline text-lg">
+							<div class="p-2 bg-[#1a1a1a] rounded-md overflow-hidden flex items-center justify-center w-10 h-10 border border-[#27272a]">
+                                <video 
+                                    v-if="runningAgents.find(a => a.id === currentAgentId)?.video"
+                                    :src="runningAgents.find(a => a.id === currentAgentId)?.video"
+                                    class="w-full h-full object-cover rounded-sm scale-150"
+                                    autoplay 
+                                    loop 
+                                    muted 
+                                    playsinline
+                                ></video>
+                                <div v-else class="strategy-icons-inline text-lg">
                                     {{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}
                                 </div>
 							</div>
@@ -189,8 +198,17 @@
 								class="p-3 flex items-center gap-3 hover:bg-[#1a1a1a] cursor-pointer transition-colors border-b border-[#27272a]/50 last:border-0"
 								:class="{ 'bg-[#092012]/35': agenteData.id === agent.id }"
 							>
-								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
-									<div class="strategy-icons-inline text-2xl">
+								<div class="w-12 h-12 rounded-md bg-[#1a1a1a] flex items-center justify-center relative overflow-hidden border border-[#27272a]">
+									<video 
+                                        v-if="agent.video"
+                                        :src="agent.video"
+                                        class="w-full h-full object-cover scale-150"
+                                        autoplay 
+                                        loop 
+                                        muted 
+                                        playsinline
+                                    ></video>
+                                    <div v-else class="strategy-icons-inline text-2xl">
 										{{ agent.emoji }}
 									</div>
 								</div>
@@ -859,6 +877,7 @@
 						title: 'Agente Zeus',
 						marketType: 'Digits',
 						icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'],
+                        video: '/Zeus_Lança_Raio_em_Vídeo.mp4',
 						emoji: '⚡', 
 						description: 'Análise: Fluxo de Mercado (Tick a Tick)\nAssertividade: 90%\nRetorno: 85%',
 						winRate: 58,
@@ -874,51 +893,6 @@
 						description: 'Análise: Entropia + Força + Assertividade\nAssertividade: 70%\nRetorno: 63.5%',
 						winRate: 62,
 						style: 'Estatístico / Preciso'
-					},
-                    { 
-						id: 'atlas', 
-						title: 'IA Atlas',
-						marketType: 'Híbrida',
-						emoji: '🛡️', 
-						description: 'Híbrida (Fluxo de Dígitos + Price Action → Tendência)\nAssertividade: 92% a 96%\nRetorno: 95% / 99%',
-						winRate: 94,
-						style: 'Híbrido'
-					},
-                    { 
-						id: 'apollo', 
-						title: 'IA Apollo',
-						marketType: 'Price Action',
-						emoji: '🚀', 
-						description: 'Price Action Puro (Inércia + Força + Tendência)\nAssertividade: 90% a 95%\nRetorno: 99%',
-						winRate: 92,
-						style: 'Agressivo'
-					},
-                    { 
-						id: 'nexus', 
-						title: 'IA Nexus',
-						marketType: 'Segurança',
-						emoji: '📈', 
-						description: 'Price Action Barreira de Segurança com Troca de Contrato\nAssertividade: 91% a 95%\nRetorno: 91% / 95%',
-						winRate: 93,
-						style: 'Conservador'
-					},
-                    { 
-						id: 'orion', 
-						title: 'IA Orion',
-						marketType: 'Estatística',
-						emoji: '⭐', 
-						description: 'Estatística de Dígitos + (Over 2) com Price Action na Recuperação\nAssertividade: 94% a 97%\nRetorno: 95% / 99%',
-						winRate: 95,
-						style: 'Estatístico'
-					},
-                    { 
-						id: 'titan', 
-						title: 'IA Titan',
-						marketType: 'Par/Ímpar',
-						emoji: '☯️', 
-						description: 'Dígitos Par/Ímpar com persistência direcional\nAssertividade: 90% - 95%\nRetorno: 95%',
-						winRate: 92,
-						style: 'Persistência'
 					}
 				],
 				hideValues: false,
@@ -1881,6 +1855,8 @@
 				// Se for um agente específico (não 'all'), emitir evento para o pai ativar
 				if (agentId !== 'all') {
 					this.$emit('change-agent', agentId);
+                    // Pausar IA e ir para o topo ao trocar de agente como solicitado
+                    this.pausarAgenteEIrParaTopo();
 				}
 				
 				// Recarregar todos os dados com o novo filtro
