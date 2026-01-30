@@ -880,13 +880,15 @@ export default {
             recoveryContracts: [],
             isFetchingContracts: false,
 
-            // WebSocket Tick Monitoring
+            // WebSocket Tick & Trade Monitoring
             ws: null,
             tickSubscriptionId: null,
             tickCount: 0,
             lastTickPrice: null,
             tickHistory: [], // Buffer for Price Momentum
             digitHistory: [], // Buffer for Digit Density/Sequence/Majority
+            isAuthorized: false,
+            activeContracts: new Map(), // To track multiple overlapping trades if any
 
             balance: 5889.28, // Mock implementation or fetch from store
             isMonitoring: false,
@@ -1445,14 +1447,48 @@ export default {
             this.ws = new WebSocket(endpoint);
 
             this.ws.onopen = () => {
-                this.addLog(`🔌 Conectado ao mercado: ${this.selectedMarketLabel}`, 'success');
-                this.subscribeTicks();
+                this.addLog(`🔌 Conectado. Autorizando...`, 'info');
+                const token = localStorage.getItem('token');
+                if (token) {
+                    this.ws.send(JSON.stringify({ authorize: token }));
+                } else {
+                    this.addLog('⚠️ Token não encontrado. Operações reais desativadas.', 'warning');
+                    this.subscribeTicks();
+                }
             };
 
             this.ws.onmessage = (event) => {
                 try {
                     const msg = JSON.parse(event.data);
-                    this.handleTickMessage(msg);
+                    
+                    if (msg.msg_type === 'authorize') {
+                        if (msg.error) {
+                            this.addLog(`❌ Falha na autorização: ${msg.error.message}`, 'error');
+                        } else {
+                            this.isAuthorized = true;
+                            this.balance = msg.authorize.balance;
+                            this.addLog(`✅ Autorizado! Saldo: $${this.balance}`, 'success');
+                            this.subscribeTicks();
+                        }
+                    }
+
+                    if (msg.msg_type === 'tick') {
+                        this.handleTickMessage(msg);
+                    }
+
+                    if (msg.msg_type === 'buy') {
+                        if (msg.error) {
+                            this.addLog(`❌ Erro na compra: ${msg.error.message}`, 'error');
+                        } else {
+                            this.addLog(`🚀 Contrato comprado! ID: ${msg.buy.contract_id}`, 'success');
+                            this.subscribeToContract(msg.buy.contract_id);
+                        }
+                    }
+
+                    if (msg.msg_type === 'proposal_open_contract') {
+                        this.handleContractUpdate(msg.proposal_open_contract);
+                    }
+
                 } catch (e) {
                     console.error('[WS] Erro JSON:', e);
                 }
@@ -1548,33 +1584,87 @@ export default {
 
             if (allPassed) {
                 this.addLog('🎯 SINAL GERADO! Filtros de ataque confirmados.', 'success');
-                this.simulateTrade(); // Trigger trade simulation
+                this.executeRealTrade(); 
+            }
+        },
+        executeRealTrade() {
+            if (!this.isAuthorized) {
+                this.addLog('⚠️ Tentativa de entrada negada: WebSocket não autorizado.', 'warning');
+                return;
+            }
+
+            // Evitar múltiplas entradas simultâneas se já houver contrato aberto (opcional, ajustável)
+            if (this.activeContracts.size > 0) return;
+
+            const buyParams = {
+                buy: 1,
+                price: this.form.initialStake,
+                parameters: {
+                    amount: this.form.initialStake,
+                    basis: 'stake',
+                    contract_type: this.form.tradeType,
+                    currency: 'USD',
+                    duration: this.form.duration,
+                    duration_unit: this.form.durationUnit,
+                    symbol: this.form.market
+                }
+            };
+
+            this.addLog(`💸 Enviando ordem de compra: ${this.form.tradeType} $${this.form.initialStake}`, 'info');
+            this.ws.send(JSON.stringify(buyParams));
+        },
+        subscribeToContract(contractId) {
+            this.ws.send(JSON.stringify({
+                proposal_open_contract: 1,
+                contract_id: contractId,
+                subscribe: 1
+            }));
+        },
+        handleContractUpdate(contract) {
+            const id = contract.contract_id;
+            
+            // Check if it's already in our list
+            let trade = this.monitoringOperations.find(o => o.id === id);
+            
+            if (!trade) {
+                trade = {
+                    id: id,
+                    time: new Date(contract.date_start * 1000).toLocaleTimeString(),
+                    market: contract.display_name,
+                    contract: contract.contract_type,
+                    stake: contract.buy_price,
+                    pnl: contract.profit || 0,
+                    result: 'OPEN'
+                };
+                this.monitoringOperations.unshift(trade);
+                this.activeContracts.set(id, trade);
+            } else {
+                trade.pnl = contract.profit || 0;
+            }
+
+            if (contract.is_sold) {
+                trade.result = contract.status.toUpperCase(); // 'WON' or 'LOST'
+                trade.pnl = contract.profit;
+
+                if (trade.result === 'WON') {
+                    this.monitoringStats.wins++;
+                    this.addLog(`💰 WIN! Lucro de $${trade.pnl}`, 'success');
+                } else {
+                    this.monitoringStats.losses++;
+                    this.addLog(`🔴 LOSS. Perda de $${Math.abs(trade.pnl)}`, 'error');
+                }
+                
+                this.monitoringStats.profit += parseFloat(trade.pnl);
+                this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
+                
+                this.activeContracts.delete(id);
+                // Unsubscribe is implicit when is_sold in some Deriv contexts, 
+                // but usually handled by server closing subscription
             }
         },
         simulateTrade() {
-            const isWin = Math.random() > 0.4;
-            const winAmount = (this.form.initialStake * 0.95).toFixed(2);
-            const lossAmount = this.form.initialStake.toFixed(2);
-            const pnl = isWin ? parseFloat(winAmount) : -parseFloat(lossAmount);
-            
-            this.monitoringStats.profit += pnl;
-            if (isWin) this.monitoringStats.wins++;
-            else this.monitoringStats.losses++;
-            
-            this.monitoringStats.balance += pnl;
-
-            const trade = {
-                id: Date.now(),
-                time: new Date().toLocaleTimeString(),
-                market: this.form.market,
-                contract: this.form.tradeType,
-                stake: this.form.initialStake,
-                pnl: pnl.toFixed(2),
-                result: isWin ? 'WIN' : 'LOSS'
-            };
-
-            this.monitoringOperations.unshift(trade);
-            this.addLog(`${isWin ? '💰 Lucro' : '🔴 Perda'} de $${Math.abs(pnl).toFixed(2)} em ${this.form.market}`, isWin ? 'success' : 'error');
+            // Deprecated in favor of executeRealTrade, but kept for non-authorized testing if needed
+            this.executeRealTrade();
         },
         simulateLog() {
             const logs = [
