@@ -19,7 +19,7 @@
                 @open-settings="showSettingsModal = true"
             />
 
-            <main class="flex-1 p-2 md:p-4 lg:p-6 overflow-auto flex flex-col justify-start">
+            <main class="flex-1 overflow-auto flex flex-col justify-start w-full" style="padding: 5rem 2rem;">
                 <!-- Header Stats Card -->
                 <div class="bg-gradient-to-br from-secondary/60 via-secondary/40 to-secondary/20 rounded-2xl border border-border/30 p-4 md:p-6 lg:p-8 relative overflow-hidden fade-in shadow-2xl shadow-black/40">
                     <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
@@ -119,10 +119,10 @@
                 </div>
 
                 <!-- Main Content Body -->
-                <div class="mt-4 md:mt-6 lg:mt-8 flex flex-col lg:flex-row gap-4 lg:gap-6">
+                <div class="mt-4 md:mt-6 lg:mt-8 flex flex-col lg:flex-row gap-4 lg:gap-6 w-full flex-1">
                     <!-- Left: Chart & History -->
-                    <div class="w-full lg:w-[72%] card-glass rounded-2xl border border-border/50 p-4 md:p-6 lg:p-8 fade-in-delay-1 gradient-border">
-                        <div class="w-full">
+                    <div class="w-full lg:w-[72%] card-glass rounded-2xl border border-border/50 p-4 md:p-6 lg:p-8 fade-in-delay-1 gradient-border flex flex-col">
+                        <div class="w-full flex-1 flex flex-col">
                             <!-- Custom Tabs -->
                             <div class="flex items-center justify-start text-muted-foreground border-b border-border mb-6 gap-6 h-auto p-0">
                                 <button @click="activeMonitoringTab = 'chart'" :class="{ 'border-success text-success': activeMonitoringTab === 'chart' }" class="inline-flex items-center justify-center py-1.5 text-sm font-medium border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-foreground">
@@ -137,7 +137,7 @@
                             </div>
 
                             <!-- Chart Tab -->
-                            <div v-show="activeMonitoringTab === 'chart'" class="space-y-6 animate-fadeIn">
+                            <div v-show="activeMonitoringTab === 'chart'" class="space-y-6 animate-fadeIn flex-1 flex flex-col">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <h3 class="text-base font-bold text-foreground tracking-tight">Evolução do Resultado da IA {{ currentConfig.strategy.toUpperCase() }}</h3>
@@ -148,7 +148,7 @@
                                         <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Resultado ($)</span>
                                     </div>
                                 </div>
-                                <div class="h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
+                                <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
                                     <LineChart 
                                        chartId="monitoring-profit-chart" 
                                        :data="profitHistory" 
