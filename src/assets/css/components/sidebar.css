@@ -16,8 +16,8 @@ aside.sidebar,
 	left: 0;
 	top: 60px;
 	height: calc(100vh - 60px);
-	/* z-index aumentado para evitar sobreposição na página de IA */
-	z-index: 999999 !important;
+	/* z-index reduzido no desktop para evitar sobreposição desnecessária */
+	z-index: 1 !important;
 	box-sizing: border-box;
 	transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
 	font-family: 'Inter', sans-serif;
@@ -421,7 +421,7 @@ aside.sidebar,
 		left: -300px;
 		top: 0 !important;
 		height: 100vh !important;
-		box-shadow: 5px 0 15px rgba(0, 0, 0, 0.7);
+		box-shadow: none;
 		z-index: 999999 !important;
 		/* Acima do header (1000) e desktopbottomnav (1000) */
 		margin: 0 !important;
