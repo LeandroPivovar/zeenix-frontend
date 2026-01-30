@@ -909,6 +909,7 @@ export default {
             // UI Modals
             showMarketModal: false,
             showTradeTypeModal: false,
+            showFilterModal: false,
             showPauseModal: false,
             savedStrategies: [],
             selectedSavedStrategyId: '',
