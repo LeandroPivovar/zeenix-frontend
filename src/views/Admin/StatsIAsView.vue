@@ -1,4697 +1,1729 @@
-<template>
-	<div class="dashboard-layout">
-		<div
-			v-if="isSidebarOpen && isMobile"
-			class="sidebar-overlay"
-			@click="closeSidebar"
-		></div>
+﻿<template>
+    <div class="zenix-layout">
 
-		<AppSidebar 
-			:is-open="isSidebarOpen" 
-			:is-collapsed="isSidebarCollapsed" 
-			:is-mobile="isMobile"
-			@close-sidebar="closeSidebar" 
-			@toggle-collapse="toggleSidebarCollapse" 
-			@open-settings="showSettingsModal = true"
-		/>
+        
 
-		<div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-			<!-- Top Navbar -->
-			<TopNavbar 
-				:is-sidebar-collapsed="isSidebarCollapsed"
-				@toggle-sidebar="isSidebarOpen = !isSidebarOpen"
-				@toggle-sidebar-collapse="toggleSidebarCollapse"
-				@open-settings="showSettingsModal = true"
-			/>
 
-		<main class="layout-content">
+        <div class="min-h-screen flex flex-col transition-all duration-300" :style="{ marginLeft: isMobile ? '0' : (isSidebarCollapsed ? '0' : '280px') }">
+        <TopNavbar 
+            :is-sidebar-collapsed="isSidebarCollapsed"
+            :balance="info?.balance"
+            :account-type="accountType"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
+            :currency-prefix="preferredCurrencyPrefix"
+            @open-settings="toggleSettingsModal"
+            @account-type-changed="handleAccountTypeChange"
+            @toggle-sidebar="toggleSidebar"
+            @toggle-sidebar-collapse="toggleSidebarCollapse"
+        />
+        
+        <!-- Settings Sidebar -->
+        <SettingsSidebar
+            :is-open="showSettingsModal"
+            :balance="info?.balance"
+            :account-type="accountType"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
+            :currency-prefix="preferredCurrencyPrefix"
+            :active-service="'ia'"
+            @close="closeSettingsModal"
+            @account-type-changed="handleAccountTypeChange"
+        />
 
-			<div class="main-header">
-				<div class="main-header-left">
-					<h1 style="font-size: 20px;">Estatísticas das IAs</h1>
-					<p style="font-size: 14px;">Monitoramento de performance e resultados das IAs cadastradas na Deriv.</p>
-				</div>
-				<div class="main-header-right">
-					<button class="btn pdf-btn" @click="exportReportToPDF">
-						<img src="../../assets/icons/box-down.svg" alt="Exportar PDF" width="20px"> Exportar Relatório
-					</button>
-				</div>
-			</div>
+            <main class="main-content" style="margin-top: 0px;">
+                <!-- AI Vision Panel - Only show when IA is inactive -->
+                <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
+                    <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
+                        <!-- Header Desktop -->
+                        <div v-if="!isMobile" class="mb-6 ai-vision-header-desktop">
+                            <div class="text-left">
+                                <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração da IA</h1>
+                                <p class="text-sm text-zenix-secondary">Escolha um dos Agentes de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
+                            </div>
+                        </div>
+                        <!-- Header Mobile -->
+                        <div v-if="isMobile" class="mb-6 ai-vision-header-mobile">
+                            <div class="flex items-center justify-between">
+                                <div class="text-left">
+                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Configuração da IA</h1>
+                                    <p class="text-sm text-zenix-secondary">Escolha uma das IAs de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
+                                </div>
+                                <div class="ai-chip-icon-mobile">
+                                    <i class="fas fa-brain text-[#22C55E] text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-12 gap-5">
+                            <!-- AI Visualization Area (Desktop Only) -->
+                            <div v-if="!isMobile" class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border-2 border-zenix-green/30 flex items-center justify-center relative ai-visualization-area">
+                                <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/5 via-transparent to-zenix-green/10"></div>
+                                <!-- Animated Grid Background -->
+                                <div class="absolute inset-0 opacity-20">
+                                    <div id="i9dlnn" class="absolute inset-0"></div>
+                                </div>
+                                <!-- Central AI Core -->
+                                <div class="relative z-10 flex items-center justify-center ai-core-mobile" style="width: 100%; height: 100%;">
+                                    <!-- Outer Rotating Ring -->
+                                    <div id="irazem" class="absolute w-40 h-40 border-2 border-zenix-green/30 rounded-full ai-glow-ring" style="opacity: 1;"></div>
+                                    <!-- Middle Rotating Ring -->
+                                    <div id="i5uptv" class="absolute w-32 h-32 border-2 border-zenix-green/40 rounded-full" style="opacity: 1;"></div>
+                                    <!-- Inner Pulsing Core -->
+                                    <div class="absolute w-24 h-24 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1;"></div>
+                                    <!-- Central Robot Icon -->
+                                    <div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-brain text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3rem !important;"></i>
+                                    </div>
+                                    <!-- Orbiting Data Nodes -->
+                                    <div id="iyljui" class="absolute w-3 h-3 bg-zenix-green rounded-full" style="opacity: 1;"></div>
+                                    <div id="isxtjr" class="absolute w-2 h-2 bg-zenix-green/70 rounded-full" style="opacity: 1;"></div>
+                                    <div id="ijse57" class="absolute w-2.5 h-2.5 bg-zenix-green/80 rounded-full" style="opacity: 1;"></div>
+                                </div>
+                                <!-- Floating Particles -->
+                                <div class="absolute inset-0 overflow-hidden">
+                                    <div id="iw45yh" class="absolute w-1 h-1 bg-zenix-green rounded-full"></div>
+                                    <div id="i2cpbj" class="absolute w-1.5 h-1.5 bg-zenix-green/70 rounded-full"></div>
+                                    <div id="ispbex" class="absolute w-1 h-1 bg-zenix-green/60 rounded-full"></div>
+                                    <div id="i7wi6r" class="absolute w-1.5 h-1.5 bg-zenix-green rounded-full"></div>
+                                </div>
+                                <!-- Data Stream Lines -->
+                                <div class="absolute inset-0 overflow-hidden opacity-30">
+                                    <div id="ivhu5o" class="absolute h-px w-20 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                                    <div id="iybi4e" class="absolute h-px w-16 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                                    <div id="icjipi" class="absolute h-px w-24 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                                </div>
+                            </div>
+                            <!-- Status Cards -->
+                            <div :class="isMobile ? 'col-span-12' : 'col-span-7'" class="grid grid-cols-2 gap-4 status-cards-container">
+                                <!-- Card 1: ESTRATÉGIAS -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+                                    <div class="flex items-center justify-center gap-2 mb-2">
+                                        <i class="fas fa-brain text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-bold status-label">ESTRATÉGIAS</p>
+                                    </div>
+                                    <p class="text-xs text-white status-value">5 IAs Especializadas</p>
+                                    <p v-if="!isMobile" class="text-xs text-zenix-label mt-1 status-description">IAs para diferentes perfis</p>
+                                </div>
+                                <!-- Card 2: DESEMPENHO -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+                                    <div class="flex items-center justify-center gap-2 mb-2">
+                                        <i class="fas fa-chart-line text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-bold status-label">DESEMPENHO</p>
+                                    </div>
+                                    <p class="text-xs text-white status-value">60% a 75%</p>
+                                    <p v-if="!isMobile" class="text-xs text-zenix-label mt-1 status-description">Varia por estratégia e modo</p>
+                                </div>
+                                <!-- Card 3: CONTROLE -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+                                    <div class="flex items-center justify-center gap-2 mb-2">
+                                        <i class="fas fa-sliders-h text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-bold status-label">CONTROLE</p>
+                                    </div>
+                                    <p class="text-xs text-white status-value">Parcial com Supervisão</p>
+                                    <p v-if="!isMobile" class="text-xs text-zenix-label mt-1 status-description">Você decide quando operar</p>
+                                </div>
+                                <!-- Card 4: SEGURANÇA -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+                                    <div class="flex items-center justify-center gap-2 mb-2">
+                                        <i class="fas fa-shield-alt text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-bold status-label">SEGURANÇA</p>
+                                    </div>
+                                    <p class="text-xs text-white status-value">Stop Loss Duplo</p>
+                                    <p v-if="!isMobile" class="text-xs text-zenix-label mt-1 status-description">Normal + Blindado automáticos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-			<!-- Seção de Monitoramento de IA (aparece quando monitoramento está ativo) -->
-			<div v-if="aiMonitoring.isActive" class="ai-monitoring-section">
-				<div class="ai-monitoring-header">
-					<h2>Monitor de Volatilidade 100</h2>
-					<button :class="['btn-ai-toggle', aiMonitoring.isActive ? 'active' : '']" @click="toggleAIMonitoring">
-						<span v-if="!aiMonitoring.isActive">▶ Ativar IA</span>
-						<span v-else>⏸ Desativar IA</span>
-					</button>
-				</div>
+                <!-- Configuration Cards Grid - Only show when IA is inactive -->
+                <div class="config-grid" v-if="!isInvestmentActive">
+                    <!-- Mercado & Estratégia -->
+                    <div id="market-strategy-card" class="config-card premium-card">
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Estratégia
+                                    <ZenixTooltip :offset="20"> 
+                                        <p>Modelo de análise usado pela IA</p>
+                                    </ZenixTooltip>
+                                </label>
+                                <!-- Premium Selector Button -->
+                                <button 
+                                    @click="openStrategyModal"
+                                    class="premium-selector-btn"
+                                >
+                                    <div class="selector-content">
+                                        <div class="selector-left">
+                                            <div v-if="selectedStrategyObject" class="strategy-icons-inline mr-2">
+                                                <div class="strategy-icon-box">
+                                                    <img v-if="selectedStrategyObject.icons && selectedStrategyObject.icons.length > 0" :src="selectedStrategyObject.icons[0]" class="deriv-svg-icon" />
+                                                    <i v-else :class="selectedStrategyObject.icon"></i>
+                                                </div>
+                                            </div>
+                                            <span :class="{ 'placeholder': !selectedStrategy }">
+                                                <template v-if="selectedStrategyObject">
+                                                    {{ selectedStrategyObject.title }}
+                                                </template>
+                                                <template v-else>
+                                                    Selecione uma estratégia
+                                                </template>
+                                            </span>
+                                        </div>
+                                        <i class="fas fa-chevron-right selector-arrow"></i>
+                                    </div>
+                                </button>
+                                
+                                <!-- Strategy Description Card (appears when selected) -->
+                                <transition name="slide-fade" mode="out-in">
+                                    <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card" :class="selectedStrategy">
+                                        <div class="agent-desc-content">
+                                            <div class="agent-desc-info">
+                                                <p v-html="strategyDescription"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </transition>
+                    </div>
 
-				<div class="ai-monitoring-content">
-					<div class="price-display-section">
-						<div class="current-price-card">
-							<h3>Preço Atual</h3>
-							<div class="price-value">
-								<span v-if="aiMonitoring.currentPrice">{{ aiMonitoring.currentPrice.toFixed(2) }}</span>
-								<span v-else>--</span>
-							</div>
-							<p class="price-timestamp">{{ aiMonitoring.lastUpdate }}</p>
-						</div>
+                    <!-- Strategy Selection Modal (Premium Style) -->
+                    <Teleport to="body">
+                        <div v-if="showStrategyModal" class="modal-overlay" @click.self="closeStrategyModal">
+                            <div class="modal-content categorized-modal" style="padding: 20px;">
+                                <div class="modal-header-premium">
+                                    <h3 class="modal-title" style="font-size: 1.6rem;">Selecionar Estratégia</h3>
+                                    <button @click="closeStrategyModal" class="modal-close-btn">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="agents-modal-list">
+                                        <div 
+                                            v-for="strategy in availableStrategies" 
+                                            :key="strategy.id"
+                                            class="agent-option-premium"
+                                            :class="{ 'active': selectedStrategy === strategy.id }"
+                                            @click="selectStrategy(strategy.id)"
+                                        >
+                                            <div class="agent-option-content">
+                                                <div class="agent-option-header-row">
+                                                    <div class="strategy-icon-box-large" :class="strategy.id">
+                                                        <img v-if="strategy.icons && strategy.icons.length > 0" :src="strategy.icons[0]" class="deriv-svg-icon" alt="strategy icon" />
+                                                        <i v-else :class="strategy.icon"></i>
+                                                        <i v-if="strategy.id === 'nexus'" class="fas fa-shield-alt mini-shield"></i>
+                                                    </div>
+                                                    <div class="agent-option-main-info">
+                                                        <h4 class="agent-option-title">{{ strategy.title }}</h4>
+                                                        <p class="agent-option-desc">{{ strategy.description }}</p>
+                                                    </div>
+                                                    <div class="agent-option-arrow">
+                                                        <i class="fas fa-chevron-right"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="agent-option-footer-stats">
+                                                    <div class="stat-item">
+                                                        <span class="stat-label">Assertividade:</span>
+                                                        <span class="stat-value">{{ strategy.assertividade }}</span>
+                                                    </div>
+                                                    <div class="stat-divider"></div>
+                                                    <div class="stat-item">
+                                                        <span class="stat-label">Retorno:</span>
+                                                        <span class="stat-value highlight">{{ strategy.retorno }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Teleport>
 
-						<div class="last-10-prices-card">
-							<h3>Últimos 10 Preços</h3>
-							<div class="price-list">
-								<div v-for="(tick, index) in aiMonitoring.ticks" :key="index" class="price-item">
-									<span class="price-number">{{ (index + 1).toString().padStart(2, '0') }}.</span>
-									<span class="price-value-item">{{ tick.value.toFixed(2) }}</span>
-									<span class="price-time">{{ tick.timestamp }}</span>
-									<span v-if="index > 0" :class="['price-variation', getVariationClass(tick.value, aiMonitoring.ticks[index - 1].value)]">
-										{{ getVariationText(tick.value, aiMonitoring.ticks[index - 1].value) }}
-									</span>
-								</div>
-								<div v-if="aiMonitoring.ticks.length === 0" class="no-data">
-									<p>Aguardando dados...</p>
-								</div>
-							</div>
-						</div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Modo de Negociação
+                                    <ZenixTooltip :offset="20"> 
+                                        <p>Define a frequência e a precisão das operações realizadas pela IA.</p>
+                                    </ZenixTooltip>
+                                </label>
+                                <div class="mode-buttons">
+                                    <button 
+                                        id="modeVeloz" 
+                                        :class="['mode-btn', { 'active': mode === 'veloz' }]"
+                                        @click="mode = 'veloz'"
+                                    >
+                                        Veloz
+                                    </button>
+                                    <button 
+                                        id="modeModerate" 
+                                        :class="['mode-btn', { 'active': mode === 'moderado' }]"
+                                        @click="mode = 'moderado'"
+                                    >
+                                        Normal
+                                    </button>
+                                    <button 
+                                        id="modeLento" 
+                                        :class="['mode-btn', { 'active': mode === 'lento' }]"
+                                        @click="mode = 'lento'"
+                                    >
+                                        Preciso
+                                    </button>
+                                </div>
+                                <p id="modeDescription" class="form-help">{{ modeDescription }}</p>
+                            </div>
+                            
+                            <!-- Gerenciamento de Risco -->
+                            <div class="form-group risk-management-section">
+                                <label class="form-label">
+                                    Gerenciamento de Risco
+                                    <ZenixTooltip :offset="20"> 
+                                        <p>Configura a estratégia de recuperação e o nível de exposição do capital.</p>
+                                    </ZenixTooltip>
+                                </label>
+                                <div class="risk-buttons">
+                                    <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
+                                        @click="modoMartingale = 'conservador'"
+                                    >
+                                        Conservador
+                                    </button>
+                                    <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'moderado' }]"
+                                        @click="modoMartingale = 'moderado'"
+                                    >
+                                        Moderado
+                                    </button>
+                                    <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'agressivo' }]"
+                                        @click="modoMartingale = 'agressivo'"
+                                    >
+                                        Agressivo
+                                    </button>
+                                </div>
+                                
+                                <div class="risk-indicator">
+                                    <div class="risk-header">
+                                        <span class="risk-label">Nível de Risco</span>
+                                        <span id="riskLevelText" class="risk-level-text">{{ riskLevelText }}</span>
+                                    </div>
+                                    <div class="risk-bar-container">
+                                        <div id="riskBar" class="risk-bar" :style="{ width: riskBarWidth }"></div>
+                                    </div>
+                                    <p id="riskDescription" class="risk-description">{{ riskDescriptionText }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-						<div v-if="aiMonitoring.statistics" class="statistics-card">
-							<h3>Estatísticas</h3>
-							<div class="stats-grid">
-								<div class="stat-item">
-									<span class="stat-label">Mínimo:</span>
-									<span class="stat-value">{{ aiMonitoring.statistics.min.toFixed(2) }}</span>
-								</div>
-								<div class="stat-item">
-									<span class="stat-label">Máximo:</span>
-									<span class="stat-value">{{ aiMonitoring.statistics.max.toFixed(2) }}</span>
-								</div>
-								<div class="stat-item">
-									<span class="stat-label">Média:</span>
-									<span class="stat-value">{{ aiMonitoring.statistics.avg.toFixed(2) }}</span>
-								</div>
-								<div class="stat-item">
-									<span class="stat-label">Variação:</span>
-									<span :class="['stat-value', aiMonitoring.statistics.change >= 0 ? 'positive' : 'negative']">
-										{{ aiMonitoring.statistics.change.toFixed(2) }}%
-									</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
+                    <!-- Parâmetros de Entrada -->
+                    <div id="entry-params-card" class="config-card premium-card">
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Valor de Entrada
+                                    <ZenixTooltip :offset="20"> 
+                                        <p>Defina o valor da sua primeira operação. Todas as estratégias de recuperação e alavancagem (Soros) serão calculadas a partir deste valor base.</p>
+                                    </ZenixTooltip>
+                                </label>
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">$</span>
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        v-model.number="entryValue"
+                                        min="0.35"
+                                        step="0.01"
+                                    >
+                                </div>
+                                <p class="form-help">{{ entryPercent }}% do saldo</p>
+                            </div>
 
-				<!-- Seção de Trading Automático -->
-				<div v-if="aiMonitoring.isActive" class="ai-trading-section">
-					<!-- Performance Summary Cards -->
-					<div class="performance-summary-section">
-						<div class="performance-cards-grid">
-							<!-- Card 1 - Saldo Total -->
-							<div class="premium-card performance-card">
-								<div class="card-header-row">
-									<span class="card-label">Saldo Total</span>
-									<button class="eye-btn" @click="balanceVisibleActive = !balanceVisibleActive">
-										<i :class="balanceVisibleActive ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
-									</button>
-								</div>
-								<div class="card-value-large">
-									<span v-if="accountBalance !== null" class="balance-value" :class="{ 'hidden-value': !balanceVisibleActive }">
-										{{ formatBalance(accountBalance) }}
-									</span>
-									<span v-else class="text-zenix-secondary">Carregando...</span>
-								</div>
-								<div class="card-actions-row">
-									<button :class="['account-type-btn', accountType === 'Real' ? 'active' : '']" @click="accountType = 'Real'">Real</button>
-									<button :class="['account-type-btn', accountType === 'Demo' ? 'active' : '']" @click="accountType = 'Demo'">Demo</button>
-								</div>
-							</div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Alvo de Lucro
+                                    <ZenixTooltip :offset="20"> 
+                                        <p>Sua meta financeira para a sessão. O sistema encerrará as operações automaticamente assim que este valor for atingido ou superado.</p>
+                                    </ZenixTooltip>
+                                </label>
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">$</span>
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        v-model.number="profitTarget"
+                                        min="0"
+                                        step="0.01"
+                                    >
+                                </div>
+                                <p class="form-help">{{ profitPercent }}% do saldo</p>
+                            </div>
 
-							<!-- Card 2 - Lucro do Dia -->
-							<div class="premium-card performance-card">
-								<div class="card-header-row">
-									<span class="card-label">Lucro do Dia</span>
-									<button class="eye-btn" @click="profitVisibleActive = !profitVisibleActive">
-										<i :class="profitVisibleActive ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
-									</button>
-								</div>
-								<div class="card-value-large">
-									<span :class="['profit-value', todayResult >= 0 ? 'positive' : 'negative', { 'hidden-value': !profitVisibleActive }]">
-										{{ todayResult >= 0 ? '+' : '' }}{{ formatCurrency(todayResult) }}
-									</span>
-								</div>
-								<span class="profit-percentage" :class="todayResultPercent >= 0 ? 'positive' : 'negative'">
-									{{ todayResultPercent >= 0 ? '+' : '' }}{{ todayResultPercent.toFixed(2) }}%
-								</span>
-							</div>
+                            <div class="loss-stoploss-row">
+                                <div class="form-group flex-1">
+                                    <label class="form-label">
+                                        Limite de Perda
+                                        <ZenixTooltip :offset="20"> 
+                                            <p>O valor máximo que você aceita arriscar na sessão. Nosso sistema possui Stop de Precisão: ele ajusta automaticamente o valor da última entrada para garantir que você nunca perca mais do que definiu aqui.</p>
+                                        </ZenixTooltip>
+                                    </label>
+                                    <div class="input-wrapper">
+                                        <span class="input-prefix">$</span>
+                                        <input 
+                                            type="number" 
+                                            class="form-input" 
+                                            v-model.number="lossLimit"
+                                            min="0"
+                                            step="0.01"
+                                        >
+                                    </div>
+                                    <p class="form-help">{{ lossPercent }}% do saldo</p>
+                                </div>
+                                
+                                <div class="form-group flex-1">
+                                    <label class="form-label">
+                                        Stoploss Blindado
+                                        <ZenixTooltip :offset="20"> 
+                                            <p>Ative para proteção dinâmica. Quando você atinge 40% da meta, o sistema cria um 'piso de segurança' móvel. Se o mercado virar, o sistema para com lucro garantido (50% do pico), impedindo que você devolva seus ganhos.</p>
+                                        </ZenixTooltip>
+                                    </label>
+                                    <div class="stoploss-blindado-wrapper">
+                                        <div class="stoploss-blindado-label">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <span>{{ stoplossBlindado ? 'Ativado' : 'Desativado' }}</span>
+                                        </div>
+                                        <label class="toggle-switch stoploss-toggle">
+                                            <input 
+                                                type="checkbox" 
+                                                v-model="stoplossBlindado"
+                                            >
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
 
-							<!-- Card 3 - Winrate -->
-							<div class="premium-card performance-card">
-								<div class="card-header-row">
-									<span class="card-label">Winrate</span>
-									<button class="eye-btn" @click="winrateVisibleActive = !winrateVisibleActive">
-										<i :class="winrateVisibleActive ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
-									</button>
-								</div>
-								<div class="card-value-large">
-									<span class="winrate-value" :class="{ 'hidden-value': !winrateVisibleActive }">
-										{{ winRate }}%
-									</span>
-								</div>
-								<span class="text-xs" :class="winRate >= 70 ? 'text-zenix-green' : winRate >= 50 ? 'text-yellow-500' : 'text-zenix-red'" style="font-weight: 500;">
-									{{ winRate >= 70 ? 'Ótimo' : winRate >= 50 ? 'Regular' : 'Baixo' }}
-								</span>
-							</div>
+                            <!-- Controle da IA -->
+                            <div class="form-group ai-status-group">
+                                
+                                <div class="ai-status-control-simple">
+                                    
+                                    <div class="ai-status-info">
+                                        <label class="form-label">Status da IA</label>
+                                        <p class="ai-status-subtitle">{{ isInvestmentActive ? 'Execução automática' : 'Ative para iniciar' }}</p>
+                                    </div>
+                                    <div class="ai-status-toggle-wrapper">
+                                        <span class="ai-status-text" :class="{ 'active': isInvestmentActive }">
+                                            {{ isInvestmentActive ? 'Ativada' : 'Desativada' }}
+                                        </span>
+                                        <label class="toggle-switch">
+                                            <input 
+                                                type="checkbox" 
+                                                :checked="isInvestmentActive"
+                                                @change="handleToggleChange"
+                                            >
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-							<!-- Card 4 - Trades Hoje -->
-							<div class="premium-card performance-card">
-								<div class="card-header-row">
-									<span class="card-label">Trades Hoje</span>
-									<button class="eye-btn" @click="tradesVisibleActive = !tradesVisibleActive">
-										<i :class="tradesVisibleActive ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
-									</button>
-								</div>
-								<div class="card-value-large">
-									<span class="trades-value" :class="{ 'hidden-value': !tradesVisibleActive }">
-										{{ todayTrades }}
-									</span>
-								</div>
-								<div class="trades-stats-row">
-									<span class="text-xs text-zenix-green font-medium">{{ tradingStats.wins || 0 }} Vitórias</span>
-									<span class="text-xs text-zenix-red/70 font-medium">{{ tradingStats.losses || 0 }} Perdas</span>
-								</div>
-							</div>
-						</div>
+                </div>
 
-						<!-- Status da Operação Card -->
-						<div class="premium-card status-card">
-							<div class="status-card-content">
-								<div class="status-card-left">
-									<div class="ai-status-widget">
-										<div class="ai-status-bg"></div>
-										<div class="ai-status-content">
-											<div class="ai-status-spinner-wrapper">
-												<div class="ai-status-pulse-bg"></div>
-												<div class="ai-status-spinner">
-													<svg fill="none" viewBox="0 0 24 24" class="spinner-svg">
-														<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="20 60" opacity="0.3"></circle>
-														<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="15 65" stroke-linecap="round"></circle>
-													</svg>
-												</div>
-											</div>
-										</div>
-									</div>
-									<div class="status-text-content">
-										<h3 class="status-title">Status da Operação</h3>
-										<div class="status-subtitle-row">
-											<span class="status-indicator-text text-[#FFD058] font-medium">Analisando</span>
-											<span class="status-indicator-dot">•</span>
-											<span class="status-indicator-subtext">Aguardando padrão de entrada</span>
-										</div>
-									</div>
-								</div>
-								<div class="status-card-right">
-									<div class="ai-online-indicator">
-										<div class="ai-pulse-dot"></div>
-										<span class="text-xs font-medium text-zenix-green">IA Online</span>
-									</div>
-									<button 
-										class="deactivate-ai-btn-new" 
-										@click="deactivateIAFromActive"
-										:disabled="isDeactivating"
-										title="Desativar IA"
-									>
-										<i class="fas fa-power-off"></i>
-										<span>{{ isDeactivating ? 'Desativando...' : 'Desativar IA' }}</span>
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
+                <!-- Chart Section - Only show when IA is active -->
+                <section id="chart-section" class="chart-section" v-if="isInvestmentActive">
+                <InvestmentActive 
+                    :ticks="ticks" 
+                    :current-price="currentPrice"
+                    :entry-value-config="entryValue"
+                    :profit-target-config="profitTarget"
+                    :loss-limit-config="lossLimit"
+                    :mode-config="mode"
+                    :account-balance-prop="balanceNumeric"
+                    :account-currency-prop="tradeCurrency"
+                    :selected-market-prop="selectedMarket"
+                    :stoploss-blindado-config="stoplossBlindado"
+                    :is-fictitious-balance-active="isFictitiousBalanceActive"
+                    :fictitious-balance="fictitiousBalance"
+                    :is-mobile="isMobile"
+                    :realtime-logs-prop="realtimeLogs"
+                    :log-operations-prop="logOperations"
+                        @deactivate="deactivateIA"
+                        @reactivate="activateIA"
+                        @update-balance="handleLiveBalanceUpdate"
+                        @refresh-balance="reloadBalance"
+                />
+                </section>
 
-					<div class="ai-trading-header">
-						<h2>🤖 Trading Automático com IA</h2>
-						
-						<!-- Banner de IA Ativa -->
-						<div v-if="tradingConfig.isActive" class="ai-active-banner">
-							<div class="banner-icon">🤖</div>
-							<div class="banner-content">
-								<strong>IA ATIVA</strong>
-								<span>Operando em background 24/7</span>
-							</div>
-							<div class="banner-status">
-								<span class="status-indicator"></span>
-								<span>Online</span>
-							</div>
-						</div>
-						
-						<!-- Configurações Fixas (apenas visualização) -->
-						<div class="fixed-config-info">
-							<div class="config-info-item">
-								<label>
-									Mercado:
-									<div class="tooltip-container">
-										<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-											<circle cx="12" cy="12" r="10"></circle>
-											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-											<line x1="12" y1="17" x2="12.01" y2="17"></line>
-										</svg>
-										<span class="tooltip-text">Escolha o ativo que deseja operar.</span>
-									</div>
-								</label>
-								<span class="fixed-value">Volatilidade 100 (R_10)</span>
-							</div>
-							<div class="config-info-item">
-								<label>
-									Estratégia:
-									<div class="tooltip-container">
-										<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-											<circle cx="12" cy="12" r="10"></circle>
-											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-											<line x1="12" y1="17" x2="12.01" y2="17"></line>
-										</svg>
-										<span class="tooltip-text">Modelo de análise usado pela IA</span>
-									</div>
-								</label>
-								<span class="fixed-value">Veloz Automático</span>
-							</div>
-							<div class="config-info-item">
-								<label>Modo de Negociação:</label>
-								<span class="fixed-value">⚡ Veloz</span>
-							</div>
-						</div>
-						
-						<!-- Parâmetros de Entrada -->
-						<div class="trading-controls">
-							<div class="input-group">
-								<label>Valor de Entrada (USD)</label>
-								<span class="input-hint">Valor por operação (mínimo: $0.35)</span>
-								<input 
-									type="number" 
-									v-model.number="tradingConfig.stakeAmount" 
-									min="0.35"
-									step="0.5"
-									:disabled="tradingConfig.isActive"
-									placeholder="50"
-								/>
-								<button 
-									v-if="!tradingConfig.isActive"
-									class="btn-save-config" 
-									@click="updateStakeAmount"
-									:disabled="isUpdatingConfig"
-								>
-									{{ isUpdatingConfig ? 'Salvando...' : '💾 Salvar Alteração' }}
-								</button>
-								<span v-if="configUpdateMessage" :class="['config-message', configUpdateSuccess ? 'success' : 'error']">
-									{{ configUpdateMessage }}
-								</span>
-							</div>
-							
-							<div class="input-group">
-								<label>Alvo de Lucro (USD)</label>
-								<span class="input-hint">Meta diária de lucro</span>
-								<input 
-									type="number" 
-									v-model.number="tradingConfig.profitTarget" 
-									min="0"
-									step="0.01"
-									:disabled="tradingConfig.isActive"
-									placeholder="100"
-								/>
-							</div>
-							
-							<div class="input-group">
-								<label>Limite de Perda (USD)</label>
-								<span class="input-hint">Stop loss diário</span>
-								<input 
-									type="number" 
-									v-model.number="tradingConfig.lossLimit" 
-									min="0"
-									step="0.01"
-									:disabled="tradingConfig.isActive"
-									placeholder="25"
-								/>
-							</div>
-							
-							<button 
-								:class="['btn-trading-toggle', tradingConfig.isActive ? 'active' : '']" 
-								@click="toggleAutomatedTrading"
-								:disabled="!aiMonitoring.isActive"
-							>
-								<span v-if="!tradingConfig.isActive">▶ Ativar IA</span>
-								<span v-else>⏸ Desativar IA</span>
-							</button>
-						</div>
-					</div>
+        </main>
 
-					<!-- Análise de Mercado (IA Ativa) -->
-					<div class="market-analysis-section">
-						<div class="market-analysis-header">
-							<h3>Análise de Mercado</h3>
-							<div class="market-analysis-meta">
-								<span>Volatility 10 • M5 • Última atualização: {{ aiMonitoring.lastUpdate || lastReadingTime }}</span>
-							</div>
-						</div>
-						
-						<!-- Controles do gráfico (IA ativa) -->
-						<div class="chart-controls-active">
-							<div class="zoom-buttons">
-								<button
-									@click="setZoomPeriodActive(10)"
-									:class="['zoom-btn', zoomPeriodActive === 10 ? 'active' : '']"
-								>10m</button>
-								<button
-									@click="setZoomPeriodActive(5)"
-									:class="['zoom-btn', zoomPeriodActive === 5 ? 'active' : '']"
-								>5m</button>
-								<button
-									@click="setZoomPeriodActive(3)"
-									:class="['zoom-btn', zoomPeriodActive === 3 ? 'active' : '']"
-								>3m</button>
-							</div>
-							<button class="type-toggle" @click="toggleChartTypeActive">
-								<i :class="chartTypeActive === 'line' ? 'fas fa-chart-line' : 'fas fa-chart-bar'"></i>
-								<span>{{ chartTypeActive === 'line' ? 'Linhas' : 'Velas' }}</span>
-							</button>
-						</div>
-						<div class="market-chart-container">
-							<div ref="marketChartContainerActive" class="market-chart-wrapper"></div>
-							<div v-if="!marketChartInitializedActive && aiMonitoring.ticks.length === 0" class="chart-placeholder">
-								<p>Gráfico em tempo real (não implementado)</p>
-								<p class="chart-placeholder-hint">Aguardando dados de preço...</p>
-							</div>
-						</div>
-					</div>
-
-					<div v-if="tradingConfig.isActive" class="trading-active-content">
-						<!-- Operação Ativa -->
-						<div v-if="activeTrade" class="active-trade-card">
-							<div class="trade-header">
-								<h3>📊 Operação em Andamento</h3>
-								<span :class="['trade-signal', activeTrade.signal]">
-									{{ activeTrade.signal === 'CALL' ? '📈 CALL' : '📉 PUT' }}
-								</span>
-							</div>
-
-							<div class="trade-details">
-								<div class="detail-row">
-									<span class="detail-label">Preço de Entrada:</span>
-									<span class="detail-value">${{ activeTrade.entryPrice?.toFixed(2) }}</span>
-								</div>
-								<div class="detail-row">
-									<span class="detail-label">Preço Atual:</span>
-									<span :class="['detail-value', getPriceChangeClass(activeTrade.entryPrice, activeTrade.currentPrice)]">
-										${{ activeTrade.currentPrice?.toFixed(2) || '--' }}
-									</span>
-								</div>
-								<div class="detail-row">
-									<span class="detail-label">Variação:</span>
-									<span :class="['detail-value', getPriceChangeClass(activeTrade.entryPrice, activeTrade.currentPrice)]">
-										{{ getPriceDifference() }} ({{ getPriceChangePercent() }})
-									</span>
-								</div>
-								<div class="detail-row">
-									<span class="detail-label">Tempo Restante:</span>
-									<span class="detail-value countdown">{{ formatTimeRemaining(activeTrade.timeRemaining) }}</span>
-								</div>
-								<div class="detail-row">
-									<span class="detail-label">Investimento:</span>
-									<span class="detail-value">${{ activeTrade.stakeAmount?.toFixed(2) }}</span>
-								</div>
-								<div class="detail-row profit-row">
-									<span class="detail-label">Lucro Estimado:</span>
-									<span :class="['detail-value profit-value', getEstimatedProfitClass()]">
-										{{ getEstimatedProfit() }}
-									</span>
-								</div>
-								
-								<!-- Barra de progresso visual -->
-								<div class="profit-progress-bar">
-									<div :class="['progress-fill', getEstimatedProfitClass()]" :style="{ width: getProgressBarWidth() }"></div>
-									<span class="progress-label">{{ isCurrentlyWinning() ? '✓ Ganhando' : '✗ Perdendo' }}</span>
-								</div>
-							</div>
-
-							<div class="trade-reasoning">
-								<p><strong>Análise da IA:</strong> {{ activeTrade.reasoning }}</p>
-							</div>
-						</div>
-
-					<!-- Aguardando Próxima Operação -->
-					<div v-else class="next-trade-card">
-						<div class="next-trade-info">
-							<div class="timer-icon">⏱️</div>
-							<div>
-								<h3>🔄 Aguardando próxima operação...</h3>
-								<p class="countdown-text">Intervalo de segurança: {{ formatTimeRemaining(nextTradeCountdown) }}</p>
-								<p class="info-text">A IA analisará o mercado novamente em breve</p>
-							</div>
-						</div>
-					</div>
-
-						<!-- Estatísticas do Trading -->
-						<div class="trading-stats-card">
-							<h3>Estatísticas da Sessão</h3>
-							<div class="stats-row">
-								<div class="stat-box">
-									<span class="stat-number">{{ tradingStats.totalTrades }}</span>
-									<span class="stat-label">Total de Operações</span>
-								</div>
-								<div class="stat-box win">
-									<span class="stat-number">{{ tradingStats.wins }}</span>
-									<span class="stat-label">Vitórias</span>
-								</div>
-								<div class="stat-box loss">
-									<span class="stat-number">{{ tradingStats.losses }}</span>
-									<span class="stat-label">Perdas</span>
-								</div>
-								<div class="stat-box">
-									<span :class="['stat-number', tradingStats.profitLoss >= 0 ? 'positive' : 'negative']">
-										{{ tradingStats.profitLoss >= 0 ? '+' : '' }}${{ tradingStats.profitLoss.toFixed(2) }}
-									</span>
-									<span class="stat-label">Lucro/Perda</span>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- Histórico de Operações -->
-					<div v-if="tradingConfig.isActive" class="trade-history-card">
-						<div class="history-header">
-							<h3>📋 Histórico de Operações</h3>
-							<button class="btn-refresh" @click="loadTradeHistory">🔄 Atualizar</button>
-						</div>
-						
-						<div v-if="tradeHistory.length > 0" class="history-table">
-							<table>
-								<thead>
-									<tr>
-										<th>Mercado</th>
-										<th>Negociação</th>
-										<th>Preço Entrada</th>
-										<th>Preço Saída</th>
-										<th>Investimento</th>
-										<th>Retorno</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr v-for="trade in tradeHistory" :key="trade.id" :class="['trade-row', trade.status.toLowerCase()]">
-										<td>{{ trade.symbol || 'R_10' }}</td>
-										<td>
-											<span :class="['signal-badge', (trade.signal || trade.geminiSignal || '').toLowerCase()]">
-												{{ (trade.signal || trade.geminiSignal || '') === 'RISE' || (trade.signal || trade.geminiSignal || '') === 'CALL' ? '📈 CALL' : 
-													(trade.signal || trade.geminiSignal || '') === 'FALL' || (trade.signal || trade.geminiSignal || '') === 'PUT' ? '📉 PUT' :
-													(trade.signal || trade.geminiSignal || '') === 'OVER' ? '📈 OVER' :
-													(trade.signal || trade.geminiSignal || '') === 'PAR' ? '📈 PAR' : '📉 ÍMPAR' }}
-											</span>
-										</td>
-										<td>${{ (trade.entryPrice || trade.entry_price || 0).toFixed(2) }}</td>
-										<td>
-											<span v-if="trade.exitPrice || trade.exit_price">${{ (trade.exitPrice || trade.exit_price || 0).toFixed(2) }}</span>
-											<span v-else class="text-muted">-</span>
-										</td>
-										<td>${{ (trade.stakeAmount || trade.stake_amount || 0).toFixed(2) }}</td>
-										<td :class="['profit-cell', (trade.profitLoss || trade.profit_loss || 0) >= 0 ? 'positive' : 'negative']">
-											{{ (trade.profitLoss || trade.profit_loss || 0) >= 0 ? '+' : '' }}${{ (trade.profitLoss || trade.profit_loss || 0).toFixed(2) }}
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-
-						<div v-else class="no-history">
-							<p>📊 Nenhuma operação realizada ainda</p>
-							<p class="hint">As operações aparecerão aqui após serem finalizadas</p>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="main-content">
-				<div class="filter-controls">
-					<div class="date-filter">
-						<input type="date" v-model="filterStartDate">
-					</div>
-					<div class="date-filter">
-						<input type="date" v-model="filterEndDate">
-					</div>
-					<div class="account-filter" style="margin-right: 10px;">
-						<select v-model="selectedAccountFilter" style="padding: 10px; border-radius: 8px; background-color: #1a1a1a; color: #fff; border: 1px solid #333;">
-							<option value="all">Todas as Contas</option>
-							<option value="real">Conta Real</option>
-							<option value="demo">Conta Demo</option>
-						</select>
-					</div>
-					<button class="btn btn-search" @click="fetchData">Buscar</button>
-				</div>
-
-				<!-- Tabela Desktop -->
-				<div class="table-container desktop-table" id="ia-stats-table">
-					<table>
-						<thead>
-							<tr>
-								<th class="bot-name-col">Nome do Bot</th>
-								<th>Total de Trades</th>
-								<th>Ganho</th>
-								<th>Perda</th>
-								<th class="profit-col">Lucro Total</th>
-								<th>Risco Mais Usado</th>
-								<th>Modo Mais Usado</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr v-for="bot in displayedStats" :key="bot.name">
-								<td class="bot-name-col">
-									<span :class="['status-dot', bot.status]"></span>
-									{{ bot.name }}
-								</td>
-								<td>{{ bot.totalTrades }}</td>
-								<td>{{ bot.wins }}</td>
-								<td>{{ bot.losses }}</td>
-								<td :class="['profit-col', bot.profit >= 0 ? 'positive-profit' : 'negative-profit']">
-									{{ formatCurrency(bot.profit) }}
-								</td>
-								<td>{{ bot.riskMode }}</td>
-								<td>{{ bot.tradeMode }}</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-
-				<!-- Cards Mobile -->
-				<div class="mobile-cards-container">
-					<div v-for="bot in displayedStats" :key="bot.name" class="mobile-bot-card">
-						<div class="mobile-card-header">
-							<div class="mobile-card-title">
-								<span :class="['status-dot', bot.status]"></span>
-								<h3>{{ bot.name }}</h3>
-							</div>
-						</div>
-						<div class="mobile-card-body">
-							<div class="mobile-card-row">
-								<span class="mobile-card-label">Total de Trades:</span>
-								<span class="mobile-card-value">{{ bot.totalTrades }}</span>
-							</div>
-							<div class="mobile-card-row">
-								<span class="mobile-card-label">Ganho:</span>
-								<span class="mobile-card-value positive">{{ bot.wins }}</span>
-							</div>
-							<div class="mobile-card-row">
-								<span class="mobile-card-label">Perda:</span>
-								<span class="mobile-card-value negative">{{ bot.losses }}</span>
-							</div>
-							<div class="mobile-card-row">
-								<span class="mobile-card-label">Lucro Total:</span>
-								<span :class="['mobile-card-value', bot.profit >= 0 ? 'positive-profit' : 'negative-profit']">
-									{{ formatCurrency(bot.profit) }}
-								</span>
-							</div>
-
-							<div class="mobile-card-row">
-								<span class="mobile-card-label">Risco Mais Usado:</span>
-								<span class="mobile-card-value">{{ bot.riskMode }}</span>
-							</div>
-							<div class="mobile-card-row">
-								<span class="mobile-card-label">Modo Mais Usado:</span>
-								<span class="mobile-card-value">{{ bot.tradeMode }}</span>
-							</div>
-						</div>
-					</div>
-				</div>
-				
-				<div class="bottom-summary-cards">
-					<div class="bottom-card">
-						<div class="card-content">
-							<img src="../../assets/icons/robot.svg" alt="Total de IAs Ativas" class="card-icon" >
-							<div class="card-text-group"> 
-								<p class="card-value card-value-white">{{ totalActiveIAs }}</p>
-								<h3 class="card-title">Total de IAs Ativas</h3>
-							</div>
-						</div>
-					</div>
-
-					<div class="bottom-card">
-						<div class="card-content">
-							<img src="../../assets/icons/stats.svg" alt="Lucro Combinado (7 dias)" class="card-icon">
-							<div class="card-text-group"> 
-								<p :class="['card-value', combinedProfit7Days >= 0 ? 'positive-profit' : 'negative-profit']">
-									{{ formatCurrency(combinedProfit7Days) }}
-								</p>
-								<h3 class="card-title">Lucro Combinado (7 dias)</h3>
-							</div>
-						</div>
-					</div>
-
-					<div class="bottom-card">
-						<div class="card-content">
-							<img src="../../assets/icons/target-IA.svg" alt="Média de Acerto Global" class="card-icon">
-							<div class="card-text-group"> 
-								<p class="card-value card-value-white">{{ globalAccuracy.toFixed(1) }}%</p>
-								<h3 class="card-title">Média de Acerto Global</h3>
-							</div>
-						</div>
-					</div>
-
-					<div class="bottom-card">
-						<div class="card-content">
-							<img src="../../assets/icons/trophy.svg" alt="IA com Maior Lucro" class="card-icon">
-							<div class="card-text-group"> 
-								<p class="card-value positive-profit">{{ topProfitIA || 'N/A' }}</p>
-								<h3 class="card-title">IA com Maior Lucro</h3>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</main>
-		</div>
-
-		<!-- Settings Modal -->
-		<SettingsSidebar
-			:is-open="showSettingsModal"
-			@close="showSettingsModal = false"
-		/>
-	</div>
-	
-	<!-- Modais de Stop Loss e Target Profit -->
-	<!-- <StopLossModal
-		:visible="showStopLossModal"
-		:result="todayResult"
-		:currency="accountType === 'Demo' ? 'DEMO' : 'USD'"
-		@confirm="handleStopLossConfirm"
-	/>
-	
-	<TargetProfitModal
-		:visible="showTargetProfitModal"
-		:result="todayResult"
-		:currency="accountType === 'Demo' ? 'DEMO' : 'USD'"
-		@confirm="handleTargetProfitConfirm"
-	/> -->
+        </div>
+        <InsufficientBalanceModal
+            :visible="showInsufficientBalanceModal"
+            :currentBalance="balanceNumeric"
+            :entryValue="entryValue"
+            :currency="tradeCurrency"
+            @confirm="showInsufficientBalanceModal = false"
+        />
+        <MinimumStakeModal
+            :visible="showMinimumStakeModal"
+            @confirm="showMinimumStakeModal = false"
+        />
+        <StrategyRequiredModal
+            :visible="showStrategyRequiredModal"
+            @close="showStrategyRequiredModal = false"
+            @confirm="handleStrategyRequiredConfirm"
+        />
+    </div>
+    <DesktopBottomNav />
+    
+    <!-- Sidebar Overlay & Component positioned at the very end to be on top of everything -->
+    <div class="sidebar-overlay" v-if="isSidebarOpen" @click="closeSidebar"></div>
+    <AppSidebar 
+        :is-open="isSidebarOpen" 
+        :is-collapsed="isSidebarCollapsed" 
+        @toggle-collapse="toggleSidebarCollapse"
+        @close-sidebar="closeSidebar"
+    />
 </template>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
-// import StopLossModal from '../../components/StopLossModal.vue';
-// import TargetProfitModal from '../../components/TargetProfitModal.vue';
-import { createChart, ColorType } from 'lightweight-charts';
+import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
+import ZenixTooltip from '@/components/ZenixTooltip.vue';
+import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
+import accountBalanceMixin from '../../mixins/accountBalanceMixin';
+import { loadAvailableAccounts } from '../../utils/accountsLoader';
+import InsufficientBalanceModal from '../../components/InsufficientBalanceModal.vue';
+import MinimumStakeModal from '../../components/modals/MinimumStakeModal.vue';
+import StrategyRequiredModal from '../../components/modals/StrategyRequiredModal.vue';
+import { StrategyAnalysis } from '@/utils/StrategyAnalysis';
+import apolloConfig from '@/utils/strategies/apollo.json';
+import atlasConfig from '@/utils/strategies/atlas.json';
+import nexusConfig from '@/utils/strategies/nexus.json';
+import orionConfig from '@/utils/strategies/orion.json';
+import titanConfig from '@/utils/strategies/titan.json';
+
+const strategiesPresets = [apolloConfig, atlasConfig, nexusConfig, orionConfig, titanConfig];
 
 export default {
-	name: 'StatsIAs',
-	components: {
-		AppSidebar,
-		TopNavbar,
-		SettingsSidebar,
-		// StopLossModal,
-		// TargetProfitModal,
-	},
-	data() {
-		// Definir datas padrão (últimos 7 dias)
-		const today = new Date();
-		const sevenDaysAgo = new Date();
-		sevenDaysAgo.setDate(today.getDate() - 7);
-		
-		const formatDate = (date) => {
-			const year = date.getFullYear();
-			const month = String(date.getMonth() + 1).padStart(2, '0');
-			const day = String(date.getDate()).padStart(2, '0');
-			return `${year}-${month}-${day}`;
-		};
-	
-		return {
-			isSidebarOpen: false, 
-			isSidebarCollapsed: false,
-			isMobile: false,
-			
-			showSettingsModal: false,
-			filterStartDate: formatDate(sevenDaysAgo), 
-			filterEndDate: formatDate(today),  
-			selectedAccountFilter: 'all',
-
-			allStats: [],
-			displayedStats: [], 
-
-			totalActiveIAs: 0,
-			combinedProfit7Days: 0,
-			globalAccuracy: 0,
-			topProfitIA: '',
-
-			// Monitoramento de IA
-			aiMonitoring: {
-				isActive: false,
-				currentPrice: null,
-				ticks: [],
-				statistics: null,
-				lastUpdate: '--',
-			},
-			aiPollingInterval: null,
-
-			// Trading Automático
-			tradingConfig: {
-				isActive: false,
-				selectedStrategy: '', // Estratégia selecionada
-				stakeAmount: 50,
-				mode: 'veloz', // Apenas veloz disponível
-				profitTarget: 100,
-				lossLimit: 25,
-			},
-			activeTrade: null,
-			nextTradeCountdown: 300, // 5 minutos em segundos
-			tradingInterval: null,
-			countdownInterval: null,
-			tradingStats: {
-				totalTrades: 0,
-				wins: 0,
-				losses: 0,
-				profitLoss: 0,
-			},
-			tradeHistory: [],
-			tradeEventsSource: null,
-			
-			// Dados para tela padrão (IA desativada)
-			accountBalance: 0,
-			accountType: 'Demo', // Real ou Demo
-			todayResult: 0,
-			todayResultPercent: 0,
-			todayTrades: 0,
-			
-			// Visibilidade dos cards na seção IA ativa
-			balanceVisibleActive: true,
-			profitVisibleActive: true,
-			winrateVisibleActive: true,
-			tradesVisibleActive: true,
-			isDeactivating: false,
-			lastReadingTime: '--:--:--',
-			winRate: 78,
-			recentLogs: [],
-			
-			// Estatísticas agregadas do StatsIAs
-			statsIAs: {
-				totalUsers: 0,
-				activeUsers: 0,
-				totalTrades: 0,
-				totalWins: 0,
-				totalLosses: 0,
-				winRate: 0,
-				totalProfit: 0,
-				averageProfit: 0,
-				source: 'local', // 'external' ou 'local'
-			},
-			tradingParams: {
-				dvxMax: 70,
-				window: 3,
-				betPercent: 0.005,
-			},
-			
-			// Gráfico IA ativa (market chart)
-			chartTypeActive: 'line', // 'line' ou 'candles'
-			zoomPeriodActive: 10, // minutos: 10 (padrão), 5, 3
-			
-			// Estado para atualização de configuração
-			isUpdatingConfig: false,
-			configUpdateMessage: '',
-			configUpdateSuccess: false,
-			
-			// Gráfico de mercado
-			marketChartInactive: null,
-			marketLineSeriesInactive: null,
-			marketChartInitializedInactive: false,
-			marketChartActive: null,
-			marketLineSeriesActive: null,
-			marketChartInitializedActive: false,
-			
-			// Modais de Stop Loss e Target Profit
-			// showStopLossModal: false,
-			// showTargetProfitModal: false,
-			sessionResult: 0,
-			previousSessionStatus: null,
-		};
-	},
-	computed: {
-		chartData() {
-			// Converter ticks para dados do gráfico (apenas valores)
-			if (!this.aiMonitoring.ticks || this.aiMonitoring.ticks.length === 0) {
-				return [];
-			}
-			// Pegar apenas os últimos 50 ticks para não sobrecarregar o gráfico
-			const recentTicks = this.aiMonitoring.ticks.slice(-50);
-			return recentTicks.map(tick => tick.value || tick.price || 0);
-		},
-	},
-	methods: {
-		formatCurrency(value) {
-			const sign = value >= 0 ? '+' : ''; 
-			const absoluteValue = Math.abs(value);
-			return `${sign}${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(absoluteValue)}`;
-		},
-		
-		formatBalance(value) {
-			const formatter = new Intl.NumberFormat('pt-BR', { 
-				minimumFractionDigits: 2,
-				maximumFractionDigits: 2
-			});
-			// ✅ Se for conta Demo, usar símbolo Đ (D com barra)
-			// Verificar tanto 'Demo' quanto 'demo' (case insensitive)
-			const isDemo = this.accountType === 'Demo' || this.accountType === 'demo' || this.accountType?.toLowerCase() === 'demo';
-			if (isDemo) {
-				return `Đ${formatter.format(value)}`;
-			}
-			return `$${formatter.format(value)}`;
-		},
-
-		applySessionStats(data) {
-			if (!data) return;
-			
-			const totalTrades = data.totalTrades ?? 0;
-			const profitLoss = data.profitLoss ?? 0;
-			
-			// Atualizar blocos de estatística
-			this.tradingStats.totalTrades = totalTrades;
-			this.tradingStats.wins = data.wins ?? 0;
-			this.tradingStats.losses = data.losses ?? 0;
-			this.tradingStats.profitLoss = profitLoss;
-			
-			// Atualizar cards principais
-			this.todayTrades = totalTrades;
-			this.todayResult = profitLoss;
-			
-			// Atualizar resultado da sessão para os modais
-			this.sessionResult = profitLoss;
-			
-			// Porcentagem baseada no saldo total atual
-			const baseBalance = this.accountBalance > 0
-				? this.accountBalance
-				: (data.sessionBalance ?? 0);
-			this.todayResultPercent = baseBalance > 0 ? (profitLoss / baseBalance) * 100 : 0;
-		},
-		
-		/**
-		 * Carrega o resultado da sessão para exibir nos modais
-		 */
-		async loadSessionResult() {
-			try {
-				const userId = this.getUserId();
-				if (!userId) return;
-				
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-				const response = await fetch(`${apiBase}/ai/session-stats/${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${localStorage.getItem('token')}`
-					}
-				});
-				const result = await response.json();
-				
-				if (result.success && result.data) {
-					this.sessionResult = result.data.profitLoss || 0;
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao carregar resultado da sessão:', error);
-				// Usar resultado atual como fallback
-				this.sessionResult = this.todayResult;
-			}
-		},
-		
-		/**
-		 * Handler para confirmação do modal de Stop Loss
-		 */
-		// async handleStopLossConfirm() {
-		// 	this.showStopLossModal = false;
-		// 	// Resetar previousSessionStatus para permitir nova detecção se necessário
-		// 	this.previousSessionStatus = null;
-		// 	// Recarregar configuração para atualizar status e garantir que IA está inativa
-		// 	await this.loadAIConfigOnMount();
-		// 	// Forçar atualização do status
-		// 	await this.fetchBackgroundStatus();
-		// },
-		
-		/**
-		 * Handler para confirmação do modal de Target Profit
-		 */
-		// async handleTargetProfitConfirm() {
-		// 	this.showTargetProfitModal = false;
-		// 	// Resetar previousSessionStatus para permitir nova detecção se necessário
-		// 	this.previousSessionStatus = null;
-		// 	// Recarregar configuração para atualizar status e garantir que IA está inativa
-		// 	await this.loadAIConfigOnMount();
-		// 	// Forçar atualização do status
-		// 	await this.fetchBackgroundStatus();
-		// },
-		
-		async loadAccountInfo() {
-			try {
-				// ✅ OTIMIZAÇÃO: Verificar se já existe uma requisição em andamento
-				if (this._loadingAccountInfo) {
-					console.log('[StatsIAsView] ⏸️ Requisição de account info já em andamento, aguardando...');
-					// Aguardar a requisição anterior terminar
-					while (this._loadingAccountInfo) {
-						await new Promise(resolve => setTimeout(resolve, 100));
-					}
-					return;
-				}
-				
-				// ✅ OTIMIZAÇÃO: Verificar cache recente (últimos 5 segundos)
-				const cacheKey = 'accountInfo_lastFetch';
-				const lastFetch = localStorage.getItem(cacheKey);
-				if (lastFetch) {
-					const timeSinceLastFetch = Date.now() - parseInt(lastFetch);
-					if (timeSinceLastFetch < 5000) {
-						console.log('[StatsIAsView] ⚡ Usando cache de account info (menos de 5s)');
-						this.loadAccountInfoFromLocal();
-						return;
-					}
-				}
-				
-				// Marcar que está carregando
-				this._loadingAccountInfo = true;
-				
-				// ✅ OTIMIZAÇÃO: Atualizar saldo da API primeiro (igual outras páginas)
-				const connectionStr = localStorage.getItem('deriv_connection');
-				if (!connectionStr) {
-					// Sem conexão salva, usar dados do localStorage se existir
-					this.loadAccountInfoFromLocal();
-					this._loadingAccountInfo = false;
-					return;
-				}
-				
-				const connection = JSON.parse(connectionStr);
-				const token = localStorage.getItem('deriv_token');
-				const appId = localStorage.getItem('deriv_app_id') || '1089';
-				
-				// Se temos token, atualizar saldo da API
-				if (token) {
-					try {
-						const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-						const response = await fetch(`${apiBase}/broker/deriv/status`, {
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json',
-								'Authorization': `Bearer ${localStorage.getItem('token')}`
-							},
-							body: JSON.stringify({
-								token: token,
-								appId: parseInt(appId),
-								currency: connection.currency || 'USD'
-							})
-						});
-						
-						if (response.ok) {
-							const data = await response.json();
-							
-							// Atualizar localStorage com dados atualizados
-							const updatedConnection = {
-								...data,
-								loginid: connection.loginid || data.loginid,
-								currency: connection.currency || data.currency || 'USD',
-								isDemo: connection.isDemo !== undefined ? connection.isDemo : (data.loginid?.startsWith('VRTC') || data.loginid?.startsWith('VRT')),
-								timestamp: Date.now()
-							};
-							localStorage.setItem('deriv_connection', JSON.stringify(updatedConnection));
-							
-							// Processar dados atualizados usando a mesma lógica do loadAccountInfoFromLocal
-							const loginid = updatedConnection.loginid || '';
-							const isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT') || updatedConnection.isDemo === true;
-							this.accountType = isDemo ? 'Demo' : 'Real';
-							
-							// Buscar saldo correto baseado no tipo de conta
-							let balance = 0;
-							if (isDemo && updatedConnection.balancesByCurrencyDemo) {
-								const demoBalances = updatedConnection.balancesByCurrencyDemo;
-								balance = demoBalances['USD'] || Object.values(demoBalances)[0] || 0;
-							} else if (!isDemo && updatedConnection.balancesByCurrencyReal) {
-								const realBalances = updatedConnection.balancesByCurrencyReal;
-								balance = realBalances['USD'] || Object.values(realBalances)[0] || 0;
-							} else {
-								balance = updatedConnection.balance || updatedConnection.balanceAfter || 0;
-							}
-							this.accountBalance = parseFloat(balance) || 0;
-							
-							// ✅ Salvar timestamp do cache
-							localStorage.setItem('accountInfo_lastFetch', Date.now().toString());
-							
-							console.log('[StatsIAsView] ✅ Saldo atualizado da API:', this.accountBalance);
-						} else {
-							// Se API falhar, usar dados do localStorage (fallback)
-							console.warn('[StatsIAsView] ⚠️ Erro ao atualizar saldo da API, usando cache local');
-							this.loadAccountInfoFromLocal();
-						}
-					} catch (apiError) {
-						console.warn('[StatsIAsView] ⚠️ Erro ao atualizar saldo da API:', apiError);
-						// Se API falhar, usar dados do localStorage (fallback)
-						this.loadAccountInfoFromLocal();
-					} finally {
-						// Sempre liberar o flag
-						this._loadingAccountInfo = false;
-					}
-				} else {
-					// Sem token, usar dados do localStorage
-					this.loadAccountInfoFromLocal();
-					this._loadingAccountInfo = false;
-				}
-				
-				// ✅ BACKEND REMOVIDO: Session stats, StatsIAs, Trading params e Logs
-				
-				// Atualizar última leitura
-				this.lastReadingTime = new Date().toLocaleTimeString('pt-BR', { 
-					hour: '2-digit', 
-					minute: '2-digit', 
-					second: '2-digit' 
-				});
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao carregar informações da conta:', error);
-			}
-		},
-		
-		/**
-	 * ✅ BACKEND REMOVIDO: Busca dados gerais das IAs
-	 */
-	async fetchData() {
-		console.log('[StatsIAsView] Backend removido - fetchData agora apenas visual');
-		// Manter visual com dados mockados
-		this.allStats = [];
-		this.displayedStats = [];
-	},
-		
-		/**
-	 * ✅ BACKEND REMOVIDO: Estatísticas agregadas
-	 */
-	async loadStatsIAs() {
-		console.log('[StatsIAsView] Backend removido - loadStatsIAs');
-	},
-		
-		/**
-	 * ✅ BACKEND REMOVIDO: Parâmetros de trading
-	 */
-	async loadTradingParams() {
-		console.log('[StatsIAsView] Backend removido - loadTradingParams');
-	},
-		
-		/**
-	 * ✅ BACKEND REMOVIDO: Atualização de configuração
-	 */
-	async updateStakeAmount() {
-		console.log('[StatsIAsView] Backend removido - updateStakeAmount');
-		this.configUpdateMessage = 'Funcionalidade desativada (apenas visual)';
-		this.configUpdateSuccess = false;
-		setTimeout(() => {
-			this.configUpdateMessage = '';
-		}, 3000);
-	},
-		
-		/**
-		 * Obter token da Deriv baseado na conta ativa
-		 * EXATAMENTE como o OperationChart.vue faz
-		 */
-		getDerivToken() {
-			console.log('[StatsIAsView] getTokenForAccount - Buscando token para conta');
-			
-			// 1. Obter informações da conta ativa do deriv_connection
-			let accountLoginid = null;
-			let preferredCurrency = null;
-			
-			try {
-				const connectionStr = localStorage.getItem('deriv_connection');
-				if (connectionStr) {
-					const connection = JSON.parse(connectionStr);
-					accountLoginid = connection.loginid;
-					preferredCurrency = connection.tradeCurrency;
-					
-					console.log('[StatsIAsView] Informações da conta ativa:', {
-						loginid: accountLoginid,
-						currency: preferredCurrency
-					});
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao parsear deriv_connection:', error);
-			}
-			
-			// 2. Se a moeda preferida for DEMO, buscar token de conta demo
-			const isDemoPreferred = preferredCurrency?.toUpperCase() === 'DEMO';
-			if (isDemoPreferred) {
-				console.log('[StatsIAsView] Moeda preferida é DEMO, buscando token de conta demo...');
-				try {
-					const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
-					const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-					
-					// Buscar qualquer conta demo disponível (VRTC ou VRT)
-					for (const [loginid, token] of Object.entries(tokensByLoginId)) {
-						if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
-							console.log('[StatsIAsView] ✓ Token demo encontrado:', loginid);
-							return token;
-						}
-					}
-					console.warn('[StatsIAsView] ⚠ Nenhuma conta demo encontrada, mas moeda preferida é DEMO');
-				} catch (error) {
-					console.error('[StatsIAsView] Erro ao buscar token demo:', error);
-				}
-			}
-			
-			// 3. Se temos um loginid específico, buscar o token correspondente
-			if (accountLoginid) {
-				try {
-					const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
-					const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-					
-					console.log('[StatsIAsView] Buscando token para loginid:', accountLoginid);
-					console.log('[StatsIAsView] Loginids disponíveis:', Object.keys(tokensByLoginId));
-					
-					// Verificar se é conta demo
-					const isDemoLoginId = accountLoginid.startsWith('VRTC') || accountLoginid.startsWith('VRT');
-					if (isDemoLoginId) {
-						console.log('[StatsIAsView] ✓ LoginID identificado como conta DEMO');
-					}
-					
-					const specificToken = tokensByLoginId[accountLoginid];
-					if (specificToken) {
-						console.log('[StatsIAsView] ✓ Token específico encontrado para loginid:', accountLoginid);
-						console.log('[StatsIAsView] - Tipo:', isDemoLoginId ? 'DEMO' : 'REAL');
-						return specificToken;
-					} else {
-						console.warn('[StatsIAsView] ⚠ Token específico NÃO encontrado para loginid:', accountLoginid);
-						
-						// Se for conta demo e não encontrou token, buscar qualquer token demo
-						if (isDemoLoginId) {
-							console.log('[StatsIAsView] Tentando encontrar token demo alternativo...');
-							for (const [loginid, token] of Object.entries(tokensByLoginId)) {
-								if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
-									console.log('[StatsIAsView] ✓ Token demo alternativo encontrado:', loginid);
-									return token;
-								}
-							}
-						}
-					}
-				} catch (error) {
-					console.error('[StatsIAsView] Erro ao buscar token específico:', error);
-				}
-			}
-			
-			// 4. Fallback: token padrão
-			const defaultToken = localStorage.getItem('deriv_token');
-			console.log('[StatsIAsView] Usando token padrão:', {
-				hasToken: !!defaultToken,
-				tokenPreview: defaultToken ? `${defaultToken.substring(0, 10)}...` : 'null'
-			});
-			
-			if (!defaultToken) {
-				console.error('[StatsIAsView] ERRO: Nenhum token encontrado!');
-			}
-			
-			return defaultToken;
-		},
-		
-		/**
-		 * Obter userId do token JWT ou localStorage
-		 */
-		getUserId() {
-			try {
-				// Tentar obter do token JWT
-				const token = localStorage.getItem('token');
-				if (token) {
-					// Decodificar JWT (base64)
-					const payload = JSON.parse(atob(token.split('.')[1]));
-					if (payload.userId || payload.sub || payload.id) {
-						return payload.userId || payload.sub || payload.id;
-					}
-				}
-				
-				// Fallback: tentar obter de user_info
-				const userInfoStr = localStorage.getItem('user_info');
-				if (userInfoStr) {
-					const userInfo = JSON.parse(userInfoStr);
-					if (userInfo.id || userInfo.userId) {
-						return userInfo.id || userInfo.userId;
-					}
-				}
-				
-				console.warn('[StatsIAsView] Não foi possível obter userId');
-				return null;
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao obter userId:', error);
-				return null;
-			}
-		},
-		
-		/**
-		 * Obter moeda preferida do usuário
-		 * Igual ao OperationChart.vue - pega a moeda da conta ativa
-		 */
-		getPreferredCurrency() {
-			console.log('[StatsIAsView] Buscando moeda preferida...');
-			
-			// 1. Tentar buscar do objeto de conexão (moeda da conta ativa)
-			try {
-				const connectionStr = localStorage.getItem('deriv_connection');
-				if (connectionStr) {
-					const connection = JSON.parse(connectionStr);
-					if (connection.tradeCurrency) {
-						const currency = connection.tradeCurrency.toUpperCase();
-						console.log('[StatsIAsView] Moeda encontrada em deriv_connection:', currency);
-						
-						// Se for DEMO, retornar USD (DEMO não é moeda real)
-						if (currency === 'DEMO') {
-							console.log('[StatsIAsView] Moeda é DEMO, usando USD');
-							return 'USD';
-						}
-						
-						return currency;
-					}
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao parsear deriv_connection:', error);
-			}
-			
-			// 2. Fallback: tentar buscar currency do userSettings
-			try {
-				const userSettingsStr = localStorage.getItem('user_settings');
-				if (userSettingsStr) {
-					const userSettings = JSON.parse(userSettingsStr);
-					if (userSettings.currency) {
-						console.log('[StatsIAsView] Moeda encontrada em user_settings:', userSettings.currency);
-						return userSettings.currency.toUpperCase();
-					}
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao parsear user_settings:', error);
-			}
-			
-			// 3. Fallback final: USD
-			console.log('[StatsIAsView] Usando USD como fallback');
-			return 'USD';
-		},
-		
-		exportReportToPDF() {
-			this.$root.$toast.success(`Download do PDF de Estatísticas iniciado! (Arquivo: Relatorio_IAs_${this.filterStartDate}_a_${this.filterEndDate}.pdf)`);
-		},
-
-		// Métodos de monitoramento de IA
-		async toggleAIMonitoring() {
-			if (this.aiMonitoring.isActive) {
-				this.stopAIMonitoring();
-			} else {
-				await this.startAIMonitoring();
-				// Após iniciar monitoramento, mostrar seção de trading automático
-				// A seção padrão será ocultada automaticamente pelo v-if="!tradingConfig.isActive"
-			}
-		},
-		
-	
-	async deactivateIAFromActive() {
-		this.isDeactivating = true;
-		try {
-			// Desativar IA e trading
-			if (this.tradingConfig.isActive) {
-				await this.stopAutomatedTrading();
-			}
-			
-			// Parar monitoramento usando o método existente
-			this.stopAIMonitoring();
-			
-			console.log('[StatsIAsView] ✅ IA desativada da seção ativa');
-			this.$root.$toast.success('IA desativada com sucesso.');
-		} catch (error) {
-			console.error('[StatsIAsView] Erro ao desativar IA:', error);
-			this.$root.$toast.error('Erro ao desativar IA');
-		} finally {
-			this.isDeactivating = false;
-		}
-	},
-
-		async startAIMonitoring() {
-		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - startAIMonitoring apenas visual');
-		this.aiMonitoring.isActive = true;
-	},
-		
-		/**
-		 * Verifica se há sessão ativa de IA antes de iniciar carregamento de ticks
-		 */
-		async checkActiveAISession() {
-		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - checkActiveAISession');
-		return false;
-	},
-
-	/**
-	 * Inicia o carregamento de dados mesmo quando a IA está desativada
-	 * para mostrar o gráfico na tela padrão
-	 * AGORA: Só inicia se houver sessão ativa de IA
-	 */
-		async startDataLoading() {
-		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - startDataLoading');
-	},
-
-		stopAIMonitoring() {
-		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - stopAIMonitoring apenas limpa estado local');
-		this.aiMonitoring.isActive = false;
-		this.stopPolling();
-		this.aiMonitoring.currentPrice = null;
-		this.aiMonitoring.ticks = [];
-		this.aiMonitoring.statistics = null;
-		this.aiMonitoring.lastUpdate = '--';
-	},
-
-		startPolling() {
-			// ✅ POOLING DESATIVADO: Não fazer polling de ticks conforme solicitado
-			// Os ticks são recebidos via WebSocket no backend, não precisam de polling no frontend
-			console.log('[StatsIAsView] ⏸️ Polling de ticks desativado - ticks vêm via WebSocket do backend');
-			
-			// Buscar dados apenas uma vez para inicializar
-			this.fetchAIData();
-		},
-
-		stopPolling() {
-			if (this.aiPollingInterval) {
-				clearInterval(this.aiPollingInterval);
-				this.aiPollingInterval = null;
-			}
-		},
-
-		async fetchAIData() {
-		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - fetchAIData');
-	},
-
-		getVariationClass(current, previous) {
-			if (current > previous) return 'positive';
-			if (current < previous) return 'negative';
-			return 'neutral';
-		},
-
-		getVariationText(current, previous) {
-			const diff = current - previous;
-			if (diff > 0) return `+${diff.toFixed(2)}`;
-			return diff.toFixed(2);
-		},
-
-		// Métodos de Trading Automático
-		async toggleAutomatedTrading() {
-			if (this.tradingConfig.isActive) {
-				this.stopAutomatedTrading();
-			} else {
-				await this.startAutomatedTrading();
-			}
-		},
-
-	async startAutomatedTrading() {
-		console.log('[StatsIAsView] Salvando configuração e redirecionando');
-		const config = {
-			strategy: this.tradingConfig.selectedStrategy || 'apollo',
-			stake: this.tradingConfig.stakeAmount,
-			mode: this.tradingConfig.mode
-		};
-		localStorage.setItem('ai_active_config', JSON.stringify(config));
-		this.$router.push('/StatsIAs/monitoring');
-	},
-
-	async stopAutomatedTrading() {
-	console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - stopAutomatedTrading apenas visual');
-	this.tradingConfig.isActive = false;
-	this.stopBackgroundPolling();
-},
-
-		async executeNextTrade() {
-			if (!this.tradingConfig.isActive) return;
-
-			try {
-				console.log('[StatsIAsView] Analisando mercado com Gemini...');
-
-				const analyzeResponse = await fetch('https://iazenix.com/api/ai/analyze', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ userId: 1 }),
-				});
-
-				const analyzeResult = await analyzeResponse.json();
-
-				if (!analyzeResult.success) {
-					console.error('[StatsIAsView] Erro na análise:', analyzeResult.message);
-					return;
-				}
-
-				const signal = analyzeResult.data;
-				console.log('[StatsIAsView] Sinal recebido:', signal);
-
-			// Obter token real da Deriv (mesmo método do OperationChart.vue)
-			const derivToken = this.getDerivToken();
-			
-			if (!derivToken) {
-				console.error('[StatsIAsView] Token da Deriv não encontrado');
-				this.$root.$toast.error('Por favor, conecte sua conta Deriv primeiro');
-				return;
-			}
-			
-			// Obter moeda preferida (USD, BTC, DEMO, etc)
-			const preferredCurrency = this.getPreferredCurrency();
-			console.log('[StatsIAsView] ====== INFORMAÇÕES DA CONTA ======');
-			console.log('[StatsIAsView] Moeda:', preferredCurrency);
-			console.log('[StatsIAsView] Token (preview):', derivToken.substring(0, 15) + '...');
-			console.log('[StatsIAsView] Stake Amount:', this.tradingConfig.stakeAmount);
-			console.log('[StatsIAsView] =====================================');
-			
-			const tradeResponse = await fetch('https://iazenix.com/api/ai/execute-trade', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					userId: 1,
-					signal,
-					stakeAmount: this.tradingConfig.stakeAmount,
-					derivToken: derivToken,
-					currency: preferredCurrency,
-				}),
-			});
-
-			const tradeResult = await tradeResponse.json();
-
-			if (!tradeResult.success) {
-				console.error('[StatsIAsView] Erro ao executar trade:', tradeResult.message);
-				
-				// Verificar se é erro de saldo insuficiente
-				if (tradeResult.error && tradeResult.error.includes('InsufficientBalance')) {
-					this.$root.$toast.error(
-						'Saldo insuficiente!<br><br>' +
-						'Seu saldo não é suficiente para esta operação.\n\n' +
-						'💡 Dica: Se você tem uma conta DEMO USD, troque de conta no Dashboard:\n' +
-						'1. Vá para o Dashboard\n' +
-						'2. Clique no seletor de contas (canto superior direito)\n' +
-						'3. Selecione sua conta DEMO USD\n' +
-						'4. Volte para IAs de Investimento e tente novamente'
-					, 8000);
-				} else {
-					this.$root.$toast.error(`Erro ao executar operação: ${tradeResult.error || tradeResult.message}`);
-				}
-				
-				return;
-			}
-
-				console.log('[StatsIAsView] Trade iniciado:', tradeResult.data.tradeId);
-
-				this.activeTrade = {
-					id: tradeResult.data.tradeId,
-					signal: signal.signal,
-					entryPrice: this.aiMonitoring.currentPrice,
-					currentPrice: this.aiMonitoring.currentPrice,
-					timeRemaining: signal.duration,
-					reasoning: signal.reasoning,
-					stakeAmount: this.tradingConfig.stakeAmount,
-				};
-
-				this.monitorActiveTrade();
-
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao executar trade:', error);
-			}
-		},
-
-		monitorActiveTrade() {
-			const monitorInterval = setInterval(async () => {
-				if (!this.activeTrade) {
-					clearInterval(monitorInterval);
-					return;
-				}
-
-				try {
-					const response = await fetch('https://iazenix.com/api/ai/active-trade');
-					const result = await response.json();
-
-					if (!result.success || !result.data) {
-						clearInterval(monitorInterval);
-						return;
-					}
-
-					const trade = result.data;
-
-					this.activeTrade.currentPrice = trade.currentPrice || this.aiMonitoring.currentPrice;
-					this.activeTrade.timeRemaining = trade.timeRemaining;
-					this.activeTrade.profitLoss = trade.profitLoss;
-
-				// Verificar se o tempo acabou OU se o status é final
-				if (trade.timeRemaining <= 0 || trade.status === 'WON' || trade.status === 'LOST') {
-					console.log('[StatsIAsView] Trade finalizado:', trade.status || 'Tempo esgotado');
-					
-					// Limpar operação ativa imediatamente
-					this.activeTrade = null;
-					clearInterval(monitorInterval);
-
-					// Recarregar estatísticas e histórico do banco
-					await this.loadSessionStats();
-					await this.loadTradeHistory();
-					
-					// Iniciar countdown de 5 minutos (300 segundos) para a próxima operação
-					if (this.tradingConfig.isActive) {
-						console.log('[StatsIAsView] Aguardando 5 minutos para próxima operação...');
-						this.nextTradeCountdown = 300;
-						this.startCountdown();
-						
-						// Executar próxima operação após 5 minutos
-						setTimeout(() => {
-							if (this.tradingConfig.isActive) {
-								this.executeNextTrade();
-							}
-						}, 300000); // 300000ms = 5 minutos
-					}
-				}
-
-				} catch (error) {
-					console.error('[StatsIAsView] Erro ao monitorar trade:', error);
-				}
-			}, 1000);
-		},
-
-		startCountdown() {
-			this.countdownInterval = setInterval(() => {
-				if (this.nextTradeCountdown > 0) {
-					this.nextTradeCountdown--;
-				}
-			}, 1000);
-		},
-
-		formatTimeRemaining(seconds) {
-			if (!seconds || seconds < 0) return '00:00';
-			const minutes = Math.floor(seconds / 60);
-			const secs = seconds % 60;
-			return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-		},
-
-		getPriceChangeClass(entryPrice, currentPrice) {
-			if (!entryPrice || !currentPrice) return '';
-			if (currentPrice > entryPrice) return 'positive';
-			if (currentPrice < entryPrice) return 'negative';
-			return '';
-		},
-
-		getEstimatedProfitClass() {
-			if (!this.activeTrade) return '';
-			
-			// Usar o profitLoss da API para determinar a classe
-			const profit = this.activeTrade.profitLoss || 0;
-			return profit >= 0 ? 'positive' : 'negative';
-		},
-
-		getEstimatedProfit() {
-			if (!this.activeTrade) return '$0.00';
-			
-			// Usar o profitLoss retornado pela API (cálculo em tempo real do backend)
-			const profit = this.activeTrade.profitLoss || 0;
-			
-			const sign = profit >= 0 ? '+' : '';
-			return `${sign}$${profit.toFixed(2)}`;
-		},
-
-		getPriceDifference() {
-			if (!this.activeTrade || !this.activeTrade.entryPrice || !this.activeTrade.currentPrice) {
-				return '--';
-			}
-			
-			const diff = this.activeTrade.currentPrice - this.activeTrade.entryPrice;
-			const sign = diff >= 0 ? '+' : '';
-			return `${sign}$${diff.toFixed(2)}`;
-		},
-
-		getPriceChangePercent() {
-			if (!this.activeTrade || !this.activeTrade.entryPrice || !this.activeTrade.currentPrice) {
-				return '0.00%';
-			}
-			
-			const percentChange = ((this.activeTrade.currentPrice - this.activeTrade.entryPrice) / this.activeTrade.entryPrice) * 100;
-			const sign = percentChange >= 0 ? '+' : '';
-			return `${sign}${percentChange.toFixed(2)}%`;
-		},
-
-		isCurrentlyWinning() {
-			if (!this.activeTrade || !this.activeTrade.entryPrice || !this.activeTrade.currentPrice) {
-				return false;
-			}
-			
-			const { signal, entryPrice, currentPrice } = this.activeTrade;
-			return (signal === 'CALL' && currentPrice > entryPrice) ||
-				(signal === 'PUT' && currentPrice < entryPrice);
-		},
-
-		getProgressBarWidth() {
-			if (!this.activeTrade || !this.activeTrade.entryPrice || !this.activeTrade.currentPrice) {
-				return '50%';
-			}
-			
-			const { entryPrice, currentPrice } = this.activeTrade;
-			const diff = Math.abs(currentPrice - entryPrice);
-			const percentDiff = (diff / entryPrice) * 100;
-			
-			// Normalizar para barra de 0-100%
-			// Se a diferença for muito pequena, mostrar pelo menos 20%
-			// Se for grande (>1%), mostrar 100%
-			const normalizedWidth = Math.min(Math.max(percentDiff * 50, 20), 100);
-			
-			return `${normalizedWidth}%`;
-		},
-
-		async loadSessionStats() {
-		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - loadSessionStats');
-	},
-
-		async loadTradeHistory() {
-		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - loadTradeHistory');
-		this.tradeHistory = [];
-	},
-
-		async loadRecentLogs() {
-		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - loadRecentLogs');
-		this.recentLogs = [];
-	},
-
-	formatTradeTime(timestamp) {
-		if (!timestamp) return '--';
-		const date = new Date(timestamp);
-		return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-	},
-
-	// Polling para atualizar status da IA em background
-	startBackgroundPolling() {
-		// ✅ Buscar status imediatamente (mesmo se inativa, para detectar mudanças de status)
-		this.fetchBackgroundStatus();
-		
-		// Continuar buscando a cada 5 segundos
-		// ✅ IMPORTANTE: Continuar polling mesmo quando inativa para detectar mudanças de session_status
-		// (ex: quando stop loss é atingido e muda para stopped_loss)
-		if (this.tradingInterval) {
-			clearInterval(this.tradingInterval);
-		}
-		
-		this.tradingInterval = setInterval(() => {
-			// ✅ Sempre buscar status para detectar mudanças (incluindo stopped_loss/stopped_profit)
-			this.fetchBackgroundStatus();
-		}, 5000);
-	},
-
-	stopBackgroundPolling() {
-		if (this.tradingInterval) {
-			clearInterval(this.tradingInterval);
-			this.tradingInterval = null;
-		}
-	},
-
-	startTradeEventsStream() {
-		const userId = this.getUserId();
-		if (!userId) return;
-
-		// Evitar múltiplas conexões
-		if (this.tradeEventsSource) {
-			this.tradeEventsSource.close();
-		}
-
-		const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-		const url = `${apiBase}/ai/trade-events/${userId}`;
-
-		const source = new EventSource(url);
-		this.tradeEventsSource = source;
-
-		source.onmessage = async (event) => {
-			try {
-				const payload = JSON.parse(event.data);
-				console.log('[StatsIAsView] Evento de trade recebido:', payload);
-
-				// Recarregar histórico e estatísticas apenas quando houver mudança real
-				await Promise.all([
-					this.loadTradeHistory(),
-					this.loadSessionStats(),
-					this.loadRecentLogs(),
-				]);
-			} catch (e) {
-				console.warn('[StatsIAsView] Evento de trade inválido:', e);
-			}
-		};
-
-		source.onerror = () => {
-			console.warn('[StatsIAsView] Erro na conexão SSE, tentando reconectar em 5s...');
-			source.close();
-			this.tradeEventsSource = null;
-			setTimeout(() => this.startTradeEventsStream(), 5000);
-		};
-	},
-
-	stopTradeEventsStream() {
-		if (this.tradeEventsSource) {
-			this.tradeEventsSource.close();
-			this.tradeEventsSource = null;
-		}
-	},
-
-	async fetchBackgroundStatus() {
-		try {
-			const userId = this.getUserId();
-			if (!userId) return;
-			
-			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-			// Buscar configuração da IA
-			const configResponse = await fetch(`${apiBase}/ai/config/${userId}`, {
-				headers: {
-					'Authorization': `Bearer ${localStorage.getItem('token')}`
-				}
-			});
-			const configResult = await configResponse.json();
-			
-			if (configResult.success && configResult.data) {
-				const config = configResult.data;
-				this.tradingConfig.isActive = config.isActive;
-				
-				// ✅ Verificar mudança de session_status para mostrar modais
-				const currentSessionStatus = config.sessionStatus || config.session_status || null;
-				
-				// ✅ Log para debug
-				if (this.previousSessionStatus !== currentSessionStatus) {
-					console.log(`[StatsIAsView] 🔄 [Background] Mudança de session_status: ${this.previousSessionStatus} → ${currentSessionStatus}`);
-				}
-				
-				// ✅ PRIORIDADE 1: Se o status atual é stopped_loss ou stopped_profit, mostrar modal
-				// (independentemente do estado anterior, desde que o modal não esteja já aberto)
-				// if (currentSessionStatus === 'stopped_loss') {
-				// 	if (!this.showStopLossModal) {
-				// 		console.log('[StatsIAsView] 🛑 [Background] Stop loss detectado! Mostrando modal...');
-				// 		console.log('[StatsIAsView] 📊 [Background] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
-				// 		// Buscar resultado da sessão
-				// 		await this.loadSessionResult();
-				// 		this.showStopLossModal = true;
-				// 		console.log('[StatsIAsView] ✅ [Background] Modal de stop loss exibido');
-				// 	}
-				// 	this.previousSessionStatus = currentSessionStatus;
-				// } else if (currentSessionStatus === 'stopped_profit') {
-				// 	// ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
-				// 	// Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
-				// 	if (!this.showTargetProfitModal) {
-				// 		console.log('[StatsIAsView] 🎯 [Background] Target profit detectado! Mostrando modal...');
-				// 		console.log('[StatsIAsView] 📊 [Background] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
-				// 		// Buscar resultado da sessão
-				// 		await this.loadSessionResult();
-				// 		this.showTargetProfitModal = true;
-				// 		console.log('[StatsIAsView] ✅ [Background] Modal de target profit exibido');
-				// 	}
-				// 	this.previousSessionStatus = currentSessionStatus;
-				// } else if (this.previousSessionStatus !== currentSessionStatus) {
-				// 	// Se mudou para outro status, atualizar previousSessionStatus
-				// 	console.log('[StatsIAsView] 🔄 [Background] Status mudou para:', currentSessionStatus);
-				// 	this.previousSessionStatus = currentSessionStatus;
-				// }
-				
-				if (this.previousSessionStatus !== currentSessionStatus) {
-					// Se mudou para outro status, atualizar previousSessionStatus
-					console.log('[StatsIAsView] 🔄 [Background] Status mudou para:', currentSessionStatus);
-					this.previousSessionStatus = currentSessionStatus;
-				}
-				
-				// ✅ Verificar também nos logs recentes para garantir detecção imediata
-				// Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
-				// if (!this.showTargetProfitModal && !this.showStopLossModal) {
-				// 	await this.loadRecentLogs(); // Carregar todos os logs da sessão atual
-				// }
-				
-				// ✅ PRIORIDADE 2: Se a IA foi desativada e não mostramos modal ainda, verificar novamente
-				// Esta é uma verificação de segurança caso a PRIORIDADE 1 não tenha capturado
-				// if (!config.isActive && !this.showStopLossModal && !this.showTargetProfitModal) {
-				// 	// Pode ter sido desativada por stop loss ou target profit
-				// 	if (currentSessionStatus === 'stopped_loss') {
-				// 		console.log('[StatsIAsView] 🛑 [Background] IA desativada por stop loss (verificação de segurança)! Mostrando modal...');
-				// 		await this.loadSessionResult();
-				// 		this.showStopLossModal = true;
-				// 		this.previousSessionStatus = currentSessionStatus;
-				// 	} else if (currentSessionStatus === 'stopped_profit') {
-				// 		console.log('[StatsIAsView] 🎯 [Background] IA desativada por target profit (verificação de segurança)! Mostrando modal...');
-				// 		await this.loadSessionResult();
-				// 		this.showTargetProfitModal = true;
-				// 		this.previousSessionStatus = currentSessionStatus;
-				// 	}
-				// }
-				
-				// Calcular countdown baseado no nextTradeAt
-				if (config.nextTradeAt) {
-					const now = new Date().getTime();
-					const nextTrade = new Date(config.nextTradeAt).getTime();
-					const diff = Math.floor((nextTrade - now) / 1000);
-					this.nextTradeCountdown = diff > 0 ? diff : 0;
-				}
-			}
-			
-			// Buscar operação ativa
-			const tradeResponse = await fetch(`${apiBase}/ai/active-trade`, {
-				headers: {
-					'Authorization': `Bearer ${localStorage.getItem('token')}`
-				}
-			});
-			const tradeResult = await tradeResponse.json();
-			
-			if (tradeResult.success && tradeResult.data) {
-				const trade = tradeResult.data;
-				
-				// Atualizar ou criar activeTrade
-				if (trade.status === 'ACTIVE' || trade.status === 'PENDING') {
-					this.activeTrade = {
-						id: trade.tradeId,
-						signal: trade.signal,
-						entryPrice: trade.entryPrice,
-						currentPrice: trade.currentPrice,
-						timeRemaining: trade.timeRemaining,
-						reasoning: trade.reasoning,
-						stakeAmount: trade.stakeAmount,
-						profitLoss: trade.profitLoss,
-					};
-				} else {
-					// Operação finalizada, limpar
-					this.activeTrade = null;
-				}
-			} else {
-				this.activeTrade = null;
-			}
-			
-		} catch (error) {
-			console.error('[StatsIAsView] Erro ao buscar status background:', error);
-		}
-	},
-
-	// ✅ OTIMIZAÇÃO: Carrega configuração do CACHE LOCAL instantaneamente
-	loadAIConfigFromCache() {
-		try {
-			const cachedConfig = localStorage.getItem('ai_config_cache');
-			if (cachedConfig) {
-				const config = JSON.parse(cachedConfig);
-				const cacheAge = Date.now() - (config._cacheTimestamp || 0);
-				
-				// Usar cache se tiver menos de 5 minutos
-				if (cacheAge < 5 * 60 * 1000) {
-					console.log('[StatsIAsView] ⚡ Carregando config do CACHE LOCAL (instantâneo)');
-					this.tradingConfig.isActive = config.isActive || false;
-					this.aiMonitoring.isActive = !!config.isActive;
-					this.tradingConfig.stakeAmount = config.stakeAmount || 50;
-					this.tradingConfig.mode = config.mode || 'veloz';
-					this.tradingConfig.profitTarget = config.profitTarget || 100;
-					this.tradingConfig.lossLimit = config.lossLimit || 25;
-					
-					if (config.isActive) {
-						console.log('[StatsIAsView] ⚡ IA estava ATIVA no cache - mostrando UI ativa');
-						if (!this.aiPollingInterval) {
-							this.startPolling();
-						}
-						this.startBackgroundPolling();
-					}
-				}
-			}
-		} catch (e) {
-			console.warn('[StatsIAsView] Cache de config inválido:', e);
-		}
-	},
-	
-	// ✅ OTIMIZAÇÃO: Carrega dados da conta do localStorage instantaneamente
-	loadAccountInfoFromLocal() {
-		try {
-			const connectionStr = localStorage.getItem('deriv_connection');
-			if (connectionStr) {
-				const connection = JSON.parse(connectionStr);
-				
-				// Determinar tipo de conta pelo loginid
-				const loginid = connection.loginid || '';
-				const isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT') || connection.isDemo === true;
-				this.accountType = isDemo ? 'Demo' : 'Real';
-				
-				// Buscar saldo correto baseado no tipo de conta
-				let balance = 0;
-				if (isDemo && connection.balancesByCurrencyDemo) {
-					const demoBalances = connection.balancesByCurrencyDemo;
-					balance = demoBalances['USD'] || Object.values(demoBalances)[0] || 0;
-				} else if (!isDemo && connection.balancesByCurrencyReal) {
-					const realBalances = connection.balancesByCurrencyReal;
-					balance = realBalances['USD'] || Object.values(realBalances)[0] || 0;
-				} else {
-					balance = connection.balance || connection.balanceAfter || 0;
-				}
-				this.accountBalance = parseFloat(balance) || 0;
-				
-				console.log('[StatsIAsView] ⚡ Dados da conta carregados do localStorage (instantâneo)');
-			}
-		} catch (e) {
-			console.warn('[StatsIAsView] Erro ao carregar dados locais:', e);
-		}
-	},
-	
-	// ✅ Salva configuração no cache local para próximo carregamento
-	saveAIConfigToCache(config) {
-		try {
-			const cacheData = {
-				...config,
-				_cacheTimestamp: Date.now()
-			};
-			localStorage.setItem('ai_config_cache', JSON.stringify(cacheData));
-		} catch (e) {
-			console.warn('[StatsIAsView] Erro ao salvar cache:', e);
-		}
-	},
-
-	async loadAIConfigOnMount() {
-		try {
-			console.log('[StatsIAsView] Buscando config atualizada da API...');
-			
-			const userId = this.getUserId();
-			if (!userId) {
-				console.warn('[StatsIAsView] userId não encontrado, pulando carregamento de config');
-				return;
-			}
-			
-			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-			const response = await fetch(`${apiBase}/ai/config/${userId}`, {
-				headers: {
-					'Authorization': `Bearer ${localStorage.getItem('token')}`
-				}
-			});
-			const result = await response.json();
-			
-			if (result.success && result.data) {
-				const config = result.data;
-				
-				// ✅ Salvar no cache para próximo carregamento instantâneo
-				this.saveAIConfigToCache(config);
-				
-				// ✅ Detectar mudança de session_status para mostrar modais
-				const currentSessionStatus = config.sessionStatus || config.session_status || null;
-				
-				// ✅ Log para debug
-				if (this.previousSessionStatus !== currentSessionStatus) {
-					console.log(`[StatsIAsView] 🔄 [OnMount] Mudança de session_status: ${this.previousSessionStatus} → ${currentSessionStatus}`);
-				}
-				
-				// ✅ PRIORIDADE 1: Se o status atual é stopped_loss ou stopped_profit, mostrar modal
-				// (independentemente do estado anterior, desde que o modal não esteja já aberto)
-				// if (currentSessionStatus === 'stopped_loss') {
-				// 	if (!this.showStopLossModal) {
-				// 		console.log('[StatsIAsView] 🛑 [OnMount] Stop loss detectado! Mostrando modal...');
-				// 		console.log('[StatsIAsView] 📊 [OnMount] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
-				// 		// Buscar resultado da sessão
-				// 		await this.loadSessionResult();
-				// 		this.showStopLossModal = true;
-				// 		console.log('[StatsIAsView] ✅ [OnMount] Modal de stop loss exibido');
-				// 	}
-				// 	this.previousSessionStatus = currentSessionStatus;
-				// } else if (currentSessionStatus === 'stopped_profit') {
-				// 	// ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
-				// 	// Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
-				// 	if (!this.showTargetProfitModal) {
-				// 		console.log('[StatsIAsView] 🎯 [OnMount] Target profit detectado! Mostrando modal...');
-				// 		console.log('[StatsIAsView] 📊 [OnMount] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
-				// 		// Buscar resultado da sessão
-				// 		await this.loadSessionResult();
-				// 		this.showTargetProfitModal = true;
-				// 		console.log('[StatsIAsView] ✅ [OnMount] Modal de target profit exibido');
-				// 	}
-				// 	this.previousSessionStatus = currentSessionStatus;
-				// } else if (this.previousSessionStatus !== currentSessionStatus) {
-				// 	// Se mudou para outro status, atualizar previousSessionStatus
-				// 	console.log('[StatsIAsView] 🔄 [OnMount] Status mudou para:', currentSessionStatus);
-				// 	this.previousSessionStatus = currentSessionStatus;
-				// }
-				
-				if (this.previousSessionStatus !== currentSessionStatus) {
-					// Se mudou para outro status, atualizar previousSessionStatus
-					console.log('[StatsIAsView] 🔄 [OnMount] Status mudou para:', currentSessionStatus);
-					this.previousSessionStatus = currentSessionStatus;
-				}
-				
-				// ✅ Verificar também nos logs recentes para garantir detecção imediata
-				// Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
-				// if (!this.showTargetProfitModal && !this.showStopLossModal) {
-				// 	await this.loadRecentLogs(); // Carregar todos os logs da sessão atual
-				// }
-				
-				this.tradingConfig.isActive = config.isActive || false;
-				this.aiMonitoring.isActive = !!config.isActive;
-				this.tradingConfig.stakeAmount = config.stakeAmount || 50;
-				this.tradingConfig.mode = config.mode || 'veloz';
-				this.tradingConfig.profitTarget = config.profitTarget || 100;
-				this.tradingConfig.lossLimit = config.lossLimit || 25;
-				
-				// Se a IA está ativa, carregar tudo automaticamente
-				if (config.isActive) {
-					console.log('[StatsIAsView] ✅ IA ATIVA confirmada pela API');
-					
-					// Não bloquear a UI: já ativamos flags e começamos os polls sem esperar /ai/start
-					if (!this.aiPollingInterval) {
-						this.startPolling();
-					}
-					this.startBackgroundPolling();
-				} else {
-					// ✅ Mesmo quando inativa, iniciar polling para detectar mudanças de status
-					// (ex: quando stop loss é atingido e muda para stopped_loss)
-					if (!this.tradingInterval) {
-						console.log('[StatsIAsView] 🔍 IA inativa, mas iniciando polling para detectar mudanças de status...');
-						this.startBackgroundPolling();
-					}
-					console.log('[StatsIAsView] IA está inativa. Aguardando ativação do usuário.');
-				}
-				
-				// Carregar estatísticas e histórico em paralelo
-				Promise.all([
-					this.loadSessionStats(),
-					this.loadTradeHistory()
-				]).catch(err => console.warn('[StatsIAsView] Erro ao carregar stats:', err));
-				
-				if (config.isActive) {
-					console.log('[StatsIAsView] ✅ Sistema pronto! IA operando em background.');
-				}
-			}
-		} catch (error) {
-			console.error('[StatsIAsView] Erro ao carregar configuração:', error);
-		}
-	},
-	
-	/**
-	 * Inicializa o gráfico de mercado para IA desativada
-	 */
-	initMarketChartInactive() {
-		if (this.marketChartInitializedInactive || !this.$refs.marketChartContainerInactive) {
-			return;
-		}
-		
-		try {
-			const container = this.$refs.marketChartContainerInactive;
-			const containerWidth = container.offsetWidth || 800;
-			const containerHeight = 400;
-			
-			this.marketChartInactive = createChart(container, {
-				width: containerWidth,
-				height: containerHeight,
-				localization: { 
-					locale: 'pt-BR',
-					timeFormatter: (time) => {
-						const date = new Date(time * 1000);
-						const hours = String(date.getHours()).padStart(2, '0');
-						const minutes = String(date.getMinutes()).padStart(2, '0');
-						return `${hours}:${minutes}`;
-					}
-				},
-				layout: {
-					background: { type: ColorType.Solid, color: '#0B0B0B' },
-					textColor: '#DFDFDF',
-				},
-				rightPriceScale: {
-					borderColor: '#1C1C1C',
-					scaleMargins: {
-						top: 0.1,
-						bottom: 0.1,
-					},
-				},
-				leftPriceScale: {
-					visible: false,
-				},
-				timeScale: {
-					borderColor: '#1C1C1C',
-					timeVisible: true,
-					secondsVisible: false,
-					rightOffset: 10,
-					fixLeftEdge: false,
-					fixRightEdge: false,
-				},
-				grid: {
-					vertLines: { 
-						color: 'rgba(148, 163, 184, 0.1)',
-						style: 0,
-						visible: true,
-					},
-					horzLines: { 
-						color: 'rgba(148, 163, 184, 0.1)',
-						style: 0,
-						visible: true,
-					},
-				},
-				crosshair: {
-					mode: 1,
-					vertLine: {
-						color: '#22C55E',
-						width: 1,
-						style: 3,
-						labelBackgroundColor: '#22C55E',
-					},
-					horzLine: {
-						color: '#22C55E',
-						width: 1,
-						style: 3,
-						labelBackgroundColor: '#22C55E',
-					},
-				},
-				handleScroll: {
-					mouseWheel: true,
-					pressedMouseMove: true,
-					horzTouchDrag: true,
-					vertTouchDrag: true,
-				},
-				handleScale: {
-					axisPressedMouseMove: {
-						time: true,
-						price: true,
-					},
-					axisDoubleClickReset: true,
-					axisTouchDrag: true,
-					mouseWheel: true,
-					pinch: true,
-				},
-			});
-			
-			this.marketLineSeriesInactive = this.marketChartInactive.addCandlestickSeries({
-				upColor: '#22C55E',
-				downColor: '#FF4747',
-				borderVisible: true,
-				borderUpColor: '#22C55E',
-				borderDownColor: '#FF4747',
-				wickUpColor: '#22C55E',
-				wickDownColor: '#FF4747',
-				priceFormat: {
-					type: 'price',
-					precision: 1,
-					minMove: 0.1,
-				},
-			});
-			
-			console.log('[StatsIAsView] ✅ Gráfico inativo inicializado com candlestick');
-			this.marketChartInitializedInactive = true;
-			
-			// Aguardar um pouco antes de atualizar para garantir que o container está pronto
-			setTimeout(() => {
-				if (this.aiMonitoring.ticks.length > 0) {
-			this.updateMarketChartInactive();
-				}
-			}, 200);
-		} catch (error) {
-			console.error('[StatsIAsView] Erro ao inicializar gráfico de mercado (inativo):', error);
-		}
-	},
-	
-	/**
-	 * Atualiza o gráfico de mercado para IA desativada
-	 */
-	updateMarketChartInactive() {
-		if (!this.marketChartInitializedInactive || !this.marketLineSeriesInactive || this.aiMonitoring.ticks.length === 0) {
-			return;
-		}
-		
-		try {
-			console.log('[StatsIAsView] Atualizando gráfico inativo. Ticks disponíveis:', this.aiMonitoring.ticks.length);
-			
-			// Converter ticks em velas
-			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks);
-			
-			if (candles.length > 0) {
-				console.log('[StatsIAsView] Atualizando gráfico com', candles.length, 'velas');
-				this.marketLineSeriesInactive.setData(candles);
-			this.marketChartInactive.timeScale().fitContent();
-			} else {
-				console.warn('[StatsIAsView] Nenhuma vela gerada para o gráfico inativo');
-			}
-		} catch (error) {
-			console.error('[StatsIAsView] Erro ao atualizar gráfico de mercado (inativo):', error);
-			console.error('[StatsIAsView] Stack:', error.stack);
-		}
-	},
-	
-	/**
-	 * Inicializa o gráfico de mercado para IA ativa
-	 */
-	initMarketChartActive() {
-		if (this.marketChartInitializedActive || !this.$refs.marketChartContainerActive) {
-			return;
-		}
-		
-		try {
-			const container = this.$refs.marketChartContainerActive;
-			const containerWidth = container.offsetWidth || 800;
-			const containerHeight = 400;
-			
-			this.marketChartActive = createChart(container, {
-				width: containerWidth,
-				height: containerHeight,
-				localization: { 
-					locale: 'pt-BR',
-					timeFormatter: (time) => {
-						const date = new Date(time * 1000);
-						const hours = String(date.getHours()).padStart(2, '0');
-						const minutes = String(date.getMinutes()).padStart(2, '0');
-						return `${hours}:${minutes}`;
-					}
-				},
-				layout: {
-					background: { type: ColorType.Solid, color: '#0B0B0B' },
-					textColor: '#DFDFDF',
-				},
-				rightPriceScale: {
-					borderColor: '#1C1C1C',
-					scaleMargins: {
-						top: 0.1,
-						bottom: 0.1,
-					},
-				},
-				leftPriceScale: {
-					visible: false,
-				},
-				timeScale: {
-					borderColor: '#1C1C1C',
-					timeVisible: true,
-					secondsVisible: false,
-					rightOffset: 10,
-					fixLeftEdge: false,
-					fixRightEdge: false,
-				},
-				grid: {
-					vertLines: { 
-						color: 'rgba(148, 163, 184, 0.1)',
-						style: 0,
-						visible: true,
-					},
-					horzLines: { 
-						color: 'rgba(148, 163, 184, 0.1)',
-						style: 0,
-						visible: true,
-					},
-				},
-				crosshair: {
-					mode: 1,
-					vertLine: {
-						color: '#22C55E',
-						width: 1,
-						style: 3,
-						labelBackgroundColor: '#22C55E',
-					},
-					horzLine: {
-						color: '#22C55E',
-						width: 1,
-						style: 3,
-						labelBackgroundColor: '#22C55E',
-					},
-				},
-				handleScroll: {
-					mouseWheel: true,
-					pressedMouseMove: true,
-					horzTouchDrag: true,
-					vertTouchDrag: true,
-				},
-				handleScale: {
-					axisPressedMouseMove: {
-						time: true,
-						price: true,
-					},
-					axisDoubleClickReset: true,
-					axisTouchDrag: true,
-					mouseWheel: true,
-					pinch: true,
-				},
-			});
-			
-			this.createMarketSeriesActive();
-			
-			console.log('[StatsIAsView] ✅ Gráfico ativo inicializado (linhas por padrão)');
-			this.marketChartInitializedActive = true;
-			
-			// Aguardar um pouco antes de atualizar para garantir que o container está pronto
-			setTimeout(() => {
-				if (this.aiMonitoring.ticks.length > 0) {
-					this.updateMarketChartActive();
-				}
-			}, 200);
-		} catch (error) {
-			console.error('[StatsIAsView] Erro ao inicializar gráfico de mercado (ativo):', error);
-		}
-	},
-	
-	/**
-	 * Atualiza o gráfico de mercado para IA ativa
-	 */
-	updateMarketChartActive() {
-		if (!this.marketChartInitializedActive || !this.marketLineSeriesActive || this.aiMonitoring.ticks.length === 0) {
-			return;
-		}
-		
-		try {
-			console.log('[StatsIAsView] Atualizando gráfico ativo. Ticks disponíveis:', this.aiMonitoring.ticks.length);
-			
-			const filteredTicks = this.filterTicksByZoomActive(this.aiMonitoring.ticks);
-			
-			if (this.chartTypeActive === 'line') {
-				const lineData = filteredTicks
-					.map(tick => {
-						let epoch = Number(tick.epoch || (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : 0));
-						if (epoch > 10000000000) epoch = Math.floor(epoch / 1000);
-						return { time: Math.floor(epoch), value: Number(tick.value || 0) };
-					})
-					.filter(p => p.value > 0 && p.time > 0)
-					.sort((a, b) => a.time - b.time);
-				
-				if (lineData.length > 0) {
-					this.marketLineSeriesActive.setData(lineData);
-					this.marketChartActive.timeScale().fitContent();
-				} else {
-					console.warn('[StatsIAsView] Nenhum ponto para gráfico de linhas');
-				}
-			} else {
-				const candles = this.aggregateTicksToCandles(filteredTicks);
-				
-				if (candles.length > 0) {
-					this.marketLineSeriesActive.setData(candles);
-					this.marketChartActive.timeScale().fitContent();
-				} else {
-					console.warn('[StatsIAsView] Nenhuma vela gerada para o gráfico ativo');
-				}
-			}
-		} catch (error) {
-			console.error('[StatsIAsView] Erro ao atualizar gráfico de mercado (ativo):', error);
-			console.error('[StatsIAsView] Stack:', error.stack);
-		}
-	},
-
-	createMarketSeriesActive() {
-		if (!this.marketChartActive) return;
-		
-		// Remover série anterior, se existir
-		if (this.marketLineSeriesActive) {
-			try {
-				this.marketChartActive.removeSeries(this.marketLineSeriesActive);
-			} catch (e) {
-				console.warn('[StatsIAsView] Erro ao remover série anterior:', e);
-			}
-		}
-		
-		if (this.chartTypeActive === 'line') {
-			this.marketLineSeriesActive = this.marketChartActive.addLineSeries({
-				color: '#22C55E',
-				lineWidth: 2,
-			});
-		} else {
-			this.marketLineSeriesActive = this.marketChartActive.addCandlestickSeries({
-				upColor: '#22C55E',
-				downColor: '#FF4747',
-				borderVisible: true,
-				borderUpColor: '#22C55E',
-				borderDownColor: '#FF4747',
-				wickUpColor: '#22C55E',
-				wickDownColor: '#FF4747',
-				priceFormat: {
-					type: 'price',
-					precision: 1,
-					minMove: 0.1,
-				},
-			});
-		}
-	},
-
-	setZoomPeriodActive(minutes) {
-		if (this.zoomPeriodActive === minutes) return;
-		this.zoomPeriodActive = minutes;
-		this.updateMarketChartActive();
-	},
-	
-	toggleChartTypeActive() {
-		this.chartTypeActive = this.chartTypeActive === 'line' ? 'candles' : 'line';
-		this.createMarketSeriesActive();
-		this.updateMarketChartActive();
-	},
-	
-	filterTicksByZoomActive(ticks) {
-		if (!Array.isArray(ticks) || ticks.length === 0) return [];
-		const now = Math.floor(Date.now() / 1000);
-		const minutesAgo = now - (this.zoomPeriodActive * 60);
-		
-		const filtered = ticks.filter(tick => {
-			let epoch = Number(tick.epoch || (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : 0));
-			if (epoch > 10000000000) epoch = Math.floor(epoch / 1000);
-			return epoch >= minutesAgo;
-		});
-		
-		if (filtered.length === 0 && ticks.length > 0) {
-			// fallback: últimos 200 ticks
-			return ticks.slice(-200);
-		}
-		return filtered;
-	},
-	
-	/**
-	 * Converte ticks em velas (candles) - uma vela por segundo
-	 * Estrutura Tick: { value: number, epoch: number, timestamp: string }
-	 */
-	aggregateTicksToCandles(ticks) {
-		if (!Array.isArray(ticks) || ticks.length === 0) {
-			console.log('[StatsIAsView] Nenhum tick disponível para converter');
-			return [];
-		}
-
-		console.log('[StatsIAsView] Iniciando conversão de ticks para velas. Total de ticks:', ticks.length);
-
-		// Filtrar e processar ticks - estrutura da API: { value, epoch, timestamp }
-		const validTicks = ticks
-			.map(tick => {
-				// Epoch vem em segundos Unix da API
-				const epoch = tick.epoch || (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : Date.now() / 1000);
-				const price = Number(tick.value || 0);
-				
-				if (!price || price <= 0) {
-					return null;
-				}
-				
-				return {
-					time: Math.floor(epoch), // Arredondar para segundo
-					price: price,
-					epoch: epoch
-				};
-			})
-			.filter(tick => tick !== null);
-
-		if (validTicks.length === 0) {
-			console.warn('[StatsIAsView] Nenhum tick válido após processamento');
-			return [];
-		}
-
-		console.log('[StatsIAsView] Ticks válidos:', validTicks.length);
-
-		// Ordenar por tempo
-		const sortedTicks = [...validTicks].sort((a, b) => a.time - b.time);
-		
-		// Agrupar ticks por segundo - cada segundo vira uma vela
-		const candleMap = new Map();
-
-		for (const tick of sortedTicks) {
-			const candleTime = tick.time;
-			
-			if (!candleMap.has(candleTime)) {
-				// Primeiro tick do segundo
-				candleMap.set(candleTime, {
-					time: candleTime,
-					open: tick.price,
-					high: tick.price,
-					low: tick.price,
-					close: tick.price,
-					count: 1
-				});
-			} else {
-				// Adicionar tick ao segundo existente
-				const candle = candleMap.get(candleTime);
-				candle.high = Math.max(candle.high, tick.price);
-				candle.low = Math.min(candle.low, tick.price);
-				candle.close = tick.price; // Último tick define o close
-				candle.count++;
-			}
-		}
-
-		// Converter Map em array ordenado (formato esperado pelo lightweight-charts)
-		const candles = Array.from(candleMap.values())
-			.sort((a, b) => a.time - b.time)
-			.map(candle => ({
-				time: candle.time,
-				open: candle.open,
-				high: candle.high,
-				low: candle.low,
-				close: candle.close
-			}));
-
-		console.log(`[StatsIAsView] ✅ Convertidos ${sortedTicks.length} ticks em ${candles.length} velas`);
-		console.log('[StatsIAsView] Primeiras 3 velas:', candles.slice(0, 3));
-		
-		return candles;
-	},
-
-	toggleMobileSidebar() {
-		this.isSidebarOpen = !this.isSidebarOpen;
-	},
-
-	closeSidebar() {
-		this.isSidebarOpen = false;
-	},
-
-	toggleSidebarCollapse() {
-		if (!this.isMobile) {
-			this.isSidebarCollapsed = !this.isSidebarCollapsed;
-		}
-	},
-
-	checkMobile() {
-		const wasMobile = this.isMobile;
-		this.isMobile = window.innerWidth <= 1024;
-		
-		console.log('[StatsIAsView] checkMobile - isMobile:', this.isMobile, 'width:', window.innerWidth);
-		
-		if (this.isMobile) {
-			// No mobile, sidebar começa fechada
-			if (!wasMobile) {
-				// Se acabou de mudar para mobile, fecha o sidebar
-				this.isSidebarOpen = false;
-			}
-			this.isSidebarCollapsed = false;
-		} else {
-			// No desktop, sidebar sempre aberta
-			this.isSidebarOpen = true;
-		}
-	},
-},
-
-mounted() {
-	this.checkMobile();
-	window.addEventListener('resize', this.checkMobile);
-	
-	// Carregar dados gerais das IAs (única chamada necessária para esta página)
-	this.fetchData();
-},
-
-	beforeUnmount() {
-		window.removeEventListener('resize', this.checkMobile);
-		this.stopPolling();
-		this.stopBackgroundPolling();
-	this.stopTradeEventsStream();
-	},
+    name: 'InvestmentIAView',
+    mixins: [accountBalanceMixin],
+    components: {
+        AppSidebar,
+        TopNavbar,
+        SettingsSidebar,
+        InvestmentActive,
+        ZenixTooltip,
+        DesktopBottomNav,
+        InsufficientBalanceModal,
+        MinimumStakeModal,
+        StrategyRequiredModal
+    },
+    data() {
+        return {
+            isSidebarOpen: false,
+            isSidebarCollapsed: false,
+            isMobile: false,
+            isInvestmentActive: false,
+            isActivating: false,
+            showSettingsModal: false,
+            showInsufficientBalanceModal: false,
+            showMinimumStakeModal: false,
+
+            showStrategyRequiredModal: false,
+            availableAccounts: [],
+            loadingAccounts: false,
+
+            ticks: [],
+            currentPrice: null,
+            pollingInterval: null,
+
+            entryValue: 1,
+            profitTarget: 100,
+            lossLimit: 100,
+            mode: 'veloz',
+            modoMartingale: 'conservador',
+            stoplossBlindado: false,
+
+            selectedMarket: 'vol10',
+            selectedStrategy: null,
+            showStrategyModal: false,
+            allStrategies: [
+                { 
+                    id: 'atlas', 
+                    title: 'IA Atlas', 
+                    marketType: 'Digits', 
+                    icon: 'fas fa-shield-alt', 
+                    icons: [], 
+                    description: 'Híbrida (Fluxo de Dígitos + Price Action → Tendência)',
+                    assertividade: '92 a 96%',
+                    retorno: '95% / 99%'
+                },
+                { 
+                    id: 'apollo', 
+                    title: 'IA Apollo', 
+                    marketType: 'Ups e Downs', 
+                    icon: 'fas fa-rocket', 
+                    icons: [],
+                    description: 'Price Action Puro (Inércia + Força + Tendência)',
+                    assertividade: '90% a 95%',
+                    retorno: '99%'
+                },
+                { 
+                    id: 'nexus', 
+                    title: 'IA Nexus', 
+                    marketType: 'Ups e Downs', 
+                    icon: 'fas fa-chart-bar',
+                    icons: [],
+                    description: 'Price Action Barreira de Segurança com Troca de Contrato',
+                    assertividade: '91% a 95%',
+                    retorno: '91% / 95%'
+                },
+                { 
+                    id: 'orion', 
+                    title: 'IA Orion', 
+                    marketType: 'Digits', 
+                    icon: 'fas fa-star', 
+                    icons: [],
+                    description: 'Estatística de Dígitos + (Over 2) com Price Action na Recuperação',
+                    assertividade: '94% a 97%',
+                    retorno: '95% / 99%'
+                },
+                { 
+                    id: 'titan', 
+                    title: 'IA Titan', 
+                    marketType: 'Digits', 
+                    icon: 'fas fa-yin-yang', 
+                    icons: [],
+                    description: 'Dígitos Par/Ímpar com persistência direcional',
+                    assertividade: '90% - 95%',
+                    retorno: '95%'
+                }
+            ],
+            
+            dailyStats: {
+                profitLoss: 0,
+                profitLossPercent: 0,
+                totalTrades: 0,
+                winrate: 0,
+                wins: 0,
+                losses: 0
+            },
+            statsUpdateInterval: null,
+
+            marketDescriptions: {
+                vol10: 'Volatilidade constante de 10% com um tique por segundo',
+                vol25: 'Volatilidade constante de 25% com um tique por segundo',
+                vol50: 'Volatilidade constante de 50% com um tique por segundo',
+                vol75: 'Volatilidade constante de 75% com um tique por segundo',
+                vol100: 'Volatilidade constante de 100% com um tique por segundo',
+                vol10_1s: 'Volatilidade constante de 10% com um tique a cada 1 segundo',
+                vol25_1s: 'Volatilidade constante de 25% com um tique a cada 1 segundo',
+                vol50_1s: 'Volatilidade constante de 50% com um tique a cada 1 segundo',
+                vol75_1s: 'Volatilidade constante de 75% com um tique a cada 1 segundo',
+                vol100_1s: 'Volatilidade constante de 100% com um tique a cada 1 segundo',
+                jump10: 'Volatilidade de 10% com saltos ocasionais de aproximadamente 30%',
+                jump25: 'Volatilidade de 25% com saltos ocasionais de aproximadamente 60%',
+                jump50: 'Volatilidade de 50% com saltos ocasionais de aproximadamente 100%',
+                jump75: 'Volatilidade de 75% com saltos ocasionais de aproximadamente 150%',
+                jump100: 'Volatilidade de 100% com saltos ocasionais de aproximadamente 200%'
+            },
+
+            // Frontend AI Operation Properties
+            isMonitoring: false,
+            tickHistory: [],
+            digitHistory: [],
+            activeFilters: [],
+            realtimeLogs: [],
+            logOperations: [],
+            currentActiveTrade: null,
+            consecutiveLosses: 0,
+            isRecoveryActive: false,
+            lastAnalysisResult: null,
+            isDeactivating: false,
+            tickCounter: 0
+        }
+    },
+    watch: {
+        entryValue(newValue) {
+            console.log('[InvestmentIAView] 💰 Valor de entrada atualizado:', newValue);
+        },
+        profitTarget(newValue) {
+            console.log('[InvestmentIAView] 🎯 Meta de lucro atualizada:', newValue);
+        },
+        lossLimit(newValue) {
+            console.log('[InvestmentIAView] 🛑 Limite de perda atualizado:', newValue);
+        },
+        mode(newValue) {
+            console.log('[InvestmentIAView] ⚡ Modo atualizado:', newValue);
+        },
+        selectedMarket(newValue) {
+            console.log('[InvestmentIAView] 📊 Mercado selecionado:', newValue);
+        }
+    },
+    computed: {
+
+
+        selectedStrategyObject() {
+            return this.allStrategies.find(s => s.id === this.selectedStrategy);
+        },
+
+        selectedStrategyName() {
+            return this.selectedStrategyObject ? this.selectedStrategyObject.title : 'Selecione uma estratégia';
+        },
+        
+        availableStrategies() {
+            // Se não houver configurações de plano carregadas ainda, mostrar todas ou nenhuma?
+            // Melhor mostrar todas por padrão até carregar, ou filtrar se planFeatures existir
+            if (!this.planFeatures) return this.allStrategies;
+            
+            // const allowedIAs = this.planFeatures.ias || [];
+            
+            // Mas geralmente no config do admin as IAs são selecionadas.
+            
+            return this.allStrategies;
+            /*
+            return this.allStrategies.filter(strategy => {
+                // Verificar se o ID da estratégia (em minúsculo) está na lista de IAs permitidas
+                return allowedIAs.some(allowed => allowed.toLowerCase() === strategy.id.toLowerCase());
+            });
+            */
+        },
+        
+        formattedLastUpdate() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        },
+        
+        formattedDailyProfit() {
+            const value = this.dailyStats.profitLoss || 0;
+            if (value >= 0) {
+                return `+${this.tradeCurrency} ${value.toFixed(2)}`;
+            } else {
+                return `-${this.tradeCurrency} ${Math.abs(value).toFixed(2)}`;
+            }
+        },
+        
+        formattedDailyProfitPercent() {
+            const value = this.dailyStats.profitLossPercent || 0;
+            const sign = value >= 0 ? '+' : '-';
+            return `(${sign}${Math.abs(value).toFixed(2)}%)`;
+        },
+        
+        dailyProfitClass() {
+            return this.dailyStats.profitLoss >= 0 ? 'profit-positive' : 'profit-negative';
+        },
+        
+        marketDescription() {
+            return this.marketDescriptions[this.selectedMarket] || this.marketDescriptions.vol10;
+        },
+        
+        modeDescription() {
+            const descriptions = {
+                'veloz': 'Mais negociações, menos precisão',
+                'moderado': 'Negociações e precisão moderado',
+                'lento': 'Menos operações, mais precisão'
+            };
+            return descriptions[this.mode] || descriptions.veloz;
+        },
+        
+        strategyDescription() {
+            const descriptions = {
+                'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%',
+                'apollo': '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 90% a 95% - <strong>Retorno:</strong> 99%',
+                'nexus': '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%',
+                'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%',
+                'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%'
+            };
+            return descriptions[this.selectedStrategy] || descriptions.atlas;
+        },
+        
+        entryValuePercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.entryValue / this.balanceNumeric) * 100).toFixed(2);
+        },
+        profitTargetPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.profitTarget / this.balanceNumeric) * 100).toFixed(2);
+        },
+        lossLimitPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.lossLimit / this.balanceNumeric) * 100).toFixed(2);
+        },
+        entryPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.entryValue / this.balanceNumeric) * 100).toFixed(2);
+        },
+        profitPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.profitTarget / this.balanceNumeric) * 100).toFixed(2);
+        },
+        lossPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.lossLimit / this.balanceNumeric) * 100).toFixed(2);
+        },
+        
+        riskLevelText() {
+            const labels = {
+                'conservador': 'Baixo',
+                'moderado': 'Médio',
+                'agressivo': 'Alto'
+            };
+            return labels[this.modoMartingale] || 'Baixo';
+        },
+        
+        riskBarWidth() {
+            const widths = {
+                'conservador': '25%',
+                'moderado': '50%',
+                'agressivo': '75%'
+            };
+            return widths[this.modoMartingale] || '25%';
+        },
+        
+        riskDescriptionText() {
+            const descriptions = {
+                'conservador': 'Recupera o valor perdido até o M5 (sexta perda). Se não conseguir, assume a perda e reseta para o valor da entrada inicial.',
+                'moderado': 'Recuperação ilimitada com +15% de lucro sobre as perdas totais',
+                'agressivo': 'Recuperação ilimitada com +30% de lucro sobre as perdas totais'
+            };
+            return descriptions[this.modoMartingale] || descriptions.conservador;
+        }
+    },
+    methods: {
+        /**
+         * ✅ ZENIX v3.5: Atualiza o saldo em tempo real vindo da IA (InvestmentActive)
+         * Evita chamadas extras à API Deriv usando os dados de lucro já disponíveis
+         */
+        handleLiveBalanceUpdate(newBalance) {
+            if (!newBalance || !this.info) return;
+            
+            console.log(`[InvestmentIAView] 💰 Sincronizando saldo real-time: $${newBalance.toFixed(2)}`);
+            
+            // 1. Atualizar o saldo principal
+            this.info.balance = newBalance;
+            
+            // 2. Atualizar campos específicos dependendo do tipo de conta
+            // Isso garante que o accountBalanceMixin e TopNavbar vejam a mudança
+            if (this.accountType === 'demo') {
+                this.info.demo_amount = newBalance;
+                if (this.info.balancesByCurrencyDemo) {
+                    this.info.balancesByCurrencyDemo['USD'] = newBalance;
+                }
+            } else {
+                this.info.real_amount = newBalance;
+                if (this.info.balancesByCurrencyReal) {
+                    this.info.balancesByCurrencyReal['USD'] = newBalance;
+                }
+            }
+            
+            // 3. Forçar reatividade clonando o objeto info
+            this.info = { ...this.info };
+        },
+
+        handleAccountTypeChange(newType) {
+            console.log('[InvestmentIAView] Tipo de conta alterado via componente filho:', newType);
+            this.accountType = newType; 
+            // NÃO chamar switchAccount() pois o componente filho (Sidebar/Navbar) já faz o reload.
+        },
+
+        async loadAvailableAccounts() {
+            this.loadingAccounts = true;
+            try {
+                const accounts = await loadAvailableAccounts();
+                this.availableAccounts = accounts;
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao carregar contas:', error);
+                this.availableAccounts = [];
+            } finally {
+                this.loadingAccounts = false;
+            }
+        },
+
+        async switchAccount(type) {
+            try {
+                const isDemo = type === 'demo';
+                const tradeCurrency = isDemo ? 'DEMO' : 'USD';
+                
+                // Tentar encontrar uma conta correspondente no cache de contas disponíveis
+                const matchingAccount = this.availableAccounts.find(acc => acc.isDemo === isDemo);
+                
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                const token = localStorage.getItem('token');
+                
+                if (matchingAccount) {
+                    console.log(`[InvestmentIAView] Sincronizando conta ${type} com token: ${matchingAccount.loginid}`);
+                    
+                    // Usar o endpoint unificado que salva token E moeda
+                    const response = await fetch(`${apiBase}/settings/deriv-token`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            token: matchingAccount.token,
+                            tradeCurrency: tradeCurrency
+                        })
+                    });
+
+                    if (response.ok) {
+                        // Atualizar localStorage local para manter consistência imediata
+                        localStorage.setItem('deriv_token', matchingAccount.token);
+                        localStorage.setItem('trade_currency', tradeCurrency);
+                        
+                        this.tradeCurrency = tradeCurrency;
+                        this.accountType = type;
+                        
+                        console.log('[InvestmentIAView] ✅ Conta e token sincronizados com sucesso');
+                        window.location.reload();
+                        return;
+                    }
+                }
+
+                // Fallback: se não encontrar conta específica ou falhar, tentar atualizar apenas a moeda
+                console.warn('[InvestmentIAView] ⚠️ Nenhuma conta correspondente encontrada ou falha no sync, tentando apenas moeda...');
+                const response = await fetch(`${apiBase}/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        tradeCurrency: tradeCurrency
+                    })
+                });
+
+                if (response.ok) {
+                    localStorage.setItem('trade_currency', tradeCurrency);
+                    this.tradeCurrency = tradeCurrency;
+                    this.accountType = type;
+                    window.location.reload();
+                } else {
+                    throw new Error('Erro ao alterar conta');
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao alterar moeda:', error);
+                await alert('Erro ao alterar moeda. Tente novamente.');
+            }
+        },
+
+
+
+        
+        getCurrencyPrefix(currency) {
+            switch ((currency || '').toUpperCase()) {
+                case 'USD':
+                    return '$';
+                case 'EUR':
+                    return '€';
+                case 'BTC':
+                    return '₿';
+                case 'DEMO':
+                    return 'D$';
+                default:
+                    return currency ? `${currency} ` : '$';
+            }
+        },
+        
+        checkMobile() {
+            this.isMobile = window.innerWidth <= 1024;
+        },
+        
+        async handleToggleChange(event) {
+            const isChecked = event.target.checked;
+            console.log('[InvestmentIAView] 🔄 Toggle alterado:', isChecked ? 'Ativar' : 'Desativar');
+            
+            if (isChecked && !this.isInvestmentActive) {
+                // Ativando IA
+                await this.activateIA();
+                
+                // ✅ FIX: Se a ativação falhar (isInvestmentActive continuar false),
+                // forçar o checkbox a voltar para unchecked.
+                if (!this.isInvestmentActive) {
+                    console.log('[InvestmentIAView] ⚠️ Ativação falhou ou cancelada, revertendo toggle.');
+                    // Forçar atualização do DOM caso o Vue não detecte a mudança (já que o model já era false)
+                    event.target.checked = false;
+                }
+            } else if (!isChecked && this.isInvestmentActive) {
+                // Desativando IA
+                await this.deactivateIA();
+            }
+        },
+        
+        async toggleInvestmentState() {
+            if (this.isInvestmentActive) {
+                await this.deactivateIA();
+            } else {
+                await this.activateIA();
+            }
+        },
+
+        async activateIA() {
+            this.isActivating = true;
+            try {
+                // ✅ Validação de Estratégia
+                if (!this.selectedStrategy) {
+                    console.warn('[InvestmentIAView] ⚠️ Nenhuma estratégia selecionada. Exibindo modal.');
+                    this.showStrategyRequiredModal = true;
+                    return;
+                }
+
+                console.log('[InvestmentIAView] ===== ATIVANDO IA (NOVA LÓGICA) =====');
+                
+                // Validação de saldo mínimo
+                const currentBalance = this.balanceNumeric || 0;
+                const requiredBalance = this.entryValue;
+
+                if (currentBalance < requiredBalance) {
+                    console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente para iniciar:', currentBalance, '<', requiredBalance);
+                    this.showInsufficientBalanceModal = true;
+                    this.isActivating = false;
+                    return;
+                }
+
+                // Validar stake mínimo
+                if (this.entryValue < 0.35) {
+                    console.warn('[InvestmentIAView] ⚠️ Valor mínimo de entrada: $0.35');
+                    this.showMinimumStakeModal = true;
+                    this.isActivating = false;
+                    return;
+                }
+
+                // Carregar Configuração da Estratégia do Preset
+                const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
+                if (!strategyPreset) {
+                    this.$root.$toast.error('Configuração da estratégia não encontrada!');
+                    this.isActivating = false;
+                    return;
+                }
+
+                // ✅ Salvar configuração no localStorage
+                const config = {
+                    strategy: this.selectedStrategy,
+                    strategyName: strategyPreset.name,
+                    stake: this.entryValue,
+                    profitTarget: this.profitTarget,
+                    lossLimit: this.lossLimit,
+                    mode: this.mode,
+                    modoMartingale: this.modoMartingale,
+                    stoplossBlindado: this.stoplossBlindado,
+                    market: this.selectedMarket
+                };
+
+                localStorage.setItem('ai_active_config', JSON.stringify(config));
+                console.log('[InvestmentIAView] ✅ Configuração salva no localStorage:', config);
+
+                this.$root.$toast.success(`IA ${strategyPreset.name} ativada! Redirecionando...`);
+
+                // ✅ Redirecionar para página de monitoramento
+                setTimeout(() => {
+                    this.$router.push('/StatsIAs/monitoring');
+                }, 500);
+
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', error);
+                this.$root.$toast.error('Erro ao ativar IA');
+            } finally {
+                this.isActivating = false;
+            }
+        },
+
+        async deactivateIA() {
+            try {
+                console.log('[InvestmentIAView] 🛑 Desativando IA (Frontend Mode)...');
+                this.isDeactivating = true;
+                
+                this.stopTickConnection();
+                this.isMonitoring = false;
+                this.isInvestmentActive = false;
+                
+                this.addLog('⏹️ IA Desativada pelo usuário.', 'info');
+                this.$root.$toast.info('IA desativada com sucesso.');
+
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro ao desativar IA:', error);
+            } finally {
+                this.isDeactivating = false;
+            }
+        },
+
+        handleStrategyRequiredConfirm() {
+            this.showStrategyRequiredModal = false;
+            this.openStrategyModal();
+        },
+
+        openStrategyModal() {
+            this.showStrategyModal = true;
+        },
+
+        closeStrategyModal() {
+            this.showStrategyModal = false;
+        },
+        
+        selectStrategy(id) {
+            this.selectedStrategy = id;
+            
+            // ✅ Sincronização de Mercado Automática (ZENIX v2.0)
+            const strategyLower = id.toLowerCase();
+            if (strategyLower === 'atlas') {
+                this.selectedMarket = 'vol100';
+                console.log('[InvestmentIAView] 🎯 Atlas selecionado: Alternando mercado para Volatility 100 Index');
+            } else if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
+                this.selectedMarket = 'vol100';
+                console.log(`[InvestmentIAView] 🎯 ${id.toUpperCase()} selecionado: Alternando mercado para Volatility 100 Index`);
+            } else {
+                this.selectedMarket = 'vol10';
+            }
+
+            // Delay closing to show visual feedback (check icon)
+            setTimeout(() => {
+                this.closeStrategyModal();
+            }, 300);
+        },
+
+        getUserId() {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.userId || payload.sub || payload.id) {
+                        return payload.userId || payload.sub || payload.id;
+                    }
+                }
+
+                const userInfoStr = localStorage.getItem('user_info');
+                if (userInfoStr) {
+                    const userInfo = JSON.parse(userInfoStr);
+                    if (userInfo.id || userInfo.userId) {
+                        return userInfo.id || userInfo.userId;
+                    }
+                }
+
+                console.warn('[InvestmentIAView] Não foi possível obter userId');
+                return null;
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao obter userId:', error);
+                return null;
+            }
+        },
+
+        getDerivToken() {
+            console.log('[InvestmentIAView] Buscando token Deriv para conta:', this.accountType);
+
+            try {
+                const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+                const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+                
+                // Se estivermos em modo demo, procurar especificamente por um token de conta virtual (VRT/VRTC)
+                if (this.accountType === 'demo') {
+                    for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+                        if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
+                            console.log('[InvestmentIAView] ✓ Token demo encontrado para loginid:', loginid);
+                            return token;
+                        }
+                    }
+                } else {
+                    // Se estivermos em modo real, tentar pegar o token associado ao loginid atual no deriv_connection
+                    const connectionStr = localStorage.getItem('deriv_connection');
+                    if (connectionStr) {
+                        const connection = JSON.parse(connectionStr);
+                        const currentLoginid = connection.loginid;
+                        
+                        if (currentLoginid && tokensByLoginId[currentLoginid]) {
+                            // Validar que não é um loginid de demo se estamos no modo real
+                            if (!currentLoginid.startsWith('VRTC') && !currentLoginid.startsWith('VRT')) {
+                                console.log('[InvestmentIAView] ✓ Token real específico encontrado para loginid:', currentLoginid);
+                                return tokensByLoginId[currentLoginid];
+                            }
+                        }
+                    }
+                    
+                    // Fallback para qualquer token real que não comece com VRT
+                    for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+                        if (!loginid.startsWith('VRTC') && !loginid.startsWith('VRT')) {
+                            console.log('[InvestmentIAView] ✓ Token real alternativo encontrado para loginid:', loginid);
+                            return token;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('[AccountBalanceMixin] Erro ao buscar token específico:', error);
+            }
+
+            // Fallback final para o token padrão
+            const defaultToken = localStorage.getItem('deriv_token');
+            if (defaultToken) {
+                console.log('[InvestmentIAView] ✓ Usando token padrão (fallback)');
+                return defaultToken;
+            }
+
+            console.error('[InvestmentIAView] ❌ Nenhum token encontrado para o modo:', this.accountType);
+            return null;
+        },
+
+
+        
+        async fetchDailyStats() {
+            // ✅ Se a IA estiver rodando localmente, não sobrescrever com dados do backend
+            if (this.isMonitoring) return;
+
+            try {
+                const userId = this.getUserId();
+                if (!userId) {
+                    console.warn('[InvestmentIAView] ❌ UserId não disponível para buscar stats');
+                    return;
+                }
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                const url = `${apiBase}/ai/session-stats/${userId}`;
+                
+                console.log('[InvestmentIAView] 📊 Buscando estatísticas diárias:', url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('[InvestmentIAView] 📦 Stats recebidas:', result);
+                
+                if (result.success && result.data) {
+                    const profitLoss = parseFloat(result.data.profitLoss) || 0;
+                    const totalVolume = parseFloat(result.data.totalVolume) || 1;
+                    const profitLossPercent = (profitLoss / totalVolume) * 100;
+                    
+                    this.dailyStats = {
+                        profitLoss: profitLoss,
+                        profitLossPercent: profitLossPercent,
+                        totalTrades: parseInt(result.data.totalTrades) || 0,
+                        winrate: parseFloat(result.data.winrate) || 0,
+                        wins: parseInt(result.data.wins) || 0,
+                        losses: parseInt(result.data.losses) || 0
+                    };
+                    
+                    console.log('[InvestmentIAView] ✅ Stats atualizadas:', this.dailyStats);
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro ao buscar estatísticas:', error);
+            }
+        },
+        
+        startStatsUpdates() {
+            // ✅ Comentado para iniciar zerado conforme solicitado. 
+            // O primeiro update virá após 10 segundos, ou será gerido localmente pela IA.
+            // this.fetchDailyStats(); 
+            this.statsUpdateInterval = setInterval(() => {
+                this.fetchDailyStats();
+            }, 10000);
+            
+            console.log('[InvestmentIAView] ⏰ Atualizações de stats iniciadas (início zerado)');
+        },
+        
+        stopStatsUpdates() {
+            if (this.statsUpdateInterval) {
+                clearInterval(this.statsUpdateInterval);
+                this.statsUpdateInterval = null;
+                console.log('[InvestmentIAView] ⏹️ Atualizações de stats paradas');
+            }
+        },
+
+        toggleSidebar() {
+            this.isSidebarOpen = !this.isSidebarOpen;
+        },
+        
+        closeSidebar() {
+            this.isSidebarOpen = false;
+        },
+        
+        toggleSidebarCollapse() {
+            this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        },
+        
+        toggleSettingsModal() {
+            this.showSettingsModal = !this.showSettingsModal;
+        },
+        
+        closeSettingsModal() {
+            this.showSettingsModal = false;
+        },
+        
+        
+        handleGlobalAccountChange() {
+            console.log('[InvestmentIAView] Detectada mudança de conta global, recarregando...');
+            this.reloadBalance();
+        },
+        async startDataLoading() {
+            try {
+                console.log('[InvestmentIAView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
+                
+                // Primeiro, buscar o histórico de 1000 ticks para construir o gráfico
+                console.log('[InvestmentIAView] 📊 Buscando histórico de 1000 ticks...');
+                await this.fetchTicksHistory(1000);
+                
+                // Depois, iniciar o serviço de monitoramento
+                const response = await fetch('https://iazenix.com/api/ai/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                console.log('[InvestmentIAView] Status da resposta:', response.status);
+                const result = await response.json();
+                console.log('[InvestmentIAView] Resultado:', result);
+
+                if (result.success) {
+                    console.log('[InvestmentIAView] ✅ Carregamento de dados iniciado');
+                    this.startPolling();
+                } else {
+                    console.warn('[InvestmentIAView] ⚠ Não foi possível iniciar:', result.message);
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ ERRO ao iniciar carregamento:', error);
+                console.error('[InvestmentIAView] Detalhes:', error.message);
+            }
+        },
+        
+        async fetchTicksHistory(count = 1000) {
+            try {
+                // Log de início
+                console.log('[InvestmentIAView] ===== INÍCIO DO CARREGAMENTO DE HISTÓRICO =====');
+                console.log(`[InvestmentIAView] 📊 Iniciando busca de histórico de ${count} ticks...`);
+                console.log(`[InvestmentIAView] ⏰ Timestamp de início: ${new Date().toISOString()}`);
+                
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                const url = `${apiBase}/ai/ticks?count=${count}`;
+                
+                // Log de envio da requisição
+                console.log('[InvestmentIAView] 📡 Enviando requisição para API...');
+                console.log(`[InvestmentIAView] 🔗 URL: ${url}`);
+                console.log(`[InvestmentIAView] 📋 Parâmetros: count=${count}`);
+                console.log(`[InvestmentIAView] ⏰ Timestamp de envio: ${new Date().toISOString()}`);
+                
+                const requestStartTime = Date.now();
+                const response = await fetch(url);
+                const requestEndTime = Date.now();
+                const requestDuration = requestEndTime - requestStartTime;
+                
+                // Log de retorno da API
+                console.log('[InvestmentIAView] 📥 Resposta recebida da API');
+                console.log(`[InvestmentIAView] ⏰ Timestamp de retorno: ${new Date().toISOString()}`);
+                console.log(`[InvestmentIAView] ⏱️ Tempo de requisição: ${requestDuration}ms`);
+                console.log(`[InvestmentIAView] 📊 Status HTTP: ${response.status} ${response.statusText}`);
+                console.log(`[InvestmentIAView] ✅ Response OK: ${response.ok}`);
+                
+                const result = await response.json();
+                
+                console.log('[InvestmentIAView] 📦 Dados recebidos da API:', {
+                    success: result.success,
+                    ticksCount: result.data?.ticks?.length || 0,
+                    currentPrice: result.data?.currentPrice,
+                    hasData: !!result.data,
+                    hasTicks: !!result.data?.ticks
+                });
+
+                if (result.success && result.data?.ticks) {
+                    // Manter apenas os últimos ticks recebidos
+                    const historyTicks = result.data.ticks.slice(-count);
+                    this.ticks = historyTicks;
+                    this.currentPrice = result.data.currentPrice;
+                    
+                    console.log('[InvestmentIAView] ✅ Histórico processado com sucesso');
+                    console.log(`[InvestmentIAView] 📊 Ticks processados: ${historyTicks.length}`);
+                    console.log(`[InvestmentIAView] 💰 Preço atual: ${this.currentPrice}`);
+                    console.log(`[InvestmentIAView] ⏰ Timestamp de conclusão: ${new Date().toISOString()}`);
+                    console.log('[InvestmentIAView] ===== FIM DO CARREGAMENTO DE HISTÓRICO =====');
+                } else {
+                    console.warn('[InvestmentIAView] ⚠ Nenhum histórico disponível ainda');
+                    console.warn('[InvestmentIAView] 📋 Resposta completa:', result);
+                    console.log('[InvestmentIAView] ===== FIM DO CARREGAMENTO DE HISTÓRICO (SEM DADOS) =====');
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro ao buscar histórico de ticks');
+                console.error(`[InvestmentIAView] ⏰ Timestamp do erro: ${new Date().toISOString()}`);
+                console.error('[InvestmentIAView] 🔴 Detalhes do erro:', error);
+                console.error('[InvestmentIAView] 📋 Mensagem:', error.message);
+                console.error('[InvestmentIAView] 📋 Stack:', error.stack);
+                console.log('[InvestmentIAView] ===== FIM DO CARREGAMENTO DE HISTÓRICO (ERRO) =====');
+            }
+        },
+
+        startPolling() {
+            this.fetchTicks();
+            this.pollingInterval = setInterval(() => {
+                this.fetchTicks();
+            }, 2000);
+        },
+
+        stopPolling() {
+            if (this.pollingInterval) {
+                clearInterval(this.pollingInterval);
+                this.pollingInterval = null;
+            }
+        },
+
+        async fetchTicks() {
+            if (this.isMonitoring) return; // Skip polling if local WebSocket is active
+            try {
+                console.log('[InvestmentIAView] Buscando novos ticks...');
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                const response = await fetch(`${apiBase}/ai/ticks`);
+                const result = await response.json();
+
+                console.log('[InvestmentIAView] Ticks recebidos:', {
+                    success: result.success,
+                    ticksCount: result.data?.ticks?.length || 0,
+                    currentPrice: result.data?.currentPrice
+                });
+
+                if (result.success && result.data?.ticks) {
+                    const newTicks = result.data.ticks || [];
+                    
+                    // Se já temos histórico, mesclar mantendo os últimos 1000 ticks
+                    if (this.ticks && this.ticks.length > 0) {
+                        // Pegar os últimos ticks do histórico atual
+                        const existingTicks = this.ticks.slice(-990); // Manter 990 do histórico
+                        // Adicionar os novos ticks
+                        const allTicks = [...existingTicks, ...newTicks];
+                        // Manter apenas os últimos 1000
+                        this.ticks = allTicks.slice(-1000);
+                    } else {
+                        // Se não temos histórico ainda, usar os ticks recebidos (limitados a 1000)
+                        this.ticks = newTicks.slice(-1000);
+                    }
+                    
+                    this.currentPrice = result.data.currentPrice;
+                    console.log('[InvestmentIAView] ✅ Ticks atualizados:', this.ticks.length);
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro ao buscar ticks:', error);
+            }
+        },
+
+        async checkAIStatus() {
+            try {
+                const userId = this.getUserId();
+                if (!userId) {
+                    console.warn('[InvestmentIAView] userId não encontrado');
+                    return;
+                }
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                const response = await fetch(`${apiBase}/ai/config/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const config = result.data;
+                    this.isInvestmentActive = config.isActive || false;
+                    
+                    // ✅ [ZENIX v2.0] Só preencher parâmetros se a IA estiver ativa
+                    // Se estiver inativa, manter os padrões para uma nova configuração
+                    if (this.isInvestmentActive) {
+                        if (config.entryValue) this.entryValue = Number(config.entryValue);
+                        if (config.profitTarget) this.profitTarget = Number(config.profitTarget);
+                        if (config.lossLimit) this.lossLimit = Number(config.lossLimit);
+                        if (config.mode) this.mode = config.mode;
+                        if (config.strategy) this.selectedStrategy = config.strategy.toLowerCase();
+                        if (config.modoMartingale) this.modoMartingale = config.modoMartingale;
+                        if (config.stoplossBlindado !== undefined) this.stoplossBlindado = config.stoplossBlindado;
+                        
+                        console.log('[InvestmentIAView] ✅ IA JÁ ESTÁ ATIVA! Parâmetros sincronizados.');
+                        // Buscar histórico de ticks para construir o gráfico
+                        await this.fetchTicksHistory(1000);
+                    } else {
+                        console.log('[InvestmentIAView] IA está inativa, usando padrões de nova configuração.');
+                    }
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao verificar status da IA:', error);
+            }
+        },
+
+        // --- FRONTEND AI ENGINE METHODS ---
+
+        initTickConnection() {
+            const marketSymbol = this.getMarketSymbol(this.selectedMarket);
+            console.log(`[InvestmentIAView] 🔌 Conectando ao mercado: ${marketSymbol}`);
+
+            this.stopTickConnection();
+
+            const appId = localStorage.getItem('deriv_app_id') || '1089';
+            const endpoint = `wss://ws.derivws.com/websockets/v3?app_id=${appId}`;
+            
+            this.ws = new WebSocket(endpoint);
+
+            this.ws.onopen = () => {
+                this.addLog(`🔌 Conectado ao Deriv. Autorizando...`, 'info');
+                const token = this.getDerivToken();
+                
+                if (token) {
+                    this.ws.send(JSON.stringify({ authorize: token }));
+                } else {
+                    this.addLog('⚠️ Token Deriv não encontrado. Operações reais desativadas.', 'warning');
+                    this.subscribeTicks(marketSymbol);
+                }
+            };
+
+            this.ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    
+                    if (msg.msg_type === 'authorize') {
+                        if (msg.error) {
+                            this.addLog(`❌ Falha na autorização: ${msg.error.message}`, 'error');
+                        } else {
+                            this.addLog(`✅ Autorizado! Saldo: $${msg.authorize.balance}`, 'success');
+                            this.subscribeTicks(marketSymbol);
+                        }
+                    }
+
+                    if (msg.msg_type === 'tick') {
+                        this.handleTickMessage(msg);
+                    }
+
+                    if (msg.msg_type === 'buy') {
+                        if (msg.error) {
+                            this.addLog(`❌ ERRO NA COMPRA: ${msg.error.message}`, 'error');
+                        } else {
+                            this.addLog(`🚀 COMPRA REALIZADA! ID: ${msg.buy.contract_id}`, 'success');
+                            this.ws.send(JSON.stringify({
+                                proposal_open_contract: 1,
+                                contract_id: msg.buy.contract_id,
+                                subscribe: 1
+                            }));
+                        }
+                    }
+
+                    if (msg.msg_type === 'proposal_open_contract') {
+                        this.handleContractUpdate(msg.proposal_open_contract);
+                    }
+
+                } catch (e) {
+                    console.error('[WS] Erro JSON:', e);
+                }
+            };
+        },
+
+        stopTickConnection() {
+            if (this.ws) {
+                this.ws.close();
+                this.ws = null;
+            }
+        },
+
+        subscribeTicks(symbol) {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(JSON.stringify({
+                    ticks: symbol,
+                    subscribe: 1
+                }));
+                this.addLog(`📡 Monitorando ticks de ${symbol}...`, 'info');
+            }
+        },
+
+        handleTickMessage(msg) {
+            const tick = msg.tick;
+            const price = tick.quote;
+            this.currentPrice = price;
+
+            // ✅ Log de Ticks (Feedback Visual)
+            // Agora em tempo real, sem filtro
+            this.tickCounter = (this.tickCounter || 0) + 1;
+            const digit = parseInt(price.toString().slice(-1));
+            this.addLog(`📊 Tick recebido: ${price} (Último dígito: ${digit})`, 'info');
+
+            // Atualizar histórico de ticks
+            this.tickHistory.push({
+                time: tick.epoch,
+                value: price
+            });
+            if (this.tickHistory.length > 500) this.tickHistory.shift();
+            
+            this.ticks = [...this.tickHistory];
+
+            // Atualizar histórico de dígitos
+            this.digitHistory.push(digit);
+            if (this.digitHistory.length > 200) this.digitHistory.shift();
+
+            // EXECUTAR ANÁLISE
+            if (this.isMonitoring) {
+                this.runAnalysis();
+            }
+        },
+
+        runAnalysis() {
+            if (this.currentActiveTrade) return;
+
+            const strategy = this.isRecoveryActive ? 'recovery' : 'main';
+            const data = {
+                tickHistory: this.tickHistory.map(t => t.value),
+                digitHistory: this.digitHistory
+            };
+
+            let allPassed = true;
+            for (const filter of this.activeFilters) {
+                if (!filter.active) continue;
+                
+                const result = StrategyAnalysis.evaluate(filter, data);
+                if (!result.pass) {
+                    allPassed = false;
+                    break;
+                }
+            }
+
+            if (allPassed && this.activeFilters.length > 0) {
+                this.addLog(`🎯 Sinal detectado (${strategy})! Executando trade...`, 'success');
+                this.executeRealTrade();
+            }
+        },
+
+        async executeRealTrade() {
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
+            const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
+            const tradeConfig = this.isRecoveryActive ? strategyPreset.config.recoveryConfig : strategyPreset.config.form;
+
+            const buyRequest = {
+                buy: '1',
+                price: Number(this.entryValue),
+                parameters: {
+                    amount: Number(this.entryValue),
+                    basis: 'stake',
+                    contract_type: tradeConfig.tradeType,
+                    currency: 'USD',
+                    duration: tradeConfig.duration || 1,
+                    duration_unit: tradeConfig.durationUnit || 't',
+                    symbol: this.getMarketSymbol(this.selectedMarket)
+                }
+            };
+
+            if (tradeConfig.prediction !== undefined) {
+                buyRequest.parameters.barrier = tradeConfig.prediction.toString();
+            }
+
+            this.currentActiveTrade = { status: 'PENDING' };
+            this.ws.send(JSON.stringify(buyRequest));
+        },
+
+        handleContractUpdate(contract) {
+            if (contract.is_sold) {
+                const profit = contract.profit;
+                const win = profit > 0;
+                
+                this.addLog(`🏁 Contrato finalizado: ${win ? 'VITORIA' : 'DERROTA'} ($${profit})`, win ? 'success' : 'error');
+
+                this.dailyStats.totalTrades++;
+                if (win) {
+                    this.dailyStats.wins++;
+                    this.consecutiveLosses = 0;
+                    this.isRecoveryActive = false;
+                    const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
+                    this.activeFilters = JSON.parse(JSON.stringify(strategyPreset.config.form.attackFilters));
+                } else {
+                    this.dailyStats.losses++;
+                    this.consecutiveLosses++;
+                    
+                    const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
+                    if (strategyPreset.config.recoveryConfig.enabled && 
+                        this.consecutiveLosses >= strategyPreset.config.recoveryConfig.lossesToActivate) {
+                        this.isRecoveryActive = true;
+                        this.activeFilters = JSON.parse(JSON.stringify(strategyPreset.config.recoveryConfig.attackFilters));
+                        this.addLog('🛡️ MODO RECUPERAÇÃO ATIVADO!', 'warning');
+                    }
+                }
+                
+                this.dailyStats.profitLoss += profit;
+                this.dailyStats.winrate = (this.dailyStats.wins / this.dailyStats.totalTrades) * 100;
+
+                this.logOperations.unshift({
+                    time: new Date().toLocaleTimeString(),
+                    pair: contract.display_name,
+                    direction: contract.contract_type,
+                    entryPrice: contract.entry_tick,
+                    exitPrice: contract.exit_tick,
+                    investment: `$${contract.buy_price}`,
+                    pnl: `${win ? '+' : ''}$${profit}`
+                });
+
+                this.currentActiveTrade = null;
+            }
+        },
+
+        addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+            
+            this.realtimeLogs.unshift({
+                id: Date.now() + Math.random(),
+                timestamp,
+                message,
+                type,
+                icon
+            });
+
+            if (this.realtimeLogs.length > 100) this.realtimeLogs.pop();
+        },
+
+        getMarketSymbol(market) {
+            const map = {
+                vol10: 'R_10', vol25: 'R_25', vol50: 'R_50', vol75: 'R_75', vol100: 'R_100',
+                vol10_1s: '1HZ10V', vol25_1s: '1HZ25V', vol50_1s: '1HZ50V', vol75_1s: '1HZ75V', vol100_1s: '1HZ100V'
+            };
+            return map[market] || 'R_100';
+        },
+    },
+    created() {
+        this.checkMobile();
+        window.addEventListener('resize', this.checkMobile);
+    },
+    async mounted() {
+        console.log('[InvestmentIAView] mounted() - Modo 100% Frontend');
+        await this.loadAvailableAccounts();
+        
+        if (this.$route.query.strategy) {
+            this.selectedStrategy = this.$route.query.strategy;
+        }
+        
+        // Sincronizar saldo inicial
+        this.reloadBalance();
+        
+        // Iniciar polling de saldo via mixin (ajustado para 5s)
+        this.startBalancePolling(5000);
+        
+        window.addEventListener('accountChanged', this.handleGlobalAccountChange);
+        window.addEventListener('refreshBalance', () => this.reloadBalance());
+    },
+
+    beforeUnmount() {
+        window.removeEventListener('resize', this.checkMobile);
+        window.removeEventListener('accountChanged', this.handleGlobalAccountChange);
+        console.log('[InvestmentIAView] Limpando intervalos e listeners...');
+        
+        this.stopPolling(); // Para os ticks do gráfico
+        this.stopStatsUpdates(); // Para as estatísticas diárias
+        this.stopBalancePolling(); // Do Mixin
+    },
 }
 </script>
 
-<style scoped>
-.dashboard-layout {
-	display: flex;
-	min-height: 100vh;
-	font-family: 'Roboto', sans-serif;
-	background-color: #0b0b0b;
-	width: 100%;
-	max-width: 100vw;
-	overflow-x: hidden;
-	box-sizing: border-box;
-}
 
-h1{
-	font-weight: 700;
-}
-
-.dashboard-content-wrapper {
-	flex-grow: 1;
-	margin-left: 280px;
-	transition: margin-left 0.3s ease;
-	min-height: 100vh;
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	justify-content: flex-start;
-	display: flex;
-	flex-direction: column;
-	overflow-x: hidden;
-}
-
-.dashboard-content-wrapper.sidebar-collapsed {
-	margin-left: 80px;
-}
-
-/* Sidebar Overlay */
-.sidebar-overlay {
-	display: none;
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-color: rgba(0, 0, 0, 0.5);
-	z-index: 999;
-}
-
-/* Mobile Header */
-
-.layout-content {
-	flex-grow: 1;
-	padding: 40px;
-	padding-top: 80px; /* Espaço para o TopNavbar */
-	overflow-y: auto;
-	overflow-x: hidden;
-	background-color: #0b0b0b;
-	box-sizing: border-box;
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	justify-content: flex-start;
-}
-
-.main-header {
-	display: flex;
-	justify-content: space-between;
-	width: 100%;
-	align-items: center;
-	margin-bottom: 24px;
-	padding-top: 0;
-	opacity: 0;
-	animation: fadeIn 0.5s ease-out forwards;
-}
-
-.main-header-left {
-	width: 100%;
-	text-align: left;
-}
-
-.main-content {
-	width: 100%;
-	margin-top: 0;
-	padding: 2rem 0 2rem 0;
-	box-sizing: border-box;
-}
-
-.main-header h1 {
-	font-size: 30px;
-	margin: 0;
-}
-
-.main-header p {
-	font-size: 14px;
-	color: #999;
-	margin: 5px 0 0 0;
-}
-
-.btn {
-	padding: 10px 20px;
-	border: none;
-	border-radius: 5px;
-	cursor: pointer;
-	font-weight: 500; 
-}
-
-.pdf-btn {
-	background-color: #00b862;
-	color: #000000;
-	width: auto;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 10px;
-	min-width: 190px;
-}
-
-.filter-controls {
-	display: flex;
-	flex-direction: row;
-	gap: 12px; 
-	align-items: center; 
-	margin-bottom: 24px;
-	opacity: 0;
-	animation: fadeIn 0.6s ease-out forwards;
-	animation-delay: 0.1s;
-	flex-wrap: nowrap;
-}
-
-.date-filter {
-	flex: 0 1 auto;
-	min-width: 180px;
-	max-width: 200px;
-}
-
-.date-filter input {
-	width: 100%;
-	background-color: #1e1e1e;
-	color: #fff;
-	border: 1px solid #333;
-	padding: 10px 12px;
-	border-radius: 6px;
-	font-family: 'Roboto', sans-serif;
-	font-size: 14px;
-	font-weight: 400;
-	transition: all 0.2s ease;
-	box-sizing: border-box;
-}
-
-.date-filter input:focus {
-	outline: none;
-	border-color: #00b862;
-	box-shadow: 0 0 0 3px rgba(0, 184, 98, 0.1);
-}
-
-.date-filter input::-webkit-calendar-picker-indicator {
-	filter: invert(1);
-	cursor: pointer;
-}
-
-.btn-search {
-	background-color: #00b862;
-	color: #fff;
-	padding: 10px 20px;
-	border-radius: 6px;
-	font-family: 'Roboto', sans-serif;
-	font-size: 14px;
-	font-weight: 500;
-	border: none;
-	cursor: pointer;
-	transition: all 0.2s ease;
-	white-space: nowrap;
-	width: fit-content;
-	flex-shrink: 0;
-}
-
-.btn-search:hover {
-	background-color: #00a050;
-	transform: translateY(-1px);
-	box-shadow: 0 4px 8px rgba(0, 184, 98, 0.3);
-}
-
-/* Tabela */
-.table-container {
-	width: 100%;
-	overflow-x: auto;
-	overflow-y: auto;
-	background: #191a19;
-	border-radius: 8px;
-	opacity: 0;
-	transform: translateY(20px);
-	animation: fadeInUp 0.6s ease-out forwards;
-	animation-delay: 0.2s;
-	margin-bottom: 30px;
-}
-
-.table-container::-webkit-scrollbar {
-	width: 8px;
-	height: 8px; 
-}
-
-.table-container::-webkit-scrollbar-track {
-	background: #2a2a2a;
-}
-
-.table-container::-webkit-scrollbar-thumb {
-	background-color: #555; 
-	border-radius: 4px; 
-	border: 2px solid #2a2a2a; 
-}
-
-.table-container::-webkit-scrollbar-thumb:hover {
-	background-color: #888;
-}
-
-
-table {
-	width: 100%;
-	border-collapse: collapse;
-	margin: 0;
-}
-
-th, td {
-	padding: 14px 16px;
-	text-align: left;
-	border-bottom: 1px solid #333;
-	font-size: 13px;
-	white-space: nowrap;
-}
-
-th:first-child, td:first-child {
-	padding-left: 20px;
-}
-
-th:last-child, td:last-child {
-	padding-right: 20px;
-}
-
-thead th {
-	background-color: #252525;
-	color: #ddd;
-	font-weight: 600; 
-	text-transform: uppercase;
-	font-size: 11px; 
-}
-
-tbody tr {
-	color: rgb(182, 182, 182);
-	font-weight: 500;
-}
-
-tbody tr:hover {
-	background-color: #2a2a2a;
-}
-
-
-.status-dot {
-	display: inline-block;
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-}
-
-.status-dot.active {
-	background-color: #00b862; 
-}
-
-.status-dot.warning {
-	background-color: #ffc107; 
-}
-
-.status-dot.inactive {
-	background-color: #dc3545; 
-}
-
-.profit-col {
-	font-weight: bold;
-}
-
-.positive-profit {
-	color: #00b862; 
-}
-
-.negative-profit {
-	color: #dc3545; 
-}
-
-.bottom-summary-cards {
-	display: grid;
-	grid-template-columns: repeat(4, 1fr); 
-	gap: 16px;
-	margin-top: 24px;
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.bottom-card {
-	background-color: #1e1e1e;
-	padding: 12px 16px;
-	border-radius: 8px;
-	display: flex;
-	min-height: 70px;
-	align-items: center;
-	opacity: 0;
-	transform: translateY(20px);
-	animation: fadeInUp 0.6s ease-out forwards;
-	overflow: hidden;
-	box-sizing: border-box;
-	width: 100%;
-}
-
-/* Delays escalonados para cada card */
-.bottom-card:nth-child(1) { animation-delay: 0.3s; }
-.bottom-card:nth-child(2) { animation-delay: 0.4s; }
-.bottom-card:nth-child(3) { animation-delay: 0.5s; }
-.bottom-card:nth-child(4) { animation-delay: 0.6s; }
-
-.bottom-card .card-content {
-	display: flex;
-	flex-direction: row; 
-	justify-content: flex-start;
-	align-items: center;
-	text-align: left;
-	gap: 12px;
-	width: 100%;
-	min-width: 0;
-	overflow: hidden;
-}
-
-.card-content {
-	gap: 15px;
-}
-
-.card-icon {
-	filter: invert(100%); 
-	width: 30px;
-	height: 30px;
-	flex-shrink: 0;
-	object-fit: contain;
-}
-
-.card-text-group {
-	display: flex;
-	flex-direction: column-reverse;
-	align-items: flex-start;
-	justify-content: center;
-	gap: 2px;
-	flex: 1;
-	min-width: 0;
-	overflow: hidden;
-}
-
-.bottom-card .card-title {
-	font-size: 11px;
-	color: #a7a7a7;
-	margin: 0;
-	text-transform: uppercase;
-	font-weight: 500;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	width: 100%;
-	font-family: 'Roboto', sans-serif;
-	line-height: 1.4;
-}
-
-.bottom-card .card-value {
-	font-size: 16px;
-	font-weight: 700; 
-	margin: 0;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	width: 100%;
-	font-family: 'Roboto', sans-serif;
-	line-height: 1.4;
-}
-
-.card-value-white {
-	color: white;
-	font-family: 'Roboto', sans-serif;
-}
-
-.positive-profit {
-	color: #10b981;
-	font-family: 'Roboto', sans-serif;
-}
-
-/* Cards Mobile */
-.mobile-cards-container {
-	display: none;
-	flex-direction: column;
-	gap: 16px;
-	margin-bottom: 24px;
-}
-
-.mobile-bot-card {
-	background: #191a19;
-	border-radius: 12px;
-	padding: 20px;
-	border: 1px solid #2a2a2a;
-}
-
-.mobile-card-header {
-	margin-bottom: 16px;
-	padding-bottom: 12px;
-	border-bottom: 1px solid #333;
-}
-
-.mobile-card-title {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-
-.mobile-card-title h3 {
-	margin: 0;
-	font-size: 18px;
-	font-weight: 600;
-	color: #f8fafc;
-	font-family: 'Roboto', sans-serif;
-}
-
-.mobile-card-body {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
-.mobile-card-row {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 8px 0;
-}
-
-.mobile-card-label {
-	font-size: 12px;
-	color: #94a3b8;
-	font-weight: 500;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	font-family: 'Roboto', sans-serif;
-}
-
-.mobile-card-value {
-	font-size: 14px;
-	font-weight: 600;
-	color: #f8fafc;
-	font-family: 'Roboto', sans-serif;
-}
-
-.mobile-card-value.positive {
-	color: #10b981;
-}
-
-.mobile-card-value.negative {
-	color: #ef4444;
-}
-
-.mobile-card-value.positive-profit {
-	color: #10b981;
-	font-weight: 700;
-}
-
-.mobile-card-value.negative-profit {
-	color: #ef4444;
-	font-weight: 700;
-}
-
-/* Desktop - Esconder cards mobile, mostrar tabela */
-.desktop-table {
-	display: block;
-}
-
-@media (max-width: 1024px) {
-	.desktop-table {
-		display: none;
-	}
-
-	.mobile-cards-container {
-		display: flex;
-	}
-}
-
-
-/* Seção de Monitoramento de IA */
-.ai-monitoring-section {
-	background: rgba(30, 41, 59, 0.4);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 12px;
-	padding: 24px;
-	margin-bottom: 30px;
-	animation: fadeIn 0.5s ease-out 0.1s forwards;
-	opacity: 0;
-}
-
-.ai-monitoring-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 20px;
-}
-
-.ai-monitoring-header h2 {
-	font-size: 22px;
-	font-weight: 600;
-	color: #f8fafc;
-	margin: 0;
-}
-
-.btn-ai-toggle {
-	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-	color: white;
-	border: none;
-	padding: 12px 24px;
-	border-radius: 8px;
-	font-weight: 600;
-	cursor: pointer;
-	transition: all 0.3s ease;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-.btn-ai-toggle:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
-}
-
-.btn-ai-toggle.active {
-	background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-}
-
-.btn-ai-toggle.active:hover {
-	box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
-}
-
-.ai-monitoring-content {
-	animation: slideDown 0.4s ease-out;
-}
-
-.price-display-section {
-	display: grid;
-	grid-template-columns: 1fr 2fr 1fr;
-	gap: 20px;
-	margin-top: 20px;
-}
-
-.current-price-card,
-.last-10-prices-card,
-.statistics-card {
-	background: rgba(15, 23, 42, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.1);
-	border-radius: 10px;
-	padding: 20px;
-}
-
-.current-price-card h3,
-.last-10-prices-card h3,
-.statistics-card h3 {
-	font-size: 14px;
-	font-weight: 600;
-	color: #94a3b8;
-	margin: 0 0 16px 0;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
-
-.price-value {
-	font-size: 48px;
-	font-weight: 800;
-	color: #06d6a0;
-	text-align: center;
-	margin: 20px 0;
-	text-shadow: 0 0 20px rgba(6, 214, 160, 0.3);
-}
-
-.price-timestamp {
-	text-align: center;
-	font-size: 12px;
-	color: #64748b;
-	margin: 0;
-}
-
-.price-list {
-	max-height: 300px;
-	overflow-y: auto;
-}
-
-.price-item {
-	display: grid;
-	grid-template-columns: 30px 80px 80px 1fr;
-	gap: 10px;
-	padding: 8px 12px;
-	border-bottom: 1px solid rgba(148, 163, 184, 0.05);
-	align-items: center;
-	font-size: 13px;
-}
-
-.price-item:last-child {
-	border-bottom: none;
-}
-
-.price-number {
-	color: #64748b;
-	font-weight: 600;
-}
-
-.price-value-item {
-	color: #f8fafc;
-	font-weight: 600;
-	font-family: 'Courier New', monospace;
-}
-
-.price-time {
-	color: #94a3b8;
-	font-size: 11px;
-}
-
-.price-variation {
-	text-align: right;
-	font-weight: 600;
-	font-size: 12px;
-}
-
-.price-variation.positive {
-	color: #10b981;
-}
-
-.price-variation.negative {
-	color: #ef4444;
-}
-
-.price-variation.neutral {
-	color: #64748b;
-}
-
-.no-data {
-	text-align: center;
-	padding: 40px 20px;
-	color: #64748b;
-}
-
-.stats-grid {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 16px;
-}
-
-.stat-item {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 12px 16px;
-	background: rgba(30, 41, 59, 0.3);
-	border-radius: 8px;
-}
-
-.stat-label {
-	color: #94a3b8;
-	font-size: 13px;
-	font-weight: 500;
-}
-
-.stat-value {
-	color: #f8fafc;
-	font-size: 16px;
-	font-weight: 700;
-	font-family: 'Courier New', monospace;
-}
-
-.stat-value.positive {
-	color: #10b981;
-}
-
-.stat-value.negative {
-	color: #ef4444;
-}
-
-@keyframes slideDown {
-	from {
-		opacity: 0;
-		transform: translateY(-20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-    }
-}
-
-/* Seção de Trading Automático */
-.ai-trading-section {
-	background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(30, 41, 59, 0.4) 100%);
-	border: 1px solid rgba(16, 185, 129, 0.3);
-	border-radius: 12px;
-	padding: 24px;
-	margin-bottom: 30px;
-	animation: fadeIn 0.5s ease-out 0.2s forwards;
-	opacity: 0;
-	width: 100%;
-	box-sizing: border-box;
-}
-
-/* Banner de IA Ativa */
-.ai-active-banner {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	padding: 16px 20px;
-	background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 214, 160, 0.1));
-	border: 2px solid rgba(16, 185, 129, 0.5);
-	border-radius: 12px;
-	margin-bottom: 20px;
-	animation: pulseGlow 2s ease-in-out infinite;
-}
-
-.banner-icon {
-	font-size: 32px;
-	filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
-}
-
-.banner-content {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.banner-content strong {
-	font-size: 18px;
-	font-weight: 700;
-	color: #10b981;
-	letter-spacing: 1px;
-}
-
-.banner-content span {
-	font-size: 13px;
-	color: #94a3b8;
-}
-
-.banner-status {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 8px 16px;
-	background: rgba(16, 185, 129, 0.15);
-	border-radius: 8px;
-	font-size: 13px;
-	font-weight: 600;
-	color: #10b981;
-}
-
-.status-indicator {
-	width: 8px;
-	height: 8px;
-	background: #10b981;
-	border-radius: 50%;
-	animation: pulse 2s ease-in-out infinite;
-	box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
-}
-
-@keyframes pulseGlow {
-	0%, 100% {
-		box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
-	}
-	50% {
-		box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
-	}
-}
-
-@keyframes pulse {
-	0%, 100% {
-		opacity: 1;
-		transform: scale(1);
-	}
-	50% {
-		opacity: 0.6;
-		transform: scale(1.2);
-	}
-}
-
-.ai-trading-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 24px;
-	flex-wrap: wrap;
-	gap: 16px;
-}
-
-.ai-trading-header h2 {
-	font-size: 24px;
-	font-weight: 700;
-	color: #f8fafc;
-	margin: 0;
-}
-
-/* Configurações Fixas */
-.fixed-config-info {
-	display: flex;
-	gap: 20px;
-	margin-bottom: 20px;
-	padding: 16px;
-	background: rgba(30, 41, 59, 0.3);
-	border-radius: 8px;
-	border: 1px solid rgba(148, 163, 184, 0.1);
-}
-
-.config-info-item {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.config-info-item label {
-	font-size: 11px;
-	color: #94a3b8;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-}
-
-.config-info-item .fixed-value {
-	font-size: 14px;
-	color: #f8fafc;
-	font-weight: 600;
-}
-
-.trading-controls {
-	display: flex;
-	gap: 16px;
-	align-items: flex-end;
-	flex-wrap: wrap;
-}
-
-.input-group {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.mode-select {
-	padding: 10px 14px;
-	background: rgba(30, 41, 59, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 8px;
-	color: #f8fafc;
-	font-size: 14px;
-	cursor: pointer;
-	transition: all 0.3s ease;
-	font-family: inherit;
-}
-
-.mode-select:hover:not(:disabled) {
-	border-color: rgba(16, 185, 129, 0.4);
-	background: rgba(30, 41, 59, 0.8);
-}
-
-.mode-select:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
-.mode-select option {
-	background: #1e293b;
-	color: #f8fafc;
-	padding: 10px;
-}
-
-.input-group label {
-	font-size: 12px;
-	color: #94a3b8;
-	font-weight: 500;
-}
-
-.input-hint {
-	font-size: 10px;
-	color: #64748b;
-	font-style: italic;
-	margin-top: 2px;
-}
-
-.input-group input {
-	background: rgba(15, 23, 42, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 8px;
-	padding: 10px 14px;
-	color: #f8fafc;
-	font-size: 14px;
-	font-weight: 600;
-	width: 140px;
-	transition: all 0.2s ease;
-}
-
-.input-group input:focus {
-	outline: none;
-	border-color: #10b981;
-	box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-.input-group input:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
-.btn-save-config {
-	background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-	border: none;
-	border-radius: 8px;
-	padding: 10px 20px;
-	color: white;
-	font-weight: 600;
-	font-size: 13px;
-	cursor: pointer;
-	transition: all 0.3s ease;
-	box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-	margin-top: 8px;
-	width: 100%;
-}
-
-.btn-save-config:hover:not(:disabled) {
-	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-.btn-save-config:disabled {
-	opacity: 0.6;
-	cursor: not-allowed;
-	transform: none;
-}
-
-.config-message {
-	display: block;
-	margin-top: 8px;
-	padding: 8px 12px;
-	border-radius: 6px;
-	font-size: 12px;
-	font-weight: 500;
-	text-align: center;
-}
-
-.config-message.success {
-	background: rgba(16, 185, 129, 0.15);
-	color: #10b981;
-	border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.config-message.error {
-	background: rgba(239, 68, 68, 0.15);
-	color: #ef4444;
-	border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.btn-trading-toggle {
-	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-	border: none;
-	border-radius: 8px;
-	padding: 12px 24px;
-	color: white;
-	font-weight: 600;
-	font-size: 14px;
-	cursor: pointer;
-	transition: all 0.3s ease;
-	box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-}
-
-.btn-trading-toggle:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-}
-
-.btn-trading-toggle.active {
-	background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-	box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
-}
-
-.btn-trading-toggle.active:hover {
-	box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
-}
-
-.trading-active-content {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 20px;
-	margin-top: 20px;
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.active-trade-card,
-.next-trade-card {
-	background: rgba(15, 23, 42, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 12px;
-	padding: 20px;
-	grid-column: span 2;
-}
-
-.trade-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 20px;
-	padding-bottom: 16px;
-	border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-}
-
-.trade-header h3 {
-	font-size: 18px;
-	font-weight: 600;
-	color: #f8fafc;
-	margin: 0;
-}
-
-.trade-signal {
-	padding: 8px 16px;
-	border-radius: 20px;
-	font-size: 14px;
-	font-weight: 700;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-}
-
-.trade-signal.CALL {
-	background: rgba(16, 185, 129, 0.2);
-	color: #10b981;
-	border: 1px solid rgba(16, 185, 129, 0.4);
-}
-
-.trade-signal.PUT {
-	background: rgba(239, 68, 68, 0.2);
-	color: #ef4444;
-	border: 1px solid rgba(239, 68, 68, 0.4);
-}
-
-.trade-details {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 16px;
-	margin-bottom: 20px;
-}
-
-.detail-row {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 14px;
-	background: rgba(30, 41, 59, 0.3);
-	border-radius: 8px;
-}
-
-.detail-label {
-	color: #94a3b8;
-	font-size: 13px;
-	font-weight: 500;
-}
-
-.detail-value {
-	color: #f8fafc;
-	font-size: 16px;
-	font-weight: 700;
-	font-family: 'Courier New', monospace;
-}
-
-.detail-value.countdown {
-	color: #60a5fa;
-	font-size: 20px;
-}
-
-.detail-row.profit-row {
-	grid-column: span 2;
-	background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1));
-	border: 1px solid rgba(99, 102, 241, 0.3);
-	padding: 18px;
-}
-
-.detail-value.profit-value {
-	font-size: 24px;
-	font-weight: 800;
-	text-shadow: 0 0 10px currentColor;
-}
-
-.profit-progress-bar {
-	grid-column: span 2;
-	position: relative;
-	height: 50px;
-	background: rgba(30, 41, 59, 0.5);
-	border-radius: 12px;
-	overflow: hidden;
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	margin-top: 8px;
-}
-
-.progress-fill {
-	position: absolute;
-	left: 0;
-	top: 0;
-	height: 100%;
-	transition: width 0.5s ease, background 0.3s ease;
-	border-radius: 12px;
-}
-
-.progress-fill.positive {
-	background: linear-gradient(90deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.6));
-	box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
-}
-
-.progress-fill.negative {
-	background: linear-gradient(90deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.6));
-	box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
-}
-
-.progress-label {
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	transform: translate(-50%, -50%);
-	color: #f8fafc;
-	font-size: 16px;
-	font-weight: 700;
-	z-index: 10;
-	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.trade-reasoning {
-	padding: 16px;
-	background: rgba(59, 130, 246, 0.1);
-	border-left: 3px solid #3b82f6;
-	border-radius: 8px;
-	margin-top: 16px;
-}
-
-.trade-reasoning p {
-	margin: 0;
-	color: #cbd5e1;
-	font-size: 14px;
-	line-height: 1.6;
-}
-
-.next-trade-info {
-	display: flex;
-	align-items: center;
-	gap: 20px;
-	padding: 20px;
-}
-
-.timer-icon {
-	font-size: 48px;
-	animation: pulse 2s ease-in-out infinite;
-}
-
-.next-trade-info h3 {
-	font-size: 18px;
-	color: #f8fafc;
-	margin: 0 0 12px 0;
-	font-weight: 600;
-}
-
-.next-trade-info .countdown-text {
-	color: #06d6a0;
-	font-size: 20px;
-	margin: 0 0 8px 0;
-	font-family: 'Courier New', monospace;
-	font-weight: 700;
-}
-
-.next-trade-info .info-text {
-	color: #94a3b8;
-	font-size: 14px;
-	margin: 0;
-	font-style: italic;
-}
-
-.trading-stats-card {
-	grid-column: span 2;
-	background: rgba(15, 23, 42, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 12px;
-	padding: 20px;
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.trading-stats-card h3 {
-	font-size: 16px;
-	color: #f8fafc;
-	margin: 0 0 20px 0;
-	font-weight: 600;
-}
-
-.stats-row {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 16px;
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.stat-box {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding: 20px;
-	background: rgba(30, 41, 59, 0.3);
-	border-radius: 8px;
-	border: 1px solid rgba(148, 163, 184, 0.1);
-	transition: all 0.3s ease;
-}
-
-.stat-box:hover {
-	transform: translateY(-4px);
-	border-color: rgba(148, 163, 184, 0.3);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.stat-box.win {
-	border-color: rgba(16, 185, 129, 0.3);
-}
-
-.stat-box.loss {
-	border-color: rgba(239, 68, 68, 0.3);
-}
-
-.stat-number {
-	font-size: 32px;
-	font-weight: 700;
-	color: #f8fafc;
-	font-family: 'Courier New', monospace;
-	margin-bottom: 8px;
-}
-
-.stat-label {
-	font-size: 12px;
-	color: #94a3b8;
-	text-align: center;
-	font-weight: 500;
-}
-
-@keyframes pulse {
-	0%, 100% {
-		transform: scale(1);
-		opacity: 1;
-	}
-	50% {
-		transform: scale(1.1);
-		opacity: 0.8;
-    }
-}
-
-@media (max-width: 1024px) {
-	.main-content {
-		padding: 1.5rem 16px 1.5rem 16px;
-	}
-
-	.main-header {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 16px;
-		margin-bottom: 20px;
-	}
-	
-	.main-header-right {
-		width: 100%;
-	}
-	
-	.filter-controls {
-		flex-direction: row;
-		gap: 10px;
-		margin-bottom: 20px;
-	}
-	
-	.date-filter {
-		flex: 1;
-		min-width: 140px;
-	}
-
-	.date-filter input {
-		width: 100%;
-	}
-
-	.btn-search {
-		flex-shrink: 0;
-		padding: 10px 16px;
-	}
-
-	.pdf-btn {
-		width: 100%;
-		justify-content: center;
-	}
-
-	.bottom-summary-cards {
-		grid-template-columns: repeat(2, 1fr);
-		gap: 12px;
-		margin-top: 20px;
-	}
-}
-
-@media (max-width: 768px) {
-	.main-content {
-		padding: 1rem 12px 1rem 12px;
-	}
-
-	.main-header h1 {
-		font-size: 24px;
-	}
-
-	.main-header p {
-		font-size: 13px;
-	}
-
-	.filter-controls {
-		flex-direction: row;
-		gap: 10px;
-		flex-wrap: wrap;
-	}
-
-	.date-filter {
-		flex: 1 1 auto;
-		min-width: 140px;
-		max-width: none;
-	}
-
-	.btn-search {
-		width: 100%;
-	}
-
-	.bottom-summary-cards {
-		grid-template-columns: 1fr;
-		gap: 12px;
-	}
-}
-
-/* Histórico de Operações */
-.trade-history-card {
-	background: linear-gradient(145deg, #1e1e1e, #252525);
-	border-radius: 15px;
-	padding: 20px;
-	margin-top: 20px;
-	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.history-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 20px;
-}
-
-.history-header h3 {
-	margin: 0;
-	font-size: 1.3rem;
-	color: #fff;
-}
-
-.btn-refresh {
-	background: linear-gradient(135deg, #4A90E2, #357ABD);
-	border: none;
-	padding: 8px 15px;
-	border-radius: 8px;
-	color: #fff;
-	cursor: pointer;
-	font-size: 0.9rem;
-	transition: all 0.3s ease;
-}
-
-.btn-refresh:hover {
-	transform: scale(1.05);
-	box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
-}
-
-.history-table {
-	overflow-x: auto;
-}
-
-.history-table table {
-	width: 100%;
-	border-collapse: collapse;
-}
-
-.history-table thead th {
-	background: #2a2a2a;
-	padding: 12px;
-	text-align: left;
-	font-size: 0.9rem;
-	color: #999;
-	border-bottom: 2px solid #333;
-}
-
-.history-table tbody tr {
-	border-bottom: 1px solid #2a2a2a;
-	transition: background 0.2s;
-}
-
-.history-table tbody tr:hover {
-	background: #252525;
-}
-
-.history-table tbody td {
-	padding: 12px;
-	font-size: 0.95rem;
-}
-
-.signal-badge {
-	display: inline-block;
-	padding: 4px 10px;
-	border-radius: 6px;
-	font-size: 0.85rem;
-	font-weight: 600;
-}
-
-.signal-badge.call {
-	background: rgba(46, 204, 113, 0.2);
-	color: #2ecc71;
-}
-
-.signal-badge.put {
-	background: rgba(231, 76, 60, 0.2);
-	color: #e74c3c;
-}
-
-.status-badge {
-	display: inline-block;
-	padding: 4px 10px;
-	border-radius: 6px;
-	font-size: 0.85rem;
-	font-weight: 600;
-}
-
-.status-badge.won {
-	background: rgba(46, 204, 113, 0.2);
-	color: #2ecc71;
-}
-
-.status-badge.lost {
-	background: rgba(231, 76, 60, 0.2);
-	color: #e74c3c;
-}
-
-.profit-cell {
-	font-weight: 700;
-	font-size: 1rem;
-}
-
-.profit-cell.positive {
-	color: #2ecc71;
-}
-
-.profit-cell.negative {
-	color: #e74c3c;
-}
-
-.no-history {
-	text-align: center;
-	padding: 40px 20px;
-	color: #999;
-}
-
-.no-history p {
-	margin: 5px 0;
-}
-
-.no-history .hint {
-	font-size: 0.9rem;
-	color: #666;
-}
-
-/* Análise de Mercado */
-.market-analysis-section {
-	background: rgba(15, 23, 42, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 12px;
-	padding: 20px;
-	margin-top: 20px;
-	margin-bottom: 20px;
-}
-
-.market-analysis-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 16px;
-	flex-wrap: wrap;
-	gap: 12px;
-}
-
-.market-analysis-header h3 {
-	font-size: 18px;
-	color: #f8fafc;
-	margin: 0;
-	font-weight: 600;
-}
-
-.market-analysis-meta {
-	font-size: 12px;
-	color: #94a3b8;
-}
-
-.market-chart-container {
-	width: 100%;
-	height: 400px;
-	position: relative;
-	background: rgba(9, 10, 12, 0.5);
-	border-radius: 8px;
-	overflow: hidden;
-}
-
-.market-chart-wrapper {
-	width: 100%;
-	height: 100%;
-}
-
-.chart-placeholder {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	height: 100%;
-	color: #64748b;
-	font-size: 14px;
-}
-
-.chart-placeholder p {
-	margin: 4px 0;
-}
-
-.chart-placeholder-hint {
-	font-size: 12px;
-	color: #475569;
-	font-style: italic;
-}
-
-/* Controles do gráfico (IA ativa) */
-.chart-controls-active {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-top: 8px;
-}
-
-.chart-controls-active .zoom-buttons {
-	display: inline-flex;
-	border: 1px solid #1A1A1A;
-	border-radius: 8px;
-	overflow: hidden;
-}
-
-.chart-controls-active .zoom-btn {
-	padding: 6px 10px;
-	font-size: 12px;
-	color: #DFDFDF;
-	background: #0B0B0B;
-	border: none;
-	cursor: pointer;
-	transition: all 0.2s ease;
-}
-
-.chart-controls-active .zoom-btn:not(.active):hover {
-	background: #1A1A1A;
-}
-
-.chart-controls-active .zoom-btn.active {
-	background: #22C55E;
-	color: #0B0B0B;
-	font-weight: 600;
-}
-
-.chart-controls-active .type-toggle {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	padding: 6px 12px;
-	font-size: 12px;
-	color: #DFDFDF;
-	background: #0B0B0B;
-	border: 1px solid #1A1A1A;
-	border-radius: 8px;
-	cursor: pointer;
-	transition: all 0.2s ease;
-}
-
-.chart-controls-active .type-toggle:hover {
-	border-color: #22C55E;
-	color: #22C55E;
-}
-
-/* Gráfico de Ticks (mantido para compatibilidade) */
-.ticks-chart-container {
-	background: rgba(15, 23, 42, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 12px;
-	padding: 20px;
-	margin-top: 20px;
-	margin-bottom: 20px;
-}
-
-.ticks-chart-container h3 {
-	font-size: 16px;
-	color: #f8fafc;
-	margin: 0 0 16px 0;
-	font-weight: 600;
-}
-
-.chart-wrapper-ticks {
-	width: 100%;
-	height: 200px;
-	position: relative;
-}
-
-/* Animações */
-@keyframes fadeInUp {
-	from {
-		opacity: 0;
-		transform: translateY(20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
-}
-
-
-
-/* Tooltip Styles */
-.tooltip-container {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	cursor: help;
-	margin-left: 4px;
-	vertical-align: middle;
-}
-
-.icon-help {
-	width: 14px;
-	height: 14px;
-	color: #94a3b8;
-	transition: color 0.2s;
-	flex-shrink: 0;
-}
-
-.icon-help:hover {
-	color: #fff;
-}
-
-.tooltip-text {
-	visibility: hidden;
-	opacity: 0;
-	background-color: #1e293b;
-	color: #fff;
-	text-align: left;
-	padding: 8px 12px;
-	border-radius: 6px;
-	font-size: 12px;
-	width: max-content;
-	max-width: 250px;
-	white-space: nowrap;
-	position: absolute;
-	z-index: 10000;
-	bottom: 100%;
-	left: 50%;
-	margin-bottom: 8px;
-	transform: translateX(-50%);
-	transition: opacity 0.2s ease, visibility 0.2s ease;
-	pointer-events: none;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-	border: 1px solid #334155;
-	text-transform: capitalize;
-}
-
-.tooltip-text::after {
-	content: "";
-	position: absolute;
-	top: 100%;
-	left: 50%;
-	margin-left: -5px;
-	border-width: 5px;
-	border-style: solid;
-	border-color: #1e293b transparent transparent transparent;
-}
-
-.tooltip-container:hover .tooltip-text {
-	visibility: visible;
-	opacity: 1;
-}
-
-/* Ajustes para labels com tooltips */
-.info-label,
-.status-label,
-.precision-label,
-.config-field label,
-.config-info-item label {
-	display: inline-flex;
-	align-items: center;
-	position: relative;
-	flex-wrap: wrap;
-	gap: 4px;
-}
-
-/* ========================================================== */
-/* Performance Cards Styles (IA Ativa)                       */
-/* ========================================================== */
-
-.performance-summary-section {
-	margin-bottom: 1.5rem;
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.performance-cards-grid {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 1rem;
-	margin-bottom: 1rem;
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.performance-card {
-	padding: 1.25rem;
-	background-color: rgba(15, 23, 42, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 12px;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	box-sizing: border-box;
-	min-height: 140px;
-}
-
-.card-header-row {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 0.75rem;
-}
-
-.card-label {
-	font-size: 0.75rem;
-	color: #94a3b8;
-	font-weight: 500;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
-
-.eye-btn {
-	cursor: pointer;
-	transition: all 0.2s ease;
-	opacity: 0.6;
-	background: none;
-	border: none;
-	color: #94a3b8;
-	padding: 0.25rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.eye-btn:hover {
-	opacity: 1;
-	color: #22C55E;
-}
-
-.eye-btn i {
-	font-size: 0.875rem;
-}
-
-.card-value-large {
-	margin-bottom: 0.75rem;
-}
-
-.card-value-large span {
-	font-size: 1.875rem;
-	font-weight: 700;
-	color: #f8fafc;
-}
-
-.hidden-value::before {
-	content: "••••••";
-	letter-spacing: 2px;
-}
-
-.hidden-value {
-	color: transparent !important;
-	font-size: 1.875rem !important;
-	font-weight: 700 !important;
-}
-
-.card-actions-row {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-}
-
-.account-type-btn {
-	padding: 0.375rem 0.75rem;
-	border-radius: 0.5rem;
-	font-size: 0.75rem;
-	font-weight: 600;
-	border: none;
-	cursor: pointer;
-	transition: all 0.3s ease;
-	background-color: rgba(15, 23, 42, 0.8);
-	color: #94a3b8;
-	border: 1px solid rgba(148, 163, 184, 0.2);
-}
-
-.account-type-btn.active {
-	background-color: #22C55E;
-	color: #000;
-	border-color: #22C55E;
-}
-
-.profit-value.positive {
-	color: #22C55E;
-}
-
-.profit-value.negative {
-	color: #EF4444;
-}
-
-.profit-percentage {
-	font-size: 0.875rem;
-	font-weight: 500;
-	display: block;
-}
-
-.profit-percentage.positive {
-	color: #22C55E;
-}
-
-.profit-percentage.negative {
-	color: #EF4444;
-}
-
-.trades-stats-row {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	font-size: 0.75rem;
-	margin-top: 0.5rem;
-}
-
-/* Status Card */
-.status-card {
-	padding: 1.25rem;
-	margin-top: 1rem;
-	background-color: rgba(15, 23, 42, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 12px;
-}
-
-.status-card-content {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 1rem;
-}
-
-.status-card-left {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	flex: 1;
-}
-
-.ai-status-widget {
-	position: relative;
-	width: 3rem;
-	height: 3rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.ai-status-bg {
-	position: absolute;
-	inset: 0;
-	background-color: rgba(11, 11, 11, 0.5);
-	border: 1px solid #1C1C1C;
-	border-radius: 0.5rem;
-}
-
-.ai-status-content {
-	position: relative;
-	z-index: 10;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 0.375rem;
-}
-
-.ai-status-spinner-wrapper {
-	position: relative;
-}
-
-.ai-status-pulse-bg {
-	position: absolute;
-	inset: 0;
-	background-color: rgba(255, 208, 88, 0.2);
-	border-radius: 9999px;
-	filter: blur(12px);
-	animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.ai-status-spinner {
-	position: relative;
-	width: 2.5rem;
-	height: 2.5rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.spinner-svg {
-	width: 1.75rem;
-	height: 1.75rem;
-	color: #FFD058;
-	animation: spin 3s linear infinite;
-}
-
-@keyframes spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
-}
-
-.status-text-content {
-	flex: 1;
-	text-align: left;
-}
-
-.status-title {
-	font-size: 0.875rem;
-	font-weight: 600;
-	color: #f8fafc;
-	margin-bottom: 0.25rem;
-	text-align: left;
-}
-
-.status-subtitle-row {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	font-size: 0.75rem;
-	text-align: left;
-}
-
-.status-indicator-text {
-	font-weight: 500;
-	color: #FFD058;
-}
-
-.status-indicator-dot {
-	color: #94a3b8;
-}
-
-.status-indicator-subtext {
-	color: #94a3b8;
-}
-
-.status-card-right {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-}
-
-.ai-online-indicator {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-}
-
-.ai-pulse-dot {
-	width: 8px;
-	height: 8px;
-	background: #22C55E;
-	border-radius: 50%;
-	animation: pulse 2s ease-in-out infinite;
-	box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
-}
-
-.deactivate-ai-btn-new {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	padding: 0.5rem 1rem;
-	background-color: rgba(239, 68, 68, 0.1);
-	color: #EF4444;
-	border: 1px solid rgba(239, 68, 68, 0.3);
-	border-radius: 0.5rem;
-	font-size: 0.75rem;
-	font-weight: 600;
-	cursor: pointer;
-	transition: all 0.3s ease;
-}
-
-.deactivate-ai-btn-new:hover:not(:disabled) {
-	background-color: rgba(239, 68, 68, 0.2);
-	border-color: rgba(239, 68, 68, 0.5);
-}
-
-.deactivate-ai-btn-new:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
-.deactivate-ai-btn-new i {
-	font-size: 0.875rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-	.performance-cards-grid {
-		grid-template-columns: repeat(2, 1fr);
-		width: 100%;
-		gap: 1rem;
-	}
-	
-	.stats-row {
-		grid-template-columns: repeat(2, 1fr);
-		width: 100%;
-	}
-	
-	.trading-active-content {
-		grid-template-columns: 1fr;
-		width: 100%;
-	}
-	
-	.trading-stats-card {
-		grid-column: span 1;
-		width: 100%;
-	}
-}
-
-@media (max-width: 768px) {
-	.performance-cards-grid {
-		grid-template-columns: 1fr;
-		width: 100%;
-		gap: 1rem;
-	}
-	
-	.stats-row {
-		grid-template-columns: 1fr;
-		width: 100%;
-	}
-	
-	.trading-active-content {
-		grid-template-columns: 1fr;
-		width: 100%;
-	}
-	
-	.trading-stats-card {
-		grid-column: span 1;
-		width: 100%;
-	}
-	
-	.status-card-content {
-		flex-direction: column;
-		align-items: flex-start;
-	}
-	
-	.status-card-right {
-		width: 100%;
-		justify-content: space-between;
-	}
-}
-
-
-/* Mobile Styles */
-@media (max-width: 1024px) {
-	.dashboard-layout {
-		flex-direction: column;
-	}
-
-	.dashboard-content-wrapper {
-		margin-left: 0 !important;
-		width: 100%;
-	}
-
-	.sidebar-overlay {
-		display: block;
-	}
-
-	.layout-content {
-		padding-top: 80px; /* Espaço para TopNavbar mobile */
-		padding: 20px;
-		padding-top: 80px;
-		overflow-x: hidden;
-		box-sizing: border-box;
-		width: 100%;
-	}
-
-	/* Sidebar mobile */
-	:deep(.sidebar) {
-		position: fixed;
-		width: 280px !important;
-		height: 100vh;
-		z-index: 1000;
-		transform: translateX(-100%);
-		transition: transform 0.3s ease-out;
-	}
-
-	/* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
-	:deep(.sidebar.is-open) {
-		transform: translateX(0);
-		z-index: 999999 !important;
-	}
-
-	.main-header {
-		padding-left: 0;
-	}
-}
-
-@media (max-width: 480px) {
-	.layout-content {
-		padding: 10px;
-		padding-top: 70px;
-		overflow-x: hidden;
-		box-sizing: border-box;
-		width: 100%;
-	}
-}
-</style>
+<style scoped src="@/assets/css/investment-ia.css"></style>

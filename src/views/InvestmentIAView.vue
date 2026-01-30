@@ -976,7 +976,7 @@ export default {
                     return;
                 }
 
-                console.log('[InvestmentIAView] ===== ATIVANDO IA (FRONTEND MODE) =====');
+                console.log('[InvestmentIAView] ===== ATIVANDO IA (NOVA LÓGICA) =====');
                 
                 // Validação de saldo mínimo
                 const currentBalance = this.balanceNumeric || 0;
@@ -989,40 +989,48 @@ export default {
                     return;
                 }
 
+                // Validar stake mínimo
+                if (this.entryValue < 0.35) {
+                    console.warn('[InvestmentIAView] ⚠️ Valor mínimo de entrada: $0.35');
+                    this.showMinimumStakeModal = true;
+                    this.isActivating = false;
+                    return;
+                }
+
                 // Carregar Configuração da Estratégia do Preset
                 const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
                 if (!strategyPreset) {
                     this.$root.$toast.error('Configuração da estratégia não encontrada!');
+                    this.isActivating = false;
                     return;
                 }
 
-                // ✅ Resetar Dados da Sessão (Zerado)
-                this.dailyStats = {
-                    profitLoss: 0,
-                    profitLossPercent: 0,
-                    totalTrades: 0,
-                    winrate: 0,
-                    wins: 0,
-                    losses: 0
+                // ✅ Salvar configuração no localStorage
+                const config = {
+                    strategy: this.selectedStrategy,
+                    strategyName: strategyPreset.name,
+                    stake: this.entryValue,
+                    profitTarget: this.profitTarget,
+                    lossLimit: this.lossLimit,
+                    mode: this.mode,
+                    modoMartingale: this.modoMartingale,
+                    stoplossBlindado: this.stoplossBlindado,
+                    market: this.selectedMarket
                 };
-                this.realtimeLogs = [];
-                this.logOperations = [];
 
-                // Configurar filtros ativos baseados no preset
-                this.activeFilters = JSON.parse(JSON.stringify(strategyPreset.config.form.attackFilters));
-                this.isRecoveryActive = false;
-                this.consecutiveLosses = 0;
+                localStorage.setItem('ai_active_config', JSON.stringify(config));
+                console.log('[InvestmentIAView] ✅ Configuração salva no localStorage:', config);
 
-                // Iniciar Conexão WebSocket Local
-                this.isInvestmentActive = true;
-                this.isMonitoring = true;
-                this.initTickConnection();
-                
-                this.addLog(`🚀 IA ${strategyPreset.name} Iniciada com sucesso!`, 'success');
-                this.$root.$toast.success('IA iniciada com sucesso (Frontend Mode)!');
+                this.$root.$toast.success(`IA ${strategyPreset.name} ativada! Redirecionando...`);
+
+                // ✅ Redirecionar para página de monitoramento
+                setTimeout(() => {
+                    this.$router.push('/StatsIAs/monitoring');
+                }, 500);
 
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', error);
+                this.$root.$toast.error('Erro ao ativar IA');
             } finally {
                 this.isActivating = false;
             }
