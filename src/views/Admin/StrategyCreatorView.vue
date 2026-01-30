@@ -194,8 +194,8 @@
                                 class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <div class="flex items-center gap-3">
-                                    <img v-if="selectedTradeTypeGroupIcon" :src="selectedTradeTypeGroupIcon" class="w-6 h-6 contrast-[1.5] brightness-[1.5]" alt="" />
-                                    <span class="font-medium text-lg">{{ selectedTradeTypeGroupLabel }}</span>
+                                    <img v-if="selectedTradeTypeIcon" :src="selectedTradeTypeIcon" class="w-6 h-6 contrast-[1.5] brightness-[1.5]" alt="" />
+                                    <span class="font-medium text-lg">{{ selectedTradeTypeLabel }}</span>
                                 </div>
                                 <i class="fa-solid fa-chevron-down text-gray-400"></i>
                             </button>
@@ -1101,11 +1101,11 @@ export default {
             }
             return this.form.tradeType;
         },
-        selectedTradeTypeGroupIcon() {
-            if (!this.form.selectedTradeTypeGroup) return null;
+        selectedTradeTypeIcon() {
+            if (!this.form.tradeType) return null;
             
             for (const cat of this.tradeTypeCategories) {
-                const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
+                const item = cat.items.find(i => i.value === this.form.tradeType);
                 if (item && item.icon) return `/deriv_icons/${item.icon}`;
             }
             return null;
