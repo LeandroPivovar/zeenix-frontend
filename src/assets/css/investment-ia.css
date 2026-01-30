@@ -2138,87 +2138,10 @@
 .agent-option-premium.active {
     border-color: #22C55E;
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(13, 26, 16, 0.8) 100%);
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.05);
-    background: rgba(34, 197, 94, 0.03);
-    /* Very subtle green tint */
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
 }
 
-.active-check-circle {
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    width: 16px;
-    height: 16px;
-    background: #22C55E;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-    z-index: 10;
-}
 
-.active-check-circle i {
-    font-size: 8px !important;
-    color: #000 !important;
-    filter: none !important;
-}
-
-.active-status-badge {
-    background: rgba(34, 197, 94, 0.2);
-    color: #22C55E;
-    font-size: 0.6rem;
-    font-weight: 800;
-    padding: 2px 6px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.agent-option-title.text-zenix-green {
-    color: #22C55E !important;
-}
-
-.agent-option-footer-stats-list {
-    margin-top: 0.5rem;
-    padding-left: calc(48px + 1rem);
-    /* Align with text, skipping icon */
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.stat-row {
-    display: flex;
-    align-items: baseline;
-    gap: 5px;
-    font-size: 0.75rem;
-    line-height: 1.4;
-}
-
-.stat-label-list {
-    color: #888;
-    font-weight: 600;
-}
-
-.stat-value-list {
-    color: #ccc;
-    font-weight: 500;
-}
-
-.stat-value-list.text-zenix-green {
-    color: #22C55E !important;
-}
-
-.desc-truncate {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    color: #666;
-    font-size: 0.7rem;
-}
 
 .agent-option-content {
     display: flex;
@@ -2244,544 +2167,535 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    margin-right: 1rem;
-    flex-shrink: 0;
-    position: relative;
-    /* Adjust size for image */
-    width: 48px;
-    height: 48px;
-    background: #0f0f0f;
-    /* Dark background for icon box */
-    border: none;
-}
 
-.strategy-icon-box-large i {
-    font-size: 2.5rem;
-    color: #FFFFFF !important;
-    background: none !important;
-    -webkit-background-clip: border-box !important;
-    background-clip: border-box !important;
-    -webkit-text-fill-color: currentColor !important;
-    transition: all 0.3s ease;
-    will-change: filter;
-    /* Neon Glow Effect - Shape Following */
-    filter: drop-shadow(0 0 3px #22C55E) drop-shadow(0 0 5px #22C55E);
-}
 
-/* Strategy Specific Glows */
-/* Strategy Specific Glows */
-/* Strategy Specific Glows - REDESIGNED: Unified Green Drop-Shadow */
+    .strategy-icon-box-large i {
+        font-size: 2.5rem;
+        color: #FFFFFF !important;
+        background: none !important;
+        -webkit-background-clip: border-box !important;
+        background-clip: border-box !important;
+        -webkit-text-fill-color: currentColor !important;
+        transition: all 0.3s ease;
+        will-change: filter;
+        /* Neon Glow Effect - Shape Following */
+        filter: drop-shadow(0 0 3px #22C55E) drop-shadow(0 0 5px #22C55E);
+    }
 
-.strategy-icon-box-large.atlas i {
-    /* Color handled by generic rule, specific override removed */
-    background: none !important;
-    -webkit-background-clip: border-box !important;
-    background-clip: border-box !important;
-    -webkit-text-fill-color: currentColor !important;
-    color: #FFFFFF !important;
-}
+    /* Strategy Specific Glows */
+    /* Strategy Specific Glows */
+    /* Strategy Specific Glows - REDESIGNED: Unified Green Drop-Shadow */
 
-.agent-selection-card.active .strategy-icon-box-large.atlas {
-    transform: scale(1.1);
-}
+    .strategy-icon-box-large.atlas i {
+        /* Color handled by generic rule, specific override removed */
+        background: none !important;
+        -webkit-background-clip: border-box !important;
+        background-clip: border-box !important;
+        -webkit-text-fill-color: currentColor !important;
+        color: #FFFFFF !important;
+    }
 
-/* Removed previous i rule to avoid duplication if cleaner wasn't perfect */
+    .agent-selection-card.active .strategy-icon-box-large.atlas {
+        transform: scale(1.1);
+    }
+
+    /* Removed previous i rule to avoid duplication if cleaner wasn't perfect */
 
 
 
-.strategy-icon-box-large.apollo i {
-    /* Color handled by generic rule, specific override removed */
-    background: none !important;
-    -webkit-background-clip: border-box !important;
-    background-clip: border-box !important;
-    -webkit-text-fill-color: currentColor !important;
-    color: #FFFFFF !important;
-}
+    .strategy-icon-box-large.apollo i {
+        /* Color handled by generic rule, specific override removed */
+        background: none !important;
+        -webkit-background-clip: border-box !important;
+        background-clip: border-box !important;
+        -webkit-text-fill-color: currentColor !important;
+        color: #FFFFFF !important;
+    }
 
-.agent-selection-card.active .strategy-icon-box-large.apollo {
-    transform: scale(1.1);
-}
+    .agent-selection-card.active .strategy-icon-box-large.apollo {
+        transform: scale(1.1);
+    }
 
-/* Removed duplicate Apollo rule */
-
-
-
-.strategy-icon-box-large.nexus i {
-    /* Color handled by generic rule, specific override removed */
-    background: none !important;
-    -webkit-background-clip: border-box !important;
-    background-clip: border-box !important;
-    -webkit-text-fill-color: currentColor !important;
-    color: #FFFFFF !important;
-}
-
-.agent-selection-card.active .strategy-icon-box-large.nexus {
-    transform: scale(1.1);
-}
+    /* Removed duplicate Apollo rule */
 
 
 
-.strategy-icon-box-large.orion i {
-    /* Color handled by generic rule, specific override removed */
-    background: none !important;
-    -webkit-background-clip: border-box !important;
-    background-clip: border-box !important;
-    -webkit-text-fill-color: currentColor !important;
-    color: #FFFFFF !important;
-}
+    .strategy-icon-box-large.nexus i {
+        /* Color handled by generic rule, specific override removed */
+        background: none !important;
+        -webkit-background-clip: border-box !important;
+        background-clip: border-box !important;
+        -webkit-text-fill-color: currentColor !important;
+        color: #FFFFFF !important;
+    }
 
-.agent-selection-card.active .strategy-icon-box-large.orion {
-    transform: scale(1.1);
-}
+    .agent-selection-card.active .strategy-icon-box-large.nexus {
+        transform: scale(1.1);
+    }
 
 
-.strategy-icon-box-large.titan i {
-    /* Color handled by generic rule, specific override removed */
-    background: none !important;
-    -webkit-background-clip: border-box !important;
-    background-clip: border-box !important;
-    -webkit-text-fill-color: currentColor !important;
-    color: #FFFFFF !important;
-}
 
-.agent-selection-card.active .strategy-icon-box-large.titan {
-    transform: scale(1.1);
-}
+    .strategy-icon-box-large.orion i {
+        /* Color handled by generic rule, specific override removed */
+        background: none !important;
+        -webkit-background-clip: border-box !important;
+        background-clip: border-box !important;
+        -webkit-text-fill-color: currentColor !important;
+        color: #FFFFFF !important;
+    }
 
-.strategy-icon-box-large.nexus i:first-child {
-    font-size: 1rem;
-    transform: translate(-3px, -3px);
-}
+    .agent-selection-card.active .strategy-icon-box-large.orion {
+        transform: scale(1.1);
+    }
 
-.mini-shield {
-    position: absolute;
-    font-size: 0.75rem;
-    bottom: 8px;
-    right: 8px;
-    color: #22C55E;
-    background: #111;
-    border-radius: 50%;
-    padding: 2px;
-}
 
-.agent-option-main-info {
-    flex: 1;
-    text-align: left;
-}
+    .strategy-icon-box-large.titan i {
+        /* Color handled by generic rule, specific override removed */
+        background: none !important;
+        -webkit-background-clip: border-box !important;
+        background-clip: border-box !important;
+        -webkit-text-fill-color: currentColor !important;
+        color: #FFFFFF !important;
+    }
 
-.agent-option-title {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #fff;
-    margin: 0 0 2px 0;
-}
+    .agent-selection-card.active .strategy-icon-box-large.titan {
+        transform: scale(1.1);
+    }
 
-.agent-option-desc {
-    font-size: 0.675rem;
-    color: #A1A1A1;
-    margin: 0;
-    line-height: 1.3;
-}
+    .strategy-icon-box-large.nexus i:first-child {
+        font-size: 1rem;
+        transform: translate(-3px, -3px);
+    }
 
-/* 
+    .mini-shield {
+        position: absolute;
+        font-size: 0.75rem;
+        bottom: 8px;
+        right: 8px;
+        color: #22C55E;
+        background: #111;
+        border-radius: 50%;
+        padding: 2px;
+    }
+
+    .agent-option-main-info {
+        flex: 1;
+        text-align: left;
+    }
+
+    .agent-option-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0 0 2px 0;
+    }
+
+    .agent-option-desc {
+        font-size: 0.675rem;
+        color: #A1A1A1;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+    /* 
    UI Refinements 
    Requested by user: 2026-01-30 
 */
 
-/* 1. Active Config Card Height */
-.config-card {
-    height: fit-content !important;
-}
-
-/* 2. Font Size Updates - Changing 12px back to 14px for general labels */
-.card-title,
-.form-label {
-    font-size: 14px !important;
-}
-
-/* 3. Specific Title "ia em funcionamento e controle manual" to 12px */
-/* Assuming this refers to .ai-status-title inside .ai-status-control-simple */
-.ai-status-control-simple .ai-status-info .form-label {
-    font-size: 12px !important;
-    color: rgb(196, 194, 194) !important;
-    /* "ia em funcionamento" specific color request */
-    text-transform: uppercase;
-}
-
-/* 4. Subtitle "monitorando..." color */
-.ai-status-subtitle {
-    color: rgb(124, 124, 124) !important;
-}
-
-/* 5. Titles "proteçoes", "ia em funcionamento", "controle manual" color */
-.loss-stoploss-row .form-label,
-.risk-management-section .form-label,
-.ai-status-group .form-label {
-    color: rgb(196, 194, 194) !important;
-}
-
-/* 6. SVGs (Atlas, Apollo, Orion, Titan) Size and Color */
-.strategy-icon-box-large i {
-    font-size: 2.5rem !important;
-    /* Increased size */
-    color: #22C55E !important;
-}
-
-/* 7. Footer Stats Alignment */
-.agent-option-footer-stats {
-    justify-content: center !important;
-    text-align: center !important;
-}
-
-/* 8. Orion IA Background Lighter */
-.agent-description-card.orion {
-    background-color: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Additional specific adjustments to match "ia em funcionamento" title request if needed */
-.ai-status-title {
-    font-size: 12px !important;
-    color: rgb(196, 194, 194) !important;
-}
-
-.agent-option-arrow {
-    color: #333;
-    font-size: 0.875rem;
-    transition: transform 0.2s;
-}
-
-.agent-option-premium:hover .agent-option-arrow {
-    color: #22C55E;
-    transform: translateX(3px);
-}
-
-.agent-option-footer-stats {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.stat-label {
-    font-size: 0.625rem;
-    text-transform: uppercase;
-    color: #666;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-.stat-value {
-    font-size: 0.75rem;
-    color: #DFDFDF;
-    font-weight: 600;
-}
-
-.stat-value.highlight {
-    color: #22C55E;
-}
-
-.stat-divider {
-    width: 1px;
-    height: 12px;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.agent-option-premium:not(.active) {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.agent-option-premium:not(.active) .agent-option-title {
-    color: #AAA;
-}
-
-
-
-/* Animations */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-    transition: all 0.3s ease;
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-    transform: translateY(-10px);
-    opacity: 0;
-}
-
-/* Responsive */
-@media (min-width: 769px) {
-    .agents-modal-list {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
-        justify-content: flex-start !important;
-        gap: 1.25rem !important;
+    /* 1. Active Config Card Height */
+    .config-card {
+        height: fit-content !important;
     }
 
-    .agent-option-premium {
-        width: calc(50% - 0.7rem);
-        flex-grow: 1;
-        max-width: 48%;
-        /* Ensure 2 per row mostly */
-    }
-}
-
-/* Ajustes para mobile */
-@media (max-width: 1024px) {
-    .content-wrapper {
-        margin-left: 0 !important;
-        width: 100% !important;
+    /* 2. Font Size Updates - Changing 12px back to 14px for general labels */
+    .card-title,
+    .form-label {
+        font-size: 14px !important;
     }
 
-    .content-wrapper.sidebar-collapsed {
-        margin-left: 0 !important;
-        width: 100% !important;
+    /* 3. Specific Title "ia em funcionamento e controle manual" to 12px */
+    /* Assuming this refers to .ai-status-title inside .ai-status-control-simple */
+    .ai-status-control-simple .ai-status-info .form-label {
+        font-size: 12px !important;
+        color: rgb(196, 194, 194) !important;
+        /* "ia em funcionamento" specific color request */
+        text-transform: uppercase;
     }
 
-    /* Sidebar como drawer no mobile */
-    :deep(.sidebar) {
-        position: fixed;
-        width: 280px !important;
-        height: 100vh;
-        z-index: 999;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-out;
+    /* 4. Subtitle "monitorando..." color */
+    .ai-status-subtitle {
+        color: rgb(124, 124, 124) !important;
     }
 
-    /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
-    :deep(.sidebar.is-open) {
-        transform: translateX(0);
-        z-index: 99999999 !important;
+    /* 5. Titles "proteçoes", "ia em funcionamento", "controle manual" color */
+    .loss-stoploss-row .form-label,
+    .risk-management-section .form-label,
+    .ai-status-group .form-label {
+        color: rgb(196, 194, 194) !important;
     }
 
-    /* Modal de Settings deve sobrepor tudo no mobile, incluindo TopNavbar */
-    /* ForÃ§ar z-index muito alto para garantir que sobreponha o TopNavbar (z-index: 1002) */
-    :deep(.settings-modal-overlay) {
-        z-index: 100000 !important;
-        top: 0 !important;
-        height: 100vh !important;
-        position: fixed !important;
+    /* 6. SVGs (Atlas, Apollo, Orion, Titan) Size and Color */
+    .strategy-icon-box-large i {
+        font-size: 2.5rem !important;
+        /* Increased size */
+        color: #22C55E !important;
     }
 
-    :deep(.settings-modal-content) {
-        z-index: 100000 !important;
-        top: 0 !important;
-        height: 100vh !important;
-        position: fixed !important;
+    /* 7. Footer Stats Alignment */
+    .agent-option-footer-stats {
+        justify-content: center !important;
+        text-align: center !important;
     }
 
-    /* Garantir que TopNavbar fique abaixo do modal quando aberto */
-    #top-navbar {
-        z-index: 1002 !important;
-    }
-}
-
-/* Header Mobile - Escondido no desktop */
-#ai-vision-panel .ai-vision-header-mobile {
-    display: none;
-}
-
-/* Estilos especÃ­ficos para VisÃ£o da IA no Mobile */
-@media (max-width: 768px) {
-
-    /* Remove o fundo do container principal da VisÃ£o da IA */
-    #ai-vision-panel .ai-vision-container {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
+    /* 8. Orion IA Background Lighter */
+    .agent-description-card.orion {
+        background-color: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Esconde header desktop, mostra mobile */
-    #ai-vision-panel .ai-vision-header-desktop {
-        display: none !important;
+    /* Additional specific adjustments to match "ia em funcionamento" title request if needed */
+    .ai-status-title {
+        font-size: 12px !important;
+        color: rgb(196, 194, 194) !important;
     }
 
-    #ai-vision-panel .ai-vision-header-mobile {
-        display: block !important;
-        margin-bottom: 0;
-        background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, .3) 0, rgba(0, 1, 0, .1) 70%, transparent 100%);
-        border-radius: .75rem;
-        padding: 1rem 0 0;
-    }
-
-    #ai-vision-panel .ai-vision-header-mobile h1 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #DFDFDF;
-        margin-bottom: 0.25rem;
-    }
-
-    #ai-vision-panel .ai-vision-header-mobile p {
+    .agent-option-arrow {
+        color: #333;
         font-size: 0.875rem;
-        color: #A1A1A1;
+        transition: transform 0.2s;
     }
 
-    #ai-vision-panel .ai-chip-icon-mobile {
+    .agent-option-premium:hover .agent-option-arrow {
+        color: #22C55E;
+        transform: translateX(3px);
+    }
+
+    .agent-option-footer-stats {
         display: flex;
         align-items: center;
-        justify-content: center;
-        background-color: rgba(34, 197, 94, 0.15);
-        padding: 15px;
-        border-radius: 50%;
-        width: auto;
-        height: auto;
+        gap: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    /* Esconde a Ã¡rea de visualizaÃ§Ã£o AI completa no mobile */
-    #ai-vision-panel .ai-visualization-area {
-        display: none !important;
-    }
-
-    /* Ajusta o grid para ocupar toda a largura no mobile */
-    #ai-vision-panel .grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    #ai-vision-panel .col-span-7 {
-        grid-column: span 1 !important;
-    }
-
-    /* Modifica os cards de status para mobile */
-    #ai-vision-panel .status-cards-container {
-        display: none !important;
-    }
-
-    #ai-vision-panel .status-card-mobile {
-        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
-        background-color: transparent !important;
-        border: 1px solid rgba(28, 28, 28, 0.8) !important;
-        border-radius: 0.75rem;
-        padding: 1rem;
-        text-align: left !important;
+    .stat-item {
         display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
+        align-items: center;
+        gap: 0.5rem;
     }
 
-    /* Remove textos descritivos (status-description) no mobile */
-    #ai-vision-panel .status-description {
-        display: none !important;
-    }
-
-    /* Alinha labels e valores Ã  esquerda */
-    #ai-vision-panel .status-label {
-        text-align: left !important;
-        margin: 0 !important;
-        color: #FFFFFF !important;
+    .stat-label {
         font-size: 0.625rem;
-        font-weight: 600;
         text-transform: uppercase;
+        color: #666;
+        font-weight: 600;
         letter-spacing: 0.5px;
     }
 
-    #ai-vision-panel .status-value {
-        text-align: left !important;
-        color: #FFFFFF !important;
-        font-weight: 700;
-        font-size: 1rem;
-        margin-top: 0.5rem;
-        margin-bottom: 0;
+    .stat-value {
+        font-size: 0.75rem;
+        color: #DFDFDF;
+        font-weight: 600;
     }
 
-    /* Ajusta os Ã­cones nos cards */
-    #ai-vision-panel .status-card-mobile .flex.items-center {
-        justify-content: flex-start !important;
-        margin-bottom: 0.5rem;
-        align-items: center;
+    .stat-value.highlight {
+        color: #22C55E;
     }
 
-    #ai-vision-panel .status-card-mobile .flex.items-center i {
-        color: #22C55E !important;
-        font-size: 1.125rem;
+    .stat-divider {
+        width: 1px;
+        height: 12px;
+        background: rgba(255, 255, 255, 0.1);
     }
 
-    #ai-vision-panel .status-card-mobile .asset-icon {
-        opacity: 1 !important;
-        width: 18px !important;
-        height: 18px !important;
-        filter: brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(96%) contrast(88%);
+    .agent-option-premium:not(.active) {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Esconde o Central AI Core no mobile */
-    #ai-vision-panel .ai-core-mobile {
-        display: none !important;
+    .agent-option-premium:not(.active) .agent-option-title {
+        color: #AAA;
     }
 
-    /* Remove gap do grid no mobile */
-    #ai-vision-panel .grid.gap-5 {
-        gap: 0 !important;
+
+
+    /* Animations */
+    .slide-fade-enter-active,
+    .slide-fade-leave-active {
+        transition: all 0.3s ease;
     }
 
-    /* Remove h3 (card-title) no mobile */
-    .config-card .card-title,
-    .config-card h3 {
-        display: none !important;
+    .slide-fade-enter-from,
+    .slide-fade-leave-to {
+        transform: translateY(-10px);
+        opacity: 0;
     }
 
-    /* Remove ai-status-title no mobile */
-    .ai-status-title {
-        display: none !important;
+    /* Responsive */
+    @media (min-width: 769px) {
+        .agents-modal-list {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            justify-content: flex-start !important;
+            gap: 1.25rem !important;
+        }
+
+        .agent-option-premium {
+            width: calc(50% - 0.7rem);
+            flex-grow: 1;
+            max-width: 48%;
+            /* Ensure 2 per row mostly */
+        }
     }
 
-    /* 1. Gerenciamento de Risco: 3 colunas */
-    .risk-buttons {
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 0.5rem !important;
-        width: 100% !important;
+    /* Ajustes para mobile */
+    @media (max-width: 1024px) {
+        .content-wrapper {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+
+        .content-wrapper.sidebar-collapsed {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+
+        /* Sidebar como drawer no mobile */
+        :deep(.sidebar) {
+            position: fixed;
+            width: 280px !important;
+            height: 100vh;
+            z-index: 999;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-out;
+        }
+
+        /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
+        :deep(.sidebar.is-open) {
+            transform: translateX(0);
+            z-index: 99999999 !important;
+        }
+
+        /* Modal de Settings deve sobrepor tudo no mobile, incluindo TopNavbar */
+        /* ForÃ§ar z-index muito alto para garantir que sobreponha o TopNavbar (z-index: 1002) */
+        :deep(.settings-modal-overlay) {
+            z-index: 100000 !important;
+            top: 0 !important;
+            height: 100vh !important;
+            position: fixed !important;
+        }
+
+        :deep(.settings-modal-content) {
+            z-index: 100000 !important;
+            top: 0 !important;
+            height: 100vh !important;
+            position: fixed !important;
+        }
+
+        /* Garantir que TopNavbar fique abaixo do modal quando aberto */
+        #top-navbar {
+            z-index: 1002 !important;
+        }
     }
 
-    /* 2. Stop Loss e Blindado: Lado a lado com mesma altura */
-    .loss-stoploss-row {
-        flex-direction: row !important;
-        gap: 12px !important;
-        align-items: stretch !important;
+    /* Header Mobile - Escondido no desktop */
+    #ai-vision-panel .ai-vision-header-mobile {
+        display: none;
     }
 
-    .loss-stoploss-row .flex-1 {
-        width: 50% !important;
-        flex: 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
+    /* Estilos especÃ­ficos para VisÃ£o da IA no Mobile */
+    @media (max-width: 768px) {
 
-    .loss-stoploss-row .form-input {
-        height: 100% !important;
-        min-height: 48px !important;
-    }
+        /* Remove o fundo do container principal da VisÃ£o da IA */
+        #ai-vision-panel .ai-vision-container {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
 
-    /* Label styling: 0.725rem, uppercase, #C5C5C5 */
-    .form-label {
-        font-size: 0.725rem !important;
-        font-weight: 80 !important;
-        text-transform: uppercase !important;
-        color: #C5C5C5 !important;
-    }
+        /* Esconde header desktop, mostra mobile */
+        #ai-vision-panel .ai-vision-header-desktop {
+            display: none !important;
+        }
 
-    .stoploss-blindado-wrapper {
-        background-color: #000000 !important;
-        padding: 0rem 0.5rem !important;
-        height: auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        min-height: 48px !important;
-    }
+        #ai-vision-panel .ai-vision-header-mobile {
+            display: block !important;
+            margin-bottom: 0;
+            background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, .3) 0, rgba(0, 1, 0, .1) 70%, transparent 100%);
+            border-radius: .75rem;
+            padding: 1rem 0 0;
+        }
 
-    .ai-status-info label {
-        margin: 0 !important;
-        font-size: 0.9rem !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        color: #C5C5C5 !important;
+        #ai-vision-panel .ai-vision-header-mobile h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #DFDFDF;
+            margin-bottom: 0.25rem;
+        }
+
+        #ai-vision-panel .ai-vision-header-mobile p {
+            font-size: 0.875rem;
+            color: #A1A1A1;
+        }
+
+        #ai-vision-panel .ai-chip-icon-mobile {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(34, 197, 94, 0.15);
+            padding: 15px;
+            border-radius: 50%;
+            width: auto;
+            height: auto;
+        }
+
+        /* Esconde a Ã¡rea de visualizaÃ§Ã£o AI completa no mobile */
+        #ai-vision-panel .ai-visualization-area {
+            display: none !important;
+        }
+
+        /* Ajusta o grid para ocupar toda a largura no mobile */
+        #ai-vision-panel .grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        #ai-vision-panel .col-span-7 {
+            grid-column: span 1 !important;
+        }
+
+        /* Modifica os cards de status para mobile */
+        #ai-vision-panel .status-cards-container {
+            display: none !important;
+        }
+
+        #ai-vision-panel .status-card-mobile {
+            background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+            background-color: transparent !important;
+            border: 1px solid rgba(28, 28, 28, 0.8) !important;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: left !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        /* Remove textos descritivos (status-description) no mobile */
+        #ai-vision-panel .status-description {
+            display: none !important;
+        }
+
+        /* Alinha labels e valores Ã  esquerda */
+        #ai-vision-panel .status-label {
+            text-align: left !important;
+            margin: 0 !important;
+            color: #FFFFFF !important;
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #ai-vision-panel .status-value {
+            text-align: left !important;
+            color: #FFFFFF !important;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+        }
+
+        /* Ajusta os Ã­cones nos cards */
+        #ai-vision-panel .status-card-mobile .flex.items-center {
+            justify-content: flex-start !important;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+
+        #ai-vision-panel .status-card-mobile .flex.items-center i {
+            color: #22C55E !important;
+            font-size: 1.125rem;
+        }
+
+        #ai-vision-panel .status-card-mobile .asset-icon {
+            opacity: 1 !important;
+            width: 18px !important;
+            height: 18px !important;
+            filter: brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(96%) contrast(88%);
+        }
+
+        /* Esconde o Central AI Core no mobile */
+        #ai-vision-panel .ai-core-mobile {
+            display: none !important;
+        }
+
+        /* Remove gap do grid no mobile */
+        #ai-vision-panel .grid.gap-5 {
+            gap: 0 !important;
+        }
+
+        /* Remove h3 (card-title) no mobile */
+        .config-card .card-title,
+        .config-card h3 {
+            display: none !important;
+        }
+
+        /* Remove ai-status-title no mobile */
+        .ai-status-title {
+            display: none !important;
+        }
+
+        /* 1. Gerenciamento de Risco: 3 colunas */
+        .risk-buttons {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 0.5rem !important;
+            width: 100% !important;
+        }
+
+        /* 2. Stop Loss e Blindado: Lado a lado com mesma altura */
+        .loss-stoploss-row {
+            flex-direction: row !important;
+            gap: 12px !important;
+            align-items: stretch !important;
+        }
+
+        .loss-stoploss-row .flex-1 {
+            width: 50% !important;
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .loss-stoploss-row .form-input {
+            height: 100% !important;
+            min-height: 48px !important;
+        }
+
+        /* Label styling: 0.725rem, uppercase, #C5C5C5 */
+        .form-label {
+            font-size: 0.725rem !important;
+            font-weight: 80 !important;
+            text-transform: uppercase !important;
+            color: #C5C5C5 !important;
+        }
+
+        .stoploss-blindado-wrapper {
+            background-color: #000000 !important;
+            padding: 0rem 0.5rem !important;
+            height: auto !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            min-height: 48px !important;
+        }
+
+        .ai-status-info label {
+            margin: 0 !important;
+            font-size: 0.9rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            color: #C5C5C5 !important;
+        }
     }
-}

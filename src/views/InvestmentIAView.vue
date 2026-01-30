@@ -206,40 +206,30 @@
                                             @click="selectStrategy(strategy.id)"
                                         >
                                             <div class="agent-option-content">
-                                                    <div class="agent-option-header-row">
-                                                        <div class="strategy-icon-box-large" :class="strategy.id">
-                                                            <i :class="strategy.icon"></i>
-                                                            <div v-if="selectedStrategy === strategy.id" class="active-check-circle">
-                                                                <i class="fas fa-check"></i>
-                                                            </div>
-                                                            <i v-if="strategy.id === 'nexus'" class="fas fa-shield-alt mini-shield"></i>
-                                                        </div>
-                                                        <div class="agent-option-main-info">
-                                                            <div class="flex items-center justify-between w-full mb-1">
-                                                                <h4 class="agent-option-title" :class="{ 'text-zenix-green': selectedStrategy === strategy.id }">{{ strategy.title.replace('IA ', 'AGENTE ') }} - {{ strategy.marketType }}</h4>
-                                                                <span v-if="selectedStrategy === strategy.id" class="active-status-badge">ATIVO</span>
-                                                            </div>
-                                                            <!-- <p class="agent-option-desc">{{ strategy.description }}</p> Remove desc from header if needed, or keep it. Image shows return/assertiveness/analysis below. -->
-                                                        </div>
-                                                        <!-- <div class="agent-option-arrow">
-                                                            <i class="fas fa-chevron-right"></i>
-                                                        </div> --> 
+                                                <div class="agent-option-header-row">
+                                                    <div class="strategy-icon-box-large" :class="strategy.id">
+                                                        <i :class="strategy.icon"></i>
+                                                        <i v-if="strategy.id === 'nexus'" class="fas fa-shield-alt mini-shield"></i>
                                                     </div>
-                                                    <div class="agent-option-footer-stats-list">
-                                                        <div class="stat-row">
-                                                            <span class="stat-label-list">Retorno:</span>
-                                                            <span class="stat-value-list" :class="{ 'text-zenix-green': selectedStrategy === strategy.id }">{{ strategy.retorno }}</span>
-                                                        </div>
-                                                        <div class="stat-row">
-                                                            <span class="stat-label-list">Assertividade:</span>
-                                                            <span class="stat-value-list">{{ strategy.assertividade }}</span>
-                                                        </div>
-                                                        <div class="stat-row analysis-row">
-                                                            <span class="stat-label-list">Análise:</span>
-                                                            <span class="stat-value-list desc-truncate">{{ strategy.description }}</span>
-                                                        </div>
+                                                    <div class="agent-option-main-info">
+                                                        <h4 class="agent-option-title">{{ strategy.title }}</h4>
+                                                        <p class="agent-option-desc">{{ strategy.description }}</p>
                                                     </div>
-
+                                                    <div class="agent-option-arrow">
+                                                        <i class="fas fa-chevron-right"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="agent-option-footer-stats">
+                                                    <div class="stat-item">
+                                                        <span class="stat-label">Assertividade:</span>
+                                                        <span class="stat-value">{{ strategy.assertividade }}</span>
+                                                    </div>
+                                                    <div class="stat-divider"></div>
+                                                    <div class="stat-item">
+                                                        <span class="stat-label">Retorno:</span>
+                                                        <span class="stat-value highlight">{{ strategy.retorno }}</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
