@@ -6,6 +6,12 @@
     box-sizing: border-box;
 }
 
+svg:not(:host).svg-inline--fa,
+svg:not(:root).svg-inline--fa {
+    box-sizing: content-box;
+    color: white;
+}
+
 
 
 /* Force Sidebar Background on Mobile */
