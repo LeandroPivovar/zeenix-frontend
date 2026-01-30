@@ -28,7 +28,48 @@
                     <button v-if="isMonitoring" @click="stopMonitoring" class="stop-btn">
                         <i class="fas fa-stop mr-2"></i> Parar Robô
                     </button>
-                    <div v-else class="flex gap-3">
+                    <div v-else class="flex flex-wrap items-center gap-3">
+                        <div class="flex items-center gap-2 bg-[#141414] border border-[#333] rounded-lg p-1">
+                            <select 
+                                v-model="selectedSavedStrategyId" 
+                                @change="loadSavedStrategy"
+                                class="bg-transparent text-white text-xs border-none focus:ring-0 min-w-[150px]"
+                            >
+                                <option value="" disabled>Estratégias Salvas</option>
+                                <option v-for="s in savedStrategies" :key="s.id" :value="s.id">{{ s.name }}</option>
+                            </select>
+                            <button 
+                                v-if="selectedSavedStrategyId"
+                                @click="deleteSavedStrategy"
+                                title="Excluir estratégia"
+                                class="text-red-500 hover:text-red-400 p-2 transition-colors"
+                            >
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                            <button 
+                                @click="saveCurrentStrategy" 
+                                title="Salvar na Galeria Local"
+                                class="bg-zenix-green/10 text-zenix-green hover:bg-zenix-green/20 p-2 rounded-lg text-xs font-bold transition-all border border-zenix-green/30"
+                            >
+                                <i class="fas fa-save"></i>
+                            </button>
+                            <button 
+                                @click="exportToJSON" 
+                                title="Exportar para Arquivo (.json)"
+                                class="bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 p-2 rounded-lg text-xs font-bold transition-all border border-blue-500/30"
+                            >
+                                <i class="fas fa-file-export"></i>
+                            </button>
+                            <button 
+                                @click="$refs.importInput.click()" 
+                                title="Importar de Arquivo"
+                                class="bg-purple-500/10 text-purple-500 hover:bg-purple-500/20 p-2 rounded-lg text-xs font-bold transition-all border border-purple-500/30"
+                            >
+                                <i class="fas fa-file-import"></i>
+                                <input type="file" ref="importInput" class="hidden" accept=".json" @change="handleImportJSON">
+                            </button>
+                        </div>
+
                         <div class="balance-card">
                             <span class="text-[10px] uppercase text-[#7D7D7D] font-bold">Saldo Disponível</span>
                             <span class="text-lg font-bold text-white block">$ {{ balance.toLocaleString() }}</span>
@@ -865,6 +906,8 @@ export default {
             showTradeTypeModal: false,
             showFilterModal: false,
             showPauseModal: false,
+            savedStrategies: [],
+            selectedSavedStrategyId: '',
             modalContext: 'main', // 'main' or 'recovery'
             filterStep: 1, // 1: Selection, 2: Configuration
 
@@ -1188,6 +1231,7 @@ export default {
         this.handleResize();
         window.addEventListener('resize', this.handleResize);
         this.fetchMarkets();
+        this.loadStrategiesFromStorage();
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
@@ -1436,6 +1480,104 @@ export default {
             this.isMonitoring = true;
             this.startSimulation();
             this.$root.$toast.success('Estratégia iniciada com sucesso!');
+        },
+
+        // --- Local Strategy Library Methods ---
+        loadStrategiesFromStorage() {
+            try {
+                const stored = localStorage.getItem('zeenix_saved_strategies');
+                this.savedStrategies = stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                console.error('Erro ao carregar estratégias:', e);
+                this.savedStrategies = [];
+            }
+        },
+
+        saveCurrentStrategy() {
+            const name = prompt('Nome da estratégia:', `Minha Estratégia ${new Date().toLocaleDateString()}`);
+            if (!name) return;
+
+            const newStrategy = {
+                id: Date.now().toString(),
+                name: name,
+                config: {
+                    form: JSON.parse(JSON.stringify(this.form)),
+                    recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig))
+                }
+            };
+
+            this.savedStrategies.push(newStrategy);
+            localStorage.setItem('zeenix_saved_strategies', JSON.stringify(this.savedStrategies));
+            this.selectedSavedStrategyId = newStrategy.id;
+            this.$root.$toast.success('Estratégia salva com sucesso!');
+        },
+
+        loadSavedStrategy() {
+            const strategy = this.savedStrategies.find(s => s.id === this.selectedSavedStrategyId);
+            if (!strategy) return;
+
+            // Deep clone to avoid proxy issues
+            this.form = JSON.parse(JSON.stringify(strategy.config.form));
+            this.recoveryConfig = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
+            
+            this.addLog(`📂 Estratégia carregada: ${strategy.name}`, 'info');
+            this.$root.$toast.success(`Estratégia "${strategy.name}" carregada!`);
+        },
+
+        deleteSavedStrategy() {
+            if (!confirm('Tem certeza que deseja excluir esta estratégia?')) return;
+            
+            this.savedStrategies = this.savedStrategies.filter(s => s.id !== this.selectedSavedStrategyId);
+            localStorage.setItem('zeenix_saved_strategies', JSON.stringify(this.savedStrategies));
+            this.selectedSavedStrategyId = '';
+            this.$root.$toast.info('Estratégia excluída.');
+        },
+
+        exportToJSON() {
+            const strategyData = {
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                config: {
+                    form: this.form,
+                    recoveryConfig: this.recoveryConfig
+                }
+            };
+
+            const json = JSON.stringify(strategyData, null, 4);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `zeenix-estrategia-${Date.now()}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            this.$root.$toast.success('Arquivo JSON gerado e baixado!');
+        },
+
+        handleImportJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.config && data.config.form && data.config.recoveryConfig) {
+                        this.form = JSON.parse(JSON.stringify(data.config.form));
+                        this.recoveryConfig = JSON.parse(JSON.stringify(data.config.recoveryConfig));
+                        this.addLog('📁 Estratégia importada com sucesso de arquivo.', 'success');
+                        this.$root.$toast.success('Estratégia importada com sucesso!');
+                    } else {
+                        throw new Error('Formato de arquivo inválido.');
+                    }
+                } catch (err) {
+                    this.$root.$toast.error('Erro ao importar JSON: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Reset input
         },
         startSimulation() {
             this.addLog('🤖 Robô iniciado. Aguardando conexão com mercado...', 'info');
