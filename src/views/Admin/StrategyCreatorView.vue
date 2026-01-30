@@ -171,7 +171,7 @@
                                 <label class="block text-white font-bold mb-2">Mercado</label>
                                 <button
                                     type="button"
-                                    @click="openMarketModal"
+                                    @click="openMarketModal('main')"
                                     class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
                                 >
                                     <span class="font-medium text-lg">{{ selectedMarketLabel }}</span>
@@ -189,7 +189,7 @@
                             <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
                             <button
                                 type="button"
-                                @click="openTradeTypeModal"
+                                @click="openTradeTypeModal('main')"
                                 :disabled="!contracts.length && !form.market"
                                 class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -494,7 +494,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="categories-grid">
-                            <div v-for="(markets, category) in marketsByCategory" :key="category" class="category-card">
+                            <div v-for="(marketsList, category) in marketsByCategory" :key="category" class="category-card">
                                 <div class="category-card-header">
                                     <div class="category-icon-wrapper">
                                         <svg v-if="category === 'Índices Contínuos'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -521,12 +521,12 @@
                                 </div>
                                 <div class="category-items-list">
                                     <button
-                                        v-for="market in markets"
-                                        :key="market.value"
-                                        @click="selectMarket(market.value)"
-                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.market : recoveryConfig.market) === market.value }]"
+                                        v-for="m in marketsList"
+                                        :key="m.value"
+                                        @click="selectMarket(m.value)"
+                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.market : recoveryConfig.market) === m.value }]"
                                     >
-                                        {{ market.label }}
+                                        {{ m.label }}
                                     </button>
                                 </div>
                             </div>
@@ -1140,6 +1140,10 @@ export default {
             } else {
                 this.recoveryConfig.market = symbol;
             }
+            
+            const market = this.markets.find(m => m.symbol === symbol);
+            this.$root.$toast.success(`Mercado selecionado: ${market ? market.label : symbol}`);
+            
             this.closeMarketModal();
             this.onMarketChange(this.modalContext);
         },
@@ -1175,6 +1179,7 @@ export default {
                 }
             }
             
+            this.$root.$toast.success(`Tipo de contrato selecionado: ${item.label}`);
             this.closeTradeTypeModal();
         },
         
