@@ -185,137 +185,121 @@
                 </div>
 
                 <div class="cards-grid">
-                <!-- Linha 1: Frequência Geral (Heatmap adaptado) -->
-                <div class="frequency-unified-card bg-[#0D0D0D] border border-white/5 rounded-2xl p-6 mb-4">
-                    <div class="flex items-center justify-between mb-8">
-                        <h3 class="text-sm font-bold text-white/90 uppercase tracking-widest">1. Frequência por Dígito</h3>
-                        <div class="text-[10px] text-white/30 font-bold uppercase tracking-widest">Amostra: 100 Ticks</div>
-                    </div>
-                    
-                    <div class="digit-bars-grid grid grid-cols-5 md:grid-cols-10 gap-3">
-                        <div 
-                            v-for="item in digitFrequenciesWithStats" 
-                            :key="'digit-'+item.digit" 
-                            class="digit-stat-card flex flex-col items-center gap-4 p-3 rounded-xl transition-all duration-500"
-                            :class="[item.statusClass, item.isHighlighted ? 'digit-highlight' : '']"
-                        >
-                            <span class="digit-number text-2xl font-black text-white">{{ item.digit }}</span>
-                            
-                            <!-- Neon Tube Progress Bar -->
-                            <div class="neon-bar-container w-4 h-24 bg-white/5 rounded-full relative overflow-hidden">
-                                <div 
-                                    class="neon-bar-fill absolute bottom-0 left-0 w-full transition-all duration-1000 ease-out"
-                                    :style="{ height: item.percentage + '%', backgroundColor: getStatusColor(item.statusClass) }"
-                                >
-                                    <div class="neon-glow"></div>
+                    <!-- Linha 1: Frequência Geral (Meta Design) -->
+                    <div class="frequency-meta-card bg-black border border-white/5 rounded-xl p-6 mb-6">
+                        <div class="flex items-center justify-between mb-8">
+                            <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Frequência dos Dígitos</h3>
+                        </div>
+                        
+                        <div class="digit-meta-grid grid grid-cols-5 md:grid-cols-10 gap-2">
+                            <div 
+                                v-for="item in digitFrequenciesWithStats" 
+                                :key="'meta-'+item.digit" 
+                                class="digit-meta-item flex flex-col items-center p-4 rounded-xl transition-all duration-500 bg-[#0F0F0F] border border-white/5"
+                                :class="[item.statusClass, item.isHighlighted ? 'meta-highlight' : '']"
+                            >
+                                <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: getStatusColor(item.statusClass) }">{{ item.digit }}</span>
+                                <span class="meta-digit-percentage text-[11px] font-bold text-white/60 mb-4">{{ item.percentage }}%</span>
+                                
+                                <div class="meta-vertical-meter-container w-1.5 h-20 bg-white/5 rounded-full relative overflow-hidden">
+                                    <div 
+                                        class="meta-vertical-meter-fill absolute bottom-0 left-0 w-full transition-all duration-1000 ease-out"
+                                        :style="{ height: item.percentage + '%', backgroundColor: getStatusColor(item.statusClass) }"
+                                    ></div>
                                 </div>
-                            </div>
-                            
-                            <div class="flex flex-col items-center">
-                                <span class="digit-percentage text-xs font-bold text-white">{{ item.percentage }}%</span>
-                                <span class="digit-status text-[8px] uppercase font-black tracking-tighter opacity-40 mt-1">{{ item.statusText }}</span>
+                                <span class="text-[9px] font-bold text-white/20 mt-4 uppercase">{{ item.percentage }}%</span>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Linha 2: Resumo por Categoria -->
-                <div class="category-summary-wrapper mb-4">
-                    <div class="flex items-center justify-between mb-4 px-1">
-                        <h3 class="text-sm font-bold text-white/90 uppercase tracking-widest">2. Resumo por Categoria</h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Paridade -->
-                        <div class="analysis-card bg-[#0D0D0D] border border-white/5 rounded-2xl p-6">
-                            <div class="flex items-center gap-3 mb-6">
-                                <i class="fas fa-divide text-blue-500"></i>
-                                <span class="text-xs font-bold text-white uppercase tracking-wider">Paridade (Par/Ímpar)</span>
+                    <!-- Linha 2: Resumo em Duas Colunas (Volatilidade e Paridade) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <!-- Volatilidade (Meta Style) -->
+                        <div class="meta-analysis-card bg-black border border-white/5 rounded-xl p-6 flex flex-col justify-between min-h-[160px]">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Volatilidade</h3>
+                                <div class="flex items-center gap-2 px-2 py-1 bg-zenix-green/10 rounded-full border border-zenix-green/20">
+                                    <span class="w-1.5 h-1.5 bg-zenix-green rounded-full shadow-[0_0_5px_#22C55E]"></span>
+                                    <span class="text-[9px] font-bold text-zenix-green uppercase">Estável</span>
+                                </div>
                             </div>
                             
-                            <div class="space-y-6">
-                                <div>
-                                    <div class="flex justify-between text-[10px] uppercase font-bold text-white/40 mb-2">
-                                        <span>Par</span>
-                                        <span class="text-blue-500">{{ digitFrequency.parity.even }}%</span>
-                                    </div>
-                                    <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                        <div class="h-full bg-blue-500 transition-all duration-1000" :style="{ width: digitFrequency.parity.even + '%' }"></div>
-                                    </div>
+                            <div class="flex items-center gap-6 py-4">
+                                <div class="flex flex-col items-center">
+                                    <span class="text-4xl font-black text-zenix-green leading-none">{{ dvxValueComputed }}</span>
+                                    <span class="text-[10px] font-bold text-white/20 uppercase mt-1">DVX</span>
                                 </div>
-                                <div>
-                                    <div class="flex justify-between text-[10px] uppercase font-bold text-white/40 mb-2">
-                                        <span>Ímpar</span>
-                                        <span class="text-orange-500">{{ digitFrequency.parity.odd }}%</span>
+                                
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-xs font-bold text-zenix-green">Volatilidade Baixa</span>
                                     </div>
-                                    <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                        <div class="h-full bg-orange-500 transition-all duration-1000" :style="{ width: digitFrequency.parity.odd + '%' }"></div>
+                                    <div class="relative h-1.5 bg-white/5 rounded-full mb-2">
+                                        <div 
+                                            class="absolute inset-y-0 left-0 bg-gradient-to-r from-zenix-green/20 to-zenix-green rounded-full transition-all duration-1000"
+                                            :style="{ width: dvxValueComputed + '%' }"
+                                        ></div>
+                                        <div 
+                                            class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)] transition-all duration-1000"
+                                            :style="{ left: dvxValueComputed + '%' }"
+                                        ></div>
+                                    </div>
+                                    <div class="flex justify-between items-center text-[9px] font-bold text-white/10 uppercase">
+                                        <span>Baixa</span>
+                                        <span>Alta</span>
                                     </div>
                                 </div>
                             </div>
+                            
+                            <p class="text-[10px] text-white/30 font-medium">Ambiente estável para operações de baixo risco</p>
                         </div>
 
-                        <!-- Alto / Baixo -->
-                        <div class="analysis-card bg-[#0D0D0D] border border-white/5 rounded-2xl p-6">
-                            <div class="flex items-center gap-3 mb-6">
-                                <i class="fas fa-arrows-up-down text-purple-500"></i>
-                                <span class="text-xs font-bold text-white uppercase tracking-wider">Distribuição (Alto/Baixo)</span>
+                        <!-- Paridade (Meta Style) -->
+                        <div class="meta-analysis-card bg-black border border-white/5 rounded-xl p-6 flex flex-col justify-between min-h-[160px]">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Paridade</h3>
+                                <div class="flex items-center gap-1 text-zenix-green">
+                                    <i class="fas fa-chart-line text-[10px]"></i>
+                                    <span class="text-[10px] font-bold">+2%</span>
+                                </div>
                             </div>
                             
-                            <div class="space-y-6">
-                                <div>
-                                    <div class="flex justify-between text-[10px] uppercase font-bold text-white/40 mb-2">
-                                        <span>Baixo (0-4)</span>
-                                        <span class="text-green-500">{{ lowPercentage }}%</span>
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="space-y-4">
+                                    <div class="parity-meta-item">
+                                        <div class="flex justify-between items-center mb-1.5">
+                                            <span class="text-xs font-bold text-white">Par</span>
+                                            <span class="text-xs font-black text-zenix-green">{{ digitFrequency.parity.even }}%</span>
+                                        </div>
+                                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                            <div class="h-full bg-zenix-green transition-all duration-1000" :style="{ width: digitFrequency.parity.even + '%' }"></div>
+                                        </div>
                                     </div>
-                                    <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                        <div class="h-full bg-green-500 transition-all duration-1000" :style="{ width: lowPercentage + '%' }"></div>
+                                    <div class="parity-meta-item">
+                                        <div class="flex justify-between items-center mb-1.5">
+                                            <span class="text-xs font-bold text-white/40">Ímpar</span>
+                                            <span class="text-xs font-black text-white/20">{{ digitFrequency.parity.odd }}%</span>
+                                        </div>
+                                        <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                            <div class="h-full bg-white/5 transition-all duration-1000" :style="{ width: digitFrequency.parity.odd + '%' }"></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <div class="flex justify-between text-[10px] uppercase font-bold text-white/40 mb-2">
-                                        <span>Alto (5-9)</span>
-                                        <span class="text-purple-500">{{ highPercentage }}%</span>
-                                    </div>
-                                    <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                        <div class="h-full bg-purple-500 transition-all duration-1000" :style="{ width: highPercentage + '%' }"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Volatilidade (DVX) -->
-                        <div class="analysis-card bg-[#0D0D0D] border border-white/5 rounded-2xl p-6">
-                            <div class="flex items-center gap-3 mb-6">
-                                <i class="fas fa-wave-square text-zenix-green"></i>
-                                <span class="text-xs font-bold text-white uppercase tracking-wider">Volatilidade (DVX)</span>
-                            </div>
-                            
-                            <div class="flex flex-col items-center justify-center pt-2">
-                                <div class="relative w-24 h-24 mb-4">
-                                    <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
-                                        <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8" />
-                                        <circle 
-                                            cx="50" 
-                                            cy="50" 
-                                            r="40" 
-                                            fill="none" 
-                                            stroke="#22C55E" 
-                                            stroke-width="8" 
-                                            stroke-dasharray="251.2" 
-                                            :stroke-dashoffset="251.2 * (1 - dvxValueComputed / 100)"
-                                            stroke-linecap="round"
-                                            class="transition-all duration-1000"
-                                        />
-                                    </svg>
-                                    <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                        <span class="text-2xl font-black text-white">{{ dvxValueComputed }}</span>
-                                        <span class="text-[8px] uppercase font-bold text-white/30">Pontos</span>
+                                <div class="border-l border-white/5 pl-6 flex flex-col justify-center">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm font-black text-white">8</span>
+                                        <span class="text-[10px] font-black text-red-500">7.8%</span>
                                     </div>
+                                    <div class="h-1.5 bg-white/5 rounded-full overflow-hidden mb-4">
+                                        <div class="h-full bg-red-500 w-[15%] transition-all duration-1000"></div>
+                                    </div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-sm font-black text-white/40">0</span>
+                                        <span class="text-[10px] font-black text-white/20">9.8%</span>
+                                    </div>
+                                    <span class="text-[9px] font-bold text-white/20 uppercase tracking-wider">Menos Frequentes</span>
                                 </div>
-                                <span class="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-zenix-green/10 text-zenix-green rounded-full">
-                                    {{ dvxStatusText }}
-                                </span>
                             </div>
                         </div>
                     </div>
@@ -436,7 +420,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
                 </div>
             </div>
 

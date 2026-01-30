@@ -2475,6 +2475,112 @@
     }
 }
 
+/* --- META DESIGN STYLES --- */
+
+.frequency-meta-card,
+.meta-analysis-card {
+    background-color: #000000 !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.digit-meta-item {
+    background-color: #080808 !important;
+    border: 1px solid rgba(255, 255, 255, 0.03) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.digit-meta-item:hover {
+    transform: translateY(-5px);
+    background-color: #0F0F0F !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.meta-digit-number {
+    text-shadow: 0 0 20px currentColor;
+    letter-spacing: -0.05em;
+}
+
+.meta-highlight {
+    border-color: rgba(34, 197, 94, 0.3) !important;
+    background: radial-gradient(circle at top, rgba(34, 197, 94, 0.1), transparent) !important;
+    box-shadow: 0 15px 30px -10px rgba(34, 197, 94, 0.2);
+}
+
+/* Vertical Meter (Bottom Up) */
+.meta-vertical-meter-container {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.meta-vertical-meter-fill {
+    border-radius: 10px;
+    box-shadow: 0 0 15px currentColor;
+}
+
+/* Status Colors for Meta */
+.status-overheated .meta-vertical-meter-fill {
+    box-shadow: 0 0 15px #EF4444;
+}
+
+.status-heated .meta-vertical-meter-fill {
+    box-shadow: 0 0 15px #F59E0B;
+}
+
+.status-underheated .meta-vertical-meter-fill {
+    box-shadow: 0 0 15px #3B82F6;
+}
+
+.status-normal .meta-vertical-meter-fill {
+    box-shadow: 0 0 15px #64748B;
+}
+
+/* Volatility & Parity */
+.meta-analysis-card {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Horizontal Meter with Thumb */
+.volatility-meter-thumb {
+    transition: left 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.parity-meta-item {
+    position: relative;
+}
+
+/* Glow Effects */
+.glow-green {
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
+}
+
+.glow-red {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+/* Remove scroll and fixed heights as per guideline 1 */
+.cards-grid,
+.main-content-grid,
+.frequency-meta-card,
+.meta-analysis-card {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+/* Tablet & Mobile Grid */
+@media (max-width: 1024px) {
+    .digit-meta-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .digit-meta-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
 /* --- NEW PREMIUM STYLES --- */
 
 .premium-analysis-header {
