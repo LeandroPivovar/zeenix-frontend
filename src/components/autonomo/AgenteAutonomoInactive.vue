@@ -353,18 +353,20 @@
 			</div> <!-- End of config-grid -->
 		</div> <!-- End of agent-config-container -->
 
-		<!-- Agent Selection Modal (Premium Style) -->
 		<Teleport to="body">
 			<div v-if="showAgentSelectorModal" class="modal-overlay" @click.self="closeAgentSelectorModal">
 				<div class="modal-content categorized-modal">
 					<div class="modal-header-premium">
-						<h3 class="modal-title">Selecionar Agente Autônomo</h3>
+						<div class="modal-header-text">
+							<h3 class="modal-title">Selecionar Agente Autônomo</h3>
+							<p class="modal-subtitle">Escolha qual inteligência irá operar por você nesta sessão</p>
+						</div>
 						<button @click="closeAgentSelectorModal" class="modal-close-btn">
 							<i class="fas fa-times"></i>
 						</button>
 					</div>
 					<div class="modal-body">
-						<div class="agents-modal-list">
+						<div class="agents-selection-list">
 							<div 
 								v-for="agent in availableAgents" 
 								:key="agent.id"
@@ -372,49 +374,61 @@
 								:class="{ 'active': selectedAgent === agent.id }"
 								@click="selectAgent(agent.id)"
 							>
-								<!-- Card Header: Icon, Name, Badge, Performance -->
-								<div class="agent-card-header">
-									<div class="agent-card-icon-box" :class="agent.id">
+								<!-- Left Section: Avatar & Branding -->
+								<div class="agent-card-left">
+									<div class="agent-avatar-box" :class="agent.id">
 										<video 
 											v-if="agent.video" 
 											:src="agent.video" 
-											class="agent-card-video" 
+											class="agent-avatar-video" 
 											autoplay 
 											loop 
 											muted 
 											playsinline
 										></video>
-										<div v-else class="agent-card-fallback-icon">
-											<img :src="agent.icons[0]" class="deriv-svg-icon" />
-										</div>
-									</div>
-									<div class="agent-card-titles">
-										<h4 class="agent-card-name">{{ agent.title.replace('Agente ', '') }}</h4>
-										<span class="agent-card-badge">{{ agent.badge }}</span>
-									</div>
-									<div class="agent-card-performance">
-										<span class="perf-value">{{ agent.percentage }}</span>
-										<span class="perf-label">{{ agent.percentageLabel }}</span>
-									</div>
-								</div>
-
-								<!-- Card Content: Feature List -->
-								<div class="agent-card-body">
-									<p class="agent-card-subtitle">{{ agent.subtitle }}</p>
-									<div class="agent-card-features">
-										<div v-for="(feature, idx) in agent.features" :key="idx" class="feature-item">
-											<i class="fas fa-check-circle feature-icon"></i>
-											<span>{{ feature }}</span>
+										<div v-else class="agent-avatar-fallback">
+											<i class="fas fa-robot"></i>
 										</div>
 									</div>
 								</div>
 
-								<!-- Card Footer: Select Button -->
-								<div class="agent-card-footer">
-									<button class="agent-select-btn" :class="{ 'selected': selectedAgent === agent.id }">
-										{{ selectedAgent === agent.id ? 'SELECIONADO' : 'SELECIONAR' }}
+								<!-- Middle Section: Info & Benefits -->
+								<div class="agent-card-middle">
+									<div class="agent-name-row">
+										<h4 class="agent-name-premium">{{ agent.title.replace('Agente ', '') }}</h4>
+										<span class="agent-profile-badge" :class="agent.profileBadge.toLowerCase()">
+											{{ agent.profileBadge }}
+										</span>
+									</div>
+									<p class="agent-description-premium">{{ agent.subtitle }}</p>
+									
+									<div class="agent-benefits-list">
+										<div class="benefits-label">Ideal para:</div>
+										<div class="benefits-grid">
+											<div v-for="(benefit, idx) in agent.benefits" :key="idx" class="benefit-item-premium">
+												<i class="fas fa-check-circle check-icon"></i>
+												<span>{{ benefit }}</span>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Right Section: Stats & Action -->
+								<div class="agent-card-right">
+									<div class="agent-performance-box">
+										<span class="perf-value-premium">{{ agent.percentage }}</span>
+										<span class="perf-label-premium">{{ agent.percentageLabel }}</span>
+									</div>
+									<button 
+										class="agent-select-btn-premium" 
+										:class="{ 'selected': selectedAgent === agent.id }"
+									>
+										{{ selectedAgent === agent.id ? 'Selecionado' : 'Selecionar ' + agent.title.replace('Agente ', '') }}
 									</button>
 								</div>
+								
+								<!-- Selection Glow Effect -->
+								<div class="selection-glow" v-if="selectedAgent === agent.id"></div>
 							</div>
 						</div>
 					</div>
@@ -483,34 +497,36 @@ export default {
 					id: 'zeus',
 					title: 'Agente Zeus',
 					subtitle: 'Análise de Fluxo',
-					badge: 'OFENSIVO',
+					profileBadge: 'OFENSIVO',
 					percentage: '+3.15%',
-					percentageLabel: 'Hoje',
+					percentageLabel: 'Performance recente',
 					graphColor: '#22c55e',
 					video: '/Zeus_Lança_Raio_em_Vídeo.mp4',
 					marketType: 'Digits',
 					icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg'],
-					description: 'O Agente Zeus foca em alta frequência e assertividade instantânea, ideal para quem busca resultados rápidos.',
-					features: [
+					description: 'Análise de Fluxo',
+					benefits: [
 						'Ideal para contas pequenas',
-						'Alta frequência de entradas',
-						'Proteção de capital agressiva'
+						'Mercado ativo',
+						'Busca de consistência',
+						'Operações mais frequentes'
 					]
 				},
 				{
 					id: 'falcon',
 					title: 'Agente Falcon',
 					subtitle: 'Barreira de segurança',
-					badge: 'DEFENSIVO',
+					profileBadge: 'DEFENSIVO',
 					percentage: '+2.89%',
-					percentageLabel: 'Hoje',
+					percentageLabel: 'Performance recente',
 					graphColor: '#22c55e',
 					video: '/Animação_de_Voo_Gerada.mp4',
 					marketType: 'Digits',
 					icons: ['/deriv_icons/TradeTypesHighsAndLowsHighIcon.svg'],
-					description: 'O Agente Falcon prioriza a preservação do capital com entradas cirúrgicas e barreira de proteção.',
-					features: [
+					description: 'Barreira de Segurança',
+					benefits: [
 						'Ideal para banca acima de $500',
+						'Proteção de capital',
 						'Foco em consistência diária',
 						'Menor exposição ao risco'
 					]
@@ -1380,7 +1396,7 @@ export default {
     box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4);
 }
 
-/* --- NOVO DESIGN: MODAL DE SELEÇÃO DE AGENTE (Image 3) --- */
+/* --- NOVO DESIGN: MODAL DE SELEÇÃO DE AGENTE PREMIUM (Horizontal) --- */
 
 .modal-overlay {
     position: fixed;
@@ -1388,7 +1404,8 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.85);
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
     z-index: 10000;
     display: flex;
     align-items: center;
@@ -1398,204 +1415,314 @@ export default {
 
 .modal-content.categorized-modal {
     width: 100%;
-    max-width: 500px; /* Narrower modal as per Image 3 */
-    background: #0D0D0D;
-    border: 1px solid #1C1C1C;
-    border-radius: 1.25rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    max-width: 800px; /* Wider for horizontal cards */
+    background: rgba(13, 13, 13, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
     overflow: hidden;
+    position: relative;
+    backdrop-filter: blur(20px);
 }
 
 .modal-header-premium {
-    padding: 1.5rem;
+    padding: 2rem 2.5rem 1.5rem;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: flex-start;
+}
+
+.modal-header-text {
+    flex: 1;
 }
 
 .modal-title {
-    font-size: 1.125rem;
-    font-weight: 700;
+    font-size: 1.5rem;
+    font-weight: 800;
     color: #fff;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.5px;
+}
+
+.modal-subtitle {
+    font-size: 0.875rem;
+    color: #A1A1A1;
     margin: 0;
 }
 
 .modal-close-btn {
-    background: none;
+    background: rgba(255, 255, 255, 0.05);
     border: none;
     color: #666;
-    font-size: 1.25rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: all 0.2s;
 }
 
 .modal-close-btn:hover {
     color: #fff;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .modal-body {
-    padding: 1.25rem;
-    max-height: 70vh;
+    padding: 0 2.5rem 2.5rem;
+    max-height: 75vh;
     overflow-y: auto;
 }
 
-.agents-modal-list {
+.agents-selection-list {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
 }
 
 .agent-selection-card {
-    background: #111;
-    border: 1px solid #1C1C1C;
-    border-radius: 1rem;
-    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    align-items: center;
+    gap: 2rem;
+    overflow: hidden;
 }
 
 .agent-selection-card:hover {
-    border-color: rgba(34, 197, 94, 0.3);
-    background: #141414;
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(34, 197, 94, 0.2);
+    transform: translateY(-4px);
 }
 
 .agent-selection-card.active {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(0, 0, 0, 0.4) 100%);
     border-color: #22C55E;
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.1);
 }
 
-.agent-card-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+/* Glassmorphism background for active card */
+.agent-selection-card.active::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.1), transparent 60%);
+    pointer-events: none;
 }
 
-.agent-card-icon-box {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: rgba(34, 197, 94, 0.1);
-    overflow: hidden;
+.agent-card-left {
     flex-shrink: 0;
+}
+
+.agent-avatar-box {
+    width: 80px;
+    height: 80px;
+    border-radius: 1rem;
+    background: #000;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.agent-card-video {
+.agent-avatar-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.agent-card-titles {
+.agent-avatar-fallback {
+    font-size: 2rem;
+    color: #333;
+}
+
+.agent-card-middle {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.agent-card-name {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #fff;
-    margin: 0;
-}
-
-.agent-card-badge {
-    font-size: 0.625rem;
-    font-weight: 800;
-    color: #22C55E;
-    background: rgba(34, 197, 94, 0.1);
-    padding: 2px 6px;
-    border-radius: 4px;
-    width: fit-content;
-    letter-spacing: 1px;
-}
-
-.agent-card-performance {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-}
-
-.perf-value {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #22C55E;
-}
-
-.perf-label {
-    font-size: 0.625rem;
-    color: #666;
-    text-transform: uppercase;
-}
-
-.agent-card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.agent-card-subtitle {
-    font-size: 0.813rem;
-    color: #666;
-    margin: 0;
-}
-
-.agent-card-features {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
-.feature-item {
+.agent-name-row {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    font-size: 0.813rem;
-    color: #DFDFDF;
+    gap: 1rem;
 }
 
-.feature-icon {
+.agent-name-premium {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.agent-profile-badge {
+    font-size: 0.625rem;
+    font-weight: 900;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.agent-profile-badge.ofensivo {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22C55E;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.agent-profile-badge.defensivo {
+    background: rgba(161, 161, 161, 0.1);
+    color: #889988;
+    border: 1px solid rgba(161, 161, 161, 0.2);
+}
+
+.agent-description-premium {
     font-size: 0.875rem;
+    color: #666;
+    margin: 0;
+}
+
+.agent-benefits-list {
+    margin-top: 0.5rem;
+}
+
+.benefits-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 1rem;
+}
+
+.benefit-item-premium {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: #A1A1A1;
+}
+
+.check-icon {
+    font-size: 0.8rem;
     color: #22C55E;
 }
 
-.agent-card-footer {
+.agent-card-right {
+    flex-shrink: 0;
     display: flex;
-    justify-content: flex-end;
-    padding-top: 0.5rem;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1.5rem;
+    min-width: 140px;
 }
 
-.agent-select-btn {
-    padding: 0.625rem 1.25rem;
+.agent-performance-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.perf-value-premium {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #22C55E;
+    line-height: 1;
+}
+
+.perf-label-premium {
+    font-size: 0.625rem;
+    color: #666;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.agent-select-btn-premium {
+    width: 100%;
+    padding: 0.75rem 1rem;
     border-radius: 0.75rem;
     font-size: 0.75rem;
     font-weight: 800;
-    border: 1px solid #1C1C1C;
-    background: #0D0D0D;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
     color: #fff;
     cursor: pointer;
     transition: all 0.2s;
+    text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.agent-selection-card:hover .agent-select-btn {
-    border-color: #22C55E;
+.agent-selection-card:hover .agent-select-btn-premium {
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
-.agent-select-btn.selected {
+.agent-select-btn-premium.selected {
     background: #22C55E;
     border-color: #22C55E;
     color: #000;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+}
+
+/* Neon Glow Effect */
+.selection-glow {
+    position: absolute;
+    inset: -1px;
+    border-radius: 1.25rem;
+    border: 1px solid #22C55E;
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* --- FIX: INPUT STYLING (IMAGE 0) --- */
+
+.form-input {
+    width: 100%;
+    background-color: #0B0B0B !important;
+    border: 1px solid #1C1C1C !important;
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.75rem 0.625rem 1.75rem !important;
+    font-size: 0.875rem;
+    color: #DFDFDF !important;
+    outline: none;
+    transition: all 0.2s;
+    height: 48px !important;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    border-color: #22C55E !important;
+    background-color: #0D0D0D !important;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.1);
+}
+
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.input-prefix {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    font-size: 0.875rem;
+    pointer-events: none;
+    z-index: 2;
 }
 
 /* Premium Selector Button */
@@ -1608,8 +1735,10 @@ export default {
     color: #fff;
     cursor: pointer;
     transition: all 0.2s ease;
-    height: 45px;
+    height: 48px;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
 }
 
 .premium-selector-btn:hover {
@@ -1637,16 +1766,17 @@ export default {
 }
 
 .deriv-svg-icon {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     filter: brightness(0) invert(1);
 }
 
 .deriv-svg-icon-small {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     filter: brightness(0) invert(1);
 }
+
 
 .selector-left span {
     font-size: 0.875rem;
