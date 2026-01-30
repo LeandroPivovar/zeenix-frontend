@@ -393,7 +393,7 @@
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Modo</p>
-                            <p class="mobile-config-param-value">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Normal' : 'Preciso' }}</p>
+                            <p class="mobile-config-param-value">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Alvo de Lucro</p>
@@ -753,6 +753,11 @@
                             <p class="text-[11px] text-[#888] font-medium" v-html="strategyDescriptionText"></p>
                         </div>
 
+
+
+                        <!-- Divider 1 -->
+                        <div class="w-full h-px bg-[#333] mb-5"></div>
+
                         <!-- SESSÃO ATIVA Card -->
                         <div class="bg-[#1A1A1A] border border-[#333] rounded-xl p-4 mb-5 relative z-10 shadow-lg">
                             <h4 class="text-xs font-bold text-zenix-green uppercase mb-3 tracking-wide">Sessão Ativa</h4>
@@ -762,7 +767,7 @@
                                 <div class="bg-[#0f0f0f] rounded-lg p-2 border border-[#252525] flex items-center justify-center gap-2">
                                     <div class="flex items-center gap-1">
                                         <span class="text-[10px] text-[#666]">MODO:</span>
-                                        <span class="text-xs font-bold text-white uppercase">{{ mode === 'veloz' ? 'VELLOZ' : mode }}</span>
+                                        <span class="text-xs font-bold text-white uppercase">{{ mode === 'veloz' ? 'VELOZ' : mode }}</span>
                                     </div>
                                     <span class="text-[#333]">|</span>
                                     <div class="flex items-center gap-1">
@@ -789,38 +794,42 @@
                                     <span class="text-[12px] font-bold text-zenix-red tracking-tight" v-if="!isLoadingConfig">-${{ lossLimit ? Number(lossLimit).toFixed(2) : '100' }}</span>
                                     <span v-else class="text-sm text-gray-500">...</span>
                                 </div>
-                            </div>
+                        </div> 
                         </div>
 
-                        <!-- Proteções Section -->
+                        <!-- Divider 2 -->
+                        <div class="w-full h-px bg-[#333] mb-4"></div>
                         <div class="mb-3 relative z-10 pl-1">
                             <div class="flex items-center gap-2 mb-2">
                                 <i class="fas fa-shield-alt text-[#333] text-xs"></i>
-                                <span class="text-[11px] text-[#666] font-medium uppercase">Proteções</span>
+                                <span class="text-[13px] text-[#D4D4D4] font-medium uppercase">Proteções</span>
                             </div>
                              <div class="space-y-1.5">
                                 <div class="flex items-center gap-2">
                                     <i class="fas fa-check text-zenix-green text-[10px]"></i>
-                                    <span class="text-[11px] text-[#AAA] font-medium">Stop Blindado {{ sessionConfig.stopLossBlindado ? 'Ativo' : 'Inativo' }}</span>
+                                    <span class="text-[11px] text-[#AAAAAA] font-medium">Stop Blindado {{ sessionConfig.stopLossBlindado ? 'Ativo' : 'Inativo' }}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <i class="fas fa-check text-zenix-green text-[10px]"></i>
-                                    <span class="text-[11px] text-[#AAA] font-medium">Defesa Automática</span>
+                                    <span class="text-[11px] text-[#AAAAAA] font-medium">Defesa Automática</span>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Divider 3 -->
+                        <div class="w-full h-px bg-[#333] my-4"></div>
+
                         <!-- IA EM FUNCIONAMENTO / Footer -->
                         <div class="mt-2 relative z-10">
-                            <h4 class="text-[10px] font-bold text-[#888] uppercase mb-1">IA Em Funcionamento</h4>
-                            <p class="text-[10px] text-[#555] leading-snug mb-4">
+                            <h4 class="text-[13px] font-bold text-[#D4D4D4] uppercase mb-1">IA Em Funcionamento</h4>
+                            <p class="text-[11px] text-[#AAAAAA] leading-snug mb-4">
                                 Monitorando o mercado e executando apenas quando há vantagem estatística.
                             </p>
 
                             <!-- Manual Control Box -->
                             <div class="bg-[#1A1A1A] border border-[#333] rounded-lg p-3 mb-3">
-                                <h5 class="text-[11px] font-bold text-[#DDD] mb-0.5">Controle Manual</h5>
-                                <p class="text-[10px] text-[#666]">Pause a IA se desejar encerrar ou reavaliar a sessão.</p>
+                                <h5 class="text-[13px] font-bold text-[#D4D4D4] mb-0.5">Controle Manual</h5>
+                                <p class="text-[11px] text-[#AAAAAA]">Pause a IA se desejar encerrar ou reavaliar a sessão.</p>
                             </div>
 
                             <!-- Pause Button -->

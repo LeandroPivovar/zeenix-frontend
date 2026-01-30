@@ -6,7 +6,7 @@
 
 .sidebar {
     width: 280px;
-    background: #0a0b0a;
+    background: #0b0b0b !important;
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     color: #e5e7eb;
     /* Cor padrão inativa (Cinza Claro) */
