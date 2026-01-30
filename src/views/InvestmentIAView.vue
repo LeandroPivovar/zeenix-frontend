@@ -2113,7 +2113,6 @@ export default {
 }
 
 /* Keyframes removed - moved to animations.css */
-}
 
 .stream-3 {
     width: 6rem;
