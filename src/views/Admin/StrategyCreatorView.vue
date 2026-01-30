@@ -823,6 +823,7 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
+import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
 
 export default {
     name: 'StrategyCreatorView',
@@ -884,6 +885,8 @@ export default {
             tickSubscriptionId: null,
             tickCount: 0,
             lastTickPrice: null,
+            tickHistory: [], // Buffer for Price Momentum
+            digitHistory: [], // Buffer for Digit Density/Sequence/Majority
 
             balance: 5889.28, // Mock implementation or fetch from store
             isMonitoring: false,
@@ -1417,7 +1420,9 @@ export default {
             
             this.simulationInterval = setInterval(() => {
                 const rand = Math.random();
-                if (rand > 0.95) { // Reduzi frequência de trades simulados para não poluir
+                // If there are no filters, we still do random trades for demonstration
+                // If filters are present, trades are triggered by runAnalysis()
+                if (this.form.attackFilters.length === 0 && rand > 0.95) {
                     this.simulateTrade();
                 } else if (rand > 0.8) {
                     this.simulateLog();
@@ -1506,7 +1511,44 @@ export default {
 
                 this.addLog(`📈 Tick recebido: ${price} - Tick #${this.tickCount}`, 'info');
                 
-                // Opcional: Atualizar mini stats ou algo visual
+                // --- Real-time Analysis Integration ---
+                // Add to history buffers (limit to 100 for performance)
+                this.tickHistory.unshift(price);
+                if (this.tickHistory.length > 100) this.tickHistory.pop();
+
+                const lastDigit = parseInt(price.toString().slice(-1));
+                this.digitHistory.unshift(lastDigit);
+                if (this.digitHistory.length > 100) this.digitHistory.pop();
+
+                // Trigger Analysis
+                this.runAnalysis();
+            }
+        },
+        runAnalysis() {
+            if (this.form.attackFilters.length === 0) return;
+
+            const activeFilters = this.form.attackFilters;
+            const data = {
+                tickHistory: this.tickHistory,
+                digitHistory: this.digitHistory
+            };
+
+            const results = activeFilters.map(filter => {
+                return StrategyAnalysis.evaluate(filter, data);
+            });
+
+            const allPassed = results.every(r => r.pass);
+            
+            // Log details for each filter
+            results.forEach(res => {
+                if (!res.pass) {
+                    this.addLog(`🔍 Analisando: ${res.reason}`, 'info');
+                }
+            });
+
+            if (allPassed) {
+                this.addLog('🎯 SINAL GERADO! Filtros de ataque confirmados.', 'success');
+                this.simulateTrade(); // Trigger trade simulation
             }
         },
         simulateTrade() {
