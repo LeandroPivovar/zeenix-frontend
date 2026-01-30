@@ -738,95 +738,104 @@
                 </div>
             </div>
 
-                <!-- Right Column - Config -->
+                <!-- Right Column - Config (Redesigned) -->
                 <div class="col-span-3 flex">
-                    <div id="i0k3nl" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-full flex flex-col w-full ">
-                        <h3 class="text-base font-semibold text-zenix-text mb-6 flex items-center text-left">
-                            <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
-                            Configuração Ativa
-                        </h3>
-                        <div class="text-left">
-                            <!-- Estratégia -->
-                            <div class="mb-[30px] text-left">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-1 tracking-wide uppercase text-left">Estratégia</p>
-                                <div class="mb-1">
-                                    <p class="text-base font-bold text-zenix-text text-left leading-none">{{ strategyName }}</p>
-                                </div>
-                                <p class="text-[11px] text-zenix-secondary text-left leading-snug" v-html="strategyDescriptionText"></p>
+                    <div id="i0k3nl" class="bg-[#111] border border-[#2A2A2A] rounded-2xl p-5 shadow-2xl h-full flex flex-col w-full relative overflow-hidden">
+                        <!-- Background Texture -->
+                         <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none"></div>
+                        
+                        <!-- Header: Strategy Name -->
+                        <div class="mb-5 relative z-10">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-2.5 h-2.5 rounded-full bg-zenix-green shadow-[0_0_10px_rgba(34,197,94,0.6)] animate-pulse"></div>
+                                <h3 class="text-base font-bold text-white uppercase tracking-wider">{{ strategyName }}</h3>
                             </div>
-
-                            <!-- Mercado -->
-
-
-                            <!-- Grid de Parâmetros Unificado -->
-                            <div class="pb-0 text-left">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Parâmetros & Gerenciamento</p>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <!-- Entrada -->
-                                    <div class="text-left border border-[#383838] rounded-lg p-2">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Entrada</p>
-                                        <p class="text-base font-bold text-zenix-text text-left" v-if="!isLoadingConfig">{{ sessionConfig.entryValue ? '$' + sessionConfig.entryValue.toFixed(2) : '$0.35' }}</p>
-                                        <p class="text-base font-bold text-zenix-text text-left" v-else>Carregando...</p>
-                                    </div>
-                                    <!-- Modo -->
-                                    <div class="text-left border border-[#383838] rounded-lg p-2">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Modo</p>
-                                        <p class="text-base font-bold text-zenix-text text-left">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Normal' : 'Preciso' }}</p>
-                                    </div>
-                                    <!-- Alvo de Lucro -->
-                                    <div class="text-left border border-[#383838] rounded-lg p-2">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Alvo De Lucro</p>
-                                        <p class="text-base font-bold text-zenix-green text-left" v-if="!isLoadingConfig">{{ profitTarget ? '$' + profitTarget.toFixed(2) : '$100.00' }}</p>
-                                        <p class="text-base font-bold text-zenix-green text-left" v-else>Carregando...</p>
-                                    </div>
-                                    <!-- Limite de Perda -->
-                                    <div class="text-left border border-[#383838] rounded-lg p-2">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Limite De Perda</p>
-                                        <p class="text-base font-bold text-zenix-red text-left" v-if="!isLoadingConfig">{{ lossLimit ? '$' + lossLimit.toFixed(2) : '$25.00' }}</p>
-                                        <p class="text-base font-bold text-zenix-red text-left" v-else>Carregando...</p>
-                                    </div>
-                                    
-                                    <!-- Stop Blindado -->
-                                    <div class="text-left border border-[#383838] rounded-lg p-2 h-full flex flex-col justify-center">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Stop Blindado</p>
-                                        <p class="text-base font-bold text-zenix-text text-left mb-1">
-                                            {{ sessionConfig.stopLossBlindado ? 'Ativado' : 'Inativo' }}
-                                        </p>
-                                    </div>
-
-                                    <!-- Gerenciamento de Risco -->
-                                    <div class="text-left border border-[#383838] rounded-lg p-2 h-full flex flex-col justify-center">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Gestão de Risco</p>
-                                        <p class="text-base font-bold text-zenix-text text-left mb-1">{{ realRiskLevel }}</p>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                                <!-- Divisor Sutil -->
-                                <div class="h-0 w-full border-t border-dashed border-[#383838] my-6"></div>
-
-                                <!-- Botão Pausar/Reiniciar (100% largura) -->
-                                <div class="flex flex-col items-start mt-0">
-                                    <div class="mb-3 text-left" v-if="!aiStoppedAutomatically">
-                                        <p class="text-white font-bold text-sm text-left">IA em Funcionamento</p>
-                                        <p class="text-[11px] text-zenix-secondary mt-1 text-left leading-snug">Monitorando o mercado e executando a estratégia automaticamente.</p>
-                                    </div>
-                                    <div class="mb-3 text-left" v-else>
-                                        <p class="text-white font-bold text-sm text-left">IA Pausada Automaticamente</p>
-                                        <p class="text-[11px] text-zenix-secondary mt-1 text-left leading-snug">Meta atingida ou limite de proteção alcançado.</p>
-                                    </div>
-                                    <button 
-                                        type="button"
-                                        class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
-                                        @click="handleDeactivate"
-                                        :disabled="isDeactivating"
-                                    >
-                                        <i :class="['fas text-sm mr-2', pauseButtonIcon]"></i>
-                                        <span>{{ isDeactivating ? 'Processando...' : pauseButtonText }}</span>
-                                    </button>
-                                </div>
+                            <p class="text-[11px] text-[#888] font-medium" v-html="strategyDescriptionText"></p>
                         </div>
+
+                        <!-- SESSÃO ATIVA Card -->
+                        <div class="bg-[#1A1A1A] border border-[#333] rounded-xl p-4 mb-5 relative z-10 shadow-lg">
+                            <h4 class="text-xs font-bold text-zenix-green uppercase mb-3 tracking-wide">Sessão Ativa</h4>
+                            
+                            <!-- Mode & Gestion Row -->
+                            <div class="grid grid-cols-2 gap-2 mb-4">
+                                <div class="bg-[#0f0f0f] rounded-lg p-2 border border-[#252525]">
+                                    <span class="text-[10px] text-[#666] block mb-0.5">Modo:</span>
+                                    <span class="text-xs font-bold text-white uppercase">{{ mode === 'veloz' ? 'VELLOZ' : mode }}</span>
+                                </div>
+                                <div class="bg-[#0f0f0f] rounded-lg p-2 border border-[#252525]">
+                                    <span class="text-[10px] text-[#666] block mb-0.5">Gestão:</span>
+                                    <span class="text-xs font-bold text-white uppercase">{{ realRiskLevel }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Entry, Target, Limit Row -->
+                            <div class="grid grid-cols-3 gap-2 text-center">
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] text-[#666] mb-1">Entrada</span>
+                                    <span class="text-lg font-bold text-white tracking-tight" v-if="!isLoadingConfig">${{ sessionConfig.entryValue ? Number(sessionConfig.entryValue).toFixed(2) : '1.00' }}</span>
+                                    <span v-else class="text-sm text-gray-500">...</span>
+                                </div>
+                                <div class="flex flex-col items-center relative after:content-[''] after:absolute after:left-0 after:top-2 after:bottom-2 after:w-px after:bg-[#333] before:content-[''] before:absolute before:right-0 before:top-2 before:bottom-2 before:w-px before:bg-[#333]">
+                                    <span class="text-[10px] text-[#666] mb-1">Alvo</span>
+                                    <span class="text-lg font-bold text-zenix-green tracking-tight" v-if="!isLoadingConfig">+${{ profitTarget ? Number(profitTarget).toFixed(2) : '100' }}</span>
+                                    <span v-else class="text-sm text-gray-500">...</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="text-[10px] text-[#666] mb-1">Limite</span>
+                                    <span class="text-lg font-bold text-zenix-red tracking-tight" v-if="!isLoadingConfig">-${{ lossLimit ? Number(lossLimit).toFixed(2) : '100' }}</span>
+                                    <span v-else class="text-sm text-gray-500">...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Proteções Section -->
+                        <div class="mb-6 relative z-10 pl-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fas fa-shield-alt text-[#333] text-xs"></i>
+                                <span class="text-[11px] text-[#666] font-medium uppercase">Proteções</span>
+                            </div>
+                             <div class="space-y-1.5">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-check text-zenix-green text-[10px]"></i>
+                                    <span class="text-[11px] text-[#AAA] font-medium">Stop Blindado {{ sessionConfig.stopLossBlindado ? 'Ativo' : 'Inativo' }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-check text-zenix-green text-[10px]"></i>
+                                    <span class="text-[11px] text-[#AAA] font-medium">Defesa Automática</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- IA EM FUNCIONAMENTO / Footer -->
+                        <div class="mt-auto relative z-10">
+                            <h4 class="text-[10px] font-bold text-[#888] uppercase mb-1">IA Em Funcionamento</h4>
+                            <p class="text-[10px] text-[#555] leading-snug mb-4">
+                                Monitorando o mercado e executando apenas quando há vantagem estatística.
+                            </p>
+
+                            <!-- Manual Control Box -->
+                            <div class="bg-[#1A1A1A] border border-[#333] rounded-lg p-3 mb-3">
+                                <h5 class="text-[11px] font-bold text-[#DDD] mb-0.5">Controle Manual</h5>
+                                <p class="text-[10px] text-[#666]">Pause a IA se desejar encerrar ou reavaliar a sessão.</p>
+                            </div>
+
+                            <!-- Pause Button -->
+                             <button 
+                                type="button"
+                                class="w-full bg-[#FCD34D] hover:bg-[#FBBF24] text-black text-xs font-bold uppercase py-3 rounded-lg flex items-center justify-center gap-2 transition-colors shadow-md"
+                                @click="handleDeactivate"
+                                :disabled="isDeactivating"
+                            >
+                                <span v-if="isDeactivating" class="flex items-center gap-2">
+                                     <i class="fas fa-spinner fa-spin"></i> Parando...
+                                </span>
+                                <span v-else class="flex items-center gap-2">
+                                    <i class="fas fa-pause text-[10px]"></i> Pausar IA
+                                </span>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>

@@ -68,9 +68,9 @@
 				<!-- Capital Inicial -->
 				<div v-if="!isMobile" class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
 					<div class="flex items-center mb-4 gap-2">
-						<div class="text-green-500">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-						</div>
+						<div class="p-2 rounded-lg border border-[#22C55E] bg-[#22C55E]/10 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign text-white"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+					</div>
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium">Entrada Inicial</span>
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">
@@ -81,9 +81,9 @@
 				<!-- Capital Final -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
 					<div class="flex items-center gap-2 mb-3">
-						<div class="text-green-500">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
-						</div>
+						<div class="p-2 rounded-lg border border-[#22C55E] bg-[#22C55E]/10 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet text-white"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
+					</div>
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital Final</span>
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-left"
@@ -223,8 +223,8 @@
 
 				<!-- Operacoes Hoje -->
 				<div class="flex items-center gap-3">
-					<div class="p-2 bg-[#1a1a1a] rounded-md">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity text-green-500"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
+					<div class="p-2 rounded-lg border border-[#22C55E] bg-[#22C55E]/10 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity text-white"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
 					</div>
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">OPERAÇÕES HOJE</div>
@@ -234,8 +234,8 @@
 
 				<!-- Tempo Ativo -->
 				<div class="flex items-center gap-3">
-					<div class="p-2 bg-[#1a1a1a] rounded-md">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock text-green-500"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+					<div class="p-2 rounded-lg border border-[#22C55E] bg-[#22C55E]/10 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock text-white"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
 					</div>
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Tempo ativo</div>
