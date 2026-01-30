@@ -9,19 +9,7 @@
 			</div>
 
 			<div class="flex flex-row items-center gap-3 w-full md:w-auto ml-auto">
-                <!-- Agent Selector (Non-functional switcher for UI) -->
-                <div class="relative z-[40] flex-1 md:flex-none">
-                    <button 
-                        class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-[#27272a] hover:bg-[#27272a] h-9 px-4 py-2 justify-between gap-3 bg-[#0c0c0c] text-[#FAFAFA] w-full md:min-w-[160px]"
-                        type="button"
-                    >
-                        <div class="flex items-center gap-2">
-                            <span class="text-green-500 text-lg">⚡</span>
-                            <span class="font-medium">Agente Zeus</span>
-                        </div>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down text-[#A1A1AA]"><path d="m6 9 6 6 6-6"></path></svg>
-                    </button>
-                </div>
+                <!-- Agent Selector REMOVED as per user request -->
 
 				<div class="relative z-[40] flex-1 md:flex-none">
 					<button 
@@ -886,6 +874,51 @@
 						description: 'Análise: Entropia + Força + Assertividade\nAssertividade: 70%\nRetorno: 63.5%',
 						winRate: 62,
 						style: 'Estatístico / Preciso'
+					},
+                    { 
+						id: 'atlas', 
+						title: 'IA Atlas',
+						marketType: 'Híbrida',
+						emoji: '🛡️', 
+						description: 'Híbrida (Fluxo de Dígitos + Price Action → Tendência)\nAssertividade: 92% a 96%\nRetorno: 95% / 99%',
+						winRate: 94,
+						style: 'Híbrido'
+					},
+                    { 
+						id: 'apollo', 
+						title: 'IA Apollo',
+						marketType: 'Price Action',
+						emoji: '🚀', 
+						description: 'Price Action Puro (Inércia + Força + Tendência)\nAssertividade: 90% a 95%\nRetorno: 99%',
+						winRate: 92,
+						style: 'Agressivo'
+					},
+                    { 
+						id: 'nexus', 
+						title: 'IA Nexus',
+						marketType: 'Segurança',
+						emoji: '📈', 
+						description: 'Price Action Barreira de Segurança com Troca de Contrato\nAssertividade: 91% a 95%\nRetorno: 91% / 95%',
+						winRate: 93,
+						style: 'Conservador'
+					},
+                    { 
+						id: 'orion', 
+						title: 'IA Orion',
+						marketType: 'Estatística',
+						emoji: '⭐', 
+						description: 'Estatística de Dígitos + (Over 2) com Price Action na Recuperação\nAssertividade: 94% a 97%\nRetorno: 95% / 99%',
+						winRate: 95,
+						style: 'Estatístico'
+					},
+                    { 
+						id: 'titan', 
+						title: 'IA Titan',
+						marketType: 'Par/Ímpar',
+						emoji: '☯️', 
+						description: 'Dígitos Par/Ímpar com persistência direcional\nAssertividade: 90% - 95%\nRetorno: 95%',
+						winRate: 92,
+						style: 'Persistência'
 					}
 				],
 				hideValues: false,
@@ -934,6 +967,11 @@
 				const strategy = this.agenteData?.estrategia?.toLowerCase() || '';
 				if (strategy.includes('zeus')) return 'zeus';
 				if (strategy.includes('falcon')) return 'falcon';
+                if (strategy.includes('atlas')) return 'atlas';
+                if (strategy.includes('apollo')) return 'apollo';
+                if (strategy.includes('nexus')) return 'nexus';
+                if (strategy.includes('orion')) return 'orion';
+                if (strategy.includes('titan')) return 'titan';
 				return 'zeus'; // Fallback default
 			},
 			dateRangeText() {
