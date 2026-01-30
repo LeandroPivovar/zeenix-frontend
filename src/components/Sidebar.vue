@@ -224,8 +224,8 @@
                 <a
                     href="#"
                     class="menu-item"
-                    :class="{ active: false }"
-                    @click.prevent="openDevModal()"
+                    :class="{ active: isStrategyCreatorActive }"
+                    @click.prevent="navigateAndClose('/admin/strategies/create')"
                     data-text="Criador de Estratégias"
                 >
                     <i class="fa-solid fa-chess-board w-5 opacity-85"></i>
@@ -365,6 +365,8 @@ export default {
         isInvestmentIAActive() { return this.$route?.path === '/InvestmentIA'; },
         isSupportItemsActive() { return this.$route?.path === '/SupportItems'; },
         isPlansManagementActive() { return this.$route?.path === '/PlansManagement'; },
+        isPlansManagementActive() { return this.$route?.path === '/PlansManagement'; },
+        isStrategyCreatorActive() { return this.$route?.path === '/admin/strategies/create'; },
         isAdmin() {
             try {
                 const token = localStorage.getItem('token');

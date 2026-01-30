@@ -220,7 +220,14 @@ const routes = [
     name: 'NotificationsAdmin',
     component: () => import('../views/Admin/NotificationsAdminView.vue'),
     meta: { requiresAuth: true, requiresRole: ['admin'] }
+  },
+  {
+    path: '/admin/strategies/create',
+    name: 'StrategyCreator',
+    component: () => import('../views/Admin/StrategyCreatorView.vue'),
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   }
+
 
 ]
 
