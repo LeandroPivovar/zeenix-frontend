@@ -1411,8 +1411,10 @@ export default {
                 .map(f => ({
                     id: f.id,
                     name: f.name,
-                    config: { ...f.config }
+                    config: JSON.parse(JSON.stringify(f.config))
                 }));
+            
+            console.log(`[saveFilters] Saved ${target.attackFilters.length} filters for context ${this.modalContext}`);
             
             this.showFilterModal = false;
             this.$root.$toast.success('Filtros configurados com sucesso!');
@@ -1641,6 +1643,19 @@ export default {
                     if (data.config && data.config.form && data.config.recoveryConfig) {
                         this.form = JSON.parse(JSON.stringify(data.config.form));
                         this.recoveryConfig = JSON.parse(JSON.stringify(data.config.recoveryConfig));
+                        
+                        // Sync filter active states
+                        this.filters.forEach(f => {
+                            const active = this.form.attackFilters.find(af => af.id === f.id);
+                            f.active = !!active;
+                            if (active) f.config = { ...active.config };
+                        });
+                        this.recoveryFilters.forEach(f => {
+                            const active = this.recoveryConfig.attackFilters.find(af => af.id === f.id);
+                            f.active = !!active;
+                            if (active) f.config = { ...active.config };
+                        });
+
                         this.addLog('📁 Estratégia importada com sucesso de arquivo.', 'success');
                         this.$root.$toast.success('Estratégia importada com sucesso!');
                     } else {

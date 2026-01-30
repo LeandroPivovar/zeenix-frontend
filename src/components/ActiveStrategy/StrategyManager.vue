@@ -527,21 +527,79 @@
                          </div>
                          <!-- Step 2: Configuration -->
                          <div v-else class="space-y-6 animate-fadeIn">
-                             <!-- Filter Configs... Same as original logic -->
-                               <div v-for="filter in activeFiltersForModal.filter(f => f.active)" :key="filter.id" class="p-6 bg-[#0B0B0B] border border-[#333] rounded-xl space-y-4">
-                                <h4 class="text-white font-bold">{{ filter.name }}</h4>
-                                <!-- Config fields based on filter.id -->
-                                <!-- Simplified for this step, but functionality remains -->
-                                <div v-if="filter.id === 'digit_density'">
-                                     <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Janela</label>
-                                     <input type="number" v-model.number="filter.config.window" class="w-full bg-[#181818] border border-[#333] rounded p-3" />
-                                     <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold mt-2">Dígitos</label>
-                                     <input type="text" v-model="filter.config.digits" class="w-full bg-[#181818] border border-[#333] rounded p-3" />
-                                     <!-- Add other fields -->
-                                </div>
-                                <!-- ... Other filters ... -->
-                               </div>
-                             <button @click="saveFilters" class="w-full bg-zenix-green text-black font-bold py-4 rounded-lg mt-8">Salvar Filtros</button>
+                              <div v-for="filter in activeFiltersForModal.filter(f => f.active)" :key="filter.id" class="p-6 bg-[#0B0B0B] border border-[#333] rounded-xl space-y-4">
+                                 <h4 class="text-white font-bold">{{ filter.name }}</h4>
+                                 
+                                 <div v-if="filter.id === 'digit_density'" class="grid grid-cols-2 gap-4">
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Janela</label>
+                                          <input type="number" v-model.number="filter.config.window" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white" />
+                                      </div>
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Dígitos</label>
+                                          <input type="text" v-model="filter.config.digits" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white" />
+                                      </div>
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Operador</label>
+                                          <select v-model="filter.config.operator" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white">
+                                              <option value="<">Menor que</option>
+                                              <option value=">">Maior que</option>
+                                              <option value="=">Igual</option>
+                                          </select>
+                                      </div>
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Limite</label>
+                                          <input type="number" v-model.number="filter.config.threshold" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white" />
+                                      </div>
+                                 </div>
+                                 
+                                 <div v-if="filter.id === 'digit_sequence'" class="grid grid-cols-2 gap-4">
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Comprimento</label>
+                                          <input type="number" v-model.number="filter.config.length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white" />
+                                      </div>
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Alvo</label>
+                                          <select v-model="filter.config.target" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white">
+                                              <option value="under_4">Abaixo 4</option>
+                                              <option value="over_5">Acima 5</option>
+                                              <option value="even">Par</option>
+                                              <option value="odd">Ímpar</option>
+                                          </select>
+                                      </div>
+                                 </div>
+
+                                 <div v-if="filter.id === 'parity_majority'" class="grid grid-cols-3 gap-3">
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Janela</label>
+                                          <input type="number" v-model.number="filter.config.window" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white" />
+                                      </div>
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">% Mínima</label>
+                                          <input type="number" v-model.number="filter.config.percentage" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white" />
+                                      </div>
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Ruído</label>
+                                          <input type="number" v-model.number="filter.config.maxNoise" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white" />
+                                      </div>
+                                 </div>
+
+                                 <div v-if="filter.id === 'price_momentum'" class="grid grid-cols-3 gap-3">
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Janela</label>
+                                          <input type="number" v-model.number="filter.config.window" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white" />
+                                      </div>
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Confirmações</label>
+                                          <input type="number" v-model.number="filter.config.ticksToConfirm" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white" />
+                                      </div>
+                                      <div>
+                                          <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Delta</label>
+                                          <input type="number" step="0.01" v-model.number="filter.config.minDelta" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-white" />
+                                      </div>
+                                 </div>
+                              </div>
+                              <button @click="saveFilters" class="w-full bg-zenix-green text-black font-bold py-4 rounded-lg mt-8">Salvar Filtros</button>
                          </div>
                     </div>
                 </div>
@@ -762,9 +820,16 @@ export default {
         },
         openFilterModal(context) { this.modalContext = context; this.filterStep = 1; this.showFilterModal = true; },
         toggleFilter(filter) {
-             if (filter.active) { filter.active = false; return; }
-             const target = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
-             if (target.filter(f => f.active).length >= 2) return;
+             if (filter.active) {
+                 filter.active = false;
+                 return;
+             }
+             const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
+             const activeCount = targetArray.filter(f => f.active).length;
+             if (activeCount >= 2) {
+                 this.$root.$toast.warning('Selecione no máximo 2 filtros.');
+                 return;
+             }
              filter.active = true;
         },
         nextFilterStep() { this.filterStep = 2; },
@@ -772,8 +837,15 @@ export default {
         saveFilters() {
              const target = this.modalContext === 'main' ? this.form : this.recoveryConfig;
              const source = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
-             target.attackFilters = source.filter(f => f.active).map(f => ({ id: f.id, name: f.name, config: { ...f.config } }));
+             target.attackFilters = source
+                .filter(f => f.active)
+                .map(f => ({
+                    id: f.id,
+                    name: f.name,
+                    config: JSON.parse(JSON.stringify(f.config))
+                }));
              this.showFilterModal = false;
+             this.$root.$toast.success('Filtros configurados com sucesso!');
         },
         loadStrategiesFromStorage() {
              // Load/Merge strategies
@@ -791,7 +863,18 @@ export default {
              if (strategy) {
                  this.form = JSON.parse(JSON.stringify(strategy.config.form));
                  this.recoveryConfig = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
-                 // Restore filters active states...
+                 
+                 // Restore filters active states
+                 this.filters.forEach(f => {
+                     const active = this.form.attackFilters.find(af => af.id === f.id);
+                     f.active = !!active;
+                     if (active) f.config = { ...active.config };
+                 });
+                 this.recoveryFilters.forEach(f => {
+                     const active = (this.recoveryConfig.attackFilters || []).find(af => af.id === f.id);
+                     f.active = !!active;
+                     if (active) f.config = { ...active.config };
+                 });
              }
         },
         saveCurrentStrategy() { /* ... */ },
@@ -809,6 +892,18 @@ export default {
                     if (data.config && data.config.form && data.config.recoveryConfig) {
                         this.form = JSON.parse(JSON.stringify(data.config.form));
                         this.recoveryConfig = JSON.parse(JSON.stringify(data.config.recoveryConfig));
+                        
+                        // Sync filter state
+                        this.filters.forEach(f => {
+                            const active = this.form.attackFilters.find(af => af.id === f.id);
+                            f.active = !!active;
+                            if (active) f.config = { ...active.config };
+                        });
+                        this.recoveryFilters.forEach(f => {
+                            const active = (this.recoveryConfig.attackFilters || []).find(af => af.id === f.id);
+                            f.active = !!active;
+                            if (active) f.config = { ...active.config };
+                        });
                         this.$root.$toast.success('Estratégia importada com sucesso!');
                     } else {
                         throw new Error('Formato de arquivo inválido.');
