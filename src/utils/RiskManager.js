@@ -1,29 +1,40 @@
-/**
- * 🛡️ RiskManager - Standardized Risk Logic (Frontend)
- * Based on Apollo Strategy Patterns: Dynamic Payouts, 1-Level Soros, and Recovery.
- */
-
 export const RiskManager = {
     /**
+     * Default payouts per contract type for safe estimation
+     */
+    payoutDefaults: {
+        'CALL': 0.95,
+        'PUT': 0.95,
+        'DIGITOVER': 0.19,  // Standard for Over 8 or similar
+        'DIGITUNDER': 0.19, // Standard for Under 8 or similar
+        'DIGITMATCH': 8.00,
+        'DIGITDIFF': 0.09,
+        'DIGITEVEN': 0.95,
+        'DIGITODD': 0.95
+    },
+
+    /**
      * Calculates the next stake based on current session state and user config.
-     * @param {Object} state - Current session state (sessionState)
-     * @param {Object} config - Strategy configuration (form or recoveryConfig)
-     * @returns {number} The calculated stake amount.
      */
     calculateNextStake(state, config) {
         const baseStake = config.initialStake || 0.35;
         const riskProfile = config.riskProfile || 'moderado';
+        const tradeType = config.tradeType || 'CALL';
 
-        // Profit Margin Factor based on Risk Profile (Apollo Standard)
+        // Profit Margin Factor based on Risk Profile
         let profitFactor = 0.15; // Moderado
         if (riskProfile === 'conservador') profitFactor = 0.00;
         else if (riskProfile === 'agressivo') profitFactor = 0.30;
 
-        // Payout Rates (Defaults if not tracked yet)
-        const payout = state.lastPayoutRate || 0.95;
+        // Determine which payout tracker to use based on mode
+        const isRecovery = state.analysisType === 'RECUPERACAO';
+        const lastPayout = isRecovery ? state.lastPayoutRecovery : state.lastPayoutPrincipal;
 
-        // 1. RECOVERY MODE (RECUPERACAO)
-        if (state.analysisType === 'RECUPERACAO') {
+        // Use last tracked payout, or fallback to default for this contract type
+        const payout = lastPayout || this.payoutDefaults[tradeType] || 0.95;
+
+        // 1. RECOVERY MODE
+        if (isRecovery) {
             const lossToRecover = state.totalLossAccumulated - state.recoveredAmount;
             const stake = (lossToRecover * (1 + profitFactor)) / payout;
             return Math.max(0.35, parseFloat(stake.toFixed(2)));
@@ -55,8 +66,11 @@ export const RiskManager = {
         state.lastStake = stakeUsed;
 
         if (win) {
-            state.lastPayoutRate = profit / stakeUsed;
+            const currentPayout = profit / stakeUsed;
+
+            // Save payout to the specific tracker for this context
             if (state.analysisType === 'RECUPERACAO') {
+                state.lastPayoutRecovery = currentPayout;
                 state.recoveredAmount += profit;
                 state.lossStreakRecovery = 0;
                 state.skipSorosNext = true; // Skip Soros immediately after a recovery win
@@ -69,6 +83,7 @@ export const RiskManager = {
                     state.recoveredAmount = 0;
                 }
             } else {
+                state.lastPayoutPrincipal = currentPayout;
                 // Main Mode Win
                 state.consecutiveLosses = 0;
                 state.totalLossAccumulated = 0;
@@ -120,7 +135,12 @@ export const RiskManager = {
 
         // 2. Update payout rate with official data
         if (win) {
-            state.lastPayoutRate = realProfit / stakeUsed;
+            const currentPayout = realProfit / stakeUsed;
+            if (state.analysisType === 'RECUPERACAO') {
+                state.lastPayoutRecovery = currentPayout;
+            } else {
+                state.lastPayoutPrincipal = currentPayout;
+            }
         }
     }
 };

@@ -275,12 +275,12 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-white font-bold mb-2">Multiplicador</label>
+                                    <label class="block text-white font-bold mb-2">Nível de Soros</label>
                                     <input 
                                         type="number" 
-                                        v-model.number="form.multiplier" 
-                                        step="0.1" 
+                                        v-model.number="form.sorosLevel" 
                                         class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                        min="0"
                                     />
                                 </div>
                                 <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)">
@@ -995,6 +995,7 @@ export default {
                 market: 'R_100',
                 tradeType: null,
                 prediction: 0, 
+                sorosLevel: 1,
                 attackFilters: []
             },
 
@@ -1006,8 +1007,10 @@ export default {
                 consecutiveWins: 0,
                 totalLossAccumulated: 0,
                 recoveredAmount: 0,
-                lastPayoutRate: 0.95, 
+                lastPayoutPrincipal: 0.95,
+                lastPayoutRecovery: 0.95,
                 lastProfit: 0,
+                lastStake: 0,
                 lastResultWin: false,
                 skipSorosNext: false,
                 lossStreakRecovery: 0,
@@ -1985,7 +1988,7 @@ export default {
                     }
 
                     // Update stats immediately to allow next trade
-                    const realPayout = this.pendingFastResult.payout || (stake * (this.sessionState.lastPayoutRate || 0.95) + stake);
+                    const realPayout = this.pendingFastResult.payout || (stake * (this.sessionState.analysisType === 'RECUPERACAO' ? this.sessionState.lastPayoutRecovery : this.sessionState.lastPayoutPrincipal) + stake);
                     const estimatedProfit = win 
                         ? (realPayout - stake)
                         : -stake;
@@ -2097,12 +2100,18 @@ export default {
             return false;
         },
         calculateNextStake() {
-            const config = this.sessionState.analysisType === 'RECUPERACAO' ? this.recoveryConfig : this.form;
+            const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
+            const config = isRecovery ? this.recoveryConfig : this.form;
             const stake = RiskManager.calculateNextStake(this.sessionState, config);
             
-            // Log if Soros is active
-            if (this.sessionState.analysisType === 'PRINCIPAL' && this.sessionState.consecutiveWins === 1 && this.sessionState.lastResultWin) {
-                this.addLog(`🚀 SOROS N1 ATIVADO: $${stake}`, 'info');
+            // Log if Soros is active (Principal mode only)
+            if (!isRecovery) {
+                const sorosLevel = this.form.sorosLevel || 1;
+                const cyclePosition = this.sessionState.consecutiveWins % (sorosLevel + 1);
+                
+                if (cyclePosition > 0 && this.sessionState.lastResultWin) {
+                    this.addLog(`🚀 SOROS ATIVADO (Mão ${cyclePosition}/${sorosLevel}): $${stake}`, 'info');
+                }
             }
 
             return stake;
@@ -2229,20 +2238,14 @@ export default {
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake);
                 }
 
-                // Update Payout Rate for next dynamic martingale
-                if (trade.result === 'WON' && trade.stake > 0) {
-                    this.sessionState.lastPayoutRate = trade.pnl / trade.stake;
-                }
-                
-                // Only subtract profit if not already handled by fast result logic (which doesn't subtract yet to avoid double counting pnl)
-                // Actually, let's always update profit/balance from the official source as it's more accurate
-                this.monitoringStats.profit += trade.pnl;
-                this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
-                
-                // Track peak profit for Stop Blindado
+                // track peak profit for Stop Blindado
                 if (this.monitoringStats.profit > this.sessionState.peakProfit) {
                     this.sessionState.peakProfit = this.monitoringStats.profit;
                 }
+
+                // Update official profit and balance
+                this.monitoringStats.profit += trade.pnl;
+                this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
 
                 this.activeContracts.delete(id);
                 this.checkLimits();
