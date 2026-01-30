@@ -1584,12 +1584,59 @@ export default {
         async handleStartClick() {
              this.isLoadingAccounts = true;
              this.showAccountModal = true;
+             this.availableAccounts = [];
              
              try {
-                 this.availableAccounts = await loadAvailableAccounts(true);
+                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                 const userToken = localStorage.getItem('token');
+                 
+                 if (!userToken) {
+                     this.$root.$toast.error('Sessão expirada. Faça login novamente.');
+                     return;
+                 }
+
+                 const response = await fetch(`${apiBase}/settings`, {
+                     headers: {
+                         'Authorization': `Bearer ${userToken}`,
+                         'Content-Type': 'application/json'
+                     }
+                 });
+
+                 if (!response.ok) throw new Error('Falha ao buscar configurações do backend');
+
+                 const data = await response.json();
+                 const accounts = [];
+
+                 // Adicionar Conta Real se existir token
+                 if (data.tokenReal) {
+                     accounts.push({
+                         loginid: data.idRealAccount || 'Conta Real',
+                         token: data.tokenReal,
+                         balance: data.realAmount || 0,
+                         currency: data.tokenRealCurrency || 'USD',
+                         isDemo: false
+                     });
+                 }
+
+                 // Adicionar Conta Demo se existir token
+                 if (data.tokenDemo) {
+                     accounts.push({
+                         loginid: data.idDemoAccount || 'Conta Demo',
+                         token: data.tokenDemo,
+                         balance: data.demoAmount || 0,
+                         currency: data.tokenDemoCurrency || 'USD',
+                         isDemo: true
+                     });
+                 }
+
+                 this.availableAccounts = accounts;
+
+                 if (accounts.length === 0) {
+                     console.warn('[StrategyCreator] Nenhuma conta com token encontrada no backend');
+                 }
              } catch (error) {
-                 console.error('[StrategyCreator] Erro ao carregar contas:', error);
-                 this.$root.$toast.error('Erro ao carregar contas. Tente novamente.');
+                 console.error('[StrategyCreator] Erro ao carregar contas do backend:', error);
+                 this.$root.$toast.error('Erro ao conectar com o servidor. Tente novamente.');
              } finally {
                  this.isLoadingAccounts = false;
              }
