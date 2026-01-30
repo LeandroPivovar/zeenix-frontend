@@ -101,13 +101,13 @@
                       item.isHighlighted ? 'meta-highlight' : ''
                     ]"
                   >
-                    <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : 'rgba(255,255,255,0.4)') }">{{ item.digit }}</span>
+                    <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : (item.statusClass === 'status-heated' ? '#F59E0B' : 'rgba(255,255,255,0.4)')) }">{{ item.digit }}</span>
                     <span class="meta-digit-percentage text-[11px] font-bold text-white/60 mb-4">{{ item.percentage }}%</span>
                     
                     <div class="meta-vertical-meter-container w-5 h-20 bg-white/5 rounded-full relative overflow-hidden">
                       <div 
                         class="meta-vertical-meter-fill absolute bottom-0 left-0 w-full transition-all duration-1000 ease-out"
-                        :style="{ height: item.percentage + '%', backgroundColor: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : 'rgba(255,255,255,0.1)') }"
+                        :style="{ height: item.percentage + '%', backgroundColor: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : (item.statusClass === 'status-heated' ? '#F59E0B' : 'rgba(255,255,255,0.1)')) }"
                       ></div>
                     </div>
                     <span class="text-[9px] font-bold text-white/20 mt-4 uppercase">{{ item.percentage }}%</span>
@@ -126,33 +126,32 @@
                       <span class="text-[9px] font-bold text-zenix-green uppercase">{{ dvxStatusText }}</span>
                     </div>
                   </div>
-                  
-                  <div class="flex items-center gap-6 py-4">
-                    <div class="flex flex-col items-center ml-6 mr-8">
-                      <span class="text-7xl font-black text-zenix-green leading-none">{{ dvxValueComputed }}</span>
-                      <span class="text-sm font-bold text-white/40 uppercase mt-2">DVX</span>
+                                    <div class="flex items-center gap-6 py-4">
+                      <div class="flex flex-col items-center ml-6 mr-8">
+                        <span class="text-6xl font-black text-zenix-green leading-none">{{ dvxValueComputed }}</span>
+                        <span class="text-sm font-bold text-white/40 uppercase mt-2">DVX</span>
+                      </div>
+                      
+                      <div class="flex-1">
+                        <div class="flex items-center justify-between mb-2">
+                          <span class="text-xs font-bold text-zenix-green">Volatilidade {{ dvxStatusText }}</span>
+                        </div>
+                        <div class="relative h-3 bg-white/5 rounded-full mb-4">
+                          <div 
+                            class="absolute inset-y-0 left-0 bg-gradient-to-r from-zenix-green/20 to-zenix-green rounded-full transition-all duration-1000"
+                            :style="{ width: dvxValueComputed + '%' }"
+                          ></div>
+                          <div 
+                            class="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all duration-1000 z-10"
+                            :style="{ left: dvxValueComputed + '%', transform: 'translate(-50%, -50%)' }"
+                          ></div>
+                        </div>
+                        <div class="flex justify-between items-center text-[9px] font-bold text-white/10 uppercase">
+                          <span>Baixa</span>
+                          <span>Alta</span>
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div class="flex-1">
-                      <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-bold text-zenix-green">Volatilidade {{ dvxStatusText }}</span>
-                      </div>
-                      <div class="relative h-5 bg-white/5 rounded-full mb-4">
-                        <div 
-                          class="absolute inset-y-0 left-0 bg-gradient-to-r from-zenix-green/20 to-zenix-green rounded-full transition-all duration-1000"
-                          :style="{ width: dvxValueComputed + '%' }"
-                        ></div>
-                        <div 
-                          class="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all duration-1000 z-10"
-                          :style="{ left: dvxValueComputed + '%', transform: 'translate(-50%, -50%)' }"
-                        ></div>
-                      </div>
-                      <div class="flex justify-between items-center text-[9px] font-bold text-white/10 uppercase">
-                        <span>Baixa</span>
-                        <span>Alta</span>
-                      </div>
-                    </div>
-                  </div>
                   
                   <p class="text-[10px] text-white/30 font-medium">Ambiente {{ dvxEnvironmentText }} para operações de baixo risco</p>
                 </div>
@@ -1090,16 +1089,28 @@ export default {
 
       return counts.map((count, index) => {
         const percentage = totalDigits > 0 ? (count / totalDigits) * 100 : 0;
-        const max = Math.max(...counts.map(c => (c / totalDigits) * 100));
-        const min = Math.min(...counts.map(c => (c / totalDigits) * 100));
         const p = (count / totalDigits) * 100;
+
+        let statusClass; // Removed barHeight from here as it's less used in chart unless needed
+
+        if (p >= 11.5) {
+            statusClass = 'status-max';
+        } else if (p >= 10.0) {
+            statusClass = 'status-heated';
+        } else if (p <= 9.0) {
+            statusClass = 'status-min';
+        } else {
+            statusClass = 'status-underheated';
+        }
 
         return {
           digit: index,
           count,
           percentage: Math.round(percentage * 10) / 10,
-          isMax: p === max && max > min,
-          isMin: p === min && min < max
+          statusClass,
+          isMax: statusClass === 'status-max',
+          isMin: statusClass === 'status-min',
+          isHighlighted: false
         };
       });
     },

@@ -203,13 +203,13 @@
                                     item.isHighlighted ? 'meta-highlight' : ''
                                 ]"
                             >
-                                <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : 'rgba(255,255,255,0.4)') }">{{ item.digit }}</span>
+                                <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : (item.statusClass === 'status-heated' ? '#F59E0B' : 'rgba(255,255,255,0.4)')) }">{{ item.digit }}</span>
                                 <span class="meta-digit-percentage text-[11px] font-bold text-white/60 mb-4">{{ item.percentage }}%</span>
                                 
                                 <div class="meta-vertical-meter-container w-5 h-20 bg-white/5 rounded-full relative overflow-hidden">
                                     <div 
                                         class="meta-vertical-meter-fill absolute bottom-0 left-0 w-full transition-all duration-1000 ease-out"
-                                        :style="{ height: item.percentage + '%', backgroundColor: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : 'rgba(255,255,255,0.1)') }"
+                                        :style="{ height: item.percentage + '%', backgroundColor: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : (item.statusClass === 'status-heated' ? '#F59E0B' : 'rgba(255,255,255,0.1)')) }"
                                     ></div>
                                 </div>
                                 <span class="text-[9px] font-bold text-white/20 mt-4 uppercase">{{ item.percentage }}%</span>
@@ -231,7 +231,7 @@
                             
                             <div class="flex items-center gap-6 py-4">
                                 <div class="flex flex-col items-center ml-6 mr-8">
-                                    <span class="text-7xl font-black text-zenix-green leading-none">{{ dvxValueComputed }}</span>
+                                    <span class="text-6xl font-black text-zenix-green leading-none">{{ dvxValueComputed }}</span>
                                     <span class="text-sm font-bold text-white/40 uppercase mt-2">DVX</span>
                                 </div>
                                 
@@ -239,13 +239,13 @@
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="text-xs font-bold text-zenix-green">Volatilidade Baixa</span>
                                     </div>
-                                    <div class="relative h-5 bg-white/5 rounded-full mb-4">
+                                    <div class="relative h-3 bg-white/5 rounded-full mb-4">
                                         <div 
                                             class="absolute inset-y-0 left-0 bg-gradient-to-r from-zenix-green/20 to-zenix-green rounded-full transition-all duration-1000"
                                             :style="{ width: dvxValueComputed + '%' }"
                                         ></div>
                                         <div 
-                                            class="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all duration-1000 z-10"
+                                            class="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all duration-1000 z-10"
                                             :style="{ left: dvxValueComputed + '%', transform: 'translate(-50%, -50%)' }"
                                         ></div>
                                     </div>
@@ -955,36 +955,34 @@ export default {
             
             const expected = totalDigits / 10;
             const frequencies = this.digitFrequencies;
-            const max = Math.max(...frequencies.map(f => f.percentage));
-            const min = Math.min(...frequencies.map(f => f.percentage));
             
             return frequencies.map(item => {
                 const count = (item.percentage / 100) * totalDigits;
                 const p = item.percentage;
                 const zScore = expected > 0 ? ((count - expected) / Math.sqrt(expected)).toFixed(1) : 0;
-                const z = parseFloat(zScore);
                 
                 let statusClass, statusText, barHeight;
-                if (z < -1.5) {
-                    statusClass = 'status-underheated';
-                    statusText = 'Subaquec.';
-                    barHeight = 42;
-                } else if (z < -0.5) {
-                    statusClass = 'status-normal';
-                    statusText = 'Normal';
-                    barHeight = 81;
-                } else if (z < 1.5) {
-                    statusClass = 'status-heated';
-                    statusText = z < 0.5 ? 'Lev. aquec.' : 'Aquecido';
-                    barHeight = z < 0.5 ? 93 : 106;
-                } else {
-                    statusClass = 'status-overheated';
+
+                if (p >= 11.5) {
+                    statusClass = 'status-max';
                     statusText = 'Sobreaquec.';
                     barHeight = 110;
+                } else if (p >= 10.0) {
+                    statusClass = 'status-heated';
+                    statusText = 'Aquecido';
+                    barHeight = 93;
+                } else if (p <= 9.0) {
+                    statusClass = 'status-min';
+                    statusText = 'Subaquec.';
+                    barHeight = 42;
+                } else {
+                    statusClass = 'status-underheated'; // Using underheated as Gray/Normal visual
+                    statusText = 'Normal';
+                    barHeight = 81;
                 }
                 
-                // Destacar dígito 7 se for subaquecido (exemplo do HTML)
-                const isHighlighted = item.digit === 7 && z < -1.5;
+                // Manter logica de destaque para interatividade se necessario
+                const isHighlighted = false;
                 
                 return {
                     digit: item.digit,
@@ -994,8 +992,8 @@ export default {
                     statusText,
                     barHeight,
                     isHighlighted,
-                    isMax: p === max && max > min,
-                    isMin: p === min && min < max
+                    isMax: statusClass === 'status-max',
+                    isMin: statusClass === 'status-min'
                 };
             });
         },
