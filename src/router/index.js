@@ -178,7 +178,12 @@ const routes = [
     name: 'InvestmentIAView',
     component: InvestmentActiveStrategyView,
     meta: { requiresAuth: true }
-
+  },
+  {
+    path: '/iaTeste',
+    name: 'iaTeste',
+    component: InvestmentActiveStrategyView,
+    meta: { requiresAuth: true }
   },
   {
     path: '/MasterTrader',
