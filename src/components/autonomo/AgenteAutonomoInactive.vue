@@ -132,14 +132,24 @@
 							>
 								<div class="selector-content">
 									<div class="selector-left">
-										<div class="strategy-icons-inline" v-if="selectedAgent">
-											<img 
-												v-for="icon in availableAgents.find(a => a.id === selectedAgent)?.icons" 
-												:key="icon" 
-												:src="icon" 
-												class="deriv-svg-icon-small"
-											/>
-										</div>
+                                            <div class="strategy-icons-inline" v-if="selectedAgent">
+                                                <div class="agent-avatar-mask-small">
+                                                    <video 
+                                                        v-if="availableAgents.find(a => a.id === selectedAgent)?.video" 
+                                                        :src="availableAgents.find(a => a.id === selectedAgent)?.video" 
+                                                        class="agent-video-avatar" 
+                                                        autoplay 
+                                                        loop 
+                                                        muted 
+                                                        playsinline
+                                                    ></video>
+                                                    <img 
+                                                        v-else
+                                                        :src="availableAgents.find(a => a.id === selectedAgent)?.icons[0]" 
+                                                        class="deriv-svg-icon-small"
+                                                    />
+                                                </div>
+                                            </div>
 										<span :class="{ 'placeholder': !selectedAgent }">
 											{{ selectedAgent ? 'IA ' + getAgentTitle(selectedAgent).replace('Agente ', '') : 'Selecione seu agente' }}
 										</span>
@@ -1852,4 +1862,30 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     font-size: 16px;
     font-weight: 700;
 }
+
+.agent-avatar-mask-small {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #333;
+}
+
+/* Ensure active title remains white */
+.agent-card-premium.active .agent-title-premium {
+    color: #FFFFFF !important;
+}
+
+/* Remove 'bolinha' overlay if it exists via pseudos */
+.agent-avatar-mask::after,
+.agent-avatar-mask::before {
+    display: none !important;
+    content: none !important;
+}
+
 </style>
