@@ -207,6 +207,22 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
+import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
+
+// Import strategy configurations
+import apolloStrategy from '../../utils/strategies/apollo.json';
+import atlasStrategy from '../../utils/strategies/atlas.json';
+import nexusStrategy from '../../utils/strategies/nexus.json';
+import orionStrategy from '../../utils/strategies/orion.json';
+import titanStrategy from '../../utils/strategies/titan.json';
+
+const strategyConfigs = {
+	apollo: apolloStrategy,
+	atlas: atlasStrategy,
+	nexus: nexusStrategy,
+	orion: orionStrategy,
+	titan: titanStrategy
+};
 
 export default {
 	name: 'AIMonitoringView',
@@ -224,38 +240,44 @@ export default {
 			isStopping: false,
 			activeTab: 'logs',
 
-			stats: {
-				balance: 1000.00,
-				profit: 0.00,
-				wins: 0,
-				losses: 0,
-				status: 'Online',
-				statusDesc: 'Analisando mercado'
-			},
-
-			logs: [],
-			operations: [],
-
+			// Strategy Config (loaded from backend or localStorage)
 			currentConfig: {
 				strategy: 'Apollo',
 				stake: 0.35,
 				mode: 'veloz'
 			},
 
-			eventSource: null
+			// WebSocket Connection
+			ws: null,
+			tickSubscriptionId: null,
+			isAuthorized: false,
+			tickCount: 0,
+			tickHistory: [],
+			digitHistory: [],
+
+			stats: {
+				balance: 0,
+				profit: 0,
+				wins: 0,
+				losses: 0,
+				status: 'Conectando...',
+				statusDesc: 'Inicializando WebSocket'
+			},
+
+			logs: [],
+			operations: [],
+			activeContracts: new Map()
 		}
 	},
 	mounted() {
 		this.checkMobile();
 		window.addEventListener('resize', this.checkMobile);
-		this.connectToLogs();
-		this.loadInitialData();
+		this.loadConfiguration();
+		this.initTickConnection();
 	},
 	beforeUnmount() {
 		window.removeEventListener('resize', this.checkMobile);
-		if (this.eventSource) {
-			this.eventSource.close();
-		}
+		this.stopTickConnection();
 	},
 	methods: {
 		checkMobile() {
@@ -268,94 +290,321 @@ export default {
 		toggleSidebarCollapse() {
 			this.isSidebarCollapsed = !this.isSidebarCollapsed;
 		},
-		async loadInitialData() {
-			try {
-				const token = localStorage.getItem('token');
-				const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-				
-				// Load current stats
-				const statsRes = await fetch(`${apiBaseUrl}/ai/stats`, {
-					headers: { 'Authorization': `Bearer ${token}` }
-				});
-				if (statsRes.ok) {
-					const data = await statsRes.json();
-					this.stats = { ...this.stats, ...data };
+		loadConfiguration() {
+			// Try to load from localStorage or use defaults
+			const savedConfig = localStorage.getItem('ai_active_config');
+			if (savedConfig) {
+				try {
+					this.currentConfig = JSON.parse(savedConfig);
+				} catch (e) {
+					console.error('Error loading config:', e);
 				}
-
-				// Load operations history
-				const historyRes = await fetch(`${apiBaseUrl}/ai/history`, {
-					headers: { 'Authorization': `Bearer ${token}` }
-				});
-				if (historyRes.ok) {
-					const data = await historyRes.json();
-					this.operations = data;
-				}
-
-				// Load current config
-				const configRes = await fetch(`${apiBaseUrl}/ai/config`, {
-					headers: { 'Authorization': `Bearer ${token}` }
-				});
-				if (configRes.ok) {
-					const data = await configRes.json();
-					this.currentConfig = data;
-				}
-			} catch (error) {
-				console.error('Erro ao carregar dados:', error);
 			}
 		},
-		connectToLogs() {
-			const token = localStorage.getItem('token');
-			const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-			
-			// Use EventSource for SSE or WebSocket
-			// For now, using SSE as an example
-			this.eventSource = new EventSource(`${apiBaseUrl}/ai/logs/stream?token=${token}`);
-			
-			this.eventSource.onmessage = (event) => {
-				try {
-					const log = JSON.parse(event.data);
-					this.logs.unshift({
-						id: Date.now() + Math.random(),
-						time: new Date().toLocaleTimeString(),
-						type: log.type || 'info',
-						message: log.message
-					});
-					
-					// Keep only last 100 logs
-					if (this.logs.length > 100) {
-						this.logs = this.logs.slice(0, 100);
+		getDerivToken() {
+			try {
+				const connectionStr = localStorage.getItem('deriv_connection');
+				if (connectionStr) {
+					const connection = JSON.parse(connectionStr);
+					const accountLoginid = connection.loginid;
+					if (accountLoginid) {
+						const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+						const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+						if (tokensByLoginId[accountLoginid]) {
+							return tokensByLoginId[accountLoginid].trim();
+						}
 					}
-				} catch (e) {
-					console.error('Error parsing log:', e);
+				}
+				const defaultToken = localStorage.getItem('deriv_token');
+				return defaultToken ? defaultToken.trim() : null;
+			} catch (e) {
+				console.error('Error getting token:', e);
+				return null;
+			}
+		},
+		async initTickConnection() {
+			this.stopTickConnection();
+			this.tickCount = 0;
+
+			const appId = localStorage.getItem('deriv_app_id') || '1089';
+			const endpoint = `wss://ws.derivws.com/websockets/v3?app_id=${appId}`;
+			
+			try {
+				this.ws = new WebSocket(endpoint);
+
+				this.ws.onopen = () => {
+					this.addLog('🔌 Conectado ao mercado', 'success');
+					const token = this.getDerivToken();
+					
+					if (token) {
+						this.ws.send(JSON.stringify({ authorize: token }));
+					} else {
+						this.addLog('⚠️ Token não encontrado. Modo observação.', 'warning');
+						this.subscribeTicks();
+					}
+				};
+
+				this.ws.onmessage = (event) => {
+					try {
+						const msg = JSON.parse(event.data);
+						
+						if (msg.msg_type === 'authorize') {
+							if (msg.error) {
+								this.addLog(`❌ Erro de autorização: ${msg.error.message}`, 'error');
+							} else {
+								this.isAuthorized = true;
+								this.stats.balance = msg.authorize.balance;
+								this.addLog(`✅ Autorizado! Saldo: $${this.stats.balance}`, 'success');
+								this.subscribeTicks();
+							}
+						}
+
+						if (msg.msg_type === 'tick') {
+							this.handleTickMessage(msg);
+						}
+
+						if (msg.msg_type === 'buy') {
+							if (msg.error) {
+								this.addLog(`❌ Erro na compra: ${msg.error.message}`, 'error');
+							} else {
+								const payout = msg.buy.payout;
+								this.addLog(`🚀 Compra realizada! ID: ${msg.buy.contract_id} | Payout: $${payout}`, 'success');
+								this.subscribeToContract(msg.buy.contract_id);
+							}
+						}
+
+						if (msg.msg_type === 'proposal_open_contract') {
+							this.handleContractUpdate(msg.proposal_open_contract);
+						}
+					} catch (e) {
+						console.error('WebSocket message error:', e);
+					}
+				};
+
+				this.ws.onerror = (error) => {
+					console.error('WebSocket error:', error);
+					this.addLog('❌ Erro na conexão WebSocket', 'error');
+				};
+
+				this.ws.onclose = () => {
+					this.addLog('📡 Conexão encerrada. Reconectando...', 'info');
+					setTimeout(() => this.initTickConnection(), 3000);
+				};
+			} catch (error) {
+				console.error('WebSocket connection error:', error);
+				this.addLog('❌ Falha ao conectar', 'error');
+			}
+		},
+		stopTickConnection() {
+			if (this.ws) {
+				if (this.tickSubscriptionId) {
+					this.ws.send(JSON.stringify({ forget: this.tickSubscriptionId }));
+				}
+				this.ws.close();
+				this.ws = null;
+			}
+			this.tickSubscriptionId = null;
+		},
+		subscribeTicks() {
+			if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+				this.ws.send(JSON.stringify({
+					ticks: 'R_100', // Using R_100 as default market for AI
+					subscribe: 1
+				}));
+				this.stats.status = 'Monitorando';
+				this.stats.statusDesc = 'Analisando tiques em tempo real';
+			}
+		},
+		handleTickMessage(msg) {
+			if (msg.error) {
+				this.addLog(`❌ Erro: ${msg.error.message}`, 'error');
+				return;
+			}
+
+			if (msg.msg_type === 'tick' && msg.tick) {
+				this.tickCount++;
+				const price = msg.tick.quote;
+				
+				if (msg.subscription) {
+					this.tickSubscriptionId = msg.subscription.id;
+				}
+
+				// Only log every 10th tick to avoid spam
+				if (this.tickCount % 10 === 0) {
+					this.addLog(`📈 Tick #${this.tickCount}: ${price}`, 'info');
+				}
+				
+				this.tickHistory.unshift(price);
+				if (this.tickHistory.length > 100) this.tickHistory.pop();
+
+				const lastDigit = parseInt(price.toString().slice(-1));
+				this.digitHistory.unshift(lastDigit);
+				if (this.digitHistory.length > 100) this.digitHistory.pop();
+
+				// Run AI analysis logic here
+				this.runAIAnalysis();
+			}
+		},
+		runAIAnalysis() {
+			// Get the strategy configuration based on selected strategy
+			const strategyKey = this.currentConfig.strategy.toLowerCase();
+			const strategyConfig = strategyConfigs[strategyKey];
+			
+			if (!strategyConfig || !strategyConfig.config) {
+				// If strategy not found, skip analysis
+				return;
+			}
+
+			// Get attack filters from the strategy
+			const attackFilters = strategyConfig.config.form.attackFilters || [];
+			
+			if (attackFilters.length === 0) {
+				// No filters configured, skip
+				return;
+			}
+
+			// Prepare data for analysis
+			const data = {
+				tickHistory: this.tickHistory,
+				digitHistory: this.digitHistory
+			};
+
+			// Evaluate all filters
+			const results = attackFilters.map(filter => {
+				return StrategyAnalysis.evaluate(filter, data);
+			});
+
+			// Check if all filters passed
+			const allPassed = results.every(r => r.pass);
+			
+			// Log filter results (only failed ones to avoid spam)
+			results.forEach(res => {
+				if (!res.pass) {
+					this.addLog(`🔍 ${res.reason}`, 'info');
+				}
+			});
+
+			// If all filters passed, execute trade
+			if (allPassed) {
+				this.addLog('🎯 SINAL GERADO! Todos os filtros confirmados.', 'success');
+				this.executeAITrade(strategyConfig);
+			}
+		},
+		executeAITrade(strategyConfig) {
+			if (!this.isAuthorized) {
+				this.addLog('⚠️ Entrada negada: Não autorizado', 'warning');
+				return;
+			}
+
+			// Check if there's already an active contract
+			if (this.activeContracts.size > 0) {
+				this.addLog('⏳ Sinal ignorado: Operação em andamento', 'info');
+				return;
+			}
+
+			const form = strategyConfig.config.form;
+			const stake = this.currentConfig.stake;
+
+			// Build trade parameters
+			const buyParams = {
+				buy: 1,
+				price: stake,
+				parameters: {
+					amount: stake,
+					basis: 'stake',
+					contract_type: form.tradeType,
+					currency: 'USD',
+					duration: form.duration,
+					duration_unit: form.durationUnit,
+					symbol: form.market
 				}
 			};
 
-			this.eventSource.onerror = (error) => {
-				console.error('SSE connection error:', error);
-			};
+			// Add prediction for digit contracts
+			if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)) {
+				buyParams.parameters.barrier = form.prediction.toString();
+			}
+
+			this.addLog(`💸 Executando: ${form.tradeType} em ${form.market} | Stake: $${stake}`, 'info');
+			
+			// Send trade via WebSocket
+			if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+				this.ws.send(JSON.stringify(buyParams));
+			} else {
+				this.addLog('❌ WebSocket não conectado', 'error');
+			}
+		},
+		subscribeToContract(contractId) {
+			if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+				this.ws.send(JSON.stringify({
+					proposal_open_contract: 1,
+					contract_id: contractId,
+					subscribe: 1
+				}));
+			}
+		},
+		handleContractUpdate(contract) {
+			const id = contract.contract_id;
+			
+			let trade = this.operations.find(o => o.id === id);
+			
+			if (!trade) {
+				trade = {
+					id: id,
+					time: new Date(contract.date_start * 1000).toLocaleTimeString(),
+					market: contract.display_name,
+					contract: contract.contract_type,
+					stake: contract.buy_price,
+					pnl: contract.profit || 0,
+					result: 'OPEN'
+				};
+				this.operations.unshift(trade);
+				this.activeContracts.set(id, trade);
+			} else {
+				trade.pnl = contract.profit || 0;
+			}
+
+			if (contract.is_sold) {
+				trade.result = contract.status.toUpperCase() === 'WON' ? 'WIN' : 'LOSS';
+				trade.pnl = parseFloat(contract.profit || 0);
+
+				if (trade.result === 'WIN') {
+					this.stats.wins++;
+					this.addLog(`💰 WIN! +$${trade.pnl.toFixed(2)}`, 'success');
+				} else {
+					this.stats.losses++;
+					this.addLog(`🔴 LOSS: -$${Math.abs(trade.pnl).toFixed(2)}`, 'error');
+				}
+				
+				this.stats.profit += trade.pnl;
+				this.stats.balance = parseFloat(this.stats.balance) + trade.pnl;
+				this.activeContracts.delete(id);
+			}
 		},
 		async stopIA() {
 			this.isStopping = true;
 			
-			try {
-				const token = localStorage.getItem('token');
-				const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-				
-				const response = await fetch(`${apiBaseUrl}/ai/stop`, {
-					method: 'POST',
-					headers: { 'Authorization': `Bearer ${token}` }
-				});
-
-				if (response.ok) {
-					this.$router.push('/StatsIAs');
-				} else {
-					alert('Erro ao parar IA');
-				}
-			} catch (error) {
-				console.error('Erro ao parar IA:', error);
-				alert('Erro ao conectar com o servidor');
-			} finally {
-				this.isStopping = false;
+			this.stopTickConnection();
+			this.addLog('⏹️ IA parada pelo usuário', 'info');
+			
+			// Save final state to localStorage
+			localStorage.removeItem('ai_active_config');
+			
+			setTimeout(() => {
+				this.$router.push('/StatsIAs');
+			}, 1000);
+		},
+		addLog(message, type) {
+			this.logs.unshift({
+				id: Date.now() + Math.random(),
+				time: new Date().toLocaleTimeString(),
+				message,
+				type
+			});
+			
+			// Keep only last 100 logs
+			if (this.logs.length > 100) {
+				this.logs = this.logs.slice(0, 100);
 			}
 		}
 	}

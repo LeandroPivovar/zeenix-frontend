@@ -222,32 +222,18 @@ export default {
 			this.isStarting = true;
 			
 			try {
-				const token = localStorage.getItem('token');
-				const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-				
-				const response = await fetch(`${apiBaseUrl}/ai/start`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					},
-					body: JSON.stringify({
-						strategy: this.config.strategy,
-						stake: this.config.stake,
-						mode: this.config.mode
-					})
-				});
+				// Save configuration to localStorage for the monitoring page
+				localStorage.setItem('ai_active_config', JSON.stringify({
+					strategy: this.config.strategy,
+					stake: this.config.stake,
+					mode: this.config.mode
+				}));
 
-				if (response.ok) {
-					// Redirect to monitoring page
-					this.$router.push('/StatsIAs/monitoring');
-				} else {
-					const error = await response.json();
-					alert('Erro ao iniciar IA: ' + (error.message || 'Erro desconhecido'));
-				}
+				// Redirect to monitoring page
+				this.$router.push('/StatsIAs/monitoring');
 			} catch (error) {
 				console.error('Erro ao iniciar IA:', error);
-				alert('Erro ao conectar com o servidor. Verifique sua conexão.');
+				alert('Erro ao iniciar IA. Por favor, tente novamente.');
 			} finally {
 				this.isStarting = false;
 			}
