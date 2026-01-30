@@ -1505,8 +1505,11 @@ export default {
                             this.addLog(`❌ ERRO NA COMPRA: ${msg.error.message}`, 'error');
                         } else {
                             const payout = msg.buy.payout;
-                            console.log(`[WS] Sucesso! ID: ${msg.buy.contract_id}, Payout: $${payout}`);
-                            this.addLog(`🚀 COMPRA REALIZADA! ID: ${msg.buy.contract_id} | Payout: $${payout}`, 'success');
+                            const stake = msg.buy.buy_price;
+                            const profitPercent = (((payout - stake) / stake) * 100).toFixed(0);
+                            
+                            console.log(`[WS] Sucesso! ID: ${msg.buy.contract_id}, Payout: $${payout} (${profitPercent}%)`);
+                            this.addLog(`🚀 COMPRA REALIZADA! ID: ${msg.buy.contract_id} | Payout: $${payout} (${profitPercent}%)`, 'success');
                             this.subscribeToContract(msg.buy.contract_id);
                         }
                     }
