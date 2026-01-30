@@ -185,7 +185,7 @@
                         </div>
 
                         <!-- Tipo de Negociação -->
-                        <div class="form-group">
+                        <div class="form-group col-span-12">
                             <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
                             <button
                                 type="button"
@@ -202,228 +202,236 @@
                         </div>
 
                         <!-- Duração, Unidade, Multiplicador -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label class="block text-white font-bold mb-2">Duração</label>
-                                <input 
-                                    type="number" 
-                                    v-model.number="form.duration" 
-                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                    min="1"
-                                />
-                            </div>
-                            <div>
-                                <label class="block text-white font-bold mb-2">Unidade</label>
-                                <div class="relative">
-                                    <select 
-                                        v-model="form.durationUnit" 
-                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
-                                    >
-                                        <option value="t">Tique</option>
-                                        <option value="s">Segundos</option>
-                                        <option value="m">Minutos</option>
-                                        <option value="h">Horas</option>
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-white font-bold mb-2">Multiplicador</label>
-                                <input 
-                                    type="number" 
-                                    v-model.number="form.multiplier" 
-                                    step="0.1" 
-                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                />
-                            </div>
-                        </div>
-
-                        <!-- Configurações Virtuais -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label class="block text-white font-bold mb-2">Perdas virtuais</label>
-                                <input 
-                                    type="number" 
-                                    v-model.number="form.virtualLosses" 
-                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                    min="0"
-                                />
-                            </div>
-                            <div>
-                                <label class="block text-white font-bold mb-2">Negociações virtuais</label>
-                                <div class="relative">
-                                    <select 
-                                        v-model="form.virtualTradeAction" 
-                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
-                                    >
-                                        <option value="loss">Na perda</option>
-                                        <option value="win">Na vitória</option>
-                                        <option value="always">Sempre</option>
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-white font-bold mb-2">Iniciar com virtuais</label>
-                                <div class="relative">
-                                    <select 
-                                        v-model="form.startWithVirtual" 
-                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
-                                    >
-                                        <option :value="true">Sim</option>
-                                        <option :value="false">Não</option>
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Configuração de Recuperação (New Section) -->
-                        <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-4 opacity-5">
-                                <i class="fa-solid fa-shield-heart text-6xl"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
-                                <i class="fa-solid fa-shield-heart text-zenix-green"></i>
-                                Configuração de Recuperação
-                            </h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                        <div class="col-span-12">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label class="block text-white font-bold mb-2">Perdas para ativar</label>
+                                    <label class="block text-white font-bold mb-2">Duração</label>
                                     <input 
                                         type="number" 
-                                        v-model.number="recoveryConfig.lossesToActivate" 
+                                        v-model.number="form.duration" 
                                         class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                        min="0"
+                                        min="1"
                                     />
                                 </div>
                                 <div>
-                                    <label class="block text-white font-bold mb-2">Troca de contrato</label>
+                                    <label class="block text-white font-bold mb-2">Unidade</label>
                                     <div class="relative">
                                         <select 
-                                            v-model="recoveryConfig.contractSwitch" 
+                                            v-model="form.durationUnit" 
                                             class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
                                         >
-                                            <option :value="true">Ativado</option>
-                                            <option :value="false">Desativado</option>
+                                            <option value="t">Tique</option>
+                                            <option value="s">Segundos</option>
+                                            <option value="m">Minutos</option>
+                                            <option value="h">Horas</option>
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                             <i class="fa-solid fa-chevron-down text-gray-400"></i>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div class="flex items-center justify-between bg-[#1E1E1E] p-3 rounded-lg border border-[#333]">
-                                        <span class="text-sm font-bold">Troca para modo normal</span>
-                                        <div 
-                                            class="w-12 h-6 rounded-full relative cursor-pointer transition-colors duration-300"
-                                            :class="recoveryConfig.switchToNormal ? 'bg-zenix-green' : 'bg-gray-600'"
-                                            @click="recoveryConfig.switchToNormal = !recoveryConfig.switchToNormal"
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Multiplicador</label>
+                                    <input 
+                                        type="number" 
+                                        v-model.number="form.multiplier" 
+                                        step="0.1" 
+                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configurações Virtuais -->
+                        <div class="col-span-12">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Perdas virtuais</label>
+                                    <input 
+                                        type="number" 
+                                        v-model.number="form.virtualLosses" 
+                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                        min="0"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Negociações virtuais</label>
+                                    <div class="relative">
+                                        <select 
+                                            v-model="form.virtualTradeAction" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
                                         >
-                                            <div 
-                                                class="w-4 h-4 rounded-full bg-white absolute top-1 transition-all duration-300"
-                                                :style="{ left: recoveryConfig.switchToNormal ? 'calc(100% - 1.25rem)' : '0.25rem' }"
-                                            ></div>
+                                            <option value="loss">Na perda</option>
+                                            <option value="win">Na vitória</option>
+                                            <option value="always">Sempre</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
                                         </div>
-                                    </div>
-                                    <div class="flex items-center justify-between bg-[#1E1E1E] p-3 rounded-lg border border-[#333]">
-                                        <span class="text-sm font-bold">Troca para modo preciso</span>
-                                        <div 
-                                            class="w-12 h-6 rounded-full relative cursor-pointer transition-colors duration-300"
-                                            :class="recoveryConfig.switchToPrecise ? 'bg-zenix-green' : 'bg-gray-600'"
-                                            @click="recoveryConfig.switchToPrecise = !recoveryConfig.switchToPrecise"
-                                        >
-                                            <div 
-                                                class="w-4 h-4 rounded-full bg-white absolute top-1 transition-all duration-300"
-                                                :style="{ left: recoveryConfig.switchToPrecise ? 'calc(100% - 1.25rem)' : '0.25rem' }"
-                                            ></div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <!-- <label class="block text-xs text-gray-400 mb-1">Máx. perdas (Preciso)</label> -->
-                                        <input 
-                                            type="number" 
-                                            placeholder="Máx. perdas preciso"
-                                            v-if="recoveryConfig.switchToPrecise"
-                                            v-model.number="recoveryConfig.maxPreciseLosses" 
-                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 text-sm focus:outline-none focus:border-zenix-green transition-colors"
-                                        />
                                     </div>
                                 </div>
-                                <div class="md:col-span-2 flex gap-4">
-                                     <button 
-                                        type="button" 
-                                        @click="showFilterModal = true"
-                                        class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <i class="fa-solid fa-filter"></i> Filtros
-                                    </button>
-                                     <button 
-                                        type="button" 
-                                        @click="showPauseModal = true"
-                                        class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <i class="fa-solid fa-pause"></i> Pausa Estratégia
-                                    </button>
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Iniciar com virtuais</label>
+                                    <div class="relative">
+                                        <select 
+                                            v-model="form.startWithVirtual" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                        >
+                                            <option :value="true">Sim</option>
+                                            <option :value="false">Não</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuração de Recuperação (New Section) -->
+                        <div class="col-span-12">
+                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
+                                <div class="absolute top-0 right-0 p-4 opacity-5">
+                                    <i class="fa-solid fa-shield-heart text-6xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
+                                    <i class="fa-solid fa-shield-heart text-zenix-green"></i>
+                                    Configuração de Recuperação
+                                </h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                                    <div>
+                                        <label class="block text-white font-bold mb-2">Perdas para ativar</label>
+                                        <input 
+                                            type="number" 
+                                            v-model.number="recoveryConfig.lossesToActivate" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                            min="0"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label class="block text-white font-bold mb-2">Troca de contrato</label>
+                                        <div class="relative">
+                                            <select 
+                                                v-model="recoveryConfig.contractSwitch" 
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                            >
+                                                <option :value="true">Ativado</option>
+                                                <option :value="false">Desativado</option>
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                                <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div class="flex items-center justify-between bg-[#1E1E1E] p-3 rounded-lg border border-[#333]">
+                                            <span class="text-sm font-bold">Troca para modo normal</span>
+                                            <div 
+                                                class="w-12 h-6 rounded-full relative cursor-pointer transition-colors duration-300"
+                                                :class="recoveryConfig.switchToNormal ? 'bg-zenix-green' : 'bg-gray-600'"
+                                                @click="recoveryConfig.switchToNormal = !recoveryConfig.switchToNormal"
+                                            >
+                                                <div 
+                                                    class="w-4 h-4 rounded-full bg-white absolute top-1 transition-all duration-300"
+                                                    :style="{ left: recoveryConfig.switchToNormal ? 'calc(100% - 1.25rem)' : '0.25rem' }"
+                                                ></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center justify-between bg-[#1E1E1E] p-3 rounded-lg border border-[#333]">
+                                            <span class="text-sm font-bold">Troca para modo preciso</span>
+                                            <div 
+                                                class="w-12 h-6 rounded-full relative cursor-pointer transition-colors duration-300"
+                                                :class="recoveryConfig.switchToPrecise ? 'bg-zenix-green' : 'bg-gray-600'"
+                                                @click="recoveryConfig.switchToPrecise = !recoveryConfig.switchToPrecise"
+                                            >
+                                                <div 
+                                                    class="w-4 h-4 rounded-full bg-white absolute top-1 transition-all duration-300"
+                                                    :style="{ left: recoveryConfig.switchToPrecise ? 'calc(100% - 1.25rem)' : '0.25rem' }"
+                                                ></div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <!-- <label class="block text-xs text-gray-400 mb-1">Máx. perdas (Preciso)</label> -->
+                                            <input 
+                                                type="number" 
+                                                placeholder="Máx. perdas preciso"
+                                                v-if="recoveryConfig.switchToPrecise"
+                                                v-model.number="recoveryConfig.maxPreciseLosses" 
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 text-sm focus:outline-none focus:border-zenix-green transition-colors"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="md:col-span-2 flex gap-4">
+                                         <button 
+                                            type="button" 
+                                            @click="showFilterModal = true"
+                                            class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <i class="fa-solid fa-filter"></i> Filtros
+                                        </button>
+                                         <button 
+                                            type="button" 
+                                            @click="showPauseModal = true"
+                                            class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <i class="fa-solid fa-pause"></i> Pausa Estratégia
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Valores Monetários -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label class="block text-white font-bold mb-2">Quantia inicial</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
-                                    <input 
-                                        type="number" 
-                                        v-model.number="form.initialStake" 
-                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-8 pr-4 focus:outline-none focus:border-zenix-green transition-colors"
-                                        step="0.01"
-                                    />
+                        <div class="col-span-12">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Quantia inicial</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
+                                        <input 
+                                            type="number" 
+                                            v-model.number="form.initialStake" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-8 pr-4 focus:outline-none focus:border-zenix-green transition-colors"
+                                            step="0.01"
+                                        />
+                                    </div>
+                                    <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.initialStake) }}% do saldo</p>
                                 </div>
-                                <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.initialStake) }}% do saldo</p>
-                            </div>
-                            <div>
-                                <label class="block text-white font-bold mb-2">Lucro alvo</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
-                                    <input 
-                                        type="number" 
-                                        v-model.number="form.takeProfit" 
-                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-8 pr-4 focus:outline-none focus:border-zenix-green transition-colors"
-                                        step="0.01"
-                                    />
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Lucro alvo</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
+                                        <input 
+                                            type="number" 
+                                            v-model.number="form.takeProfit" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-8 pr-4 focus:outline-none focus:border-zenix-green transition-colors"
+                                            step="0.01"
+                                        />
+                                    </div>
+                                    <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.takeProfit) }}% do saldo</p>
                                 </div>
-                                <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.takeProfit) }}% do saldo</p>
-                            </div>
-                            <div>
-                                <div class="flex justify-between items-center mb-2">
-                                    <label class="block text-white font-bold">Limite de perda</label>
-                                    <!-- <i class="fa-solid fa-gear text-gray-400 cursor-pointer hover:text-white transition-colors"></i> -->
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="block text-white font-bold">Limite de perda</label>
+                                        <!-- <i class="fa-solid fa-gear text-gray-400 cursor-pointer hover:text-white transition-colors"></i> -->
+                                    </div>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
+                                        <input 
+                                            type="number" 
+                                            v-model.number="form.stopLoss" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-8 pr-4 focus:outline-none focus:border-zenix-green transition-colors"
+                                            step="0.01"
+                                        />
+                                    </div>
+                                    <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.stopLoss) }}% do saldo</p>
                                 </div>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
-                                    <input 
-                                        type="number" 
-                                        v-model.number="form.stopLoss" 
-                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-8 pr-4 focus:outline-none focus:border-zenix-green transition-colors"
-                                        step="0.01"
-                                    />
-                                </div>
-                                <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.stopLoss) }}% do saldo</p>
                             </div>
                         </div>
 
                         <!-- Submit Button -->
-                        <div class="pt-6">
+                        <div class="col-span-12 pt-6">
                             <button 
                                 type="submit" 
                                 class="w-full bg-zenix-green hover:bg-green-600 text-black font-bold text-lg py-4 rounded-lg flex justify-center items-center gap-3 transition-colors shadow-lg hover:shadow-zenix-green/20"
