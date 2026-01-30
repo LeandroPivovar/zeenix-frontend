@@ -259,7 +259,6 @@
                                     </button>
                                 </div>
                             </div>
-                        </div>
 
                         <!-- Duração, Unidade, Multiplicador -->
                         <div class="col-span-12">
