@@ -173,7 +173,7 @@
                           <span class="text-xs font-bold text-white">Par</span>
                           <span class="text-xs font-black text-zenix-green">{{ evenPercentage }}%</span>
                         </div>
-                        <div class="h-4 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-3 bg-white/5 rounded-full overflow-hidden">
                           <div class="h-full bg-zenix-green transition-all duration-1000" :style="{ width: evenPercentage + '%' }"></div>
                         </div>
                       </div>
@@ -182,7 +182,7 @@
                           <span class="text-xs font-bold text-white/40">Ímpar</span>
                           <span class="text-xs font-black text-white/20">{{ oddPercentage }}%</span>
                         </div>
-                        <div class="h-4 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-3 bg-white/5 rounded-full overflow-hidden">
                           <div class="h-full bg-white/5 transition-all duration-1000" :style="{ width: oddPercentage + '%' }"></div>
                         </div>
                       </div>
@@ -193,7 +193,7 @@
                         <span class="text-sm font-black text-white">{{ mostFrequentDigit ? mostFrequentDigit.digit : '-' }}</span>
                         <span class="text-[10px] font-black text-white/20">{{ mostFrequentDigit ? mostFrequentDigit.percentage : '0' }}%</span>
                       </div>
-                      <div class="h-4 bg-white/5 rounded-full overflow-hidden mb-4">
+                      <div class="h-3 bg-white/5 rounded-full overflow-hidden mb-4">
                         <div class="h-full bg-zenix-green w-[15%] transition-all duration-1000" :style="{ width: mostFrequentDigit ? mostFrequentDigit.percentage + '%' : '0%' }"></div>
                       </div>
                       <div class="flex items-center justify-between mb-1">
@@ -212,11 +212,11 @@
               <!-- 3. HISTÓRICO RECENTE (Meta Style) -->
               <div class="border border-white/5 rounded-xl p-6">
                  <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mb-6">Histórico Recente</h3>
-                  <div v-if="recentDigits.length > 0" class="recent-digits-grid grid grid-cols-[repeat(15,minmax(0,1fr))] gap-2">
+                  <div v-if="recentDigits.length > 0" class="recent-digits-grid grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1.5">
                     <div 
                      v-for="(digit, idx) in recentDigits.slice(0, 30)" 
                      :key="'recent-'+idx"
-                     class="aspect-square rounded-xl flex items-center justify-center font-black text-sm transition-all duration-300"
+                     class="h-7 w-7 rounded-lg flex items-center justify-center font-black text-xs transition-all duration-300 mx-auto"
                     :class="[
                       idx === 0 ? 'bg-zenix-green text-black scale-110 shadow-[0_0_15px_#22C55E]' : 'bg-white/5 text-white/40',
                       digit % 2 === 0 ? 'border border-blue-500/20' : 'border border-orange-500/20'
@@ -1013,12 +1013,12 @@ export default {
         // >10 -> Yellow
         // >0 -> Red
         
-        if (item.percentage >= 30) {
-            statusClass = 'status-max'; // Green
-        } else if (item.percentage >= 10) {
-            statusClass = 'status-heated'; // Yellow
+        if (item.percentage > 10) {
+            statusClass = 'status-max'; // Green (Acima de 10%)
+        } else if (item.percentage >= 5) {
+            statusClass = 'status-heated'; // Yellow (Abaixo de 10% e acima/igual a 5%)
         } else {
-            statusClass = 'status-min'; // Red (assuming < 10 basically)
+            statusClass = 'status-min'; // Red (Abaixo de 5%)
         }
 
         const isHighlighted = item.digit === 7 && z < -1.5; // Manter lógica de destaque se necessário, ou remover
