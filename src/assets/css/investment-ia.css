@@ -2170,31 +2170,22 @@
 }
 
 .strategy-icon-box-large i {
-    font-size: 2.2rem;
+    font-size: 3.75rem;
+    /* text-6xl equivalent */
     color: #FFFFFF !important;
     background: none !important;
     -webkit-background-clip: border-box !important;
     background-clip: border-box !important;
     -webkit-text-fill-color: currentColor !important;
     transition: all 0.3s ease;
-    will-change: filter, text-shadow;
-    /* Simulated 1px Stroke using Text Shadow + Glow */
-    text-shadow:
-        -1px -1px 0 #22C55E,
-        1px -1px 0 #22C55E,
-        -1px 1px 0 #22C55E,
-        1px 1px 0 #22C55E,
-        0 0 10px rgba(34, 197, 94, 0.6);
-    filter: none !important;
-    /* Disable drop-shadow to prefer text-shadow stroke */
+    will-change: filter;
+    /* Neon Glow Effect - Shape Following */
+    filter: drop-shadow(0 0 3px #22C55E) drop-shadow(0 0 5px #22C55E);
 }
 
 /* Strategy Specific Glows */
 /* Strategy Specific Glows */
 /* Strategy Specific Glows - REDESIGNED: Unified Green Drop-Shadow */
-.strategy-icon-box-large.atlas {
-    /* Filter removed in favor of direct icon styling */
-}
 
 .strategy-icon-box-large.atlas i {
     /* Color handled by generic rule, specific override removed */
@@ -2212,9 +2203,6 @@
 /* Removed previous i rule to avoid duplication if cleaner wasn't perfect */
 
 
-.strategy-icon-box-large.apollo {
-    /* Filter removed */
-}
 
 .strategy-icon-box-large.apollo i {
     /* Color handled by generic rule, specific override removed */
@@ -2232,9 +2220,6 @@
 /* Removed duplicate Apollo rule */
 
 
-.strategy-icon-box-large.nexus {
-    /* Filter removed */
-}
 
 .strategy-icon-box-large.nexus i {
     /* Color handled by generic rule, specific override removed */
@@ -2250,9 +2235,6 @@
 }
 
 
-.strategy-icon-box-large.orion {
-    /* Filter removed */
-}
 
 .strategy-icon-box-large.orion i {
     /* Color handled by generic rule, specific override removed */
@@ -2267,9 +2249,6 @@
     transform: scale(1.1);
 }
 
-.strategy-icon-box-large.titan {
-    /* Filter removed */
-}
 
 .strategy-icon-box-large.titan i {
     /* Color handled by generic rule, specific override removed */
