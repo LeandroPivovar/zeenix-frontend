@@ -17,12 +17,13 @@
                 <a
                     href="#"
                     class="menu-item"
-                    :class="{ active: isStatsIAsActive }"
-                    @click.prevent="navigateAndClose('/StatsIAs')"
+                    :class="{ active: isStatsIAsActive, disabled: !isAdmin }"
+                    @click.prevent="isAdmin ? navigateAndClose('/StatsIAs') : openDevModal()"
                     data-text="IAs de Investimento"
                 >
                     <i class="fa-solid fa-brain w-5 opacity-85"></i>
                     <span>IA's de Investimento</span>
+                    <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
                 </a>
 
                 <a
@@ -40,14 +41,14 @@
                 <a
                     href="#"
                     class="menu-item"
-                    :class="{ active: isCopyTradingActive, disabled: !canAccessCopyTrader }"
-                    :title="!canAccessCopyTrader ? 'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.' : ''"
-                    @click.prevent="canAccessCopyTrader ? navigateAndClose('/copy-trading') : openDevModal()"
+                    :class="{ active: isCopyTradingActive, disabled: !isAdmin }"
+                    :title="!isAdmin ? 'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.' : ''"
+                    @click.prevent="isAdmin ? navigateAndClose('/copy-trading') : openDevModal()"
                     data-text="Copy Trading"
                 >
                     <i class="fa-solid fa-users w-5 opacity-85"></i>
                     <span>Copy Trading</span>
-                    <i v-if="!canAccessCopyTrader" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
+                    <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
                 </a>
 
                 <a 
