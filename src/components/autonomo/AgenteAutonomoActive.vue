@@ -156,22 +156,8 @@
 					>
 						<div class="flex items-center gap-3">
 							<div class="p-2 bg-[#1a1a1a] rounded-md">
-                                <div class="agent-avatar-mask-small">
-                                    <video 
-                                        v-if="runningAgents.find(a => a.id === currentAgentId)?.video" 
-                                        :src="runningAgents.find(a => a.id === currentAgentId)?.video" 
-                                        class="agent-video-avatar" 
-                                        autoplay 
-                                        loop 
-                                        muted 
-                                        playsinline
-                                    ></video>
-                                    <img 
-                                        v-else-if="runningAgents.find(a => a.id === currentAgentId)?.icons"
-                                        :src="runningAgents.find(a => a.id === currentAgentId)?.icons[0]" 
-                                        class="deriv-svg-icon-small"
-                                    />
-                                    <span v-else class="text-lg">{{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}</span>
+                                <div class="strategy-icons-inline text-lg">
+                                    {{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}
                                 </div>
 							</div>
 									<span class="text-white font-bold">{{ agenteData.estrategia ? agenteData.estrategia.replace('IA ', '') : 'Agente' }}</span>
@@ -195,26 +181,10 @@
 								class="p-3 flex items-center gap-3 hover:bg-[#1a1a1a] cursor-pointer transition-colors border-b border-[#27272a]/50 last:border-0"
 								:class="{ 'bg-[#092012]/35': agenteData.id === agent.id }"
 							>
-								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center relative items-center justify-center p-1">
-                                    <div class="agent-avatar-mask-small w-full h-full">
-                                        <video 
-                                            v-if="agent.video" 
-                                            :src="agent.video" 
-                                            class="agent-video-avatar" 
-                                            autoplay 
-                                            loop 
-                                            muted 
-                                            playsinline
-                                        ></video>
-                                        <img 
-                                            v-else-if="agent.icons"
-                                            :src="agent.icons[0]" 
-                                            class="deriv-svg-icon-small"
-                                        />
-                                        <div v-else class="strategy-icons-inline text-2xl">
-                                            {{ agent.emoji }}
-                                        </div>
-                                    </div>
+								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
+									<div class="strategy-icons-inline text-2xl">
+										{{ agent.emoji }}
+									</div>
 								</div>
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center justify-between gap-2">
