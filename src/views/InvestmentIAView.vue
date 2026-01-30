@@ -176,7 +176,7 @@
                                 
                                 <!-- Strategy Description Card (appears when selected) -->
                                 <transition name="slide-fade" mode="out-in">
-                                    <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card">
+                                    <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card" :class="selectedStrategy">
                                         <div class="agent-desc-content">
                                             <div class="agent-desc-info">
                                                 <p v-html="strategyDescription"></p>

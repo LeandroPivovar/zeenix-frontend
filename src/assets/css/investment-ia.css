@@ -2298,6 +2298,68 @@
     line-height: 1.3;
 }
 
+/* 
+   UI Refinements 
+   Requested by user: 2026-01-30 
+*/
+
+/* 1. Active Config Card Height */
+.config-card {
+    height: fit-content !important;
+}
+
+/* 2. Font Size Updates - Changing 12px back to 14px for general labels */
+.card-title,
+.form-label {
+    font-size: 14px !important;
+}
+
+/* 3. Specific Title "ia em funcionamento e controle manual" to 12px */
+/* Assuming this refers to .ai-status-title inside .ai-status-control-simple */
+.ai-status-control-simple .ai-status-info .form-label {
+    font-size: 12px !important;
+    color: rgb(196, 194, 194) !important;
+    /* "ia em funcionamento" specific color request */
+    text-transform: uppercase;
+}
+
+/* 4. Subtitle "monitorando..." color */
+.ai-status-subtitle {
+    color: rgb(124, 124, 124) !important;
+}
+
+/* 5. Titles "proteçoes", "ia em funcionamento", "controle manual" color */
+.loss-stoploss-row .form-label,
+.risk-management-section .form-label,
+.ai-status-group .form-label {
+    color: rgb(196, 194, 194) !important;
+}
+
+/* 6. SVGs (Atlas, Apollo, Orion, Titan) Size and Color */
+.strategy-icon-box-large i {
+    font-size: 2.5rem !important;
+    /* Increased size */
+    color: white !important;
+}
+
+/* 7. Footer Stats Alignment */
+.agent-option-footer-stats {
+    justify-content: flex-end !important;
+    text-align: right !important;
+}
+
+/* 8. Orion IA Background Lighter */
+.agent-description-card.orion {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Additional specific adjustments to match "ia em funcionamento" title request if needed */
+.ai-status-title {
+    font-size: 12px !important;
+    color: rgb(196, 194, 194) !important;
+}
+
 .agent-option-arrow {
     color: #333;
     font-size: 0.875rem;
