@@ -205,21 +205,31 @@
                                             :class="{ 'active': selectedStrategy === strategy.id }"
                                             @click="selectStrategy(strategy.id)"
                                         >
-                                            <div class="agent-option-info">
-                                                <div class="agent-option-simple-row">
-                                                    <div class="strategy-icons-inline">
-                                                        <div class="strategy-icon-box">
-                                                            <i :class="strategy.icon"></i>
-                                                        </div>
+                                            <div class="agent-option-content">
+                                                <div class="agent-option-header-row">
+                                                    <div class="strategy-icon-box-large" :class="strategy.id">
+                                                        <i :class="strategy.icon"></i>
+                                                        <i v-if="strategy.id === 'nexus'" class="fas fa-shield-alt mini-shield"></i>
                                                     </div>
-                                                    <div class="agent-option-text-col">
+                                                    <div class="agent-option-main-info">
                                                         <h4 class="agent-option-title">{{ strategy.title }}</h4>
-                                                        <p class="agent-option-desc" v-html="strategy.description"></p>
+                                                        <p class="agent-option-desc">{{ strategy.description }}</p>
+                                                    </div>
+                                                    <div class="agent-option-arrow">
+                                                        <i class="fas fa-chevron-right"></i>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="agent-option-check">
-                                                <i class="fas" :class="selectedStrategy === strategy.id ? 'fa-check-circle' : 'fa-circle'"></i>
+                                                <div class="agent-option-footer-stats">
+                                                    <div class="stat-item">
+                                                        <span class="stat-label">Assertividade:</span>
+                                                        <span class="stat-value">{{ strategy.assertividade }}</span>
+                                                    </div>
+                                                    <div class="stat-divider"></div>
+                                                    <div class="stat-item">
+                                                        <span class="stat-label">Retorno:</span>
+                                                        <span class="stat-value highlight">{{ strategy.retorno }}</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -534,43 +544,53 @@ export default {
             allStrategies: [
                 { 
                     id: 'atlas', 
-                    title: 'Atlas', 
+                    title: 'IA Atlas', 
                     marketType: 'Digits', 
-                    icon: 'fas fa-brain', 
-                    icons: ['/deriv_icons/TradeTypesDigitsMatchesIcon.svg'],
-                    description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%' 
+                    icon: 'fas fa-shield-alt', 
+                    icons: [], // Removed SVG icons to use FontAwesome as per request for consistency with Image 1
+                    description: 'Híbrida (Fluxo de Dígitos + Price Action → Tendência)',
+                    assertividade: '92 a 96%',
+                    retorno: '95% / 99%'
                 },
                 { 
                     id: 'apollo', 
-                    title: 'Apollo', 
+                    title: 'IA Apollo', 
                     marketType: 'Ups e Downs', 
                     icon: 'fas fa-rocket', 
-                    icons: ['/deriv_icons/TradeTypesUpsAndDownsRiseIcon.svg'],
-                    description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 90% a 95% - <strong>Retorno:</strong> 99%' 
+                    icons: [],
+                    description: 'Price Action Puro (Inércia + Força + Tendência)',
+                    assertividade: '90% a 95%',
+                    retorno: '99%'
                 },
                 { 
                     id: 'nexus', 
-                    title: 'Nexus', 
+                    title: 'IA Nexus', 
                     marketType: 'Ups e Downs', 
-                    icon: 'fas fa-share-alt', 
-                    icons: ['/deriv_icons/TradeTypesUpsAndDownsFallIcon.svg'],
-                    description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%' 
+                    icon: 'fas fa-chart-line', // Will use CSS for the shield overlay
+                    icons: [],
+                    description: 'Price Action Barreira de Segurança com Troca de Contrato',
+                    assertividade: '91% a 95%',
+                    retorno: '91% / 95%'
                 },
                 { 
                     id: 'orion', 
-                    title: 'Orion', 
+                    title: 'IA Orion', 
                     marketType: 'Digits', 
                     icon: 'fas fa-star', 
-                    icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg'],
-                    description: '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%' 
+                    icons: [],
+                    description: 'Estatística de Dígitos + (Over 2) com Price Action na Recuperação',
+                    assertividade: '94% a 97%',
+                    retorno: '95% / 99%'
                 },
                 { 
                     id: 'titan', 
-                    title: 'Titan', 
+                    title: 'IA Titan', 
                     marketType: 'Digits', 
-                    icon: 'fas fa-shield-alt', 
-                    icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg'],
-                    description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%' 
+                    icon: 'fas fa-yin-yang', 
+                    icons: [],
+                    description: 'Dígitos Par/Ímpar com persistência direcional',
+                    assertividade: '90% - 95%',
+                    retorno: '95%'
                 }
             ],
             
