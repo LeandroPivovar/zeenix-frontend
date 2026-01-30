@@ -1150,7 +1150,13 @@ export default {
 
              return this.tradeTypeCategories.map(category => {
                 const filteredItems = category.items.filter(item => {
-                  return item.directions.some(dir => contextContracts.includes(dir.value.toUpperCase()));
+                    // Check if item itself is available
+                    if (contextContracts.includes(item.value.toUpperCase())) return true;
+                    // Check if item has nested directions (legacy support or specific groups like logic)
+                    if (item.directions) {
+                         return item.directions.some(dir => contextContracts.includes(dir.value.toUpperCase()));
+                    }
+                    return false;
                 });
                 
                 if (filteredItems.length > 0) {
