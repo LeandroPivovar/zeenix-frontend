@@ -23,7 +23,7 @@ export const RiskManager = {
 
         // Profit Margin Factor based on Risk Profile
         let profitFactor = 0.15; // Moderado
-        if (riskProfile === 'conservador') profitFactor = 0.00;
+        if (riskProfile === 'conservador') profitFactor = 0.02;
         else if (riskProfile === 'agressivo') profitFactor = 0.30;
 
         // Determine which payout tracker to use based on mode
@@ -37,7 +37,8 @@ export const RiskManager = {
         if (isRecovery) {
             const lossToRecover = state.totalLossAccumulated - state.recoveredAmount;
             const stake = (lossToRecover * (1 + profitFactor)) / payout;
-            return Math.max(0.35, parseFloat(stake.toFixed(2)));
+            // Use ceil to ensure 100% coverage even with rounding
+            return Math.max(0.35, Math.ceil(stake * 100) / 100);
         }
 
         // 2. PRINCIPAL MODE (Standard)
@@ -75,13 +76,11 @@ export const RiskManager = {
                 state.lossStreakRecovery = 0;
                 state.skipSorosNext = true; // Skip Soros immediately after a recovery win
 
-                // Check if recovery is complete
-                if (state.recoveredAmount >= state.totalLossAccumulated) {
-                    state.analysisType = 'PRINCIPAL';
-                    state.consecutiveLosses = 0;
-                    state.totalLossAccumulated = 0;
-                    state.recoveredAmount = 0;
-                }
+                // Single Win Recovery: Exit immediately after any win
+                state.analysisType = 'PRINCIPAL';
+                state.consecutiveLosses = 0;
+                state.totalLossAccumulated = 0;
+                state.recoveredAmount = 0;
             } else {
                 state.lastPayoutPrincipal = currentPayout;
                 // Main Mode Win
@@ -124,13 +123,11 @@ export const RiskManager = {
             // Deduct the estimated profit and add the real one
             state.recoveredAmount = state.recoveredAmount - estimatedProfit + realProfit;
 
-            // Re-check if recovery is now complete or needs more
-            if (state.recoveredAmount >= state.totalLossAccumulated) {
-                state.analysisType = 'PRINCIPAL';
-                state.consecutiveLosses = 0;
-                state.totalLossAccumulated = 0;
-                state.recoveredAmount = 0;
-            }
+            // Single Win Recovery: Exit immediately after any win
+            state.analysisType = 'PRINCIPAL';
+            state.consecutiveLosses = 0;
+            state.totalLossAccumulated = 0;
+            state.recoveredAmount = 0;
         }
 
         // 2. Update payout rate with official data

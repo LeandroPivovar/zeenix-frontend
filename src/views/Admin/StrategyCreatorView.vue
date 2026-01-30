@@ -187,12 +187,12 @@
                                             <td class="py-4 text-xs">{{ op.contract }}</td>
                                             <td class="py-4">$ {{ op.stake.toFixed(2) }}</td>
                                             <td class="py-4">
-                                                <span :class="op.result === 'WIN' ? 'bg-zenix-green/10 text-zenix-green border-zenix-green/20' : 'bg-red-500/10 text-red-500 border-red-500/20'" class="px-2 py-1 rounded border text-[10px] font-bold">
+                                                <span :class="op.result === 'WON' ? 'bg-zenix-green/10 text-zenix-green border-zenix-green/20' : 'bg-red-500/10 text-red-500 border-red-500/20'" class="px-2 py-1 rounded border text-[10px] font-bold">
                                                     {{ op.result }}
                                                 </span>
                                             </td>
-                                            <td class="py-4 text-right font-bold" :class="op.result === 'WIN' ? 'text-zenix-green' : 'text-red-500'">
-                                                {{ op.result === 'WIN' ? '+' : '' }}{{ op.pnl }}
+                                            <td class="py-4 text-right font-bold" :class="op.result === 'WON' ? 'text-zenix-green' : 'text-red-500'">
+                                                {{ op.result === 'WON' ? '+' : '' }}{{ op.pnl }}
                                             </td>
                                         </tr>
                                         <tr v-if="monitoringOperations.length === 0">
