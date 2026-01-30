@@ -155,7 +155,6 @@
 						@click.stop="toggleAgentSwitcher"
 					>
 						<div class="flex items-center gap-3">
-						<div class="flex items-center gap-3">
 							<div class="p-2 bg-[#1a1a1a] rounded-md">
                                 <div class="agent-avatar-mask-small">
                                     <video 
