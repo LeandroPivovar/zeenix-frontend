@@ -1154,10 +1154,10 @@ export default {
 .agent-desc-info-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 0.25rem;
     font-size: 12px;
     color: #A1A1A1;
-    line-height: 1.6;
+    line-height: normal;
 }
 
 .info-item strong {
