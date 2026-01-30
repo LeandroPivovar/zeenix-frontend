@@ -226,10 +226,10 @@
                     class="menu-item"
                     :class="{ active: isStrategyCreatorActive }"
                     @click.prevent="navigateAndClose('/admin/strategies/create')"
-                    data-text="Criador de Estratégias"
+                    data-text="Criador de Estratégias [BETA]"
                 >
                     <i class="fa-solid fa-chess-board w-5 opacity-85"></i>
-                    <span>Criador de Estratégias</span>
+                    <span>Criador de Estratégias [BETA]</span>
                 </a>
 
                 <a
