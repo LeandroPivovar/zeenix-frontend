@@ -948,7 +948,6 @@ import nexusConfig from '@/utils/strategies/nexus.json';
 import orionConfig from '@/utils/strategies/orion.json';
 import titanConfig from '@/utils/strategies/titan.json';
 import { RiskManager } from '../../utils/RiskManager';
-import { loadAvailableAccounts } from '@/utils/accountsLoader';
 
 const defaultStrategies = [apolloConfig, atlasConfig, nexusConfig, orionConfig, titanConfig];
 
