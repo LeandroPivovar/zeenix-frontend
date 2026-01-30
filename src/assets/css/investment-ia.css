@@ -2172,12 +2172,12 @@
 
 .strategy-icon-box-large i {
     font-size: 2.2rem;
-    /* Increased size since box is gone */
-    background: linear-gradient(135deg, #FFFFFF 0%, #22C55E 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    color: transparent;
+    color: #FFFFFF;
+    background: none;
+    -webkit-background-clip: initial;
+    -webkit-text-fill-color: initial;
+    background-clip: initial;
+    transition: all 0.3s ease;
     /* Ensure drop-shadow works on the element */
     will-change: filter;
 }
@@ -2190,10 +2190,11 @@
 }
 
 .strategy-icon-box-large.atlas i {
-    background: linear-gradient(135deg, #FFFFFF 30%, #22C55E 100%) !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
+    /* Color handled by generic rule, specific override removed */
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
 }
 
 .agent-selection-card.active .strategy-icon-box-large.atlas {
@@ -2210,11 +2211,11 @@
 }
 
 .strategy-icon-box-large.apollo i {
-    background: linear-gradient(135deg, #FFFFFF 30%, #22C55E 100%) !important;
-    /* Unified Green */
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
+    /* Color handled by generic rule, specific override removed */
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
 }
 
 .agent-selection-card.active .strategy-icon-box-large.apollo {
@@ -2222,11 +2223,7 @@
     transform: scale(1.1);
 }
 
-.strategy-icon-box-large.apollo i {
-    background: linear-gradient(135deg, #FFFFFF 0%, #EF4444 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-}
+/* Removed duplicate Apollo rule */
 
 
 .strategy-icon-box-large.nexus {
@@ -2235,11 +2232,11 @@
 }
 
 .strategy-icon-box-large.nexus i {
-    background: linear-gradient(135deg, #FFFFFF 30%, #22C55E 100%) !important;
-    /* Unified Green */
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
+    /* Color handled by generic rule, specific override removed */
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
 }
 
 .agent-selection-card.active .strategy-icon-box-large.nexus {
@@ -2254,11 +2251,11 @@
 }
 
 .strategy-icon-box-large.orion i {
-    background: linear-gradient(135deg, #FFFFFF 30%, #22C55E 100%) !important;
-    /* Unified Green */
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
+    /* Color handled by generic rule, specific override removed */
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
 }
 
 .agent-selection-card.active .strategy-icon-box-large.orion {
@@ -2272,11 +2269,11 @@
 }
 
 .strategy-icon-box-large.titan i {
-    background: linear-gradient(135deg, #FFFFFF 30%, #22C55E 100%) !important;
-    /* Unified Green */
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
+    /* Color handled by generic rule, specific override removed */
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
 }
 
 .agent-selection-card.active .strategy-icon-box-large.titan {
