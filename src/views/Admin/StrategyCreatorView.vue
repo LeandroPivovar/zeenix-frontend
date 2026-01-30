@@ -750,7 +750,7 @@ export default {
             ws: null,
             tickSubscriptionId: null,
             tickCount: 0,
-            lastTickPrice: null,,
+            lastTickPrice: null,
 
             balance: 5889.28, // Mock implementation or fetch from store
             isMonitoring: false,
