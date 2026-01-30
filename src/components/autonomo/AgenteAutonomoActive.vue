@@ -181,70 +181,74 @@
 						</div>
 					</div>
 
-					<!-- Agent Switcher Dropdown (Matching Image 4) -->
+					<!-- Agent Switcher Dropdown (Matching Image 1 - Latest set) -->
 					<div 
 						v-if="showAgentSwitcher"
-						class="absolute top-full left-0 mt-4 w-[360px] bg-[#0c0c0c] border border-[#27272a] rounded-lg shadow-2xl z-[60] overflow-hidden animate-fade-in"
+						class="absolute top-full left-0 mt-4 w-[420px] bg-[#0c0c0c] border border-[#27272a] rounded-lg shadow-2xl z-[60] overflow-hidden animate-fade-in"
 					>
 						<div class="p-4 border-b border-[#27272a] bg-[#121212]/50">
 							<h4 class="text-[11px] font-bold text-[#A1A1AA] uppercase tracking-wider text-left">SELECIONE O AGENTE</h4>
 						</div>
 						
-						<div class="max-h-[350px] overflow-y-auto custom-scrollbar p-2">
+						<div class="max-h-[350px] overflow-y-auto custom-scrollbar p-3">
 							<div 
 								v-for="agent in runningAgents" 
 								:key="agent.id"
 								@click="selectAgent(agent.id)"
-								class="p-4 flex items-center gap-4 hover:bg-[#1a1a1a] cursor-pointer transition-colors rounded-lg mb-1 last:mb-0 relative group"
-								:class="{ 'bg-[#092012]/15 border border-[#22c55e]/20': currentAgentId === agent.id }"
+								class="w-full flex items-center gap-4 p-4 cursor-pointer transition-all rounded-lg mb-2 last:mb-0 relative group border border-transparent"
+								:class="currentAgentId === agent.id ? 'bg-[#092012]/10 border-[#22c55e]/20' : 'hover:bg-[#1a1a1a] border-[#27272a]/0 hover:border-[#27272a]'"
 							>
-								<div class="w-16 h-16 rounded-md bg-[#1a1a1a] flex items-center justify-center relative overflow-hidden border border-[#27272a]">
+                                <!-- Icon Box -->
+								<div class="w-12 h-12 rounded-lg bg-[#141414] flex items-center justify-center relative shrink-0 border border-[#27272a]/50">
 									<video 
                                         v-if="agent.video"
                                         :src="agent.video"
-                                        class="w-full h-full object-cover scale-150"
+                                        class="w-full h-full object-cover rounded-md"
                                         autoplay 
                                         loop 
                                         muted 
                                         playsinline
                                     ></video>
-                                    <div v-else class="strategy-icons-inline text-3xl">
+                                    <div v-else class="strategy-icons-inline text-2xl">
 										{{ agent.emoji }}
 									</div>
 
-                                    <!-- Active Checkmark Overlay (Image 4) -->
+                                    <!-- Active Checkmark Overlay (Image 1) -->
                                     <div 
                                         v-if="currentAgentId === agent.id" 
-                                        class="absolute top-0 right-0 w-5 h-5 bg-[#22c55e] rounded-full flex items-center justify-center -translate-y-1/4 translate-x-1/4 z-10 shadow-lg"
-                                        style="transform: translate(25%, -25%);"
+                                        class="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 bg-[#22c55e] rounded-full flex items-center justify-center z-10 border-2 border-[#0c0c0c] shadow-md"
+                                        style="width: 18px; height: 18px;"
                                     >
-                                        <i class="fas fa-check text-white text-[10px]"></i>
+                                        <i class="fas fa-check text-[#000000] text-[9px] font-black"></i>
                                     </div>
 								</div>
 
-								<div class="flex-1 min-w-0">
-									<div class="flex items-center justify-between gap-2 mb-1">
-										<h5 class="text-sm font-bold truncate text-left" :class="currentAgentId === agent.id ? 'text-[#22c55e]' : 'text-[#dbdbdb]'">
-                                            {{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}
-                                        </h5>
-										<span v-if="currentAgentId === agent.id" class="px-2 py-0.5 rounded bg-[#22c55e]/10 text-[8px] text-[#22c55e] font-bold uppercase tracking-widest shrink-0">Ativo</span>
-									</div>
+                                <!-- Info Area -->
+								<div class="flex-1 min-w-0 pr-12">
+									<h5 class="text-[13px] font-bold truncate text-left mb-1 transition-colors" :class="currentAgentId === agent.id ? 'text-[#22c55e]' : 'text-[#DFDFDF]'">
+                                        {{ agent.title.toUpperCase() }} - Digits
+                                    </h5>
+                                    
                                     <div class="flex flex-col gap-0.5">
-                                        <p class="text-[11px] text-[#A1A1AA] text-left leading-tight">
-                                            <span class="font-bold text-[#DFDFDF]">Retorno:</span> 
-                                            <span class="text-[#22c55e] font-bold">{{ agent.description.match(/Retorno: (.*)/)?.[1] || '85%' }}</span>
+                                        <p class="text-[11px] text-[#A1A1AA] text-left">
+                                            <span class="font-bold">Retorno:</span> 
+                                            <span class="text-[#22c55e] ml-1 font-bold">{{ agent.description.match(/Retorno: (.*)%/)?.[1] || '85' }}%</span>
                                         </p>
-                                        <p class="text-[11px] text-[#A1A1AA] text-left leading-tight">
-                                            <span class="font-bold text-[#A1A1AA]">Assertividade:</span> {{ agent.description.match(/Assertividade: (.*)/)?.[1] || '90%' }}
+                                        <p class="text-[11px] text-[#A1A1AA] text-left">
+                                            <span class="font-bold">Assertividade:</span> {{ agent.description.match(/Assertividade: (.*)%/)?.[1] || '90' }}%
                                         </p>
-                                        <p class="text-[11px] text-[#A1A1AA] text-left leading-tight truncate">
-                                            <span class="font-bold text-[#A1A1AA]">Análise:</span> {{ agent.description.match(/Análise: (.*)/)?.[1] || 'Fluxo de Mercado' }}
+                                        <p class="text-[11px] text-[#A1A1AA] text-left truncate">
+                                            <span class="font-bold">Análise:</span> {{ agent.description.split('\n')[0].replace('Análise: ', '') }}
                                         </p>
                                     </div>
 								</div>
-                                
-                                <div class="shrink-0 text-[#A1A1AA] group-hover:text-white transition-colors">
-                                    <i class="fas fa-chevron-right text-[10px]"></i>
+
+                                <!-- Active Badge -->
+                                <div 
+                                    v-if="currentAgentId === agent.id" 
+                                    class="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-[#22c55e]/10 border border-[#22c55e]/20"
+                                >
+                                    <span class="text-[9px] text-[#22c55e] font-black uppercase tracking-wider">ATIVO</span>
                                 </div>
 							</div>
 						</div>
