@@ -757,40 +757,43 @@
                         <div class="bg-[#1A1A1A] border border-[#333] rounded-xl p-4 mb-5 relative z-10 shadow-lg">
                             <h4 class="text-xs font-bold text-zenix-green uppercase mb-3 tracking-wide">Sessão Ativa</h4>
                             
-                            <!-- Mode & Gestion Row -->
-                            <div class="grid grid-cols-2 gap-2 mb-4">
-                                <div class="bg-[#0f0f0f] rounded-lg p-2 border border-[#252525]">
-                                    <span class="text-[10px] text-[#666] block mb-0.5">Modo:</span>
-                                    <span class="text-xs font-bold text-white uppercase">{{ mode === 'veloz' ? 'VELLOZ' : mode }}</span>
-                                </div>
-                                <div class="bg-[#0f0f0f] rounded-lg p-2 border border-[#252525]">
-                                    <span class="text-[10px] text-[#666] block mb-0.5">Gestão:</span>
-                                    <span class="text-xs font-bold text-white uppercase">{{ realRiskLevel }}</span>
+                            <!-- Mode & Gestion Row (Consolidated) -->
+                            <div class="mb-3">
+                                <div class="bg-[#0f0f0f] rounded-lg p-2 border border-[#252525] flex items-center justify-center gap-2">
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-[10px] text-[#666]">MODO:</span>
+                                        <span class="text-xs font-bold text-white uppercase">{{ mode === 'veloz' ? 'VELLOZ' : mode }}</span>
+                                    </div>
+                                    <span class="text-[#333]">|</span>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-[10px] text-[#666]">GESTÃO:</span>
+                                        <span class="text-xs font-bold text-white uppercase">{{ realRiskLevel }}</span>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Entry, Target, Limit Row -->
-                            <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="grid grid-cols-3 gap-0 text-center relative">
                                 <div class="flex flex-col items-center">
                                     <span class="text-[10px] text-[#666] mb-1">Entrada</span>
-                                    <span class="text-lg font-bold text-white tracking-tight" v-if="!isLoadingConfig">${{ sessionConfig.entryValue ? Number(sessionConfig.entryValue).toFixed(2) : '1.00' }}</span>
+                                    <span class="text-[12px] font-bold text-white tracking-tight" v-if="!isLoadingConfig">${{ sessionConfig.entryValue ? Number(sessionConfig.entryValue).toFixed(2) : '1.00' }}</span>
                                     <span v-else class="text-sm text-gray-500">...</span>
                                 </div>
-                                <div class="flex flex-col items-center relative after:content-[''] after:absolute after:left-0 after:top-2 after:bottom-2 after:w-px after:bg-[#333] before:content-[''] before:absolute before:right-0 before:top-2 before:bottom-2 before:w-px before:bg-[#333]">
+                                <div class="flex flex-col items-center relative border-x border-[#333]">
                                     <span class="text-[10px] text-[#666] mb-1">Alvo</span>
-                                    <span class="text-lg font-bold text-zenix-green tracking-tight" v-if="!isLoadingConfig">+${{ profitTarget ? Number(profitTarget).toFixed(2) : '100' }}</span>
+                                    <span class="text-[12px] font-bold text-zenix-green tracking-tight" v-if="!isLoadingConfig">+${{ profitTarget ? Number(profitTarget).toFixed(2) : '100' }}</span>
                                     <span v-else class="text-sm text-gray-500">...</span>
                                 </div>
                                 <div class="flex flex-col items-center">
                                     <span class="text-[10px] text-[#666] mb-1">Limite</span>
-                                    <span class="text-lg font-bold text-zenix-red tracking-tight" v-if="!isLoadingConfig">-${{ lossLimit ? Number(lossLimit).toFixed(2) : '100' }}</span>
+                                    <span class="text-[12px] font-bold text-zenix-red tracking-tight" v-if="!isLoadingConfig">-${{ lossLimit ? Number(lossLimit).toFixed(2) : '100' }}</span>
                                     <span v-else class="text-sm text-gray-500">...</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Proteções Section -->
-                        <div class="mb-6 relative z-10 pl-1">
+                        <div class="mb-3 relative z-10 pl-1">
                             <div class="flex items-center gap-2 mb-2">
                                 <i class="fas fa-shield-alt text-[#333] text-xs"></i>
                                 <span class="text-[11px] text-[#666] font-medium uppercase">Proteções</span>
@@ -808,7 +811,7 @@
                         </div>
 
                         <!-- IA EM FUNCIONAMENTO / Footer -->
-                        <div class="mt-auto relative z-10">
+                        <div class="mt-2 relative z-10">
                             <h4 class="text-[10px] font-bold text-[#888] uppercase mb-1">IA Em Funcionamento</h4>
                             <p class="text-[10px] text-[#555] leading-snug mb-4">
                                 Monitorando o mercado e executando apenas quando há vantagem estatística.
