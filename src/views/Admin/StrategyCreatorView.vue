@@ -1854,7 +1854,7 @@ export default {
                     const msg = JSON.parse(event.data);
                     
                     // Debug Log for Critical Messages
-                    if (['authorize', 'buy', 'proposal_open_contract'].includes(msg.msg_type) || msg.error) {
+                    if (['authorize', 'buy', 'proposal', 'proposal_open_contract'].includes(msg.msg_type) || msg.error) {
                          console.log(`[WS] Mensagem Recebida (${msg.msg_type}):`, msg);
                     }
                     
@@ -1870,6 +1870,35 @@ export default {
                             console.log('[WS] Autorizado com sucesso! Dados:', msg.authorize);
                             this.addLog(`✅ Autorizado! Saldo: $${balanceValue.toFixed(2)}`, 'success');
                             this.subscribeTicks();
+                        }
+                    }
+
+                    if (msg.msg_type === 'proposal') {
+                        if (msg.error) {
+                            this.addLog(`❌ Erro na proposta: ${msg.error.message}`, 'error');
+                        } else {
+                            const proposalId = msg.proposal.id;
+                            const payout = msg.proposal.payout;
+                            const stakeValue = msg.proposal.ask_price;
+                            
+                            this.addLog(`🔍 Proposta recebida: Payout $${payout} (Stake: $${stakeValue})`, 'info');
+                            
+                            // 1. Update sessionState with the real payout for accuracy in next calculations
+                            if (this.sessionState.analysisType === 'RECUPERACAO') {
+                                this.sessionState.lastPayoutRecovery = payout / stakeValue;
+                            } else {
+                                this.sessionState.lastPayoutPrincipal = payout / stakeValue;
+                            }
+
+                            // 2. Prepare for fast result calculation with the EXACT payout
+                            this.pendingFastResult.payout = payout;
+                            
+                            // 3. Execute the Buy
+                            this.addLog(`💸 Comprando contrato via ID: ${proposalId}`, 'info');
+                            this.ws.send(JSON.stringify({
+                                buy: proposalId,
+                                price: stakeValue
+                            }));
                         }
                     }
 
@@ -2141,42 +2170,41 @@ export default {
                 return;
             }
 
+            const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
             const stake = this.calculateNextStake();
-            const config = this.sessionState.isRecoveryMode ? this.recoveryConfig : this.form;
+            const config = isRecovery ? this.recoveryConfig : this.form;
 
-            const buyParams = {
-                buy: 1,
-                price: stake,
-                parameters: {
-                    amount: stake,
-                    basis: 'stake',
-                    contract_type: config.tradeType,
-                    currency: 'USD',
-                    duration: this.form.duration,
-                    duration_unit: this.form.durationUnit,
-                    symbol: config.market || this.form.market
-                }
+            this.addLog(`📡 Solicitando proposta (${isRecovery ? 'RECUPERAÇÃO' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
+            
+            // Step 1: Request Proposal to get exact payout
+            const proposalParams = {
+                proposal: 1,
+                amount: stake,
+                basis: 'stake',
+                contract_type: config.tradeType,
+                currency: 'USD',
+                duration: this.form.duration,
+                duration_unit: this.form.durationUnit,
+                symbol: config.market || this.form.market
             };
 
             if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(config.tradeType)) {
-                buyParams.parameters.barrier = config.prediction.toString(); 
+                proposalParams.barrier = config.prediction.toString(); 
             }
 
-            this.addLog(`💸 Enviando ordem (${this.sessionState.isRecoveryMode ? 'RECUPERAÇÃO' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
-            
-            // Prepare for fast result calculation
+            // Store current context for fast result (will be activated on buy response)
             this.pendingFastResult = {
                 contractId: null,
                 barrier: config.prediction,
                 contractType: config.tradeType,
-                active: false, // Will be activated when contractId is received
+                active: false,
                 stake: stake,
-                payout: null, // Will be updated on 'buy' response
+                payout: null, // Will be filled when proposal arrives
                 duration: this.form.duration,
                 durationUnit: this.form.durationUnit
             };
 
-            this.ws.send(JSON.stringify(buyParams));
+            this.ws.send(JSON.stringify(proposalParams));
         },
         subscribeToContract(contractId) {
             this.ws.send(JSON.stringify({
