@@ -9,7 +9,50 @@
 			</div>
 
 			<div class="flex flex-row items-center gap-3 w-full md:w-auto ml-auto">
-                <!-- Agent Selector and Session Selector REMOVED as per user request -->
+                <!-- Agent Selector (Non-functional switcher for UI) -->
+                <div class="relative z-[40] flex-1 md:flex-none">
+                    <button 
+                        class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-[#27272a] hover:bg-[#27272a] h-9 px-4 py-2 justify-between gap-3 bg-[#0c0c0c] text-[#FAFAFA] w-full md:min-w-[160px]"
+                        type="button"
+                    >
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-500 text-lg">⚡</span>
+                            <span class="font-medium">Agente Zeus</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down text-[#A1A1AA]"><path d="m6 9 6 6 6-6"></path></svg>
+                    </button>
+                </div>
+
+				<div class="relative z-[40] flex-1 md:flex-none">
+					<button 
+						@click.stop="toggleDatePicker"
+						class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-[#27272a] hover:bg-[#27272a] h-9 px-4 py-2 justify-between gap-2 bg-[#0c0c0c] text-[#FAFAFA] w-full md:min-w-[180px]" 
+						type="button"
+					>
+						<div class="flex items-center gap-2">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar text-green-500"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
+							<span class="font-medium">{{ dateRangeText }}</span>
+						</div>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down text-[#A1A1AA] transition-transform duration-200" :class="{ 'rotate-180': showDatePicker }"><path d="m6 9 6 6 6-6"></path></svg>
+					</button>
+
+					<!-- Dropdown Menu -->
+					<div 
+						v-if="showDatePicker"
+						class="absolute top-full left-0 mt-1 w-full rounded-md border border-[#27272a] bg-[#0c0c0c] shadow-lg z-[50] py-1"
+					>
+						<button 
+							v-for="option in dateOptions" 
+							:key="option.value"
+							@click="selectDateRange(option)"
+							class="w-full text-left px-4 py-2 text-sm text-[#A1A1AA] hover:text-[#FAFAFA] hover:bg-[#27272a] transition-colors flex items-center justify-between group"
+							:class="{ 'text-green-500 bg-[#27272a]': selectedPeriod === option.value }"
+						>
+							<span>{{ option.label }}</span>
+							<svg v-if="selectedPeriod === option.value" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check text-green-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
+						</button>
+					</div>
+				</div>
 
 
 
