@@ -822,9 +822,16 @@ export default {
         },
         calculatePercentage(val) { return this.balance ? ((val/this.balance)*100).toFixed(2) : '0.00'; },
         submitForm() {
+            let strategyName = 'Custom Strategy';
+            if (this.selectedSavedStrategyId) {
+                const s = this.savedStrategies.find(i => i.id === this.selectedSavedStrategyId);
+                if (s) strategyName = s.name;
+            }
+
             this.$emit('start-monitoring', {
                 form: this.form,
-                recoveryConfig: this.recoveryConfig
+                recoveryConfig: this.recoveryConfig,
+                strategyName: strategyName
             });
         }
     }

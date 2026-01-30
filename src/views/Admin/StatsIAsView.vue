@@ -1048,30 +1048,7 @@ export default {
 					this._loadingAccountInfo = false;
 				}
 				
-				// Buscar estatísticas de hoje
-				const userId = this.getUserId();
-				if (userId) {
-					const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-					const response = await fetch(`${apiBase}/ai/session-stats/${userId}`, {
-						headers: {
-							'Authorization': `Bearer ${localStorage.getItem('token')}`
-						}
-					});
-					const result = await response.json();
-					
-					if (result.success && result.data) {
-						this.applySessionStats(result.data);
-					}
-				}
-				
-				// Carregar estatísticas agregadas do StatsIAs
-				await this.loadStatsIAs();
-				
-				// Carregar parâmetros de trading ajustados
-				await this.loadTradingParams();
-
-				// Carregar últimos logs (para tela padrão)
-				await this.loadRecentLogs();
+				// ✅ BACKEND REMOVIDO: Session stats, StatsIAs, Trading params e Logs
 				
 				// Atualizar última leitura
 				this.lastReadingTime = new Date().toLocaleTimeString('pt-BR', { 
@@ -1085,194 +1062,40 @@ export default {
 		},
 		
 		/**
-		 * Busca dados gerais das IAs com filtros de data
-		 */
-		async fetchData() {
-			try {
-				console.log('[StatsIAsView] Buscando estatísticas gerais...', {
-					startDate: this.filterStartDate,
-					endDate: this.filterEndDate
-				});
-				
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-				const params = new URLSearchParams();
-				
-				if (this.filterStartDate) {
-					params.append('startDate', this.filterStartDate);
-				}
-				if (this.filterEndDate) {
-					params.append('endDate', this.filterEndDate);
-				}
-				if (this.selectedAccountFilter !== 'all') {
-					params.append('accountType', this.selectedAccountFilter);
-				}
-				
-				const url = `${apiBase}/autonomous-agent/general-stats?${params.toString()}`;
-				console.log('[StatsIAsView] URL:', url);
-				
-				const response = await fetch(url, {
-					headers: {
-						'Authorization': `Bearer ${localStorage.getItem('token')}`
-					}
-				});
-				
-				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
-				}
-				
-				const result = await response.json();
-				console.log('[StatsIAsView] Resultado completo:', JSON.stringify(result, null, 2));
-				
-				if (result.success && result.data) {
-					const { strategies, summary } = result.data;
-					
-					console.log('[StatsIAsView] Strategies:', strategies);
-					console.log('[StatsIAsView] Summary:', summary);
-					
-					// Atualizar tabela de estratégias
-					this.allStats = strategies;
-					this.displayedStats = strategies;
-					
-					// Atualizar cards de resumo
-					this.totalActiveIAs = summary.totalActiveIAs;
-					this.combinedProfit7Days = summary.combinedProfit;
-					this.globalAccuracy = summary.globalAccuracy;
-					this.topProfitIA = `${summary.topPerformer.name} (+${summary.topPerformer.profit.toFixed(2)})`;
-					
-					console.log('[StatsIAsView] ✅ Estatísticas carregadas com sucesso');
-					console.log('[StatsIAsView] displayedStats:', this.displayedStats);
-				} else {
-					console.error('[StatsIAsView] Resposta inválida:', result);
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao buscar estatísticas gerais:', error);
-				// Manter valores zerados em caso de erro
-				this.allStats = [];
-				this.displayedStats = [];
-			}
-		},
+	 * ✅ BACKEND REMOVIDO: Busca dados gerais das IAs
+	 */
+	async fetchData() {
+		console.log('[StatsIAsView] Backend removido - fetchData agora apenas visual');
+		// Manter visual com dados mockados
+		this.allStats = [];
+		this.displayedStats = [];
+	},
 		
 		/**
-		 * Carrega estatísticas agregadas do StatsIAs
-		 */
-		async loadStatsIAs() {
-			try {
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-				const response = await fetch(`${apiBase}/ai/stats-ias`, {
-					headers: {
-						'Authorization': `Bearer ${localStorage.getItem('token')}`
-					}
-				});
-				const result = await response.json();
-				
-				if (result.success && result.data && result.data.data) {
-					const stats = result.data.data;
-					this.statsIAs = {
-						totalUsers: stats.totalUsers || 0,
-						activeUsers: stats.activeUsers || 0,
-						totalTrades: stats.totalTrades || 0,
-						totalWins: stats.totalWins || 0,
-						totalLosses: stats.totalLosses || 0,
-						winRate: stats.winRate || 0,
-						totalProfit: stats.totalProfit || 0,
-						averageProfit: stats.averageProfit || 0,
-						source: result.data.source || 'local',
-					};
-					console.log('[StatsIAsView] Estatísticas agregadas carregadas:', this.statsIAs);
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao carregar estatísticas do StatsIAs:', error);
-			}
-		},
+	 * ✅ BACKEND REMOVIDO: Estatísticas agregadas
+	 */
+	async loadStatsIAs() {
+		console.log('[StatsIAsView] Backend removido - loadStatsIAs');
+	},
 		
 		/**
-		 * Carrega parâmetros de trading ajustados baseados nas estatísticas
-		 */
-		async loadTradingParams() {
-			try {
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-				const response = await fetch(`${apiBase}/ai/trading-params`, {
-					headers: {
-						'Authorization': `Bearer ${localStorage.getItem('token')}`
-					}
-				});
-				const result = await response.json();
-				
-				if (result.success && result.data) {
-					this.tradingParams = {
-						dvxMax: result.data.dvxMax || 70,
-						window: result.data.window || 3,
-						betPercent: result.data.betPercent || 0.005,
-					};
-					console.log('[StatsIAsView] Parâmetros de trading ajustados:', this.tradingParams);
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao carregar parâmetros de trading:', error);
-			}
-		},
+	 * ✅ BACKEND REMOVIDO: Parâmetros de trading
+	 */
+	async loadTradingParams() {
+		console.log('[StatsIAsView] Backend removido - loadTradingParams');
+	},
 		
 		/**
-		 * Atualiza o valor de entrada (stake amount) da IA
-		 */
-		async updateStakeAmount() {
-			if (this.tradingConfig.stakeAmount < 0.35) {
-				this.configUpdateMessage = 'Valor mínimo é $0.35';
-				this.configUpdateSuccess = false;
-				setTimeout(() => {
-					this.configUpdateMessage = '';
-				}, 3000);
-				return;
-			}
-
-			this.isUpdatingConfig = true;
+	 * ✅ BACKEND REMOVIDO: Atualização de configuração
+	 */
+	async updateStakeAmount() {
+		console.log('[StatsIAsView] Backend removido - updateStakeAmount');
+		this.configUpdateMessage = 'Funcionalidade desativada (apenas visual)';
+		this.configUpdateSuccess = false;
+		setTimeout(() => {
 			this.configUpdateMessage = '';
-
-			try {
-				const userId = this.getUserId();
-				if (!userId) {
-					throw new Error('Usuário não identificado');
-				}
-
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-				const response = await fetch(`${apiBase}/ai/update-config`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${localStorage.getItem('token')}`
-					},
-					body: JSON.stringify({
-						userId: userId,
-						stakeAmount: this.tradingConfig.stakeAmount,
-					}),
-				});
-
-				const result = await response.json();
-
-				if (result.success) {
-					this.configUpdateMessage = '✅ Valor de entrada atualizado com sucesso!';
-					this.configUpdateSuccess = true;
-					console.log('[StatsIAsView] Valor de entrada atualizado:', this.tradingConfig.stakeAmount);
-					
-					// Limpar mensagem após 3 segundos
-					setTimeout(() => {
-						this.configUpdateMessage = '';
-					}, 3000);
-				} else {
-					throw new Error(result.message || 'Erro ao atualizar configuração');
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao atualizar valor de entrada:', error);
-				this.configUpdateMessage = `❌ Erro: ${error.message || 'Não foi possível atualizar'}`;
-				this.configUpdateSuccess = false;
-				
-				// Limpar mensagem após 5 segundos
-				setTimeout(() => {
-					this.configUpdateMessage = '';
-				}, 5000);
-			} finally {
-				this.isUpdatingConfig = false;
-			}
-		},
+		}, 3000);
+	},
 		
 		/**
 		 * Obter token da Deriv baseado na conta ativa
@@ -1493,78 +1316,16 @@ export default {
 	},
 
 		async startAIMonitoring() {
-			try {
-				console.log('[StatsIAsView] Iniciando monitoramento de IA...');
-				
-				// Iniciar monitoramento no backend
-				const response = await fetch('https://iazenix.com/api/ai/start', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				});
-
-				const result = await response.json();
-
-				if (result.success) {
-					this.aiMonitoring.isActive = true;
-					console.log('[StatsIAsView] Monitoramento iniciado com sucesso');
-					
-					// ✅ POOLING DESATIVADO: Buscar dados apenas uma vez (sem polling)
-					this.startPolling();
-					
-					// Inicializar gráfico de mercado ativo
-					this.$nextTick(() => {
-						setTimeout(() => {
-							if (this.$refs.marketChartContainerActive) {
-								this.initMarketChartActive();
-							}
-						}, 500);
-					});
-					
-					// A seção de trading automático aparecerá automaticamente
-					// pois aiMonitoring.isActive agora é true
-				} else {
-					console.error('[StatsIAsView] Erro ao iniciar monitoramento:', result.message);
-					this.$root.$toast.error('Erro ao iniciar monitoramento: ' + result.message);
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao iniciar monitoramento:', error);
-				this.$root.$toast.error('Erro ao conectar com o servidor');
-			}
-		},
+		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - startAIMonitoring apenas visual');
+		this.aiMonitoring.isActive = true;
+	},
 		
-	/**
-	 * Verifica se há sessão ativa de IA antes de iniciar carregamento de ticks
-	 */
-	async checkActiveAISession() {
-		try {
-			const userId = this.getUserId();
-			if (!userId) {
-				console.log('[StatsIAsView] Usuário não encontrado, não iniciando carregamento de ticks');
-				return false;
-			}
-			
-			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-			const response = await fetch(`${apiBase}/ai/config/${userId}`, {
-				headers: {
-					'Authorization': `Bearer ${localStorage.getItem('token')}`
-				}
-			});
-			
-			const result = await response.json();
-			
-			if (result.success && result.data) {
-				const isActive = result.data.isActive || false;
-				console.log('[StatsIAsView] Sessão de IA:', isActive ? 'ATIVA' : 'INATIVA');
-				return isActive;
-			}
-			
-			return false;
-		} catch (error) {
-			console.error('[StatsIAsView] Erro ao verificar sessão ativa:', error);
-			return false;
-		}
+		/**
+		 * Verifica se há sessão ativa de IA antes de iniciar carregamento de ticks
+		 */
+		async checkActiveAISession() {
+		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - checkActiveAISession');
+		return false;
 	},
 
 	/**
@@ -1572,74 +1333,19 @@ export default {
 	 * para mostrar o gráfico na tela padrão
 	 * AGORA: Só inicia se houver sessão ativa de IA
 	 */
-	async startDataLoading() {
-		try {
-			console.log('[StatsIAsView] ===== VERIFICANDO SESSÃO ATIVA ANTES DE CARREGAR TICKS =====');
-			
-			// ✅ Verificar se há sessão ativa antes de iniciar carregamento
-			const hasActiveSession = await this.checkActiveAISession();
-			
-			if (!hasActiveSession) {
-				console.log('[StatsIAsView] ⏸️ Nenhuma sessão ativa de IA encontrada. Ticks não serão carregados.');
-				return;
-			}
-			
-			console.log('[StatsIAsView] ✅ Sessão ativa encontrada. Iniciando carregamento de ticks...');
-			console.log('[StatsIAsView] URL:', 'https://iazenix.com/api/ai/start');
-			
-			// Iniciar monitoramento no backend (sem ativar a IA)
-			const response = await fetch('https://iazenix.com/api/ai/start', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			});
-
-			console.log('[StatsIAsView] Status da resposta:', response.status);
-			console.log('[StatsIAsView] Response OK?', response.ok);
-
-			const result = await response.json();
-			console.log('[StatsIAsView] Resultado:', result);
-
-			if (result.success) {
-				console.log('[StatsIAsView] ✅ Carregamento de dados iniciado (IA desativada)');
-				
-				// ✅ NÃO iniciar polling quando IA está desativada
-				// O polling só deve ocorrer quando a IA estiver ativa
-				// Buscar dados apenas uma vez para inicializar o gráfico
-				this.fetchAIData();
-			} else {
-				console.warn('[StatsIAsView] ⚠ Não foi possível iniciar carregamento de dados:', result.message);
-			}
-		} catch (error) {
-			console.error('[StatsIAsView] ❌ ERRO ao iniciar carregamento de dados:', error);
-			console.error('[StatsIAsView] Detalhes do erro:', error.message);
-			console.error('[StatsIAsView] Stack:', error.stack);
-		}
+		async startDataLoading() {
+		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - startDataLoading');
 	},
 
 		stopAIMonitoring() {
-			console.log('[StatsIAsView] Parando monitoramento de IA...');
-			
-			this.aiMonitoring.isActive = false;
-			this.stopPolling();
-
-			// Parar monitoramento no backend
-			fetch('https://iazenix.com/api/ai/stop', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}).catch(error => {
-				console.error('[StatsIAsView] Erro ao parar monitoramento:', error);
-			});
-
-			// Limpar dados
-			this.aiMonitoring.currentPrice = null;
-			this.aiMonitoring.ticks = [];
-			this.aiMonitoring.statistics = null;
-			this.aiMonitoring.lastUpdate = '--';
-		},
+		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - stopAIMonitoring apenas limpa estado local');
+		this.aiMonitoring.isActive = false;
+		this.stopPolling();
+		this.aiMonitoring.currentPrice = null;
+		this.aiMonitoring.ticks = [];
+		this.aiMonitoring.statistics = null;
+		this.aiMonitoring.lastUpdate = '--';
+	},
 
 		startPolling() {
 			// ✅ POOLING DESATIVADO: Não fazer polling de ticks conforme solicitado
@@ -1657,80 +1363,8 @@ export default {
 			}
 		},
 
-	async fetchAIData() {
-		// ✅ Não buscar ticks se a IA não estiver ativa
-		if (!this.tradingConfig.isActive && !this.aiMonitoring.isActive) {
-			console.log('[StatsIAsView] ⏸️ IA não está ativa, pulando busca de ticks');
-			return;
-		}
-		
-		try {
-			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-			console.log('[StatsIAsView] Buscando ticks de', `${apiBase}/ai/ticks`);
-			
-			const response = await fetch(`${apiBase}/ai/ticks`);
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-			
-			const result = await response.json();
-
-			console.log('[StatsIAsView] Resposta de ticks:', {
-				success: result.success,
-				ticksCount: result.data?.ticks?.length || 0,
-				currentPrice: result.data?.currentPrice,
-				firstTick: result.data?.ticks?.[0]
-			});
-
-			if (result.success && result.data) {
-				// Estrutura Tick da API: { value, epoch, timestamp, digit, parity }
-				const ticks = result.data.ticks || [];
-				
-				console.log('[StatsIAsView] Ticks recebidos:', ticks.length);
-				console.log('[StatsIAsView] Exemplo de tick:', ticks[0]);
-				
-				// Garantir que cada tick tenha epoch válido
-				const processedTicks = ticks.map((tick, index) => {
-					// Se não tiver epoch, calcular baseado no índice (assumindo 1 tick por segundo)
-					if (!tick.epoch) {
-						const baseEpoch = Date.now() / 1000;
-						tick.epoch = baseEpoch - (ticks.length - index - 1);
-					}
-					return tick;
-				});
-				
-				this.aiMonitoring.ticks = processedTicks;
-				this.aiMonitoring.currentPrice = result.data.currentPrice;
-				this.aiMonitoring.statistics = result.data.statistics;
-				this.aiMonitoring.lastUpdate = new Date().toLocaleTimeString('pt-BR');
-				
-				// Atualizar gráficos após processar os ticks
-				this.$nextTick(() => {
-					setTimeout(() => {
-					if (!this.aiMonitoring.isActive) {
-						if (!this.marketChartInitializedInactive) {
-							console.log('[StatsIAsView] Inicializando gráfico inativo...');
-							this.initMarketChartInactive();
-						} else {
-							console.log('[StatsIAsView] Atualizando gráfico inativo...');
-							this.updateMarketChartInactive();
-						}
-					} else {
-						if (!this.marketChartInitializedActive) {
-							console.log('[StatsIAsView] Inicializando gráfico ativo...');
-							this.initMarketChartActive();
-						} else {
-							console.log('[StatsIAsView] Atualizando gráfico ativo...');
-							this.updateMarketChartActive();
-						}
-					}
-					}, 100);
-				});
-			}
-		} catch (error) {
-			console.error('[StatsIAsView] ❌ Erro ao buscar dados:', error);
-			console.error('[StatsIAsView] Detalhes:', error.message);
-		}
+		async fetchAIData() {
+		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - fetchAIData');
 	},
 
 		getVariationClass(current, previous) {
@@ -1755,112 +1389,15 @@ export default {
 		},
 
 	async startAutomatedTrading() {
-		if (this.tradingConfig.stakeAmount < 1) {
-			this.$root.$toast.error('Valor de entrada deve ser no mínimo $1');
-			return;
-		}
-
-		console.log('[StatsIAsView] Ativando IA em background...');
-		
-		try {
-			// Obter userId do localStorage (token JWT ou user info)
-			const userId = this.getUserId();
-			if (!userId) {
-				this.$root.$toast.error('Erro: usuário não identificado. Por favor, faça login novamente.');
-				return;
-			}
-			
-			// Obter token e moeda
-			const derivToken = this.getDerivToken();
-			if (!derivToken) {
-				this.$root.$toast.error('Por favor, conecte sua conta Deriv primeiro');
-				// Redirecionar para a tela de conexão Deriv já existente
-				if (this.$router) {
-					this.$router.push('/dashboard');
-				}
-				return;
-			}
-			
-			const preferredCurrency = this.getPreferredCurrency();
-			
-			// Ativar IA no backend (roda em background)
-			const response = await fetch((process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api') + '/ai/activate', {
-				method: 'POST',
-				headers: { 
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${localStorage.getItem('token')}`
-				},
-				body: JSON.stringify({
-					userId: userId,
-					stakeAmount: this.tradingConfig.stakeAmount,
-					derivToken: derivToken,
-					currency: preferredCurrency,
-					mode: 'veloz', // Sempre veloz
-					profitTarget: this.tradingConfig.profitTarget || null,
-					lossLimit: this.tradingConfig.lossLimit || null,
-				}),
-			});
-			
-			const result = await response.json();
-			
-			if (result.success) {
-				this.tradingConfig.isActive = true;
-				console.log('[StatsIAsView] ✅ IA ativada em background!');
-				this.$root.$toast.success('IA ativada! Ela continuará operando mesmo se você fechar a plataforma.');
-				
-				// Carregar estatísticas e histórico do banco
-				await this.loadSessionStats();
-				await this.loadTradeHistory();
-				
-				// Iniciar polling para atualizar a tela
-				this.startBackgroundPolling();
-			} else {
-				this.$root.$toast.error('Erro ao ativar IA: ' + result.message);
-			}
-		} catch (error) {
-			console.error('[StatsIAsView] Erro ao ativar IA:', error);
-			this.$root.$toast.error('Erro ao ativar IA. Verifique sua conexão.');
-		}
-	},
+	console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - startAutomatedTrading apenas visual');
+	this.tradingConfig.isActive = true;
+},
 
 	async stopAutomatedTrading() {
-		console.log('[StatsIAsView] Desativando IA em background...');
-		
-		try {
-			const userId = this.getUserId();
-			if (!userId) {
-				this.$root.$toast.error('Erro: usuário não identificado.');
-				return;
-			}
-			
-			const response = await fetch((process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api') + '/ai/deactivate', {
-				method: 'POST',
-				headers: { 
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${localStorage.getItem('token')}`
-				},
-				body: JSON.stringify({
-					userId: userId,
-				}),
-			});
-			
-			const result = await response.json();
-			
-			if (result.success) {
-				this.tradingConfig.isActive = false;
-				console.log('[StatsIAsView] ✅ IA desativada!');
-				this.$root.$toast.success('IA desativada com sucesso.');
-				
-				// Parar polling
-				this.stopBackgroundPolling();
-			} else {
-				this.$root.$toast.error('Erro ao desativar IA: ' + result.message);
-			}
-		} catch (error) {
-			console.error('[StatsIAsView] Erro ao desativar IA:', error);
-			this.$root.$toast.error('Erro ao desativar IA.');
-		}
-	},
+	console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - stopAutomatedTrading apenas visual');
+	this.tradingConfig.isActive = false;
+	this.stopBackgroundPolling();
+},
 
 		async executeNextTrade() {
 			if (!this.tradingConfig.isActive) return;
@@ -2098,113 +1635,18 @@ export default {
 		},
 
 		async loadSessionStats() {
-			try {
-				const userId = this.getUserId();
-				if (!userId) return;
-				
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-				const response = await fetch(`${apiBase}/ai/session-stats/${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${localStorage.getItem('token')}`
-					}
-				});
-				const result = await response.json();
-
-				if (result.success && result.data) {
-					this.applySessionStats(result.data);
-					console.log('[StatsIAsView] Estatísticas carregadas:', result.data);
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao carregar estatísticas:', error);
-			}
-		},
+		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - loadSessionStats');
+	},
 
 		async loadTradeHistory() {
-			try {
-				const userId = this.getUserId();
-				if (!userId) return;
-				
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-				const response = await fetch(`${apiBase}/ai/trade-history/${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${localStorage.getItem('token')}`
-					}
-				});
-				const result = await response.json();
-
-				if (result.success && result.data) {
-					// ✅ Filtrar operações com status ERROR (não devem aparecer no histórico)
-					this.tradeHistory = result.data.filter(trade => 
-						trade.status !== 'ERROR' && 
-						trade.status !== 'error' &&
-						!trade.error_message
-					);
-					console.log('[StatsIAsView] Histórico carregado:', this.tradeHistory.length, 'operações (filtradas)');
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao carregar histórico:', error);
-			}
-		},
+		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - loadTradeHistory');
+		this.tradeHistory = [];
+	},
 
 		async loadRecentLogs() {
-			try {
-				const userId = this.getUserId();
-				if (!userId) return;
-
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-				const response = await fetch(`${apiBase}/ai/logs/${userId}`, {
-					headers: {
-						'Authorization': `Bearer ${localStorage.getItem('token')}`
-					}
-				});
-
-				if (!response.ok) {
-					console.warn('[StatsIAsView] ⚠️ Erro ao buscar logs:', response.status, response.statusText);
-					return;
-				}
-
-				const result = await response.json();
-				if (result.success && Array.isArray(result.data)) {
-					// ✅ Mostrar todos os logs da sessão atual (sem limite)
-					this.recentLogs = result.data.map(log => {
-						const timestamp = log.timestamp || log.created_at;
-						const time = timestamp
-							? new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-							: '--:--:--';
-						return {
-							time,
-							message: log.message || '',
-							type: log.type || 'info',
-						};
-					});
-					
-					// ✅ Verificar se há mensagem de meta de lucro atingida nos logs recentes
-					// Isso garante que o modal seja mostrado mesmo se o sessionStatus ainda não foi atualizado
-					// const hasTargetProfitMessage = this.recentLogs.some(log => 
-					// 	log.message && log.message.includes('META DE LUCRO ATINGIDA')
-					// );
-					
-					// if (hasTargetProfitMessage && !this.showTargetProfitModal) {
-					// 	console.log('[StatsIAsView] 🎯 [Logs] Meta de lucro detectada nos logs! Mostrando modal...');
-					// 	await this.loadSessionResult();
-					// 	this.showTargetProfitModal = true;
-					// }
-					
-					// ✅ Verificar se há mensagem de stop loss nos logs recentes
-					// const hasStopLossMessage = this.recentLogs.some(log => 
-					// 	log.message && log.message.includes('STOP LOSS ATINGIDO')
-					// );
-					
-					// if (hasStopLossMessage && !this.showStopLossModal) {
-					// 	console.log('[StatsIAsView] 🛑 [Logs] Stop loss detectado nos logs! Mostrando modal...');
-					// 	await this.loadSessionResult();
-					// 	this.showStopLossModal = true;
-					// }
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao carregar logs:', error);
-			}
-		},
+		console.log('[StatsIAsView] ✅ BACKEND REMOVIDO - loadRecentLogs');
+		this.recentLogs = [];
+	},
 
 	formatTradeTime(timestamp) {
 		if (!timestamp) return '--';
