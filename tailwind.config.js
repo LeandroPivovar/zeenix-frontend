@@ -18,7 +18,14 @@ module.exports = {
         'zenix-divider': '#1A1A1A',
         'zenix-blue': '#0099FF',
         'zenix-yellow': '#FFD058',
-        'zenix-red': '#FF4747'
+        'zenix-red': '#FF4747',
+        // Standard aliases for the new design
+        'success': '#22C55E',
+        'secondary': '#141414',
+        'foreground': '#DFDFDF',
+        'muted-foreground': '#7A7A7A',
+        'border': '#1C1C1C',
+        'success-foreground': '#FFFFFF'
       },
       fontFamily: {
         'inter': ['Inter', 'sans-serif'],
