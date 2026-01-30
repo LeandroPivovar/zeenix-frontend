@@ -162,12 +162,10 @@
 							<transition name="slide-fade" mode="out-in">
 								<div v-if="selectedAgent" :key="selectedAgent" class="agent-description-card mt-3">
 									<div class="agent-desc-content">
-										<div class="agent-desc-info">
-											<p>
-												<strong>Análise:</strong> {{ getAgentAnalysis(selectedAgent) }}<br>
-												<strong>Assertividade:</strong> {{ getAgentAssertiveness(selectedAgent) }}<br>
-												<strong>Retorno:</strong> {{ getAgentReturn(selectedAgent) }}
-											</p>
+										<div class="agent-desc-info-row">
+											<span class="info-item"><strong>Análise:</strong> {{ getAgentAnalysis(selectedAgent) }}</span>
+											<span class="info-item"><strong>Assertividade:</strong> {{ getAgentAssertiveness(selectedAgent) }}</span>
+											<span class="info-item"><strong>Retorno:</strong> {{ getAgentReturn(selectedAgent) }}</span>
 										</div>
 									</div>
 								</div>
@@ -1153,12 +1151,18 @@ export default {
     letter-spacing: 0.5px;
 }
 
-.agent-desc-info p {
+.agent-desc-info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
     font-size: 12px;
     color: #A1A1A1;
     line-height: 1.6;
-    margin: 0;
-    white-space: pre-line;
+}
+
+.info-item strong {
+    color: #DFDFDF;
+    margin-right: 4px;
 }
 
 /* Slide Fade Transition */
@@ -1271,21 +1275,6 @@ export default {
     position: relative;
     display: flex;
     align-items: center;
-}
-
-.input-prefix {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 2.5rem;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #DFDFDF;
-    font-size: 0.95rem;
-    pointer-events: none;
-    line-height: normal;
 }
 
 
@@ -1543,32 +1532,14 @@ export default {
 .agent-avatar-box {
     width: 60px;
     height: 60px;
-    border-radius: 12px;
-    background: #111;
+    border-radius: 50%;
+    background: #000;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
-.agent-avatar-box.zeus {
-    background: rgba(34, 197, 94, 0.1) !important;
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
-}
-
-.agent-avatar-box.falcon {
-    background: rgba(161, 161, 161, 0.05) !important;
-    box-shadow: 0 0 20px rgba(161, 161, 161, 0.1);
-}
-
-.agent-avatar-box i {
-    font-size: 1.5rem;
-}
-
-.agent-avatar-box.zeus i { color: #22C55E !important; }
-.agent-avatar-box.falcon i { color: #A1A1A1 !important; }
 
 .agent-avatar-video {
     width: 100%;
