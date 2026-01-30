@@ -194,8 +194,8 @@
                                 class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <div class="flex items-center gap-3">
-                                    <img v-if="selectedTradeTypeGroupIcon" :src="selectedTradeTypeGroupIcon" class="w-6 h-6 contrast-[1.5] brightness-[1.5]" alt="" />
-                                    <span class="font-medium text-lg">{{ selectedTradeTypeGroupLabel }}</span>
+                                    <img v-if="selectedTradeTypeIcon" :src="selectedTradeTypeIcon" class="w-6 h-6 contrast-[1.5] brightness-[1.5]" alt="" />
+                                    <span class="font-medium text-lg">{{ selectedTradeTypeLabel }}</span>
                                 </div>
                                 <i class="fa-solid fa-chevron-down text-gray-400"></i>
                             </button>
@@ -242,6 +242,27 @@
                             </div>
                         </div>
 
+
+
+                        <!-- Digit Prediction/Barrier (Conditional) -->
+                        <div class="col-span-12" v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Dígito Alvo (Previsão)</label>
+                                    <div class="relative">
+                                        <select 
+                                            v-model.number="form.prediction" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                        >
+                                            <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Filtros de Ataque (Primary Entry) -->
                         <div class="col-span-12">
@@ -851,15 +872,17 @@ export default {
             contracts: [],
             
             form: {
-                market: '',
-                selectedTradeTypeGroup: '', // For grouping
-                tradeType: '', // Actual API value
+                initialStake: 0.35,
+                profitTarget: 10,
+                stopLoss: 50,
+                martingaleMode: 'conservador',
                 duration: 1,
                 durationUnit: 't',
-                multiplier: 2.2,
-                initialStake: 1,
-                takeProfit: 20,
-                stopLoss: 1000,
+                market: 'R_100',
+                tradeType: null,
+                selectedTradeTypeGroup: null, // Track group selection separately
+                multiplier: 0,
+                prediction: 0, // For Digit Match/Diff/Over/Under
                 attackFilters: [] // Final filters configuration
             },
             
@@ -979,70 +1002,6 @@ export default {
                     ]
                 }
             ],
-                {
-                    id: 'digits',
-                    label: 'Dígitos',
-                    icon: 'fas fa-sort-numeric-up',
-                    items: [
-                        { value: 'match_diff', label: 'Combina / Difere', icon: 'TradeTypesDigitsMatchDiffIcon.svg', directions: [
-                            { value: 'DIGITMATCH', label: 'Combina' },
-                            { value: 'DIGITDIFF', label: 'Difere' }
-                        ]},
-                        { value: 'even_odd', label: 'Par / Ímpar', icon: 'TradeTypesDigitsEvenOddIcon.svg', directions: [
-                            { value: 'DIGITEVEN', label: 'Par' },
-                            { value: 'DIGITODD', label: 'Ímpar' }
-                        ]},
-                        { value: 'over_under', label: 'Acima / Abaixo', icon: 'TradeTypesDigitsOverUnderIcon.svg', directions: [
-                            { value: 'DIGITOVER', label: 'Acima' },
-                            { value: 'DIGITUNDER', label: 'Abaixo' }
-                        ]}
-                    ]
-                },
-                {
-                    id: 'one_barrier',
-                    label: 'Uma Barreira',
-                    icon: 'fas fa-bullseye',
-                    items: [
-                        { value: 'touch_no_touch', label: 'Toca / Não Toca', icon: 'TradeTypesHighsAndLowsTouchIcon.svg', directions: [
-                            { value: 'ONETOUCH', label: 'Toca' },
-                            { value: 'NOTOUCH', label: 'Não Toca' }
-                        ]},
-                        { value: 'higher_lower', label: 'Maior / Menor', icon: 'TradeTypesHighsAndLowsHigherIcon.svg', directions: [
-                            { value: 'HIGHER', label: 'Maior' },
-                            { value: 'LOWER', label: 'Menor' }
-                        ]}
-                    ]
-                },
-                {
-                    id: 'two_barriers',
-                    label: 'Duas Barreiras',
-                    icon: 'fas fa-shield-alt',
-                    items: [
-                        { value: 'in_out', label: 'Permanece Dentro / Sai Fora', icon: 'TradeTypesInsAndOutsStaysInIcon.svg', directions: [
-                            { value: 'RANGE', label: 'Permanece Dentro' },
-                            { value: 'UPORDOWN', label: 'Sai Fora' }
-                        ]},
-                        { value: 'ends_in_out', label: 'Termina Dentro / Termina Fora', icon: 'TradeTypesInsAndOutsEndsInIcon.svg', directions: [
-                            { value: 'EXPIRYRANGE', label: 'Termina Dentro' },
-                            { value: 'EXPIRYMISS', label: 'Termina Fora' }
-                        ]}
-                    ]
-                },
-                {
-                    id: 'no_expiry',
-                    label: 'Sem Vencimento',
-                    icon: 'fas fa-bolt',
-                    items: [
-                        { value: 'multipliers_mult', label: 'Multiplicadores', icon: 'TradeTypesMultipliersUpIcon.svg', directions: [
-                            { value: 'MULTUP', label: 'Alta' },
-                            { value: 'MULTDOWN', label: 'Baixa' }
-                        ]},
-                        { value: 'accumulators_accu', label: 'Acumuladores', icon: 'TradeTypesAccumulatorStayInIcon.svg', directions: [
-                            { value: 'ACCU', label: 'Acumuladores' }
-                        ]}
-                    ]
-                }
-            ],
             allTradeTypes: [
                 { value: 'CALL', label: 'Subida' }, { value: 'PUT', label: 'Queda' },
                 { value: 'DIGITMATCH', label: 'Combina' }, { value: 'DIGITDIFF', label: 'Difere' },
@@ -1142,11 +1101,11 @@ export default {
             }
             return this.form.tradeType;
         },
-        selectedTradeTypeGroupIcon() {
-            if (!this.form.selectedTradeTypeGroup) return null;
+        selectedTradeTypeIcon() {
+            if (!this.form.tradeType) return null;
             
             for (const cat of this.tradeTypeCategories) {
-                const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
+                const item = cat.items.find(i => i.value === this.form.tradeType);
                 if (item && item.icon) return `/deriv_icons/${item.icon}`;
             }
             return null;
@@ -1191,7 +1150,13 @@ export default {
 
              return this.tradeTypeCategories.map(category => {
                 const filteredItems = category.items.filter(item => {
-                  return item.directions.some(dir => contextContracts.includes(dir.value.toUpperCase()));
+                    // Check if item itself is available
+                    if (contextContracts.includes(item.value.toUpperCase())) return true;
+                    // Check if item has nested directions (legacy support or specific groups like logic)
+                    if (item.directions) {
+                         return item.directions.some(dir => contextContracts.includes(dir.value.toUpperCase()));
+                    }
+                    return false;
                 });
                 
                 if (filteredItems.length > 0) {
@@ -1413,15 +1378,10 @@ export default {
         },
         selectTradeType(item) {
             if (this.modalContext === 'main') {
-                this.form.selectedTradeTypeGroup = item.value;
-                if (item.directions && item.directions.length > 0) {
-                     this.form.tradeType = item.directions[0].value;
-                }
+                this.form.tradeType = item.value;
+                // Clear group if needed or set it based on category lookup if we want to reverse track
             } else {
-                this.recoveryConfig.selectedTradeTypeGroup = item.value;
-                if (item.directions && item.directions.length > 0) {
-                     this.recoveryConfig.tradeType = item.directions[0].value;
-                }
+                this.recoveryConfig.tradeType = item.value;
             }
             
             this.$root.$toast.success(`Tipo de contrato selecionado: ${item.label}`);
@@ -1645,6 +1605,16 @@ export default {
                     symbol: this.form.market
                 }
             };
+
+            // Add Barrier/Prediction for Digit Contracts
+            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(this.form.tradeType)) {
+                // For 'buy' proposal, parameters usually mimics proposal request.
+                // Depending on the API version, it might be 'barrier' or 'prediction'.
+                // Standard for digits is typically 'barrier' in some contexts, but let's try 'barrier' first as per common usage for target.
+                // However, for DIGITMATCH/DIFF 'prediction' is semantically correct.
+                // Let's use 'barrier' as it's the generic parameter key often used for the target value.
+                buyParams.parameters.barrier = this.form.prediction.toString(); 
+            }
 
             this.addLog(`💸 Enviando ordem de compra: ${this.form.tradeType} $${this.form.initialStake}`, 'info');
             this.ws.send(JSON.stringify(buyParams));
