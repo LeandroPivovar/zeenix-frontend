@@ -1439,7 +1439,7 @@ export default {
 .modal-title {
     font-size: 1.5rem;
     font-weight: 800;
-    color: #fff;
+    color: #ebebeb;
     margin: 0 0 0.5rem 0;
     letter-spacing: -0.5px;
 }
@@ -1465,7 +1465,7 @@ export default {
 }
 
 .modal-close-btn:hover {
-    color: #fff;
+    color: #ebebeb;
     background: rgba(255, 255, 255, 0.1);
 }
 
@@ -1490,7 +1490,7 @@ export default {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* Alinhado ao topo */
     gap: 2rem;
     overflow: hidden;
 }
@@ -1518,12 +1518,13 @@ export default {
 
 .agent-card-left {
     flex-shrink: 0;
+    padding-top: 4px; /* Ajuste fino para alinhar com o texto */
 }
 
 .agent-avatar-box {
     width: 80px;
     height: 80px;
-    border-radius: 1rem;
+    border-radius: 50%; /* Foto redonda */
     background: #000;
     overflow: hidden;
     display: flex;
@@ -1559,7 +1560,7 @@ export default {
 .agent-name-premium {
     font-size: 1.5rem;
     font-weight: 800;
-    color: #fff;
+    color: #ebebeb;
     margin: 0;
     letter-spacing: -0.5px;
 }
@@ -1598,14 +1599,14 @@ export default {
 .benefits-label {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #fff;
+    color: #ebebeb;
     margin-bottom: 0.5rem;
 }
 
 .benefits-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px 1rem;
+    display: flex; /* Mudado para flex para facilitar coluna única */
+    flex-direction: column;
+    gap: 6px;
 }
 
 .benefit-item-premium {
@@ -1628,6 +1629,7 @@ export default {
     align-items: flex-end;
     gap: 1.5rem;
     min-width: 140px;
+    padding-top: 4px; /* Alinhado ao topo */
 }
 
 .agent-performance-box {
@@ -1658,7 +1660,7 @@ export default {
     font-weight: 800;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.02);
-    color: #fff;
+    color: #ebebeb;
     cursor: pointer;
     transition: all 0.2s;
     text-transform: uppercase;
@@ -1732,7 +1734,7 @@ export default {
     background-color: #0B0B0B;
     border: 1px solid #1C1C1C;
     border-radius: 0.5rem;
-    color: #fff;
+    color: #ebebeb;
     cursor: pointer;
     transition: all 0.2s ease;
     height: 48px;
