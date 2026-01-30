@@ -232,7 +232,7 @@ export default {
 			isMobile: false,
 			showSettingsModal: false,
 			isStopping: false,
-			activeTab: 'logs',
+			activeTab: 'chart',
 
 			// Strategy Config (loaded from backend or localStorage)
 			currentConfig: {
