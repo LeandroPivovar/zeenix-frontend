@@ -1569,8 +1569,8 @@ export default {
 .agent-profile-badge {
     font-size: 0.625rem;
     font-weight: 900;
-    padding: 3px 8px;
-    border-radius: 4px;
+    padding: 8px 13px;
+    border-radius: 17px;
     letter-spacing: 1px;
     text-transform: uppercase;
 }
@@ -1801,9 +1801,15 @@ export default {
 	max-width: 800px;
 	background: #0D0D0D;
 	border: 1px solid #22C55E33;
-	padding: 20px;
+	padding: 10px;
 	border-radius: 1rem;
 	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.modal-body {
+    padding: 10px;
+    max-height: 75vh;
+    overflow-y: auto;
 }
 
 .modal-header-premium {
