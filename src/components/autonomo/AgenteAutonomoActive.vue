@@ -177,8 +177,6 @@
 									<span class="text-white font-bold">{{ agenteData.estrategia ? agenteData.estrategia.replace('IA ', '') : 'Agente' }}</span>
 								</div>
 							</div>
-						</div>
-					</div>
 
 					<!-- Agent Switcher Dropdown -->
 					<div 
