@@ -243,6 +243,27 @@
                         </div>
 
 
+
+                        <!-- Digit Prediction/Barrier (Conditional) -->
+                        <div class="col-span-12" v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Dígito Alvo (Previsão)</label>
+                                    <div class="relative">
+                                        <select 
+                                            v-model.number="form.prediction" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                        >
+                                            <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Filtros de Ataque (Primary Entry) -->
                         <div class="col-span-12">
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
@@ -851,15 +872,17 @@ export default {
             contracts: [],
             
             form: {
-                market: '',
-                selectedTradeTypeGroup: '', // For grouping
-                tradeType: '', // Actual API value
+                initialStake: 0.35,
+                profitTarget: 10,
+                stopLoss: 50,
+                martingaleMode: 'conservador',
                 duration: 1,
                 durationUnit: 't',
-                multiplier: 2.2,
-                initialStake: 1,
-                takeProfit: 20,
-                stopLoss: 1000,
+                market: 'R_100',
+                tradeType: null,
+                selectedTradeTypeGroup: null, // Track group selection separately
+                multiplier: 0,
+                prediction: 0, // For Digit Match/Diff/Over/Under
                 attackFilters: [] // Final filters configuration
             },
             
@@ -979,25 +1002,6 @@ export default {
                     ]
                 }
             ],
-                {
-                    id: 'digits',
-                    label: 'Dígitos',
-                    icon: 'fas fa-sort-numeric-up',
-                    items: [
-                        { value: 'match_diff', label: 'Combina / Difere', icon: 'TradeTypesDigitsMatchDiffIcon.svg', directions: [
-                            { value: 'DIGITMATCH', label: 'Combina' },
-                            { value: 'DIGITDIFF', label: 'Difere' }
-                        ]},
-                        { value: 'even_odd', label: 'Par / Ímpar', icon: 'TradeTypesDigitsEvenOddIcon.svg', directions: [
-                            { value: 'DIGITEVEN', label: 'Par' },
-                            { value: 'DIGITODD', label: 'Ímpar' }
-                        ]},
-                        { value: 'over_under', label: 'Acima / Abaixo', icon: 'TradeTypesDigitsOverUnderIcon.svg', directions: [
-                            { value: 'DIGITOVER', label: 'Acima' },
-                            { value: 'DIGITUNDER', label: 'Abaixo' }
-                        ]}
-                    ]
-                },
                 {
                     id: 'one_barrier',
                     label: 'Uma Barreira',
@@ -1645,6 +1649,16 @@ export default {
                     symbol: this.form.market
                 }
             };
+
+            // Add Barrier/Prediction for Digit Contracts
+            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(this.form.tradeType)) {
+                // For 'buy' proposal, parameters usually mimics proposal request.
+                // Depending on the API version, it might be 'barrier' or 'prediction'.
+                // Standard for digits is typically 'barrier' in some contexts, but let's try 'barrier' first as per common usage for target.
+                // However, for DIGITMATCH/DIFF 'prediction' is semantically correct.
+                // Let's use 'barrier' as it's the generic parameter key often used for the target value.
+                buyParams.parameters.barrier = this.form.prediction.toString(); 
+            }
 
             this.addLog(`💸 Enviando ordem de compra: ${this.form.tradeType} $${this.form.initialStake}`, 'info');
             this.ws.send(JSON.stringify(buyParams));
