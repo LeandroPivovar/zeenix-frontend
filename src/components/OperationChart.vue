@@ -101,13 +101,13 @@
                       item.isHighlighted ? 'meta-highlight' : ''
                     ]"
                   >
-                    <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : (item.statusClass === 'status-heated' ? '#F59E0B' : 'rgba(255,255,255,0.4)')) }">{{ item.digit }}</span>
+                    <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: item.statusClass === 'status-max' ? '#22C55E' : (item.statusClass === 'status-heated' ? '#F59E0B' : (item.statusClass === 'status-min' ? '#EF4444' : 'rgba(255,255,255,0.4)')) }">{{ item.digit }}</span>
                     <span class="meta-digit-percentage text-[11px] font-bold text-white/60 mb-4">{{ item.percentage }}%</span>
                     
                     <div class="meta-vertical-meter-container w-5 h-20 bg-white/5 rounded-full relative overflow-hidden">
                       <div 
                         class="meta-vertical-meter-fill absolute bottom-0 left-0 w-full transition-all duration-1000 ease-out"
-                        :style="{ height: item.percentage + '%', backgroundColor: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : (item.statusClass === 'status-heated' ? '#F59E0B' : 'rgba(255,255,255,0.1)')) }"
+                        :style="{ height: item.percentage + '%', backgroundColor: item.statusClass === 'status-max' ? '#22C55E' : (item.statusClass === 'status-heated' ? '#F59E0B' : (item.statusClass === 'status-min' ? '#EF4444' : 'rgba(255,255,255,0.1)')) }"
                       ></div>
                     </div>
                     <span class="text-[9px] font-bold text-white/20 mt-4 uppercase">{{ item.percentage }}%</span>
@@ -190,15 +190,18 @@
 
                     <div class="border-l border-white/5 pl-6 flex flex-col justify-center">
                       <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-black text-white">8</span>
-                        <span class="text-[10px] font-black text-red-500">7.8%</span>
+                        <span class="text-sm font-black text-white">{{ mostFrequentDigit ? mostFrequentDigit.digit : '-' }}</span>
+                        <span class="text-[10px] font-black text-white/20">{{ mostFrequentDigit ? mostFrequentDigit.percentage : '0' }}%</span>
                       </div>
                       <div class="h-4 bg-white/5 rounded-full overflow-hidden mb-4">
-                        <div class="h-full bg-red-500 w-[15%] transition-all duration-1000"></div>
+                        <div class="h-full bg-zenix-green w-[15%] transition-all duration-1000" :style="{ width: mostFrequentDigit ? mostFrequentDigit.percentage + '%' : '0%' }"></div>
                       </div>
                       <div class="flex items-center justify-between mb-1">
-                        <span class="text-sm font-black text-white/40">0</span>
-                        <span class="text-[10px] font-black text-white/20">9.8%</span>
+                        <span class="text-sm font-black text-white/40">{{ leastFrequentDigit ? leastFrequentDigit.digit : '-' }}</span>
+                        <span class="text-[10px] font-black text-white/20">{{ leastFrequentDigit ? leastFrequentDigit.percentage : '0' }}%</span>
+                      </div>
+                      <div class="h-1 bg-white/5 rounded-full overflow-hidden mb-1">
+                         <div class="h-full bg-red-500 w-[15%] transition-all duration-1000" :style="{ width: leastFrequentDigit ? leastFrequentDigit.percentage + '%' : '0%' }"></div>
                       </div>
                       <span class="text-[9px] font-bold text-white/20 uppercase tracking-wider">Menos Frequentes</span>
                     </div>
@@ -209,11 +212,11 @@
               <!-- 3. HISTÓRICO RECENTE (Meta Style) -->
               <div class="border border-white/5 rounded-xl p-6">
                  <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mb-6">Histórico Recente</h3>
-                 <div class="flex flex-wrap gap-2.5">
-                   <div 
-                    v-for="(digit, idx) in recentDigits" 
-                    :key="'recent-'+idx"
-                    class="w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm transition-all duration-300"
+                  <div v-if="recentDigits.length > 0" class="recent-digits-grid grid grid-cols-[repeat(15,minmax(0,1fr))] gap-2">
+                    <div 
+                     v-for="(digit, idx) in recentDigits.slice(0, 30)" 
+                     :key="'recent-'+idx"
+                     class="aspect-square rounded-xl flex items-center justify-center font-black text-sm transition-all duration-300"
                     :class="[
                       idx === 0 ? 'bg-zenix-green text-black scale-110 shadow-[0_0_15px_#22C55E]' : 'bg-white/5 text-white/40',
                       digit % 2 === 0 ? 'border border-blue-500/20' : 'border border-orange-500/20'
@@ -995,37 +998,55 @@ export default {
         const zScore = expected > 0 ? ((count - expected) / Math.sqrt(expected)).toFixed(1) : 0;
         const z = parseFloat(zScore);
         
-        let statusClass, statusText, barHeight;
-        if (z < -1.5) {
-          statusClass = 'status-underheated';
-          statusText = 'Subaquec.';
-          barHeight = 42;
-        } else if (z < -0.5) {
-          statusClass = 'status-normal';
-          statusText = 'Normal';
-          barHeight = 81;
-        } else if (z < 1.5) {
-          statusClass = 'status-heated';
-          statusText = z < 0.5 ? 'Lev. aquec.' : 'Aquecido';
-          barHeight = z < 0.5 ? 93 : 106;
-        } else {
-          statusClass = 'status-overheated';
-          statusText = 'Sobreaquec.';
-          barHeight = 110;
-        }
         
-        const isHighlighted = item.digit === 7 && z < -1.5;
+
+        let statusClass = 'status-normal';
+        
+        // Regra do Usuário: 30% acima verde, 10% pra cima amarelo, 0% pra cima vermelho
+        // Assumindo que:
+        // >= 30: green (max)
+        // >= 10: yellow (heated)
+        // < 10: red (min) seems to be the intent for "0% pra cima" usually implying standard, but user context implies low freq red. 
+        // Actually, "0% pra cima vermelho" essentially means everything else is red if it's not yellow/green.
+        // Wait, "0% pra cima vermelho" implies >0 is red. But surely 30% is >0. So order matters.
+        // >30 -> Green
+        // >10 -> Yellow
+        // >0 -> Red
+        
+        if (item.percentage >= 30) {
+            statusClass = 'status-max'; // Green
+        } else if (item.percentage >= 10) {
+            statusClass = 'status-heated'; // Yellow
+        } else {
+            statusClass = 'status-min'; // Red (assuming < 10 basically)
+        }
+
+        const isHighlighted = item.digit === 7 && z < -1.5; // Manter lógica de destaque se necessário, ou remover
         
         return {
           digit: item.digit,
           percentage: item.percentage.toFixed(1),
           zScore: zScore,
           statusClass,
-          statusText,
-          barHeight,
-          isHighlighted
+          statusText: '', // Not used anymore
+          barHeight: 0, // Not used
+          isHighlighted,
+          isMax: item.percentage >= 30, // Compatibilidade
+          isMin: item.percentage < 10
         };
       });
+    },
+    mostFrequentDigit() {
+        if (!this.digitFrequenciesWithStats || this.digitFrequenciesWithStats.length === 0) return null;
+        // Clone and sort descending
+        const sorted = [...this.digitFrequenciesWithStats].sort((a, b) => parseFloat(b.percentage) - parseFloat(a.percentage));
+        return sorted[0];
+    },
+    leastFrequentDigit() {
+        if (!this.digitFrequenciesWithStats || this.digitFrequenciesWithStats.length === 0) return null;
+        // Clone and sort ascending
+        const sorted = [...this.digitFrequenciesWithStats].sort((a, b) => parseFloat(a.percentage) - parseFloat(b.percentage));
+        return sorted[0];
     },
     dvxValueComputed() {
       if (this.digitFrequency.digits.length < 20) {
@@ -5211,7 +5232,7 @@ export default {
   .digits-tab-container {
     height: auto !important;
     max-height: none !important;
-    min-height: 600px;
+    min-height: auto !important; /* fit-content behavior */
     overflow: visible !important;
   }
 
