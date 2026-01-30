@@ -20,23 +20,18 @@
 			/>
 
 			<main class="layout-content">
-				<!-- Header -->
-				<div class="main-header mb-6">
-					<div class="flex justify-between items-center">
-						<div>
-							<h1 style="font-size: 20px; font-weight: bold; color: white;">Monitoramento de IA</h1>
-							<p style="font-size: 14px; color: #7D7D7D;">Acompanhe a execução da IA em tempo real</p>
-						</div>
-						<button @click="stopIA" :disabled="isStopping" class="stop-btn">
-							<i class="fas fa-stop mr-2"></i>
-							{{ isStopping ? 'Parando...' : 'Parar IA' }}
-						</button>
+				<div class="content-header mb-6 flex justify-between items-center px-4">
+					<div>
+						<h1 class="text-2xl font-bold text-white">Monitoramento de IA</h1>
+						<p class="text-sm text-[#7D7D7D]">Acompanhe a atividade do robô em tempo real.</p>
 					</div>
+					<button @click="stopIA" :disabled="isStopping" class="stop-btn">
+						<i class="fas fa-stop mr-2"></i> {{ isStopping ? 'Parando...' : 'Parar IA' }}
+					</button>
 				</div>
 
-				<!-- Stats Cards -->
+				<!-- Summary Cards -->
 				<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 px-4">
-					<!-- Balance Card -->
 					<div class="stats-card">
 						<div class="stats-icon-wrapper blue">
 							<i class="fas fa-wallet"></i>
@@ -46,8 +41,6 @@
 							<span class="stats-value">$ {{ stats.balance.toFixed(2) }}</span>
 						</div>
 					</div>
-
-					<!-- Session P/L Card -->
 					<div class="stats-card">
 						<div class="stats-icon-wrapper" :class="stats.profit >= 0 ? 'green' : 'red'">
 							<i class="fas fa-chart-line"></i>
@@ -59,22 +52,16 @@
 							</span>
 						</div>
 					</div>
-
-					<!-- Win/Loss Card -->
 					<div class="stats-card">
 						<div class="stats-icon-wrapper yellow">
 							<i class="fas fa-percentage"></i>
 						</div>
 						<div class="stats-info">
 							<span class="stats-label">Assertividade</span>
-							<span class="stats-value text-zenix-green">
-								{{ stats.wins + stats.losses > 0 ? ((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(0) : 0 }}%
-							</span>
+							<span class="stats-value text-zenix-green">{{ stats.wins + stats.losses > 0 ? ((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(0) : 0 }}%</span>
 							<span class="text-[10px] text-[#7A7A7A] ml-1">{{ stats.wins }}W / {{ stats.losses }}L</span>
 						</div>
 					</div>
-
-					<!-- AI Status Card -->
 					<div class="stats-card">
 						<div class="stats-icon-wrapper green pulse">
 							<i class="fas fa-robot"></i>
@@ -87,12 +74,15 @@
 					</div>
 				</div>
 
-				<!-- Tabs Section -->
+				<!-- Tabs -->
 				<div class="px-4">
 					<div class="monitoring-tabs-container mb-4">
 						<div class="monitoring-tabs flex gap-4 border-b border-[#333]">
+							<button @click="activeTab = 'chart'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeTab === 'chart' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
+								<i class="fas fa-chart-area mr-2"></i> Gráfico
+							</button>
 							<button @click="activeTab = 'logs'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeTab === 'logs' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
-								<i class="fas fa-list-ul mr-2"></i> Logs
+								<i class="fas fa-list-ul mr-2"></i> Registros
 							</button>
 							<button @click="activeTab = 'history'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeTab === 'history' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
 								<i class="fas fa-history mr-2"></i> Histórico
@@ -104,10 +94,18 @@
 					</div>
 
 					<!-- Tab Content -->
-					<div class="tab-content-container bg-[#141414] border border-[#333] rounded-xl p-6 min-h-[500px]">
+					<div class="tab-content-container bg-[#141414] border border-[#333] rounded-xl p-6 min-h-[400px]">
+						<!-- Chart Placeholder -->
+						<div v-show="activeTab === 'chart'" class="chart-tab-content flex items-center justify-center h-full min-h-[300px]">
+							<div class="text-center">
+								<i class="fas fa-chart-line text-6xl text-zenix-green/20 mb-4 block"></i>
+								<p class="text-[#7A7A7A]">Aguardando conexão com o mercado...</p>
+							</div>
+						</div>
+
 						<!-- Logs Tab -->
 						<div v-if="activeTab === 'logs'" class="logs-tab-content h-full">
-							<div class="logs-list-wrapper space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar">
+							<div class="logs-list-wrapper space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar">
 								<div v-for="log in logs" :key="log.id" class="p-3 bg-[#0B0B0B] rounded-lg border border-[#222] font-mono text-xs flex gap-3">
 									<span class="text-gray-500">[{{ log.time }}]</span>
 									<span :class="{ 'text-zenix-green': log.type === 'success', 'text-red-500': log.type === 'error', 'text-blue-400': log.type === 'info', 'text-yellow-400': log.type === 'warning' }">
@@ -115,7 +113,6 @@
 									</span>
 								</div>
 								<div v-if="logs.length === 0" class="text-center py-12 text-[#7A7A7A]">
-									<i class="fas fa-inbox text-4xl mb-4 block opacity-20"></i>
 									Nenhum log registrado ainda.
 								</div>
 							</div>
@@ -130,13 +127,13 @@
 											<th class="pb-4">Hora</th>
 											<th class="pb-4">Mercado</th>
 											<th class="pb-4">Contrato</th>
-											<th class="pb-4">Stake</th>
+											<th class="pb-4">Investimento</th>
 											<th class="pb-4">Resultado</th>
 											<th class="pb-4 text-right">P/L</th>
 										</tr>
 									</thead>
 									<tbody class="text-sm">
-										<tr v-for="op in operations" :key="op.id" class="border-b border-[#222] last:border-0 hover:bg-[#1A1A1A] transition-colors">
+										<tr v-for="op in operations" :key="op.id" class="border-b border-[#222] last:border-0">
 											<td class="py-4">{{ op.time }}</td>
 											<td class="py-4">{{ op.market }}</td>
 											<td class="py-4 text-xs">{{ op.contract }}</td>
@@ -147,14 +144,11 @@
 												</span>
 											</td>
 											<td class="py-4 text-right font-bold" :class="op.result === 'WIN' ? 'text-zenix-green' : 'text-red-500'">
-												{{ op.result === 'WIN' ? '+' : '' }}$ {{ op.pnl.toFixed(2) }}
+												{{ op.result === 'WIN' ? '+' : '' }}{{ op.pnl.toFixed(2) }}
 											</td>
 										</tr>
 										<tr v-if="operations.length === 0">
-											<td colspan="6" class="text-center py-12 text-[#7A7A7A]">
-												<i class="fas fa-history text-4xl mb-4 block opacity-20"></i>
-												Nenhuma operação executada nesta sessão.
-											</td>
+											<td colspan="6" class="text-center py-12 text-[#7A7A7A]">Nenhuma operação executada nesta sessão.</td>
 										</tr>
 									</tbody>
 								</table>
@@ -612,63 +606,70 @@ export default {
 </script>
 
 <style scoped>
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(10px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+	animation: fadeIn 0.3s ease-out forwards;
+}
 .dashboard-layout {
 	display: flex;
 	min-height: 100vh;
-	background: #0a0a0a;
+	background-color: #0B0B0B;
+	color: #fff;
+	font-family: 'Roboto', sans-serif;
 }
 
 .sidebar-overlay {
 	position: fixed;
 	inset: 0;
-	background: rgba(0, 0, 0, 0.5);
-	z-index: 40;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 999;
 }
 
 .dashboard-content-wrapper {
-	flex: 1;
+	flex-grow: 1;
+	margin-left: 280px;
+	transition: margin-left 0.3s ease;
+	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
 }
 
+.dashboard-content-wrapper.sidebar-collapsed {
+	margin-left: 0;
+}
+
 .layout-content {
-	flex: 1;
-	padding: 24px;
+	flex-grow: 1;
+	padding: 20px;
+	padding-top: 50px;
+	padding-bottom: 40px;
+	background-color: #0B0B0B;
+	width: 100%;
 	overflow-y: auto;
 }
 
-.stop-btn {
-	background-color: #ef4444;
-	color: white;
-	padding: 12px 24px;
-	border-radius: 12px;
-	font-weight: bold;
-	font-size: 14px;
-	transition: all 0.2s;
-	border: none;
-	cursor: pointer;
-}
-.stop-btn:hover {
-	background-color: #dc2626;
-	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-}
-.stop-btn:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
+@media (max-width: 1024px) {
+	.dashboard-content-wrapper { margin-left: 0; }
+	.dashboard-content-wrapper.sidebar-collapsed { margin-left: 0; }
+	.layout-content { padding-top: 70px; }
 }
 
 .stats-card {
 	background: rgba(20, 20, 20, 0.6);
 	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
 	border: 1px solid rgba(255, 255, 255, 0.05);
 	border-radius: 20px;
 	padding: 1.25rem;
 	display: flex;
 	align-items: center;
 	gap: 16px;
-	transition: all 0.4s;
+	transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .stats-card:hover {
 	background: rgba(26, 26, 26, 0.8);
 	border-color: rgba(34, 197, 94, 0.3);
@@ -684,31 +685,16 @@ export default {
 	align-items: center;
 	justify-content: center;
 	font-size: 22px;
+	transition: all 0.3s ease;
 }
+
 .stats-icon-wrapper.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
 .stats-icon-wrapper.green { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
 .stats-icon-wrapper.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
 .stats-icon-wrapper.yellow { background: rgba(234, 179, 8, 0.1); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.2); }
 
-.stats-info {
-	flex: 1;
-}
-
-.stats-label {
-	display: block;
-	font-size: 11px;
-	color: #7A7A7A;
-	text-transform: uppercase;
-	font-weight: 600;
-	letter-spacing: 0.5px;
-}
-
-.stats-value {
-	display: block;
-	font-size: 20px;
-	font-weight: bold;
-	color: white;
-	margin-top: 4px;
+.stats-card:hover .stats-icon-wrapper {
+	transform: scale(1.1);
 }
 
 .glow-green-text {
@@ -719,14 +705,62 @@ export default {
 	color: #22C55E;
 }
 
-.pulse {
-	animation: pulse 2s infinite;
+.stats-icon-wrapper.pulse {
+	animation: statsPulse 2s infinite;
 }
 
-@keyframes pulse {
+@keyframes statsPulse {
 	0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
 	70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
 	100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.stats-label {
+	display: block;
+	font-size: 10px;
+	text-transform: uppercase;
+	color: #A1A1AA;
+	font-weight: 800;
+	letter-spacing: 0.1em;
+	margin-bottom: 4px;
+}
+
+.stats-value {
+	display: block;
+	font-size: 20px;
+	font-weight: 900;
+	color: #fff;
+	line-height: 1;
+}
+
+.monitoring-tabs-container {
+	border-bottom: 1px solid #1A1A1A;
+}
+
+.tab-content-container {
+	background: rgba(15, 15, 15, 0.8) !important;
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.05) !important;
+	border-radius: 20px !important;
+	min-height: 480px !important;
+}
+
+.stop-btn {
+	background-color: #ef4444;
+	color: white;
+	padding: 10px 20px;
+	border-radius: 12px;
+	font-weight: bold;
+	font-size: 14px;
+	transition: all 0.2s;
+	border: none;
+	cursor: pointer;
+}
+
+.stop-btn:hover {
+	background-color: #dc2626;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
