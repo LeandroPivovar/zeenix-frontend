@@ -1672,7 +1672,7 @@ export default {
                 icon
             });
 
-            if (this.realtimeLogs.length > 50) this.realtimeLogs.pop();
+            if (this.realtimeLogs.length > 100) this.realtimeLogs.pop();
         },
 
         getMarketSymbol(market) {
