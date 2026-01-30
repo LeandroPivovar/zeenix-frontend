@@ -1538,13 +1538,10 @@ export default {
             this.currentPrice = price;
 
             // ✅ Log de Ticks (Feedback Visual)
-            // Logar a cada 10 ticks para evitar spam, mas mostrar que está vivo
-            if (!this.tickCounter) this.tickCounter = 0;
-            this.tickCounter++;
-            if (this.tickCounter % 10 === 0) {
-                const digit = parseInt(price.toString().slice(-1));
-                this.addLog(`📊 Tick recebido: ${price} (Último dígito: ${digit})`, 'info');
-            }
+            // Agora em tempo real, sem filtro
+            this.tickCounter = (this.tickCounter || 0) + 1;
+            const digit = parseInt(price.toString().slice(-1));
+            this.addLog(`📊 Tick recebido: ${price} (Último dígito: ${digit})`, 'info');
 
             // Atualizar histórico de ticks
             this.tickHistory.push({
@@ -1556,7 +1553,6 @@ export default {
             this.ticks = [...this.tickHistory];
 
             // Atualizar histórico de dígitos
-            const digit = parseInt(price.toString().slice(-1));
             this.digitHistory.push(digit);
             if (this.digitHistory.length > 200) this.digitHistory.shift();
 
