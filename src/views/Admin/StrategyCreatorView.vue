@@ -524,7 +524,7 @@
                                         v-for="market in markets"
                                         :key="market.value"
                                         @click="selectMarket(market.value)"
-                                        :class="['category-item-btn', { 'active': form.market === market.value }]"
+                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.market : recoveryConfig.market) === market.value }]"
                                     >
                                         {{ market.label }}
                                     </button>
@@ -584,7 +584,7 @@
                                         v-for="item in category.items"
                                         :key="item.value"
                                         @click="selectTradeType(item)"
-                                        :class="['category-item-btn', { 'active': form.selectedTradeTypeGroup === item.value }]"
+                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.selectedTradeTypeGroup : recoveryConfig.selectedTradeTypeGroup) === item.value }]"
                                     >
                                         <div class="flex items-center gap-2">
                                             <img v-if="item.icon" :src="`/deriv_icons/${item.icon}`" class="w-5 h-5 contrast-[1.5] brightness-[1.5]" alt="" />
@@ -661,6 +661,7 @@
                                     <label class="block text-xs text-gray-400 mb-1">Volatilidade (DVX &lt; ?)</label>
                                     <input 
                                         type="number"
+                                        v-model.number="recoveryConfig.pauseVolatility"
                                         placeholder="Ex: 50" 
                                         class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
                                     />
@@ -669,6 +670,7 @@
                                     <label class="block text-xs text-gray-400 mb-1">Tempo (minutos)</label>
                                     <input 
                                         type="number"
+                                        v-model.number="recoveryConfig.pauseTime"
                                         placeholder="Ex: 5" 
                                         class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
                                     />
@@ -742,9 +744,12 @@ export default {
                 switchToNormal: false,
                 switchToPrecise: true,
                 maxPreciseLosses: 3,
-                pauseLosses: 5
+                pauseLosses: 5,
+                pauseVolatility: 50,
+                pauseTime: 5
             },
             recoveryContracts: [],
+            isFetchingContracts: false,
 
             // WebSocket Tick Monitoring
             ws: null,
@@ -1097,6 +1102,7 @@ export default {
                 this.recoveryConfig.tradeType = '';
             }
             
+            this.isFetchingContracts = true;
             try {
                 const token = localStorage.getItem('token');
                 const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
@@ -1116,6 +1122,8 @@ export default {
             } catch (error) {
                 console.error('Erro ao buscar contratos:', error);
                 this.$root.$toast.error('Erro ao carregar contratos do mercado');
+            } finally {
+                this.isFetchingContracts = false;
             }
         },
         // Modal Handlers
@@ -1137,7 +1145,17 @@ export default {
         },
         openTradeTypeModal(context = 'main') {
             const contracts = context === 'main' ? this.contracts : this.recoveryContracts;
-            if (!contracts.length) return;
+            
+            if (this.isFetchingContracts) {
+                this.$root.$toast.info('Carregando contratos... Por favor, aguarde.');
+                return;
+            }
+
+            if (!contracts.length) {
+                this.$root.$toast.warning('Selecione um mercado válido primeiro.');
+                return;
+            }
+
             this.modalContext = context;
             this.showTradeTypeModal = true;
         },
@@ -1284,8 +1302,8 @@ export default {
         },
         simulateTrade() {
             const isWin = Math.random() > 0.4;
-            const winAmount = (this.form.stake * 0.95).toFixed(2);
-            const lossAmount = this.form.stake.toFixed(2);
+            const winAmount = (this.form.initialStake * 0.95).toFixed(2);
+            const lossAmount = this.form.initialStake.toFixed(2);
             const pnl = isWin ? parseFloat(winAmount) : -parseFloat(lossAmount);
             
             this.monitoringStats.profit += pnl;
@@ -1299,7 +1317,7 @@ export default {
                 time: new Date().toLocaleTimeString(),
                 market: this.form.market,
                 contract: this.form.tradeType,
-                stake: this.form.stake,
+                stake: this.form.initialStake,
                 pnl: pnl.toFixed(2),
                 result: isWin ? 'WIN' : 'LOSS'
             };
