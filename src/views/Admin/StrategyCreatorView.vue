@@ -1392,6 +1392,31 @@ export default {
             if (!value || !this.balance) return '0.00';
             return ((value / this.balance) * 100).toFixed(2);
         },
+        
+        getDerivToken() {
+            try {
+                // 1. Tentar loginid ativo
+                const connectionStr = localStorage.getItem('deriv_connection');
+                if (connectionStr) {
+                    const connection = JSON.parse(connectionStr);
+                    const accountLoginid = connection.loginid;
+                    if (accountLoginid) {
+                        const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+                        const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+                        if (tokensByLoginId[accountLoginid]) {
+                            return tokensByLoginId[accountLoginid].trim();
+                        }
+                    }
+                }
+                
+                // 2. Fallback para deriv_token padrão
+                const defaultToken = localStorage.getItem('deriv_token');
+                return defaultToken ? defaultToken.trim() : null;
+            } catch (e) {
+                console.error('[StrategyCreator] Erro ao obter token:', e);
+                return null;
+            }
+        },
         submitForm() {
             this.isMonitoring = true;
             this.startSimulation();
@@ -1444,19 +1469,14 @@ export default {
 
             this.ws.onopen = () => {
                 this.addLog(`🔌 Conectado. Autorizando...`, 'info');
-                let token = localStorage.getItem('token');
+                const token = this.getDerivToken();
                 
                 if (token) {
-                    // Sanitize token: remove whitespace and surrounding quotes if present
-                    token = token.trim();
-                    if ((token.startsWith('"') && token.endsWith('"')) || (token.startsWith("'") && token.endsWith("'"))) {
-                        token = token.slice(1, -1);
-                    }
-                    console.log('[WS] Token sanitizado enviado:', token.substring(0, 4) + '...');
+                    console.log('[WS] Enviando token de autorização Deriv...');
                     this.ws.send(JSON.stringify({ authorize: token }));
                 } else {
-                    console.warn('[WS] Token ausente no localStorage');
-                    this.addLog('⚠️ Token não encontrado. Operações reais desativadas.', 'warning');
+                    console.warn('[WS] Token Deriv não encontrado!');
+                    this.addLog('⚠️ Token Deriv não encontrado. Operações reais desativadas.', 'warning');
                     this.subscribeTicks();
                 }
             };
@@ -1472,10 +1492,12 @@ export default {
                     
                     if (msg.msg_type === 'authorize') {
                         if (msg.error) {
+                            console.error('[WS] Erro na autorização:', msg.error);
                             this.addLog(`❌ Falha na autorização: ${msg.error.message}`, 'error');
                         } else {
                             this.isAuthorized = true;
                             this.balance = msg.authorize.balance;
+                            console.log('[WS] Autorizado com sucesso! Dados:', msg.authorize);
                             this.addLog(`✅ Autorizado! Saldo: $${this.balance}`, 'success');
                             this.subscribeTicks();
                         }
@@ -1486,15 +1508,19 @@ export default {
                     }
 
                     if (msg.msg_type === 'buy') {
+                        console.log('[WS] Resposta de compra recebida:', msg);
                         if (msg.error) {
                             this.addLog(`❌ Erro na compra: ${msg.error.message}`, 'error');
                         } else {
-                            this.addLog(`🚀 Contrato comprado! ID: ${msg.buy.contract_id}`, 'success');
+                            const payout = msg.buy.payout;
+                            console.log(`[WS] Sucesso! Payout esperado: $${payout}`);
+                            this.addLog(`🚀 Contrato comprado! Payout: $${payout}`, 'success');
                             this.subscribeToContract(msg.buy.contract_id);
                         }
                     }
 
                     if (msg.msg_type === 'proposal_open_contract') {
+                        console.log('[WS] Atualização de contrato:', msg.proposal_open_contract);
                         this.handleContractUpdate(msg.proposal_open_contract);
                     }
 
