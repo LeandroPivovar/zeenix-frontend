@@ -2156,17 +2156,68 @@
 }
 
 .strategy-icon-box-large {
-    width: 44px;
-    height: 44px;
-    background: rgba(34, 197, 94, 0.1);
-    border-radius: 10px;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: #111;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #22C55E;
-    font-size: 1.25rem;
-    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    margin-right: 1rem;
     flex-shrink: 0;
+    position: relative;
+}
+
+.strategy-icon-box-large i {
+    font-size: 1.75rem;
+}
+
+/* Strategy Specific Glows */
+.strategy-icon-box-large.atlas {
+    background: rgba(34, 197, 94, 0.1) !important;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+.strategy-icon-box-large.atlas i {
+    color: #22C55E !important;
+}
+
+.strategy-icon-box-large.apollo {
+    background: rgba(239, 68, 68, 0.1) !important;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+.strategy-icon-box-large.apollo i {
+    color: #EF4444 !important;
+}
+
+.strategy-icon-box-large.nexus {
+    background: rgba(59, 130, 246, 0.1) !important;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.strategy-icon-box-large.nexus i {
+    color: #3B82F6 !important;
+}
+
+.strategy-icon-box-large.orion {
+    background: rgba(168, 85, 247, 0.1) !important;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+}
+
+.strategy-icon-box-large.orion i {
+    color: #A855F7 !important;
+}
+
+.strategy-icon-box-large.titan {
+    background: rgba(245, 158, 11, 0.1) !important;
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.strategy-icon-box-large.titan i {
+    color: #F59E0B !important;
 }
 
 .strategy-icon-box-large.nexus i:first-child {
