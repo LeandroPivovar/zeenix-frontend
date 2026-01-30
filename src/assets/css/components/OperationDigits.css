@@ -2474,3 +2474,169 @@
         transform: scale(1) translateY(0);
     }
 }
+
+/* --- NEW PREMIUM STYLES --- */
+
+.premium-analysis-header {
+    background: linear-gradient(90deg, rgba(34, 197, 94, 0.05) 0%, transparent 100%);
+    border-left: 3px solid #22C55E;
+    padding: 12px 20px;
+    border-radius: 4px 16px 16px 4px;
+}
+
+.analysis-icon-wrapper {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.icon-pulse {
+    position: absolute;
+    inset: -4px;
+    border: 1px solid #22C55E;
+    border-radius: 14px;
+    opacity: 0;
+    animation: iconPulse 2s infinite;
+}
+
+@keyframes iconPulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: scale(1.1);
+        opacity: 0;
+    }
+}
+
+.live-status-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 6px 14px;
+    border-radius: 100px;
+}
+
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    background: #22C55E;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #22C55E;
+    animation: dotPulse 1.5s infinite;
+}
+
+@keyframes dotPulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Digit Stat Cards */
+.digit-stat-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.digit-stat-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-4px);
+}
+
+.digit-highlight {
+    background: rgba(34, 197, 94, 0.05) !important;
+    border-color: rgba(34, 197, 94, 0.3) !important;
+    box-shadow: 0 10px 20px -10px rgba(34, 197, 94, 0.3);
+}
+
+.digit-number {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.neon-bar-container {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.neon-bar-fill {
+    border-radius: 10px;
+    box-shadow: 0 0 15px currentColor;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.neon-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.digit-percentage {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Analysis Cards */
+.analysis-card {
+    transition: all 0.3s ease;
+}
+
+.analysis-card:hover {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    transform: translateY(-2px);
+}
+
+/* Recent History Badges */
+.recent-digit-badge {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.active-digit {
+    background: #22C55E !important;
+    color: #000 !important;
+    border-color: #22C55E !important;
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+    z-index: 10;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .digit-bars-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+    }
+
+    .neon-bar-container {
+        height: 60px !important;
+    }
+
+    .digit-number {
+        font-size: 1.25rem !important;
+    }
+}
