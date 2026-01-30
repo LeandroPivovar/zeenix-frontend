@@ -151,7 +151,7 @@
                                                 </div>
                                             </div>
 										<span :class="{ 'placeholder': !selectedAgent }">
-											{{ selectedAgent ? 'IA ' + getAgentTitle(selectedAgent).replace('Agente ', '') : 'Selecione seu agente' }}
+											{{ selectedAgent ? getAgentTitle(selectedAgent).replace('Agente ', '') : 'Selecione seu agente' }}
 										</span>
 									</div>
 									<i class="fas fa-chevron-right selector-arrow"></i>
@@ -163,7 +163,9 @@
 								<div v-if="selectedAgent" :key="selectedAgent" class="agent-description-card mt-3">
 									<div class="agent-desc-content">
 										<div class="agent-desc-info">
-											<p>{{ getAgentDescription(selectedAgent) }}</p>
+											<p><strong>Análise:</strong> {{ getAgentAnalysis(selectedAgent) }}</p>
+											<p><strong>Assertividade:</strong> {{ getAgentAssertiveness(selectedAgent) }}</p>
+											<p><strong>Retorno:</strong> {{ getAgentReturn(selectedAgent) }}</p>
 										</div>
 									</div>
 								</div>
@@ -505,6 +507,9 @@ export default {
 					marketType: 'Digits',
 					icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg'],
 					description: 'Análise de Fluxo',
+					analysis: 'Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação',
+					assertiveness: '56% a 90%',
+					return: '56% / 85%',
 					benefits: [
 						'Ideal para contas pequenas',
 						'Mercado ativo',
@@ -524,6 +529,9 @@ export default {
 					marketType: 'Digits',
 					icons: ['/deriv_icons/TradeTypesHighsAndLowsHighIcon.svg'],
 					description: 'Barreira de Segurança',
+					analysis: 'Estatística de Dégitos (Over 2) com Price Action na Recuperação',
+					assertiveness: '91% a 95%',
+					return: '91% / 95%',
 					benefits: [
 						'Ideal para banca acima de $500',
 						'Proteção de capital',
@@ -1135,9 +1143,9 @@ export default {
 }
 
 .agent-desc-info p {
-    font-size: 14px;
+    font-size: 12px;
     color: #A1A1A1;
-    line-height: 1.5;
+    line-height: 1.6;
     margin: 0;
     white-space: pre-line;
 }
@@ -1504,7 +1512,7 @@ export default {
 .agent-selection-card.active {
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(0, 0, 0, 0.4) 100%);
     border-color: #22C55E;
-    box-shadow: 0 0 30px rgba(34, 197, 94, 0.1);
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.2), 0 0 10px rgba(34, 197, 94, 0.1);
 }
 
 /* Glassmorphism background for active card */
@@ -1522,16 +1530,34 @@ export default {
 }
 
 .agent-avatar-box {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%; /* Foto redonda */
-    background: #000;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: #111;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
 }
+
+.agent-avatar-box.zeus {
+    background: rgba(34, 197, 94, 0.1) !important;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+}
+
+.agent-avatar-box.falcon {
+    background: rgba(161, 161, 161, 0.05) !important;
+    box-shadow: 0 0 20px rgba(161, 161, 161, 0.1);
+}
+
+.agent-avatar-box i {
+    font-size: 1.5rem;
+}
+
+.agent-avatar-box.zeus i { color: #22C55E !important; }
+.agent-avatar-box.falcon i { color: #A1A1A1 !important; }
 
 .agent-avatar-video {
     width: 100%;
@@ -1697,7 +1723,7 @@ export default {
     background-color: #0B0B0B !important;
     border: 1px solid #1C1C1C !important;
     border-radius: 0.5rem;
-    padding: 0.625rem 0.75rem 0.625rem 1.75rem !important;
+    padding: 0.625rem 0.75rem 0.625rem 2.75rem !important;
     font-size: 0.875rem;
     color: #DFDFDF !important;
     outline: none;
@@ -1801,7 +1827,7 @@ export default {
 	max-width: 800px;
 	background: #0D0D0D;
 	border: 1px solid #22C55E33;
-	padding: 10px;
+	padding: 20px;
 	border-radius: 1rem;
 	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     z-index: 10000000;
@@ -1823,7 +1849,7 @@ export default {
 }
 
 .modal-title {
-    font-size: 1.1rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: #fff;
     margin: 0;
