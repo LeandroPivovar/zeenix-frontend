@@ -10,6 +10,7 @@ import PlansView from '../views/PlansView.vue'
 import OperationView from '../views/OperationView.vue'
 import DerivOAuthCallback from '../views/DerivOAuthCallback.vue'
 // import MarkupView from '../views/Admin/MarkupView.vue'
+import InvestmentIAView from '../views/InvestmentIAView.vue'
 import InvestmentActiveStrategyView from '../views/InvestmentActiveStrategyView.vue'
 import MasterTraderView from '@/views/MasterTraderView.vue'
 import AgenteAutonomoView from '@/views/AgenteAutonomo.vue'
@@ -120,7 +121,7 @@ const routes = [
   {
     path: '/StatsIAs',
     name: 'StatsIAs',
-    component: InvestmentActiveStrategyView,
+    component: InvestmentIAView,
     meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
