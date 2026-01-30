@@ -127,7 +127,7 @@
 
                 <div class="cards-grid">
                     <!-- Linha 1: Frequência Geral (Meta Design) -->
-                    <div class="frequency-meta-card bg-black border border-white/5 rounded-xl p-6 mb-6">
+                    <div class="frequency-meta-card bg-black border border-white/5 rounded-xl p-6 mb-6 h-fit">
                         <div class="flex items-center justify-between mb-8">
                             <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Frequência dos Dígitos</h3>
                         </div>
@@ -269,7 +269,7 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-2">
+                    <div class="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1">
                         <div 
                             v-for="(digit, index) in recentDigits.slice(0, 15)" 
                             :key="'recent-'+index"
@@ -813,6 +813,9 @@ export default {
             
             const frequencies = this.digitFrequencies;
             
+            const maxP = Math.max(...frequencies.map(f => f.percentage));
+            const minP = Math.min(...frequencies.map(f => f.percentage));
+
             return frequencies.map(item => {
                 const p = item.percentage;
                 let statusClass = 'status-normal';
@@ -829,8 +832,8 @@ export default {
                     digit: item.digit,
                     percentage: item.percentage.toFixed(1),
                     statusClass,
-                    isMax: p > 10,
-                    isMin: p < 5,
+                    isMax: p === maxP && p > 0,
+                    isMin: p === minP && p > 0,
                     isHighlighted: false
                 };
             });

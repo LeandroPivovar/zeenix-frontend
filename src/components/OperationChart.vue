@@ -84,7 +84,7 @@
           <div v-if="activeTab === 'digits'" class="flex-1 overflow-y-auto bg-[#0B0B0B] custom-scrollbar digits-tab-container">
             <div class="p-6 space-y-6">
               <!-- 1. FREQUÊNCIA GERAL (Meta Design) -->
-              <div class="frequency-meta-card border border-white/5 rounded-xl p-6">
+              <div class="frequency-meta-card border border-white/5 rounded-xl p-6 h-fit">
                 <div class="flex items-center justify-between mb-8">
                   <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Frequência dos Dígitos</h3>
                 </div>
@@ -96,8 +96,8 @@
                     class="digit-meta-item flex flex-col items-center p-2 rounded-xl transition-all duration-500 bg-[#0F0F0F] border border-white/5"
                     :class="[
                       item.statusClass, 
-                      item.percentage > 10 ? 'meta-highest-freq' : '',
-                      item.percentage < 5 ? 'meta-lowest-freq' : '',
+                      item.isMax ? 'meta-highest-freq' : '',
+                      item.isMin ? 'meta-lowest-freq' : '',
                       item.isHighlighted ? 'meta-highlight' : ''
                     ]"
                   >
@@ -223,7 +223,7 @@
                      <span class="text-[10px] font-bold text-white/60">Últimos 15</span>
                    </div>
                  </div>
-                  <div v-if="recentDigits.length > 0" class="recent-digits-grid grid grid-cols-[repeat(15,minmax(0,1fr))] gap-2">
+                  <div v-if="recentDigits.length > 0" class="recent-digits-grid grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1">
                     <div 
                      v-for="(digit, idx) in recentDigits.slice(0, 15)" 
                      :key="'recent-'+idx"
@@ -992,125 +992,41 @@ export default {
         return Array.from({ length: 10 }, (_, i) => ({
           digit: i,
           percentage: 0,
-          zScore: 0,
           statusClass: 'status-normal',
-          statusText: 'Normal',
-          barHeight: 42,
+          isMax: false,
+          isMin: false,
           isHighlighted: false
         }));
       }
       
-      const expected = totalDigits / 10;
       const frequencies = this.digitFrequencies;
-      
-      return frequencies.map(item => {
-        const count = (item.percentage / 100) * totalDigits;
-        const zScore = expected > 0 ? ((count - expected) / Math.sqrt(expected)).toFixed(1) : 0;
-        const z = parseFloat(zScore);
-        
-        
+      const maxP = Math.max(...frequencies.map(f => f.percentage));
+      const minP = Math.min(...frequencies.map(f => f.percentage));
 
+      return frequencies.map(item => {
+        const p = item.percentage;
         let statusClass = 'status-normal';
         
-        // Regra do Usuário: 30% acima verde, 10% pra cima amarelo, 0% pra cima vermelho
-        // Assumindo que:
-        // >= 30: green (max)
-        // >= 10: yellow (heated)
-        // < 10: red (min) seems to be the intent for "0% pra cima" usually implying standard, but user context implies low freq red. 
-        // Actually, "0% pra cima vermelho" essentially means everything else is red if it's not yellow/green.
-        // Wait, "0% pra cima vermelho" implies >0 is red. But surely 30% is >0. So order matters.
-        // >30 -> Green
-        // >10 -> Yellow
-        // >0 -> Red
-        
-        if (item.percentage > 10) {
-            statusClass = 'status-max'; // Green (Acima de 10%)
-        } else if (item.percentage >= 5) {
-            statusClass = 'status-heated'; // Yellow (Abaixo de 10% e acima/igual a 5%)
+        if (p > 10) {
+            statusClass = 'status-max'; // Green
+        } else if (p >= 5) {
+            statusClass = 'status-heated'; // Yellow
         } else {
-            statusClass = 'status-min'; // Red (Abaixo de 5%)
+            statusClass = 'status-min'; // Red
         }
 
-        const isHighlighted = item.digit === 7 && z < -1.5; // Manter lógica de destaque se necessário, ou remover
+        const isMax = p === maxP && p > 0;
+        const isMin = p === minP && p > 0;
         
         return {
           digit: item.digit,
           percentage: item.percentage.toFixed(1),
-          zScore: zScore,
           statusClass,
-          statusText: '', // Not used anymore
-          barHeight: 0, // Not used
-          isHighlighted,
-          isMax: item.percentage >= 30, // Compatibilidade
-          isMin: item.percentage < 10
+          isMax,
+          isMin,
+          isHighlighted: false
         };
       });
-    },
-    mostFrequentDigit() {
-        if (!this.digitFrequenciesWithStats || this.digitFrequenciesWithStats.length === 0) return null;
-        // Clone and sort descending
-        const sorted = [...this.digitFrequenciesWithStats].sort((a, b) => parseFloat(b.percentage) - parseFloat(a.percentage));
-        return sorted[0];
-    },
-    leastFrequentDigit() {
-        if (!this.digitFrequenciesWithStats || this.digitFrequenciesWithStats.length === 0) return null;
-        // Clone and sort ascending
-        const sorted = [...this.digitFrequenciesWithStats].sort((a, b) => parseFloat(a.percentage) - parseFloat(b.percentage));
-        return sorted[0];
-    },
-    dvxValueComputed() {
-      if (this.digitFrequency.digits.length < 20) {
-        return 0;
-      }
-      const frequencies = this.digitFrequencies;
-      const expected = 10;
-      let variance = 0;
-      frequencies.forEach(f => {
-        variance += Math.pow(f.percentage - expected, 2);
-      });
-      const stdDev = Math.sqrt(variance / 10);
-      const val = Math.min(100, Math.round((stdDev / 25) * 100));
-      return val;
-    },
-    dvxStatusClass() {
-      const val = this.dvxValueComputed;
-      if (val <= 30) return 'dvx-status-green';
-      if (val <= 60) return 'dvx-status-yellow';
-      return 'dvx-status-red';
-    },
-    dvxStatusText() {
-      const val = this.dvxValueComputed;
-      if (val <= 30) return 'Volatilidade Baixa';
-      if (val <= 60) return 'Volatilidade Moderada';
-      return 'Volatilidade Alta';
-    },
-    dvxEnvironmentText() {
-      const val = this.dvxValueComputed;
-      if (val <= 30) return 'estável';
-      if (val <= 60) return 'moderado';
-      return 'arriscado';
-    },
-    evenPercentage() {
-      const total = this.digitFrequency.digits.length;
-      if (total === 0) return 0;
-      const evenCount = this.digitFrequency.digits.filter(d => d % 2 === 0).length;
-      return Math.round((evenCount / total) * 100);
-    },
-    oddPercentage() {
-      return 100 - this.evenPercentage;
-    },
-    parityRecommendationText() {
-      const even = this.evenPercentage;
-      const odd = this.oddPercentage;
-      const diff = Math.abs(even - odd);
-      if (diff < 5) return 'Distribuição equilibrada — sem vantagem clara';
-      return even > 55 ? 'Próximo tick: maior probabilidade de ÍMPAR (ODD)' : 'Próximo tick: maior probabilidade de PAR (EVEN)';
-    },
-    lowCount() {
-      return this.digitFrequency.digits.filter(d => d >= 0 && d <= 4).length;
-    },
-    highCount() {
-      return this.digitFrequency.digits.filter(d => d >= 5 && d <= 9).length;
     },
     lowPercentage() {
       const total = this.digitFrequency.digits.length;
