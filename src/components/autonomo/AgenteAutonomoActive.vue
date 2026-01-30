@@ -66,28 +66,28 @@
 			<!-- Metric Cards -->
 			<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
 				<!-- Capital Inicial -->
-				<div v-if="!isMobile" class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
+				<div v-if="!isMobile" class="metric-card">
 					<div class="flex items-center mb-4 gap-2">
-						<div class="p-2 rounded-lg border border-[#22C55E] bg-[#22C55E]/10 flex items-center justify-center">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign text-white"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+						<div class="icon-glow-wrapper">
+						    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign text-white"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+					    </div>
+						<span class="text-[#A1A1AA] text-[10px] uppercase tracking-wider font-bold">Entrada Inicial</span>
 					</div>
-						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium">Entrada Inicial</span>
-					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">
+					<div class="text-3xl font-black mb-1 tabular-nums text-[#FAFAFA] text-left">
 						{{ hideValues ? '••••' : '$' + formatPrice(initialCapital) }}
 					</div>
 				</div>
 
 				<!-- Capital Final -->
-				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
-					<div class="flex items-center gap-2 mb-3">
-						<div class="p-2 rounded-lg border border-[#22C55E] bg-[#22C55E]/10 flex items-center justify-center">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet text-white"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
+				<div class="metric-card">
+					<div class="flex items-center gap-2 mb-4">
+						<div class="icon-glow-wrapper">
+						    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet text-white"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
+					    </div>
+						<span class="text-[#A1A1AA] text-[10px] uppercase tracking-wider font-bold whitespace-nowrap">Capital Final</span>
 					</div>
-						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital Final</span>
-					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-left"
-						:class="finalCapital >= initialCapital ? 'text-green-500' : 'text-red-500'"
+					<div class="text-3xl font-black mb-1 tabular-nums text-left"
+						:class="finalCapital >= initialCapital ? 'text-zenix-green glow-green-text' : 'text-red-500'"
 					>
 						{{ hideValues ? '••••' : (finalCapital >= 0 ? '$' : '-$') + formatPrice(Math.abs(finalCapital)) }}
 					</div>
@@ -95,28 +95,28 @@
 
 				<!-- Lucro do Periodo -->
 				<div 
-					class="rounded-lg border bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212] relative overflow-hidden"
-					:class="periodProfit >= 0 ? 'border-green-500/20' : 'border-red-500/20'"
+					class="metric-card relative overflow-hidden"
+					:class="periodProfit >= 0 ? 'border-green-500/10' : 'border-red-500/10'"
 				>
 					<div 
 						class="absolute inset-0 pointer-events-none"
 						:class="periodProfit >= 0 ? 'bg-green-500/5' : 'bg-red-500/5'"
 					></div>
-					<div class="flex items-center gap-2 mb-3 relative z-10">
-						<div :class="periodProfit >= 0 ? 'text-green-500' : 'text-red-500'">
+					<div class="flex items-center gap-2 mb-4 relative z-10">
+						<div :class="periodProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up" v-if="periodProfit >= 0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down" v-else><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Lucro do Período</span>
+						<span class="text-[#A1A1AA] text-[10px] uppercase tracking-wider font-bold whitespace-nowrap">Lucro do Período</span>
 					</div>
 					<div 
-						class="text-2xl font-bold mb-1 tabular-nums relative z-10 text-left"
-						:class="periodProfit >= 0 ? 'text-green-500' : 'text-red-500'"
+						class="text-3xl font-black mb-1 tabular-nums relative z-10 text-left"
+						:class="periodProfit >= 0 ? 'text-zenix-green glow-green-text' : 'text-red-500'"
 					>
 						{{ hideValues ? '••••' : (periodProfit >= 0 ? '+' : '') + '$' + periodProfit.toFixed(2) }}
 					</div>
 					<!-- ✅ Formatação Dual: Mostrar Percentual -->
-					<div class="text-xs font-medium tabular-nums relative z-10 text-left opacity-80"
+					<div class="text-xs font-bold tabular-nums relative z-10 text-left opacity-80"
 						:class= "periodProfit >= 0 ? 'text-green-400' : 'text-red-400'"
 					>
 						<span v-if="!hideValues && initialCapital > 0">
@@ -124,24 +124,23 @@
 						</span>
 						<span v-else-if="hideValues">••••</span>
 					</div>
-					<!-- Percentage Badge Removed -->
 				</div>
 
 				<!-- Lucro Medio/Dia -->
 				<div 
 					v-if="!isMobile"
-					class="rounded-lg border bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]"
-					:class="avgDailyProfit >= 0 ? 'border-[#27272a]' : 'border-red-500/20'"
+					class="metric-card"
+					:class="avgDailyProfit >= 0 ? '' : 'border-red-500/10'"
 				>
-					<div class="flex items-center gap-2 mb-3">
-						<div :class="avgDailyProfit >= 0 ? 'text-green-500' : 'text-red-500'">
+					<div class="flex items-center gap-2 mb-4">
+						<div :class="avgDailyProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-column"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium">Lucro Médio/Dia</span>
+						<span class="text-[#A1A1AA] text-[10px] uppercase tracking-wider font-bold">Lucro Médio/Dia</span>
 					</div>
 					<div 
-						class="text-2xl font-bold mb-1 tabular-nums text-left"
-						:class="avgDailyProfit >= 0 ? 'text-green-500' : 'text-red-500'"
+						class="text-3xl font-black mb-1 tabular-nums text-left"
+						:class="avgDailyProfit >= 0 ? 'text-zenix-green glow-green-text' : 'text-red-500'"
 					>
 						{{ hideValues ? '••••' : (avgDailyProfitPercent >= 0 ? '+' : '') + avgDailyProfitPercent.toFixed(2) + '%' }}
 					</div>
@@ -2019,6 +2018,62 @@
 </script>
 
 <style scoped>
+.text-zenix-green {
+    color: #22C55E;
+}
+
+.glow-green-text {
+    text-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+}
+
+.metric-card {
+    background: rgba(12, 12, 12, 0.6);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 20px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.metric-card:hover {
+    background: rgba(18, 18, 18, 0.85);
+    border-color: rgba(34, 197, 94, 0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(34, 197, 94, 0.1);
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.3), transparent);
+}
+
+.icon-glow-wrapper {
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    background: rgba(34, 197, 94, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.1);
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover .icon-glow-wrapper {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.5);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+}
+
 .strategy-icons-inline {
     display: flex;
     align-items: center;

@@ -104,7 +104,7 @@
                             </div>
                             <div class="stats-info">
                                 <span class="stats-label">Sessão P/L</span>
-                                <span class="stats-value" :class="monitoringStats.profit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                                <span class="stats-value" :class="monitoringStats.profit >= 0 ? 'text-zenix-green glow-green-text' : 'text-red-500'">
                                     {{ monitoringStats.profit >= 0 ? '+' : '' }}$ {{ monitoringStats.profit.toFixed(2) }}
                                 </span>
                             </div>
@@ -115,7 +115,7 @@
                             </div>
                             <div class="stats-info">
                                 <span class="stats-label">Assertividade</span>
-                                <span class="stats-value">{{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%</span>
+                                <span class="stats-value text-zenix-green">{{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%</span>
                                 <span class="text-[10px] text-[#7A7A7A] ml-1">{{ monitoringStats.wins }}W / {{ monitoringStats.losses }}L</span>
                             </div>
                         </div>
@@ -125,7 +125,7 @@
                             </div>
                             <div class="stats-info">
                                 <span class="stats-label">Recuperação</span>
-                                <span class="stats-value text-zenix-green">$ {{ (sessionState.totalLossAccumulated - sessionState.recoveredAmount).toFixed(2) }}</span>
+                                <span class="stats-value text-zenix-green glow-green-text">$ {{ (sessionState.totalLossAccumulated - sessionState.recoveredAmount).toFixed(2) }}</span>
                                 <p class="text-[10px] text-gray-500">Restante para Meta</p>
                             </div>
                         </div>
@@ -135,8 +135,8 @@
                             </div>
                             <div class="stats-info">
                                 <span class="stats-label">Status da IA</span>
-                                <span class="stats-value text-sm">{{ monitoringStats.status }}</span>
-                                <p class="text-[10px] text-zenix-green">{{ monitoringStats.statusDesc }}</p>
+                                <span class="stats-value text-sm text-zenix-green">{{ monitoringStats.status }}</span>
+                                <p class="text-[10px] text-zenix-green/80">{{ monitoringStats.statusDesc }}</p>
                             </div>
                         </div>
                     </div>
@@ -2103,6 +2103,7 @@ export default {
 
 .dashboard-content-wrapper {
     flex-grow: 1;
+    margin-left: 280px;
     transition: margin-left 0.3s ease;
     min-height: 100vh;
     display: flex;
@@ -2110,7 +2111,7 @@ export default {
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 80px;
+    margin-left: 0;
 }
 
 .layout-content {
@@ -2352,34 +2353,52 @@ export default {
 }
 
 .stats-card {
-    background: #141414;
-    border: 1px solid #333;
-    border-radius: 16px;
-    padding: 16px;
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 1.25rem;
     display: flex;
     align-items: center;
     gap: 16px;
-    transition: all 0.3s;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stats-card:hover {
-    border-color: #444;
+    background: rgba(26, 26, 26, 0.8);
+    border-color: rgba(34, 197, 94, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .stats-icon-wrapper {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 22px;
+    transition: all 0.3s ease;
 }
 
-.stats-icon-wrapper.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-.stats-icon-wrapper.green { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
-.stats-icon-wrapper.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-.stats-icon-wrapper.yellow { background: rgba(234, 179, 8, 0.1); color: #eab308; }
+.stats-icon-wrapper.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+.stats-icon-wrapper.green { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+.stats-icon-wrapper.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+.stats-icon-wrapper.yellow { background: rgba(234, 179, 8, 0.1); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.2); }
+
+.stats-card:hover .stats-icon-wrapper {
+    transform: scale(1.1);
+}
+
+.glow-green-text {
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+
+.text-zenix-green {
+    color: #22C55E;
+}
 
 .stats-icon-wrapper.pulse {
     animation: statsPulse 2s infinite;
@@ -2395,28 +2414,30 @@ export default {
     display: block;
     font-size: 10px;
     text-transform: uppercase;
-    color: #7A7A7A;
-    font-weight: bold;
-    letter-spacing: 0.05em;
-    margin-bottom: 2px;
+    color: #A1A1AA;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
 }
 
 .stats-value {
     display: block;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 20px;
+    font-weight: 900;
     color: #fff;
+    line-height: 1;
 }
 
 .monitoring-tabs-container {
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #1A1A1A;
 }
 
 .tab-content-container {
-    background: #141414;
-    border: 1px solid #333;
-    border-radius: 16px;
-    min-height: 400px;
+    background: rgba(15, 15, 15, 0.8) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 20px !important;
+    min-height: 480px !important;
 }
 
 .log-entry.info { border-left: 3px solid #3b82f6; }
@@ -2432,5 +2453,26 @@ export default {
 
 .badge-win { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
 .badge-loss { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+/* Form Aesthetics */
+.strategy-creator-form-container input, .strategy-creator-form-container select, .strategy-creator-form-container button[type="button"] {
+    background: rgba(15, 15, 15, 0.8) !important;
+    border: 1px solid #27272a !important;
+    transition: all 0.3s ease !important;
+}
+
+.strategy-creator-form-container input:focus, .strategy-creator-form-container select:focus {
+    border-color: #22C55E !important;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.1) !important;
+}
+
+button[type="submit"].bg-zenix-green {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+}
+
+button[type="submit"].bg-zenix-green:hover {
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+    transform: translateY(-2px);
+}
 </style>
 
