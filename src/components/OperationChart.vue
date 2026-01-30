@@ -337,24 +337,23 @@
       <div class="max-w-[400px] w-[400px] flex-shrink-0 bg-[#0D0D0D] border border-white/5 p-8 overflow-y-auto sidebar-panel rounded-xl">
         <div class="pb-6 mb-6 border-b border-white/5">
           <div class="flex flex-col gap-4">
-            <h2 class="text-xl font-black text-white text-left leading-tight tracking-wide flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-zenix-green shadow-[0_0_8px_#22C55E]"></span>
+            <h2 class="text-xl font-black text-white text-left leading-tight tracking-wide">
               Painel de Negociação
             </h2>
             
             <!-- Mode Switcher -->
-            <div class="flex items-center p-1 bg-[#080808] border border-white/5 rounded-xl premium-switcher">
+            <div class="flex items-center p-1 bg-[#080808] border border-white/5 rounded-xl">
               <button 
                 @click="tradingMode = 'manual'"
-                class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all tracking-widest"
-                :class="tradingMode === 'manual' ? 'active-tab' : 'inactive-tab'"
+                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
+                :class="tradingMode === 'manual' ? 'bg-zenix-green text-black' : 'text-white/40 hover:text-white'"
               >
                 MANUAL
               </button>
               <button 
                 @click="tradingMode = 'ai'"
-                class="flex-1 py-2 text-[10px] font-bold rounded-lg transition-all tracking-widest"
-                :class="tradingMode === 'ai' ? 'active-tab' : 'inactive-tab'"
+                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
+                :class="tradingMode === 'ai' ? 'bg-zenix-green text-black' : 'text-white/40 hover:text-white'"
               >
                 SINAIS DE IA
               </button>
@@ -596,29 +595,37 @@
               <!-- AI Mode Display & Button -->
               <div v-else class="space-y-4">
                 <!-- AI Signal Info -->
-                <div class="w-full bg-white/[0.02] border border-white/5 rounded-xl p-5 text-left transition-all duration-300 relative overflow-hidden group premium-signal-card">
-                   <div class="flex items-center gap-5 relative z-10 w-full">
-                      <!-- Robot Icon Circle -->
-                      <div class="flex-shrink-0 w-20 h-20 rounded-full bg-[#0F110F] border border-zenix-green/20 flex items-center justify-center relative overflow-hidden robot-icon-container">
-                        <div class="absolute inset-0 bg-radial-glow"></div>
-                        <img src="@/assets/icons/robot.svg" class="w-10 h-10 relative z-10 opacity-80" alt="Bot" />
-                      </div>
-
-                      <div class="flex flex-col gap-1 flex-1">
-                        <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">SINAL DA IA</span>
-                        <div v-if="aiRecommendation" class="flex flex-col gap-0.5">
-                          <div class="flex items-center gap-2">
-                             <i :class="aiRecommendation.action === 'CALL' ? 'fas fa-arrow-up text-zenix-green' : 'fas fa-arrow-down text-red-500'"></i>
-                             <span :class="aiRecommendation.action === 'CALL' ? 'text-white' : 'text-white'" class="text-xl font-black tracking-tighter">
-                               {{ aiRecommendation.action === 'CALL' ? 'CALL' : 'PUT' }}
-                             </span>
+                <div class="w-full bg-zenix-green/5 border border-zenix-green/20 rounded-xl p-5 text-center transition-all duration-300 relative overflow-hidden group flex flex-col items-center justify-center">
+                   <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   <div class="flex flex-col items-center gap-2 relative z-10 w-full">
+                     <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Sinal da IA</span>
+                      <div v-if="aiRecommendation" class="flex flex-col items-center gap-1">
+                        <div class="flex items-center gap-3">
+                           <i :class="getButtonIcon(aiRecommendation.action) + ' ' + getButtonColor(aiRecommendation.action) + ' text-2xl'"></i>
+                           <span :class="getButtonColor(aiRecommendation.action)" class="text-xl font-black">
+                             {{ getButtonLabel(aiRecommendation.action) }}
+                           </span>
+                        </div>
+                        <span class="text-[10px] text-white/60 font-bold tracking-wider">{{ aiRecommendation.confidence }}% CONFIABILIDADE</span>
+                     </div>
+                     <div v-else class="flex flex-col items-center gap-2 py-2">
+                        <button 
+                          @click="toggleAnalysis"
+                          :disabled="isAnalyzing"
+                          class="flex flex-col items-center gap-2 group hover:scale-105 transition-transform"
+                        >
+                          <div class="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center bg-white/5 group-hover:bg-zenix-green/10 group-hover:border-zenix-green/30 transition-all relative" :class="{ 'animate-pulse': isAnalyzing }">
+                            <i class="fas fa-robot text-xl" :class="isAnalyzing ? 'text-zenix-green' : 'text-white/20'"></i>
+                            <div v-if="isAnalyzing" class="absolute inset-0 rounded-full border border-zenix-green/50 animate-ping"></div>
                           </div>
-                          <span class="text-[10px] text-white/60 font-bold tracking-tight">{{ aiRecommendation.confidence }}% CONFIABILIDADE</span>
-                        </div>
-                        <div v-else class="flex flex-col gap-1">
-                          <span class="text-sm font-bold text-white/20">Aguardando sinal...</span>
-                        </div>
-                      </div>
+                          <div class="flex flex-col items-center">
+                            <span class="text-xs font-bold transition-colors" :class="isAnalyzing ? 'text-zenix-green' : 'text-white/40 group-hover:text-white/60 uppercase tracking-tighter'">
+                              {{ isAnalyzing ? 'Analisando...' : 'Gerar Sinal de IA' }}
+                            </span>
+                            <span v-if="!isAnalyzing" class="text-[9px] text-white/20 uppercase tracking-widest font-medium">Toque para iniciar</span>
+                          </div>
+                        </button>
+                     </div>
                    </div>
                 </div>
 
@@ -633,13 +640,13 @@
                 <button 
                   @click="executeAIOrder"
                   :disabled="!canExecuteAIOrder"
-                  class="w-full btn-executar-ai text-black font-bold py-5 rounded-xl transition-all text-base flex flex-col items-center justify-center gap-0 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed active:scale-95 shadow-lg"
+                  class="w-full bg-zenix-green hover:bg-zenix-green-hover text-black font-bold py-5 rounded-xl transition-all text-base flex flex-col items-center justify-center gap-1 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed shadow-[0_0_20px_rgba(34,197,94,0.2)] active:scale-95"
                 >
                   <div class="flex items-center gap-2">
                     <i class="fas fa-bolt"></i>
-                    <span class="tracking-tighter uppercase font-black">EXECUTAR OPERAÇÃO</span>
+                    <span class="tracking-tighter">EXECUTAR OPERAÇÃO</span>
                   </div>
-                  <span class="text-[10px] opacity-70 font-bold uppercase tracking-widest">Seguir inteligência artificial</span>
+                  <span v-if="aiRecommendation" class="text-[10px] opacity-70 font-bold uppercase tracking-widest">Seguir inteligência artificial</span>
                 </button>
               </div>
             </template>
@@ -5481,63 +5488,4 @@ export default {
   .dvx-status-green-text { color: #22C55E; }
   .dvx-status-yellow-text { color: #FFD058; }
   .dvx-status-red-text { color: #FF4747; }
-
-  /* Premium AI Signals Styles */
-  .premium-switcher {
-    gap: 0.25rem;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-  }
-
-  .active-tab {
-    background: linear-gradient(180deg, #3DB46E 0%, #2A8B51 100%);
-    color: #000 !important;
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-  }
-
-  .inactive-tab {
-    color: rgba(255, 255, 255, 0.3) !important;
-    background: transparent;
-  }
-
-  .inactive-tab:hover {
-    color: rgba(255, 255, 255, 0.6) !important;
-  }
-
-  .premium-signal-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  }
-
-  .robot-icon-container {
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
-  }
-
-  .bg-radial-glow {
-    background: radial-gradient(circle at center, rgba(34, 197, 94, 0.15) 0%, transparent 70%);
-  }
-
-  .btn-executar-ai {
-    background: linear-gradient(180deg, #F9D976 0%, #D4AF37 100%) !important;
-    color: #000 !important;
-    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
-    border: none;
-    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
-  }
-
-  .btn-executar-ai:hover {
-    filter: brightness(1.1);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(212, 175, 55, 0.4);
-  }
-
-  .btn-executar-ai:active {
-    transform: translateY(0);
-  }
-
-  .btn-executar-ai:disabled {
-    background: #2D2D2D !important;
-    color: rgba(255, 255, 255, 0.2) !important;
-    box-shadow: none;
-    opacity: 0.5;
-  }
 </style>
