@@ -4378,18 +4378,14 @@ export default {
     watch: {
         realtimeLogsProp: {
             handler(newLogs) {
-                if (newLogs && newLogs.length > 0) {
-                    this.realtimeLogs = [...newLogs];
-                }
+                this.realtimeLogs = newLogs ? [...newLogs] : [];
             },
             immediate: true,
             deep: true
         },
         logOperationsProp: {
             handler(newOps) {
-                if (newOps && newOps.length > 0) {
-                    this.logOperations = [...newOps];
-                }
+                this.logOperations = newOps ? [...newOps] : [];
             },
             immediate: true,
             deep: true

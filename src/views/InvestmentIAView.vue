@@ -989,6 +989,18 @@ export default {
                     return;
                 }
 
+                // ✅ Resetar Dados da Sessão (Zerado)
+                this.dailyStats = {
+                    profitLoss: 0,
+                    profitLossPercent: 0,
+                    totalTrades: 0,
+                    winrate: 0,
+                    wins: 0,
+                    losses: 0
+                };
+                this.realtimeLogs = [];
+                this.logOperations = [];
+
                 // Configurar filtros ativos baseados no preset
                 this.activeFilters = JSON.parse(JSON.stringify(strategyPreset.config.form.attackFilters));
                 this.isRecoveryActive = false;
@@ -1145,6 +1157,9 @@ export default {
 
         
         async fetchDailyStats() {
+            // ✅ Se a IA estiver rodando localmente, não sobrescrever com dados do backend
+            if (this.isMonitoring) return;
+
             try {
                 const userId = this.getUserId();
                 if (!userId) {
@@ -1194,12 +1209,14 @@ export default {
         },
         
         startStatsUpdates() {
-            this.fetchDailyStats();
+            // ✅ Comentado para iniciar zerado conforme solicitado. 
+            // O primeiro update virá após 10 segundos, ou será gerido localmente pela IA.
+            // this.fetchDailyStats(); 
             this.statsUpdateInterval = setInterval(() => {
                 this.fetchDailyStats();
             }, 10000);
             
-            console.log('[InvestmentIAView] ⏰ Atualizações de stats iniciadas');
+            console.log('[InvestmentIAView] ⏰ Atualizações de stats iniciadas (início zerado)');
         },
         
         stopStatsUpdates() {
@@ -1671,6 +1688,20 @@ export default {
         // O accountBalanceMixin já lida com loadTradeCurrency e loadAccountBalanceInfo no seu mounted()
         
         await this.checkAIStatus();
+
+        // ✅ Garantir que inicie zerado (Logs e Histórico) conforme solicitado
+        // Exceto se a sincronização via checkAIStatus já tiver trazido algo que queremos manter, 
+        // mas a instrução "traga zerado" sugere uma limpeza.
+        this.realtimeLogs = [];
+        this.logOperations = [];
+        this.dailyStats = {
+            profitLoss: 0,
+            profitLossPercent: 0,
+            totalTrades: 0,
+            winrate: 0,
+            wins: 0,
+            losses: 0
+        };
         
         console.log('[InvestmentIAView] Iniciando carregamento de dados...');
         this.startDataLoading();
