@@ -30,18 +30,19 @@ export const RiskManager = {
         }
 
         // 2. PRINCIPAL MODE (Standard)
+        const sorosLevel = config.sorosLevel || 1; // Number of Soros steps (Compounding) after base
 
-        // A. Reset after Soros Level 1
-        if (state.consecutiveWins >= 2) {
-            return baseStake;
+        // Cycle Logic:
+        // Level 1: [Base, Soros] -> [0, 1]
+        // Level 2: [Base, Soros1, Soros2] -> [0, 1, 2]
+        const cyclePosition = state.consecutiveWins % (sorosLevel + 1);
+
+        // B. SOROS TRADES (Compounding)
+        if (state.lastResultWin && state.lastProfit > 0 && cyclePosition > 0 && !state.skipSorosNext) {
+            return Math.max(0.35, parseFloat((state.lastStake + state.lastProfit).toFixed(2)));
         }
 
-        // B. SOROS LEVEL 1 (Base + Profit of last win)
-        if (state.lastResultWin && state.lastProfit > 0 && state.consecutiveWins === 1 && !state.skipSorosNext) {
-            return Math.max(0.35, parseFloat((baseStake + state.lastProfit).toFixed(2)));
-        }
-
-        // C. DEFAULT: Base Stake
+        // C. DEFAULT: Base Stake (Start of Cycle)
         return baseStake;
     },
 
@@ -51,6 +52,7 @@ export const RiskManager = {
     processTradeResult(state, win, profit, stakeUsed) {
         state.lastProfit = profit;
         state.lastResultWin = win;
+        state.lastStake = stakeUsed;
 
         if (win) {
             state.lastPayoutRate = profit / stakeUsed;
