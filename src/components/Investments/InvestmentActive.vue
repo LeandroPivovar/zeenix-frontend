@@ -794,14 +794,11 @@
                                     <span class="text-[12px] font-bold text-zenix-red tracking-tight" v-if="!isLoadingConfig">-${{ lossLimit ? Number(lossLimit).toFixed(2) : '100' }}</span>
                                     <span v-else class="text-sm text-gray-500">...</span>
                                 </div>
-                            </div>
+                        </div> 
+                        </div>
+
                         <!-- Divider 2 -->
                         <div class="w-full h-px bg-[#333] mb-4"></div>
-
-
-
-                        <!-- Divider 3 -->
-                        <div class="w-full h-px bg-[#333] my-4"></div>
                         <div class="mb-3 relative z-10 pl-1">
                             <div class="flex items-center gap-2 mb-2">
                                 <i class="fas fa-shield-alt text-[#333] text-xs"></i>
@@ -819,9 +816,9 @@
                             </div>
                         </div>
 
+                        <!-- Divider 3 -->
+                        <div class="w-full h-px bg-[#333] my-4"></div>
 
-
-                        <!-- IA EM FUNCIONAMENTO / Footer -->
                         <!-- IA EM FUNCIONAMENTO / Footer -->
                         <div class="mt-2 relative z-10">
                             <h4 class="text-[13px] font-bold text-[#D4D4D4] uppercase mb-1">IA Em Funcionamento</h4>
