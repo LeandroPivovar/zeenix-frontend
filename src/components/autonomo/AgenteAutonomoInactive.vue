@@ -239,7 +239,7 @@
 									</div>
 								</label>
 								<div class="input-wrapper">
-									<span class="input-prefix">$</span>
+									<span class="input-prefix-premium">$</span>
 									<input 
 										type="number" 
 										class="form-input" 
@@ -264,7 +264,7 @@
 									</div>
 								</label>
 								<div class="input-wrapper">
-									<span class="input-prefix">$</span>
+									<span class="input-prefix-premium">$</span>
 									<input 
 										type="number" 
 										class="form-input" 
@@ -291,7 +291,7 @@
 									</div>
 								</label>
 								<div class="input-wrapper">
-									<span class="input-prefix">$</span>
+									<span class="input-prefix-premium">$</span>
 									<input 
 										type="number" 
 										class="form-input" 
@@ -1725,7 +1725,7 @@ export default {
     width: 100%;
 }
 
-.input-prefix {
+.input-prefix-premium {
     position: absolute;
     left: 0.75rem;
     top: 50%;
