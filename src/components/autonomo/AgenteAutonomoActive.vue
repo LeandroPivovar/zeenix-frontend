@@ -181,25 +181,26 @@
 						</div>
 					</div>
 
-					<!-- Agent Switcher Dropdown (Matching Image 1 - Latest set) -->
+					<!-- Agent Switcher Dropdown (Robust Grid Layout - Final Fix) -->
 					<div 
 						v-if="showAgentSwitcher"
-						class="absolute top-full left-0 mt-4 w-[420px] bg-[#0c0c0c] border border-[#27272a] rounded-lg shadow-2xl z-[60] overflow-hidden animate-fade-in"
+						class="absolute top-full left-0 mt-4 w-[460px] bg-[#0c0c0c] border border-[#27272a] rounded-lg shadow-2xl z-[60] overflow-hidden animate-fade-in"
 					>
 						<div class="p-4 border-b border-[#27272a] bg-[#121212]/50">
 							<h4 class="text-[11px] font-bold text-[#A1A1AA] uppercase tracking-wider text-left">SELECIONE O AGENTE</h4>
 						</div>
 						
-						<div class="max-h-[350px] overflow-y-auto custom-scrollbar p-3">
+						<div class="max-h-[420px] overflow-y-auto custom-scrollbar p-3">
 							<div 
 								v-for="agent in runningAgents" 
 								:key="agent.id"
 								@click="selectAgent(agent.id)"
-								class="w-full flex items-center gap-4 p-4 cursor-pointer transition-all rounded-lg mb-2 last:mb-0 relative group border border-transparent"
-								:class="currentAgentId === agent.id ? 'bg-[#092012]/10 border-[#22c55e]/20' : 'hover:bg-[#1a1a1a] border-[#27272a]/0 hover:border-[#27272a]'"
+								class="w-full grid grid-cols-[60px_1fr_80px] items-center gap-4 p-4 cursor-pointer transition-all rounded-xl mb-3 last:mb-0 relative group shadow-lg border"
+								:class="currentAgentId === agent.id ? 'bg-[#092012]/15 border-[#22c55e]/50 shadow-[#22c55e]/10' : 'bg-[#141414] border-[#27272a] hover:border-[#333] shadow-black/20'"
+                                style="display: grid !important; grid-template-columns: 60px 1fr 80px !important; align-items: center !important;"
 							>
-                                <!-- Icon Box -->
-								<div class="w-12 h-12 rounded-lg bg-[#141414] flex items-center justify-center relative shrink-0 border border-[#27272a]/50">
+                                <!-- Col 1: Icon -->
+								<div class="w-14 h-14 rounded-lg bg-[#0c0c0c] flex items-center justify-center relative shrink-0 border border-[#27272a] overflow-visible">
 									<video 
                                         v-if="agent.video"
                                         :src="agent.video"
@@ -213,42 +214,44 @@
 										{{ agent.emoji }}
 									</div>
 
-                                    <!-- Active Checkmark Overlay (Image 1) -->
+                                    <!-- Checkmark on Icon Corner -->
                                     <div 
                                         v-if="currentAgentId === agent.id" 
-                                        class="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 bg-[#22c55e] rounded-full flex items-center justify-center z-10 border-2 border-[#0c0c0c] shadow-md"
-                                        style="width: 18px; height: 18px;"
+                                        class="absolute -top-1.5 -right-1.5 w-[20px] h-[20px] bg-[#22c55e] rounded-full flex items-center justify-center z-20 border-2 border-[#0c0c0c] shadow-lg"
                                     >
-                                        <i class="fas fa-check text-[#000000] text-[9px] font-black"></i>
+                                        <i class="fas fa-check text-[#000000] text-[10px] font-black"></i>
                                     </div>
 								</div>
 
-                                <!-- Info Area -->
-								<div class="flex-1 min-w-0 pr-12">
-									<h5 class="text-[13px] font-bold truncate text-left mb-1 transition-colors" :class="currentAgentId === agent.id ? 'text-[#22c55e]' : 'text-[#DFDFDF]'">
+                                <!-- Col 2: Info -->
+								<div class="min-w-0 flex flex-col justify-center gap-0.5">
+									<h5 class="text-[14px] font-bold truncate text-left transition-colors" :class="currentAgentId === agent.id ? 'text-[#22c55e]' : 'text-[#DFDFDF]'">
                                         {{ agent.title.toUpperCase() }} - Digits
                                     </h5>
                                     
                                     <div class="flex flex-col gap-0.5">
-                                        <p class="text-[11px] text-[#A1A1AA] text-left">
-                                            <span class="font-bold">Retorno:</span> 
-                                            <span class="text-[#22c55e] ml-1 font-bold">{{ agent.description.match(/Retorno: (.*)%/)?.[1] || '85' }}%</span>
+                                        <p class="text-[11px] text-[#A1A1AA] text-left leading-tight">
+                                            <span class="font-bold text-[#DFDFDF]">Retorno:</span> 
+                                            <span class="text-[#22c55e] ml-1 font-bold">{{ agent.description.match(/Retorno: (.*)%/)?.[1] || (agent.id === 'zeus' ? '85' : '63.5') }}%</span>
                                         </p>
-                                        <p class="text-[11px] text-[#A1A1AA] text-left">
-                                            <span class="font-bold">Assertividade:</span> {{ agent.description.match(/Assertividade: (.*)%/)?.[1] || '90' }}%
+                                        <p class="text-[11px] text-[#A1A1AA] text-left leading-tight">
+                                            <span class="font-bold">Assertividade:</span> {{ agent.description.match(/Assertividade: (.*)%/)?.[1] || (agent.id === 'zeus' ? '90' : '70') }}%
                                         </p>
-                                        <p class="text-[11px] text-[#A1A1AA] text-left truncate">
+                                        <p class="text-[11px] text-[#A1A1AA] text-left leading-tight truncate opacity-60">
                                             <span class="font-bold">Análise:</span> {{ agent.description.split('\n')[0].replace('Análise: ', '') }}
                                         </p>
                                     </div>
 								</div>
 
-                                <!-- Active Badge -->
-                                <div 
-                                    v-if="currentAgentId === agent.id" 
-                                    class="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-[#22c55e]/10 border border-[#22c55e]/20"
-                                >
-                                    <span class="text-[9px] text-[#22c55e] font-black uppercase tracking-wider">ATIVO</span>
+                                <!-- Col 3: Badge -->
+                                <div class="flex justify-end pr-1">
+                                    <div 
+                                        v-if="currentAgentId === agent.id" 
+                                        class="px-3 py-1.5 rounded-full bg-[#1b3324]/80 border border-[#22c55e]/40 shadow-sm"
+                                    >
+                                        <span class="text-[9px] text-[#22c55e] font-black uppercase tracking-wider">ATIVO</span>
+                                    </div>
+                                    <div v-else class="w-[50px]"></div>
                                 </div>
 							</div>
 						</div>
