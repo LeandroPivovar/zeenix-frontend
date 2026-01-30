@@ -91,15 +91,20 @@
                     v-for="item in digitFrequenciesWithStats" 
                     :key="'meta-'+item.digit" 
                     class="digit-meta-item flex flex-col items-center p-2 rounded-xl transition-all duration-500 bg-[#0F0F0F] border border-white/5"
-                    :class="[item.statusClass, item.isHighlighted ? 'meta-highlight' : '']"
+                    :class="[
+                      item.statusClass, 
+                      item.isMax ? 'meta-highest-freq' : '',
+                      item.isMin ? 'meta-lowest-freq' : '',
+                      item.isHighlighted ? 'meta-highlight' : ''
+                    ]"
                   >
-                    <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: getStatusColor(item.statusClass) }">{{ item.digit }}</span>
+                    <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : 'rgba(255,255,255,0.4)') }">{{ item.digit }}</span>
                     <span class="meta-digit-percentage text-[11px] font-bold text-white/60 mb-4">{{ item.percentage }}%</span>
                     
                     <div class="meta-vertical-meter-container w-3 h-20 bg-white/5 rounded-full relative overflow-hidden">
                       <div 
                         class="meta-vertical-meter-fill absolute bottom-0 left-0 w-full transition-all duration-1000 ease-out"
-                        :style="{ height: item.percentage + '%', backgroundColor: getStatusColor(item.statusClass) }"
+                        :style="{ height: item.percentage + '%', backgroundColor: item.isMax ? '#22C55E' : (item.isMin ? '#EF4444' : 'rgba(255,255,255,0.1)') }"
                       ></div>
                     </div>
                     <span class="text-[9px] font-bold text-white/20 mt-4 uppercase">{{ item.percentage }}%</span>
@@ -1082,10 +1087,16 @@ export default {
 
       return counts.map((count, index) => {
         const percentage = totalDigits > 0 ? (count / totalDigits) * 100 : 0;
+        const max = Math.max(...counts.map(c => (c / totalDigits) * 100));
+        const min = Math.min(...counts.map(c => (c / totalDigits) * 100));
+        const p = (count / totalDigits) * 100;
+
         return {
           digit: index,
           count,
-          percentage: Math.round(percentage * 10) / 10
+          percentage: Math.round(percentage * 10) / 10,
+          isMax: p === max && max > min,
+          isMin: p === min && min < max
         };
       });
     },
@@ -1506,12 +1517,14 @@ export default {
   methods: {
     getStatusColor(statusClass) {
       const colors = {
-        'status-overheated': '#10B981', // Green for High Frequency (Full)
-        'status-heated': '#F59E0B',      // Yellow for Middle Frequency
-        'status-underheated': '#EF4444', // Red for Low Frequency (Final)
-        'status-normal': '#64748B'       // Gray for Normal
+        'status-overheated': '#FFFFFF', 
+        'status-max': '#22C55E',      // Intense Green
+        'status-min': '#B91C1C',      // Dark Red
+        'status-heated': '#F59E0B',
+        'status-underheated': '#64748B',
+        'status-normal': '#FFFFFF'
       };
-      return colors[statusClass] || '#64748B';
+      return colors[statusClass] || '#FFFFFF';
     },
     // WebSocket Methods (Refactored)
     async initDirectConnection() {
@@ -5510,6 +5523,17 @@ export default {
   .meta-digit-number {
     text-shadow: 0 0 8px currentColor;
     letter-spacing: -0.05em;
+  }
+
+  .meta-highest-freq {
+    border-color: rgba(34, 197, 94, 0.4) !important;
+    background: radial-gradient(circle at top, rgba(34, 197, 94, 0.2), transparent) !important;
+    box-shadow: 0 15px 30px -10px rgba(34, 197, 94, 0.3);
+  }
+
+  .meta-lowest-freq {
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    background: radial-gradient(circle at top, rgba(239, 68, 68, 0.1), transparent) !important;
   }
 
   .meta-highlight {
