@@ -1059,6 +1059,7 @@ export default {
                 statusDesc: 'Analisando condições de mercado'
             },
             monitoringLogs: [],
+            logCounter: 0,
             monitoringOperations: [],
             simulationInterval: null,
             filters: [
@@ -2258,13 +2259,14 @@ export default {
             this.addLog(msg, 'info');
         },
         addLog(message, type) {
+            this.logCounter++;
             this.monitoringLogs.unshift({
-                id: Date.now(),
+                id: `log-${Date.now()}-${this.logCounter}`,
                 time: new Date().toLocaleTimeString(),
                 message,
                 type
             });
-            if (this.monitoringLogs.length > 50) this.monitoringLogs.pop();
+            if (this.monitoringLogs.length > 100) this.monitoringLogs.pop();
         }
     }
 }
