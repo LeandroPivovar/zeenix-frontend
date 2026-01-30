@@ -70,7 +70,17 @@
                                 <span class="text-[10px] text-[#7A7A7A] ml-1">{{ monitoringStats.wins }}W / {{ monitoringStats.losses }}L</span>
                             </div>
                         </div>
-                        <div class="stats-card">
+                        <div v-if="sessionState.isRecoveryMode" class="stats-card border border-zenix-green/30 bg-zenix-green/5">
+                            <div class="stats-icon-wrapper green">
+                                <i class="fas fa-undo"></i>
+                            </div>
+                            <div class="stats-info">
+                                <span class="stats-label">Recuperação</span>
+                                <span class="stats-value text-zenix-green">$ {{ (sessionState.totalLossAccumulated - sessionState.recoveredAmount).toFixed(2) }}</span>
+                                <p class="text-[10px] text-gray-500">Restante para Meta</p>
+                            </div>
+                        </div>
+                        <div v-else class="stats-card">
                             <div class="stats-icon-wrapper green pulse">
                                 <i class="fas fa-robot"></i>
                             </div>
@@ -349,88 +359,51 @@
                                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
                                         </button>
                                     </div>
-                                    <div class="md:col-span-2 flex gap-4">
-                                         <button 
-                                            type="button" 
-                                            @click="openFilterModal('recovery')"
-                                            class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <i class="fa-solid fa-filter"></i> Filtros
-                                        </button>
-                                         <button 
-                                            type="button" 
-                                            @click="showPauseModal = true"
-                                            class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <i class="fa-solid fa-pause"></i> Pausa Estratégia
-                                        </button>
-                                    </div>
-                                    <div>
-                                        <label class="block text-white font-bold mb-2">Perdas para ativar</label>
-                                        <input 
-                                            type="number" 
-                                            v-model.number="recoveryConfig.lossesToActivate" 
-                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                            min="0"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label class="block text-white font-bold mb-2">Troca de contrato</label>
-                                        <div class="relative">
-                                            <select 
-                                                v-model="recoveryConfig.contractSwitch" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
-                                            >
-                                                <option :value="true">Ativado</option>
-                                                <option :value="false">Desativado</option>
-                                            </select>
-                                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                                <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                            </div>
-                                        </div>
-                                    </div>
                                     <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div class="flex items-center justify-between bg-[#1E1E1E] p-3 rounded-lg border border-[#333]">
-                                            <span class="text-sm font-bold">Troca para modo normal</span>
-                                            <div 
-                                                class="w-12 h-6 rounded-full relative cursor-pointer transition-colors duration-300"
-                                                :class="recoveryConfig.switchToNormal ? 'bg-zenix-green' : 'bg-gray-600'"
-                                                @click="recoveryConfig.switchToNormal = !recoveryConfig.switchToNormal"
-                                            >
-                                                <div 
-                                                    class="w-4 h-4 rounded-full bg-white absolute top-1 transition-all duration-300"
-                                                    :style="{ left: recoveryConfig.switchToNormal ? 'calc(100% - 1.25rem)' : '0.25rem' }"
-                                                ></div>
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center justify-between bg-[#1E1E1E] p-3 rounded-lg border border-[#333]">
-                                            <span class="text-sm font-bold">Troca para modo preciso</span>
-                                            <div 
-                                                class="w-12 h-6 rounded-full relative cursor-pointer transition-colors duration-300"
-                                                :class="recoveryConfig.switchToPrecise ? 'bg-zenix-green' : 'bg-gray-600'"
-                                                @click="recoveryConfig.switchToPrecise = !recoveryConfig.switchToPrecise"
-                                            >
-                                                <div 
-                                                    class="w-4 h-4 rounded-full bg-white absolute top-1 transition-all duration-300"
-                                                    :style="{ left: recoveryConfig.switchToPrecise ? 'calc(100% - 1.25rem)' : '0.25rem' }"
-                                                ></div>
+                                        <div>
+                                            <label class="block text-white font-bold mb-2">Perfil de Risco</label>
+                                            <div class="relative">
+                                                <select 
+                                                    v-model="form.riskProfile" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                                >
+                                                    <option value="conservador">Conservador (0%)</option>
+                                                    <option value="moderado">Moderado (15%)</option>
+                                                    <option value="agressivo">Agressivo (30%)</option>
+                                                </select>
+                                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                                    <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                                </div>
                                             </div>
                                         </div>
                                         <div>
-                                            <!-- <label class="block text-xs text-gray-400 mb-1">Máx. perdas (Preciso)</label> -->
+                                            <label class="block text-white font-bold mb-2">Dígito Alvo Rec.</label>
+                                            <div class="relative">
+                                                <select 
+                                                    v-model.number="recoveryConfig.prediction" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                                >
+                                                    <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
+                                                </select>
+                                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                                    <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-white font-bold mb-2">Perdas para Rec.</label>
                                             <input 
                                                 type="number" 
-                                                placeholder="Máx. perdas preciso"
-                                                v-if="recoveryConfig.switchToPrecise"
-                                                v-model.number="recoveryConfig.maxPreciseLosses" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 text-sm focus:outline-none focus:border-zenix-green transition-colors"
+                                                v-model.number="recoveryConfig.lossesToActivate" 
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                                min="1"
                                             />
                                         </div>
                                     </div>
                                     <div class="md:col-span-2 flex gap-4">
                                          <button 
                                             type="button" 
-                                            @click="showFilterModal = true"
+                                            @click="openFilterModal('recovery')"
                                             class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
                                         >
                                             <i class="fa-solid fa-filter"></i> Filtros
@@ -469,17 +442,29 @@
                                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
                                         <input 
                                             type="number" 
-                                            v-model.number="form.takeProfit" 
+                                            v-model.number="form.profitTarget" 
                                             class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-8 pr-4 focus:outline-none focus:border-zenix-green transition-colors"
                                             step="0.01"
                                         />
                                     </div>
-                                    <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.takeProfit) }}% do saldo</p>
+                                    <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.profitTarget) }}% do saldo</p>
                                 </div>
                                 <div>
                                     <div class="flex justify-between items-center mb-2">
                                         <label class="block text-white font-bold">Limite de perda</label>
-                                        <!-- <i class="fa-solid fa-gear text-gray-400 cursor-pointer hover:text-white transition-colors"></i> -->
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs text-gray-400">Stop Blindado</span>
+                                            <div 
+                                                class="w-10 h-5 rounded-full relative cursor-pointer transition-colors duration-300"
+                                                :class="form.useBlindado ? 'bg-zenix-green' : 'bg-gray-600'"
+                                                @click="form.useBlindado = !form.useBlindado"
+                                            >
+                                                <div 
+                                                    class="w-3 h-3 rounded-full bg-white absolute top-1 transition-all duration-300"
+                                                    :style="{ left: form.useBlindado ? 'calc(100% - 1rem)' : '0.25rem' }"
+                                                ></div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="relative">
                                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
@@ -490,7 +475,15 @@
                                             step="0.01"
                                         />
                                     </div>
-                                    <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.stopLoss) }}% do saldo</p>
+                                    <div v-if="form.useBlindado" class="mt-2 flex items-center gap-2">
+                                        <label class="text-xs text-gray-400">Piso Proteção:</label>
+                                        <select v-model.number="form.stopBlindadoPercent" class="bg-transparent text-zenix-green text-xs font-bold border-none p-0 focus:ring-0">
+                                            <option value="30">30%</option>
+                                            <option value="50">50%</option>
+                                            <option value="70">70%</option>
+                                        </select>
+                                    </div>
+                                    <p v-else class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.stopLoss) }}% do saldo</p>
                                 </div>
                             </div>
                         </div>
@@ -875,21 +868,35 @@ export default {
                 initialStake: 0.35,
                 profitTarget: 10,
                 stopLoss: 50,
-                martingaleMode: 'conservador',
+                riskProfile: 'moderado', // 'conservador', 'moderado', 'agressivo'
+                useBlindado: false,
+                stopBlindadoPercent: 50,
                 duration: 1,
                 durationUnit: 't',
                 market: 'R_100',
                 tradeType: null,
-                selectedTradeTypeGroup: null, // Track group selection separately
-                multiplier: 0,
-                prediction: 0, // For Digit Match/Diff/Over/Under
-                attackFilters: [] // Final filters configuration
+                prediction: 0, 
+                attackFilters: []
+            },
+
+            // Strategy Execution State
+            sessionState: {
+                isRecoveryMode: false,
+                consecutiveLosses: 0,
+                totalLossAccumulated: 0,
+                recoveredAmount: 0,
+                lastPayoutRate: 0.95, // Default for estimation
+                peakProfit: 0,
+                stopBlindadoActive: false,
+                stopBlindadoFloor: 0,
+                isStopped: false
             },
             
             recoveryConfig: {
                 market: '',
                 selectedTradeTypeGroup: '',
                 tradeType: '',
+                prediction: 0,
                 lossesToActivate: 2,
                 contractSwitch: true,
                 switchToNormal: false,
@@ -1422,19 +1429,6 @@ export default {
             this.startSimulation();
             this.$root.$toast.success('Estratégia iniciada com sucesso!');
         },
-        stopMonitoring() {
-            this.isMonitoring = false;
-            if (this.simulationInterval) {
-                clearInterval(this.simulationInterval);
-                this.simulationInterval = null;
-            }
-            this.stopTickConnection(); // Close WebSocket
-            this.monitoringLogs = [];
-            this.monitoringOperations = [];
-            this.monitoringStats.profit = 0;
-            this.monitoringStats.wins = 0;
-            this.monitoringStats.losses = 0;
-        },
         startSimulation() {
             this.addLog('🤖 Robô iniciado. Aguardando conexão com mercado...', 'info');
             
@@ -1622,40 +1616,119 @@ export default {
                 this.executeRealTrade(); 
             }
         },
+        checkLimits() {
+            if (this.sessionState.isStopped) return true;
+
+            const lucroAtual = this.monitoringStats.profit;
+            const target = this.form.profitTarget;
+            const stopLoss = this.form.stopLoss;
+
+            // 1. Profit Target
+            if (target > 0 && lucroAtual >= target) {
+                this.addLog(`🎯 META ATINGIDA: +$${lucroAtual.toFixed(2)}`, 'success');
+                this.stopMonitoring('Meta atingida');
+                return true;
+            }
+
+            // 2. Stop Blindado
+            if (this.form.useBlindado && target > 0) {
+                const activationThreshold = target * 0.40;
+                const currentPeak = this.sessionState.peakProfit;
+
+                if (currentPeak >= activationThreshold) {
+                    if (!this.sessionState.stopBlindadoActive) {
+                        this.sessionState.stopBlindadoActive = true;
+                        const factor = (this.form.stopBlindadoPercent || 50) / 100;
+                        this.sessionState.stopBlindadoFloor = activationThreshold * factor;
+                        this.addLog(`🛡️ STOP BLINDADO ATIVADO! Piso: $${this.sessionState.stopBlindadoFloor.toFixed(2)}`, 'info');
+                    }
+
+                    if (lucroAtual <= this.sessionState.stopBlindadoFloor) {
+                        this.addLog(`🛡️ STOP BLINDADO ATINGIDO: Protegendo $${lucroAtual.toFixed(2)}`, 'warning');
+                        this.stopMonitoring('Stop Blindado atingido');
+                        return true;
+                    }
+                }
+            }
+
+            // 3. Stop Loss
+            if (stopLoss > 0 && lucroAtual <= -stopLoss) {
+                this.addLog(`🛑 STOP LOSS ATINGIDO: -$${Math.abs(lucroAtual).toFixed(2)}`, 'error');
+                this.stopMonitoring('Stop Loss atingido');
+                return true;
+            }
+
+            return false;
+        },
+        calculateNextStake() {
+            if (!this.sessionState.isRecoveryMode) {
+                return this.form.initialStake;
+            }
+
+            // Dynamic Martingale (Apollo Style)
+            // Stake = (LossToRecover * (1 + ProfitRate)) / PayoutRate
+            const lossToRecover = this.sessionState.totalLossAccumulated - this.sessionState.recoveredAmount;
+            
+            let profitFactor = 0.15; // Moderate
+            if (this.form.riskProfile === 'conservador') profitFactor = 0;
+            else if (this.form.riskProfile === 'agressivo') profitFactor = 0.30;
+
+            const config = this.recoveryConfig;
+            let payoutRate = this.sessionState.lastPayoutRate;
+
+            // Use defaults if first recovery or payout rate seems outdated for the contract type
+            if (!payoutRate || payoutRate < 0.10) {
+                if (config.tradeType === 'DIGITUNDER' && config.prediction === 8) payoutRate = 0.19;
+                else if (config.tradeType === 'DIGITUNDER' && config.prediction === 4) payoutRate = 1.25;
+                else if (config.tradeType === 'DIGITEVEN' || config.tradeType === 'DIGITODD') payoutRate = 0.95;
+                else payoutRate = 0.95; // Safe generic default
+            }
+            
+            const stake = (lossToRecover * (1 + profitFactor)) / payoutRate;
+            
+            return Math.max(0.35, parseFloat(stake.toFixed(2)));
+        },
+        stopMonitoring(reason = 'Finalizado pelo usuário') {
+            this.isMonitoring = false;
+            this.sessionState.isStopped = true;
+            this.monitoringStats.status = 'Parado';
+            this.monitoringStats.statusDesc = reason;
+            this.stopTickConnection();
+            this.addLog(`⏹️ Monitoramento parado: ${reason}`, 'info');
+        },
         executeRealTrade() {
             if (!this.isAuthorized) {
                 this.addLog('⚠️ Tentativa de entrada negada: WebSocket não autorizado.', 'warning');
                 return;
             }
 
-            // Evitar múltiplas entradas simultâneas se já houver contrato aberto (opcional, ajustável)
+            if (this.checkLimits()) return;
+
+            // Evitar múltiplas entradas simultâneas
             if (this.activeContracts.size > 0) return;
+
+            const stake = this.calculateNextStake();
+            const config = this.sessionState.isRecoveryMode ? this.recoveryConfig : this.form;
 
             const buyParams = {
                 buy: 1,
-                price: this.form.initialStake,
+                price: stake,
                 parameters: {
-                    amount: this.form.initialStake,
+                    amount: stake,
                     basis: 'stake',
-                    contract_type: this.form.tradeType,
+                    contract_type: config.tradeType,
                     currency: 'USD',
                     duration: this.form.duration,
                     duration_unit: this.form.durationUnit,
-                    symbol: this.form.market
+                    symbol: config.market || this.form.market
                 }
             };
 
-            // Add Barrier/Prediction for Digit Contracts
-            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(this.form.tradeType)) {
-                // For 'buy' proposal, parameters usually mimics proposal request.
-                // Depending on the API version, it might be 'barrier' or 'prediction'.
-                // Standard for digits is typically 'barrier' in some contexts, but let's try 'barrier' first as per common usage for target.
-                // However, for DIGITMATCH/DIFF 'prediction' is semantically correct.
-                // Let's use 'barrier' as it's the generic parameter key often used for the target value.
-                buyParams.parameters.barrier = this.form.prediction.toString(); 
+            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(config.tradeType)) {
+                buyParams.parameters.barrier = config.prediction.toString(); 
             }
 
-            this.addLog(`💸 Enviando ordem de compra: ${this.form.tradeType} $${this.form.initialStake}`, 'info');
+            this.addLog(`💸 Enviando ordem (${this.sessionState.isRecoveryMode ? 'RECUPERAÇÃO' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
             this.ws.send(JSON.stringify(buyParams));
         },
         subscribeToContract(contractId) {
@@ -1689,22 +1762,54 @@ export default {
 
             if (contract.is_sold) {
                 trade.result = contract.status.toUpperCase(); // 'WON' or 'LOST'
-                trade.pnl = contract.profit;
+                trade.pnl = parseFloat(contract.profit || 0);
 
                 if (trade.result === 'WON') {
                     this.monitoringStats.wins++;
-                    this.addLog(`💰 WIN! Lucro de $${trade.pnl}`, 'success');
+                    this.addLog(`💰 WIN! Lucro de $${trade.pnl.toFixed(2)}`, 'success');
+                    
+                    // Update Payout Rate for next dynamic martingale
+                    if (trade.stake > 0) {
+                        this.sessionState.lastPayoutRate = trade.pnl / trade.stake;
+                    }
+
+                    if (this.sessionState.isRecoveryMode) {
+                        this.sessionState.recoveredAmount += trade.pnl;
+                        if (this.sessionState.recoveredAmount >= this.sessionState.totalLossAccumulated) {
+                            this.addLog('✅ RECUPERAÇÃO CONCLUÍDA!', 'success');
+                            this.sessionState.isRecoveryMode = false;
+                            this.sessionState.consecutiveLosses = 0;
+                            this.sessionState.totalLossAccumulated = 0;
+                            this.sessionState.recoveredAmount = 0;
+                        }
+                    } else {
+                        this.sessionState.consecutiveLosses = 0;
+                        this.sessionState.totalLossAccumulated = 0;
+                    }
                 } else {
                     this.monitoringStats.losses++;
-                    this.addLog(`🔴 LOSS. Perda de $${Math.abs(trade.pnl)}`, 'error');
+                    this.addLog(`🔴 LOSS. Perda de $${Math.abs(trade.pnl).toFixed(2)}`, 'error');
+                    
+                    this.sessionState.consecutiveLosses++;
+                    this.sessionState.totalLossAccumulated += Math.abs(trade.pnl);
+
+                    if (!this.sessionState.isRecoveryMode && this.sessionState.consecutiveLosses >= this.recoveryConfig.lossesToActivate) {
+                        this.addLog('🔄 ATIVANDO MODO RECUPERAÇÃO...', 'warning');
+                        this.sessionState.isRecoveryMode = true;
+                        this.sessionState.recoveredAmount = 0;
+                    }
                 }
                 
-                this.monitoringStats.profit += parseFloat(trade.pnl);
+                this.monitoringStats.profit += trade.pnl;
                 this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
                 
+                // Track peak profit for Stop Blindado
+                if (this.monitoringStats.profit > this.sessionState.peakProfit) {
+                    this.sessionState.peakProfit = this.monitoringStats.profit;
+                }
+
                 this.activeContracts.delete(id);
-                // Unsubscribe is implicit when is_sold in some Deriv contexts, 
-                // but usually handled by server closing subscription
+                this.checkLimits();
             }
         },
         simulateTrade() {
