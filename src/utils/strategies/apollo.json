@@ -1,0 +1,50 @@
+{
+    "id": "apollo",
+    "name": "Apollo",
+    "config": {
+        "form": {
+            "market": "R_100",
+            "tradeType": "DIGITUNDER",
+            "duration": 1,
+            "durationUnit": "t",
+            "prediction": 8,
+            "attackFilters": [
+                {
+                    "id": "digit_density",
+                    "name": "Densidade de Dígitos 8 e 9",
+                    "active": true,
+                    "config": {
+                        "window": 20,
+                        "digits": "8, 9",
+                        "operator": "<",
+                        "threshold": 5
+                    }
+                }
+            ],
+            "initialStake": 1,
+            "profitTarget": 100,
+            "stopLoss": 100,
+            "useBlindado": false
+        },
+        "recoveryConfig": {
+            "enabled": true,
+            "market": "R_100",
+            "tradeType": "DIGITUNDER",
+            "prediction": 4,
+            "lossesToActivate": 1,
+            "attackFilters": [
+                {
+                    "id": "digit_density",
+                    "name": "Densidade de Dígitos < 4",
+                    "active": true,
+                    "config": {
+                        "window": 20,
+                        "digits": "0, 1, 2, 3",
+                        "operator": ">",
+                        "threshold": 4
+                    }
+                }
+            ]
+        }
+    }
+}

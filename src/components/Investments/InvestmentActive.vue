@@ -4547,49 +4547,46 @@ export default {
             this.selectedMarket = this.selectedMarketProp;
         }
         
-        // 📊 Buscar configuração primeiro (assíncrono)
-        this.fetchSessionConfig().then(async () => {
-            // Após config carregada, verificar se IA está ativa
-            const isActive = this.sessionConfig.isActive === 1 || this.sessionConfig.isActive === true;
-            if (isActive) {
-                console.log('[InvestmentActive] ✅ IA está ativa, inicializando logs...');
-                if (this.realtimeLogs.length === 0) {
-                    this.logSystemInit();
-                    // ✅ Aguardar um pouco e então verificar logs após inicialização
-                    setTimeout(() => {
-                        if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
+        // 📊 Somente buscar dados do backend se NÃO estivermos recebendo props de tempo real (Frontend Mode)
+        if (!this.realtimeLogsProp || this.realtimeLogsProp.length === 0) {
+            this.fetchSessionConfig().then(async () => {
+                // Após config carregada, verificar se IA está ativa
+                const isActive = this.sessionConfig.isActive === 1 || this.sessionConfig.isActive === true;
+                if (isActive) {
+                    console.log('[InvestmentActive] ✅ IA está ativa (Backend Mode), inicializando logs...');
+                    if (this.realtimeLogs.length === 0) {
+                        this.logSystemInit();
+                        setTimeout(() => {
+                            if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
+                                this.checkLogsForStopEvents();
+                            }
+                        }, 1000);
+                    } else {
+                        this.startLogPolling();
+                        if (!this.showStopLossModal && !this.showTargetProfitModal) {
                             this.checkLogsForStopEvents();
                         }
-                    }, 1000);
+                    }
                 } else {
-                    // Se já tem logs, apenas iniciar polling
-                    this.startLogPolling();
-                    // ✅ Verificar logs imediatamente
-                    if (!this.showStopLossModal && !this.showTargetProfitModal) {
+                    if (this.realtimeLogs.length === 0) {
+                        await this.fetchRealtimeLogs();
+                    }
+                    if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
                         this.checkLogsForStopEvents();
                     }
                 }
-            } else {
-                // ✅ Mesmo quando inativa, verificar logs para detectar stop loss/target profit
-                // Isso garante que o modal seja mostrado se a IA foi desativada recentemente
-                if (this.realtimeLogs.length === 0) {
-                    // Carregar logs uma vez para verificar
-                    await this.fetchRealtimeLogs();
-                }
-                if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
-                    this.checkLogsForStopEvents();
-                }
-            }
-        });
-        
-        // 📊 Buscar estatísticas do dia
-        this.startStatsUpdates();
-        
-        // 📊 Buscar histórico de operações
-        this.fetchTradeHistory();
-        
-            // 🔄 Iniciar SSE de eventos de trade (sem polling)
+            });
+
+            // 📊 Buscar estatísticas e histórico do backend
+            this.startStatsUpdates();
+            this.fetchTradeHistory();
             this.startTradeEventsStream();
+        } else {
+            console.log('[InvestmentActive] 🚀 Modo Frontend Ativo: Ignorando requisições ao backend para sessão.');
+            // No modo frontend, os logs já vêm via prop. O logSystemInit pode ser redundante,
+            // mas se não houver logs ainda, talvez queiramos inicializar a UI.
+            // No entanto, assumimos que o pai (InvestmentIAView) já enviará os logs de início.
+        }
         
         // 🎯 Iniciar animação da barra de progresso mobile
         this.startProgressAnimation();

@@ -501,7 +501,13 @@ import InsufficientBalanceModal from '../components/InsufficientBalanceModal.vue
 import MinimumStakeModal from '../components/modals/MinimumStakeModal.vue';
 import StrategyRequiredModal from '../components/modals/StrategyRequiredModal.vue';
 import StrategyAnalysis from '@/utils/StrategyAnalysis';
-import strategiesPresets from '@/utils/strategies_presets.json';
+import apolloConfig from '@/utils/strategies/apollo.json';
+import atlasConfig from '@/utils/strategies/atlas.json';
+import nexusConfig from '@/utils/strategies/nexus.json';
+import orionConfig from '@/utils/strategies/orion.json';
+import titanConfig from '@/utils/strategies/titan.json';
+
+const strategiesPresets = [apolloConfig, atlasConfig, nexusConfig, orionConfig, titanConfig];
 
 export default {
     name: 'InvestmentIAView',
@@ -638,7 +644,8 @@ export default {
             consecutiveLosses: 0,
             isRecoveryActive: false,
             lastAnalysisResult: null,
-            isDeactivating: false
+            isDeactivating: false,
+            tickCounter: 0
         }
     },
     watch: {
@@ -1530,6 +1537,15 @@ export default {
             const price = tick.quote;
             this.currentPrice = price;
 
+            // ✅ Log de Ticks (Feedback Visual)
+            // Logar a cada 10 ticks para evitar spam, mas mostrar que está vivo
+            if (!this.tickCounter) this.tickCounter = 0;
+            this.tickCounter++;
+            if (this.tickCounter % 10 === 0) {
+                const digit = parseInt(price.toString().slice(-1));
+                this.addLog(`📊 Tick recebido: ${price} (Último dígito: ${digit})`, 'info');
+            }
+
             // Atualizar histórico de ticks
             this.tickHistory.push({
                 time: tick.epoch,
@@ -1676,43 +1692,19 @@ export default {
         window.addEventListener('resize', this.checkMobile);
     },
     async mounted() {
-        console.log('[InvestmentIAView] mounted() - Sincronizando com logic do Dashboard');
+        console.log('[InvestmentIAView] mounted() - Modo 100% Frontend');
         await this.loadAvailableAccounts();
         
-        // Verificar se há uma estratégia passada via query param
         if (this.$route.query.strategy) {
-            console.log('[InvestmentIAView] 🎯 Estratégia recebida via query:', this.$route.query.strategy);
             this.selectedStrategy = this.$route.query.strategy;
         }
         
-        // O accountBalanceMixin já lida com loadTradeCurrency e loadAccountBalanceInfo no seu mounted()
-        
-        await this.checkAIStatus();
-
-        // ✅ Garantir que inicie zerado (Logs e Histórico) conforme solicitado
-        // Exceto se a sincronização via checkAIStatus já tiver trazido algo que queremos manter, 
-        // mas a instrução "traga zerado" sugere uma limpeza.
-        this.realtimeLogs = [];
-        this.logOperations = [];
-        this.dailyStats = {
-            profitLoss: 0,
-            profitLossPercent: 0,
-            totalTrades: 0,
-            winrate: 0,
-            wins: 0,
-            losses: 0
-        };
-        
-        console.log('[InvestmentIAView] Iniciando carregamento de dados...');
-        this.startDataLoading();
-        
-        console.log('[InvestmentIAView] Iniciando atualização de estatísticas...');
-        this.startStatsUpdates();
+        // Sincronizar saldo inicial
+        this.reloadBalance();
         
         // Iniciar polling de saldo via mixin (ajustado para 5s)
         this.startBalancePolling(5000);
         
-        // Escutar mudanças de conta e pedidos de refresh para atualizar saldo automaticamente
         window.addEventListener('accountChanged', this.handleGlobalAccountChange);
         window.addEventListener('refreshBalance', () => this.reloadBalance());
     },

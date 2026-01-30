@@ -1,0 +1,48 @@
+{
+    "id": "atlas",
+    "name": "Atlas",
+    "config": {
+        "form": {
+            "market": "R_100",
+            "tradeType": "DIGITOVER",
+            "duration": 1,
+            "durationUnit": "t",
+            "prediction": 2,
+            "attackFilters": [
+                {
+                    "id": "digit_density",
+                    "name": "Densidade Baixa de Dígitos 0, 1, 2",
+                    "active": true,
+                    "config": {
+                        "window": 10,
+                        "digits": "0, 1, 2",
+                        "operator": "<",
+                        "threshold": 2
+                    }
+                }
+            ],
+            "initialStake": 1,
+            "profitTarget": 100,
+            "stopLoss": 100,
+            "useBlindado": false
+        },
+        "recoveryConfig": {
+            "enabled": true,
+            "market": "R_100",
+            "tradeType": "CALL",
+            "lossesToActivate": 1,
+            "attackFilters": [
+                {
+                    "id": "price_momentum",
+                    "name": "Tendência de Preço (Alta)",
+                    "active": true,
+                    "config": {
+                        "window": 5,
+                        "ticksToConfirm": 3,
+                        "minDelta": 0.021
+                    }
+                }
+            ]
+        }
+    }
+}

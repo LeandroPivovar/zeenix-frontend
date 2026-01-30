@@ -1,0 +1,46 @@
+{
+    "id": "nexus",
+    "name": "Nexus",
+    "config": {
+        "form": {
+            "market": "R_100",
+            "tradeType": "CALL",
+            "duration": 5,
+            "durationUnit": "t",
+            "attackFilters": [
+                {
+                    "id": "price_momentum",
+                    "name": "Momentum de Preço",
+                    "active": true,
+                    "config": {
+                        "window": 20,
+                        "ticksToConfirm": 1,
+                        "minDelta": 0.05
+                    }
+                }
+            ],
+            "initialStake": 1,
+            "profitTarget": 100,
+            "stopLoss": 100,
+            "useBlindado": true
+        },
+        "recoveryConfig": {
+            "enabled": true,
+            "market": "R_100",
+            "tradeType": "CALL",
+            "lossesToActivate": 2,
+            "attackFilters": [
+                {
+                    "id": "price_momentum",
+                    "name": "Recuperação Momentum",
+                    "active": true,
+                    "config": {
+                        "window": 5,
+                        "ticksToConfirm": 1,
+                        "minDelta": 0.03
+                    }
+                }
+            ]
+        }
+    }
+}

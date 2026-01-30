@@ -1,0 +1,46 @@
+{
+    "id": "orion",
+    "name": "Orion",
+    "config": {
+        "form": {
+            "market": "R_100",
+            "tradeType": "DIGITOVER",
+            "duration": 1,
+            "durationUnit": "t",
+            "prediction": 3,
+            "attackFilters": [
+                {
+                    "id": "digit_sequence",
+                    "name": "Sequência de Dígitos < 4",
+                    "active": true,
+                    "config": {
+                        "length": 3,
+                        "target": "under_4"
+                    }
+                }
+            ],
+            "initialStake": 1,
+            "profitTarget": 100,
+            "stopLoss": 100,
+            "useBlindado": false
+        },
+        "recoveryConfig": {
+            "enabled": true,
+            "market": "R_100",
+            "tradeType": "CALL",
+            "lossesToActivate": 2,
+            "attackFilters": [
+                {
+                    "id": "price_momentum",
+                    "name": "Recuperação Orion (Tendência)",
+                    "active": true,
+                    "config": {
+                        "window": 3,
+                        "ticksToConfirm": 2,
+                        "minDelta": 0.5
+                    }
+                }
+            ]
+        }
+    }
+}

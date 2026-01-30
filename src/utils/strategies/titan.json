@@ -1,0 +1,46 @@
+{
+    "id": "titan",
+    "name": "Titan",
+    "config": {
+        "form": {
+            "market": "R_100",
+            "tradeType": "DIGITEVEN",
+            "duration": 1,
+            "durationUnit": "t",
+            "attackFilters": [
+                {
+                    "id": "parity_majority",
+                    "name": "Maioria Par",
+                    "active": true,
+                    "config": {
+                        "window": 24,
+                        "percentage": 60,
+                        "maxNoise": 8
+                    }
+                }
+            ],
+            "initialStake": 1,
+            "profitTarget": 100,
+            "stopLoss": 100,
+            "useBlindado": false
+        },
+        "recoveryConfig": {
+            "enabled": true,
+            "market": "R_100",
+            "tradeType": "DIGITEVEN",
+            "lossesToActivate": 4,
+            "attackFilters": [
+                {
+                    "id": "parity_majority",
+                    "name": "Persistência Par",
+                    "active": true,
+                    "config": {
+                        "window": 10,
+                        "percentage": 70,
+                        "maxNoise": 2
+                    }
+                }
+            ]
+        }
+    }
+}
