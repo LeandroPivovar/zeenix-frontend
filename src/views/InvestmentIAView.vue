@@ -500,7 +500,7 @@ import { loadAvailableAccounts } from '../utils/accountsLoader';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal.vue';
 import MinimumStakeModal from '../components/modals/MinimumStakeModal.vue';
 import StrategyRequiredModal from '../components/modals/StrategyRequiredModal.vue';
-import StrategyAnalysis from '@/utils/StrategyAnalysis';
+import { StrategyAnalysis } from '@/utils/StrategyAnalysis';
 import apolloConfig from '@/utils/strategies/apollo.json';
 import atlasConfig from '@/utils/strategies/atlas.json';
 import nexusConfig from '@/utils/strategies/nexus.json';

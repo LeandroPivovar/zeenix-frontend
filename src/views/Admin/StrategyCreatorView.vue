@@ -894,6 +894,13 @@ import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
+import apolloConfig from '@/utils/strategies/apollo.json';
+import atlasConfig from '@/utils/strategies/atlas.json';
+import nexusConfig from '@/utils/strategies/nexus.json';
+import orionConfig from '@/utils/strategies/orion.json';
+import titanConfig from '@/utils/strategies/titan.json';
+
+const defaultStrategies = [apolloConfig, atlasConfig, nexusConfig, orionConfig, titanConfig];
 
 export default {
     name: 'StrategyCreatorView',
@@ -1520,10 +1527,24 @@ export default {
         loadStrategiesFromStorage() {
             try {
                 const stored = localStorage.getItem('zeenix_saved_strategies');
-                this.savedStrategies = stored ? JSON.parse(stored) : [];
+                let userStrategies = stored ? JSON.parse(stored) : [];
+
+                // Merge default strategies
+                defaultStrategies.forEach(def => {
+                    const index = userStrategies.findIndex(s => s.id === def.id);
+                    if (index !== -1) {
+                        // Update existing default strategy
+                        userStrategies[index] = def;
+                    } else {
+                        // Add new default strategy
+                        userStrategies.push(def);
+                    }
+                });
+
+                this.savedStrategies = userStrategies;
             } catch (e) {
                 console.error('Erro ao carregar estratégias:', e);
-                this.savedStrategies = [];
+                this.savedStrategies = [...defaultStrategies];
             }
         },
 
