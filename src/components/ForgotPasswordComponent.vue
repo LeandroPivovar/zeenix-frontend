@@ -453,8 +453,9 @@ button.bg-zenix-green:disabled {
   animation: spin 0.8s linear infinite;
 }
 
-/* Animations moved to animations.css */
-@import '../assets/css/animations.css';
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
 /* Animação de gradiente para forgot-password no mobile - igual ao login */
 @keyframes gradient-animation {
@@ -476,7 +477,20 @@ button.bg-zenix-green:disabled {
 }
 
 /* Animação textureFloat para o background animado */
-/* textureFloat removed - moved to animations.css */
+@keyframes textureFloat {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(8px, -8px);
+  }
+  50% {
+    transform: translate(-6px, 6px);
+  }
+  75% {
+    transform: translate(6px, 8px);
+  }
+}
 
 /* Efeito de digitação */
 .typing-text {
@@ -501,7 +515,14 @@ button.bg-zenix-green:disabled {
   animation-delay: 0.3s;
 }
 
-/* fadeInLeft removed - moved to animations.css */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 /* Animação dos benefícios da esquerda para direita */
 .benefit-item {

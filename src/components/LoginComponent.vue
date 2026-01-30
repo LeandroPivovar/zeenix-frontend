@@ -501,8 +501,9 @@ button.bg-zenix-green:disabled {
   animation: spin 0.8s linear infinite;
 }
 
-/* Animations moved to animations.css */
-@import '../assets/css/animations.css';
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
 /* Efeito de digitação */
 .typing-text {
@@ -671,7 +672,14 @@ button.bg-zenix-green:disabled {
   animation-delay: 0.3s;
 }
 
-/* fadeInLeft removed - moved to animations.css */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 /* Animação dos benefícios da esquerda para direita */
 .benefit-item {
