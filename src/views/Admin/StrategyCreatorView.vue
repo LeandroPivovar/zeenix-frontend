@@ -47,8 +47,16 @@
                                 <i class="fas fa-trash-alt text-xs"></i>
                             </button>
                             <button 
+                                v-if="selectedSavedStrategyId"
+                                @click="updateCurrentStrategy" 
+                                title="Atualizar IA"
+                                class="bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 border border-blue-500/30"
+                            >
+                                <i class="fas fa-sync-alt"></i> Atualizar
+                            </button>
+                            <button 
                                 @click="saveCurrentStrategy" 
-                                title="Salvar na Galeria Local"
+                                title="Salvar Nova IA"
                                 class="bg-zenix-green/10 text-zenix-green hover:bg-zenix-green/20 p-2 rounded-lg text-xs font-bold transition-all border border-zenix-green/30"
                             >
                                 <i class="fas fa-save"></i>
@@ -401,8 +409,8 @@
                                             class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-3 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             <div class="flex items-center gap-2">
-                                                <img v-if="selectedRecoveryTradeTypeGroupIcon" :src="selectedRecoveryTradeTypeGroupIcon" class="w-4 h-4 contrast-[1.5] brightness-[1.5]" alt="" />
-                                                <span class="font-medium text-sm">{{ selectedRecoveryTradeTypeGroupLabel }}</span>
+                                                <img v-if="selectedRecoveryTradeTypeIcon" :src="selectedRecoveryTradeTypeIcon" class="w-4 h-4 contrast-[1.5] brightness-[1.5]" alt="" />
+                                                <span class="font-medium text-sm">{{ selectedRecoveryTradeTypeLabel }}</span>
                                             </div>
                                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
                                         </button>
@@ -688,7 +696,7 @@
                             <button v-if="filterStep === 2" @click="prevFilterStep" class="text-gray-400 hover:text-white transition-colors">
                                 <i class="fa-solid fa-arrow-left"></i>
                             </button>
-                            <h3 class="modal-title font-bold text-white">{{ filterStep === 1 ? 'Selecionar Filtros de Ataque' : 'Configurar Filtros' }}</h3>
+                            <h3 class="modal-title font-bold text-white">{{ filterStep === 1 ? (modalContext === 'main' ? 'Selecionar Filtros de Ataque' : 'Selecionar Filtros de Recuperação') : 'Configurar Filtros' }}</h3>
                         </div>
                         <button @click="showFilterModal = false" class="modal-close-btn">
                             <i class="fa-solid fa-times"></i>
@@ -696,17 +704,17 @@
                     </div>
                     <div class="modal-body custom-scrollbar" style="max-height: 70vh; overflow-y: auto;">
                         <!-- Step 1: Selection -->
-                        <div v-if="filterStep === 1" class="space-y-4">
-                            <p class="text-sm text-gray-400 mb-4 px-1">Selecione até 2 estratégias de ataque para filtrar as entradas do robô.</p>
+                         <div v-if="filterStep === 1" class="space-y-4">
+                            <p class="text-sm text-gray-400 mb-4 px-1">Selecione até 2 filtros para as entradas de {{ modalContext === 'main' ? 'ataque' : 'recuperação' }}.</p>
                             <div class="grid grid-cols-1 gap-3">
                                 <div 
-                                    v-for="filter in filters" 
+                                    v-for="filter in activeFiltersForModal" 
                                     :key="filter.id" 
                                     @click="toggleFilter(filter)"
                                     class="p-4 rounded-xl border transition-all cursor-pointer group"
                                     :class="[
                                         filter.active ? 'border-zenix-green bg-zenix-green/5' : 'border-[#333] bg-[#111] hover:border-[#444]',
-                                        !filter.active && filters.filter(f => f.active).length >= 2 ? 'opacity-50 cursor-not-allowed' : ''
+                                        !filter.active && activeFiltersForModal.filter(f => f.active).length >= 2 ? 'opacity-50 cursor-not-allowed' : ''
                                     ]"
                                 >
                                     <div class="flex items-center gap-3 mb-2">
@@ -734,7 +742,7 @@
 
                         <!-- Step 2: Configuration -->
                         <div v-else class="space-y-6 animate-fadeIn">
-                            <div v-for="filter in filters.filter(f => f.active)" :key="filter.id" class="p-6 bg-[#0B0B0B] border border-[#333] rounded-xl space-y-4">
+                            <div v-for="filter in activeFiltersForModal.filter(f => f.active)" :key="filter.id" class="p-6 bg-[#0B0B0B] border border-[#333] rounded-xl space-y-4">
                                 <div class="flex items-center gap-2 border-b border-[#222] pb-3 mb-4">
                                     <i class="fa-solid fa-gear text-zenix-green text-xs"></i>
                                     <h4 class="text-white font-bold">{{ filter.name }}</h4>
@@ -904,10 +912,10 @@ export default {
             // UI Modals
             showMarketModal: false,
             showTradeTypeModal: false,
-            showFilterModal: false,
             showPauseModal: false,
             savedStrategies: [],
             selectedSavedStrategyId: '',
+            recoveryFilters: [],
             modalContext: 'main', // 'main' or 'recovery'
             filterStep: 1, // 1: Selection, 2: Configuration
 
@@ -1203,28 +1211,38 @@ export default {
         },
         availableTradeTypeGroups() {
              const contextContracts = this.modalContext === 'main' ? this.availableContracts : this.availableRecoveryContracts;
-             
              if (!contextContracts.length) return []; 
 
              return this.tradeTypeCategories.map(category => {
                 const filteredItems = category.items.filter(item => {
-                    // Check if item itself is available
                     if (contextContracts.includes(item.value.toUpperCase())) return true;
-                    // Check if item has nested directions (legacy support or specific groups like logic)
                     if (item.directions) {
                          return item.directions.some(dir => contextContracts.includes(dir.value.toUpperCase()));
                     }
                     return false;
                 });
-                
-                if (filteredItems.length > 0) {
-                  return {
-                    ...category,
-                    items: filteredItems
-                  };
-                }
+                if (filteredItems.length > 0) return { ...category, items: filteredItems };
                 return null;
               }).filter(Boolean);
+        },
+        activeFiltersForModal() {
+            return this.modalContext === 'main' ? this.filters : this.recoveryFilters;
+        },
+        selectedRecoveryTradeTypeLabel() {
+            if (!this.recoveryConfig.tradeType) return 'Selecionar';
+            for (const cat of this.tradeTypeCategories) {
+                const item = cat.items.find(i => i.value === this.recoveryConfig.tradeType);
+                if (item) return `${cat.label} - ${item.label}`;
+            }
+            return this.recoveryConfig.tradeType;
+        },
+        selectedRecoveryTradeTypeIcon() {
+            if (!this.recoveryConfig.tradeType) return null;
+            for (const cat of this.tradeTypeCategories) {
+                const item = cat.items.find(i => i.value === this.recoveryConfig.tradeType);
+                if (item && item.icon) return `/deriv_icons/${item.icon}`;
+            }
+            return null;
         }
     },
     mounted() {
@@ -1232,6 +1250,10 @@ export default {
         window.addEventListener('resize', this.handleResize);
         this.fetchMarkets();
         this.loadStrategiesFromStorage();
+        // Initialize recovery filters as a clone of main filters
+        this.recoveryFilters = JSON.parse(JSON.stringify(this.filters));
+        this.onMarketChange('main');
+        this.onMarketChange('recovery');
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
@@ -1360,17 +1382,18 @@ export default {
                 return;
             }
 
-            // Check if we already have 2 active filters
-            const activeCount = this.filters.filter(f => f.active).length;
+            const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
+            const activeCount = targetArray.filter(f => f.active).length;
             if (activeCount >= 2) {
-                this.$root.$toast.warning('Selecione no máximo 2 filtros de ataque.');
+                this.$root.$toast.warning('Selecione no máximo 2 filtros.');
                 return;
             }
 
             filter.active = true;
         },
         nextFilterStep() {
-            const activeCount = this.filters.filter(f => f.active).length;
+            const sourceArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
+            const activeCount = sourceArray.filter(f => f.active).length;
             if (activeCount === 0) {
                 this.$root.$toast.warning('Selecione pelo menos 1 filtro para configurar.');
                 return;
@@ -1382,9 +1405,10 @@ export default {
         },
         saveFilters() {
             const target = this.modalContext === 'main' ? this.form : this.recoveryConfig;
+            const sourceArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
             
             // Persist the active filters to the target object
-            target.attackFilters = this.filters
+            target.attackFilters = sourceArray
                 .filter(f => f.active)
                 .map(f => ({
                     id: f.id,
@@ -1530,8 +1554,36 @@ export default {
             this.form = JSON.parse(JSON.stringify(strategy.config.form));
             this.recoveryConfig = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
             
+            // Restore filters active state for main
+            this.filters.forEach(f => {
+                const active = this.form.attackFilters.find(af => af.id === f.id);
+                f.active = !!active;
+                if (active) f.config = { ...active.config };
+            });
+
+            // Restore filters active state for recovery
+            this.recoveryFilters.forEach(f => {
+                const active = this.recoveryConfig.attackFilters.find(af => af.id === f.id);
+                f.active = !!active;
+                if (active) f.config = { ...active.config };
+            });
+
             this.addLog(`📂 Estratégia carregada: ${strategy.name}`, 'info');
             this.$root.$toast.success(`Estratégia "${strategy.name}" carregada!`);
+        },
+
+        updateCurrentStrategy() {
+            if (!this.selectedSavedStrategyId) return;
+            const strategy = this.savedStrategies.find(s => s.id === this.selectedSavedStrategyId);
+            if (!strategy) return;
+
+            strategy.config = {
+                form: JSON.parse(JSON.stringify(this.form)),
+                recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig))
+            };
+
+            localStorage.setItem('zeenix_saved_strategies', JSON.stringify(this.savedStrategies));
+            this.$root.$toast.success('IA Atualizada com sucesso!');
         },
 
         deleteSavedStrategy() {
@@ -1743,9 +1795,12 @@ export default {
             }
         },
         runAnalysis() {
-            if (this.form.attackFilters.length === 0) return;
+            const activeFilters = this.sessionState.isRecoveryMode 
+                ? this.recoveryConfig.attackFilters 
+                : this.form.attackFilters;
+                
+            if (activeFilters.length === 0) return;
 
-            const activeFilters = this.form.attackFilters;
             const data = {
                 tickHistory: this.tickHistory,
                 digitHistory: this.digitHistory
