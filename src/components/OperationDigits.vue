@@ -60,54 +60,6 @@
                         />
                     </div>
 
-                    <!-- Gerador de Sinais Inline (Mobile Only) -->
-                    <div class="signal-generator-inline-mobile">
-                        <div class="signal-generator-inline-header">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full border border-zenix-green bg-zenix-green/10 flex items-center justify-center">
-                                    <i class="fas fa-bolt text-zenix-green text-sm"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-bold text-white">Gerador de Sinais</h4>
-                                    <p class="text-xs text-white/40">Análise inteligente</p>
-                                </div>
-                            </div>
-                            <button 
-                                @click="toggleAnalysis"
-                                :disabled="isAnalyzing"
-                                class="bg-zenix-green text-black font-bold px-4 py-2 rounded-lg transition-all text-xs flex items-center gap-2 active:scale-95 hover:bg-opacity-90 transition-all shadow-[0_0_15px_rgba(34,197,94,0.3)]"
-                                :class="{ 'opacity-50 cursor-not-allowed grayscale': isAnalyzing }"
-                            >
-                                <i class="fas" :class="isAnalyzing ? 'fa-spinner fa-spin' : 'fa-bolt'"></i>
-                                <span>{{ isAnalyzing ? 'Analisando...' : 'Gerar' }}</span>
-                            </button>
-                        </div>
-
-                        <div class="signal-generator-inline-metrics">
-                            <div class="signal-inline-metric">
-                                <span class="signal-inline-label">Estado</span>
-                                <span v-if="isAnalyzing" class="text-zenix-green animate-pulse text-xs font-bold">Analisando...</span>
-                                <span v-else-if="aiRecommendation" class="text-zenix-green text-xs font-bold">Sinal Gerado</span>
-                                <span v-else class="text-white/30 text-xs font-bold">Aguardando</span>
-                            </div>
-                            <div class="signal-inline-metric">
-                                <span class="signal-inline-label">Estratégia</span>
-                                <span v-if="aiRecommendation" class="text-white text-xs font-bold">{{ aiRecommendation.action }}</span>
-                                <span v-else class="text-white/30 text-xs font-bold">-</span>
-                            </div>
-                            <div class="signal-inline-metric">
-                                <span class="signal-inline-label">Confiança</span>
-                                <span v-if="aiRecommendation" class="text-zenix-green text-sm font-black">{{ aiRecommendation.confidence }}%</span>
-                                <span v-else class="text-white/30 text-xs font-bold">-</span>
-                            </div>
-                            <div class="signal-inline-metric">
-                                <span class="signal-inline-label">Tempo</span>
-                                <span v-if="signalCountdown !== null" class="text-zenix-green text-sm font-black">{{ signalCountdown }}s</span>
-                                <span v-else-if="aiRecommendation && aiRecommendation.time" class="text-zenix-green text-sm font-black">{{ aiRecommendation.time }}</span>
-                                <span v-else class="text-white/30 text-xs font-bold">-</span>
-                            </div>
-                        </div>
-                    </div>
                     
                     <!-- Seção de Entrada e Ação -->
                     <div class="space-y-8">
@@ -141,17 +93,6 @@
                                 {{ dir.label }}
                             </button>
 
-                            <!-- AI Execution Button -->
-                            <button 
-                                v-if="aiRecommendation && aiRecommendation.action && aiRecommendation.action !== 'ERRO' && aiRecommendation.action !== 'AGUARDAR'"
-                                @click="executeAIOrder"
-                                :disabled="isTrading || activeContract"
-                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all duration-300 shadow-lg uppercase tracking-widest text-sm mt-2 flex items-center justify-center gap-2"
-                                :class="{ 'opacity-30 cursor-not-allowed': isTrading || activeContract }"
-                            >
-                                <i class="fas fa-robot"></i>
-                                EXECUTAR SINAL IA
-                            </button>
                         </div>
                     </div>
 
@@ -245,7 +186,7 @@
                                             :style="{ width: dvxValueComputed + '%' }"
                                         ></div>
                                         <div 
-                                            class="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all duration-1000 z-10"
+                                            class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all duration-1000 z-10"
                                             :style="{ left: dvxValueComputed + '%', transform: 'translate(-50%, -50%)' }"
                                         ></div>
                                     </div>
@@ -276,7 +217,7 @@
                                             <span class="text-xs font-bold text-white">Par</span>
                                             <span class="text-xs font-black text-zenix-green">{{ digitFrequency.parity.even }}%</span>
                                         </div>
-                                        <div class="h-5 bg-white/5 rounded-full overflow-hidden">
+                                        <div class="h-4 bg-white/5 rounded-full overflow-hidden">
                                             <div class="h-full bg-zenix-green transition-all duration-1000" :style="{ width: digitFrequency.parity.even + '%' }"></div>
                                         </div>
                                     </div>
@@ -285,7 +226,7 @@
                                             <span class="text-xs font-bold text-white/40">Ímpar</span>
                                             <span class="text-xs font-black text-white/20">{{ digitFrequency.parity.odd }}%</span>
                                         </div>
-                                        <div class="h-5 bg-white/5 rounded-full overflow-hidden">
+                                        <div class="h-4 bg-white/5 rounded-full overflow-hidden">
                                             <div class="h-full bg-white/5 transition-all duration-1000" :style="{ width: digitFrequency.parity.odd + '%' }"></div>
                                         </div>
                                     </div>
@@ -296,7 +237,7 @@
                                         <span class="text-sm font-black text-white">8</span>
                                         <span class="text-[10px] font-black text-red-500">7.8%</span>
                                     </div>
-                                    <div class="h-5 bg-white/5 rounded-full overflow-hidden mb-4">
+                                    <div class="h-4 bg-white/5 rounded-full overflow-hidden mb-4">
                                         <div class="h-full bg-red-500 w-[15%] transition-all duration-1000"></div>
                                     </div>
                                     <div class="flex items-center justify-between mb-1">
@@ -332,100 +273,6 @@
                     </div>
                 </div>
 
-                <!-- Signal Generator Card -->
-                <div class="signal-generator-wrapper-digits bg-[#0D0D0D] border border-white/5 p-8 rounded-2xl shadow-xl">
-                    <div class="signal-generator-header flex items-center justify-between mb-8">
-                        <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-full border border-zenix-green bg-zenix-green/10 flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.2)]">
-                                <i class="fas fa-bolt text-zenix-green text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-white tracking-tight text-left">Gerador de Sinais (Dígitos)</h3>
-                                <p class="text-sm text-white/40 font-medium text-left">Análise inteligente de frequências</p>
-                            </div>
-                        </div>
-                        <button 
-                            @click="toggleAnalysis"
-                            class="btn-gerar-sinal-header hover:brightness-110 transition-all active:scale-95"
-                            :class="isAnalyzing ? 'opacity-80' : 'bg-zenix-green shadow-zenix-green/20'"
-                            title="Gerar sinal com Inteligência Artificial"
-                        >
-                            <i class="fas" :class="isAnalyzing ? 'fa-stop' : 'fa-bolt'"></i>
-                            <span>{{ isAnalyzing ? 'Parar Análise' : 'Gerar Sinal' }}</span>
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <!-- Estado de Análise -->
-                        <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
-                            <div class="metric-signal-header flex items-center gap-2 mb-3">
-                                <i class="fas fa-clock text-white/60 text-sm"></i>
-                                <span class="text-sm font-bold text-white/90 uppercase tracking-wider">Estado</span>
-                            </div>
-                            <div class="metric-body">
-                                <span v-if="isAnalyzing" class="text-sm text-zenix-green animate-pulse font-medium">Analisando Mercado...</span>
-                                <span v-else-if="aiRecommendation" class="text-sm text-zenix-green font-medium">Sinal Gerado</span>
-                                <span v-else class="text-sm text-white/40 font-medium tracking-wider">Aguardando...</span>
-                            </div>
-                        </div>
-
-                        <!-- Resultado do Sinal -->
-                        <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
-                            <div class="metric-signal-header flex items-center gap-2 mb-3">
-                                <i class="fas fa-question-circle text-white/60 text-sm"></i>
-                                <span class="text-sm font-bold text-white/90 uppercase tracking-wider">Resultado</span>
-                            </div>
-                            <div class="metric-body">
-                                <div v-if="aiRecommendation" class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-2">
-                                        <i class="fas fa-bullseye text-zenix-green"></i>
-                                        <span class="text-sm font-black text-white uppercase tracking-wider">
-                                            {{ aiRecommendation.action }}
-                                        </span>
-                                    </div>
-                                    <div v-if="aiRecommendation.reason" class="text-[10px] text-white/40 uppercase tracking-tighter italic ml-6 line-clamp-1">
-                                        {{ aiRecommendation.reason }}
-                                    </div>
-                                </div>
-                                <span v-else class="text-sm text-white/40 font-medium uppercase tracking-wider">-</span>
-                            </div>
-                        </div>
-
-                        <!-- Confiança -->
-                        <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
-                            <div class="metric-signal-header flex items-center gap-2 mb-3">
-                                <i class="fas fa-chart-bar text-white/60 text-sm"></i>
-                                <span class="text-sm font-bold text-white/90 uppercase tracking-wider">Confiança</span>
-                            </div>
-                            <div class="metric-body">
-                                <span v-if="aiRecommendation" class="text-xl font-black text-zenix-green">
-                                    {{ aiRecommendation.confidence }}%
-                                </span>
-                                <span v-else class="text-sm text-white/40 font-medium tracking-wider">-</span>
-                            </div>
-                        </div>
-
-                        <!-- Tempo -->
-                        <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
-                            <div class="metric-signal-header flex items-center gap-2 mb-3">
-                                <i class="fas fa-bolt text-white/60 text-sm"></i>
-                                <span class="text-sm font-bold text-white/90 uppercase tracking-wider">Tempo</span>
-                            </div>
-                            <div class="metric-body">
-                                <div v-if="signalCountdown !== null" class="flex flex-col">
-                                    <span class="text-xl font-black text-zenix-green">
-                                        {{ signalCountdown }}s
-                                    </span>
-                                    <span class="text-[10px] text-white/40 uppercase font-black tracking-tighter">Entrar em</span>
-                                </div>
-                                <span v-else-if="aiRecommendation && aiRecommendation.entry_time" class="text-xl font-black text-zenix-green">
-                                    {{ aiRecommendation.entry_time }}s
-                                </span>
-                                <span v-else class="text-sm text-white/40 font-medium tracking-wider">-</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Trade Result Modal -->

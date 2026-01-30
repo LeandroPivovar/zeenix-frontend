@@ -142,7 +142,7 @@
                             :style="{ width: dvxValueComputed + '%' }"
                           ></div>
                           <div 
-                            class="absolute top-1/2 -translate-y-1/2 w-7 h-7 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all duration-1000 z-10"
+                            class="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all duration-1000 z-10"
                             :style="{ left: dvxValueComputed + '%', transform: 'translate(-50%, -50%)' }"
                           ></div>
                         </div>
@@ -173,7 +173,7 @@
                           <span class="text-xs font-bold text-white">Par</span>
                           <span class="text-xs font-black text-zenix-green">{{ evenPercentage }}%</span>
                         </div>
-                        <div class="h-5 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-4 bg-white/5 rounded-full overflow-hidden">
                           <div class="h-full bg-zenix-green transition-all duration-1000" :style="{ width: evenPercentage + '%' }"></div>
                         </div>
                       </div>
@@ -182,7 +182,7 @@
                           <span class="text-xs font-bold text-white/40">Ímpar</span>
                           <span class="text-xs font-black text-white/20">{{ oddPercentage }}%</span>
                         </div>
-                        <div class="h-5 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-4 bg-white/5 rounded-full overflow-hidden">
                           <div class="h-full bg-white/5 transition-all duration-1000" :style="{ width: oddPercentage + '%' }"></div>
                         </div>
                       </div>
@@ -193,7 +193,7 @@
                         <span class="text-sm font-black text-white">8</span>
                         <span class="text-[10px] font-black text-red-500">7.8%</span>
                       </div>
-                      <div class="h-5 bg-white/5 rounded-full overflow-hidden mb-4">
+                      <div class="h-4 bg-white/5 rounded-full overflow-hidden mb-4">
                         <div class="h-full bg-red-500 w-[15%] transition-all duration-1000"></div>
                       </div>
                       <div class="flex items-center justify-between mb-1">
@@ -230,97 +230,6 @@
           </div>
         </div>
         
-        <!-- Desktop Signal Generator Card - Hidden on Mobile -->
-        <div v-if="tradingMode === 'manual'" class="bg-[#0D0D0D] border border-white/5 p-6 rounded-2xl signal-area-card md:block hidden">
-          <!-- Header -->
-          <div class="signal-generator-header flex items-center justify-between mb-8">
-            <div class="flex items-center gap-4">
-              <div class="w-14 h-14 rounded-full border border-zenix-green bg-zenix-green/10 flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.2)]">
-                <i class="fas fa-bolt text-zenix-green text-xl"></i>
-              </div>
-              <div>
-                <h3 class="text-xl font-bold text-white tracking-tight text-left">Gerador de Sinais</h3>
-                <p class="text-sm text-white/40 font-medium text-left">Análise automática de padrões</p>
-              </div>
-            </div>
-            <button 
-              @click="toggleAnalysis"
-              class="btn-gerar-sinal btn-gerar-sinal-header hover:brightness-110 transition-all active:scale-95"
-              :class="{ 'opacity-100 cursor-pointer': !isAnalyzing, 'opacity-80': isAnalyzing }"
-              title="Gerar sinal com Inteligência Artificial"
-            >
-              <i class="fas" :class="isAnalyzing ? 'fa-stop' : 'fa-bolt'"></i>
-              <span>{{ isAnalyzing ? 'Parar Análise' : 'Gerar Sinal' }}</span>
-            </button>
-          </div>
-
-          <!-- Metrics Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <!-- Estado de Análise -->
-            <div class="metric-signal-card">
-              <div class="metric-signal-header">
-                <i class="fas fa-clock text-white/60 text-sm"></i>
-                <span class="text-sm font-bold text-white/90">Estado de Análise</span>
-              </div>
-              <div class="metric-signal-body">
-                <span v-if="isAnalyzing" class="text-sm text-zenix-green animate-pulse font-medium">Analisando Mercado...</span>
-                <span v-else-if="aiRecommendation" class="text-sm text-zenix-green font-medium">Sinal Gerado</span>
-                <span v-else class="text-sm text-white/40 font-medium">Aguardando geração...</span>
-              </div>
-            </div>
-
-            <!-- Resultado do Sinal -->
-            <div class="metric-signal-card">
-              <div class="metric-signal-header">
-                <i class="fas fa-question-circle text-white/60 text-sm"></i>
-                <span class="text-sm font-bold text-white/90">Resultado do Sinal</span>
-              </div>
-              <div class="metric-signal-body">
-                <div v-if="aiRecommendation" class="flex items-center gap-2">
-                  <i :class="aiRecommendation.action === 'CALL' ? 'fas fa-arrow-up text-zenix-green' : 'fas fa-arrow-down text-red-500'"></i>
-                  <span :class="aiRecommendation.action === 'CALL' ? 'text-zenix-green' : 'text-red-500'" class="text-sm font-bold">
-                    {{ aiRecommendation.action === 'CALL' ? 'COMPRA (CALL)' : 'VENDA (PUT)' }}
-                  </span>
-                </div>
-                <span v-else class="text-sm text-white/40 font-medium">Nenhum sinal gerado</span>
-              </div>
-            </div>
-
-            <!-- Confiança -->
-            <div class="metric-signal-card">
-              <div class="metric-signal-header">
-                <i class="fas fa-chart-bar text-white/60 text-sm"></i>
-                <span class="text-sm font-bold text-white/90">Confiança</span>
-              </div>
-              <div class="metric-signal-body">
-                <span v-if="aiRecommendation" class="text-lg font-black text-zenix-green">
-                  {{ aiRecommendation.confidence }}%
-                </span>
-                <span v-else class="text-sm text-white/40 font-medium">-</span>
-              </div>
-            </div>
-
-            <!-- Tempo -->
-            <div class="metric-signal-card">
-              <div class="metric-signal-header">
-                <i class="fas fa-bolt text-white/60 text-sm"></i>
-                <span class="text-sm font-bold text-white/90">Tempo</span>
-              </div>
-              <div class="metric-signal-body">
-                <div v-if="signalCountdown !== null" class="flex flex-col items-center">
-                  <span class="text-lg font-black text-zenix-green">
-                    {{ signalCountdown }}s
-                  </span>
-                  <span class="text-[10px] text-white/40 uppercase font-bold tracking-tighter">Entrar em</span>
-                </div>
-                <span v-else-if="aiRecommendation && aiRecommendation.entry_time" class="text-lg font-black text-zenix-green">
-                  {{ aiRecommendation.entry_time }}s
-                </span>
-                <span v-else class="text-sm text-white/40 font-medium">-</span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Sidebar Panel -->
@@ -403,57 +312,7 @@
             </div>
           </div>
 
-          <!-- Gerador de Sinais Inline (Mobile Only) -->
-          <div v-if="tradingMode === 'manual'" class="signal-generator-inline-mobile md:hidden block">
-            <div class="signal-generator-inline-header">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full border border-zenix-green bg-zenix-green/10 flex items-center justify-center">
-                  <i class="fas fa-bolt text-zenix-green text-sm"></i>
-                </div>
-                <div>
-                  <h4 class="text-sm font-bold text-white">Gerador de Sinais</h4>
-                  <p class="text-[10px] text-white/40 uppercase tracking-wider">Automático</p>
-                </div>
-              </div>
-              <button 
-                @click="toggleAnalysis"
-                class="bg-zenix-green text-black font-bold px-4 py-2 rounded-lg transition-all text-[10px] uppercase tracking-widest flex items-center gap-2 active:scale-95 hover:bg-opacity-90"
-              >
-                <i class="fas" :class="isAnalyzing ? 'fa-stop' : 'fa-bolt'"></i>
-                <span>{{ isAnalyzing ? 'PARAR' : 'GERAR' }}</span>
-              </button>
-            </div>
 
-            <div class="signal-generator-inline-metrics">
-              <div class="signal-inline-metric">
-                <span class="signal-inline-label">Estado</span>
-                <span v-if="isAnalyzing" class="text-zenix-green animate-pulse text-xs font-bold">Analisando...</span>
-                <span v-else-if="aiRecommendation" class="text-zenix-green text-xs font-bold">Sinal Gerado</span>
-                <span v-else class="text-white/30 text-xs font-bold">Aguardando</span>
-              </div>
-              <div class="signal-inline-metric">
-                <span class="signal-inline-label">Resultado</span>
-                <div v-if="aiRecommendation" class="flex items-center gap-1">
-                  <i :class="aiRecommendation.action === 'CALL' ? 'fas fa-arrow-up text-zenix-green' : 'fas fa-arrow-down text-red-500'"></i>
-                  <span :class="aiRecommendation.action === 'CALL' ? 'text-zenix-green' : 'text-red-500'" class="text-xs font-bold">
-                    {{ aiRecommendation.action === 'CALL' ? 'CALL' : 'PUT' }}
-                  </span>
-                </div>
-                <span v-else class="text-white/30 text-xs font-bold">-</span>
-              </div>
-              <div class="signal-inline-metric">
-                <span class="signal-inline-label">Confiança</span>
-                <span v-if="aiRecommendation" class="text-zenix-green text-sm font-black">{{ aiRecommendation.confidence }}%</span>
-                <span v-else class="text-white/30 text-xs font-bold">-</span>
-              </div>
-              <div class="signal-inline-metric">
-                <span class="signal-inline-label">Tempo</span>
-                <span v-if="signalCountdown !== null" class="text-zenix-green text-sm font-black">{{ signalCountdown }}s</span>
-                <span v-else-if="aiRecommendation && aiRecommendation.time" class="text-zenix-green text-sm font-black">{{ aiRecommendation.time }}</span>
-                <span v-else class="text-white/30 text-xs font-bold">-</span>
-              </div>
-            </div>
-          </div>
           
           <!-- Valor de Entrada -->
           <div>
@@ -4645,125 +4504,7 @@ export default {
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
-/* Signal Area Styles */
-.signal-content {
-  padding: 16px;
-  background: rgba(11, 11, 11, 0.6);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 12px;
-}
 
-/* Signal status info styles - Desktop: hidden */
-.signal-status-info {
-  display: none;
-}
-
-.signal-status-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.signal-status-label {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.signal-status-value {
-  font-size: 0.875rem;
-  color: #FFFFFF;
-  font-weight: 500;
-}
-
-.signal-status-waiting {
-  color: #FFD058 !important;
-}
-
-.signal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.signal-action {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.signal-call {
-  background: rgba(34, 197, 94, 0.15);
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  color: #22C55E;
-}
-
-.signal-put {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: #EF4444;
-}
-
-.signal-action-text {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.signal-confidence {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.confidence-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.confidence-value {
-  font-size: 16px;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 6px;
-}
-
-.confidence-high {
-  color: #22C55E;
-  background: rgba(34, 197, 94, 0.1);
-}
-
-.confidence-medium {
-  color: #FBBF24;
-  background: rgba(251, 191, 36, 0.1);
-}
-
-.confidence-low {
-  color: #EF4444;
-  background: rgba(239, 68, 68, 0.1);
-}
-
-.signal-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
-}
-
-.signal-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 13px;
-}
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
@@ -5276,45 +5017,8 @@ export default {
     align-items: center !important;
     justify-content: space-between !important;
   }
-  /* Gerador de Sinais Inline (Mobile) */
-  .signal-generator-inline-mobile {
-    display: none !important;
-    background: #080808;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 1rem;
-  }
-
-  .signal-generator-inline-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-  }
-
-  .signal-generator-inline-metrics {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-  }
-
-  .signal-inline-metric {
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    padding: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .signal-inline-label {
-    font-size: 0.625rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.4);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
 }
+
   /* Trade Result Modal Premium Styles */
   .trade-result-modal {
     max-width: 400px !important;
