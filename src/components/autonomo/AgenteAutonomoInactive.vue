@@ -1552,9 +1552,10 @@ export default {
 }
 
 .agent-name-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
 }
 
 .agent-name-premium {
@@ -1653,18 +1654,18 @@ export default {
 }
 
 .agent-select-btn-premium {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 800;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.02);
-    color: #ebebeb;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+	width: 100%;
+	padding: 0.75rem 1rem;
+	border-radius: 0.75rem;
+	font-size: 0.75rem;
+	font-weight: 800;
+	border: 1px solid #C5A15E66;
+	background: #FFFFFF05;
+	color: #ebebeb;
+	cursor: pointer;
+	transition: all 0.2s;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }
 
 .agent-selection-card:hover .agent-select-btn-premium {
@@ -1796,13 +1797,13 @@ export default {
 
 /* Modal Premium Styles */
 .categorized-modal {
-    width: 100%;
-    max-width: 800px;
-    background: #0D0D0D;
-    border: 1px solid #22C55E33;
-    padding: 1.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+	width: 100%;
+	max-width: 800px;
+	background: #0D0D0D;
+	border: 1px solid #22C55E33;
+	padding: 20px;
+	border-radius: 1rem;
+	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
 .modal-header-premium {
