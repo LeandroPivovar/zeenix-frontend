@@ -122,13 +122,13 @@ const routes = [
     path: '/StatsIAs',
     name: 'StatsIAs',
     component: () => import('../views/Admin/StatsIAsView.vue'),
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
     path: '/StatsIAs/monitoring',
     name: 'AIMonitoring',
     component: () => import('../views/Admin/AIMonitoringView.vue'),
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
     path: '/Experts',

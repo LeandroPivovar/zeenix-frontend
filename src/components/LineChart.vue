@@ -109,27 +109,69 @@ export default {
           data: {
             labels: this.data.map((_, i) => i),
             datasets: [{
-              data: [...this.data], // Criar cópia para evitar referência
+              data: [...this.data],
               borderColor: this.color,
               backgroundColor: this.createGradient(ctx, this.color),
-              borderWidth: 2,
+              borderWidth: 3,
               fill: true,
-              tension: 0.4, 
-              pointRadius: 0, 
-              pointHoverRadius: 0 
+              tension: 0.4,
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              pointBackgroundColor: this.color,
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2
             }]
           },
           options: {
-            responsive: true, 
+            responsive: true,
             maintainAspectRatio: false,
-            animation: false, // Desabilitar animação para evitar problemas
-            plugins: { 
-              legend: { display: false }, 
-              tooltip: { enabled: false } 
+            animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
             },
-            scales: { 
-              x: { display: false }, 
-              y: { display: false } 
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                enabled: true,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleFont: { size: 10 },
+                bodyFont: { size: 12, weight: 'bold' },
+                padding: 10,
+                displayColors: false,
+                callbacks: {
+                    label: function(context) {
+                        return '$ ' + context.parsed.y.toFixed(2);
+                    }
+                }
+              }
+            },
+            scales: {
+              x: { 
+                display: true,
+                grid: {
+                    display: true,
+                    color: 'rgba(255, 255, 255, 0.05)',
+                    drawBorder: false
+                },
+                ticks: {
+                    display: false // Hide X ticks for cleaner look as in image
+                }
+              },
+              y: { 
+                display: true,
+                grid: {
+                    display: true,
+                    color: 'rgba(255, 255, 255, 0.05)',
+                    drawBorder: false
+                },
+                ticks: {
+                    color: 'rgba(255, 255, 255, 0.4)',
+                    font: { size: 10 },
+                    callback: function(value) {
+                        return '$' + value;
+                    }
+                }
+              }
             },
             interaction: { intersect: false, mode: 'index' }
           }

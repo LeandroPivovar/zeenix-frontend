@@ -17,12 +17,13 @@
                 <a
                     href="#"
                     class="menu-item"
-                    :class="{ active: isStatsIAsActive }"
-                    @click.prevent="navigateAndClose('/StatsIAs')"
+                    :class="{ active: isStatsIAsActive, disabled: !isAdmin }"
+                    @click.prevent="isAdmin ? navigateAndClose('/StatsIAs') : openDevModal()"
                     data-text="IAs de Investimento"
                 >
                     <i class="fa-solid fa-brain w-5 opacity-85"></i>
                     <span>IA's de Investimento</span>
+                    <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
                 </a>
 
                 <a

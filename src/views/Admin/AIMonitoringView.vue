@@ -46,68 +46,67 @@
                             <div class="flex flex-col min-w-0">
                                 <div class="flex items-center gap-2 lg:gap-2.5 mb-1">
                                     <span class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_hsl(142,76%,45%,0.6)]"></span>
-                                    <span class="text-lg lg:text-2xl font-bold text-success tracking-wide drop-shadow-[0_0_12px_hsl(142,76%,45%,0.4)]">
-                                        {{ currentConfig.strategy.toUpperCase() }}
+                                     <span class="text-xl lg:text-3xl font-black text-success tracking-tight drop-shadow-[0_0_12px_hsl(142,76%,45%,0.6)]">
+                                        IA {{ currentConfig.strategy.toUpperCase() }}
                                     </span>
                                 </div>
                                 <div class="h-5 overflow-hidden">
-                                    <p class="text-xs lg:text-sm text-foreground/90 font-medium transition-all duration-300 opacity-100 translate-y-0">
-                                        {{ monitoringStats.statusDesc }}
+                                    <p class="text-xs lg:text-sm text-foreground/80 font-medium transition-all duration-300 opacity-100 translate-y-0">
+                                        {{ monitoringStats.statusDesc || 'Iniciando sistema...' }}
                                     </p>
                                 </div>
-                                <p class="text-[9px] lg:text-[10px] text-muted-foreground mt-1 uppercase tracking-wider hidden md:block">Sistema operando automaticamente</p>
+                                <p class="text-[9px] lg:text-[10px] text-muted-foreground/60 mt-1 uppercase tracking-[0.2em] hidden md:block">Sistema operando automaticamente</p>
                             </div>
                         </div>
 
                         <!-- Capital -->
-                        <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center md:border-l md:border-border/20 md:pl-4 lg:pl-6">
-                            <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Capital</p>
-                            <p class="text-xl lg:text-3xl font-bold text-foreground tracking-tight">
-                                $ {{ Math.floor(monitoringStats.balance) }}<span class="text-base lg:text-xl text-muted-foreground hidden md:inline">,{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}</span>
+                        <div class="col-span-1 md:col-span-3 lg:col-span-3 text-center md:border-l md:border-border/10 md:pl-4 lg:pl-10">
+                            <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-2">Capital</p>
+                            <p class="text-2xl lg:text-4xl font-black text-foreground tracking-tight leading-none">
+                                ${{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }}<span class="text-lg lg:text-2xl text-muted-foreground font-bold">,{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}</span>
                             </p>
                         </div>
 
                         <!-- Resultado -->
-                        <div class="col-span-1 md:col-span-3 lg:col-span-3 text-center border-l border-border/20 pl-3 lg:pl-6">
-                            <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Resultado</p>
-                            <div class="flex items-baseline justify-center gap-1 lg:gap-3">
-                                <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)]"
+                        <div class="col-span-1 md:col-span-3 lg:col-span-3 text-center border-l border-border/10 pl-3 lg:pl-10">
+                            <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-2">Resultado</p>
+                            <div class="flex flex-col items-center justify-center gap-0">
+                                <p class="text-2xl lg:text-5xl font-black tracking-tighter drop-shadow-[0_0_30px_hsl(142,76%,45%,0.5)] leading-tight"
                                    :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}${{ monitoringStats.profit.toFixed(2) }}
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}${{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
                                 </p>
-                                <span class="text-xs lg:text-lg font-semibold bg-success/10 px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
-                                      :class="monitoringStats.profit >= 0 ? 'text-success/80' : 'text-red-500/80'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.balance - monitoringStats.profit || 1)) * 100).toFixed(1) }}%
-                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] lg:text-sm font-bold bg-success/15 px-2 py-0.5 rounded-full border border-success/20"
+                                          :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500 bg-red-500/15 border-red-500/20'">
+                                        {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.balance - monitoringStats.profit || 1)) * 100).toFixed(1) }}%
+                                    </span>
+                                </div>
                             </div>
-                            <div class="mt-2 lg:mt-3 h-1 w-20 lg:w-32 mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
-                                 :class="monitoringStats.profit >= 0 ? 'from-success/70 via-success/40 to-transparent' : 'from-red-500/70 via-red-500/40 to-transparent'"></div>
+                            <div class="mt-3 h-1 w-20 lg:w-32 mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
+                                 :class="monitoringStats.profit >= 0 ? 'from-success via-success/40 to-transparent' : 'from-red-500 via-red-500/40 to-transparent'"></div>
                         </div>
 
                         <!-- Operations Stats -->
-                        <div class="col-span-2 md:col-span-3 lg:col-span-4 border-t md:border-t-0 md:border-l border-border/20 pt-4 md:pt-0 md:pl-4 lg:pl-6 mt-2 md:mt-0">
-                            <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-2 lg:mb-3">Operações</p>
-                            <div class="flex items-center justify-between md:justify-start gap-3 lg:gap-4 text-sm">
+                        <div class="col-span-2 md:col-span-3 lg:col-span-3 border-t md:border-t-0 md:border-l border-border/10 pt-4 md:pt-0 md:pl-4 lg:pl-10 mt-2 md:mt-0">
+                            <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-3">Operações</p>
+                            <div class="flex items-center justify-between lg:gap-8 text-sm">
                                 <div class="text-center">
-                                    <span class="text-lg lg:text-xl font-semibold text-foreground/90">{{ monitoringStats.wins + monitoringStats.losses }}</span>
-                                    <span class="text-[10px] lg:text-xs text-muted-foreground block">Total</span>
+                                    <span class="text-xl lg:text-2xl font-black text-foreground">{{ monitoringStats.wins + monitoringStats.losses }}</span>
+                                    <span class="text-[9px] lg:text-[10px] text-muted-foreground block uppercase font-bold tracking-wider">Total</span>
                                 </div>
-                                <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
                                 <div class="text-center">
-                                    <span class="text-lg lg:text-xl font-semibold text-success/90">{{ monitoringStats.wins }}</span>
-                                    <span class="text-[10px] lg:text-xs text-muted-foreground block">Win</span>
+                                    <span class="text-xl lg:text-2xl font-black text-success">{{ monitoringStats.wins }}</span>
+                                    <span class="text-[9px] lg:text-[10px] text-muted-foreground block uppercase font-bold tracking-wider">Win</span>
                                 </div>
-                                <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
                                 <div class="text-center">
-                                    <span class="text-lg lg:text-xl font-semibold text-red-500/60">{{ monitoringStats.losses }}</span>
-                                    <span class="text-[10px] lg:text-xs text-muted-foreground block">Loss</span>
+                                    <span class="text-xl lg:text-2xl font-black text-red-500/80">{{ monitoringStats.losses }}</span>
+                                    <span class="text-[9px] lg:text-[10px] text-muted-foreground block uppercase font-bold tracking-wider">Loss</span>
                                 </div>
-                                <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
                                 <div class="text-center">
-                                    <span class="text-lg lg:text-xl font-semibold text-success/90">
+                                    <span class="text-xl lg:text-2xl font-black text-success">
                                         {{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%
                                     </span>
-                                    <span class="text-[10px] lg:text-xs text-muted-foreground block">WR</span>
+                                    <span class="text-[9px] lg:text-[10px] text-muted-foreground block uppercase font-bold tracking-wider">WR</span>
                                 </div>
                             </div>
                             <!-- Mobile Pause Button -->
@@ -141,18 +140,26 @@
                             <div v-show="activeMonitoringTab === 'chart'" class="space-y-6 animate-fadeIn">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <h3 class="text-base font-medium text-foreground">Evolução do Resultado da IA {{ currentConfig.strategy.toUpperCase() }}</h3>
-                                        <p class="text-xs text-muted-foreground mt-1">Desempenho em tempo real da sessão atual</p>
+                                        <h3 class="text-base font-bold text-foreground tracking-tight">Evolução do Resultado da IA {{ currentConfig.strategy.toUpperCase() }}</h3>
+                                        <p class="text-xs text-muted-foreground mt-1">Desempenho financeiro em tempo real</p>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <div class="w-8 h-0.5 bg-gradient-to-r from-success to-success/40 rounded-full"></div>
-                                        <span class="text-xs text-muted-foreground">Resultado ($)</span>
+                                        <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Resultado ($)</span>
                                     </div>
                                 </div>
-                                <div class="h-80 w-full flex items-center justify-center bg-secondary/20 rounded-xl border border-border/30">
-                                     <div class="text-center">
-                                        <i class="fas fa-chart-line text-6xl text-success/20 mb-4 block"></i>
-                                        <p class="text-muted-foreground">Monitorando tiques em tempo real...</p>
+                                <div class="h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
+                                    <LineChart 
+                                       chartId="monitoring-profit-chart" 
+                                       :data="profitHistory" 
+                                       :height="320"
+                                       color="#22C55E"
+                                    />
+                                    <div v-if="profitHistory.length <= 1" class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500">
+                                        <div class="text-center">
+                                           <i class="fas fa-chart-line text-5xl text-success/20 mb-4 block animate-bounce"></i>
+                                           <p class="text-muted-foreground text-sm font-medium">Aguardando primeira operação...</p>
+                                       </div>
                                     </div>
                                 </div>
                             </div>
@@ -265,26 +272,29 @@
                             </div>
 
                             <!-- Protections -->
-                            <div class="mt-3 p-4 rounded-xl bg-success/5 border border-success/30">
+                            <div class="mt-3 p-4 rounded-xl bg-success/5 border border-success/20 hover:bg-success/10 transition-colors">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center">
+                                        <div class="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center border border-success/20">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check w-4 h-4 text-success"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
                                         </div>
-                                        <span class="text-sm font-semibold text-foreground">Stoploss Blindado</span>
+                                        <span class="text-sm font-bold text-foreground">Stoploss Blindado</span>
                                     </div>
-                                    <span class="text-xs font-bold text-success uppercase tracking-wider">
+                                    <span class="text-[10px] font-black text-success uppercase tracking-[0.1em]">
                                         {{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}
                                     </span>
                                 </div>
                             </div>
 
-                            <div class="flex-1 min-h-4"></div>
+                            <div class="flex-1 min-h-[40px]"></div>
 
                             <!-- Desktop Pause Button -->
-                            <div class="mt-3 pt-4 border-t border-border/40 hidden lg:block">
-                                <button @click="stopIA" :disabled="isStopping" class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 w-full bg-success hover:bg-success/90 text-success-foreground font-bold py-5 text-sm rounded-xl shadow-lg shadow-success/20">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause w-4 h-4 mr-2"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
+                            <div class="mt-auto px-1">
+                                <button @click="stopIA" :disabled="isStopping" class="group relative flex items-center justify-center gap-3 w-full h-14 bg-success hover:bg-success/90 text-white font-black text-sm uppercase tracking-widest rounded-xl transition-all duration-300 shadow-[0_8px_20px_rgba(34,197,94,0.3)] hover:shadow-[0_12px_25px_rgba(34,197,94,0.4)] active:scale-[0.98] disabled:opacity-50">
+                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div class="w-6 h-6 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause w-5 h-5"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
+                                    </div>
                                     {{ isStopping ? 'Parando...' : 'Pausar IA' }}
                                 </button>
                             </div>
@@ -305,6 +315,7 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
+import LineChart from '../../components/LineChart.vue';
 import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
 
 // Import strategy configurations
@@ -328,6 +339,7 @@ export default {
         AppSidebar,
         TopNavbar,
         SettingsSidebar,
+        LineChart
     },
     data() {
         return {
@@ -364,6 +376,7 @@ export default {
 
             monitoringLogs: [],
             monitoringOperations: [],
+            profitHistory: [0], // Start with 0 profit
             activeContracts: new Map()
         }
     },
@@ -616,6 +629,9 @@ export default {
                     this.addLog(`🔴 LOSS: -$${Math.abs(trade.pnl).toFixed(2)}`, 'error');
                 }
                 this.monitoringStats.profit += trade.pnl;
+                this.profitHistory.push(parseFloat(this.monitoringStats.profit.toFixed(2)));
+                if (this.profitHistory.length > 50) this.profitHistory.shift();
+                
                 this.monitoringStats.balance = parseFloat(this.monitoringStats.balance) + trade.pnl;
                 this.activeContracts.delete(id);
             }
