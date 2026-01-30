@@ -1445,9 +1445,11 @@ export default {
             this.ws.onopen = () => {
                 this.addLog(`🔌 Conectado. Autorizando...`, 'info');
                 const token = localStorage.getItem('token');
+                console.log('[WS] Tentando autorizar com token:', token ? 'Token presente (mascarado)' : 'Token não encontrado');
                 if (token) {
                     this.ws.send(JSON.stringify({ authorize: token }));
                 } else {
+                    console.warn('[WS] Token ausente no localStorage');
                     this.addLog('⚠️ Token não encontrado. Operações reais desativadas.', 'warning');
                     this.subscribeTicks();
                 }
@@ -1456,6 +1458,11 @@ export default {
             this.ws.onmessage = (event) => {
                 try {
                     const msg = JSON.parse(event.data);
+                    
+                    // Debug Log for Critical Messages
+                    if (['authorize', 'buy', 'proposal_open_contract'].includes(msg.msg_type) || msg.error) {
+                         console.log(`[WS] Mensagem Recebida (${msg.msg_type}):`, msg);
+                    }
                     
                     if (msg.msg_type === 'authorize') {
                         if (msg.error) {
