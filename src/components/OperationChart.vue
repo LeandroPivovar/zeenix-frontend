@@ -78,10 +78,10 @@
           </div>
 
           <!-- Digit Analysis Tab -->
-          <div v-if="activeTab === 'digits'" class="flex-1 overflow-y-auto bg-[#0B0B0B] custom-scrollbar">
+          <div v-if="activeTab === 'digits'" class="flex-1 overflow-y-auto bg-[#0B0B0B] custom-scrollbar digits-tab-container">
             <div class="p-6 space-y-6">
               <!-- 1. FREQUÊNCIA GERAL (Meta Design) -->
-              <div class="frequency-meta-card bg-black border border-white/5 rounded-xl p-6">
+              <div class="frequency-meta-card border border-white/5 rounded-xl p-6">
                 <div class="flex items-center justify-between mb-8">
                   <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Frequência dos Dígitos</h3>
                 </div>
@@ -90,7 +90,7 @@
                   <div 
                     v-for="item in digitFrequenciesWithStats" 
                     :key="'meta-'+item.digit" 
-                    class="digit-meta-item flex flex-col items-center p-4 rounded-xl transition-all duration-500 bg-[#0F0F0F] border border-white/5"
+                    class="digit-meta-item flex flex-col items-center p-2 rounded-xl transition-all duration-500 bg-[#0F0F0F] border border-white/5"
                     :class="[item.statusClass, item.isHighlighted ? 'meta-highlight' : '']"
                   >
                     <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: getStatusColor(item.statusClass) }">{{ item.digit }}</span>
@@ -110,7 +110,7 @@
               <!-- 2. VOLATILIDADE E RESUMO (Meta Style) -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Volatilidade (Meta Style) -->
-                <div class="meta-analysis-card bg-black border border-white/5 rounded-xl p-6 flex flex-col justify-between min-h-[160px]">
+                <div class="meta-analysis-card border border-white/5 rounded-xl p-6 flex flex-col justify-between min-h-[160px]">
                   <div class="flex items-center justify-between mb-2">
                     <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Volatilidade</h3>
                     <div class="flex items-center gap-2 px-2 py-1 bg-zenix-green/10 rounded-full border border-zenix-green/20">
@@ -121,21 +121,21 @@
                   
                   <div class="flex items-center gap-6 py-4">
                     <div class="flex flex-col items-center">
-                      <span class="text-4xl font-black text-zenix-green leading-none">{{ dvxValueComputed }}</span>
-                      <span class="text-[10px] font-bold text-white/20 uppercase mt-1">DVX</span>
+                      <span class="text-7xl font-black text-zenix-green leading-none">{{ dvxValueComputed }}</span>
+                      <span class="text-base font-bold text-white/40 uppercase mt-2">DVX</span>
                     </div>
                     
                     <div class="flex-1">
                       <div class="flex items-center justify-between mb-2">
                         <span class="text-xs font-bold text-zenix-green">Volatilidade {{ dvxStatusText }}</span>
                       </div>
-                      <div class="relative h-1.5 bg-white/5 rounded-full mb-2">
+                      <div class="relative h-4 bg-white/5 rounded-full mb-2">
                         <div 
                           class="absolute inset-y-0 left-0 bg-gradient-to-r from-zenix-green/20 to-zenix-green rounded-full transition-all duration-1000"
                           :style="{ width: dvxValueComputed + '%' }"
                         ></div>
                         <div 
-                          class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)] transition-all duration-1000"
+                          class="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white border-2 border-zenix-green rounded-full shadow-[0_0_15px_rgba(34,197,94,0.6)] transition-all duration-1000"
                           :style="{ left: dvxValueComputed + '%' }"
                         ></div>
                       </div>
@@ -150,7 +150,7 @@
                 </div>
 
                 <!-- Paridade (Meta Style) -->
-                <div class="meta-analysis-card bg-black border border-white/5 rounded-xl p-6 flex flex-col justify-between min-h-[160px]">
+                <div class="meta-analysis-card border border-white/5 rounded-xl p-6 flex flex-col justify-between min-h-[160px]">
                   <div class="flex items-center justify-between mb-4">
                     <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Paridade</h3>
                     <div class="flex items-center gap-1 text-zenix-green">
@@ -200,7 +200,7 @@
               </div>
 
               <!-- 3. HISTÓRICO RECENTE (Meta Style) -->
-              <div class="bg-black border border-white/5 rounded-xl p-6">
+              <div class="border border-white/5 rounded-xl p-6">
                  <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mb-6">Histórico Recente</h3>
                  <div class="flex flex-wrap gap-2.5">
                    <div 
@@ -1506,10 +1506,10 @@ export default {
   methods: {
     getStatusColor(statusClass) {
       const colors = {
-        'status-overheated': '#EF4444',
-        'status-heated': '#F59E0B',
-        'status-underheated': '#10B981',
-        'status-normal': '#64748B'
+        'status-overheated': '#10B981', // Green for High Frequency (Full)
+        'status-heated': '#F59E0B',      // Yellow for Middle Frequency
+        'status-underheated': '#EF4444', // Red for Low Frequency (Final)
+        'status-normal': '#64748B'       // Gray for Normal
       };
       return colors[statusClass] || '#64748B';
     },
@@ -5477,15 +5477,21 @@ export default {
     background: rgba(255, 255, 255, 0.2);
   }
 
+  .digits-tab-container {
+    height: auto !important;
+    max-height: 1200px !important;
+    min-height: 600px;
+  }
+
   .dvx-status-green-text { color: #22C55E; }
   .dvx-status-yellow-text { color: #FFD058; }
   .dvx-status-red-text { color: #FF4747; }
 
   /* --- META DESIGN STYLES --- */
   .frequency-meta-card, .meta-analysis-card {
-    background-color: #000000 !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    background-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
   }
 
   .digit-meta-item {
