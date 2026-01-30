@@ -563,6 +563,8 @@ export default {
 /* Estilos do CourseDetailView */
 </style>
 <style scoped>
+@import '@/assets/css/animations.css';
+
 .main-wrapper {
     width: 100%!important;
 }
@@ -633,7 +635,7 @@ export default {
     display: none;
 }
 
-@media (max-width: 1024px) {
+    @media (max-width: 1024px) {
     .sidebar-overlay {
         display: block;
         position: fixed;
@@ -643,18 +645,11 @@ export default {
         bottom: 0;
         background: rgba(0, 0, 0, 0.5);
         z-index: 998;
-        animation: fadeIn 0.3s ease-in-out;
+        animation: fadeInOpacity 0.3s ease-in-out;
     }
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
+/* Keyframes removed - moved to animations.css */
 </style>
 
 <style>

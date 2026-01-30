@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import './assets/css/global.css'
+import './assets/css/animations.css'
 import DialogService from './services/DialogService'
 
 // Override native alerts with custom dialogs
