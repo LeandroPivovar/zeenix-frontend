@@ -155,19 +155,26 @@
 						@click.stop="toggleAgentSwitcher"
 					>
 						<div class="flex items-center gap-3">
+						<div class="flex items-center gap-3">
 							<div class="p-2 bg-[#1a1a1a] rounded-md">
-								<i class="fas fa-microchip text-green-500 text-base"></i>
+                                <div class="agent-avatar-mask-small">
+                                    <video 
+                                        v-if="runningAgents.find(a => a.id === currentAgentId)?.video" 
+                                        :src="runningAgents.find(a => a.id === currentAgentId)?.video" 
+                                        class="agent-video-avatar" 
+                                        autoplay 
+                                        loop 
+                                        muted 
+                                        playsinline
+                                    ></video>
+                                    <img 
+                                        v-else-if="runningAgents.find(a => a.id === currentAgentId)?.icons"
+                                        :src="runningAgents.find(a => a.id === currentAgentId)?.icons[0]" 
+                                        class="deriv-svg-icon-small"
+                                    />
+                                    <span v-else class="text-lg">{{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}</span>
+                                </div>
 							</div>
-							<div class="text-left">
-								<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide flex items-center gap-1">
-									AGENTE ATIVO
-									<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
-								</div>
-								
-								<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
-									<div class="strategy-icons-inline text-lg">
-										{{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}
-									</div>
 									<span class="text-white font-bold">{{ agenteData.estrategia ? agenteData.estrategia.replace('IA ', '') : 'Agente' }}</span>
 								</div>
 							</div>
@@ -191,17 +198,30 @@
 								class="p-3 flex items-center gap-3 hover:bg-[#1a1a1a] cursor-pointer transition-colors border-b border-[#27272a]/50 last:border-0"
 								:class="{ 'bg-[#092012]/35': agenteData.id === agent.id }"
 							>
-								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
-									<div class="strategy-icons-inline text-2xl">
-										{{ agent.emoji }}
-									</div>
-									<div v-if="agenteData.id === agent.id" class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0c0c0c] flex items-center justify-center">
-										<i class="fas fa-check text-[8px] text-black"></i>
-									</div>
+								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center relative items-center justify-center p-1">
+                                    <div class="agent-avatar-mask-small w-full h-full">
+                                        <video 
+                                            v-if="agent.video" 
+                                            :src="agent.video" 
+                                            class="agent-video-avatar" 
+                                            autoplay 
+                                            loop 
+                                            muted 
+                                            playsinline
+                                        ></video>
+                                        <img 
+                                            v-else-if="agent.icons"
+                                            :src="agent.icons[0]" 
+                                            class="deriv-svg-icon-small"
+                                        />
+                                        <div v-else class="strategy-icons-inline text-2xl">
+                                            {{ agent.emoji }}
+                                        </div>
+                                    </div>
 								</div>
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center justify-between gap-2">
-										<h5 class="text-xs font-bold truncate text-left" :class="agenteData.id === agent.id ? 'text-green-500' : 'text-[#dbdbdb]'">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
+										<h5 class="text-xs font-bold truncate text-left text-[#dbdbdb]">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
 										<span v-if="currentAgentId === agent.id" class="text-[8px] text-[#22c55e] font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
 									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line" v-html="formatAgentDescription(agent.description)"></p>
@@ -870,6 +890,7 @@
 						title: 'Agente Falcon',
 						marketType: 'Digits',
 						icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'],
+                        video: '/Animação_de_Voo_Gerada.mp4',
 						emoji: '🦅', 
 						description: 'Análise: Entropia + Força + Assertividade\nAssertividade: 70%\nRetorno: 63.5%',
 						winRate: 62,
@@ -1991,5 +2012,24 @@
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+.agent-avatar-mask-small {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #333;
+}
+
+.agent-video-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 </style>
