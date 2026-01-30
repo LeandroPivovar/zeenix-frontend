@@ -980,6 +980,7 @@ export default {
             balance: 5889.28, // Mock implementation or fetch from store
             isMonitoring: false,
             activeMonitoringTab: 'logs',
+            pendingFastResult: { contractId: null, barrier: null, contractType: null, active: false, stake: 0 },
             monitoringStats: {
                 balance: 5889.28,
                 profit: 0,
@@ -1741,6 +1742,14 @@ export default {
                             
                             console.log(`[WS] Sucesso! ID: ${msg.buy.contract_id}, Payout: $${payout} (${profitPercent}%)`);
                             this.addLog(`🚀 COMPRA REALIZADA! ID: ${msg.buy.contract_id} | Payout: $${payout} (${profitPercent}%)`, 'success');
+                            
+                            // Activate fast result calculation if it's 1-tick
+                            if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
+                                this.pendingFastResult.contractId = msg.buy.contract_id;
+                                this.pendingFastResult.active = true;
+                                console.log('[FastResult] Monitoramento rápido ativado para o próximo tick.');
+                            }
+
                             this.subscribeToContract(msg.buy.contract_id);
                         }
                     }
@@ -1807,6 +1816,58 @@ export default {
                 }
 
                 this.addLog(`📈 Tick recebido: ${price} - Tick #${this.tickCount}`, 'info');
+
+                // --- Fast Result Calculation ---
+                if (this.pendingFastResult && this.pendingFastResult.active) {
+                    const lastDigit = parseInt(price.toString().slice(-1));
+                    const { contractId, barrier, contractType, stake } = this.pendingFastResult;
+                    
+                    let win = false;
+                    if (contractType === 'DIGITUNDER') win = lastDigit < barrier;
+                    else if (contractType === 'DIGITOVER') win = lastDigit > barrier;
+                    else if (contractType === 'DIGITMATCH') win = lastDigit === barrier;
+                    else if (contractType === 'DIGITDIFF') win = lastDigit !== barrier;
+                    else if (contractType === 'DIGITEVEN') win = lastDigit % 2 === 0;
+                    else if (contractType === 'DIGITODD') win = lastDigit % 2 !== 0;
+
+                    this.addLog(`⚡ RESULTADO RÁPIDO: ${win ? 'WIN' : 'LOSS'} (Dígito: ${lastDigit})`, win ? 'success' : 'error');
+                    
+                    // Pre-update trade in activeContracts if present
+                    const trade = this.activeContracts.get(contractId);
+                    if (trade) {
+                        trade.result = win ? 'WON' : 'LOST';
+                        trade.fastResultApplied = true;
+                    }
+
+                    // Update stats immediately to allow next trade
+                    if (win) {
+                        this.monitoringStats.wins++;
+                        this.sessionState.consecutiveLosses = 0;
+                        if (this.sessionState.isRecoveryMode) {
+                            // Payout is estimative here, will be exact in handleContractUpdate
+                            const estimatedProfit = stake * (this.sessionState.lastPayoutRate || 0.95);
+                            this.sessionState.recoveredAmount += estimatedProfit;
+                        }
+                    } else {
+                        this.monitoringStats.losses++;
+                        this.sessionState.consecutiveLosses++;
+                        this.sessionState.totalLossAccumulated += stake;
+
+                        if (!this.sessionState.isRecoveryMode && 
+                            this.recoveryConfig.enabled && 
+                            this.sessionState.consecutiveLosses >= this.recoveryConfig.lossesToActivate) {
+                            this.addLog('🔄 ATIVANDO MODO RECUPERAÇÃO (RÁPIDO)...', 'warning');
+                            this.sessionState.isRecoveryMode = true;
+                            this.sessionState.recoveredAmount = 0;
+                        }
+                    }
+
+                    // CRITICAL: Remove from activeContracts to allow next trade analysis immediately!
+                    this.activeContracts.delete(contractId);
+                    this.pendingFastResult.active = false;
+                    
+                    this.checkLimits();
+                }
                 
                 // --- Real-time Analysis Integration ---
                 // Add to history buffers (limit to 100 for performance)
@@ -1970,6 +2031,18 @@ export default {
             }
 
             this.addLog(`💸 Enviando ordem (${this.sessionState.isRecoveryMode ? 'RECUPERAÇÃO' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
+            
+            // Prepare for fast result calculation
+            this.pendingFastResult = {
+                contractId: null,
+                barrier: config.prediction,
+                contractType: config.tradeType,
+                active: false, // Will be activated when contractId is received
+                stake: stake,
+                duration: this.form.duration,
+                durationUnit: this.form.durationUnit
+            };
+
             this.ws.send(JSON.stringify(buyParams));
         },
         subscribeToContract(contractId) {
@@ -2006,7 +2079,17 @@ export default {
                 trade.pnl = parseFloat(contract.profit || 0);
 
                 if (trade.result === 'WON') {
-                    this.monitoringStats.wins++;
+                    // Only increment if not already processed by fast result
+                    if (!trade.fastResultApplied) {
+                        this.monitoringStats.wins++;
+                        if (this.sessionState.isRecoveryMode) {
+                            this.sessionState.recoveredAmount += trade.pnl;
+                        } else {
+                            this.sessionState.consecutiveLosses = 0;
+                            this.sessionState.totalLossAccumulated = 0;
+                        }
+                    }
+
                     this.addLog(`💰 WIN! Resultado: +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
                     
                     // Update Payout Rate for next dynamic martingale
@@ -2028,21 +2111,26 @@ export default {
                         this.sessionState.totalLossAccumulated = 0;
                     }
                 } else {
-                    this.monitoringStats.losses++;
-                    this.addLog(`🔴 LOSS! Prejuízo: -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
-                    
-                    this.sessionState.consecutiveLosses++;
-                    this.sessionState.totalLossAccumulated += Math.abs(trade.pnl);
+                    // Only increment if not already processed by fast result
+                    if (!trade.fastResultApplied) {
+                        this.monitoringStats.losses++;
+                        this.sessionState.consecutiveLosses++;
+                        this.sessionState.totalLossAccumulated += Math.abs(trade.pnl);
 
-                    if (!this.sessionState.isRecoveryMode && 
-                        this.recoveryConfig.enabled && 
-                        this.sessionState.consecutiveLosses >= this.recoveryConfig.lossesToActivate) {
-                        this.addLog('🔄 ATIVANDO MODO RECUPERAÇÃO...', 'warning');
-                        this.sessionState.isRecoveryMode = true;
-                        this.sessionState.recoveredAmount = 0;
+                        if (!this.sessionState.isRecoveryMode && 
+                            this.recoveryConfig.enabled && 
+                            this.sessionState.consecutiveLosses >= this.recoveryConfig.lossesToActivate) {
+                            this.addLog('🔄 ATIVANDO MODO RECUPERAÇÃO...', 'warning');
+                            this.sessionState.isRecoveryMode = true;
+                            this.sessionState.recoveredAmount = 0;
+                        }
                     }
+
+                    this.addLog(`🔴 LOSS! Prejuízo: -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
                 }
                 
+                // Only subtract profit if not already handled by fast result logic (which doesn't subtract yet to avoid double counting pnl)
+                // Actually, let's always update profit/balance from the official source as it's more accurate
                 this.monitoringStats.profit += trade.pnl;
                 this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
                 
