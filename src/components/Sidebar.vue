@@ -365,7 +365,6 @@ export default {
         isInvestmentIAActive() { return this.$route?.path === '/InvestmentIA'; },
         isSupportItemsActive() { return this.$route?.path === '/SupportItems'; },
         isPlansManagementActive() { return this.$route?.path === '/PlansManagement'; },
-        isPlansManagementActive() { return this.$route?.path === '/PlansManagement'; },
         isStrategyCreatorActive() { return this.$route?.path === '/admin/strategies/create'; },
         isAdmin() {
             try {
