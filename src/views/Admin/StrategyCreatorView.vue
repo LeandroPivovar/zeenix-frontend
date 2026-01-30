@@ -2087,7 +2087,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -2129,10 +2129,29 @@ export default {
     padding-top: 80px;
     padding-bottom: 40px;
     background-color: #0B0B0B;
-    width: 100%;
+    width: 100% !important;
     max-width: 100% !important;
+    margin: 0 !important;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
 }
+
+.strategy-creator-form-container,
+.monitoring-dashboard {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+.strategy-creator-form-container form,
+.monitoring-dashboard > div {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
 
 @media (max-width: 1024px) {
     .dashboard-content-wrapper { margin-left: 0; }
