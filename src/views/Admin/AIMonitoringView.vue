@@ -427,6 +427,9 @@ export default {
             }
         },
         runAIAnalysis() {
+            // ✅ Sincronização: Aguardar resultado do contrato antes de nova análise
+            if (this.activeContracts.size > 0) return;
+
             const strategyKey = this.currentConfig.strategy.toLowerCase();
             const strategyConfig = strategyConfigs[strategyKey];
             if (!strategyConfig || !strategyConfig.config) return;
