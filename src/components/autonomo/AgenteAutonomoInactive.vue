@@ -163,9 +163,11 @@
 								<div v-if="selectedAgent" :key="selectedAgent" class="agent-description-card mt-3">
 									<div class="agent-desc-content">
 										<div class="agent-desc-info">
-											<p><strong>Análise:</strong> {{ getAgentAnalysis(selectedAgent) }}</p>
-											<p><strong>Assertividade:</strong> {{ getAgentAssertiveness(selectedAgent) }}</p>
-											<p><strong>Retorno:</strong> {{ getAgentReturn(selectedAgent) }}</p>
+											<p>
+												<strong>Análise:</strong> {{ getAgentAnalysis(selectedAgent) }}<br>
+												<strong>Assertividade:</strong> {{ getAgentAssertiveness(selectedAgent) }}<br>
+												<strong>Retorno:</strong> {{ getAgentReturn(selectedAgent) }}
+											</p>
 										</div>
 									</div>
 								</div>
@@ -693,7 +695,7 @@ export default {
 
 		getAgentTitle(id) {
 			const agent = this.availableAgents.find(a => a.id === id);
-			return agent ? agent.title : 'Selecione seu agente';
+			return agent ? agent.title.replace('Agente ', '') : 'Selecione seu agente';
 		},
 		selectMarket(marketId) {
 			this.selectedMarket = marketId;
@@ -727,11 +729,20 @@ export default {
 
 		// 🟢 NOVO MÉTODO: Descrição do Agente 🟢
 		getAgentDescription(id) {
-			const map = {
-				'zeus': 'Análise: Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação\nAssertividade: 56% a 90%\nRetorno: 56% / 85%',
-				'falcon': 'Análise: Padrão Estatístico (Entropia + Força + Assertividade)\nAssertividade: 60% a 70%\nRetorno: 63.5%'
-			};
-			return map[id] || '';
+			const agent = this.availableAgents.find(a => a.id === id);
+			return agent ? agent.description : '';
+		},
+		getAgentAnalysis(id) {
+			const agent = this.availableAgents.find(a => a.id === id);
+			return agent ? agent.analysis : '';
+		},
+		getAgentAssertiveness(id) {
+			const agent = this.availableAgents.find(a => a.id === id);
+			return agent ? agent.assertiveness : '';
+		},
+		getAgentReturn(id) {
+			const agent = this.availableAgents.find(a => a.id === id);
+			return agent ? agent.return : '';
 		},
 
 		getRiskTitle(id) {
