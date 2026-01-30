@@ -120,7 +120,7 @@
                   </div>
                   
                   <div class="flex items-center gap-6 py-4">
-                    <div class="flex flex-col items-center mr-8">
+                    <div class="flex flex-col items-center ml-6 mr-8">
                       <span class="text-7xl font-black text-zenix-green leading-none">{{ dvxValueComputed }}</span>
                       <span class="text-sm font-bold text-white/40 uppercase mt-2">DVX</span>
                     </div>
@@ -5508,7 +5508,7 @@ export default {
   }
 
   .meta-digit-number {
-    text-shadow: 0 0 20px currentColor;
+    text-shadow: 0 0 8px currentColor;
     letter-spacing: -0.05em;
   }
 
