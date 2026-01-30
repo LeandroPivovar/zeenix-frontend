@@ -20,24 +20,164 @@
             />
 
             <main class="layout-content">
-                <div class="strategy-creator-view max-w-4xl mx-auto">
-                    <header class="mb-8">
-                        <h1 class="text-3xl font-bold text-white mb-2">Criador de Estratégias</h1>
-                        <p class="text-gray-400">Configure e inicie uma nova estratégia automatizada.</p>
-                    </header>
+                <div class="content-header mb-6 flex justify-between items-center px-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">{{ isMonitoring ? 'Acompanhamento de Estratégia [BETA]' : 'Criador de Estratégias [BETA]' }}</h1>
+                        <p class="text-sm text-[#7D7D7D]">{{ isMonitoring ? 'Acompanhe a atividade do robô em tempo real.' : 'Configure sua estratégia automatizada para execução no mercado.' }}</p>
+                    </div>
+                    <button v-if="isMonitoring" @click="stopMonitoring" class="stop-btn">
+                        <i class="fas fa-stop mr-2"></i> Parar Robô
+                    </button>
+                    <div v-else class="flex gap-3">
+                        <div class="balance-card">
+                            <span class="text-[10px] uppercase text-[#7D7D7D] font-bold">Saldo Disponível</span>
+                            <span class="text-lg font-bold text-white block">$ {{ balance.toLocaleString() }}</span>
+                        </div>
+                    </div>
+                </div>
 
-                    <form @submit.prevent="submitForm" class="space-y-6">
-                        <!-- Mercado Section -->
-                        <div class="form-group">
-                            <label class="block text-white font-bold mb-2">Mercado</label>
-                            <button
-                                type="button"
-                                @click="openMarketModal"
-                                class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
-                            >
-                                <span class="font-medium text-lg">{{ selectedMarketLabel }}</span>
-                                <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                <!-- MONITORING DASHBOARD -->
+                <div v-if="isMonitoring" class="monitoring-dashboard animate-fadeIn px-4">
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="stats-card">
+                            <div class="stats-icon-wrapper blue">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="stats-info">
+                                <span class="stats-label">Saldo Atual</span>
+                                <span class="stats-value">$ {{ monitoringStats.balance.toFixed(2) }}</span>
+                            </div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-icon-wrapper" :class="monitoringStats.profit >= 0 ? 'green' : 'red'">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stats-info">
+                                <span class="stats-label">Sessão P/L</span>
+                                <span class="stats-value" :class="monitoringStats.profit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}$ {{ monitoringStats.profit.toFixed(2) }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-icon-wrapper yellow">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="stats-info">
+                                <span class="stats-label">Assertividade</span>
+                                <span class="stats-value">{{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%</span>
+                                <span class="text-[10px] text-[#7A7A7A] ml-1">{{ monitoringStats.wins }}W / {{ monitoringStats.losses }}L</span>
+                            </div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-icon-wrapper green pulse">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="stats-info">
+                                <span class="stats-label">Status da IA</span>
+                                <span class="stats-value text-sm">{{ monitoringStats.status }}</span>
+                                <p class="text-[10px] text-zenix-green">{{ monitoringStats.statusDesc }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="monitoring-tabs-container mb-4">
+                        <div class="monitoring-tabs flex gap-4 border-b border-[#333]">
+                            <button @click="activeMonitoringTab = 'chart'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeMonitoringTab === 'chart' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
+                                <i class="fas fa-chart-area mr-2"></i> Gráfico
                             </button>
+                            <button @click="activeMonitoringTab = 'logs'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeMonitoringTab === 'logs' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
+                                <i class="fas fa-list-ul mr-2"></i> Registros
+                            </button>
+                            <button @click="activeMonitoringTab = 'history'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeMonitoringTab === 'history' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
+                                <i class="fas fa-history mr-2"></i> Histórico
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content-container bg-[#141414] border border-[#333] rounded-xl p-6 min-h-[400px]">
+                        <!-- Chart Placeholder -->
+                        <div v-show="activeMonitoringTab === 'chart'" class="chart-tab-content flex items-center justify-center h-full min-h-[300px]">
+                            <div class="text-center">
+                                <i class="fas fa-chart-line text-6xl text-zenix-green/20 mb-4 block"></i>
+                                <p class="text-[#7A7A7A]">Aguardando conexão com o mercado...</p>
+                            </div>
+                        </div>
+
+                        <!-- Logs Tab -->
+                        <div v-if="activeMonitoringTab === 'logs'" class="logs-tab-content h-full">
+                            <div class="logs-list-wrapper space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar">
+                                <div v-for="log in monitoringLogs" :key="log.id" class="p-3 bg-[#0B0B0B] rounded-lg border border-[#222] font-mono text-xs flex gap-3">
+                                    <span class="text-gray-500">[{{ log.time }}]</span>
+                                    <span :class="{ 'text-zenix-green': log.type === 'success', 'text-red-500': log.type === 'error', 'text-blue-400': log.type === 'info' }">
+                                        {{ log.message }}
+                                    </span>
+                                </div>
+                                <div v-if="monitoringLogs.length === 0" class="text-center py-12 text-[#7A7A7A]">
+                                    Nenhum log registrado ainda.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- History Tab -->
+                        <div v-if="activeMonitoringTab === 'history'" class="history-tab-content">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="border-b border-[#333] text-xs text-[#7A7A7A] uppercase tracking-wider">
+                                        <tr>
+                                            <th class="pb-4">Hora</th>
+                                            <th class="pb-4">Mercado</th>
+                                            <th class="pb-4">Contrato</th>
+                                            <th class="pb-4">Investimento</th>
+                                            <th class="pb-4">Resultado</th>
+                                            <th class="pb-4 text-right">P/L</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-sm">
+                                        <tr v-for="op in monitoringOperations" :key="op.id" class="border-b border-[#222] last:border-0">
+                                            <td class="py-4">{{ op.time }}</td>
+                                            <td class="py-4">{{ op.market }}</td>
+                                            <td class="py-4 text-xs">{{ op.contract }}</td>
+                                            <td class="py-4">$ {{ op.stake.toFixed(2) }}</td>
+                                            <td class="py-4">
+                                                <span :class="op.result === 'WIN' ? 'bg-zenix-green/10 text-zenix-green border-zenix-green/20' : 'bg-red-500/10 text-red-500 border-red-500/20'" class="px-2 py-1 rounded border text-[10px] font-bold">
+                                                    {{ op.result }}
+                                                </span>
+                                            </td>
+                                            <td class="py-4 text-right font-bold" :class="op.result === 'WIN' ? 'text-zenix-green' : 'text-red-500'">
+                                                {{ op.result === 'WIN' ? '+' : '' }}{{ op.pnl }}
+                                            </td>
+                                        </tr>
+                                        <tr v-if="monitoringOperations.length === 0">
+                                            <td colspan="6" class="text-center py-12 text-[#7A7A7A]">Nenhuma operação executada nesta sessão.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONFIGURATION FORM -->
+                <div v-else class="strategy-creator-form-container px-4">
+                    <div class="grid grid-cols-12 gap-6">
+                        <div class="col-span-12">
+                            <!-- Mercado Section (Fixed) -->
+                            <div class="form-group mb-6">
+                                <label class="block text-white font-bold mb-2">Mercado</label>
+                                <button
+                                    type="button"
+                                    @click="openMarketModal"
+                                    class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
+                                >
+                                    <span class="font-medium text-lg">{{ selectedMarketLabel }}</span>
+                                    <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                </button>
+                            </div>
+
                             <!-- <p v-if="selectedMarketDescription" class="mt-2 text-zenix-green text-sm">
                                 {{ selectedMarketDescription }}
                             </p> -->
@@ -435,16 +575,21 @@
                     </div>
                     <div class="modal-body">
                          <div class="space-y-4">
-                             <!-- Placeholder for filters -->
-                             <div class="flex items-center gap-3 p-3 bg-[#111] rounded border border-[#333]">
-                                 <input type="checkbox" id="trend" class="w-5 h-5 accent-zenix-green" />
-                                 <label for="trend" class="text-white cursor-pointer select-none">Seguir Tendência (EMA)</label>
+                             <div v-for="filter in filters" :key="filter.id" class="flex flex-col gap-3 p-4 bg-[#111] rounded-xl border border-[#333] transition-all" :class="{ 'border-zenix-green/30 bg-zenix-green/5': filter.active }">
+                                 <div class="flex items-center gap-3">
+                                     <input type="checkbox" :id="filter.id" v-model="filter.active" class="w-5 h-5 accent-zenix-green cursor-pointer" />
+                                     <label :for="filter.id" class="text-white font-bold cursor-pointer select-none">{{ filter.name }}</label>
+                                 </div>
+                                 <div v-if="filter.active" class="pl-8 transition-all animate-fadeIn">
+                                     <input 
+                                         type="number" 
+                                         v-model.number="filter.value" 
+                                         :placeholder="filter.placeholder"
+                                         class="w-full bg-[#1A1A1A] text-white border border-[#333] rounded-lg p-3 text-sm focus:outline-none focus:border-zenix-green/50 transition-colors"
+                                     />
+                                 </div>
                              </div>
-                             <div class="flex items-center gap-3 p-3 bg-[#111] rounded border border-[#333]">
-                                 <input type="checkbox" id="rsi" class="w-5 h-5 accent-zenix-green" />
-                                 <label for="rsi" class="text-white cursor-pointer select-none">Filtro RSI (Sobrecompra/Sobrevenda)</label>
-                             </div>
-                             <div class="p-4 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-sm rounded">
+                             <div class="p-4 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-sm rounded-xl">
                                  Mais filtros serão adicionados em breve.
                              </div>
                          </div>
@@ -560,8 +705,25 @@ export default {
                 pauseLosses: 5
             },
 
-            balance: 5889.28,
-
+            balance: 5889.28, // Mock implementation or fetch from store
+            isMonitoring: false,
+            activeMonitoringTab: 'chart',
+            monitoringStats: {
+                balance: 5889.28,
+                profit: 0,
+                wins: 0,
+                losses: 0,
+                status: 'Aguardando sinal...',
+                statusDesc: 'Analisando condições de mercado'
+            },
+            monitoringLogs: [],
+            monitoringOperations: [],
+            simulationInterval: null,
+            filters: [
+                { id: 'trend', name: 'Seguir Tendência (EMA)', active: false, value: 20, placeholder: 'Período EMA' },
+                { id: 'rsi', name: 'Filtro RSI (Sobrecompra/Sobrevenda)', active: false, value: 70, placeholder: 'Nível RSI' },
+                { id: 'volatility', name: 'Filtro de Volatilidade (DVX)', active: false, value: 50, placeholder: 'Máx. DVX' }
+            ],
             // Hardcoded Category Data (from OperationChart.vue)
             tradeTypeCategories: [
                 {
@@ -662,15 +824,16 @@ export default {
         marketsByCategory() {
             const grouped = {};
             
-            // Priority Order
+            // Priority Order (Matching OperationChart)
             const categoryPriority = {
                 'Índices Contínuos': 1,
-                'Daily Reset Indices': 2,
-                'Indices Step': 3,
-                'Jump Indices': 4,
-                'Boom/Crash': 5,
+                'Índices Daily Reset': 2,
+                'Índices Step': 3,
+                'Índices JUMP': 4,
+                'Índices Crash/Boom': 5,
                 'Criptomoedas': 6,
                 'Forex Majors': 7,
+                'Major Pairs': 7,
                 'Forex Minors': 8,
                 'Outros': 99
             };
@@ -681,7 +844,8 @@ export default {
                 'Boom/Crash': 'Índices Crash/Boom',
                 'Daily Reset Indices': 'Índices Daily Reset',
                 'Major Pairs': 'Forex Majors',
-                'Minor Pairs': 'Forex Minors'
+                'Minor Pairs': 'Forex Minors',
+                'Continuous Indices': 'Índices Contínuos'
             };
             
             this.markets.forEach(market => {
@@ -701,7 +865,8 @@ export default {
             const categories = Object.keys(grouped).sort((a, b) => {
                 const pA = categoryPriority[a] || 99;
                 const pB = categoryPriority[b] || 99;
-                return pA - pB;
+                if (pA !== pB) return pA - pB;
+                return a.localeCompare(b);
             });
 
             categories.forEach(cat => {
@@ -794,23 +959,57 @@ export default {
 
                 if (res.ok) {
                     const data = await res.json();
-                    // Fallback mapping if backend doesn't provide category/value/label structure expected by categorization logic
-                    this.markets = data.map(m => ({
-                        ...m,
-                        value: m.symbol,
-                        label: m.displayName,
-                        category: m.submarket_display_name || m.market_display_name || 'Outros' // Try to map category
-                    }));
+                    
+                    const allowedForex = ['frxEURUSD', 'frxUSDJPY', 'frxGBPUSD', 'frxAUDUSD', 'frxUSDCHF', 'frxUSDCAD', 'frxNZDUSD', 'frxEURGBP', 'frxEURJPY', 'frxGBPJPY'];
+                    const allowedCrypto = ['cryBTCUSD', 'cryETHUSD', 'cryLTCUSD', 'cryXRPUSD', 'cryBCHUSD'];
+                    const allowedSynthetic = ['Continuous Indices', 'Daily Reset Indices', 'Indices Step', 'Jump Indices', 'Boom/Crash'];
+
+                    const filteredData = data.filter(m => {
+                        if (m.symbol.startsWith('frx')) return allowedForex.includes(m.symbol);
+                        if (m.symbol.startsWith('cry')) return allowedCrypto.includes(m.symbol);
+                        
+                        const submarket = m.submarketDisplayName;
+                        if (allowedSynthetic.includes(submarket)) return true;
+                        
+                        if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ') || 
+                            m.symbol.startsWith('JDM') || m.symbol.startsWith('BOOM') || 
+                            m.symbol.startsWith('CRASH') || m.symbol.startsWith('STP') ||
+                            m.symbol.startsWith('RDBEAR') || m.symbol.startsWith('RDBULL')) {
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    this.markets = filteredData.map(m => {
+                        let category = m.submarketDisplayName || m.marketDisplayName || 'Outros';
+                        
+                        if (m.symbol.startsWith('frx')) {
+                            category = 'Major Pairs';
+                        } else if (m.symbol.startsWith('cry')) {
+                            category = 'Criptomoedas';
+                        } else if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ')) {
+                            category = 'Índices Contínuos';
+                        } else if (m.symbol.startsWith('JDM')) {
+                            category = 'Jump Indices';
+                        } else if (m.symbol.startsWith('BOOM') || m.symbol.startsWith('CRASH')) {
+                            category = 'Boom/Crash';
+                        } else if (m.symbol.startsWith('STP')) {
+                            category = 'Indices Step';
+                        } else if (m.symbol.startsWith('RDBEAR') || m.symbol.startsWith('RDBULL')) {
+                            category = 'Daily Reset Indices';
+                        }
+
+                        return {
+                            ...m,
+                            value: m.symbol,
+                            label: m.displayName,
+                            category: category
+                        };
+                    });
                 }
             } catch (error) {
                 console.error('Erro ao buscar mercados:', error);
                 this.$root.$toast.error('Erro ao carregar mercados');
-                
-                // Fallback debug data if simulation/failure
-                 this.markets = [
-                     { value: 'R_100', symbol: 'R_100', label: 'Volatility 100', displayName: 'Volatility 100', category: 'Índices Contínuos' },
-                     { value: 'R_10', symbol: 'R_10', label: 'Volatility 10', displayName: 'Volatility 10', category: 'Índices Contínuos' },
-                 ];
             }
         },
         async onMarketChange() {
@@ -875,8 +1074,79 @@ export default {
             return ((value / this.balance) * 100).toFixed(2);
         },
         submitForm() {
-            console.log('Strategy Config:', { ...this.form, recovery: this.recoveryConfig });
-            this.$root.$toast.success('Robô iniciado com sucesso! (Simulação)');
+            this.isMonitoring = true;
+            this.startSimulation();
+            this.$root.$toast.success('Estratégia iniciada com sucesso!');
+        },
+        stopMonitoring() {
+            this.isMonitoring = false;
+            if (this.simulationInterval) {
+                clearInterval(this.simulationInterval);
+                this.simulationInterval = null;
+            }
+            this.monitoringLogs = [];
+            this.monitoringOperations = [];
+            this.monitoringStats.profit = 0;
+            this.monitoringStats.wins = 0;
+            this.monitoringStats.losses = 0;
+        },
+        startSimulation() {
+            this.addLog('🤖 Robô iniciado. Aguardando sinal de entrada...', 'info');
+            
+            this.simulationInterval = setInterval(() => {
+                const rand = Math.random();
+                if (rand > 0.9) {
+                    this.simulateTrade();
+                } else if (rand > 0.7) {
+                    this.simulateLog();
+                }
+            }, 5000);
+        },
+        simulateTrade() {
+            const isWin = Math.random() > 0.4;
+            const winAmount = (this.form.stake * 0.95).toFixed(2);
+            const lossAmount = this.form.stake.toFixed(2);
+            const pnl = isWin ? parseFloat(winAmount) : -parseFloat(lossAmount);
+            
+            this.monitoringStats.profit += pnl;
+            if (isWin) this.monitoringStats.wins++;
+            else this.monitoringStats.losses++;
+            
+            this.monitoringStats.balance += pnl;
+
+            const trade = {
+                id: Date.now(),
+                time: new Date().toLocaleTimeString(),
+                market: this.form.market,
+                contract: this.form.tradeType,
+                stake: this.form.stake,
+                pnl: pnl.toFixed(2),
+                result: isWin ? 'WIN' : 'LOSS'
+            };
+
+            this.monitoringOperations.unshift(trade);
+            this.addLog(`${isWin ? '💰 Lucro' : '🔴 Perda'} de $${Math.abs(pnl).toFixed(2)} em ${this.form.market}`, isWin ? 'success' : 'error');
+        },
+        simulateLog() {
+            const logs = [
+                'Analisando tendência...',
+                'EMA 20 cruzando para cima.',
+                'RSI em nível de neutralidade.',
+                'Aguardando confirmação de RSI...',
+                'Filtro de volatilidade OK.',
+                'Padrão Candlestick detectado.'
+            ];
+            const msg = logs[Math.floor(Math.random() * logs.length)];
+            this.addLog(msg, 'info');
+        },
+        addLog(message, type) {
+            this.monitoringLogs.unshift({
+                id: Date.now(),
+                time: new Date().toLocaleTimeString(),
+                message,
+                type
+            });
+            if (this.monitoringLogs.length > 50) this.monitoringLogs.pop();
         }
     }
 }
@@ -1089,6 +1359,15 @@ export default {
   }
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
 @media (max-width: 1024px) {
   .categorized-modal {
     min-width: 95% !important;
@@ -1116,4 +1395,108 @@ export default {
      min-height: auto !important; 
   }
 }
-</style>
+/* Monitoring Dashboard Styles */
+.monitoring-dashboard {
+    height: 100%;
+}
+
+.stop-btn {
+    background-color: #ef4444;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 14px;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.stop-btn:hover {
+    background-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.stats-card {
+    background: #141414;
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s;
+}
+
+.stats-card:hover {
+    border-color: #444;
+}
+
+.stats-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.stats-icon-wrapper.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.stats-icon-wrapper.green { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.stats-icon-wrapper.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.stats-icon-wrapper.yellow { background: rgba(234, 179, 8, 0.1); color: #eab308; }
+
+.stats-icon-wrapper.pulse {
+    animation: statsPulse 2s infinite;
+}
+
+@keyframes statsPulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.stats-label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #7A7A7A;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.stats-value {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.monitoring-tabs-container {
+    border-bottom: 1px solid #333;
+}
+
+.tab-content-container {
+    background: #141414;
+    border: 1px solid #333;
+    border-radius: 16px;
+    min-height: 400px;
+}
+
+.log-entry.info { border-left: 3px solid #3b82f6; }
+.log-entry.success { border-left: 3px solid #22c55e; }
+.log-entry.error { border-left: 3px solid #ef4444; }
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.badge-win { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+.badge-loss { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
