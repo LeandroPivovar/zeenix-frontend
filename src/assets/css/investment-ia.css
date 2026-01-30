@@ -2221,7 +2221,6 @@ svg:not(:root).svg-inline--fa {
 /* Removed duplicate Apollo rule */
 
 
-
 .strategy-icon-box-large.nexus i {
     /* Color handled by generic rule, specific override removed */
     background: none !important;
