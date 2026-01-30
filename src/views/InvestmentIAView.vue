@@ -552,7 +552,7 @@ export default {
                     title: 'IA Atlas', 
                     marketType: 'Digits', 
                     icon: 'fas fa-shield-alt', 
-                    icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg'], 
+                    icons: [], 
                     description: 'Híbrida (Fluxo de Dígitos + Price Action → Tendência)',
                     assertividade: '92 a 96%',
                     retorno: '95% / 99%'
@@ -562,7 +562,7 @@ export default {
                     title: 'IA Apollo', 
                     marketType: 'Ups e Downs', 
                     icon: 'fas fa-rocket', 
-                    icons: ['/deriv_icons/TradeTypesHighsAndLowsHighIcon.svg'],
+                    icons: [],
                     description: 'Price Action Puro (Inércia + Força + Tendência)',
                     assertividade: '90% a 95%',
                     retorno: '99%'
@@ -571,8 +571,8 @@ export default {
                     id: 'nexus', 
                     title: 'IA Nexus', 
                     marketType: 'Ups e Downs', 
-                    icon: 'fas fa-chart-line', // Will use CSS for the shield overlay
-                    icons: ['/deriv_icons/TradeTypesDigitsMatchIcon.svg'],
+                    icon: 'fas fa-chart-bar',
+                    icons: [],
                     description: 'Price Action Barreira de Segurança com Troca de Contrato',
                     assertividade: '91% a 95%',
                     retorno: '91% / 95%'
@@ -582,7 +582,7 @@ export default {
                     title: 'IA Orion', 
                     marketType: 'Digits', 
                     icon: 'fas fa-star', 
-                    icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg'],
+                    icons: [],
                     description: 'Estatística de Dígitos + (Over 2) com Price Action na Recuperação',
                     assertividade: '94% a 97%',
                     retorno: '95% / 99%'
@@ -592,7 +592,7 @@ export default {
                     title: 'IA Titan', 
                     marketType: 'Digits', 
                     icon: 'fas fa-yin-yang', 
-                    icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg'],
+                    icons: [],
                     description: 'Dígitos Par/Ímpar com persistência direcional',
                     assertividade: '90% - 95%',
                     retorno: '95%'
