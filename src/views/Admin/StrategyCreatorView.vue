@@ -691,8 +691,8 @@
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Operador</label>
                                         <select v-model="filter.config.operator" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
-                                            <option value="<">Menor que (<)</option>
-                                            <option value=">">Maior que (>)</option>
+                                            <option value="<">Menor que (&lt;)</option>
+                                            <option value=">">Maior que (&gt;)</option>
                                             <option value="=">Igual a (=)</option>
                                         </select>
                                     </div>
