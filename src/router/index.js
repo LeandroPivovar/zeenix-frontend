@@ -121,7 +121,7 @@ const routes = [
   {
     path: '/StatsIAs',
     name: 'StatsIAs',
-    component: InvestmentIAView,
+    component: InvestmentActiveStrategyView,
     meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
