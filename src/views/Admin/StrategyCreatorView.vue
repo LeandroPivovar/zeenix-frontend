@@ -424,7 +424,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div>
+                                        <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(recoveryConfig.tradeType)">
                                             <label class="block text-white font-bold mb-2">Dígito Alvo Rec.</label>
                                             <div class="relative">
                                                 <select 
@@ -664,7 +664,7 @@
                                         v-for="item in category.items"
                                         :key="item.value"
                                         @click="selectTradeType(item)"
-                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.selectedTradeTypeGroup : recoveryConfig.selectedTradeTypeGroup) === item.value }]"
+                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.tradeType : recoveryConfig.tradeType) === item.value }]"
                                     >
                                         <div class="flex items-center gap-2">
                                             <img v-if="item.icon" :src="`/deriv_icons/${item.icon}`" class="w-5 h-5 contrast-[1.5] brightness-[1.5]" alt="" />
@@ -1436,11 +1436,21 @@ export default {
             this.showTradeTypeModal = false;
         },
         selectTradeType(item) {
+            // Find the category to set the group correctly
+            let categoryId = '';
+            for (const cat of this.tradeTypeCategories) {
+                if (cat.items.find(i => i.value === item.value)) {
+                    categoryId = cat.id;
+                    break;
+                }
+            }
+
             if (this.modalContext === 'main') {
                 this.form.tradeType = item.value;
-                // Clear group if needed or set it based on category lookup if we want to reverse track
+                this.form.selectedTradeTypeGroup = categoryId;
             } else {
                 this.recoveryConfig.tradeType = item.value;
+                this.recoveryConfig.selectedTradeTypeGroup = categoryId;
             }
             
             this.$root.$toast.success(`Tipo de contrato selecionado: ${item.label}`);
