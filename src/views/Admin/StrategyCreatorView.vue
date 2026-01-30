@@ -20,7 +20,7 @@
             />
 
             <main class="layout-content">
-                <div class="content-header mb-6 flex justify-between items-center px-4">
+                <div class="content-header mb-6 flex justify-between items-center px-4 w-full">
                     <div>
                         <h1 class="text-2xl font-bold text-white">{{ isMonitoring ? 'Acompanhamento de Estratégia [BETA]' : 'Criador de Estratégias [BETA]' }}</h1>
                         <p class="text-sm text-[#7D7D7D]">{{ isMonitoring ? 'Acompanhe a atividade do robô em tempo real.' : 'Configure sua estratégia automatizada para execução no mercado.' }}</p>
@@ -33,10 +33,10 @@
                             <select 
                                 v-model="selectedSavedStrategyId" 
                                 @change="loadSavedStrategy"
-                                class="bg-transparent text-white text-xs border-none focus:ring-0 min-w-[150px]"
+                                class="bg-[#141414] text-white text-xs border-none focus:ring-0 min-w-[150px] cursor-pointer hover:text-zenix-green transition-colors"
                             >
-                                <option value="" disabled>Estratégias Salvas</option>
-                                <option v-for="s in savedStrategies" :key="s.id" :value="s.id">{{ s.name }}</option>
+                                <option value="" disabled class="bg-[#141414] text-gray-500">Selecionar Estratégia</option>
+                                <option v-for="s in savedStrategies" :key="s.id" :value="s.id" class="bg-[#141414] text-white">{{ s.name }}</option>
                             </select>
                             <button 
                                 v-if="selectedSavedStrategyId"
@@ -76,11 +76,6 @@
                                 <i class="fas fa-file-import"></i>
                                 <input type="file" ref="importInput" class="hidden" accept=".json" @change="handleImportJSON">
                             </button>
-                        </div>
-
-                        <div class="balance-card">
-                            <span class="text-[10px] uppercase text-[#7D7D7D] font-bold">Saldo Disponível</span>
-                            <span class="text-lg font-bold text-white block">$ {{ balance.toLocaleString() }}</span>
                         </div>
                     </div>
                 </div>
@@ -144,9 +139,6 @@
                     <!-- Tabs -->
                     <div class="monitoring-tabs-container mb-4">
                         <div class="monitoring-tabs flex gap-4 border-b border-[#333]">
-                            <button @click="activeMonitoringTab = 'chart'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeMonitoringTab === 'chart' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
-                                <i class="fas fa-chart-area mr-2"></i> Gráfico
-                            </button>
                             <button @click="activeMonitoringTab = 'logs'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeMonitoringTab === 'logs' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
                                 <i class="fas fa-list-ul mr-2"></i> Registros
                             </button>
@@ -158,13 +150,6 @@
 
                     <!-- Tab Content -->
                     <div class="tab-content-container bg-[#141414] border border-[#333] rounded-xl p-6 min-h-[400px]">
-                        <!-- Chart Placeholder -->
-                        <div v-show="activeMonitoringTab === 'chart'" class="chart-tab-content flex items-center justify-center h-full min-h-[300px]">
-                            <div class="text-center">
-                                <i class="fas fa-chart-line text-6xl text-zenix-green/20 mb-4 block"></i>
-                                <p class="text-[#7A7A7A]">Aguardando conexão com o mercado...</p>
-                            </div>
-                        </div>
 
                         <!-- Logs Tab -->
                         <div v-if="activeMonitoringTab === 'logs'" class="logs-tab-content h-full">
@@ -224,45 +209,45 @@
                 <div v-else class="strategy-creator-form-container px-4">
                     <form @submit.prevent="submitForm" class="space-y-8">
                         <div class="grid grid-cols-12 gap-6">
-                            <div class="col-span-12">
-                            <!-- Mercado Section (Fixed) -->
-                            <div class="form-group mb-6">
-                                <label class="block text-white font-bold mb-2">Mercado</label>
-                                <button
-                                    type="button"
-                                    @click="openMarketModal('main')"
-                                    class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
-                                >
-                                    <span class="font-medium text-lg">{{ selectedMarketLabel }}</span>
-                                    <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                </button>
+                            <!-- Mercado e Tipo de Negociação -->
+                            <div class="col-span-12 md:col-span-6">
+                                <div class="form-group">
+                                    <label class="block text-white font-bold mb-2">Mercado</label>
+                                    <button
+                                        type="button"
+                                        @click="openMarketModal('main')"
+                                        class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
+                                    >
+                                        <span class="font-medium text-lg">{{ selectedMarketLabel }}</span>
+                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- <p v-if="selectedMarketDescription" class="mt-2 text-zenix-green text-sm">
-                                {{ selectedMarketDescription }}
-                            </p> -->
-                        </div>
-
-                        <!-- Tipo de Negociação -->
-                        <div class="form-group col-span-12">
-                            <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
-                            <button
-                                type="button"
-                                @click="openTradeTypeModal('main')"
-                                :disabled="!contracts.length && !form.market"
-                                class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <img v-if="selectedTradeTypeIcon" :src="selectedTradeTypeIcon" class="w-6 h-6 contrast-[1.5] brightness-[1.5]" alt="" />
-                                    <span class="font-medium text-lg">{{ selectedTradeTypeLabel }}</span>
+                            <div class="col-span-12 md:col-span-6">
+                                <div class="form-group">
+                                    <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
+                                    <button
+                                        type="button"
+                                        @click="openTradeTypeModal('main')"
+                                        :disabled="!contracts.length && !form.market"
+                                        class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <div class="flex items-center gap-3">
+                                            <div v-if="selectedTradeTypeIcon" class="w-6 h-6 flex items-center justify-center text-zenix-green">
+                                                <i class="fa-solid fa-chart-line" v-if="form.tradeType === 'CALL' || form.tradeType === 'PUT'"></i>
+                                                <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11L13.5 15.5L8.5 10.5L2 14"/><path d="M16 11H22V17"/></svg>
+                                            </div>
+                                            <span class="font-medium text-lg">{{ selectedTradeTypeLabel }}</span>
+                                        </div>
+                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                    </button>
                                 </div>
-                                <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                            </button>
-                        </div>
+                            </div>
 
-                        <!-- Duração, Unidade, Multiplicador -->
+                        <!-- Parâmetros de Execução -->
                         <div class="col-span-12">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div>
                                     <label class="block text-white font-bold mb-2">Duração</label>
                                     <input 
@@ -298,15 +283,7 @@
                                         class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
                                     />
                                 </div>
-                            </div>
-                        </div>
-
-
-
-                        <!-- Digit Prediction/Barrier (Conditional) -->
-                        <div class="col-span-12" v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
+                                <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)">
                                     <label class="block text-white font-bold mb-2">Dígito Alvo (Previsão)</label>
                                     <div class="relative">
                                         <select 
@@ -415,13 +392,13 @@
                                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
                                         </button>
                                     </div>
-                                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div>
-                                            <label class="block text-white font-bold mb-2">Perfil de Risco</label>
+                                            <label class="block text-white font-bold mb-2 text-sm">Perfil de Risco</label>
                                             <div class="relative">
                                                 <select 
                                                     v-model="form.riskProfile" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
                                                 >
                                                     <option value="conservador">Conservador (0%)</option>
                                                     <option value="moderado">Moderado (15%)</option>
@@ -433,11 +410,11 @@
                                             </div>
                                         </div>
                                         <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(recoveryConfig.tradeType)">
-                                            <label class="block text-white font-bold mb-2">Dígito Alvo Rec.</label>
+                                            <label class="block text-white font-bold mb-2 text-sm">Dígito Alvo Rec.</label>
                                             <div class="relative">
                                                 <select 
                                                     v-model.number="recoveryConfig.prediction" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
                                                 >
                                                     <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
                                                 </select>
@@ -447,30 +424,30 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <label class="block text-white font-bold mb-2">Perdas para Rec.</label>
+                                            <label class="block text-white font-bold mb-2 text-sm">Perdas para Rec.</label>
                                             <input 
                                                 type="number" 
                                                 v-model.number="recoveryConfig.lossesToActivate" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
                                                 min="1"
                                             />
                                         </div>
-                                    </div>
-                                    <div class="md:col-span-2 flex gap-4">
-                                         <button 
-                                            type="button" 
-                                            @click="openFilterModal('recovery')"
-                                            class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <i class="fa-solid fa-filter"></i> Filtros
-                                        </button>
-                                         <button 
-                                            type="button" 
-                                            @click="showPauseModal = true"
-                                            class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <i class="fa-solid fa-pause"></i> Pausa Estratégia
-                                        </button>
+                                        <div class="flex items-end gap-2">
+                                             <button 
+                                                type="button" 
+                                                @click="openFilterModal('recovery')"
+                                                class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white h-[46px] rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2 text-xs"
+                                            >
+                                                <i class="fa-solid fa-filter"></i> Filtros
+                                            </button>
+                                             <button 
+                                                type="button" 
+                                                @click="showPauseModal = true"
+                                                class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white h-[46px] rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2 text-xs"
+                                            >
+                                                <i class="fa-solid fa-pause"></i> Pausa
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -478,7 +455,7 @@
 
                         <!-- Valores Monetários -->
                         <div class="col-span-12">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div>
                                     <label class="block text-white font-bold mb-2">Quantia inicial</label>
                                     <div class="relative">
@@ -508,19 +485,6 @@
                                 <div>
                                     <div class="flex justify-between items-center mb-2">
                                         <label class="block text-white font-bold">Limite de perda</label>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xs text-gray-400">Stop Blindado</span>
-                                            <div 
-                                                class="w-10 h-5 rounded-full relative cursor-pointer transition-colors duration-300"
-                                                :class="form.useBlindado ? 'bg-zenix-green' : 'bg-gray-600'"
-                                                @click="form.useBlindado = !form.useBlindado"
-                                            >
-                                                <div 
-                                                    class="w-3 h-3 rounded-full bg-white absolute top-1 transition-all duration-300"
-                                                    :style="{ left: form.useBlindado ? 'calc(100% - 1rem)' : '0.25rem' }"
-                                                ></div>
-                                            </div>
-                                        </div>
                                     </div>
                                     <div class="relative">
                                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
@@ -531,15 +495,32 @@
                                             step="0.01"
                                         />
                                     </div>
-                                    <div v-if="form.useBlindado" class="mt-2 flex items-center gap-2">
-                                        <label class="text-xs text-gray-400">Piso Proteção:</label>
-                                        <select v-model.number="form.stopBlindadoPercent" class="bg-transparent text-zenix-green text-xs font-bold border-none p-0 focus:ring-0">
-                                            <option value="30">30%</option>
-                                            <option value="50">50%</option>
-                                            <option value="70">70%</option>
-                                        </select>
+                                    <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.stopLoss) }}% do saldo</p>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="block text-white font-bold">Stop Blindado</label>
                                     </div>
-                                    <p v-else class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.stopLoss) }}% do saldo</p>
+                                    <div class="flex items-center gap-4 bg-[#1E1E1E] border border-[#333] rounded-lg p-2 h-[50px]">
+                                        <div 
+                                            class="w-10 h-5 rounded-full relative cursor-pointer transition-colors duration-300"
+                                            :class="form.useBlindado ? 'bg-zenix-green' : 'bg-gray-600'"
+                                            @click="form.useBlindado = !form.useBlindado"
+                                        >
+                                            <div 
+                                                class="w-3 h-3 rounded-full bg-white absolute top-1 transition-all duration-300"
+                                                :style="{ left: form.useBlindado ? 'calc(100% - 1rem)' : '0.25rem' }"
+                                            ></div>
+                                        </div>
+                                        <div v-if="form.useBlindado" class="flex flex-1 items-center gap-2">
+                                            <select v-model.number="form.stopBlindadoPercent" class="bg-transparent text-zenix-green text-sm font-bold border-none p-0 focus:ring-0">
+                                                <option value="30">30%</option>
+                                                <option value="50">50%</option>
+                                                <option value="70">70%</option>
+                                            </select>
+                                            <span class="text-[10px] text-gray-500 uppercase">Piso</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -585,22 +566,21 @@
                             <div v-for="(marketsList, category) in marketsByCategory" :key="category" class="category-card">
                                 <div class="category-card-header">
                                     <div class="category-icon-wrapper">
-                                        <svg v-if="category === 'Índices Contínuos'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <svg v-if="category === 'Índices Contínuos' || category === 'Continuous Indices'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M16 11H22V17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                         <svg v-else-if="category === 'Criptomoedas'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
                                             <path d="M9 12H15M12 9V15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
                                         </svg>
-                                        <svg v-else-if="category === 'Major Pairs' || category === 'Forex Minors' || category === 'Forex Exotics'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <svg v-else-if="category === 'Forex Majors' || category === 'Minor Pairs' || category === 'Major Pairs'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
-                                            <path d="M15 9L9 15M9 9L15 15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
-                                            <path d="M12 2V22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                                            <path d="M12 7V17M15 12H9" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
                                         </svg>
                                         <svg v-else-if="category === 'Metais'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M6 4L18 4L21 9L12 21L3 9L6 4Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M3 9H21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M3 9H21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                             <path d="M12 21V9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                         <i v-else class="fa-solid fa-bars text-white"></i>
@@ -646,22 +626,27 @@
                                     <div class="category-icon-wrapper">
                                         <svg v-if="category.id === 'rising_falling'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M16 11H22V17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category.id === 'daily_reset_indices' || category.id === 'Índices Daily Reset'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 2V22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                                            <path d="M17 7L12 2L7 7" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M17 17L12 22L7 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                         <svg v-else-if="category.id === 'digits'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M4 9H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                             <path d="M4 15H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M10 3L8 21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M16 3L14 21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M10 3L8 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 3L14 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                         <svg v-else-if="category.id === 'accumulators'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M2 17L12 22L22 17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M2 17L12 22L22 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                             <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                         <svg v-else-if="category.id === 'multipliers'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
-                                            <path d="M15 9L9 15M9 9L15 15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
+                                            <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
                                         </svg>
                                         <i v-else :class="category.icon"></i>
                                     </div>
@@ -675,7 +660,12 @@
                                         :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.tradeType : recoveryConfig.tradeType) === item.value }]"
                                     >
                                         <div class="flex items-center gap-2">
-                                            <img v-if="item.icon" :src="`/deriv_icons/${item.icon}`" class="w-5 h-5 contrast-[1.5] brightness-[1.5]" alt="" />
+                                            <div class="w-5 h-5 flex items-center justify-center text-zenix-green">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M22 11L13.5 15.5L8.5 10.5L2 14"/>
+                                                    <path d="M16 11H22V17"/>
+                                                </svg>
+                                            </div>
                                             <span>{{ item.label }}</span>
                                         </div>
                                     </button>
@@ -988,7 +978,7 @@ export default {
 
             balance: 5889.28, // Mock implementation or fetch from store
             isMonitoring: false,
-            activeMonitoringTab: 'chart',
+            activeMonitoringTab: 'logs',
             monitoringStats: {
                 balance: 5889.28,
                 profit: 0,
@@ -2078,7 +2068,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -2117,12 +2107,32 @@ export default {
 .layout-content {
     flex-grow: 1;
     padding: 20px;
-    padding-top: 50px;
+    padding-top: 80px;
     padding-bottom: 40px;
     background-color: #0B0B0B;
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
 }
+
+.strategy-creator-form-container,
+.monitoring-dashboard {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+.strategy-creator-form-container form,
+.monitoring-dashboard > div {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
 
 @media (max-width: 1024px) {
     .dashboard-content-wrapper { margin-left: 0; }
