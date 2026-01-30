@@ -1,18 +1,32 @@
 ﻿<template>
 	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ paddingTop: isMobile ? '20px' : '2rem' }">
 		<!-- Header -->
-		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 md:mt-8 mt-0">
+		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-8 gap-4 md:mt-8 mt-4 fade-in">
 			<!-- Title Section -->
 			<div v-if="showTitle" class="text-left">
-				<h2 class="text-xl font-bold text-[#FAFAFA] mb-1">MONITORAMENTO</h2>
-				<p class="text-xs text-[#A1A1AA]">Acompanhe em tempo real a performance do seu agente.</p>
+				<h1 class="text-xl font-bold text-zenix-text mb-1">MONITORAMENTO</h1>
+				<p class="text-sm text-zenix-secondary">Acompanhe em tempo real a performance do seu agente autônomo.</p>
 			</div>
 
-			<div class="flex flex-row items-center gap-2 w-full md:w-auto ml-auto">
+			<div class="flex flex-row items-center gap-3 w-full md:w-auto ml-auto">
+                <!-- Agent Selector (Non-functional switcher for UI) -->
+                <div class="relative z-[40] flex-1 md:flex-none">
+                    <button 
+                        class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-[#27272a] hover:bg-[#27272a] h-9 px-4 py-2 justify-between gap-3 bg-[#0c0c0c] text-[#FAFAFA] w-full md:min-w-[160px]"
+                        type="button"
+                    >
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-500 text-lg">⚡</span>
+                            <span class="font-medium">Agente Zeus</span>
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down text-[#A1A1AA]"><path d="m6 9 6 6 6-6"></path></svg>
+                    </button>
+                </div>
+
 				<div class="relative z-[40] flex-1 md:flex-none">
 					<button 
 						@click.stop="toggleDatePicker"
-						class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-[#27272a] hover:bg-[#27272a] hover:text-white h-9 px-4 py-2 justify-between gap-2 bg-[#0c0c0c] text-[#FAFAFA] w-full md:min-w-[180px]" 
+						class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-[#27272a] hover:bg-[#27272a] h-9 px-4 py-2 justify-between gap-2 bg-[#0c0c0c] text-[#FAFAFA] w-full md:min-w-[180px]" 
 						type="button"
 					>
 						<div class="flex items-center gap-2">
@@ -745,6 +759,10 @@
 			shouldTeleport: {
 				type: Boolean,
 				default: false
+			},
+			showTitle: {
+				type: Boolean,
+				default: true
 			},
 			isMobile: {
 				type: Boolean,

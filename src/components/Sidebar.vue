@@ -1,6 +1,6 @@
 <template>
     <div class="sidebar-wrapper">
-        <aside class="sidebar" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
+        <aside class="sidebar noise-bg" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <nav class="menu">
             <template v-if="!isAdminFlow">
                 <a
