@@ -30,50 +30,34 @@
                         <!-- Mercado Section -->
                         <div class="form-group">
                             <label class="block text-white font-bold mb-2">Mercado</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fa-solid fa-chart-bar text-gray-500"></i>
-                                </div>
-                                <select 
-                                    v-model="form.market" 
-                                    @change="onMarketChange"
-                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-zenix-green transition-colors appearance-none"
-                                >
-                                    <option value="" disabled>Selecione um mercado</option>
-                                    <option v-for="market in markets" :key="market.symbol" :value="market.symbol">
-                                        {{ market.displayName }}
-                                    </option>
-                                </select>
-                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                    <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                </div>
-                            </div>
-                            <p v-if="selectedMarketDescription" class="mt-2 text-zenix-green text-sm">
+                            <button
+                                type="button"
+                                @click="openMarketModal"
+                                class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
+                            >
+                                <span class="font-medium text-lg">{{ selectedMarketLabel }}</span>
+                                <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                            </button>
+                            <!-- <p v-if="selectedMarketDescription" class="mt-2 text-zenix-green text-sm">
                                 {{ selectedMarketDescription }}
-                            </p>
+                            </p> -->
                         </div>
 
                         <!-- Tipo de Negociação -->
                         <div class="form-group">
                             <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fa-solid fa-layer-group text-gray-500"></i>
+                            <button
+                                type="button"
+                                @click="openTradeTypeModal"
+                                :disabled="!contracts.length && !form.market"
+                                class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <img v-if="selectedTradeTypeGroupIcon" :src="selectedTradeTypeGroupIcon" class="w-6 h-6 contrast-[1.5] brightness-[1.5]" alt="" />
+                                    <span class="font-medium text-lg">{{ selectedTradeTypeGroupLabel }}</span>
                                 </div>
-                                <select 
-                                    v-model="form.tradeType" 
-                                    :disabled="!contracts.length"
-                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:border-zenix-green transition-colors appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <option value="" disabled>Selecione o tipo</option>
-                                    <option v-for="contract in contracts" :key="contract.contractType" :value="contract.contractType">
-                                        {{ contract.contractDisplay || contract.contractType }}
-                                    </option>
-                                </select>
-                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                    <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                </div>
-                            </div>
+                                <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                            </button>
                         </div>
 
                         <!-- Duração, Unidade, Multiplicador -->
@@ -159,6 +143,98 @@
                             </div>
                         </div>
 
+                        <!-- Configuração de Recuperação (New Section) -->
+                        <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-4 opacity-5">
+                                <i class="fa-solid fa-shield-heart text-6xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
+                                <i class="fa-solid fa-shield-heart text-zenix-green"></i>
+                                Configuração de Recuperação
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Perdas para ativar</label>
+                                    <input 
+                                        type="number" 
+                                        v-model.number="recoveryConfig.lossesToActivate" 
+                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                        min="0"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Troca de contrato</label>
+                                    <div class="relative">
+                                        <select 
+                                            v-model="recoveryConfig.contractSwitch" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                        >
+                                            <option :value="true">Ativado</option>
+                                            <option :value="false">Desativado</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="flex items-center justify-between bg-[#1E1E1E] p-3 rounded-lg border border-[#333]">
+                                        <span class="text-sm font-bold">Troca para modo normal</span>
+                                        <div 
+                                            class="w-12 h-6 rounded-full relative cursor-pointer transition-colors duration-300"
+                                            :class="recoveryConfig.switchToNormal ? 'bg-zenix-green' : 'bg-gray-600'"
+                                            @click="recoveryConfig.switchToNormal = !recoveryConfig.switchToNormal"
+                                        >
+                                            <div 
+                                                class="w-4 h-4 rounded-full bg-white absolute top-1 transition-all duration-300"
+                                                :style="{ left: recoveryConfig.switchToNormal ? 'calc(100% - 1.25rem)' : '0.25rem' }"
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between bg-[#1E1E1E] p-3 rounded-lg border border-[#333]">
+                                        <span class="text-sm font-bold">Troca para modo preciso</span>
+                                        <div 
+                                            class="w-12 h-6 rounded-full relative cursor-pointer transition-colors duration-300"
+                                            :class="recoveryConfig.switchToPrecise ? 'bg-zenix-green' : 'bg-gray-600'"
+                                            @click="recoveryConfig.switchToPrecise = !recoveryConfig.switchToPrecise"
+                                        >
+                                            <div 
+                                                class="w-4 h-4 rounded-full bg-white absolute top-1 transition-all duration-300"
+                                                :style="{ left: recoveryConfig.switchToPrecise ? 'calc(100% - 1.25rem)' : '0.25rem' }"
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <!-- <label class="block text-xs text-gray-400 mb-1">Máx. perdas (Preciso)</label> -->
+                                        <input 
+                                            type="number" 
+                                            placeholder="Máx. perdas preciso"
+                                            v-if="recoveryConfig.switchToPrecise"
+                                            v-model.number="recoveryConfig.maxPreciseLosses" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 text-sm focus:outline-none focus:border-zenix-green transition-colors"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="md:col-span-2 flex gap-4">
+                                     <button 
+                                        type="button" 
+                                        @click="showFilterModal = true"
+                                        class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <i class="fa-solid fa-filter"></i> Filtros
+                                    </button>
+                                     <button 
+                                        type="button" 
+                                        @click="showPauseModal = true"
+                                        class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <i class="fa-solid fa-pause"></i> Pausa Estratégia
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Valores Monetários -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
@@ -190,7 +266,7 @@
                             <div>
                                 <div class="flex justify-between items-center mb-2">
                                     <label class="block text-white font-bold">Limite de perda</label>
-                                    <i class="fa-solid fa-gear text-gray-400 cursor-pointer hover:text-white transition-colors"></i>
+                                    <!-- <i class="fa-solid fa-gear text-gray-400 cursor-pointer hover:text-white transition-colors"></i> -->
                                 </div>
                                 <div class="relative">
                                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
@@ -224,6 +300,211 @@
             :is-open="showSettingsModal" 
             @close="showSettingsModal = false" 
         />
+
+        <!-- Market Selection Modal -->
+        <Teleport to="body">
+            <div 
+                v-if="showMarketModal" 
+                class="modal-overlay" 
+                data-modal="market" 
+                @click.self="closeMarketModal"
+            >
+                <div class="modal-content categorized-modal">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Selecionar Mercado</h3>
+                        <button @click="closeMarketModal" class="modal-close-btn">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="categories-grid">
+                            <div v-for="(markets, category) in marketsByCategory" :key="category" class="category-card">
+                                <div class="category-card-header">
+                                    <div class="category-icon-wrapper">
+                                        <svg v-if="category === 'Índices Contínuos'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 11H22V17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category === 'Criptomoedas'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
+                                            <path d="M9 12H15M12 9V15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
+                                        </svg>
+                                        <svg v-else-if="category === 'Major Pairs' || category === 'Forex Minors' || category === 'Forex Exotics'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
+                                            <path d="M15 9L9 15M9 9L15 15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
+                                            <path d="M12 2V22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                                        </svg>
+                                        <svg v-else-if="category === 'Metais'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M6 4L18 4L21 9L12 21L3 9L6 4Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M3 9H21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M12 21V9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <i v-else class="fa-solid fa-bars text-white"></i>
+                                    </div>
+                                    <h4 class="category-card-title">{{ category }}</h4>
+                                </div>
+                                <div class="category-items-list">
+                                    <button
+                                        v-for="market in markets"
+                                        :key="market.value"
+                                        @click="selectMarket(market.value)"
+                                        :class="['category-item-btn', { 'active': form.market === market.value }]"
+                                    >
+                                        {{ market.label }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+          
+        <!-- Trade Type Selection Modal -->
+        <Teleport to="body">
+            <div 
+                v-if="showTradeTypeModal" 
+                class="modal-overlay" 
+                data-modal="trade-type" 
+                @click.self="closeTradeTypeModal"
+            >
+                <div class="modal-content categorized-modal">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
+                        <button @click="closeTradeTypeModal" class="modal-close-btn">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="categories-grid">
+                            <div v-for="category in availableTradeTypeGroups" :key="category.id" class="category-card">
+                                <div class="category-card-header">
+                                    <div class="category-icon-wrapper">
+                                        <svg v-if="category.id === 'rising_falling'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 11H22V17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category.id === 'digits'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M4 9H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M4 15H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M10 3L8 21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 3L14 21" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category.id === 'accumulators'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M2 17L12 22L22 17" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category.id === 'multipliers'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
+                                            <path d="M15 9L9 15M9 9L15 15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
+                                        </svg>
+                                        <i v-else :class="category.icon"></i>
+                                    </div>
+                                    <h4 class="category-card-title">{{ category.label }}</h4>
+                                </div>
+                                <div class="category-items-list">
+                                    <button
+                                        v-for="item in category.items"
+                                        :key="item.value"
+                                        @click="selectTradeType(item)"
+                                        :class="['category-item-btn', { 'active': form.selectedTradeTypeGroup === item.value }]"
+                                    >
+                                        <div class="flex items-center gap-2">
+                                            <img v-if="item.icon" :src="`/deriv_icons/${item.icon}`" class="w-5 h-5 contrast-[1.5] brightness-[1.5]" alt="" />
+                                            <span>{{ item.label }}</span>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
+        <!-- Filter Modal Placeholder -->
+        <Teleport to="body">
+            <div v-if="showFilterModal" class="modal-overlay" @click.self="showFilterModal = false">
+                <div class="modal-content" style="max-width: 500px">
+                     <div class="modal-header">
+                        <h3 class="modal-title">Filtros de Entrada</h3>
+                        <button @click="showFilterModal = false" class="modal-close-btn">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                         <div class="space-y-4">
+                             <!-- Placeholder for filters -->
+                             <div class="flex items-center gap-3 p-3 bg-[#111] rounded border border-[#333]">
+                                 <input type="checkbox" id="trend" class="w-5 h-5 accent-zenix-green" />
+                                 <label for="trend" class="text-white cursor-pointer select-none">Seguir Tendência (EMA)</label>
+                             </div>
+                             <div class="flex items-center gap-3 p-3 bg-[#111] rounded border border-[#333]">
+                                 <input type="checkbox" id="rsi" class="w-5 h-5 accent-zenix-green" />
+                                 <label for="rsi" class="text-white cursor-pointer select-none">Filtro RSI (Sobrecompra/Sobrevenda)</label>
+                             </div>
+                             <div class="p-4 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-sm rounded">
+                                 Mais filtros serão adicionados em breve.
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
+        <!-- Pause Strategy Modal -->
+        <Teleport to="body">
+            <div v-if="showPauseModal" class="modal-overlay" @click.self="showPauseModal = false">
+                <div class="modal-content" style="max-width: 500px">
+                     <div class="modal-header">
+                        <h3 class="modal-title">Pausa Estratégica</h3>
+                        <button @click="showPauseModal = false" class="modal-close-btn">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body space-y-6">
+                         <div>
+                            <label class="block text-white font-bold mb-2">Derrotas para ativar (Sequenciais)</label>
+                            <input 
+                                type="number" 
+                                v-model.number="recoveryConfig.pauseLosses"
+                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                            />
+                        </div>
+                        
+                        <div class="pt-4 border-t border-[#333]">
+                            <h4 class="text-lg font-bold text-white mb-3">Filtro de Saída (Retomar)</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Volatilidade (DVX &lt; ?)</label>
+                                    <input 
+                                        type="number"
+                                        placeholder="Ex: 50" 
+                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Tempo (minutos)</label>
+                                    <input 
+                                        type="number"
+                                        placeholder="Ex: 5" 
+                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-4">
+                            <button @click="showPauseModal = false" class="w-full bg-zenix-green text-black font-bold py-3 rounded-lg">
+                                Salvar Configuração
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
     </div>
 </template>
 
@@ -245,11 +526,20 @@ export default {
             isSidebarCollapsed: false,
             isMobile: false,
             showSettingsModal: false,
+            
+            // UI Modals
+            showMarketModal: false,
+            showTradeTypeModal: false,
+            showFilterModal: false,
+            showPauseModal: false,
+
             markets: [],
             contracts: [],
+            
             form: {
                 market: '',
-                tradeType: '',
+                selectedTradeTypeGroup: '', // For grouping
+                tradeType: '', // Actual API value
                 duration: 1,
                 durationUnit: 't',
                 multiplier: 2.2,
@@ -260,22 +550,225 @@ export default {
                 takeProfit: 20,
                 stopLoss: 1000
             },
-            balance: 5889.28 // Mock implementation or fetch from store
+            
+            recoveryConfig: {
+                lossesToActivate: 2,
+                contractSwitch: true,
+                switchToNormal: false,
+                switchToPrecise: true,
+                maxPreciseLosses: 3,
+                pauseLosses: 5
+            },
+
+            balance: 5889.28,
+
+            // Hardcoded Category Data (from OperationChart.vue)
+            tradeTypeCategories: [
+                {
+                    id: 'rising_falling',
+                    label: 'Sobe / Desce',
+                    icon: 'fas fa-chart-line',
+                    items: [
+                        { value: 'rise_fall', label: 'Sobe / Desce', icon: 'TradeTypesRiseFallIcon.svg', directions: [
+                            { value: 'CALL', label: 'Sobe' },
+                            { value: 'PUT', label: 'Desce' }
+                        ]},
+                        { value: 'rise_fall_equal', label: 'Sobe / Desce Igual', icon: 'TradeTypesRiseFallEqualIcon.svg', directions: [
+                            { value: 'CALLE', label: 'Sobe Igual' },
+                            { value: 'PUTE', label: 'Desce Igual' }
+                        ]}
+                    ]
+                },
+                {
+                    id: 'digits',
+                    label: 'Dígitos',
+                    icon: 'fas fa-sort-numeric-up',
+                    items: [
+                        { value: 'match_diff', label: 'Combina / Difere', icon: 'TradeTypesDigitsMatchDiffIcon.svg', directions: [
+                            { value: 'DIGITMATCH', label: 'Combina' },
+                            { value: 'DIGITDIFF', label: 'Difere' }
+                        ]},
+                        { value: 'even_odd', label: 'Par / Ímpar', icon: 'TradeTypesDigitsEvenOddIcon.svg', directions: [
+                            { value: 'DIGITEVEN', label: 'Par' },
+                            { value: 'DIGITODD', label: 'Ímpar' }
+                        ]},
+                        { value: 'over_under', label: 'Acima / Abaixo', icon: 'TradeTypesDigitsOverUnderIcon.svg', directions: [
+                            { value: 'DIGITOVER', label: 'Acima' },
+                            { value: 'DIGITUNDER', label: 'Abaixo' }
+                        ]}
+                    ]
+                },
+                {
+                    id: 'one_barrier',
+                    label: 'Uma Barreira',
+                    icon: 'fas fa-bullseye',
+                    items: [
+                        { value: 'touch_no_touch', label: 'Toca / Não Toca', icon: 'TradeTypesHighsAndLowsTouchIcon.svg', directions: [
+                            { value: 'ONETOUCH', label: 'Toca' },
+                            { value: 'NOTOUCH', label: 'Não Toca' }
+                        ]},
+                        { value: 'higher_lower', label: 'Maior / Menor', icon: 'TradeTypesHighsAndLowsHigherIcon.svg', directions: [
+                            { value: 'HIGHER', label: 'Maior' },
+                            { value: 'LOWER', label: 'Menor' }
+                        ]}
+                    ]
+                },
+                {
+                    id: 'two_barriers',
+                    label: 'Duas Barreiras',
+                    icon: 'fas fa-shield-alt',
+                    items: [
+                        { value: 'in_out', label: 'Permanece Dentro / Sai Fora', icon: 'TradeTypesInsAndOutsStaysInIcon.svg', directions: [
+                            { value: 'RANGE', label: 'Permanece Dentro' },
+                            { value: 'UPORDOWN', label: 'Sai Fora' }
+                        ]},
+                        { value: 'ends_in_out', label: 'Termina Dentro / Termina Fora', icon: 'TradeTypesInsAndOutsEndsInIcon.svg', directions: [
+                            { value: 'EXPIRYRANGE', label: 'Termina Dentro' },
+                            { value: 'EXPIRYMISS', label: 'Termina Fora' }
+                        ]}
+                    ]
+                },
+                {
+                    id: 'no_expiry',
+                    label: 'Sem Vencimento',
+                    icon: 'fas fa-bolt',
+                    items: [
+                        { value: 'multipliers_mult', label: 'Multiplicadores', icon: 'TradeTypesMultipliersUpIcon.svg', directions: [
+                            { value: 'MULTUP', label: 'Alta' },
+                            { value: 'MULTDOWN', label: 'Baixa' }
+                        ]},
+                        { value: 'accumulators_accu', label: 'Acumuladores', icon: 'TradeTypesAccumulatorStayInIcon.svg', directions: [
+                            { value: 'ACCU', label: 'Acumuladores' }
+                        ]}
+                    ]
+                }
+            ],
+            allTradeTypes: [
+                { value: 'CALL', label: 'Subida' }, { value: 'PUT', label: 'Queda' },
+                { value: 'DIGITMATCH', label: 'Combina' }, { value: 'DIGITDIFF', label: 'Difere' },
+                { value: 'DIGITEVEN', label: 'Par' }, { value: 'DIGITODD', label: 'Ímpar' },
+                { value: 'DIGITOVER', label: 'Superior' }, { value: 'DIGITUNDER', label: 'Inferior' },
+                { value: 'CALLE', label: 'Subida Igual' }, { value: 'PUTE', label: 'Queda Igual' },
+                { value: 'ACCU', label: 'Acumuladores' },
+                { value: 'MULTUP', label: 'Alta' }, { value: 'MULTDOWN', label: 'Baixa' },
+                { value: 'ONETOUCH', label: 'Toca' }, { value: 'NOTOUCH', label: 'Não Toca' },
+                { value: 'HIGHER', label: 'Maior' }, { value: 'LOWER', label: 'Menor' },
+                { value: 'RANGE', label: 'Permanece Dentro' }, { value: 'UPORDOWN', label: 'Sai Fora' },
+                { value: 'EXPIRYRANGE', label: 'Termina Dentro' }, { value: 'EXPIRYMISS', label: 'Termina Fora' },
+            ]
         }
     },
     computed: {
-        selectedMarketDescription() {
-            // This is a placeholder as the API might not return this description directly
-            // In a real scenario, this could be mapped or fetched
-            if (this.form.market === 'R_100') return 'Volatilidade constante de 100% com um tique a cada 2 segundos';
-            return '';
+        marketsByCategory() {
+            const grouped = {};
+            
+            // Priority Order
+            const categoryPriority = {
+                'Índices Contínuos': 1,
+                'Daily Reset Indices': 2,
+                'Indices Step': 3,
+                'Jump Indices': 4,
+                'Boom/Crash': 5,
+                'Criptomoedas': 6,
+                'Forex Majors': 7,
+                'Forex Minors': 8,
+                'Outros': 99
+            };
+
+            const nameMap = {
+                'Indices Step': 'Índices Step',
+                'Jump Indices': 'Índices JUMP',
+                'Boom/Crash': 'Índices Crash/Boom',
+                'Daily Reset Indices': 'Índices Daily Reset',
+                'Major Pairs': 'Forex Majors',
+                'Minor Pairs': 'Forex Minors'
+            };
+            
+            this.markets.forEach(market => {
+                let category = market.category || 'Outros';
+                
+                if (nameMap[category]) {
+                    category = nameMap[category];
+                }
+
+                if (!grouped[category]) {
+                    grouped[category] = [];
+                }
+                grouped[category].push(market);
+            });
+
+            const sortedGrouped = {};
+            const categories = Object.keys(grouped).sort((a, b) => {
+                const pA = categoryPriority[a] || 99;
+                const pB = categoryPriority[b] || 99;
+                return pA - pB;
+            });
+
+            categories.forEach(cat => {
+                sortedGrouped[cat] = grouped[cat];
+            });
+
+            return sortedGrouped;
+        },
+        selectedMarketLabel() {
+            const market = this.markets.find(m => m.symbol === this.form.market); // Using 'symbol' property usually used in StrategyCreator
+            if (market) return market.displayName || market.label;
+            
+            // Try matching by value if symbol not found (fallback)
+            const marketByValue = this.markets.find(m => m.value === this.form.market);
+            return marketByValue ? marketByValue.label : 'Selecione um mercado';
+        },
+        selectedTradeTypeGroupLabel() {
+            if (!this.form.selectedTradeTypeGroup) return 'Selecionar Tipo';
+            
+            for (const cat of this.tradeTypeCategories) {
+                const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
+                if (item) return item.label;
+            }
+            return 'Selecionar Tipo';
+        },
+        selectedTradeTypeGroupIcon() {
+            if (!this.form.selectedTradeTypeGroup) return null;
+            
+            for (const cat of this.tradeTypeCategories) {
+                const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
+                if (item && item.icon) return `/deriv_icons/${item.icon}`;
+            }
+            return null;
+        },
+        availableContracts() {
+            // Converts fetched contracts to a list of types to filter categories
+            if (!this.contracts || this.contracts.length === 0) return [];
+            return this.contracts.map(c => c.contractType.toUpperCase());
+        },
+        availableTradeTypeGroups() {
+             // If no contracts loaded yet, show all (or none? better show all to explore)
+             // But UI is disabled if no contracts.
+             // If contracts are loaded, filter.
+             
+             if (!this.availableContracts.length) return []; // Should rely on disabled state
+
+             const availableTypes = this.availableContracts;
+             
+             return this.tradeTypeCategories.map(category => {
+                const filteredItems = category.items.filter(item => {
+                  return item.directions.some(dir => availableTypes.includes(dir.value.toUpperCase()));
+                });
+                
+                if (filteredItems.length > 0) {
+                  return {
+                    ...category,
+                    items: filteredItems
+                  };
+                }
+                return null;
+              }).filter(Boolean);
         }
     },
     mounted() {
         this.handleResize();
         window.addEventListener('resize', this.handleResize);
         this.fetchMarkets();
-        // this.fetchBalance(); // Implement real balance fetching
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
@@ -300,15 +793,32 @@ export default {
                 });
 
                 if (res.ok) {
-                    this.markets = await res.json();
+                    const data = await res.json();
+                    // Fallback mapping if backend doesn't provide category/value/label structure expected by categorization logic
+                    this.markets = data.map(m => ({
+                        ...m,
+                        value: m.symbol,
+                        label: m.displayName,
+                        category: m.submarket_display_name || m.market_display_name || 'Outros' // Try to map category
+                    }));
                 }
             } catch (error) {
                 console.error('Erro ao buscar mercados:', error);
                 this.$root.$toast.error('Erro ao carregar mercados');
+                
+                // Fallback debug data if simulation/failure
+                 this.markets = [
+                     { value: 'R_100', symbol: 'R_100', label: 'Volatility 100', displayName: 'Volatility 100', category: 'Índices Contínuos' },
+                     { value: 'R_10', symbol: 'R_10', label: 'Volatility 10', displayName: 'Volatility 10', category: 'Índices Contínuos' },
+                 ];
             }
         },
         async onMarketChange() {
             if (!this.form.market) return;
+            
+            this.contracts = [];
+            this.form.selectedTradeTypeGroup = '';
+            this.form.tradeType = '';
             
             try {
                 const token = localStorage.getItem('token');
@@ -320,21 +830,52 @@ export default {
 
                 if (res.ok) {
                     this.contracts = await res.json();
-                    if (this.contracts.length > 0) {
-                        this.form.tradeType = this.contracts[0].contractType;
-                    }
                 }
             } catch (error) {
                 console.error('Erro ao buscar contratos:', error);
                 this.$root.$toast.error('Erro ao carregar contratos do mercado');
             }
         },
+        // Modal Handlers
+        openMarketModal() {
+            this.showMarketModal = true;
+        },
+        closeMarketModal() {
+            this.showMarketModal = false;
+        },
+        selectMarket(symbol) {
+            this.form.market = symbol;
+            this.closeMarketModal();
+            this.onMarketChange();
+        },
+        openTradeTypeModal() {
+            if (!this.contracts.length) return;
+            this.showTradeTypeModal = true;
+        },
+        closeTradeTypeModal() {
+            this.showTradeTypeModal = false;
+        },
+        selectTradeType(item) {
+            this.form.selectedTradeTypeGroup = item.value;
+            // Default to first direction or something logical, usually 'CALL' equivalent
+            // But since this is a strategy config, maybe just setting the group is enough for now?
+            // User might need to select direction specific if logic demands.
+            // For now, let's assume the Strategy handles the group logic (e.g. Rise/Fall encompasses both)
+            
+            // Set first available direction as default tradeType for form submission
+            if (item.directions && item.directions.length > 0) {
+                 this.form.tradeType = item.directions[0].value;
+            }
+            
+            this.closeTradeTypeModal();
+        },
+        
         calculatePercentage(value) {
             if (!value || !this.balance) return '0.00';
             return ((value / this.balance) * 100).toFixed(2);
         },
         submitForm() {
-            console.log('Strategy Config:', this.form);
+            console.log('Strategy Config:', { ...this.form, recovery: this.recoveryConfig });
             this.$root.$toast.success('Robô iniciado com sucesso! (Simulação)');
         }
     }
@@ -383,5 +924,196 @@ export default {
     .dashboard-content-wrapper { margin-left: 0; }
     .dashboard-content-wrapper.sidebar-collapsed { margin-left: 0; }
     .layout-content { padding-top: 70px; }
+}
+
+/* Modal Styles Copied/Adapted from OperationChart */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  pointer-events: auto;
+}
+
+.modal-content {
+  position: relative;
+  background: #0F0F0F;
+  border: 1px solid #1A1A1A;
+  border-radius: 24px;
+  padding: 0;
+  min-width: 480px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: none;
+  animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  border-bottom: 1px solid #1A1A1A;
+  background: #0F0F0F;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-body {
+  padding: 24px 32px;
+  background: #0F0F0F;
+}
+
+.categorized-modal {
+  min-width: 900px !important;
+  max-width: 1100px !important;
+  background: #0B0B0B !important;
+  border-radius: 12px !important;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.category-card {
+  background: rgba(17, 17, 17, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 320px;
+  width: 100%; 
+}
+
+.category-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.category-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  background: rgba(34, 197, 94, 0.15) !important;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(34, 197, 94, 0.25);
+}
+
+.category-icon-wrapper svg, .category-icon-wrapper svg path {
+  stroke: #22C55E !important;
+}
+
+.category-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.category-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-item-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.category-item-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
+}
+
+.category-item-btn.active {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22C55E;
+  font-weight: 500;
+  border-left: 2px solid #22C55E;
+  border-radius: 0 6px 6px 0;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (max-width: 1024px) {
+  .categorized-modal {
+    min-width: 95% !important;
+  }
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .categories-grid {
+    grid-template-columns: 1fr;
+    gap: 16px !important;
+  }
+  .categorized-modal {
+    min-width: auto !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    max-height: calc(100vh - 20px) !important;
+  }
+  .modal-body {
+     padding: 20px 16px !important; 
+  }
+  .category-card {
+     min-height: auto !important; 
+  }
 }
 </style>
