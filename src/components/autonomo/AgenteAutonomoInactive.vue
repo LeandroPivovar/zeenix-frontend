@@ -368,41 +368,52 @@
 							<div 
 								v-for="agent in availableAgents" 
 								:key="agent.id"
-								class="agent-card-premium"
+								class="agent-selection-card"
 								:class="{ 'active': selectedAgent === agent.id }"
 								@click="selectAgent(agent.id)"
 							>
-								<!-- Left: Avatar/Video -->
-								<div class="agent-avatar-container">
-									<div class="agent-avatar-mask">
+								<!-- Card Header: Icon, Name, Badge, Performance -->
+								<div class="agent-card-header">
+									<div class="agent-card-icon-box" :class="agent.id">
 										<video 
 											v-if="agent.video" 
 											:src="agent.video" 
-											class="agent-video-avatar" 
+											class="agent-card-video" 
 											autoplay 
 											loop 
 											muted 
 											playsinline
 										></video>
-										<div v-else class="agent-image-avatar">
+										<div v-else class="agent-card-fallback-icon">
 											<img :src="agent.icons[0]" class="deriv-svg-icon" />
+										</div>
+									</div>
+									<div class="agent-card-titles">
+										<h4 class="agent-card-name">{{ agent.title.replace('Agente ', '') }}</h4>
+										<span class="agent-card-badge">{{ agent.badge }}</span>
+									</div>
+									<div class="agent-card-performance">
+										<span class="perf-value">{{ agent.percentage }}</span>
+										<span class="perf-label">{{ agent.percentageLabel }}</span>
+									</div>
+								</div>
+
+								<!-- Card Content: Feature List -->
+								<div class="agent-card-body">
+									<p class="agent-card-subtitle">{{ agent.subtitle }}</p>
+									<div class="agent-card-features">
+										<div v-for="(feature, idx) in agent.features" :key="idx" class="feature-item">
+											<i class="fas fa-check-circle feature-icon"></i>
+											<span>{{ feature }}</span>
 										</div>
 									</div>
 								</div>
 
-								<!-- Middle: Info -->
-								<div class="agent-info-premium">
-									<h4 class="agent-title-premium">{{ agent.title.replace('Agente ', '') }}</h4>
-									<p class="agent-subtitle-premium">{{ agent.subtitle }}</p>
-								</div>
-
-								<!-- Right: Stats & Graph -->
-								<div class="agent-stats-premium">
-									<!-- Mini Graph SVG -->
-									<svg class="agent-mini-graph" width="60" height="24" viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-										<path d="M2 22L12 16L22 19L32 10L42 14L58 2" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-									</svg>
-									<span class="agent-percentage-premium">{{ agent.percentage }}</span>
+								<!-- Card Footer: Select Button -->
+								<div class="agent-card-footer">
+									<button class="agent-select-btn" :class="{ 'selected': selectedAgent === agent.id }">
+										{{ selectedAgent === agent.id ? 'SELECIONADO' : 'SELECIONAR' }}
+									</button>
 								</div>
 							</div>
 						</div>
@@ -472,23 +483,37 @@ export default {
 					id: 'zeus',
 					title: 'Agente Zeus',
 					subtitle: 'Análise de Fluxo',
+					badge: 'OFENSIVO',
 					percentage: '+3.15%',
+					percentageLabel: 'Hoje',
 					graphColor: '#22c55e',
 					video: '/Zeus_Lança_Raio_em_Vídeo.mp4',
 					marketType: 'Digits',
 					icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg'],
-					description: 'Análise: Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação\nAssertividade: 56% a 90%\nRetorno: 56% / 85%'
+					description: 'O Agente Zeus foca em alta frequência e assertividade instantânea, ideal para quem busca resultados rápidos.',
+					features: [
+						'Ideal para contas pequenas',
+						'Alta frequência de entradas',
+						'Proteção de capital agressiva'
+					]
 				},
 				{
 					id: 'falcon',
 					title: 'Agente Falcon',
 					subtitle: 'Barreira de segurança',
+					badge: 'DEFENSIVO',
 					percentage: '+2.89%',
+					percentageLabel: 'Hoje',
 					graphColor: '#22c55e',
 					video: '/Animação_de_Voo_Gerada.mp4',
 					marketType: 'Digits',
 					icons: ['/deriv_icons/TradeTypesHighsAndLowsHighIcon.svg'],
-					description: 'Análise: Padrão Estatístico (Entropia + Força + Assertividade)\nAssertividade: 60% a 70%\nRetorno: 63.5%'
+					description: 'O Agente Falcon prioriza a preservação do capital com entradas cirúrgicas e barreira de proteção.',
+					features: [
+						'Ideal para banca acima de $500',
+						'Foco em consistência diária',
+						'Menor exposição ao risco'
+					]
 				}
 			]
 		};
@@ -1355,27 +1380,223 @@ export default {
     box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4);
 }
 
-.start-disclaimer-center {
-    font-size: 0.75rem;
-    color: #666;
-    font-style: italic;
-    text-align: center;
+/* --- NOVO DESIGN: MODAL DE SELEÇÃO DE AGENTE (Image 3) --- */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
 }
 
-.form-input {
+.modal-content.categorized-modal {
     width: 100%;
-    background-color: #0B0B0B;
+    max-width: 500px; /* Narrower modal as per Image 3 */
+    background: #0D0D0D;
     border: 1px solid #1C1C1C;
-    border-radius: 0.5rem;
-    padding: 0.625rem 0.75rem 0.625rem 1.75rem;
-    font-size: 0.875rem;
-    color: #DFDFDF;
-    outline: none;
-    transition: border-color 0.2s;
-    height: 45px; /* Standardizing height to match Stoploss */
-    box-sizing: border-box;
+    border-radius: 1.25rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
 }
 
+.modal-header-premium {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.modal-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+    color: #fff;
+}
+
+.modal-body {
+    padding: 1.25rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.agents-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.agent-selection-card {
+    background: #111;
+    border: 1px solid #1C1C1C;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.agent-selection-card:hover {
+    border-color: rgba(34, 197, 94, 0.3);
+    background: #141414;
+    transform: translateY(-2px);
+}
+
+.agent-selection-card.active {
+    border-color: #22C55E;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+}
+
+.agent-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.agent-card-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(34, 197, 94, 0.1);
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.agent-card-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.agent-card-titles {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.agent-card-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.agent-card-badge {
+    font-size: 0.625rem;
+    font-weight: 800;
+    color: #22C55E;
+    background: rgba(34, 197, 94, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    width: fit-content;
+    letter-spacing: 1px;
+}
+
+.agent-card-performance {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+}
+
+.perf-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #22C55E;
+}
+
+.perf-label {
+    font-size: 0.625rem;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.agent-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.agent-card-subtitle {
+    font-size: 0.813rem;
+    color: #666;
+    margin: 0;
+}
+
+.agent-card-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.813rem;
+    color: #DFDFDF;
+}
+
+.feature-icon {
+    font-size: 0.875rem;
+    color: #22C55E;
+}
+
+.agent-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 0.5rem;
+}
+
+.agent-select-btn {
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    border: 1px solid #1C1C1C;
+    background: #0D0D0D;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+}
+
+.agent-selection-card:hover .agent-select-btn {
+    border-color: #22C55E;
+}
+
+.agent-select-btn.selected {
+    background: #22C55E;
+    border-color: #22C55E;
+    color: #000;
+}
 
 /* Premium Selector Button */
 .premium-selector-btn {
