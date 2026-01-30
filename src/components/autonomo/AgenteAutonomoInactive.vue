@@ -5,7 +5,7 @@
 			<!-- Header Section -->
 		<section class="fade-in" style="margin-bottom: 1.5rem;">
 			<!-- Desktop: AI Vision Panel -->
-			<div class="ai-vision-panel-desktop" style="margin-top: 2rem;">
+			<div v-if="!isMobile" class="ai-vision-panel-desktop" style="margin-top: 2rem;">
 				<div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
 					<!-- Header Desktop -->
 					<div class="mb-6">
@@ -98,7 +98,7 @@
 			
 			<!-- Mobile: Simple Header -->
 			<!-- Mobile: Header Structured -->
-			<div class="mb-6 ai-vision-header-mobile">
+			<div v-if="isMobile" class="mb-6 ai-vision-header-mobile">
 				<div class="flex items-center justify-between">
 					<div class="text-left flex flex-col gap-[3px]">
 						<h1 class="text-xl font-bold text-zenix-text leading-tight">Configuração do Agente Autônomo</h1>
@@ -132,14 +132,24 @@
 							>
 								<div class="selector-content">
 									<div class="selector-left">
-										<div class="strategy-icons-inline" v-if="selectedAgent">
-											<img 
-												v-for="icon in availableAgents.find(a => a.id === selectedAgent)?.icons" 
-												:key="icon" 
-												:src="icon" 
-												class="deriv-svg-icon-small"
-											/>
-										</div>
+                                            <div class="strategy-icons-inline" v-if="selectedAgent">
+                                                <div class="agent-avatar-mask-small">
+                                                    <video 
+                                                        v-if="availableAgents.find(a => a.id === selectedAgent)?.video" 
+                                                        :src="availableAgents.find(a => a.id === selectedAgent)?.video" 
+                                                        class="agent-video-avatar" 
+                                                        autoplay 
+                                                        loop 
+                                                        muted 
+                                                        playsinline
+                                                    ></video>
+                                                    <img 
+                                                        v-else
+                                                        :src="availableAgents.find(a => a.id === selectedAgent)?.icons[0]" 
+                                                        class="deriv-svg-icon-small"
+                                                    />
+                                                </div>
+                                            </div>
 										<span :class="{ 'placeholder': !selectedAgent }">
 											{{ selectedAgent ? 'IA ' + getAgentTitle(selectedAgent).replace('Agente ', '') : 'Selecione seu agente' }}
 										</span>
@@ -431,6 +441,10 @@ export default {
 		planFeatures: {
 			type: Object,
 			default: null
+		},
+		isMobile: {
+			type: Boolean,
+			default: false
 		}
 		// NOTA: Este componente também está recebendo 'estrategia', 'mercado', 'risco', etc.
 		// do 'agenteData' (via v-bind), mas está usando seu próprio 'data()' local.
@@ -781,6 +795,12 @@ export default {
 .layout-content-agent-autonomo {
     margin: 0;
     padding: 30px 0px;
+}
+
+@media (max-width: 1024px) {
+    .layout-content-agent-autonomo {
+        padding: 20px 0px;
+    }
 }
 
 /* --- PADRÃO ZENIX v2.0: CONFIGURAÇÕES PREMIUM --- */
@@ -1843,4 +1863,30 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     font-size: 16px;
     font-weight: 700;
 }
+
+.agent-avatar-mask-small {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #333;
+}
+
+/* Ensure active title remains white */
+.agent-card-premium.active .agent-title-premium {
+    color: #FFFFFF !important;
+}
+
+/* Remove 'bolinha' overlay if it exists via pseudos */
+.agent-avatar-mask::after,
+.agent-avatar-mask::before {
+    display: none !important;
+    content: none !important;
+}
+
 </style>

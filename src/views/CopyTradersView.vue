@@ -48,10 +48,10 @@
           <p>Carregando dados do Copy Trading...</p>
         </div>
       
-        <!-- AI Vision Panel for Copy Trading -->
-        <section v-else-if="activeTab === 'config' && !hasActiveSession && !isMobile" class="fade-in" style="margin-bottom: 1.5rem;">
+        <!-- AI Vision Panel for Copy Trading (Otimizado com v-if) -->
+        <section v-if="activeTab === 'config' && !hasActiveSession" class="fade-in" style="margin-bottom: 1.5rem;">
           <!-- Desktop: AI Vision Panel -->
-          <div class="ai-vision-panel-desktop">
+          <div v-if="!isMobile" class="ai-vision-panel-desktop">
             <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
               <!-- Header Desktop -->
               <div class="mb-6">
@@ -143,7 +143,7 @@
           </div>
           
           <!-- Mobile: Simple Header -->
-          <div class="mobile-simple-header">
+          <div v-if="isMobile" class="mobile-simple-header">
             <h1 class="mobile-header-title">Configuração do Copy Trading</h1>
             <p class="mobile-header-subtitle">Escolha traders e IAs para copiar, configure proporção e filtros, e replique operações automaticamente.</p>
           </div>

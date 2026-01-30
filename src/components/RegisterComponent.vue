@@ -269,8 +269,8 @@
         </div>
       </div>
 
-      <!-- Right Column - Hero Content -->
-      <div id="hero-section" class="w-full max-w-[600px] pl-12 flex-shrink-0">
+      <!-- Right Column - Hero Content (Otimizado com v-if) -->
+      <div v-if="!isMobile" id="hero-section" class="w-full max-w-[600px] pl-12 flex-shrink-0">
         
         <!-- Main Title -->
         <div class="mb-8 text-left">

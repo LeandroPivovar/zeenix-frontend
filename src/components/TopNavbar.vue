@@ -5,11 +5,10 @@
     style="width: 100%; background: #0B0B0B; padding: 0;"
   >
     <!-- Desktop Layout -->
-    <div class="h-full flex items-center justify-between desktop-nav">
+    <div v-if="!isMobile" class="h-full flex items-center justify-between desktop-nav">
       <div class="flex items-center space-x-4 mr-10">
         <!-- Botão de toggle do menu (apenas desktop, sempre visível) -->
         <button 
-          v-if="!isMobile"
           @click="toggleSidebarCollapse"
           class="toggle-menu-btn-header p-[6px]"
           :title="isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'"
@@ -18,7 +17,7 @@
         </button>
         
         <!-- Título ZENIX (apenas desktop, sempre visível) -->
-        <div v-if="!isMobile" class="header-brand-text">
+        <div class="header-brand-text">
           <span class="text-white font-bold text-xl">ZEN</span>
           <span class="text-white font-bold text-xl">I</span>
           <span class="text-[#22C55E] font-bold text-xl">X</span>
@@ -26,7 +25,7 @@
         
         <!-- Botão Grupo de Alunos (apenas desktop, sempre visível) -->
         <a 
-          v-if="!isMobile && studentGroupConfig.show"
+          v-if="studentGroupConfig.show"
           :href="studentGroupConfig.link" 
           target="_blank"
           class="header-whatsapp-button bg-transparent hover:bg-[#0E0E0E] text-[#A1A1A1] hover:text-[#25D366] font-medium px-3 py-1.5 rounded-lg text-xs inline-flex items-center space-x-2 transition-all duration-200 border border-[#1C1C1C] hover:border-[#25D366]/30"
@@ -97,7 +96,7 @@
     </div>
 
     <!-- Mobile Layout -->
-    <div class="h-full px-4 flex items-center justify-between mobile-nav">
+    <div v-if="isMobile" class="h-full px-4 flex items-center justify-between mobile-nav">
       <!-- Menu Hambúrguer -->
       <button 
         @click="toggleMobileSidebar"

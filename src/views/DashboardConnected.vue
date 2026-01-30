@@ -33,30 +33,32 @@
       <section id="hero-section" class="w-full mt-16 py-12 relative overflow-visible group h-[560px]">
       <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent" style="left: -32px; width: calc(100% + 64px);">
         <!-- Video Background - Desktop Only (Dual Video for Seamless Loop) -->
-        <video 
-          ref="heroVideo1"
-          class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-1"
-          autoplay 
-          muted 
-          playsinline
-          preload="auto"
-        >
-          <source src="@/assets/video/hero_background.mp4" type="video/mp4">
-        </video>
-        <video 
-          ref="heroVideo2"
-          class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-2"
-          muted 
-          playsinline
-          preload="auto"
-        >
-          <source src="@/assets/video/hero_background.mp4" type="video/mp4">
-        </video>
+        <template v-if="!isMobile">
+          <video 
+            ref="heroVideo1"
+            class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-1"
+            autoplay 
+            muted 
+            playsinline
+            preload="auto"
+          >
+            <source src="@/assets/video/hero_background.mp4" type="video/mp4">
+          </video>
+          <video 
+            ref="heroVideo2"
+            class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-2"
+            muted 
+            playsinline
+            preload="auto"
+          >
+            <source src="@/assets/video/hero_background.mp4" type="video/mp4">
+          </video>
+        </template>
         <!-- Fallback Background for Mobile -->
-        <div class="md:hidden absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
+        <div v-else class="md:hidden absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
         </div>
         <!-- Overlay for Desktop - desaparece quando sidebar está colapsada -->
-        <div v-if="!localSidebarCollapsed" class="hidden md:block absolute inset-0 bg-gradient-to-r from-[rgb(20_17_17/0.35)] to-transparent">
+        <div v-if="!isMobile && !localSidebarCollapsed" class="hidden md:block absolute inset-0 bg-gradient-to-r from-[rgb(20_17_17/0.35)] to-transparent">
         </div>
       </div>
       <div class="relative z-10 h-full w-full">
@@ -211,7 +213,7 @@
             
             
             <!-- Desktop Grid -->
-            <div class="grid grid-cols-5 gap-6 mb-0 desktop-grid-ias">
+            <div v-if="!isMobile" class="grid grid-cols-5 gap-6 mb-0 desktop-grid-ias">
             <div 
               v-for="(ia, index) in bestIAs" 
               :key="index"
@@ -249,7 +251,7 @@
           </div>
           
           <!-- Mobile Grid - Lista vertical de 4 IAs -->
-          <div class="mobile-grid-ias">
+          <div v-else class="mobile-grid-ias">
             <div 
               v-for="(ia, index) in displayedIAs" 
               :key="index"
@@ -300,7 +302,7 @@
           </div>
           
           <!-- Performance Grid (Desktop) -->
-          <div class="desktop-performance-grid hidden md:grid grid-cols-4 gap-6">
+          <div v-if="!isMobile" class="desktop-performance-grid hidden md:grid grid-cols-4 gap-6">
             <div 
               v-for="(perf, index) in sortedPerformanceData" 
               :key="index"
@@ -381,7 +383,7 @@
           </div>
           
           <!-- Mobile Performance Grid -->
-          <div class="mobile-performance-grid">
+          <div v-else class="mobile-performance-grid">
             <div 
               v-for="(perf, index) in sortedPerformanceData" 
               :key="index"
@@ -2487,112 +2489,8 @@ export default {
 }
 
 /* Animations */
-@keyframes fadeInSlide {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes numberEntry {
-  from {
-    opacity: 0;
-    transform: translateY(4px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes breathe {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.005);
-  }
-}
-
-@keyframes float-slow {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translate(15px, -20px) scale(1.1);
-    opacity: 0.8;
-  }
-}
-
-@keyframes float-medium {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translate(-20px, 15px) scale(1.15);
-    opacity: 0.7;
-  }
-}
-
-@keyframes float-fast {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.4;
-  }
-  50% {
-    transform: translate(10px, -25px) scale(1.2);
-    opacity: 0.6;
-  }
-}
-
-@keyframes dash {
-  0% {
-    stroke-dashoffset: 0;
-  }
-  100% {
-    stroke-dashoffset: 100;
-  }
-}
-
-@keyframes dash-reverse {
-  0% {
-    stroke-dashoffset: 100;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes pulse-ring {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes data-stream {
-  0% {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(200%);
-    opacity: 0;
-  }
-}
+/* Animations moved to animations.css */
+@import '../assets/css/animations.css';
 
 .animate-float-slow {
   animation: float-slow 8s ease-in-out infinite;
@@ -2715,35 +2613,7 @@ export default {
   animation-play-state: paused;
 }
 
-@keyframes float-card-1 {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes float-card-2 {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes float-card-3 {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
-}
+/* Float Card Animations removed - moved to animations.css */
 
 /* Hero Section Background Elements */
 .grid-pattern {
@@ -2887,37 +2757,7 @@ export default {
   height: 560px;
 }
 
-@keyframes grid-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.02);
-  }
-}
-
-@keyframes float-header {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-/* Ticker Scroll Animation */
-@keyframes ticker-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
+/* Grid/Header/Ticker Animations removed - moved to animations.css */
 
 #ticker-scroll {
   animation: ticker-scroll 60s linear infinite;
@@ -2931,232 +2771,7 @@ export default {
 }
 
 /* Center Pulse Animation */
-@keyframes center-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 32px rgba(34, 197, 94, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 48px rgba(34, 197, 94, 0.6);
-  }
-}
-
-.animate-center-pulse {
-  animation: center-pulse 3s ease-in-out infinite;
-}
-
-/* Float Card Animations */
-@keyframes float-card-1 {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes float-card-2 {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
-}
-
-@keyframes float-card-3 {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-/* Bar Fill and Shimmer */
-@keyframes bar-fill {
-  0% {
-    width: 0%;
-  }
-  100% {
-    width: var(--bar-width);
-  }
-}
-
-@keyframes bar-shimmer {
-  0% {
-    transform: translateX(-200%);
-  }
-  100% {
-    transform: translateX(200%);
-  }
-}
-
-.animate-bar-fill {
-  animation: bar-fill 1s ease-out;
-}
-
-.animate-bar-shimmer {
-  animation: bar-shimmer 2s ease-in-out infinite;
-}
-
-/* Icon Pulse Animations */
-@keyframes icon-pulse {
-  0%,
-  100% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes icon-pulse-delay-1 {
-  0%,
-  100% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes icon-pulse-delay-2 {
-  0%,
-  100% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes icon-pulse-delay-3 {
-  0%,
-  100% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-}
-
-.animate-icon-pulse {
-  animation: icon-pulse 3s ease-in-out infinite;
-}
-
-.animate-icon-pulse-delay-1 {
-  animation: icon-pulse-delay-1 3s ease-in-out infinite;
-  animation-delay: 0.5s;
-}
-
-.animate-icon-pulse-delay-2 {
-  animation: icon-pulse-delay-2 3s ease-in-out infinite;
-  animation-delay: 1s;
-}
-
-.animate-icon-pulse-delay-3 {
-  animation: icon-pulse-delay-3 3s ease-in-out infinite;
-  animation-delay: 1.5s;
-}
-
-/* Chart Wave Animations */
-@keyframes chart-wave {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes chart-wave-delay-1 {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes chart-wave-delay-2 {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes chart-wave-delay-3 {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-.animate-chart-wave {
-  animation: chart-wave 4s ease-in-out infinite;
-}
-
-.animate-chart-wave-delay-1 {
-  animation: chart-wave-delay-1 4s ease-in-out infinite;
-  animation-delay: 0.5s;
-}
-
-.animate-chart-wave-delay-2 {
-  animation: chart-wave-delay-2 4s ease-in-out infinite;
-  animation-delay: 1s;
-}
-
-.animate-chart-wave-delay-3 {
-  animation: chart-wave-delay-3 4s ease-in-out infinite;
-  animation-delay: 1.5s;
-}
-
-/* Light Sweep Animation */
-@keyframes light-sweep {
-  0% {
-    background: linear-gradient(90deg, transparent 0%, transparent 100%);
-  }
-  15% {
-    background: linear-gradient(90deg, transparent 0%, rgba(34, 197, 94, 0.14) 25%, transparent 50%, transparent 100%);
-  }
-  50% {
-    background: linear-gradient(90deg, transparent 0%, transparent 40%, rgba(34, 197, 94, 0.14) 50%, transparent 60%, transparent 100%);
-  }
-  85% {
-    background: linear-gradient(90deg, transparent 0%, transparent 50%, rgba(34, 197, 94, 0.14) 75%, transparent 100%);
-  }
-  100% {
-    background: linear-gradient(90deg, transparent 0%, transparent 100%);
-  }
-}
+/* Remaining animations removed - moved to animations.css */
 
 .animate-light-sweep {
   animation: light-sweep 7s ease-in-out infinite;

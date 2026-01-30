@@ -65,7 +65,7 @@
     font-size: 0.9rem;
 }
 
-.select-group{
+.select-group {
     display: flex;
     gap: 10px;
     align-items: center;
@@ -278,11 +278,11 @@
     border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
     background-color: #00ff80;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     transform: translateX(18px);
 }
 
@@ -589,19 +589,19 @@ input:checked + .slider:before {
 @media (max-width: 1024px) {
     .copy-trading-view {
         flex-direction: column-reverse;
-        padding: 15px;
+        padding: 20px;
     }
 
     .config-sidebar {
         width: 100%;
-        min-width: unset; 
+        min-width: unset;
         padding: 15px;
-        order: 1; 
+        order: 1;
     }
 
     .dashboard-content-copy {
         width: 100%;
-        order: 2; 
+        order: 2;
     }
 
     .config-sidebar .section-header {
@@ -618,7 +618,7 @@ input:checked + .slider:before {
 
 @media (max-width: 768px) {
     .dashboard-grid {
-        grid-template-columns: 1fr; 
+        grid-template-columns: 1fr;
         gap: 15px;
     }
 
@@ -627,16 +627,16 @@ input:checked + .slider:before {
     }
 
     .config-section .row {
-        flex-direction: column; 
+        flex-direction: column;
         gap: 15px;
     }
-    
+
     .config-section .field {
-        width: 100%; 
+        width: 100%;
     }
-    
+
     .config-section .toggle-buttons button {
-        flex-grow: 1; 
+        flex-grow: 1;
         padding: 10px 5px;
         font-size: 0.9em;
     }
@@ -645,11 +645,11 @@ input:checked + .slider:before {
         font-size: 0.9em;
     }
 
-    .trader-stats{
+    .trader-stats {
         height: fit-content;
     }
 
-    .summary-note{
+    .summary-note {
         margin-top: 2rem;
     }
 }

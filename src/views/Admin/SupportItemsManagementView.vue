@@ -1028,13 +1028,12 @@ body {
 
 .dashboard-content-wrapper {
     flex-grow: 1;
+    margin-left: 280px;
+    width: calc(100% - 280px);
     transition: margin-left 0.3s ease;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    width: auto !important;
-    max-width: none !important;
-    min-width: 0 !important;
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
@@ -1167,6 +1166,13 @@ body {
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease-out forwards; 
     padding-right: 15px;
+}
+
+@media (min-width: 1025px) {
+    .form-support-item {
+        margin-left: 280px;
+        width: calc(100% - 280px);
+    }
 }
 
 .form-support-item::-webkit-scrollbar { width: 8px; }
@@ -1318,6 +1324,7 @@ body {
     background-color: #1f1f1f;
     border-radius: 8px;
     padding: 0 20px 20px 20px;
+    margin-top: 1rem;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     width: 100% !important;
     max-width: none !important;

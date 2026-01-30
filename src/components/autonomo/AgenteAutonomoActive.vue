@@ -1,5 +1,5 @@
 ﻿<template>
-	<div class="min-h-screen text-[#FAFAFA] font-sans" style="padding-top: 2rem;">
+	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ paddingTop: isMobile ? '20px' : '2rem' }">
 		<!-- Header -->
 		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 md:mt-8 mt-0">
 			<!-- Title Section -->
@@ -61,7 +61,7 @@
 			<!-- Metric Cards -->
 			<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
 				<!-- Capital Inicial -->
-				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212] hidden md:block">
+				<div v-if="!isMobile" class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
 					<div class="flex items-center mb-4 gap-2">
 						<div class="text-green-500">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
@@ -124,7 +124,8 @@
 
 				<!-- Lucro Medio/Dia -->
 				<div 
-					class="rounded-lg border bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212] hidden md:block"
+					v-if="!isMobile"
+					class="rounded-lg border bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]"
 					:class="avgDailyProfit >= 0 ? 'border-[#27272a]' : 'border-red-500/20'"
 				>
 					<div class="flex items-center gap-2 mb-3">
@@ -155,23 +156,13 @@
 					>
 						<div class="flex items-center gap-3">
 							<div class="p-2 bg-[#1a1a1a] rounded-md">
-								<i class="fas fa-microchip text-green-500 text-base"></i>
+                                <div class="strategy-icons-inline text-lg">
+                                    {{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}
+                                </div>
 							</div>
-							<div class="text-left">
-								<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide flex items-center gap-1">
-									AGENTE ATIVO
-									<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
-								</div>
-								
-								<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
-									<div class="strategy-icons-inline text-lg">
-										{{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}
-									</div>
 									<span class="text-white font-bold">{{ agenteData.estrategia ? agenteData.estrategia.replace('IA ', '') : 'Agente' }}</span>
 								</div>
 							</div>
-						</div>
-					</div>
 
 					<!-- Agent Switcher Dropdown -->
 					<div 
@@ -194,13 +185,10 @@
 									<div class="strategy-icons-inline text-2xl">
 										{{ agent.emoji }}
 									</div>
-									<div v-if="agenteData.id === agent.id" class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0c0c0c] flex items-center justify-center">
-										<i class="fas fa-check text-[8px] text-black"></i>
-									</div>
 								</div>
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center justify-between gap-2">
-										<h5 class="text-xs font-bold truncate text-left" :class="agenteData.id === agent.id ? 'text-green-500' : 'text-[#dbdbdb]'">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
+										<h5 class="text-xs font-bold truncate text-left text-[#dbdbdb]">{{ agent.title.toUpperCase() }} {{ agent.marketType ? '- ' + agent.marketType : '' }}</h5>
 										<span v-if="currentAgentId === agent.id" class="text-[8px] text-[#22c55e] font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
 									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line" v-html="formatAgentDescription(agent.description)"></p>
@@ -269,7 +257,7 @@
                             {{ type.label }}
                         </button>
                     </div>
-                    <span class="text-[#A1A1AA] text-xs font-medium uppercase tracking-tight hidden md:block">{{ dateRangeText }}</span>
+                    <span v-if="!isMobile" class="text-[#A1A1AA] text-xs font-medium uppercase tracking-tight">{{ dateRangeText }}</span>
                 </div>
 			</div>
 			
@@ -757,6 +745,10 @@
 			shouldTeleport: {
 				type: Boolean,
 				default: false
+			},
+			isMobile: {
+				type: Boolean,
+				default: false
 			}
 		},
 		emits: ['pausarAgente'],
@@ -865,6 +857,7 @@
 						title: 'Agente Falcon',
 						marketType: 'Digits',
 						icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'],
+                        video: '/Animação_de_Voo_Gerada.mp4',
 						emoji: '🦅', 
 						description: 'Análise: Entropia + Força + Assertividade\nAssertividade: 70%\nRetorno: 63.5%',
 						winRate: 62,
@@ -1986,5 +1979,24 @@
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+.agent-avatar-mask-small {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #333;
+}
+
+.agent-video-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 </style>

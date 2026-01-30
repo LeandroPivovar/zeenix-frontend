@@ -143,6 +143,8 @@ export default {
 <style scoped src="../assets/css/views/homeView.css"></style>
 
 <style scoped>
+@import '../assets/css/animations.css';
+
 /* Estilos adicionais específicos para o loading se não estiverem no CSS global/home */
 .loading-content {
     display: flex;
@@ -188,7 +190,5 @@ export default {
     font-size: 12px;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+/* Keyframes removed - moved to animations.css */
 </style>

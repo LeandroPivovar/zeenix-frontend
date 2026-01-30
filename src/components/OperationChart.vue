@@ -5489,4 +5489,3 @@ export default {
   .dvx-status-yellow-text { color: #FFD058; }
   .dvx-status-red-text { color: #FF4747; }
 </style>
-

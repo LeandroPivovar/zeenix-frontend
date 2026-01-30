@@ -15,6 +15,7 @@
             <CopyTradingComponent
                 v-if="showPerformance"
                 :performance-data="performanceData"
+                :is-mobile="isMobile"
                 @navigate-to-history="showPerformance = false; showHistory = true; updateHeaders()"
                 @navigate-to-performance="showPerformance = true; showHistory = false; updateHeaders()"
                 @copy-activated="handleCopyActivated"
@@ -26,6 +27,7 @@
                 :operations="historyData.operations"
                 :trader-active="traderActive"
                 :account-performance="accountPerformance"
+                :is-mobile="isMobile"
                 @navigate-to-performance="showHistory = false; showPerformance = true; updateHeaders()"
                 @navigate-to-history="showHistory = true; showPerformance = false; updateHeaders()"
             />
@@ -107,8 +109,16 @@ export default {
                 operations: '121',
                 activeDays: '7',
                 balance: 10249.55
-            }
+            },
+            isMobile: false
         }
+    },
+    created() {
+        this.checkMobile();
+        window.addEventListener('resize', this.checkMobile);
+    },
+    beforeUnmount() {
+        window.removeEventListener('resize', this.checkMobile);
     },
     mounted() {
         this.updateHeaders();
@@ -143,6 +153,9 @@ export default {
         async loadCopyTradingData() {
             // Carregar dados atualizados do copy trading
             // Esta função pode ser expandida para buscar dados reais da API
+        },
+        checkMobile() {
+            this.isMobile = window.innerWidth <= 1024;
         }
     }
 }

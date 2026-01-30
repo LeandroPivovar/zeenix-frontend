@@ -523,6 +523,8 @@ export default {
 <style scoped src="../assets/css/views/plansView.css"></style>
 
 <style scoped>
+@import '../assets/css/animations.css';
+
 /* --- 1. Container e Elemento do Player (ESSENCIAL PARA O VÍDEO CHEGAR NA BORDA) --- */
 .video-player-container {
     width: 100% !important;
@@ -573,12 +575,7 @@ export default {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    animation: pulse-ring 2s infinite;
-}
-
-@keyframes pulse-ring {
-    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+    animation: pulse-ring-centered 2s infinite;
 }
 
 /* --- 4. Badge e Tipografia --- */
@@ -610,16 +607,7 @@ export default {
     animation: fadeInUp 0.5s ease-out;
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+/* Keyframes removed - moved to animations.css */
 
 /* --- 6. Fallback (Caso o vídeo não carregue) --- */
 .video-fallback {

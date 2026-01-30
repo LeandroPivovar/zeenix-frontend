@@ -2,7 +2,7 @@
     <div class="investment-active-wrapper">
         <main class="investment-active-main">
             <!-- Desktop: Layout Original - Performance Summary Cards -->
-            <section id="compact-performance-panel" class="mb-6 desktop-performance-panel">
+            <section v-if="!isMobile" id="compact-performance-panel" class="mb-6 desktop-performance-panel">
                 <div id="iya1j" class="grid grid-cols-12 gap-3" style="width: 100%; box-sizing: border-box;">
                     <!-- Card 1 - Saldo Total -->
                     <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
@@ -163,7 +163,7 @@
             </section>
             
             <!-- Mobile: Card Unificado: Header + Saldo + Resultado + Trades + Ordem -->
-            <section id="mobile-compact-performance-panel" class="mb-6 mobile-performance-panel">
+            <section v-if="isMobile" id="mobile-compact-performance-panel" class="mb-6 mobile-performance-panel">
                 <div class="bg-[#0B0B0B]/80 border-2 border-[#1C1C1C] rounded-2xl p-4 premium-card relative overflow-hidden">
                     <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                     <div class="relative z-10">
@@ -553,7 +553,7 @@
                             
                             <template v-else>
                                 <!-- Desktop: Tabela -->
-                                <div class="logs-table-wrapper desktop-logs-table custom-scrollbar">
+                                <div v-if="!isMobile" class="logs-table-wrapper desktop-logs-table custom-scrollbar">
                                     <table class="logs-table">
                                         <thead>
                                             <tr>
@@ -602,7 +602,7 @@
                                 </div>
                                 
                                 <!-- Mobile: Cards -->
-                                <div class="mobile-logs-cards custom-scrollbar">
+                                <div v-if="isMobile" class="mobile-logs-cards custom-scrollbar">
                                     <div v-for="(op, index) in logOperations" :key="op.id || op.created_at || op.timestamp || `mob-log-${index}`" class="mobile-log-card">
                                         <div class="mobile-log-time">{{ op.time }}</div>
                                         <div class="mobile-log-type">
@@ -654,6 +654,7 @@
                             
                             <!-- Desktop Logs List -->
                             <div 
+                                v-if="!isMobile"
                                 ref="logsContainer" 
                                 class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar relative desktop-register-list" 
                                 style="scroll-behavior: smooth;"
@@ -694,6 +695,7 @@
                             
                             <!-- Mobile: Cards de Registro -->
                             <div 
+                                v-if="isMobile"
                                 ref="logsContainerMobile" 
                                 class="flex-1 overflow-y-auto custom-scrollbar relative mobile-register-cards" 
                                 style="scroll-behavior: smooth; max-height: 500px;"
@@ -932,6 +934,10 @@ export default {
         fictitiousBalance: {
             type: Number,
             default: 0
+        },
+        isMobile: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -8629,7 +8635,7 @@ button i,
     }
 
     .investment-active-main {
-        padding: 30px 15px !important;
+        padding: 20px 15px !important;
         max-width: 100%;
         width: 100%;
         box-sizing: border-box;

@@ -11,18 +11,9 @@ import OperationView from '../views/OperationView.vue'
 import DerivOAuthCallback from '../views/DerivOAuthCallback.vue'
 // import MarkupView from '../views/Admin/MarkupView.vue'
 import InvestmentIAView from '../views/InvestmentIAView.vue'
-import ExpertsView from '../views/Admin/ExpertsView.vue'
-import ClientesView from '../views/Admin/ClientesView.vue'
-import WebhookView from '../views/Admin/WebhookView.vue'
-import AcademyManagementView from '../views/Admin/AcademyManagementView.vue'
-import AcademyCoursesListView from '../views/Admin/AcademyCoursesListView.vue'
-import AdminView from '@/views/Admin/AdminView.vue'
-import StatsIAsView from '@/views/Admin/StatsIAsView.vue'
 import MasterTraderView from '@/views/MasterTraderView.vue'
 import AgenteAutonomoView from '@/views/AgenteAutonomo.vue'
 import CopyTraders from '@/views/CopyTradersView.vue';
-import SupportItemsManagementView from '@/views/Admin/SupportItemsManagementView.vue';
-import PlansManagementView from '@/views/Admin/PlansManagementView.vue';
 import AutonomousAgentLogsView from '@/views/AutonomousAgentLogsView.vue';
 
 const routes = [
@@ -135,44 +126,44 @@ const routes = [
   {
     path: '/Experts',
     name: 'Experts',
-    component: ExpertsView,
+    component: () => import('../views/Admin/ExpertsView.vue'),
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/Clientes',
     name: 'Clientes',
-    component: ClientesView,
+    component: () => import('../views/Admin/ClientesView.vue'),
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/Webhooks',
     name: 'Webhooks',
-    component: WebhookView,
+    component: () => import('../views/Admin/WebhookView.vue'),
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
 
   {
     path: '/AcademyManagement',
     name: 'AcademyCoursesList',
-    component: AcademyCoursesListView,
+    component: () => import('../views/Admin/AcademyCoursesListView.vue'),
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/AcademyManagement/:id',
     name: 'AcademyManagement',
-    component: AcademyManagementView,
+    component: () => import('../views/Admin/AcademyManagementView.vue'),
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/Admin',
     name: 'Admin',
-    component: AdminView,
+    component: () => import('@/views/Admin/AdminView.vue'),
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/AdminStatsIAs',
     name: 'AdminStatsIAs',
-    component: StatsIAsView,
+    component: () => import('@/views/Admin/StatsIAsView.vue'),
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
@@ -209,13 +200,13 @@ const routes = [
   {
     path: '/SupportItems',
     name: 'SupportItemsManagement',
-    component: SupportItemsManagementView,
+    component: () => import('@/views/Admin/SupportItemsManagementView.vue'),
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/PlansManagement',
     name: 'PlansManagement',
-    component: PlansManagementView,
+    component: () => import('@/views/Admin/PlansManagementView.vue'),
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {

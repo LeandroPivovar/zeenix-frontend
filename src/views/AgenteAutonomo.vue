@@ -47,6 +47,7 @@
             :trade-history="tradeHistoryData"
             :user-id="currentUserId"
             :plan-features="planFeatures"
+            :is-mobile="isMobile"
             @pausar-agente="toggleAgenteStatus('componenteAtivo')"
             @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
             @change-agent="handleChangeAgent"
@@ -1725,7 +1726,7 @@
     }
 
     .container-componentes {
-      padding: 2rem 1rem 20px 1rem !important;
+      padding: 4rem 1rem 20px 1rem !important;
       margin-top: 0;
       background: linear-gradient(180deg, transparent 50%, #000100) !important;
       background-blend-mode: normal;

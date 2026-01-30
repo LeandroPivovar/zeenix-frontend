@@ -1005,12 +1005,17 @@ body {
     margin-bottom: 30px;
     margin-top: 20px;
     box-shadow: 0 4px 12px rgba(7, 51, 1, 0.4);
-    max-height: 500px;
-    overflow-y: auto;
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease-out forwards; 
     padding-right: 15px;
+}
+
+@media (min-width: 1025px) {
+    .form-expert {
+        margin-left: 280px;
+        width: calc(100% - 280px);
+    }
 }
 
 .form-expert::-webkit-scrollbar { width: 8px; }
@@ -1253,6 +1258,7 @@ body {
     background-color: #1f1f1f;
     border-radius: 8px;
     padding: 0 20px 20px 20px;
+    margin-top: 1rem;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     width: 100%;
     overflow-x: scroll; 
