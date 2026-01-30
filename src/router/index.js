@@ -93,13 +93,13 @@ const routes = [
     path: '/operation',
     name: 'Operation',
     component: OperationView,
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
     path: '/copy-trading',
     name: 'CopyTrading',
     component: CopyTraders,
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
     path: '/oauth/callback',
@@ -122,13 +122,13 @@ const routes = [
     path: '/StatsIAs',
     name: 'StatsIAs',
     component: () => import('../views/Admin/StatsIAsView.vue'),
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
     path: '/StatsIAs/monitoring',
     name: 'AIMonitoring',
     component: () => import('../views/Admin/AIMonitoringView.vue'),
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
     path: '/Experts',
@@ -177,13 +177,13 @@ const routes = [
     path: '/InvestmentIA',
     name: 'InvestmentIAView',
     component: InvestmentActiveStrategyView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/iaTeste',
     name: 'iaTeste',
     component: InvestmentActiveStrategyView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/MasterTrader',
@@ -195,19 +195,19 @@ const routes = [
     path: '/agente-autonomo',
     name: 'AgenteAutonomoView',
     component: AgenteAutonomoView,
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
     path: '/agente-autonomo/logs',
     name: 'AutonomousAgentLogsView',
     component: AutonomousAgentLogsView,
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
     path: '/copy-trader',
     name: 'CopyTradersView',
     component: CopyTraders,
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
     path: '/SupportItems',
