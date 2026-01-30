@@ -327,12 +327,19 @@
                                 <div class="absolute top-0 right-0 p-4 opacity-5">
                                     <i class="fa-solid fa-shield-heart text-6xl"></i>
                                 </div>
-                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
-                                    <i class="fa-solid fa-shield-heart text-zenix-green"></i>
-                                    Configuração de Recuperação
+                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-shield-heart text-zenix-green"></i>
+                                        Configuração de Recuperação
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer scale-90">
+                                        <input type="checkbox" v-model="recoveryConfig.enabled" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zenix-green"></div>
+                                        <span class="ms-3 text-xs font-bold text-gray-400 uppercase tracking-tighter">{{ recoveryConfig.enabled ? 'Ativa' : 'Inativa' }}</span>
+                                    </label>
                                 </h3>
                                 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10" :class="{ 'opacity-40 grayscale pointer-events-none': !recoveryConfig.enabled }">
                                     <div>
                                         <label class="block text-white font-bold mb-2">Mercado de Recuperação</label>
                                         <button
@@ -893,6 +900,7 @@ export default {
             },
             
             recoveryConfig: {
+                enabled: true,
                 market: '',
                 selectedTradeTypeGroup: '',
                 tradeType: '',
@@ -902,7 +910,7 @@ export default {
                 switchToNormal: false,
                 switchToPrecise: true,
                 maxPreciseLosses: 3,
-                pauseLosses: 5,
+                pauseLosses: 6,
                 pauseVolatility: 50,
                 pauseTime: 5,
                 attackFilters: []
@@ -1434,17 +1442,6 @@ export default {
             
             // Iniciar Monitoramento de Ticks Real-time
             this.initTickConnection();
-            
-            this.simulationInterval = setInterval(() => {
-                const rand = Math.random();
-                // If there are no filters, we still do random trades for demonstration
-                // If filters are present, trades are triggered by runAnalysis()
-                if (this.form.attackFilters.length === 0 && rand > 0.95) {
-                    this.simulateTrade();
-                } else if (rand > 0.8) {
-                    this.simulateLog();
-                }
-            }, 8000);
         },
         // WebSocket Tick Monitoring Methods
         async initTickConnection() {
@@ -1504,11 +1501,12 @@ export default {
                     if (msg.msg_type === 'buy') {
                         console.log('[WS] Resposta de compra recebida:', msg);
                         if (msg.error) {
-                            this.addLog(`❌ Erro na compra: ${msg.error.message}`, 'error');
+                            console.error('[WS] Erro na compra:', msg.error);
+                            this.addLog(`❌ ERRO NA COMPRA: ${msg.error.message}`, 'error');
                         } else {
                             const payout = msg.buy.payout;
-                            console.log(`[WS] Sucesso! Payout esperado: $${payout}`);
-                            this.addLog(`🚀 Contrato comprado! Payout: $${payout}`, 'success');
+                            console.log(`[WS] Sucesso! ID: ${msg.buy.contract_id}, Payout: $${payout}`);
+                            this.addLog(`🚀 COMPRA REALIZADA! ID: ${msg.buy.contract_id} | Payout: $${payout}`, 'success');
                             this.subscribeToContract(msg.buy.contract_id);
                         }
                     }
@@ -1689,23 +1687,29 @@ export default {
             return Math.max(0.35, parseFloat(stake.toFixed(2)));
         },
         stopMonitoring(reason = 'Finalizado pelo usuário') {
+            // Handle PointerEvents if called from @click
+            const stopReason = (reason instanceof Event) ? 'Finalizado pelo usuário' : reason;
+            
             this.isMonitoring = false;
             this.sessionState.isStopped = true;
             this.monitoringStats.status = 'Parado';
-            this.monitoringStats.statusDesc = reason;
+            this.monitoringStats.statusDesc = stopReason;
             this.stopTickConnection();
-            this.addLog(`⏹️ Monitoramento parado: ${reason}`, 'info');
+            this.addLog(`⏹️ Monitoramento parado: ${stopReason}`, 'info');
         },
         executeRealTrade() {
             if (!this.isAuthorized) {
-                this.addLog('⚠️ Tentativa de entrada negada: WebSocket não autorizado.', 'warning');
+                this.addLog('⚠️ Entrada negada: Não autorizado (Token inválido ou ausente).', 'warning');
                 return;
             }
 
             if (this.checkLimits()) return;
 
             // Evitar múltiplas entradas simultâneas
-            if (this.activeContracts.size > 0) return;
+            if (this.activeContracts.size > 0) {
+                this.addLog('⏳ Sinal ignorado: Já existe uma operação em andamento.', 'info');
+                return;
+            }
 
             const stake = this.calculateNextStake();
             const config = this.sessionState.isRecoveryMode ? this.recoveryConfig : this.form;
@@ -1766,7 +1770,7 @@ export default {
 
                 if (trade.result === 'WON') {
                     this.monitoringStats.wins++;
-                    this.addLog(`💰 WIN! Lucro de $${trade.pnl.toFixed(2)}`, 'success');
+                    this.addLog(`💰 WIN! Resultado: +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
                     
                     // Update Payout Rate for next dynamic martingale
                     if (trade.stake > 0) {
@@ -1788,12 +1792,14 @@ export default {
                     }
                 } else {
                     this.monitoringStats.losses++;
-                    this.addLog(`🔴 LOSS. Perda de $${Math.abs(trade.pnl).toFixed(2)}`, 'error');
+                    this.addLog(`🔴 LOSS! Prejuízo: -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
                     
                     this.sessionState.consecutiveLosses++;
                     this.sessionState.totalLossAccumulated += Math.abs(trade.pnl);
 
-                    if (!this.sessionState.isRecoveryMode && this.sessionState.consecutiveLosses >= this.recoveryConfig.lossesToActivate) {
+                    if (!this.sessionState.isRecoveryMode && 
+                        this.recoveryConfig.enabled && 
+                        this.sessionState.consecutiveLosses >= this.recoveryConfig.lossesToActivate) {
                         this.addLog('🔄 ATIVANDO MODO RECUPERAÇÃO...', 'warning');
                         this.sessionState.isRecoveryMode = true;
                         this.sessionState.recoveredAmount = 0;
