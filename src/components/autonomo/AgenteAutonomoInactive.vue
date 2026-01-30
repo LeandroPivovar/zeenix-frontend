@@ -460,6 +460,7 @@ export default {
 					subtitle: 'Análise de Fluxo',
 					percentage: '+3.15%',
 					graphColor: '#22c55e',
+					video: '/Zeus_Lança_Raio_em_Vídeo.mp4',
 					marketType: 'Digits',
 					icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg'],
 					description: 'Análise: Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação\nAssertividade: 56% a 90%\nRetorno: 56% / 85%'
