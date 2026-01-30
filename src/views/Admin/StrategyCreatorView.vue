@@ -301,6 +301,32 @@
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                                     <div>
+                                        <label class="block text-white font-bold mb-2">Mercado de Recuperação</label>
+                                        <button
+                                            type="button"
+                                            @click="openMarketModal('recovery')"
+                                            class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-3 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
+                                        >
+                                            <span class="font-medium text-sm">{{ selectedRecoveryMarketLabel }}</span>
+                                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
+                                        <button
+                                            type="button"
+                                            @click="openTradeTypeModal('recovery')"
+                                            :disabled="!recoveryContracts.length && !recoveryConfig.market"
+                                            class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-3 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <div class="flex items-center gap-2">
+                                                <img v-if="selectedRecoveryTradeTypeGroupIcon" :src="selectedRecoveryTradeTypeGroupIcon" class="w-4 h-4 contrast-[1.5] brightness-[1.5]" alt="" />
+                                                <span class="font-medium text-sm">{{ selectedRecoveryTradeTypeGroupLabel }}</span>
+                                            </div>
+                                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                        </button>
+                                    </div>
+                                    <div>
                                         <label class="block text-white font-bold mb-2">Perdas para ativar</label>
                                         <input 
                                             type="number" 
@@ -687,6 +713,7 @@ export default {
             showTradeTypeModal: false,
             showFilterModal: false,
             showPauseModal: false,
+            modalContext: 'main', // 'main' or 'recovery'
 
             markets: [],
             contracts: [],
@@ -707,6 +734,9 @@ export default {
             },
             
             recoveryConfig: {
+                market: '',
+                selectedTradeTypeGroup: '',
+                tradeType: '',
                 lossesToActivate: 2,
                 contractSwitch: true,
                 switchToNormal: false,
@@ -714,6 +744,13 @@ export default {
                 maxPreciseLosses: 3,
                 pauseLosses: 5
             },
+            recoveryContracts: [],
+
+            // WebSocket Tick Monitoring
+            ws: null,
+            tickSubscriptionId: null,
+            tickCount: 0,
+            lastTickPrice: null,,
 
             balance: 5889.28, // Mock implementation or fetch from store
             isMonitoring: false,
@@ -911,23 +948,47 @@ export default {
             }
             return null;
         },
+        selectedRecoveryMarketLabel() {
+            const market = this.markets.find(m => m.symbol === this.recoveryConfig.market);
+            if (market) return market.displayName || market.label;
+            
+            const marketByValue = this.markets.find(m => m.value === this.recoveryConfig.market);
+            return marketByValue ? marketByValue.label : 'Mercado de Recuperação';
+        },
+        selectedRecoveryTradeTypeGroupLabel() {
+            if (!this.recoveryConfig.selectedTradeTypeGroup) return 'Selecionar Tipo';
+            
+            for (const cat of this.tradeTypeCategories) {
+                const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
+                if (item) return item.label;
+            }
+            return 'Selecionar Tipo';
+        },
+        selectedRecoveryTradeTypeGroupIcon() {
+            if (!this.recoveryConfig.selectedTradeTypeGroup) return null;
+            
+            for (const cat of this.tradeTypeCategories) {
+                const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
+                if (item && item.icon) return `/deriv_icons/${item.icon}`;
+            }
+            return null;
+        },
         availableContracts() {
-            // Converts fetched contracts to a list of types to filter categories
             if (!this.contracts || this.contracts.length === 0) return [];
             return this.contracts.map(c => c.contractType.toUpperCase());
         },
+        availableRecoveryContracts() {
+            if (!this.recoveryContracts || this.recoveryContracts.length === 0) return [];
+            return this.recoveryContracts.map(c => c.contractType.toUpperCase());
+        },
         availableTradeTypeGroups() {
-             // If no contracts loaded yet, show all (or none? better show all to explore)
-             // But UI is disabled if no contracts.
-             // If contracts are loaded, filter.
+             const contextContracts = this.modalContext === 'main' ? this.availableContracts : this.availableRecoveryContracts;
              
-             if (!this.availableContracts.length) return []; // Should rely on disabled state
+             if (!contextContracts.length) return []; 
 
-             const availableTypes = this.availableContracts;
-             
              return this.tradeTypeCategories.map(category => {
                 const filteredItems = category.items.filter(item => {
-                  return item.directions.some(dir => availableTypes.includes(dir.value.toUpperCase()));
+                  return item.directions.some(dir => contextContracts.includes(dir.value.toUpperCase()));
                 });
                 
                 if (filteredItems.length > 0) {
@@ -1022,23 +1083,35 @@ export default {
                 this.$root.$toast.error('Erro ao carregar mercados');
             }
         },
-        async onMarketChange() {
-            if (!this.form.market) return;
+        async onMarketChange(context = 'main') {
+            const market = context === 'main' ? this.form.market : this.recoveryConfig.market;
+            if (!market) return;
             
-            this.contracts = [];
-            this.form.selectedTradeTypeGroup = '';
-            this.form.tradeType = '';
+            if (context === 'main') {
+                this.contracts = [];
+                this.form.selectedTradeTypeGroup = '';
+                this.form.tradeType = '';
+            } else {
+                this.recoveryContracts = [];
+                this.recoveryConfig.selectedTradeTypeGroup = '';
+                this.recoveryConfig.tradeType = '';
+            }
             
             try {
                 const token = localStorage.getItem('token');
                 const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 
-                const res = await fetch(`${apiBaseUrl}/markets/${this.form.market}/contracts`, {
+                const res = await fetch(`${apiBaseUrl}/markets/${market}/contracts`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
++
                 if (res.ok) {
-                    this.contracts = await res.json();
+                    const contracts = await res.json();
+                    if (context === 'main') {
+                        this.contracts = contracts;
+                    } else {
+                        this.recoveryContracts = contracts;
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao buscar contratos:', error);
@@ -1046,34 +1119,42 @@ export default {
             }
         },
         // Modal Handlers
-        openMarketModal() {
+        openMarketModal(context = 'main') {
+            this.modalContext = context;
             this.showMarketModal = true;
         },
         closeMarketModal() {
             this.showMarketModal = false;
         },
         selectMarket(symbol) {
-            this.form.market = symbol;
+            if (this.modalContext === 'main') {
+                this.form.market = symbol;
+            } else {
+                this.recoveryConfig.market = symbol;
+            }
             this.closeMarketModal();
-            this.onMarketChange();
+            this.onMarketChange(this.modalContext);
         },
-        openTradeTypeModal() {
-            if (!this.contracts.length) return;
+        openTradeTypeModal(context = 'main') {
+            const contracts = context === 'main' ? this.contracts : this.recoveryContracts;
+            if (!contracts.length) return;
+            this.modalContext = context;
             this.showTradeTypeModal = true;
         },
         closeTradeTypeModal() {
             this.showTradeTypeModal = false;
         },
         selectTradeType(item) {
-            this.form.selectedTradeTypeGroup = item.value;
-            // Default to first direction or something logical, usually 'CALL' equivalent
-            // But since this is a strategy config, maybe just setting the group is enough for now?
-            // User might need to select direction specific if logic demands.
-            // For now, let's assume the Strategy handles the group logic (e.g. Rise/Fall encompasses both)
-            
-            // Set first available direction as default tradeType for form submission
-            if (item.directions && item.directions.length > 0) {
-                 this.form.tradeType = item.directions[0].value;
+            if (this.modalContext === 'main') {
+                this.form.selectedTradeTypeGroup = item.value;
+                if (item.directions && item.directions.length > 0) {
+                     this.form.tradeType = item.directions[0].value;
+                }
+            } else {
+                this.recoveryConfig.selectedTradeTypeGroup = item.value;
+                if (item.directions && item.directions.length > 0) {
+                     this.recoveryConfig.tradeType = item.directions[0].value;
+                }
             }
             
             this.closeTradeTypeModal();
@@ -1094,6 +1175,7 @@ export default {
                 clearInterval(this.simulationInterval);
                 this.simulationInterval = null;
             }
+            this.stopTickConnection(); // Close WebSocket
             this.monitoringLogs = [];
             this.monitoringOperations = [];
             this.monitoringStats.profit = 0;
@@ -1101,16 +1183,104 @@ export default {
             this.monitoringStats.losses = 0;
         },
         startSimulation() {
-            this.addLog('🤖 Robô iniciado. Aguardando sinal de entrada...', 'info');
+            this.addLog('🤖 Robô iniciado. Aguardando conexão com mercado...', 'info');
+            
+            // Iniciar Monitoramento de Ticks Real-time
+            this.initTickConnection();
             
             this.simulationInterval = setInterval(() => {
                 const rand = Math.random();
-                if (rand > 0.9) {
+                if (rand > 0.95) { // Reduzi frequência de trades simulados para não poluir
                     this.simulateTrade();
-                } else if (rand > 0.7) {
+                } else if (rand > 0.8) {
                     this.simulateLog();
                 }
-            }, 5000);
+            }, 8000);
+        },
+        // WebSocket Tick Monitoring Methods
+        async initTickConnection() {
+            if (!this.form.market) {
+                this.addLog('⚠️ Nenhum mercado selecionado.', 'error');
+                return;
+            }
+
+            this.stopTickConnection();
+            this.tickCount = 0;
+
+            const appId = localStorage.getItem('deriv_app_id') || '1089'; // Default App ID
+            const endpoint = `wss://ws.derivws.com/websockets/v3?app_id=${appId}`;
+            
+            this.ws = new WebSocket(endpoint);
+
+            this.ws.onopen = () => {
+                this.addLog(`🔌 Conectado ao mercado: ${this.selectedMarketLabel}`, 'success');
+                this.subscribeTicks();
+            };
+
+            this.ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    this.handleTickMessage(msg);
+                } catch (e) {
+                    console.error('[WS] Erro JSON:', e);
+                }
+            };
+
+            this.ws.onerror = (e) => {
+                console.error('[WS] Erro:', e);
+                this.addLog('❌ Erro na conexão com o mercado.', 'error');
+            };
+
+            this.ws.onclose = () => {
+                if (this.isMonitoring) {
+                    this.addLog('📡 Conexão encerrada. Tentando reconectar...', 'info');
+                    setTimeout(() => {
+                        if (this.isMonitoring) this.initTickConnection();
+                    }, 3000);
+                }
+            };
+        },
+
+        stopTickConnection() {
+            if (this.ws) {
+                if (this.tickSubscriptionId) {
+                    this.ws.send(JSON.stringify({ forget: this.tickSubscriptionId }));
+                }
+                this.ws.close();
+                this.ws = null;
+            }
+            this.tickSubscriptionId = null;
+            this.tickCount = 0;
+        },
+
+        subscribeTicks() {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(JSON.stringify({
+                    ticks: this.form.market,
+                    subscribe: 1
+                }));
+            }
+        },
+
+        handleTickMessage(msg) {
+            if (msg.error) {
+                this.addLog(`❌ Erro Deriv: ${msg.error.message}`, 'error');
+                return;
+            }
+
+            if (msg.msg_type === 'tick' && msg.tick) {
+                this.tickCount++;
+                const price = msg.tick.quote;
+                this.lastTickPrice = price;
+                
+                if (msg.subscription) {
+                    this.tickSubscriptionId = msg.subscription.id;
+                }
+
+                this.addLog(`📈 Tick recebido: ${price} - Tick #${this.tickCount}`, 'info');
+                
+                // Opcional: Atualizar mini stats ou algo visual
+            }
         },
         simulateTrade() {
             const isWin = Math.random() > 0.4;
