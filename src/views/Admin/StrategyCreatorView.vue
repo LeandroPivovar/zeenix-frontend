@@ -242,47 +242,49 @@
                             </div>
                         </div>
 
-                        <!-- Configurações Virtuais -->
+
+                        <!-- Filtros de Ataque (Primary Entry) -->
                         <div class="col-span-12">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <label class="block text-white font-bold mb-2">Perdas virtuais</label>
-                                    <input 
-                                        type="number" 
-                                        v-model.number="form.virtualLosses" 
-                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                        min="0"
-                                    />
+                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
+                                <div class="absolute top-0 right-0 p-4 opacity-5">
+                                    <i class="fa-solid fa-bolt text-6xl"></i>
                                 </div>
-                                <div>
-                                    <label class="block text-white font-bold mb-2">Negociações virtuais</label>
-                                    <div class="relative">
-                                        <select 
-                                            v-model="form.virtualTradeAction" 
-                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
+                                    <i class="fa-solid fa-crosshairs text-zenix-green"></i>
+                                    Filtros de Ataque (Sinal de Entrada)
+                                </h3>
+                                
+                                <div class="space-y-4 relative z-10">
+                                    <div v-if="form.attackFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
+                                        <p class="text-gray-400 text-sm mb-3">Nenhum filtro de ataque configurado. O robô entrará em cada sinal disponível.</p>
+                                        <button 
+                                            type="button" 
+                                            @click="openFilterModal('main')"
+                                            class="bg-zenix-green/10 text-zenix-green border border-zenix-green/30 px-6 py-2 rounded-lg hover:bg-zenix-green/20 transition-all font-bold text-sm"
                                         >
-                                            <option value="loss">Na perda</option>
-                                            <option value="win">Na vitória</option>
-                                            <option value="always">Sempre</option>
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                        </div>
+                                            Configurar Filtros
+                                        </button>
                                     </div>
-                                </div>
-                                <div>
-                                    <label class="block text-white font-bold mb-2">Iniciar com virtuais</label>
-                                    <div class="relative">
-                                        <select 
-                                            v-model="form.startWithVirtual" 
-                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
-                                        >
-                                            <option :value="true">Sim</option>
-                                            <option :value="false">Não</option>
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                    
+                                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div v-for="filter in form.attackFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between">
+                                            <div>
+                                                <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
+                                                <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
+                                            </div>
+                                            <button type="button" @click="openFilterModal('main')" class="text-gray-500 hover:text-white transition-colors">
+                                                <i class="fa-solid fa-gear"></i>
+                                            </button>
                                         </div>
+                                        <button 
+                                            v-if="form.attackFilters.length < 2"
+                                            type="button" 
+                                            @click="openFilterModal('main')"
+                                            class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
+                                        >
+                                            <i class="fa-solid fa-plus text-xs"></i>
+                                            <span class="text-sm">Adicionar Segundo Filtro</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -324,6 +326,22 @@
                                                 <span class="font-medium text-sm">{{ selectedRecoveryTradeTypeGroupLabel }}</span>
                                             </div>
                                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                        </button>
+                                    </div>
+                                    <div class="md:col-span-2 flex gap-4">
+                                         <button 
+                                            type="button" 
+                                            @click="openFilterModal('recovery')"
+                                            class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <i class="fa-solid fa-filter"></i> Filtros
+                                        </button>
+                                         <button 
+                                            type="button" 
+                                            @click="showPauseModal = true"
+                                            class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white py-3 rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <i class="fa-solid fa-pause"></i> Pausa Estratégia
                                         </button>
                                     </div>
                                     <div>
@@ -599,36 +617,146 @@
             </div>
         </Teleport>
 
-        <!-- Filter Modal Placeholder -->
+        <!-- Advanced Filter Modal -->
         <Teleport to="body">
             <div v-if="showFilterModal" class="modal-overlay" @click.self="showFilterModal = false">
-                <div class="modal-content" style="max-width: 500px">
-                     <div class="modal-header">
-                        <h3 class="modal-title">Filtros de Entrada</h3>
+                <div class="modal-content categorized-modal" style="max-width: 600px">
+                    <div class="modal-header">
+                        <div class="flex items-center gap-3">
+                            <button v-if="filterStep === 2" @click="prevFilterStep" class="text-gray-400 hover:text-white transition-colors">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <h3 class="modal-title font-bold text-white">{{ filterStep === 1 ? 'Selecionar Filtros de Ataque' : 'Configurar Filtros' }}</h3>
+                        </div>
                         <button @click="showFilterModal = false" class="modal-close-btn">
                             <i class="fa-solid fa-times"></i>
                         </button>
                     </div>
-                    <div class="modal-body">
-                         <div class="space-y-4">
-                             <div v-for="filter in filters" :key="filter.id" class="flex flex-col gap-3 p-4 bg-[#111] rounded-xl border border-[#333] transition-all" :class="{ 'border-zenix-green/30 bg-zenix-green/5': filter.active }">
-                                 <div class="flex items-center gap-3">
-                                     <input type="checkbox" :id="filter.id" v-model="filter.active" class="w-5 h-5 accent-zenix-green cursor-pointer" />
-                                     <label :for="filter.id" class="text-white font-bold cursor-pointer select-none">{{ filter.name }}</label>
-                                 </div>
-                                 <div v-if="filter.active" class="pl-8 transition-all animate-fadeIn">
-                                     <input 
-                                         type="number" 
-                                         v-model.number="filter.value" 
-                                         :placeholder="filter.placeholder"
-                                         class="w-full bg-[#1A1A1A] text-white border border-[#333] rounded-lg p-3 text-sm focus:outline-none focus:border-zenix-green/50 transition-colors"
-                                     />
-                                 </div>
-                             </div>
-                             <div class="p-4 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-sm rounded-xl">
-                                 Mais filtros serão adicionados em breve.
-                             </div>
-                         </div>
+                    <div class="modal-body custom-scrollbar" style="max-height: 70vh; overflow-y: auto;">
+                        <!-- Step 1: Selection -->
+                        <div v-if="filterStep === 1" class="space-y-4">
+                            <p class="text-sm text-gray-400 mb-4 px-1">Selecione até 2 estratégias de ataque para filtrar as entradas do robô.</p>
+                            <div class="grid grid-cols-1 gap-3">
+                                <div 
+                                    v-for="filter in filters" 
+                                    :key="filter.id" 
+                                    @click="toggleFilter(filter)"
+                                    class="p-4 rounded-xl border transition-all cursor-pointer group"
+                                    :class="[
+                                        filter.active ? 'border-zenix-green bg-zenix-green/5' : 'border-[#333] bg-[#111] hover:border-[#444]',
+                                        !filter.active && filters.filter(f => f.active).length >= 2 ? 'opacity-50 cursor-not-allowed' : ''
+                                    ]"
+                                >
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div 
+                                            class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
+                                            :class="filter.active ? 'bg-zenix-green border-zenix-green text-black' : 'border-[#444] group-hover:border-gray-500'"
+                                        >
+                                            <i v-if="filter.active" class="fa-solid fa-check text-[10px]"></i>
+                                        </div>
+                                        <span class="text-white font-bold">{{ filter.name }}</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 pl-8 leading-relaxed">{{ filter.desc }}</p>
+                                </div>
+                            </div>
+                            <div class="mt-8">
+                                <button 
+                                    @click="nextFilterStep" 
+                                    class="w-full bg-zenix-green hover:bg-green-600 shadow-lg shadow-green-500/10 text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2 transition-all"
+                                >
+                                    <span>Continuar para Configuração</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Configuration -->
+                        <div v-else class="space-y-6 animate-fadeIn">
+                            <div v-for="filter in filters.filter(f => f.active)" :key="filter.id" class="p-6 bg-[#0B0B0B] border border-[#333] rounded-xl space-y-4">
+                                <div class="flex items-center gap-2 border-b border-[#222] pb-3 mb-4">
+                                    <i class="fa-solid fa-gear text-zenix-green text-xs"></i>
+                                    <h4 class="text-white font-bold">{{ filter.name }}</h4>
+                                </div>
+
+                                <!-- Digit Density Config -->
+                                <div v-if="filter.id === 'digit_density'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Janela (Ticks/Dígitos)</label>
+                                        <input type="number" v-model.number="filter.config.window" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Dígitos Alvo (Sep. por vírgula)</label>
+                                        <input type="text" v-model="filter.config.digits" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Operador</label>
+                                        <select v-model="filter.config.operator" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="<">Menor que (<)</option>
+                                            <option value=">">Maior que (>)</option>
+                                            <option value="=">Igual a (=)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Quantidade Limite</label>
+                                        <input type="number" v-model.number="filter.config.threshold" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                </div>
+
+                                <!-- Digit Sequence Config -->
+                                <div v-if="filter.id === 'digit_sequence'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tamanho da Sequência</label>
+                                        <input type="number" v-model.number="filter.config.length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Grupo Alvo</label>
+                                        <select v-model="filter.config.target" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="under_4">Abaixo de 4 (0,1,2,3)</option>
+                                            <option value="over_5">Acima de 5 (6,7,8,9)</option>
+                                            <option value="even">Pares</option>
+                                            <option value="odd">Ímpares</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Parity Majority Config -->
+                                <div v-if="filter.id === 'parity_majority'" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Janela</label>
+                                        <input type="number" v-model.number="filter.config.window" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">% Mínima</label>
+                                        <input type="number" v-model.number="filter.config.percentage" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Máx. Ruído</label>
+                                        <input type="number" v-model.number="filter.config.maxNoise" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                </div>
+
+                                <!-- Price Momentum Config -->
+                                <div v-if="filter.id === 'price_momentum'" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Janela</label>
+                                        <input type="number" v-model.number="filter.config.window" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tiques Conf.</label>
+                                        <input type="number" v-model.number="filter.config.ticksToConfirm" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Delta Mín.</label>
+                                        <input type="number" v-model.number="filter.config.minDelta" step="0.01" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button @click="saveFilters" class="w-full bg-zenix-green hover:bg-green-600 shadow-xl shadow-green-500/5 text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2 mt-8 transition-all">
+                                <i class="fa-solid fa-circle-check"></i>
+                                Salvar Filtros Selecionados
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -716,6 +844,7 @@ export default {
             showFilterModal: false,
             showPauseModal: false,
             modalContext: 'main', // 'main' or 'recovery'
+            filterStep: 1, // 1: Selection, 2: Configuration
 
             markets: [],
             contracts: [],
@@ -727,12 +856,10 @@ export default {
                 duration: 1,
                 durationUnit: 't',
                 multiplier: 2.2,
-                virtualLosses: 0,
-                virtualTradeAction: 'loss',
-                startWithVirtual: true,
                 initialStake: 1,
                 takeProfit: 20,
-                stopLoss: 1000
+                stopLoss: 1000,
+                attackFilters: [] // Final filters configuration
             },
             
             recoveryConfig: {
@@ -746,7 +873,8 @@ export default {
                 maxPreciseLosses: 3,
                 pauseLosses: 5,
                 pauseVolatility: 50,
-                pauseTime: 5
+                pauseTime: 5,
+                attackFilters: []
             },
             recoveryContracts: [],
             isFetchingContracts: false,
@@ -772,9 +900,38 @@ export default {
             monitoringOperations: [],
             simulationInterval: null,
             filters: [
-                { id: 'trend', name: 'Seguir Tendência (EMA)', active: false, value: 20, placeholder: 'Período EMA' },
-                { id: 'rsi', name: 'Filtro RSI (Sobrecompra/Sobrevenda)', active: false, value: 70, placeholder: 'Nível RSI' },
-                { id: 'volatility', name: 'Filtro de Volatilidade (DVX)', active: false, value: 50, placeholder: 'Máx. DVX' }
+                { 
+                    id: 'digit_density', 
+                    name: 'Densidade de Dígitos (Apollo)', 
+                    active: false, 
+                    type: 'digit',
+                    desc: 'Analisa a frequência de dígitos específicos numa janela.',
+                    config: { window: 20, digits: '8,9', operator: '<', threshold: 5 }
+                },
+                { 
+                    id: 'digit_sequence', 
+                    name: 'Sequência de Dígitos (Orion)', 
+                    active: false, 
+                    type: 'digit',
+                    desc: 'Busca sequências de dígitos (Par, Ímpar, <4, etc).',
+                    config: { length: 3, target: 'under_4' }
+                },
+                { 
+                    id: 'parity_majority', 
+                    name: 'Maioria de Paridade (Titan)', 
+                    active: false, 
+                    type: 'digit',
+                    desc: 'Exige que um lado (Par/Ímpar) domine a janela.',
+                    config: { window: 24, percentage: 60, maxNoise: 8 }
+                },
+                { 
+                    id: 'price_momentum', 
+                    name: 'Momentum de Preço (Nexus)', 
+                    active: false, 
+                    type: 'price',
+                    desc: 'Analisa a força e direção dos tiques de preço.',
+                    config: { window: 10, ticksToConfirm: 2, minDelta: 0.1 }
+                }
             ],
             // Hardcoded Category Data (from OperationChart.vue)
             tradeTypeCategories: [
@@ -1126,6 +1283,53 @@ export default {
                 this.isFetchingContracts = false;
             }
         },
+        // Filter Management Methods
+        openFilterModal(context = 'main') {
+            this.modalContext = context;
+            this.filterStep = 1;
+            this.showFilterModal = true;
+        },
+        toggleFilter(filter) {
+            if (filter.active) {
+                filter.active = false;
+                return;
+            }
+
+            // Check if we already have 2 active filters
+            const activeCount = this.filters.filter(f => f.active).length;
+            if (activeCount >= 2) {
+                this.$root.$toast.warning('Selecione no máximo 2 filtros de ataque.');
+                return;
+            }
+
+            filter.active = true;
+        },
+        nextFilterStep() {
+            const activeCount = this.filters.filter(f => f.active).length;
+            if (activeCount === 0) {
+                this.$root.$toast.warning('Selecione pelo menos 1 filtro para configurar.');
+                return;
+            }
+            this.filterStep = 2;
+        },
+        prevFilterStep() {
+            this.filterStep = 1;
+        },
+        saveFilters() {
+            const target = this.modalContext === 'main' ? this.form : this.recoveryConfig;
+            
+            // Persist the active filters to the target object
+            target.attackFilters = this.filters
+                .filter(f => f.active)
+                .map(f => ({
+                    id: f.id,
+                    name: f.name,
+                    config: { ...f.config }
+                }));
+            
+            this.showFilterModal = false;
+            this.$root.$toast.success('Filtros configurados com sucesso!');
+        },
         // Modal Handlers
         openMarketModal(context = 'main') {
             this.modalContext = context;
@@ -1356,6 +1560,13 @@ export default {
 </script>
 
 <style scoped>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-out forwards;
+}
 .dashboard-layout {
     display: flex;
     min-height: 100vh;
