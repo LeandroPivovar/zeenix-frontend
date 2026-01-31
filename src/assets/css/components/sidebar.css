@@ -110,13 +110,15 @@ aside.sidebar,
 		position: absolute;
 		left: 50%;
 		top: 50%;
-		font-size: 24px;
-		font-weight: 700;
+		font-size: 26px;
+		/* Slightly larger for better visibility */
+		font-weight: 800;
+		/* Extra bold for premium feel */
 		color: #fff;
 	}
 
 	.sidebar.collapsed:not(:hover) .logo-z {
-		opacity: 1;
+		opacity: 1 !important;
 		transform: translate(-50%, -50%) scale(1);
 	}
 
