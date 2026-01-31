@@ -404,18 +404,10 @@
 										</span>
 									</div>
 									
-									<div class="agent-tech-details">
-										<div class="tech-item">
-											<span class="tech-label">Assertividade</span>
-											<span class="tech-value">{{ agent.assertiveness }}</span>
-										</div>
-										<div class="tech-item">
-											<span class="tech-label">Retorno</span>
-											<span class="tech-value">{{ agent.return }}</span>
-										</div>
-										<div class="tech-item full-width">
-											<span class="tech-label">Análise</span>
-											<span class="tech-value analysis-text">{{ agent.analysis }}</span>
+									<div class="agent-benefits-list">
+										<div v-for="(benefit, i) in agent.benefits.slice(0, 3)" :key="i" class="benefit-item-premium">
+											<i class="fas fa-check check-icon"></i>
+											<span>{{ benefit }}</span>
 										</div>
 									</div>
 								</div>
@@ -424,7 +416,7 @@
 								<div class="agent-card-action">
 									<div class="agent-performance-badget">
 										<span class="perf-val">{{ agent.percentage }}</span>
-										<span class="perf-lbl">Performance</span>
+										<span class="perf-lbl">{{ agent.percentageLabel ? 'Retorno' : 'Performance' }}</span>
 									</div>
 									<button 
 										class="agent-select-btn-premium" 
@@ -2307,7 +2299,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     display: flex;
     align-items: center;
     justify-content: center;
-    border-right: 1px solid rgba(255,255,255,0.05);
+    border-right: none;
 }
 
 .agent-video-tall {
@@ -2435,13 +2427,13 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     width: 160px;
     flex-shrink: 0;
     padding: 1.5rem;
-    border-left: 1px solid rgba(255,255,255,0.05);
+    border-left: none;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 1.5rem;
-    background: rgba(0,0,0,0.2);
+    background: transparent;
 }
 
 .agent-performance-badget {
