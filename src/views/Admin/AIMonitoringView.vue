@@ -11,7 +11,7 @@
             @open-settings="showSettingsModal = true" 
         />
 
-        <div class="dashboard-content-wrapper">
+        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
@@ -712,6 +712,13 @@ export default {
     mounted() {
         this.checkMobile();
         window.addEventListener('resize', this.checkMobile);
+        
+        // Sincronizar estado do sidebar com localStorage
+        const savedSidebarState = localStorage.getItem('sidebar_collapsed');
+        if (savedSidebarState !== null) {
+            this.isSidebarCollapsed = savedSidebarState === 'true';
+        }
+
         this.loadConfiguration();
         this.initTickConnection();
     },
@@ -729,6 +736,7 @@ export default {
         },
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
+            localStorage.setItem('sidebar_collapsed', this.isSidebarCollapsed);
         },
         loadConfiguration() {
             const savedConfig = localStorage.getItem('ai_active_config');
