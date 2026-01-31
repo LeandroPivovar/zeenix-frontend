@@ -2297,15 +2297,10 @@ export default {
             // Note: isRecovery for financial (stake) is based on analysisType (Martingale)
             const isFinancialRecovery = this.sessionState.analysisType === 'RECUPERACAO';
 
-            // Evitar múltiplas entradas simultâneas
-            if (this.activeContracts.size > 0) {
-                this.addLog('⏳ Sinal ignorado: Já existe uma operação em andamento.', 'info');
-                return;
-            }
-
-            this.isNegotiating = true;
-
-            const config = isRecoveryStrategy ? this.recoveryConfig : this.form;
+            // CRITICAL: If we are in Financial Recovery (Martingale), we MUST use the Recovery Contract 
+            // to ensure the Payout (e.g. 126%) matches the Stake Calculation.
+            // So we override 'config' to recoveryConfig if isFinancialRecovery is true.
+            const config = (isFinancialRecovery || isRecoveryStrategy) ? this.recoveryConfig : this.form;
             
             // Check for Contract Switch
             if (this.sessionState.lastContractType && this.sessionState.lastContractType !== config.tradeType) {
