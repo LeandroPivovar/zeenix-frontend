@@ -119,7 +119,8 @@
                                             <th class="px-6 py-4 text-left">Mercado</th>
                                             <th class="px-6 py-4 text-left">Contrato</th>
                                             <th class="px-6 py-4 text-left">Investido</th>
-                                            <th class="px-6 py-4 text-right">P/L</th>
+                                            <th class="px-6 py-4 text-left">Status</th>
+                                            <th class="px-6 py-4 text-right">Resultado</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -128,9 +129,16 @@
                                             <td class="px-6 py-4 text-white font-bold">{{ op.market }}</td>
                                             <td class="px-6 py-4 text-gray-500 text-xs">{{ op.contract }}</td>
                                             <td class="px-6 py-4 text-white">$ {{ op.stake.toFixed(2) }}</td>
+                                            <td class="px-6 py-4 text-white">
+                                                <span v-if="op.result === 'OPEN' || op.result === 'PENDING' || !op.result" class="text-yellow-500 font-bold uppercase tracking-tight text-xs">PENDENTE</span>
+                                                <span v-else :class="op.result.toUpperCase() === 'WIN' || op.result.toUpperCase() === 'WON' ? 'text-[#22C55E]' : 'text-[#EF4444]'" class="font-bold text-xs uppercase">
+                                                    {{ op.result }}
+                                                </span>
+                                            </td>
                                             <td class="px-6 py-4 text-right">
-                                                <span :class="op.result === 'WIN' ? 'text-[#22C55E]' : 'text-[#EF4444]'" class="font-black text-sm">
-                                                    {{ op.result === 'WIN' ? '+' : '' }}{{ op.pnl }}
+                                                <span v-if="op.result === 'OPEN' || op.result === 'PENDING' || !op.result" class="text-gray-500 font-bold">-</span>
+                                                <span v-else :class="op.result.toUpperCase() === 'WIN' || op.result.toUpperCase() === 'WON' ? 'text-[#22C55E]' : 'text-[#EF4444]'" class="font-black text-sm">
+                                                    {{ op.result.toUpperCase() === 'WIN' || op.result.toUpperCase() === 'WON' ? '+' : '' }}{{ typeof op.pnl === 'number' ? op.pnl.toFixed(2) : op.pnl }}
                                                 </span>
                                             </td>
                                         </tr>
