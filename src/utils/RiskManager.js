@@ -56,7 +56,7 @@ export const RiskManager = {
         return baseStake;
     },
 
-    processTradeResult(state, win, profit, stakeUsed, tradeMode = 'PRINCIPAL') {
+    processTradeResult(state, win, profit, stakeUsed, tradeMode = 'PRINCIPAL', recoveryThreshold = 1) {
         state.lastProfit = profit;
         state.lastStake = stakeUsed;
         state.lastResultWin = win;
@@ -89,6 +89,7 @@ export const RiskManager = {
                 state.consecutiveWins++;
                 state.skipSorosNext = false;
                 state.negotiationMode = 'VELOZ'; // Reset mode on win
+                state.activeStrategy = 'PRINCIPAL';
             }
         } else {
             // LOSS
@@ -112,9 +113,28 @@ export const RiskManager = {
             } else {
                 state.consecutiveLosses++;
 
-                // Immediate Transition to Recovery (Martingale Active)
+                // 1. MARTINGALE / FINANCIAL RECOVERY
+                // Always active immediately after a loss to ensure capital protection
                 state.analysisType = 'RECUPERACAO';
-                state.negotiationMode = 'VELOZ'; // Starts in VELOZ even in recovery until 2nd loss
+
+                // CRITICAL: Sync payout estimate for the first Martingale calculation
+                if (state.lastPayoutRecovery === 0.95 && state.lastPayoutPrincipal !== 0.95) {
+                    state.lastPayoutRecovery = state.lastPayoutPrincipal;
+                }
+
+                // 2. STRATEGIC RECOVERY (FILTERS & CONTRACTS)
+                // Only active if losses >= configured threshold
+                state.activeStrategy = (state.consecutiveLosses >= recoveryThreshold) ? 'RECUPERACAO' : 'PRINCIPAL';
+
+                // 3. NEGOTIATION MODE (VELOZ/NORMAL/PRECISO)
+                // Determines analysis frequency and aggressiveness
+                if (state.consecutiveLosses >= 4) {
+                    state.negotiationMode = 'PRECISO';
+                } else if (state.consecutiveLosses >= 2) {
+                    state.negotiationMode = 'NORMAL';
+                } else {
+                    state.negotiationMode = 'VELOZ';
+                }
 
                 state.recoveredAmount = 0;
                 state.lossStreakRecovery = 0;

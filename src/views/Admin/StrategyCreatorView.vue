@@ -1018,6 +1018,7 @@ export default {
                 lastResultWin: false,
                 lastContractType: '',
                 negotiationMode: 'VELOZ', // 'VELOZ' | 'NORMAL' | 'PRECISO'
+                activeStrategy: 'PRINCIPAL', // 'PRINCIPAL' | 'RECUPERACAO' (Filters/Contracts)
                 skipSorosNext: false,
                 lossStreakRecovery: 0,
                 peakProfit: 0,
@@ -2051,7 +2052,7 @@ export default {
                     if (win) this.monitoringStats.wins++;
                     else this.monitoringStats.losses++;
 
-                    RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake, this.pendingFastResult.analysisType);
+                    RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake, this.pendingFastResult.analysisType, this.recoveryConfig.lossesToActivate);
                     this.activeContracts.delete(this.pendingFastResult.contractId);
                     
                     // Keep isRecoveryMode sync for legacy UI if needed
@@ -2080,7 +2081,7 @@ export default {
             }
         },
         runAnalysis() {
-            const activeFilters = this.sessionState.isRecoveryMode 
+            const activeFilters = this.sessionState.activeStrategy === 'RECUPERACAO' 
                 ? this.recoveryConfig.attackFilters 
                 : this.form.attackFilters;
                 
@@ -2110,7 +2111,7 @@ export default {
             if (allPassed) {
                 // Detailed Analysis Log (Zeus style)
                 const mode = this.sessionState.negotiationMode;
-                const isRec = this.sessionState.analysisType === 'RECUPERACAO';
+                const isRec = this.sessionState.activeStrategy === 'RECUPERACAO';
                 
                 let analysisLog = `🧠 ANÁLISE DO MERCADO<br>` +
                     `• MODO: ${mode} ${isRec ? '(RECUPERAÇÃO)' : ''}<br>` +
@@ -2201,14 +2202,18 @@ export default {
 
             if (this.checkLimits()) return;
 
+            // Note: isRecovery for logic is based on activeStrategy (filters/contracts)
+            const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
+            // Note: isRecovery for financial (stake) is based on analysisType (Martingale)
+            const isFinancialRecovery = this.sessionState.analysisType === 'RECUPERACAO';
+
             // Evitar múltiplas entradas simultâneas
             if (this.activeContracts.size > 0) {
                 this.addLog('⏳ Sinal ignorado: Já existe uma operação em andamento.', 'info');
                 return;
             }
 
-            const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
-            const config = isRecovery ? this.recoveryConfig : this.form;
+            const config = isRecoveryStrategy ? this.recoveryConfig : this.form;
             
             // Check for Contract Switch
             if (this.sessionState.lastContractType && this.sessionState.lastContractType !== config.tradeType) {
@@ -2217,7 +2222,7 @@ export default {
             this.sessionState.lastContractType = config.tradeType;
             const stake = this.calculateNextStake();
 
-            this.addLog(`📡 Solicitando proposta (${isRecovery ? 'RECUPERAÇÃO' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
+            this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
             
             // Step 1: Request Proposal to get exact payout
             const proposalParams = {
@@ -2304,7 +2309,7 @@ export default {
                     const oldMode = this.sessionState.negotiationMode;
 
                     // Update State via Risk Manager
-                    RiskManager.processTradeResult(this.sessionState, trade.result === 'WON', trade.pnl, trade.stake, trade.analysisType);
+                    RiskManager.processTradeResult(this.sessionState, trade.result === 'WON', trade.pnl, trade.stake, trade.analysisType, this.recoveryConfig.lossesToActivate);
                     
                     // Sync legacy mode
                     this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
