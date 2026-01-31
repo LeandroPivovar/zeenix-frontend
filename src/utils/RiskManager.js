@@ -147,6 +147,7 @@ export const RiskManager = {
                 state.totalLossAccumulated = 0;
                 state.recoveredAmount = 0;
                 state.skipSorosNext = true;
+                state.consecutiveWins = 0; // Reset para começar nova sequência de Soros
             } else {
                 console.log('[RiskManager] -> Principal Win Block Triggered.');
                 state.lastPayoutPrincipal = currentPayout;
