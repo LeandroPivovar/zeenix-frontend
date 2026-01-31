@@ -175,7 +175,7 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/iaTeste',
+    path: '/Investments-IA/monitoring',
     name: 'iaTeste',
     component: InvestmentActiveStrategyView,
     meta: { requiresAuth: true }
