@@ -747,6 +747,7 @@ export default {
                         ...baseConfig.form,
                         ...parsed, // Overwrite with saved values (stake, stopLoss, etc)
                         // Garantir defaults importantes se faltarem no salvo
+                        market: this.resolveMarketSymbol(parsed.market || baseConfig.form.market || 'R_100'),
                         expectedPayout: parsed.expectedPayout || baseConfig.form.expectedPayout || 1.20,
                         sorosLevel: parsed.sorosLevel !== undefined ? parsed.sorosLevel : (baseConfig.form.sorosLevel || 1),
                         attackFilters: baseConfig.form.attackFilters // Sempre usar filtros do arquivo base para integridade
