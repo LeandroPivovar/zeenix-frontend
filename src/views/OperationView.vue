@@ -138,7 +138,8 @@ export default {
       },
       lastOrders: [],
       isSidebarOpen: false,
-      isSidebarCollapsed: false,
+      isSidebarCollapsed: true, // Começa recolhido
+      showDevModal: false,
       loadingConnection: false,
       accountType: 'real', // 'real' ou 'demo'
       isMobile: false,
@@ -207,8 +208,20 @@ export default {
     },
   },
   methods: {
+    toggleSidebarCollapse() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    },
+    toggleMobileSidebar() {
+      this.isSidebarOpen = !this.isSidebarOpen;
+    },
+    closeSidebar() {
+      this.isSidebarOpen = false;
+    },
+    openDevModal() {
+      this.showDevModal = true;
+    },
     checkMobile() {
-      this.isMobile = window.innerWidth <= 768;
+      this.isMobile = window.innerWidth <= 1024;
       // Removido o switch forçado entre OperationChart e OperationDigits no mobile
       // pois agora a análise de dígitos está integrada no Gráfico.
     },
@@ -1093,7 +1106,7 @@ export default {
   box-sizing: border-box;
 }
 
-.content-wrapper.sidebar-collapsed {
+.dashboard-content-wrapper.sidebar-collapsed {
   margin-left: 80px;
   width: calc(100% - 80px);
 }
@@ -1113,7 +1126,7 @@ export default {
   box-sizing: border-box;
 }
 
-.content-wrapper.sidebar-collapsed .top-header {
+.dashboard-content-wrapper.sidebar-collapsed .top-header {
   left: 0;
   width: 100%;
 }

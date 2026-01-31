@@ -191,8 +191,8 @@
       return {
         activeTab: 'config',
         isSidebarOpen: false,
+        isSidebarCollapsed: true, // Começa recolhido
         showDevModal: false,
-        isSidebarCollapsed: false,
         isSettingsOpen: false,
         isMobile: false,
         loading: true,

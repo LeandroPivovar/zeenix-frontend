@@ -506,6 +506,15 @@ export default {
         },
         openDevModal() {
             this.showDevModal = true;
+        },
+        toggleSidebarCollapse() {
+            this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        },
+        toggleMobileSidebar() {
+            this.isSidebarOpen = !this.isSidebarOpen;
+        },
+        closeSidebar() {
+            this.isSidebarOpen = false;
         }
     },
     mounted() {
