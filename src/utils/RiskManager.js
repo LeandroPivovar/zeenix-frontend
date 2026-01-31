@@ -93,31 +93,42 @@ export const RiskManager = {
             return baseStake;
         }
 
-        // ✅ SOROS LEVEL 1 (Apollo Style): Aplica no SEGUNDO WIN (consecutiveWins === 2)
-        // Win1: consecutiveWins = 1 → Próximo stake = BASE
-        // Win2: consecutiveWins = 2 → Próximo stake = BASE + LUCRO (Soros)
-        // Win3: consecutiveWins = 3 → Reset → BASE
+        // ✅ SOROS LOGIC (Standard): Apply immediately after win, up to Config Level
+        // Win1: consecutiveWins = 1 → Apply Soros (if Level >= 1)
+        // Win2: consecutiveWins = 2 → Apply Soros (if Level >= 2)
+        // ...
+        const sorosLevel = config.sorosLevel || 1;
+        const willApplySoros = state.lastResultWin &&
+            state.lastProfitPrincipal > 0 &&
+            state.consecutiveWins >= 1 &&
+            state.consecutiveWins <= sorosLevel;
+
         console.log('[RiskManager] Soros Check:', {
             lastResultWin: state.lastResultWin,
             lastProfitPrincipal: state.lastProfitPrincipal,
             consecutiveWins: state.consecutiveWins,
-            skipSorosNext: state.skipSorosNext,
-            willApplySoros: state.lastResultWin && state.lastProfitPrincipal > 0 && state.consecutiveWins === 2
+            sorosLevel: sorosLevel,
+            willApplySoros: willApplySoros
         });
 
-        if (state.lastResultWin && state.lastProfitPrincipal > 0 && state.consecutiveWins === 2) {
+        if (willApplySoros) {
+            // Check if we just exceeded the level (should restart)
+            // Actually, if wins > level, the check above (<= sorosLevel) fails, so we return base. 
+            // So this block only runs if we are WITHIN the sequence.
+
             const profit = state.lastProfitPrincipal;
             console.log(`[RiskManager] 🚀 SOROS APPLIED! Base: ${baseStake}, Profit: ${profit}, Total: ${baseStake + profit}`);
             return parseFloat((baseStake + profit).toFixed(2));
         }
 
-        // Reset after Soros (Apollo prevents > Level 1)
-        if (state.consecutiveWins >= 3) {
-            state.consecutiveWins = 0;
+        // Reset if sequence finished
+        if (state.consecutiveWins > sorosLevel) {
+            // Log that we are resetting due to level cap
+            console.log(`[RiskManager] Soros Level ${sorosLevel} reached. Resetting to base stake.`);
             return baseStake;
         }
 
-        // Default
+        // Default Fallback
         console.log(`[RiskManager] Calc Default Stake: Base=${baseStake}, Wins=${state.consecutiveWins}, LastProfit=${state.lastProfitPrincipal}, Skip=${state.skipSorosNext}`);
         return baseStake;
     },
