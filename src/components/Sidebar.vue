@@ -13,15 +13,7 @@
                 </span>
             </div>
 
-            <!-- Botão de Recolher Sidebar (Apenas Desktop) -->
-            <button 
-                v-if="!isMobile" 
-                class="collapse-toggle-btn" 
-                @click="toggleCollapse"
-                :title="isCollapsed ? 'Expandir Menu' : 'Recolher Menu'"
-            >
-                <i :class="isCollapsed ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-left'"></i>
-            </button>
+
             
             <button v-if="isMobile" class="close-sidebar-btn" @click="$emit('close-sidebar')">
                 <i class="fa-solid fa-xmark"></i>

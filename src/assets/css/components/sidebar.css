@@ -78,7 +78,7 @@ aside.sidebar,
 		height: 60px;
 		display: flex;
 		align-items: center;
-		justify-content: flex-start;
+		justify-content: space-between;
 		border-bottom: 1px solid #1C1C1C;
 		margin-bottom: 0;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -148,6 +148,7 @@ aside.sidebar,
 		color: #fff;
 		white-space: nowrap;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+		line-height: normal;
 	}
 
 	.logo-z {

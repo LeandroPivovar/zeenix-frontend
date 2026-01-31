@@ -44,7 +44,7 @@
                 </div>
 
                 <!-- Resultado -->
-                <div class="col-span-1 md:col-span-3 lg:col-span-3 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6 flex flex-col items-center justify-center">
+                <div class="col-span-1 md:col-span-3 lg:col-span-3 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6 flex flex-col items-center">
                     <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Resultado</p>
                     <div class="flex items-baseline justify-center gap-1 lg:gap-3">
                         <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_rgba(34,197,94,0.3)]"
@@ -52,7 +52,7 @@
                             {{ stats.profit >= 0 ? '+' : '' }}${{ stats.profit.toFixed(2) }}
                         </p>
                         <span class="text-xs lg:text-lg font-semibold px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
-                               :class="stats.profit >= 0 ? 'text-[#22C55E]/80 bg-[#22C55E]/10' : 'text-[#EF4444]/80 bg-[#EF4444]/10'">
+                              :class="stats.profit >= 0 ? 'text-[#22C55E]/80 bg-[#22C55E]/10' : 'text-[#EF4444]/80 bg-[#EF4444]/10'">
                             {{ (stats.profit >= 0 ? '+' : '') }}{{ ((stats.profit / (stats.balance - stats.profit || 1)) * 100).toFixed(1) }}%
                         </span>
                     </div>
@@ -96,7 +96,6 @@
         <div class="flex flex-col lg:flex-row gap-6 w-full flex-1 min-h-0 pb-10">
             <!-- Left Column: Tabs Content -->
             <div class="w-full lg:w-[72%] bg-[#121212]/40 backdrop-blur-md rounded-2xl border border-[rgba(255,255,255,0.05)] p-4 md:p-6 lg:p-8 gradient-border flex flex-col shadow-xl">
-                <!-- Custom Tabs -->
                 <div class="flex items-center justify-start text-gray-500 border-b border-[rgba(255,255,255,0.05)] mb-6 gap-6 h-auto p-0 overflow-x-auto no-scrollbar">
                     <button @click="activeTab = 'history'" :class="{ 'border-[#22C55E] text-[#22C55E]': activeTab === 'history' }" class="inline-flex items-center justify-center py-2 text-sm font-bold border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-white whitespace-nowrap">
                         <i class="fas fa-history mr-2"></i> Histórico
@@ -148,6 +147,16 @@
 
                     <!-- Logs View -->
                     <div v-show="activeTab === 'logs'" class="animate-fadeIn h-full">
+                        <!-- Log Controls -->
+                        <div class="flex justify-end gap-3 mb-4">
+                            <button @click="exportLogs" class="text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-2 bg-blue-400/5 px-3 py-1.5 rounded-lg border border-blue-400/20">
+                                <i class="fas fa-file-export"></i> Exportar Logs
+                            </button>
+                            <button @click="clearLogs" class="text-[10px] font-bold uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors flex items-center gap-2 bg-red-400/5 px-3 py-1.5 rounded-lg border border-red-400/20">
+                                <i class="fas fa-trash-alt"></i> Limpar Logs
+                            </button>
+                        </div>
+
                         <div class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
                             <div v-for="log in logs" :key="log.id" class="p-4 bg-[#0D0D0D]/60 rounded-xl border border-[rgba(255,255,255,0.03)] hover:border-[#22C55E]/20 transition-all duration-300">
                                 <div class="flex items-start gap-4">
@@ -187,9 +196,9 @@
                                 </div>
                                 <div class="absolute inset-0 rounded-lg bg-[#22C55E]/20 blur-lg -z-10"></div>
                             </div>
-                            <div class="flex flex-col justify-center">
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider leading-none">IA {{ sessionState.strategy || 'Ativa' }}</h3>
-                                <p class="text-[10px] text-gray-500 mt-1">Robot de análise probabilística</p>
+                            <div>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">IA {{ sessionState.strategy || 'Ativa' }}</h3>
+                                <p class="text-[10px] text-gray-500">Robot de análise probabilística</p>
                             </div>
                         </div>
                     </div>
@@ -243,6 +252,15 @@
 
                     <div class="flex-1 min-h-[40px]"></div>
 
+                    <!-- Desktop Stop Button -->
+                    <div class="mt-auto pt-6 border-t border-white/[0.05]">
+                        <button @click="$emit('stop')" class="group flex items-center justify-center w-full h-[52px] bg-[#22C55E] hover:bg-[#1EAE54] text-black font-black uppercase tracking-[0.2em] text-[10px] rounded-xl transition-all duration-300 shadow-xl shadow-[#22C55E]/20 active:scale-[0.98]">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-stop text-xs"></i>
+                                <span class="mt-0.5">Parar Operação</span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -270,7 +288,7 @@ export default {
             required: true
         }
     },
-    emits: ['stop'],
+    emits: ['stop', 'clear-logs'],
     data() {
         return {
             activeTab: 'history',
@@ -287,6 +305,28 @@ export default {
     methods: {
         checkMobile() {
             this.isMobile = window.innerWidth < 1024;
+        },
+        exportLogs() {
+            if (this.logs.length === 0) return;
+            // Extract text from messages (remove HTML tags)
+            const logText = this.logs.map(log => {
+                const temp = document.createElement('div');
+                temp.innerHTML = log.message;
+                return `[${log.time}] [${log.type.toUpperCase()}] ${temp.textContent || temp.innerText}`;
+            }).join('\n');
+            
+            const blob = new Blob([logText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `zeenix_logs_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        },
+        clearLogs() {
+            if (confirm('Tem certeza que deseja limpar todos os registros?')) {
+                this.$emit('clear-logs');
+            }
         }
     }
 }
