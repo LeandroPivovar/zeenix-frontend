@@ -676,7 +676,6 @@ export default {
             },
 
             monitoringLogs: [],
-            monitoringLogs: [],
             monitoringOperations: [],
             profitHistory: [0], // Start with 0 profit
             activeContracts: new Map(),
