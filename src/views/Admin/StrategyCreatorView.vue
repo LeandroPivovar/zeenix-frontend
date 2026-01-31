@@ -2435,27 +2435,8 @@ export default {
                 // Refinar resultado se já processado pelo resultado rápido
                 if (trade.fastResultApplied) {
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
-                } 
-                
-                // Always update payout history for this contract type (Win or Loss? Payout is mostly constant per type unless barrier changes)
-                // For a loss, we don't know the real payout unless we saved it from proposal. 
-                // But for a WIN, we know exactly.
-                if (trade.result === 'WON') {
-                     const payoutRate = trade.pnl / trade.stake;
-                     
-                     // Determine prefix (use stored analysisType from trade if available, or current? Trade has it)
-                     // Determine prefix (use stored analysisType from trade if available, or current? Trade has it)
-                     const prefix = (trade.analysisType === 'RECUPERACAO') ? 'RECUPERACAO_' : 'PRINCIPAL_';
-                     
-                     let barrierSuffix = '';
-                     if (trade.barrier !== undefined) {
-                         barrierSuffix = '_' + trade.barrier;
-                     } 
-                     
-                     RiskManager.updatePayoutHistory(prefix + trade.contract + barrierSuffix, payoutRate);
-                }
-                else {
-                    // Se não foi processado pelo rápido, marcar como processado e atualizar lógica
+                } else {
+                    // ✅ CORRECTED LOGIC: Process ALL results (WIN and LOSS) if not fast-processed
                     trade.fastResultApplied = true;
                     if (trade.result === 'WON') this.monitoringStats.wins++;
                     else this.monitoringStats.losses++;
@@ -2470,7 +2451,6 @@ export default {
                         this.recoveryConfig.lossesToActivate
                     );
 
-                    
                     const oldAnalysis = this.sessionState.analysisType;
                     const oldMode = this.sessionState.negotiationMode;
                     
@@ -2488,11 +2468,28 @@ export default {
                          this.addLog(`📉 Loss acumulado ($${lossSum.toFixed(2)}). Ativando RECUPERAÇÃO.`, 'warning');
                     } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
                          this.addLog('✅ RECUPERAÇÃO CONCLUÍDA!', 'success');
-                    } else if (this.sessionState.analysisType === 'RECUPERACAO' && !trade.result === 'WON') {
+                    } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST') {
                          this.addLog(`📉 Loss na Recuperação. Ajustando Martingale...`, 'warning');
                     }
                     // Refine result from Fast Result logic with official data
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake);
+                }
+                
+                // Always update payout history for this contract type (Win or Loss? Payout is mostly constant per type unless barrier changes)
+                // For a loss, we don't know the real payout unless we saved it from proposal. 
+                // But for a WIN, we know exactly.
+                if (trade.result === 'WON') {
+                     const payoutRate = trade.pnl / trade.stake;
+                     
+                     // Determine prefix (use stored analysisType from trade if available, or current? Trade has it)
+                     const prefix = (trade.analysisType === 'RECUPERACAO') ? 'RECUPERACAO_' : 'PRINCIPAL_';
+                     
+                     let barrierSuffix = '';
+                     if (trade.barrier !== undefined) {
+                         barrierSuffix = '_' + trade.barrier;
+                     } 
+                     
+                     RiskManager.updatePayoutHistory(prefix + trade.contract + barrierSuffix, payoutRate);
                 }
 
                 // track peak profit for Stop Blindado
