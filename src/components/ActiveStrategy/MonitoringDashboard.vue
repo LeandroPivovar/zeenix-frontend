@@ -315,11 +315,17 @@ export default {
                 return `[${log.time}] [${log.type.toUpperCase()}] ${temp.textContent || temp.innerText}`;
             }).join('\n');
             
+            const iaName = (this.sessionState.strategy || 'Estrategia').toLowerCase().replace(/\s+/g, '-');
+            const mode = (this.sessionState.mode || 'modo').toLowerCase();
+            const risk = (this.sessionState.modoMartingale || 'risco').toLowerCase();
+            const date = new Date().toISOString().split('T')[0];
+            const fileName = `zenix-${iaName}-${mode}-${risk}-${date}.txt`;
+
             const blob = new Blob([logText], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `zeenix_logs_${new Date().toISOString().split('T')[0]}.txt`;
+            a.download = fileName;
             a.click();
             window.URL.revokeObjectURL(url);
         },
