@@ -176,7 +176,7 @@ const routes = [
   },
   {
     path: '/Investments-IA/monitoring',
-    name: 'iaTeste',
+    name: 'InvestmentMonitoring',
     component: InvestmentActiveStrategyView,
     meta: { requiresAuth: true }
   },

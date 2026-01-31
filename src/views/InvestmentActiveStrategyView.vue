@@ -551,6 +551,12 @@ export default {
             this.monitoringStats.statusDesc = 'Sessão encerrada';
             this.stopTickConnection();
             this.addLog('⏹️ Operação finalizada.', 'info');
+            
+            // ✅ Limpar configuração ativa e redirecionar
+            localStorage.removeItem('ai_active_config');
+            setTimeout(() => {
+                this.$router.push('/Investments-IA');
+            }, 1000);
         },
 
         addLog(message, type) {
