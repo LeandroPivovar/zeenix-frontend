@@ -405,9 +405,14 @@
 									</div>
 									
 									<div class="agent-benefits-list">
-										<div v-for="(benefit, i) in agent.benefits.slice(0, 3)" :key="i" class="benefit-item-premium">
-											<i class="fas fa-check check-icon"></i>
-											<span>{{ benefit }}</span>
+										<div class="benefit-item-premium">
+											<strong style="color: #DFDFDF;">Análise:</strong> <span>{{ agent.analysis }}</span>
+										</div>
+										<div class="benefit-item-premium">
+											<strong style="color: #DFDFDF;">Assertividade:</strong> <span>{{ agent.assertiveness }}</span>
+										</div>
+										<div class="benefit-item-premium">
+											<strong style="color: #DFDFDF;">Retorno:</strong> <span>{{ agent.return }}</span>
 										</div>
 									</div>
 								</div>
@@ -2344,7 +2349,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 }
 
 .agent-name-premium {
-    font-size: 1.4rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: #FFF;
     margin: 0;
@@ -2430,9 +2435,9 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     border-left: none;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    gap: 1.5rem;
+    gap: 0;
     background: transparent;
 }
 
