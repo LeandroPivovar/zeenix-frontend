@@ -406,12 +406,15 @@
 									
 									<div class="agent-benefits-list">
 										<div class="benefit-item-premium">
+											<i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
 											<strong style="color: #DFDFDF;">Análise:</strong> <span>{{ agent.analysis }}</span>
 										</div>
 										<div class="benefit-item-premium">
+											<i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
 											<strong style="color: #DFDFDF;">Assertividade:</strong> <span>{{ agent.assertiveness }}</span>
 										</div>
 										<div class="benefit-item-premium">
+											<i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
 											<strong style="color: #DFDFDF;">Retorno:</strong> <span>{{ agent.return }}</span>
 										</div>
 									</div>
@@ -423,12 +426,6 @@
 										<span class="perf-val">{{ agent.percentage }}</span>
 										<span class="perf-lbl">{{ agent.percentageLabel ? 'Retorno' : 'Performance' }}</span>
 									</div>
-									<button 
-										class="agent-select-btn-premium" 
-										:class="{ 'selected': selectedAgent === agent.id }"
-									>
-										{{ selectedAgent === agent.id ? 'Selecionado' : 'Selecionar' }}
-									</button>
 								</div>
 								
 								<!-- Glow Effect -->
@@ -2330,11 +2327,11 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 /* Section Middle: Content */
 .agent-card-content {
     flex: 1;
-    padding: 1.5rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
-    justify-content: center;
+    justify-content: space-between;
 }
 
 .agent-header-row {
@@ -2431,12 +2428,13 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 .agent-card-action {
     width: 160px;
     flex-shrink: 0;
-    padding: 1.5rem;
+    padding: 1rem;
     border-left: none;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
+    padding: 1rem;
     gap: 0;
     background: transparent;
 }
