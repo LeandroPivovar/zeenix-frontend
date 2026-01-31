@@ -11,6 +11,7 @@ import OperationView from '../views/OperationView.vue'
 import DerivOAuthCallback from '../views/DerivOAuthCallback.vue'
 // import MarkupView from '../views/Admin/MarkupView.vue'
 import InvestmentActiveStrategyView from '../views/InvestmentActiveStrategyView.vue'
+import InvestmentIAView from '../views/InvestmentIAView.vue'
 import MasterTraderView from '@/views/MasterTraderView.vue'
 import AgenteAutonomoView from '@/views/AgenteAutonomo.vue'
 import CopyTraders from '@/views/CopyTradersView.vue';
@@ -170,7 +171,7 @@ const routes = [
   {
     path: '/Investments-IA',
     name: 'InvestmentIAView',
-    component: InvestmentActiveStrategyView,
+    component: InvestmentIAView,
     meta: { requiresAuth: true }
   },
   {
