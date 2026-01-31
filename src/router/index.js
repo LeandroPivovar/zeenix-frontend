@@ -119,13 +119,13 @@ const routes = [
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
-    path: '/StatsIAs',
+    path: '/adminStatsIAs',
     name: 'StatsIAs',
     component: () => import('../views/Admin/StatsIAsView.vue'),
     meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
-    path: '/StatsIAs/monitoring',
+    path: '/adminStatsIAs/monitoring',
     name: 'AIMonitoring',
     component: () => import('../views/Admin/AIMonitoringView.vue'),
     meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
@@ -168,13 +168,7 @@ const routes = [
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
-    path: '/AdminStatsIAs',
-    name: 'AdminStatsIAs',
-    component: () => import('@/views/Admin/StatsIAsView.vue'),
-    meta: { requiresAuth: true, requiresRole: ['admin'] }
-  },
-  {
-    path: '/InvestmentIA',
+    path: '/Investments-IA',
     name: 'InvestmentIAView',
     component: InvestmentActiveStrategyView,
     meta: { requiresAuth: true }

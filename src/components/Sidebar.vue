@@ -47,7 +47,7 @@
                     href="#"
                     class="menu-item"
                     :class="{ active: isStatsIAsActive, disabled: !isAdmin }"
-                    @click.prevent="isAdmin ? navigateAndClose('/StatsIAs') : openDevModal()"
+                    @click.prevent="isAdmin ? navigateAndClose('/adminStatsIAs') : openDevModal()"
                     data-text="IAs de Investimento"
                 >
                     <i class="fa-solid fa-brain w-5 opacity-85"></i>
@@ -388,8 +388,8 @@ export default {
         isCopyTradingActive() { return this.$route?.path === '/copy-trading' || this.$route?.path === '/copy-trader'; },
         isAutonomousAgentActive() { return this.$route?.path === '/agente-autonomo'; },
         isMarkupActive() { return this.$route?.path === '/markup'; },
-        isStatsIAsActive() { return this.$route?.path === '/StatsIAs'; },
-        isAdminStatsIAsActive() { return this.$route?.path === '/AdminStatsIAs'; },
+        isStatsIAsActive() { return this.$route?.path === '/adminStatsIAs'; },
+        isAdminStatsIAsActive() { return this.$route?.path === '/adminStatsIAs'; },
         isExpertsActive() { return this.$route?.path === '/Experts'; },
         isClientesActive() { return this.$route?.path === '/Clientes'; },
         isWebhooksActive() { return this.$route?.path === '/Webhooks'; },
@@ -400,7 +400,7 @@ export default {
         },
         isAdminViewActive() { return this.$route?.path === '/Admin'; },
         isMasterTraderActive() { return this.$route?.path === '/MasterTrader' || this.$route?.path === '/tradermestre'; },
-        isInvestmentIAActive() { return this.$route?.path === '/InvestmentIA'; },
+        isInvestmentIAActive() { return this.$route?.path === '/Investments-IA'; },
         isSupportItemsActive() { return this.$route?.path === '/SupportItems'; },
         isPlansManagementActive() { return this.$route?.path === '/PlansManagement'; },
         isStrategyCreatorActive() { return this.$route?.path === '/admin/strategies/create'; },
