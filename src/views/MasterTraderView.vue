@@ -1,6 +1,5 @@
 <template>
-    <div class="layout-master-trader" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-        <AppSidebar 
+    <div class="layout-master-trader" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">    <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="isSidebarCollapsed" 
             @toggle-collapse="toggleSidebarCollapse"
@@ -669,13 +668,9 @@ export default {
     min-height: 100vh;
     background: #0b0b0b;
     color: #f0f6fc; /* Texto principal claro */
-    width: calc(100% - 280px);
-    margin-left: 280px;
 }
 
 .layout-master-trader.sidebar-collapsed {
-    margin-left: 80px;
-    width: calc(100% - 80px);
 }
 
 .layout-master-trader .agente-autonomo-header {
