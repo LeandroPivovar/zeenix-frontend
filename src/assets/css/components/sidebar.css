@@ -97,47 +97,60 @@ aside.sidebar,
 		align-items: center;
 		position: relative;
 		width: 100%;
-		height: 30px;
+		height: 40px;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+		justify-content: flex-start;
+		overflow: hidden;
+	}
+
+	.sidebar.collapsed:not(:hover) .brand-logo-container {
 		justify-content: center;
 	}
 
-	.logo-z {
-		display: block;
-		opacity: 0;
-		transform: translate(-50%, -50%) scale(0.8);
-		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		font-size: 26px;
-		/* Slightly larger for better visibility */
+	.logo-text {
+		display: flex;
+		align-items: center;
+		font-size: 24px;
 		font-weight: 800;
-		/* Extra bold for premium feel */
+		letter-spacing: 1px;
+		color: #fff;
+		white-space: nowrap;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.logo-z {
+		display: inline-block;
+		color: #fff;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+		flex-shrink: 0;
+	}
+
+	.logo-suffix {
+		display: inline-flex;
+		opacity: 1;
+		width: auto;
+		transform: translateX(0);
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+		pointer-events: auto;
+	}
+
+	.logo-suffix .white {
 		color: #fff;
 	}
 
-	.sidebar.collapsed:not(:hover) .logo-z {
-		opacity: 1 !important;
-		transform: translate(-50%, -50%) scale(1);
-	}
-
-	.logo-full {
-		display: block;
-		opacity: 1;
-		transform: translateX(0);
-		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-		font-size: 20px;
-		font-weight: 800;
-		letter-spacing: 2px;
+	.logo-suffix .green {
 		color: #22C55E;
-		white-space: nowrap;
 	}
 
-	.sidebar.collapsed:not(:hover) .logo-full {
+	.sidebar.collapsed:not(:hover) .logo-suffix {
 		opacity: 0;
+		width: 0;
 		transform: translateX(10px);
 		pointer-events: none;
+	}
+
+	.sidebar.collapsed:not(:hover) .logo-text {
+		transform: translateX(0);
 	}
 
 	.sidebar.collapsed:not(:hover) .student-group-badge {

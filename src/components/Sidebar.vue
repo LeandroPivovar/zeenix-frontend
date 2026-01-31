@@ -3,8 +3,9 @@
         <aside class="sidebar noise-bg" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <div class="sidebar-brand">
             <div class="brand-logo-container">
-                <span class="logo-z">Z</span>
-                <span class="logo-full">ZENIX</span>
+                <span class="logo-text">
+                    <span class="logo-z">Z</span><span class="logo-suffix"><span class="white">ENI</span><span class="green">X</span></span>
+                </span>
             </div>
             <a 
                 v-if="studentGroupConfig.show" 
