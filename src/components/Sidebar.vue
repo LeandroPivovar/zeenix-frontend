@@ -2,8 +2,20 @@
     <div class="sidebar-wrapper">
         <aside class="sidebar noise-bg" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <div class="sidebar-brand">
-            <span class="logo-z">Z</span>
-            <span class="logo-full">ZENIX</span>
+            <div class="brand-logo-container">
+                <span class="logo-z">Z</span>
+                <span class="logo-full">ZENIX</span>
+            </div>
+            <a 
+                v-if="!isCollapsed && studentGroupConfig.show" 
+                :href="studentGroupConfig.link" 
+                target="_blank" 
+                class="student-group-badge"
+            >
+                <i v-if="studentGroupConfig.icon" :class="studentGroupConfig.icon"></i>
+                <i v-else class="fa-solid fa-users"></i>
+                <span>Grupo</span>
+            </a>
         </div>
         
         <nav class="menu">
@@ -127,17 +139,7 @@
                     <span>Suporte</span>
                 </a>
 
-                <a
-                    v-if="studentGroupConfig.show && !isCollapsed"
-                    :href="studentGroupConfig.link"
-                    target="_blank"
-                    class="menu-item"
-                    data-text="Grupo de Alunos"
-                >
-                    <i v-if="studentGroupConfig.icon" :class="studentGroupConfig.icon + ' w-5 opacity-85'"></i>
-                    <i v-else class="fa-solid fa-users-rectangle w-5 opacity-85"></i>
-                    <span>{{ studentGroupConfig.text }}</span>
-                </a>
+                <!-- removed old student group menu item -->
 
                 <a
                     href="#"
