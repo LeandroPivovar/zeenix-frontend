@@ -621,7 +621,7 @@ export default {
             isAuthorized: false,
             tickCount: 0,
             tickHistory: [],
-            tickHistory: [],
+
             digitHistory: [],
             isNegotiating: false,
 
