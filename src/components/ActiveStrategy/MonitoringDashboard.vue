@@ -44,7 +44,7 @@
                 </div>
 
                 <!-- Resultado -->
-                <div class="col-span-1 md:col-span-3 lg:col-span-3 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6 flex flex-col items-center">
+                <div class="col-span-1 md:col-span-3 lg:col-span-3 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6 flex flex-col items-center justify-center">
                     <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Resultado</p>
                     <div class="flex items-baseline justify-center gap-1 lg:gap-3">
                         <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_rgba(34,197,94,0.3)]"
@@ -52,7 +52,7 @@
                             {{ stats.profit >= 0 ? '+' : '' }}${{ stats.profit.toFixed(2) }}
                         </p>
                         <span class="text-xs lg:text-lg font-semibold px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
-                              :class="stats.profit >= 0 ? 'text-[#22C55E]/80 bg-[#22C55E]/10' : 'text-[#EF4444]/80 bg-[#EF4444]/10'">
+                               :class="stats.profit >= 0 ? 'text-[#22C55E]/80 bg-[#22C55E]/10' : 'text-[#EF4444]/80 bg-[#EF4444]/10'">
                             {{ (stats.profit >= 0 ? '+' : '') }}{{ ((stats.profit / (stats.balance - stats.profit || 1)) * 100).toFixed(1) }}%
                         </span>
                     </div>
@@ -98,9 +98,6 @@
             <div class="w-full lg:w-[72%] bg-[#121212]/40 backdrop-blur-md rounded-2xl border border-[rgba(255,255,255,0.05)] p-4 md:p-6 lg:p-8 gradient-border flex flex-col shadow-xl">
                 <!-- Custom Tabs -->
                 <div class="flex items-center justify-start text-gray-500 border-b border-[rgba(255,255,255,0.05)] mb-6 gap-6 h-auto p-0 overflow-x-auto no-scrollbar">
-                    <button @click="activeTab = 'chart'" :class="{ 'border-[#22C55E] text-[#22C55E]': activeTab === 'chart' }" class="inline-flex items-center justify-center py-2 text-sm font-bold border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-white whitespace-nowrap">
-                        <i class="fas fa-chart-line mr-2"></i> Gráfico
-                    </button>
                     <button @click="activeTab = 'history'" :class="{ 'border-[#22C55E] text-[#22C55E]': activeTab === 'history' }" class="inline-flex items-center justify-center py-2 text-sm font-bold border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-white whitespace-nowrap">
                         <i class="fas fa-history mr-2"></i> Histórico
                     </button>
@@ -111,17 +108,6 @@
 
                 <!-- Content Area -->
                 <div class="flex-1 min-h-[400px]">
-                    <!-- Chart View -->
-                    <div v-show="activeTab === 'chart'" class="h-full animate-fadeIn flex flex-col items-center justify-center bg-[#0B0B0B]/40 rounded-xl border border-[rgba(255,255,255,0.03)] p-10">
-                        <div class="text-center group">
-                            <div class="relative inline-block mb-6">
-                                <div class="absolute inset-0 bg-[#22C55E]/10 blur-2xl rounded-full group-hover:bg-[#22C55E]/20 transition-all duration-500"></div>
-                                <i class="fas fa-chart-area text-7xl text-gray-700/50 group-hover:text-[#22C55E]/30 transition-all duration-500"></i>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-300 mb-2">Conectando ao Mercado...</h3>
-                            <p class="text-sm text-gray-500 max-w-xs mx-auto">Aguardando a primeira movimentação de ticks para renderizar a análise probabilística.</p>
-                        </div>
-                    </div>
 
                     <!-- History View -->
                     <div v-show="activeTab === 'history'" class="animate-fadeIn h-full">
@@ -201,9 +187,9 @@
                                 </div>
                                 <div class="absolute inset-0 rounded-lg bg-[#22C55E]/20 blur-lg -z-10"></div>
                             </div>
-                            <div>
-                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">IA {{ sessionState.strategy || 'Ativa' }}</h3>
-                                <p class="text-[10px] text-gray-500">Robot de análise probabilística</p>
+                            <div class="flex flex-col justify-center">
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider leading-none">IA {{ sessionState.strategy || 'Ativa' }}</h3>
+                                <p class="text-[10px] text-gray-500 mt-1">Robot de análise probabilística</p>
                             </div>
                         </div>
                     </div>
@@ -257,15 +243,6 @@
 
                     <div class="flex-1 min-h-[40px]"></div>
 
-                    <!-- Desktop Stop Button -->
-                    <div class="mt-auto pt-6 border-t border-white/[0.05]">
-                        <button @click="$emit('stop')" class="group flex items-center justify-center w-full h-[52px] bg-[#22C55E] hover:bg-[#1EAE54] text-black font-black uppercase tracking-[0.2em] text-[10px] rounded-xl transition-all duration-300 shadow-xl shadow-[#22C55E]/20 active:scale-[0.98]">
-                            <div class="flex items-center gap-3">
-                                <i class="fas fa-stop text-xs"></i>
-                                <span class="mt-0.5">Parar Operação</span>
-                            </div>
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -296,7 +273,7 @@ export default {
     emits: ['stop'],
     data() {
         return {
-            activeTab: 'chart',
+            activeTab: 'history',
             isMobile: false
         }
     },

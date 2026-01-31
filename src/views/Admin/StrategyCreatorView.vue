@@ -20,14 +20,16 @@
             />
 
             <main class="layout-content">
-                <div class="content-header mb-6 flex justify-between items-center px-4 w-full">
-                    <div>
+                <div class="content-header mb-6 flex justify-between items-center w-full">
+                    <div class="flex-1">
                         <h1 class="text-2xl font-bold text-white">{{ isMonitoring ? 'Acompanhamento de Estratégia [BETA]' : 'Criador de Estratégias [BETA]' }}</h1>
                         <p class="text-sm text-[#7D7D7D]">{{ isMonitoring ? 'Acompanhe a atividade do robô em tempo real.' : 'Configure sua estratégia automatizada para execução no mercado.' }}</p>
                     </div>
-                    <button v-if="isMonitoring" @click="stopMonitoring" class="stop-btn">
-                        <i class="fas fa-stop mr-2"></i> Parar Robô
-                    </button>
+                    <div v-if="isMonitoring" class="flex items-center gap-4">
+                        <button @click="stopMonitoring" class="stop-btn">
+                            <i class="fas fa-stop mr-2"></i> Parar Robô
+                        </button>
+                    </div>
                     <div v-else class="flex flex-wrap items-center gap-3">
                         <div class="flex items-center gap-2 bg-[#141414] border border-[#333] rounded-lg p-1">
                             <select 
@@ -2524,6 +2526,13 @@ export default {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+}
+
+.dashboard-content-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-grow: 1;
+    transition: all 0.3s ease;
 }
 
 .strategy-creator-form-container,
