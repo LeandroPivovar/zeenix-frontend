@@ -402,10 +402,10 @@
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
     }
 
-    /* REMOVER O Z DO BRAND NO MOBILE */
-    .logo-z {
+    /* Z DO BRAND NO MOBILE REMOVIDO PARA PERSISTÊNCIA */
+    /* .logo-z {
         display: none !important;
-    }
+    } */
 
     /* Ajustar padding ou alinhamento se o Z sumir */
     .sidebar-brand {
