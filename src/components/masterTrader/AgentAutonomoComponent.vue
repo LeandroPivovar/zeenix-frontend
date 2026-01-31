@@ -1,3 +1,4 @@
+<template>
   <div class="layout-agente-autnomo">
     <div class="container-componentes">
       <component
@@ -12,6 +13,7 @@
       />
     </div>
   </div>
+</template>
 
 <script>
 import AgenteAutonomoActive from "../autonomo/AgenteAutonomoActive.vue";
@@ -23,6 +25,20 @@ export default {
   components: {
     AgenteAutonomoActive,
     AgenteAutonomoInactive,
+  },
+  props: {
+    isMobile: {
+      type: Boolean,
+      default: false
+    },
+    isSidebarCollapsed: {
+      type: Boolean,
+      default: true
+    },
+    showTitle: {
+      type: Boolean,
+      default: true
+    }
   },
   data() {
     return {
@@ -77,11 +93,6 @@ export default {
       // Ações do Agente
       agentActions: [],
 
-      // Estado do Sidebar
-      isSidebarOpen: false, // Começa fechado no mobile
-      isSidebarCollapsed: false,
-      isMobile: false,
-
       // Intervalos de Simulação
       chartInterval: null,
       profitInterval: null,
@@ -98,12 +109,6 @@ export default {
       balancesByCurrencyDemo: {},
       isSettingsOpen: false,
     };
-  },
-  props: {
-    showTitle: {
-      type: Boolean,
-      default: true
-    }
   },
   computed: {
     componenteAtual() {
@@ -930,30 +935,6 @@ export default {
       this.chartInterval = null;
     },
 
-    toggleMobileSidebar() {
-      this.isSidebarOpen = !this.isSidebarOpen;
-    },
-
-    closeSidebar() {
-      this.isSidebarOpen = false;
-    },
-
-    toggleSidebarCollapse() {
-      if (!this.isMobile) {
-        this.isSidebarCollapsed = !this.isSidebarCollapsed;
-      }
-    },
-
-    checkMobile() {
-      this.isMobile = window.innerWidth <= 1024;
-      if (this.isMobile) {
-        this.isSidebarOpen = false;
-        this.isSidebarCollapsed = false;
-      } else {
-        this.isSidebarOpen = true;
-      }
-    },
-
     getPreferredCurrency() {
       try {
         const connectionStr = localStorage.getItem("deriv_connection");
@@ -1153,9 +1134,6 @@ export default {
   },
   async mounted() {
       this.preferredCurrency = this.getPreferredCurrency();
-      this.checkMobile();
-
-      window.addEventListener("resize", this.checkMobile);
 
       // Carregar saldo primeiro para que esteja disponível quando agenteData for computado
       await this.fetchAccountBalance();
@@ -1179,7 +1157,6 @@ export default {
     this.stopSimulations();
     this.stopPolling();
     this.stopBalanceUpdates();
-    window.removeEventListener("resize", this.checkMobile);
 
     if (this.timeAndMetricsInterval) {
       clearInterval(this.timeAndMetricsInterval);

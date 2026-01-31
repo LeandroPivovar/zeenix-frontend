@@ -251,6 +251,8 @@
             <main id="master-trader-portal-target" class="master-trader-main-content">
                 <component 
                     :is="currentViewComponent" 
+                    :is-mobile="isMobile"
+                    :is-sidebar-collapsed="isSidebarCollapsed"
                     :show-title="currentViewComponent === 'AgenteAutonomoView' ? false : true"
                 />
             </main>
@@ -292,6 +294,7 @@ export default {
             showSettingsModal: false,
             // Variável de estado para controlar o modo ativo
             activeMode: 'Detalhes Copiadores',
+            isMobile: false,
             // Dados do header
             accountBalance: null,
             accountCurrency: 'USD',
@@ -498,14 +501,23 @@ export default {
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         },
-        toggleMobileSidebar() {
+        toggleSidebar() {
             this.isSidebarOpen = !this.isSidebarOpen;
         },
         closeSidebar() {
             this.isSidebarOpen = false;
+        },
+        checkMobile() {
+            this.isMobile = window.innerWidth <= 1024;
+            if (this.isMobile) {
+                this.isSidebarOpen = false;
+                this.isSidebarCollapsed = false;
+            }
         }
     },
     mounted() {
+        this.checkMobile();
+        window.addEventListener('resize', this.checkMobile);
         const saved = localStorage.getItem('master_trader_cards_visibility');
         if (saved) {
             try {
@@ -527,6 +539,7 @@ export default {
         }, 30000);
     },
     beforeUnmount() {
+        window.removeEventListener('resize', this.checkMobile);
         this.stopBalanceUpdates();
     }
 }

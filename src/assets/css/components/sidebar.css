@@ -88,16 +88,17 @@ aside.sidebar,
 	}
 
 	.sidebar.collapsed:not(:hover) .sidebar-brand {
-		padding: 0;
-		justify-content: center;
+		padding: 24px 20px;
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+		position: relative;
 	}
 
 	.brand-logo-container {
 		display: flex;
 		align-items: center;
-		position: relative;
-		width: 100%;
-		height: 40px;
+		height: 48px;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 		justify-content: flex-start;
 		overflow: hidden;
@@ -155,11 +156,65 @@ aside.sidebar,
 		transform: translateX(0);
 	}
 
-	.sidebar.collapsed:not(:hover) .student-group-badge {
+	.sidebar.collapsed:not(:hover) .student-group-badge-premium {
 		opacity: 0;
 		transform: translateX(10px);
 		pointer-events: none;
 		display: none !important;
+	}
+
+	.student-group-badge-premium {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.02) 100%);
+		border: 1px solid rgba(34, 197, 94, 0.2);
+		padding: 8px 12px;
+		border-radius: 12px;
+		text-decoration: none;
+		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+		margin-top: 20px;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.student-group-badge-premium:hover {
+		background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%);
+		border-color: rgba(34, 197, 94, 0.4);
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+	}
+
+	.badge-icon-bg {
+		width: 28px;
+		height: 28px;
+		background: rgba(34, 197, 94, 0.2);
+		border-radius: 8px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.badge-icon-bg i {
+		color: #22C55E;
+		font-size: 14px;
+		filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.5));
+	}
+
+	.student-group-badge-premium span {
+		color: #fff;
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 0.5px;
+	}
+
+	.student-group-badge-premium .external-icon {
+		transition: transform 0.3s ease;
+	}
+
+	.student-group-badge-premium:hover .external-icon {
+		transform: translate(2px, -2px);
+		opacity: 0.8;
 	}
 
 	/* Cleanup of old buttons */
@@ -527,8 +582,43 @@ aside.sidebar,
 	/* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
 	.sidebar.is-open {
 		left: 0;
+		z-index: 1000000 !important;
+	}
+
+	.sidebar-overlay {
+		position: fixed !important;
+		top: 0 !important;
+		left: 0 !important;
+		right: 0 !important;
+		bottom: 0 !important;
+		width: 100% !important;
+		height: 100% !important;
+		background: rgba(0, 0, 0, 0.75);
+		backdrop-filter: blur(4px);
 		z-index: 999999 !important;
-		/* Acima do header (1000) e desktopbottomnav (1000) */
+		display: block !important;
+	}
+
+	.close-sidebar-btn {
+		position: absolute;
+		top: 20px;
+		right: 20px;
+		width: 32px;
+		height: 32px;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 8px;
+		color: #fff;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.close-sidebar-btn:hover {
+		background: rgba(255, 255, 255, 0.1);
+		transform: scale(1.05);
 	}
 
 	/* No mobile, a sidebar deve estar sempre expandida quando aberta. */

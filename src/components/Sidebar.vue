@@ -1,21 +1,34 @@
 <template>
     <div class="sidebar-wrapper">
+        <div v-if="isOpen && isMobile" class="sidebar-overlay" @click="$emit('close-sidebar')"></div>
         <aside class="sidebar noise-bg" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <div class="sidebar-brand">
             <div class="brand-logo-container">
                 <span class="logo-text">
-                    <span class="logo-z">Z</span><span class="logo-suffix"><span class="white">ENI</span><span class="green">X</span></span>
+                    <span class="logo-z">Z</span>
+                    <span class="logo-suffix">
+                        <span class="white">ENI</span>
+                        <span class="green">X</span>
+                    </span>
                 </span>
             </div>
+            
+            <button v-if="isMobile" class="close-sidebar-btn" @click="$emit('close-sidebar')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
             <a 
                 v-if="studentGroupConfig.show" 
                 :href="studentGroupConfig.link" 
                 target="_blank" 
-                class="student-group-badge"
+                class="student-group-badge-premium"
             >
-                <i v-if="studentGroupConfig.icon" :class="studentGroupConfig.icon"></i>
-                <i v-else class="fa-solid fa-users"></i>
-                <span>Grupo</span>
+                <div class="badge-icon-bg">
+                    <i v-if="studentGroupConfig.icon" :class="studentGroupConfig.icon"></i>
+                    <i v-else class="fa-solid fa-users"></i>
+                </div>
+                <span>Comunidade</span>
+                <i class="fa-solid fa-arrow-up-right-from-square external-icon text-[8px] opacity-40 ml-1"></i>
             </a>
         </div>
         

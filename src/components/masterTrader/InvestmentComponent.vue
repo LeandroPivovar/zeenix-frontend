@@ -1,4 +1,3 @@
-</template>
 <template>
     <div class="zenix-layout">
         <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
@@ -365,11 +364,19 @@ export default {
         ZenixTooltip,
         InsufficientBalanceModal
     },
+    props: {
+        isMobile: {
+            type: Boolean,
+            default: false
+        },
+        isSidebarCollapsed: {
+            type: Boolean,
+            default: true
+        }
+    },
     data() {
         return {
-            isSidebarOpen: false,
-            isSidebarCollapsed: false,
-            isMobile: false,
+            // Variáveis de controle de estado local foram removidas para usar via props
             isInvestmentActive: false,
             isActivating: false,
             showSettingsModal: false,
@@ -566,10 +573,6 @@ export default {
                 default:
                     return currency ? `${currency} ` : '$';
             }
-        },
-        
-        checkMobile() {
-            this.isMobile = window.innerWidth <= 1024;
         },
         
         async handleToggleChange(event) {
@@ -871,18 +874,6 @@ export default {
                 console.log('[InvestmentIAView] ⏹️ Atualizações de stats paradas');
             }
         },
-
-        toggleSidebar() {
-            this.isSidebarOpen = !this.isSidebarOpen;
-        },
-        
-        closeSidebar() {
-            this.isSidebarOpen = false;
-        },
-        
-        toggleSidebarCollapse() {
-            this.isSidebarCollapsed = !this.isSidebarCollapsed;
-        },
         
         toggleSettingsModal() {
             this.showSettingsModal = !this.showSettingsModal;
@@ -1078,8 +1069,6 @@ export default {
         }
     },
     created() {
-        this.checkMobile();
-        window.addEventListener('resize', this.checkMobile);
     },
     async mounted() {
         console.log('[InvestmentIAView] mounted() - Sincronizando com logic do Dashboard');
@@ -1102,7 +1091,6 @@ export default {
     },
 
     beforeUnmount() {
-        window.removeEventListener('resize', this.checkMobile);
         window.removeEventListener('accountChanged', this.handleGlobalAccountChange);
         console.log('[InvestmentIAView] Limpando intervalos e listeners...');
         

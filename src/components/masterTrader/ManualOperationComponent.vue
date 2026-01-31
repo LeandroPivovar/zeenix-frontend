@@ -82,6 +82,16 @@ export default {
     OperationLogs,
     OperationLastOrders,
   },
+  props: {
+    isMobile: {
+      type: Boolean,
+      default: false
+    },
+    isSidebarCollapsed: {
+      type: Boolean,
+      default: true
+    }
+  },
   data() {
     return {
       currentView: 'OperationChart',
@@ -95,11 +105,8 @@ export default {
         value: 10.0,
       },
       lastOrders: [],
-      isSidebarOpen: false,
-      isSidebarCollapsed: false,
       loadingConnection: false,
       accountType: 'real', // 'real' ou 'demo'
-      isMobile: false,
       showSettingsModal: false,
       isComponentDestroyed: false, // Flag para verificar se componente foi destruído
       updateQueue: [], // Fila de atualizações pendentes
@@ -162,9 +169,6 @@ export default {
     },
   },
   methods: {
-    checkMobile() {
-      this.isMobile = window.innerWidth <= 768;
-    },
     async switchAccount(type) {
       // Usa a mesma lógica do Dashboard - altera o tradeCurrency
       try {
@@ -227,26 +231,11 @@ export default {
           return currency ? `${currency} ` : '$';
       }
     },
-    closeSidebar() {
-      this.isSidebarOpen = false;
-    },
-    toggleSidebarCollapse() {
-      this.isSidebarCollapsed = !this.isSidebarCollapsed;
-    },
     toggleSettingsModal() {
       this.showSettingsModal = !this.showSettingsModal;
     },
     closeSettingsModal() {
       this.showSettingsModal = false;
-    },
-    handleHamburgerClick() {
-      if (this.isSidebarCollapsed) {
-        // Se estiver colapsada, expandir
-        this.isSidebarCollapsed = false;
-      } else {
-        // Se não estiver colapsada, abrir no modo mobile
-        this.isSidebarOpen = true;
-      }
     },
     // Helper para verificar se componente está montado e válido
     isComponentMounted() {
@@ -858,8 +847,6 @@ export default {
     },
   },
   created() {
-    this.checkMobile();
-    window.addEventListener('resize', this.checkMobile);
   },
   beforeUnmount() {
     // Marcar componente como destruído PRIMEIRO
@@ -868,9 +855,6 @@ export default {
     // Limpar fila de atualizações pendentes
     this.updateQueue = [];
     this.isProcessingUpdates = false;
-    
-    // Limpar event listeners
-    window.removeEventListener('resize', this.checkMobile);
     
     // Cancelar qualquer operação assíncrona pendente
     // (se houver timeouts ou promises pendentes, devem verificar isComponentDestroyed)
