@@ -1037,7 +1037,7 @@ export default {
                 selectedTradeTypeGroup: '',
                 tradeType: '',
                 prediction: 0,
-                lossesToActivate: 2,
+                lossesToActivate: 1, // Default changed to 1 for immediate recovery (User Preference)
                 contractSwitch: true,
                 switchToNormal: false,
                 switchToPrecise: true,
