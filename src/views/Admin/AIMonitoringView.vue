@@ -948,12 +948,15 @@ export default {
         },
         subscribeTicks() {
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                const market = this.currentConfig.market || 'R_100';
+                this.addLog(`Monitorando Mercado`, [`Símbolo: ${market}`], 'info');
+                
                 this.ws.send(JSON.stringify({
-                    ticks: 'R_100',
+                    ticks: market,
                     subscribe: 1
                 }));
                 this.monitoringStats.status = 'Monitorando';
-                this.monitoringStats.statusDesc = 'Analisando tiques em tempo real';
+                this.monitoringStats.statusDesc = `Analisando ${market} em tempo real`;
             }
         },
         handleTickMessage(msg) {
