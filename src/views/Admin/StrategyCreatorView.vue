@@ -1028,6 +1028,7 @@ export default {
             },
             
             // Internal State
+            isNegotiating: false,
             retryingProposal: false,
             
             recoveryConfig: {
@@ -1906,6 +1907,7 @@ export default {
                     if (msg.msg_type === 'proposal') {
                         if (msg.error) {
                             this.addLog(`❌ Erro na proposta: ${msg.error.message}`, 'error');
+                            this.isNegotiating = false; // Reset lock on error
                         } else {
                             const proposalId = msg.proposal.id;
                             const payout = msg.proposal.payout;
@@ -1992,6 +1994,7 @@ export default {
                         if (msg.error) {
                             console.error('[WS] Erro na compra:', msg.error);
                             this.addLog(`❌ ERRO NA COMPRA: ${msg.error.message}`, 'error');
+                            this.isNegotiating = false; // Reset lock on buy error
                         } else {
                             const payout = msg.buy.payout;
                             const stake = msg.buy.buy_price;
@@ -2007,7 +2010,8 @@ export default {
                                 this.pendingFastResult.active = true;
                                 console.log('[FastResult] Monitoramento rápido ativado para o próximo tick.');
                             }
-
+                            
+                            this.isNegotiating = false; // Reset lock on success
                             this.subscribeToContract(msg.buy.contract_id);
                         }
                     }
@@ -2140,6 +2144,11 @@ export default {
                 : this.form.attackFilters;
                 
             if (activeFilters.length === 0) return;
+            
+            // Prevent spamming analysis if we are already in a trade or negotiating one
+            if (this.activeContracts.size > 0 || this.isNegotiating) return;
+            // Also pendingFastResult might be active but contract not yet in activeContracts list?
+            if (this.pendingFastResult && this.pendingFastResult.active) return;
 
             const data = {
                 tickHistory: this.tickHistory,
@@ -2266,6 +2275,8 @@ export default {
                 this.addLog('⏳ Sinal ignorado: Já existe uma operação em andamento.', 'info');
                 return;
             }
+
+            this.isNegotiating = true;
 
             const config = isRecoveryStrategy ? this.recoveryConfig : this.form;
             
