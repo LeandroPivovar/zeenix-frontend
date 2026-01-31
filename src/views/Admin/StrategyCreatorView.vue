@@ -1011,7 +1011,13 @@ export default {
                 lastPayoutRecovery: 0.95,
                 lastProfit: 0,
                 lastStake: 0,
+                lastProfitPrincipal: 0,
+                lastStakePrincipal: 0,
+                lastProfitRecovery: 0,
+                lastStakeRecovery: 0,
                 lastResultWin: false,
+                lastContractType: '',
+                negotiationMode: 'VELOZ', // 'VELOZ' | 'NORMAL' | 'PRECISO'
                 skipSorosNext: false,
                 lossStreakRecovery: 0,
                 peakProfit: 0,
@@ -1815,7 +1821,27 @@ export default {
             event.target.value = ''; // Reset input
         },
         startSimulation() {
-            this.addLog('🤖 Robô iniciado. Aguardando conexão com mercado...', 'info');
+            // Zeus-style Initial Logs
+            const mode = this.sessionState.negotiationMode;
+            const profile = this.form.riskProfile || 'MODERADO';
+            
+            const configLog = `⚙️ CONFIGURAÇÃO INICIAL<br>` +
+                `• Agente: ZEUS (Strategy Creator)<br>` +
+                `• Modo: ${mode}<br>` +
+                `• Perfil: ${profile.toUpperCase()}<br>` +
+                `• Meta Lucro: $${this.form.profitTarget.toFixed(2)}<br>` +
+                `• Stop Loss: $${this.form.stopLoss.toFixed(2)}<br>` +
+                `• Stop Blindado: ${this.form.useBlindado ? 'ATIVO 🛡️' : 'INATIVO ❌'}`;
+            
+            this.addLog(configLog, 'info');
+
+            const sessionLog = `🚀 INICIANDO SESSÃO DE OPERAÇÕES<br>` +
+                `• Banca Inicial: $${this.balance.toFixed(2)}<br>` +
+                `• Meta do Dia: +$${this.form.profitTarget.toFixed(2)}<br>` +
+                `• Stop Loss: -$${this.form.stopLoss.toFixed(2)}<br>` +
+                `• Modo Inicial: ${mode}`;
+
+            this.addLog(sessionLog, 'info');
             
             // Iniciar Monitoramento de Ticks Real-time
             this.initTickConnection();
@@ -1916,8 +1942,8 @@ export default {
                             const stake = msg.buy.buy_price;
                             const profitPercent = (((payout - stake) / stake) * 100).toFixed(0);
                             
-                            console.log(`[WS] Sucesso! ID: ${msg.buy.contract_id}, Payout: $${payout} (${profitPercent}%)`);
-                            this.addLog(`🚀 COMPRA REALIZADA! ID: ${msg.buy.contract_id} | Payout: $${payout} (${profitPercent}%)`, 'success');
+                            console.log(`[WS] Sucesso! ID: ${msg.buy.contract_id}, Entrada: $${stake}, Payout: $${payout} (${profitPercent}%)`);
+                            this.addLog(`🚀 COMPRA REALIZADA! | Entrada: $${stake.toFixed(2)} | Payout: $${payout.toFixed(2)} (${profitPercent}%)`, 'success');
                             
                             // Activate fast result calculation if it's 1-tick
                             if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
@@ -2025,7 +2051,8 @@ export default {
                     if (win) this.monitoringStats.wins++;
                     else this.monitoringStats.losses++;
 
-                    RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake);
+                    RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake, this.pendingFastResult.analysisType);
+                    this.activeContracts.delete(this.pendingFastResult.contractId);
                     
                     // Keep isRecoveryMode sync for legacy UI if needed
                     this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
@@ -2034,8 +2061,6 @@ export default {
                          this.addLog('🔄 MODO RECUPERAÇÃO ATIVADO (RÁPIDO)...', 'warning');
                     }
 
-                    // CRITICAL: Remove from activeContracts to allow next trade analysis immediately!
-                    this.activeContracts.delete(contractId);
                     this.pendingFastResult.active = false;
                     
                     this.checkLimits();
@@ -2075,12 +2100,24 @@ export default {
             // Log details for each filter
             results.forEach(res => {
                 if (!res.pass) {
-                    this.addLog(`🔍 Analisando: ${res.reason}`, 'info');
+                    // Log blocked entry with reason (Zeus style)
+                    // Reducing spam: only log if it's a specific "Entry Blocked" scenario, or simplify
+                    // For now, simpler concise log
+                     this.addLog(`⏸️ ENTRADA BLOQUEADA: ${res.reason}`, 'warning');
                 }
             });
 
             if (allPassed) {
-                this.addLog('🎯 SINAL GERADO! Filtros de ataque confirmados.', 'success');
+                // Detailed Analysis Log (Zeus style)
+                const mode = this.sessionState.negotiationMode;
+                const isRec = this.sessionState.analysisType === 'RECUPERACAO';
+                
+                let analysisLog = `🧠 ANÁLISE DO MERCADO<br>` +
+                    `• MODO: ${mode} ${isRec ? '(RECUPERAÇÃO)' : ''}<br>` +
+                    `• STATUS: Confirmado<br>` +
+                    `• GATILHO: Filtros de Ataque Atendidos`;
+                
+                this.addLog(analysisLog, 'info');
                 this.executeRealTrade(); 
             }
         },
@@ -2171,8 +2208,14 @@ export default {
             }
 
             const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
-            const stake = this.calculateNextStake();
             const config = isRecovery ? this.recoveryConfig : this.form;
+            
+            // Check for Contract Switch
+            if (this.sessionState.lastContractType && this.sessionState.lastContractType !== config.tradeType) {
+                this.addLog(`📊 CONTRATO ALTERADO: ${this.sessionState.lastContractType} ➔ ${config.tradeType}`, 'info');
+            }
+            this.sessionState.lastContractType = config.tradeType;
+            const stake = this.calculateNextStake();
 
             this.addLog(`📡 Solicitando proposta (${isRecovery ? 'RECUPERAÇÃO' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
             
@@ -2199,6 +2242,7 @@ export default {
                 contractType: config.tradeType,
                 active: false,
                 stake: stake,
+                analysisType: isRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
                 payout: null, // Will be filled when proposal arrives
                 duration: this.form.duration,
                 durationUnit: this.form.durationUnit
@@ -2227,6 +2271,7 @@ export default {
                     contract: contract.contract_type,
                     stake: contract.buy_price,
                     pnl: contract.profit || 0,
+                    analysisType: this.sessionState.analysisType,
                     result: 'OPEN'
                 };
                 this.monitoringOperations.unshift(trade);
@@ -2245,23 +2290,39 @@ export default {
                     this.addLog(`🔴 LOSS! Prejuízo: -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
                 }
 
-                // Update Risk Logic (Only if not already processed by fast result)
-                if (!trade.fastResultApplied) {
+                // Refinar resultado se já processado pelo resultado rápido
+                if (trade.fastResultApplied) {
+                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
+                } else {
+                    // Se não foi processado pelo rápido, marcar como processado e atualizar lógica
+                    trade.fastResultApplied = true;
                     if (trade.result === 'WON') this.monitoringStats.wins++;
                     else this.monitoringStats.losses++;
 
-                    const oldMode = this.sessionState.analysisType;
-                    RiskManager.processTradeResult(this.sessionState, trade.result === 'WON', trade.pnl, trade.stake);
+                    
+                    const oldAnalysis = this.sessionState.analysisType;
+                    const oldMode = this.sessionState.negotiationMode;
+
+                    // Update State via Risk Manager
+                    RiskManager.processTradeResult(this.sessionState, trade.result === 'WON', trade.pnl, trade.stake, trade.analysisType);
                     
                     // Sync legacy mode
                     this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
 
-                    if (oldMode === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
-                        this.addLog('🔄 MODO RECUPERAÇÃO ATIVADO!', 'warning');
-                    } else if (oldMode === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
-                        this.addLog('✅ RECUPERAÇÃO CONCLUÍDA!', 'success');
+                    // Mode Switching Logs
+                    if (this.sessionState.negotiationMode !== oldMode) {
+                        this.addLog(`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`, 'warning');
                     }
-                } else {
+
+                    // Special Recovery Logs
+                    if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
+                         const lossSum = this.sessionState.totalLossAccumulated || this.sessionState.lastStakePrincipal;
+                         this.addLog(`📉 Loss acumulado ($${lossSum.toFixed(2)}). Ativando RECUPERAÇÃO.`, 'warning');
+                    } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
+                         this.addLog('✅ RECUPERAÇÃO CONCLUÍDA!', 'success');
+                    } else if (this.sessionState.analysisType === 'RECUPERACAO' && !trade.result === 'WON') {
+                         this.addLog(`📉 Loss na Recuperação. Ajustando Martingale...`, 'warning');
+                    }
                     // Refine result from Fast Result logic with official data
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake);
                 }

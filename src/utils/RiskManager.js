@@ -42,52 +42,53 @@ export const RiskManager = {
         }
 
         // 2. PRINCIPAL MODE (Standard)
-        const sorosLevel = config.sorosLevel || 1; // Number of Soros steps (Compounding) after base
+        const sorosLevel = config.sorosLevel || 1;
 
         // Cycle Logic:
-        // Level 1: [Base, Soros] -> [0, 1]
-        // Level 2: [Base, Soros1, Soros2] -> [0, 1, 2]
         const cyclePosition = state.consecutiveWins % (sorosLevel + 1);
 
         // B. SOROS TRADES (Compounding)
-        if (state.lastResultWin && state.lastProfit > 0 && cyclePosition > 0 && !state.skipSorosNext) {
-            return Math.max(0.35, parseFloat((state.lastStake + state.lastProfit).toFixed(2)));
+        if (state.lastResultWin && state.lastProfitPrincipal > 0 && cyclePosition > 0 && !state.skipSorosNext) {
+            return Math.max(0.35, parseFloat((state.lastStakePrincipal + state.lastProfitPrincipal).toFixed(2)));
         }
 
         // C. DEFAULT: Base Stake (Start of Cycle)
         return baseStake;
     },
 
-    /**
-     * Updates the session state after a trade finishes.
-     */
-    processTradeResult(state, win, profit, stakeUsed) {
+    processTradeResult(state, win, profit, stakeUsed, tradeMode = 'PRINCIPAL') {
         state.lastProfit = profit;
-        state.lastResultWin = win;
         state.lastStake = stakeUsed;
+        state.lastResultWin = win;
 
         if (win) {
             const currentPayout = profit / stakeUsed;
 
-            // Save payout to the specific tracker for this context
-            if (state.analysisType === 'RECUPERACAO') {
+            // Track stats specifically by trade mode to avoid pollution
+            if (tradeMode === 'RECUPERACAO') {
                 state.lastPayoutRecovery = currentPayout;
+                state.lastProfitRecovery = profit;
+                state.lastStakeRecovery = stakeUsed;
                 state.recoveredAmount += profit;
                 state.lossStreakRecovery = 0;
-                state.skipSorosNext = true; // Skip Soros immediately after a recovery win
+                state.skipSorosNext = true;
 
-                // Single Win Recovery: Exit immediately after any win
+                // Reset to initial mode after any win
                 state.analysisType = 'PRINCIPAL';
+                state.negotiationMode = 'VELOZ';
                 state.consecutiveLosses = 0;
                 state.totalLossAccumulated = 0;
                 state.recoveredAmount = 0;
             } else {
                 state.lastPayoutPrincipal = currentPayout;
+                state.lastProfitPrincipal = profit;
+                state.lastStakePrincipal = stakeUsed;
                 // Main Mode Win
                 state.consecutiveLosses = 0;
                 state.totalLossAccumulated = 0;
                 state.consecutiveWins++;
                 state.skipSorosNext = false;
+                state.negotiationMode = 'VELOZ'; // Reset mode on win
             }
         } else {
             // LOSS
@@ -99,41 +100,52 @@ export const RiskManager = {
                 state.lossStreakRecovery++;
             } else {
                 state.consecutiveLosses++;
-                // Transition to Recovery Mode immediately after 1 loss (Standard Pattern)
-                state.analysisType = 'RECUPERACAO';
+
+                // Transition logic:
+                // 1. Loss 1: Stay in VELOZ (Principal)
+                // 2. Loss 2: Switch to NORMAL (Principal)
+                // 3. Loss 4: Switch to PRECISO (Recovery)
+
+                if (state.consecutiveLosses >= 4) {
+                    state.negotiationMode = 'PRECISO';
+                    state.analysisType = 'RECUPERACAO';
+                } else if (state.consecutiveLosses >= 2) {
+                    state.negotiationMode = 'NORMAL';
+                } else {
+                    state.negotiationMode = 'VELOZ';
+                }
+
                 state.recoveredAmount = 0;
                 state.lossStreakRecovery = 0;
             }
         }
     },
 
-    /**
-     * Refines the result of a trade that was previously processed by Fast Result.
-     * Ensures financial accuracy without double-counting wins/losses.
-     */
-    refineTradeResult(state, realProfit, stakeUsed) {
-        const estimatedProfit = state.lastProfit;
+    refineTradeResult(state, realProfit, stakeUsed, tradeMode = 'PRINCIPAL') {
+        const estimatedProfit = (tradeMode === 'RECUPERACAO') ? state.lastProfitRecovery : state.lastProfitPrincipal;
         const win = realProfit > 0;
 
-        // 1. Correct the general profit tracking in state if needed
-        // (RiskManager focuses on sessionState, so we update recoveredAmount and lastProfit)
+        // 1. Correct the general profit tracking in state
         state.lastProfit = realProfit;
 
-        if (state.analysisType === 'RECUPERACAO') {
+        if (tradeMode === 'RECUPERACAO') {
+            state.lastProfitRecovery = realProfit;
             // Deduct the estimated profit and add the real one
-            state.recoveredAmount = state.recoveredAmount - estimatedProfit + realProfit;
+            state.recoveredAmount = state.recoveredAmount - (estimatedProfit || 0) + realProfit;
 
-            // Single Win Recovery: Exit immediately after any win
+            // Single Win Recovery: Always ensure clean exit on official result
             state.analysisType = 'PRINCIPAL';
             state.consecutiveLosses = 0;
             state.totalLossAccumulated = 0;
             state.recoveredAmount = 0;
+        } else {
+            state.lastProfitPrincipal = realProfit;
         }
 
         // 2. Update payout rate with official data
         if (win) {
             const currentPayout = realProfit / stakeUsed;
-            if (state.analysisType === 'RECUPERACAO') {
+            if (tradeMode === 'RECUPERACAO') {
                 state.lastPayoutRecovery = currentPayout;
             } else {
                 state.lastPayoutPrincipal = currentPayout;
