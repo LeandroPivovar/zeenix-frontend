@@ -30,10 +30,24 @@ export const RiskManager = {
         else if (riskProfile === 'agressivo') profitFactor = 0.30;
 
         // Determine best payout estimate
-        // 1. Check history for this specific contract type
-        // 2. Check defaults
-        // 3. Fallback to 0.95 (standard rise/fall)
-        const estimatedPayout = this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
+        // Determine best payout estimate
+        // Use composite key to separate Principal vs Recovery payouts AND Barriers
+        // e.g. DIGITUNDER_8 != DIGITUNDER_4
+        const isRecovery = state.analysisType === 'RECUPERACAO';
+        const modePrefix = isRecovery ? 'RECUPERACAO_' : 'PRINCIPAL_';
+
+        // Append barrier/prediction if available for digit/over/under contracts
+        let barrierSuffix = '';
+        if (config.prediction !== undefined && config.prediction !== null) {
+            barrierSuffix = '_' + config.prediction;
+        }
+
+        const historyKey = modePrefix + tradeType + barrierSuffix;
+
+        // 1. Check history for this specific mode+contract
+        // 2. Fallback to generic contract history
+        // 3. Defaults
+        const estimatedPayout = this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
 
         // 1. RECOVERY MODE
         if (state.analysisType === 'RECUPERACAO') {

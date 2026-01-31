@@ -1929,7 +1929,20 @@ export default {
                             // Normalize Key to match RiskManager
                             const cType = (msg.proposal.contract_type || '').toUpperCase();
                             if (cType) {
-                                RiskManager.updatePayoutHistory(cType, realProfitRate);
+                                // Prefix with current mode to separate histories
+                                // Prefix with current mode to separate histories
+                                const prefix = this.sessionState.analysisType === 'RECUPERACAO' ? 'RECUPERACAO_' : 'PRINCIPAL_';
+                                
+                                // Append Barrier if this contract has one in the request context
+                                // We need to access the CONFIG that generated this proposal to be sure?
+                                // Or use msg.proposal.barrier if available? Deriv response usually contains it in 'echo_req'?
+                                // msg.echo_req.barrier is reliable.
+                                let barrierSuffix = '';
+                                if (msg.echo_req.barrier !== undefined) {
+                                    barrierSuffix = '_' + msg.echo_req.barrier;
+                                }
+                                
+                                RiskManager.updatePayoutHistory(prefix + cType + barrierSuffix, realProfitRate);
                             }
 
                             // 2. CHECK IF STAKE ADJUSTMENT IS NEEDED
@@ -2345,7 +2358,10 @@ export default {
                     stake: contract.buy_price,
                     pnl: contract.profit || 0,
                     analysisType: this.sessionState.analysisType,
-                    result: 'OPEN'
+                    analysisType: this.sessionState.analysisType,
+                    result: 'OPEN',
+                    // Save Barrier for history key update later
+                    barrier: contract.barrier
                 };
                 this.monitoringOperations.unshift(trade);
                 this.activeContracts.set(id, trade);
@@ -2373,7 +2389,17 @@ export default {
                 // But for a WIN, we know exactly.
                 if (trade.result === 'WON') {
                      const payoutRate = trade.pnl / trade.stake;
-                     RiskManager.updatePayoutHistory(trade.contract, payoutRate);
+                     
+                     // Determine prefix (use stored analysisType from trade if available, or current? Trade has it)
+                     // Determine prefix (use stored analysisType from trade if available, or current? Trade has it)
+                     const prefix = (trade.analysisType === 'RECUPERACAO') ? 'RECUPERACAO_' : 'PRINCIPAL_';
+                     
+                     let barrierSuffix = '';
+                     if (trade.barrier !== undefined) {
+                         barrierSuffix = '_' + trade.barrier;
+                     } 
+                     
+                     RiskManager.updatePayoutHistory(prefix + trade.contract + barrierSuffix, payoutRate);
                 }
                 else {
                     // Se não foi processado pelo rápido, marcar como processado e atualizar lógica
