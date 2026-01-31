@@ -81,129 +81,14 @@
                 </div>
 
                 <!-- MONITORING DASHBOARD -->
-                <div v-if="isMonitoring" class="monitoring-dashboard animate-fadeIn px-4">
-                    <!-- Summary Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div class="stats-card">
-                            <div class="stats-icon-wrapper blue">
-                                <i class="fas fa-wallet"></i>
-                            </div>
-                            <div class="stats-info">
-                                <span class="stats-label">Saldo Atual</span>
-                                <span class="stats-value">$ {{ monitoringStats.balance.toFixed(2) }}</span>
-                            </div>
-                        </div>
-                        <div class="stats-card">
-                            <div class="stats-icon-wrapper" :class="monitoringStats.profit >= 0 ? 'green' : 'red'">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <div class="stats-info">
-                                <span class="stats-label">Sessão P/L</span>
-                                <span class="stats-value" :class="monitoringStats.profit >= 0 ? 'text-zenix-green glow-green-text' : 'text-red-500'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}$ {{ monitoringStats.profit.toFixed(2) }}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="stats-card">
-                            <div class="stats-icon-wrapper yellow">
-                                <i class="fas fa-percentage"></i>
-                            </div>
-                            <div class="stats-info">
-                                <span class="stats-label">Assertividade</span>
-                                <span class="stats-value text-zenix-green">{{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%</span>
-                                <span class="text-[10px] text-[#7A7A7A] ml-1">{{ monitoringStats.wins }}W / {{ monitoringStats.losses }}L</span>
-                            </div>
-                        </div>
-                        <div v-if="sessionState.isRecoveryMode" class="stats-card border border-zenix-green/30 bg-zenix-green/5">
-                            <div class="stats-icon-wrapper green">
-                                <i class="fas fa-undo"></i>
-                            </div>
-                            <div class="stats-info">
-                                <span class="stats-label">Recuperação</span>
-                                <span class="stats-value text-zenix-green glow-green-text">$ {{ (sessionState.totalLossAccumulated - sessionState.recoveredAmount).toFixed(2) }}</span>
-                                <p class="text-[10px] text-gray-500">Restante para Meta</p>
-                            </div>
-                        </div>
-                        <div v-else class="stats-card">
-                            <div class="stats-icon-wrapper green pulse">
-                                <i class="fas fa-robot"></i>
-                            </div>
-                            <div class="stats-info">
-                                <span class="stats-label">Status da IA</span>
-                                <span class="stats-value text-sm text-zenix-green">{{ monitoringStats.status }}</span>
-                                <p class="text-[10px] text-zenix-green/80">{{ monitoringStats.statusDesc }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tabs -->
-                    <div class="monitoring-tabs-container mb-4">
-                        <div class="monitoring-tabs flex gap-4 border-b border-[#333]">
-                            <button @click="activeMonitoringTab = 'logs'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeMonitoringTab === 'logs' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
-                                <i class="fas fa-list-ul mr-2"></i> Registros
-                            </button>
-                            <button @click="activeMonitoringTab = 'history'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeMonitoringTab === 'history' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
-                                <i class="fas fa-history mr-2"></i> Histórico
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Tab Content -->
-                    <div class="tab-content-container bg-[#141414] border border-[#333] rounded-xl p-6 min-h-[400px]">
-
-                        <!-- Logs Tab -->
-                        <div v-if="activeMonitoringTab === 'logs'" class="logs-tab-content h-full">
-                            <div class="logs-list-wrapper space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar">
-                                <div v-for="log in monitoringLogs" :key="log.id" class="p-3 bg-[#0B0B0B] rounded-lg border border-[#222] font-mono text-xs flex gap-3">
-                                    <span class="text-gray-500">[{{ log.time }}]</span>
-                                    <span :class="{ 'text-zenix-green': log.type === 'success', 'text-red-500': log.type === 'error', 'text-blue-400': log.type === 'info' }">
-                                        {{ log.message }}
-                                    </span>
-                                </div>
-                                <div v-if="monitoringLogs.length === 0" class="text-center py-12 text-[#7A7A7A]">
-                                    Nenhum log registrado ainda.
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- History Tab -->
-                        <div v-if="activeMonitoringTab === 'history'" class="history-tab-content">
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left">
-                                    <thead class="border-b border-[#333] text-xs text-[#7A7A7A] uppercase tracking-wider">
-                                        <tr>
-                                            <th class="pb-4">Hora</th>
-                                            <th class="pb-4">Mercado</th>
-                                            <th class="pb-4">Contrato</th>
-                                            <th class="pb-4">Investimento</th>
-                                            <th class="pb-4">Resultado</th>
-                                            <th class="pb-4 text-right">P/L</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="text-sm">
-                                        <tr v-for="op in monitoringOperations" :key="op.id" class="border-b border-[#222] last:border-0">
-                                            <td class="py-4">{{ op.time }}</td>
-                                            <td class="py-4">{{ op.market }}</td>
-                                            <td class="py-4 text-xs">{{ op.contract }}</td>
-                                            <td class="py-4">$ {{ op.stake.toFixed(2) }}</td>
-                                            <td class="py-4">
-                                                <span :class="op.result === 'WON' ? 'bg-zenix-green/10 text-zenix-green border-zenix-green/20' : 'bg-red-500/10 text-red-500 border-red-500/20'" class="px-2 py-1 rounded border text-[10px] font-bold">
-                                                    {{ op.result }}
-                                                </span>
-                                            </td>
-                                            <td class="py-4 text-right font-bold" :class="op.result === 'WON' ? 'text-zenix-green' : 'text-red-500'">
-                                                {{ op.result === 'WON' ? '+' : '' }}{{ op.pnl }}
-                                            </td>
-                                        </tr>
-                                        <tr v-if="monitoringOperations.length === 0">
-                                            <td colspan="6" class="text-center py-12 text-[#7A7A7A]">Nenhuma operação executada nesta sessão.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <MonitoringDashboard 
+                    v-if="isMonitoring" 
+                    :stats="monitoringStats" 
+                    :logs="monitoringLogs" 
+                    :operations="monitoringOperations" 
+                    :session-state="sessionState"
+                    @stop="stopMonitoring"
+                />
 
                 <!-- CONFIGURATION FORM -->
                 <div v-else class="strategy-creator-form-container px-4">
@@ -995,6 +880,7 @@ import nexusConfig from '@/utils/strategies/nexus.json';
 import orionConfig from '@/utils/strategies/orion.json';
 import titanConfig from '@/utils/strategies/titan.json';
 import { RiskManager } from '../../utils/RiskManager';
+import MonitoringDashboard from '../../components/ActiveStrategy/MonitoringDashboard.vue';
 
 const defaultStrategies = [apolloConfig, atlasConfig, nexusConfig, orionConfig, titanConfig];
 
@@ -1003,7 +889,8 @@ export default {
     components: {
         AppSidebar,
         TopNavbar,
-        SettingsSidebar
+        SettingsSidebar,
+        MonitoringDashboard
     },
     data() {
         return {
@@ -1720,6 +1607,18 @@ export default {
                 return;
             }
             this.isMonitoring = true;
+            
+            // Populate extra fields for MonitoringDashboard UI
+            this.sessionState.strategy = this.selectedSavedStrategyId 
+                ? (this.savedStrategies.find(s => s.id === this.selectedSavedStrategyId)?.name || 'Custom')
+                : 'Custom Strategy';
+            this.sessionState.mode = this.sessionState.negotiationMode || 'VELOZ';
+            this.sessionState.modoMartingale = this.form.riskProfile || 'Moderado';
+            this.sessionState.stake = this.form.initialStake;
+            this.sessionState.profitTarget = this.form.profitTarget;
+            this.sessionState.lossLimit = this.form.stopLoss;
+            this.sessionState.stoplossBlindado = this.form.useBlindado || false;
+
             this.startSimulation();
             this.$root.$toast.success('Estratégia iniciada com sucesso!');
         },

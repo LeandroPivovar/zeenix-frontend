@@ -1,155 +1,271 @@
 <template>
-    <div class="monitoring-dashboard-wrapper h-full">
-        <!-- Header -->
-        <div class="content-header mb-6 flex justify-between items-center px-4">
-            <div>
-                <h1 class="text-2xl font-bold text-white">Acompanhamento de Estratégia [BETA]</h1>
-                <p class="text-sm text-[#7D7D7D]">Acompanhe a atividade do robô em tempo real.</p>
+    <div class="monitoring-dashboard-wrapper h-full animate-fadeIn" :class="{ 'px-4': isMobile }">
+        <!-- Header Stats Card -->
+        <div class="w-full bg-gradient-to-br from-[#161616]/60 via-[#161616]/40 to-[#161616]/20 rounded-2xl border border-[rgba(255,255,255,0.05)] p-4 md:p-6 lg:p-8 relative overflow-hidden shadow-2xl shadow-black/40 mb-6">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
+                <div class="absolute w-1 h-1 rounded-full bg-[#22C55E]/30" style="top: 20%; left: 15%; animation: float-particle 8s ease-in-out 0s infinite;"></div>
+                <div class="absolute w-0.5 h-0.5 rounded-full bg-[#22C55E]/20" style="top: 60%; left: 40%; animation: float-particle 10s ease-in-out 2s infinite;"></div>
+                <div class="absolute w-1 h-1 rounded-full bg-[#22C55E]/25" style="top: 40%; right: 20%; animation: float-particle 9s ease-in-out 1s infinite;"></div>
             </div>
-            <button @click="$emit('stop')" class="stop-btn">
-                <i class="fas fa-stop mr-2"></i> Parar Robô
-            </button>
-        </div>
-
-        <!-- Dashboard Content -->
-        <div class="monitoring-dashboard animate-fadeIn px-4">
-            <!-- Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <!-- Balance Card -->
-                <div class="stats-card">
-                    <div class="stats-icon-wrapper blue">
-                        <i class="fas fa-wallet"></i>
+            
+            <div class="absolute top-0 left-4 right-4 md:left-8 md:right-8 h-px bg-gradient-to-r from-transparent via-[#22C55E]/30 to-transparent"></div>
+            
+            <div class="relative grid grid-cols-2 md:grid-cols-6 lg:grid-cols-12 gap-4 md:gap-5 lg:gap-6 items-center">
+                <!-- Strategy Info -->
+                <div class="col-span-2 md:col-span-3 lg:col-span-3 flex items-center gap-3 lg:gap-4">
+                    <div class="relative flex-shrink-0">
+                        <div class="absolute inset-0 rounded-full bg-[#22C55E]/30 blur-2xl scale-[2]"></div>
+                        <div class="absolute inset-0 rounded-full bg-[#22C55E]/15 blur-xl scale-[1.5]"></div>
+                        <div class="relative w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-gradient-to-br from-[#22C55E]/20 to-[#22C55E]/5 border border-[#22C55E]/30 flex items-center justify-center backdrop-blur-sm shadow-[0_0_20px_rgba(34,197,94,0.15)]">
+                            <i class="fas fa-robot text-2xl lg:text-3xl text-[#22C55E] drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]"></i>
+                            <div class="absolute inset-0 rounded-full border border-[#22C55E]/20 animate-ping" style="animation-duration: 3s;"></div>
+                        </div>
+                        <div class="absolute w-1.5 h-1.5 rounded-full bg-[#22C55E]/60 animate-pulse" style="top: -4px; right: 4px;"></div>
                     </div>
-                    <div class="stats-info">
-                        <span class="stats-label">Saldo Atual</span>
-                        <span class="stats-value">$ {{ stats.balance.toFixed(2) }}</span>
-                    </div>
-                </div>
-
-                <!-- Session P/L Card -->
-                <div class="stats-card">
-                    <div class="stats-icon-wrapper" :class="stats.profit >= 0 ? 'green' : 'red'">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stats-info">
-                        <span class="stats-label">Sessão P/L</span>
-                        <span class="stats-value" :class="stats.profit >= 0 ? 'text-zenix-green glow-green-text' : 'text-red-500'">
-                            {{ stats.profit >= 0 ? '+' : '' }}$ {{ stats.profit.toFixed(2) }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Win/Loss Card -->
-                <div class="stats-card">
-                    <div class="stats-icon-wrapper yellow">
-                        <i class="fas fa-percentage"></i>
-                    </div>
-                    <div class="stats-info">
-                        <span class="stats-label">Assertividade</span>
-                        <span class="stats-value text-zenix-green">
-                            {{ stats.wins + stats.losses > 0 ? ((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(0) : 0 }}%
-                        </span>
-                        <span class="text-[10px] text-[#7A7A7A] ml-1">{{ stats.wins }}W / {{ stats.losses }}L</span>
-                    </div>
-                </div>
-
-                <!-- Status/Recovery Card -->
-                <div v-if="sessionState.isRecoveryMode" class="stats-card border border-zenix-green/30 bg-zenix-green/5">
-                    <div class="stats-icon-wrapper green">
-                        <i class="fas fa-undo"></i>
-                    </div>
-                    <div class="stats-info">
-                        <span class="stats-label">Recuperação</span>
-                        <span class="stats-value text-zenix-green glow-green-text">$ {{ (sessionState.totalLossAccumulated - sessionState.recoveredAmount).toFixed(2) }}</span>
-                        <p class="text-[10px] text-gray-500">Restante para Meta</p>
-                    </div>
-                </div>
-                <div v-else class="stats-card">
-                    <div class="stats-icon-wrapper green pulse">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <div class="stats-info">
-                        <span class="stats-label">Status da IA</span>
-                        <span class="stats-value text-sm text-zenix-green">{{ stats.status }}</span>
-                        <p class="text-[10px] text-zenix-green/80">{{ stats.statusDesc }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabs -->
-            <div class="monitoring-tabs-container mb-4">
-                <div class="monitoring-tabs flex gap-4 border-b border-[#333]">
-                    <button @click="activeTab = 'chart'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeTab === 'chart' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
-                        <i class="fas fa-chart-area mr-2"></i> Gráfico
-                    </button>
-                    <button @click="activeTab = 'logs'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeTab === 'logs' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
-                        <i class="fas fa-list-ul mr-2"></i> Registros
-                    </button>
-                    <button @click="activeTab = 'history'" :class="{ 'active text-zenix-green border-b-2 border-zenix-green': activeTab === 'history' }" class="pb-2 px-4 transition-all hover:text-white text-[#7A7A7A]">
-                        <i class="fas fa-history mr-2"></i> Histórico
-                    </button>
-                </div>
-            </div>
-
-            <!-- Tab Content -->
-            <div class="tab-content-container bg-[#141414] border border-[#333] rounded-xl p-6 min-h-[400px]">
-                <!-- Chart Placeholder -->
-                <div v-show="activeTab === 'chart'" class="chart-tab-content flex items-center justify-center h-full min-h-[300px]">
-                    <div class="text-center">
-                        <i class="fas fa-chart-line text-6xl text-zenix-green/20 mb-4 block"></i>
-                        <p class="text-[#7A7A7A]">Aguardando conexão com o mercado...</p>
-                    </div>
-                </div>
-
-                <!-- Logs Tab -->
-                <div v-if="activeTab === 'logs'" class="logs-tab-content h-full">
-                    <div class="logs-list-wrapper space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar">
-                        <div v-for="log in logs" :key="log.id" class="p-3 bg-[#0B0B0B] rounded-lg border border-[#222] font-mono text-xs flex gap-3">
-                            <span class="text-gray-500">[{{ log.time }}]</span>
-                            <span :class="{ 'text-zenix-green': log.type === 'success', 'text-red-500': log.type === 'error', 'text-blue-400': log.type === 'info', 'text-yellow-400': log.type === 'warning' }">
-                                {{ log.message }}
+                    <div class="flex flex-col min-w-0">
+                        <div class="flex items-center gap-2 lg:gap-2.5 mb-1">
+                            <span class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-[#22C55E] animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                            <span class="text-lg lg:text-2xl font-bold text-[#22C55E] tracking-wide drop-shadow-[0_0_12px_rgba(34,197,94,0.4)] truncate">
+                                IA {{ sessionState.strategy?.toUpperCase() || 'ATIVA' }}
                             </span>
                         </div>
-                        <div v-if="logs.length === 0" class="text-center py-12 text-[#7A7A7A]">
-                            Nenhum log registrado ainda.
-                        </div>
+                        <p class="text-xs lg:text-sm text-gray-400 font-medium truncate uppercase tracking-wider">
+                            {{ stats.status || 'Em operação' }}
+                        </p>
                     </div>
                 </div>
 
-                <!-- History Tab -->
-                <div v-if="activeTab === 'history'" class="history-tab-content">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="border-b border-[#333] text-xs text-[#7A7A7A] uppercase tracking-wider">
-                                <tr>
-                                    <th class="pb-4">Hora</th>
-                                    <th class="pb-4">Mercado</th>
-                                    <th class="pb-4">Contrato</th>
-                                    <th class="pb-4">Investimento</th>
-                                    <th class="pb-4">Resultado</th>
-                                    <th class="pb-4 text-right">P/L</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-sm">
-                                <tr v-for="op in operations" :key="op.id" class="border-b border-[#222] last:border-0">
-                                    <td class="py-4">{{ op.time }}</td>
-                                    <td class="py-4">{{ op.market }}</td>
-                                    <td class="py-4 text-xs">{{ op.contract }}</td>
-                                    <td class="py-4">$ {{ op.stake.toFixed(2) }}</td>
-                                    <td class="py-4">
-                                        <span :class="op.result === 'WIN' ? 'bg-zenix-green/10 text-zenix-green border-zenix-green/20' : 'bg-red-500/10 text-red-500 border-red-500/20'" class="px-2 py-1 rounded border text-[10px] font-bold">
-                                            {{ op.result }}
-                                        </span>
-                                    </td>
-                                    <td class="py-4 text-right font-bold" :class="op.result === 'WIN' ? 'text-zenix-green' : 'text-red-500'">
-                                        {{ op.result === 'WIN' ? '+' : '' }}{{ op.pnl }}
-                                    </td>
-                                </tr>
-                                <tr v-if="operations.length === 0">
-                                    <td colspan="6" class="text-center py-12 text-[#7A7A7A]">Nenhuma operação executada nesta sessão.</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- Capital -->
+                <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center md:border-l border-[rgba(255,255,255,0.05)] md:pl-4 lg:pl-6">
+                    <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Capital</p>
+                    <p class="text-xl lg:text-3xl font-bold text-white tracking-tight">
+                        $ {{ Math.floor(stats.balance).toLocaleString('en-US') }}<span class="text-base lg:text-xl text-gray-500 hidden md:inline">.{{ (stats.balance % 1).toFixed(2).split('.')[1] || '00' }}</span>
+                    </p>
+                </div>
+
+                <!-- Resultado -->
+                <div class="col-span-1 md:col-span-3 lg:col-span-3 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6 flex flex-col items-center">
+                    <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Resultado</p>
+                    <div class="flex items-baseline justify-center gap-1 lg:gap-3">
+                        <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+                           :class="stats.profit >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]'">
+                            {{ stats.profit >= 0 ? '+' : '' }}${{ stats.profit.toFixed(2) }}
+                        </p>
+                        <span class="text-xs lg:text-lg font-semibold px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
+                              :class="stats.profit >= 0 ? 'text-[#22C55E]/80 bg-[#22C55E]/10' : 'text-[#EF4444]/80 bg-[#EF4444]/10'">
+                            {{ (stats.profit >= 0 ? '+' : '') }}{{ ((stats.profit / (stats.balance - stats.profit || 1)) * 100).toFixed(1) }}%
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Operations Stats -->
+                <div class="col-span-2 md:col-span-3 lg:col-span-4 border-t md:border-t-0 md:border-l border-[rgba(255,255,255,0.05)] pt-4 md:pt-0 md:pl-4 lg:pl-6 mt-2 md:mt-0">
+                    <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-2 lg:mb-3">Operações</p>
+                    <div class="flex items-center justify-between md:justify-start gap-3 lg:gap-4 text-sm">
+                        <div class="text-center">
+                            <span class="text-lg lg:text-xl font-semibold text-white/90">{{ stats.wins + stats.losses }}</span>
+                            <span class="text-[10px] lg:text-xs text-gray-500 block">Total</span>
+                        </div>
+                        <span class="text-gray-500/30 text-lg lg:text-xl hidden md:inline">·</span>
+                        <div class="text-center">
+                            <span class="text-lg lg:text-xl font-semibold text-[#22C55E]/90">{{ stats.wins }}</span>
+                            <span class="text-[10px] lg:text-xs text-gray-500 block">Wins</span>
+                        </div>
+                        <span class="text-gray-500/30 text-lg lg:text-xl hidden md:inline">·</span>
+                        <div class="text-center">
+                            <span class="text-lg lg:text-xl font-semibold text-[#EF4444]/70">{{ stats.losses }}</span>
+                            <span class="text-[10px] lg:text-xs text-gray-500 block">Losses</span>
+                        </div>
+                        <span class="text-gray-500/30 text-lg lg:text-xl hidden md:inline">·</span>
+                        <div class="text-center">
+                            <span class="text-lg lg:text-xl font-semibold text-[#22C55E]/90">
+                                {{ stats.wins + stats.losses > 0 ? ((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(0) : 0 }}%
+                            </span>
+                            <span class="text-[10px] lg:text-xs text-gray-500 block">WinRate</span>
+                        </div>
+                    </div>
+                    <!-- Stop Button Mobile Only -->
+                    <button @click="$emit('stop')" class="w-full mt-4 bg-[#EF4444]/10 hover:bg-[#EF4444]/20 text-[#EF4444] font-bold py-3 text-xs rounded-xl border border-[#EF4444]/20 transition-all uppercase tracking-widest lg:hidden">
+                        <i class="fas fa-stop mr-2"></i> Parar Robô
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Split Layout -->
+        <div class="flex flex-col lg:flex-row gap-6 w-full flex-1 min-h-0 pb-10">
+            <!-- Left Column: Tabs Content -->
+            <div class="w-full lg:w-[72%] bg-[#121212]/40 backdrop-blur-md rounded-2xl border border-[rgba(255,255,255,0.05)] p-4 md:p-6 lg:p-8 gradient-border flex flex-col shadow-xl">
+                <!-- Custom Tabs -->
+                <div class="flex items-center justify-start text-gray-500 border-b border-[rgba(255,255,255,0.05)] mb-6 gap-6 h-auto p-0 overflow-x-auto no-scrollbar">
+                    <button @click="activeTab = 'chart'" :class="{ 'border-[#22C55E] text-[#22C55E]': activeTab === 'chart' }" class="inline-flex items-center justify-center py-2 text-sm font-bold border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-white whitespace-nowrap">
+                        <i class="fas fa-chart-line mr-2"></i> Gráfico
+                    </button>
+                    <button @click="activeTab = 'history'" :class="{ 'border-[#22C55E] text-[#22C55E]': activeTab === 'history' }" class="inline-flex items-center justify-center py-2 text-sm font-bold border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-white whitespace-nowrap">
+                        <i class="fas fa-history mr-2"></i> Histórico
+                    </button>
+                    <button @click="activeTab = 'logs'" :class="{ 'border-[#22C55E] text-[#22C55E]': activeTab === 'logs' }" class="inline-flex items-center justify-center py-2 text-sm font-bold border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-white whitespace-nowrap">
+                        <i class="fas fa-list-ul mr-2"></i> Registros
+                    </button>
+                </div>
+
+                <!-- Content Area -->
+                <div class="flex-1 min-h-[400px]">
+                    <!-- Chart View -->
+                    <div v-show="activeTab === 'chart'" class="h-full animate-fadeIn flex flex-col items-center justify-center bg-[#0B0B0B]/40 rounded-xl border border-[rgba(255,255,255,0.03)] p-10">
+                        <div class="text-center group">
+                            <div class="relative inline-block mb-6">
+                                <div class="absolute inset-0 bg-[#22C55E]/10 blur-2xl rounded-full group-hover:bg-[#22C55E]/20 transition-all duration-500"></div>
+                                <i class="fas fa-chart-area text-7xl text-gray-700/50 group-hover:text-[#22C55E]/30 transition-all duration-500"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-300 mb-2">Conectando ao Mercado...</h3>
+                            <p class="text-sm text-gray-500 max-w-xs mx-auto">Aguardando a primeira movimentação de ticks para renderizar a análise probabilística.</p>
+                        </div>
+                    </div>
+
+                    <!-- History View -->
+                    <div v-show="activeTab === 'history'" class="animate-fadeIn h-full">
+                        <div class="rounded-xl border border-[rgba(255,255,255,0.05)] overflow-hidden bg-[#0B0B0B]/50">
+                            <div class="overflow-x-auto custom-scrollbar">
+                                <table class="w-full text-sm border-collapse">
+                                    <thead class="bg-[#161616]/80 text-[10px] text-gray-500 uppercase font-black tracking-[0.15em] border-b border-[rgba(255,255,255,0.05)]">
+                                        <tr>
+                                            <th class="px-6 py-4 text-left">Hora</th>
+                                            <th class="px-6 py-4 text-left">Mercado</th>
+                                            <th class="px-6 py-4 text-left">Contrato</th>
+                                            <th class="px-6 py-4 text-left">Investido</th>
+                                            <th class="px-6 py-4 text-right">P/L</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(op, idx) in operations" :key="idx" class="border-b border-[rgba(255,255,255,0.02)] transition-colors hover:bg-white/[0.02]">
+                                            <td class="px-6 py-4 text-gray-400 font-mono text-xs">{{ op.time }}</td>
+                                            <td class="px-6 py-4 text-white font-bold">{{ op.market }}</td>
+                                            <td class="px-6 py-4 text-gray-500 text-xs">{{ op.contract }}</td>
+                                            <td class="px-6 py-4 text-white">$ {{ op.stake.toFixed(2) }}</td>
+                                            <td class="px-6 py-4 text-right">
+                                                <span :class="op.result === 'WIN' ? 'text-[#22C55E]' : 'text-[#EF4444]'" class="font-black text-sm">
+                                                    {{ op.result === 'WIN' ? '+' : '' }}{{ op.pnl }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="operations.length === 0">
+                                            <td colspan="5" class="py-20 text-center text-gray-600 uppercase text-[10px] font-black tracking-widest">
+                                                Aguardando primeira operação...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logs View -->
+                    <div v-show="activeTab === 'logs'" class="animate-fadeIn h-full">
+                        <div class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                            <div v-for="log in logs" :key="log.id" class="p-4 bg-[#0D0D0D]/60 rounded-xl border border-[rgba(255,255,255,0.03)] hover:border-[#22C55E]/20 transition-all duration-300">
+                                <div class="flex items-start gap-4">
+                                    <span class="text-[10px] font-mono text-gray-600 mt-0.5">[{{ log.time }}]</span>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <div class="w-1.5 h-1.5 rounded-full" 
+                                                 :class="{ 
+                                                    'bg-[#22C55E] shadow-[0_0_10px_rgba(34,197,94,0.5)]': log.type === 'success', 
+                                                    'bg-[#EF4444] shadow-[0_0_10px_rgba(239,68,68,0.5)]': log.type === 'error', 
+                                                    'bg-blue-400 shadow-[0_0_10px_#60A5FA]': log.type === 'info', 
+                                                    'bg-yellow-400 shadow-[0_0_10px_#FACC15]': log.type === 'warning' 
+                                                 }"></div>
+                                            <span class="text-xs font-bold" :class="{ 'text-[#22C55E]': log.type === 'success', 'text-[#EF4444]': log.type === 'error', 'text-blue-400': log.type === 'info', 'text-yellow-400': log.type === 'warning' }">
+                                                {{ log.message }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="logs.length === 0" class="py-20 text-center text-gray-600 uppercase text-[10px] font-black tracking-widest">
+                                Nenhum log registrado na sessão.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Sidebar (Desktop) -->
+            <div v-if="!isMobile" class="w-full lg:w-[28%] flex flex-col gap-6">
+                <div class="bg-[#121212]/40 backdrop-blur-md rounded-2xl border border-[rgba(255,255,255,0.05)] p-5 flex flex-col gradient-border h-full shadow-xl">
+                    <!-- Header Info -->
+                    <div class="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <div class="w-11 h-11 rounded-lg bg-[#22C55E]/10 border border-[#22C55E]/30 flex items-center justify-center">
+                                    <i class="fas fa-brain text-[#22C55E] text-lg"></i>
+                                </div>
+                                <div class="absolute inset-0 rounded-lg bg-[#22C55E]/20 blur-lg -z-10"></div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">IA {{ sessionState.strategy || 'Ativa' }}</h3>
+                                <p class="text-[10px] text-gray-500">Robot de análise probabilística</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Config Card -->
+                    <div class="mt-4 space-y-3">
+                        <div class="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                            <div class="flex items-center justify-between mb-3 pb-3 border-b border-white/[0.05]">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-bolt text-gray-500 text-xs"></i>
+                                    <span class="text-[10px] text-gray-500 uppercase tracking-widest">Modo</span>
+                                </div>
+                                <span class="text-xs font-bold text-white uppercase">{{ sessionState.mode }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-shield-alt text-gray-500 text-xs"></i>
+                                    <span class="text-[10px] text-gray-500 uppercase tracking-widest">Gestão</span>
+                                </div>
+                                <span class="text-xs font-bold text-white uppercase">{{ sessionState.modoMartingale || 'Moderado' }}</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05] space-y-3">
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span class="text-gray-500 uppercase tracking-widest">Stake Inicial</span>
+                                <span class="font-bold text-gray-200">${{ (sessionState.stake || 0.00).toFixed(2) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span class="text-gray-500 uppercase tracking-widest">Meta de Lucro</span>
+                                <span class="font-bold text-[#22C55E]">${{ (sessionState.profitTarget || 0.0).toFixed(2) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span class="text-gray-500 uppercase tracking-widest">Stop Loss</span>
+                                <span class="font-bold text-[#EF4444]">${{ (sessionState.lossLimit || 0.0).toFixed(2) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-[#22C55E]/5 border border-[#22C55E]/20">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-[#22C55E]/10 flex items-center justify-center border border-[#22C55E]/20 text-[#22C55E] text-xs">
+                                        <i class="fas fa-user-shield"></i>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Stop Blindado</span>
+                                </div>
+                                <span class="text-[9px] font-black text-[#22C55E] uppercase tracking-wider">{{ sessionState.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 min-h-[40px]"></div>
+
+                    <!-- Desktop Stop Button -->
+                    <div class="mt-auto pt-6 border-t border-white/[0.05]">
+                        <button @click="$emit('stop')" class="group flex items-center justify-center w-full h-[52px] bg-[#22C55E] hover:bg-[#1EAE54] text-black font-black uppercase tracking-[0.2em] text-[10px] rounded-xl transition-all duration-300 shadow-xl shadow-[#22C55E]/20 active:scale-[0.98]">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-stop text-xs"></i>
+                                <span class="mt-0.5">Parar Operação</span>
+                            </div>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -181,85 +297,70 @@ export default {
     emits: ['stop'],
     data() {
         return {
-            activeTab: 'chart'
+            activeTab: 'chart',
+            isMobile: false
+        }
+    },
+    mounted() {
+        this.checkMobile();
+        window.addEventListener('resize', this.checkMobile);
+    },
+    beforeUnmount() {
+        window.removeEventListener('resize', this.checkMobile);
+    },
+    methods: {
+        checkMobile() {
+            this.isMobile = window.innerWidth < 1024;
         }
     }
 }
 </script>
 
 <style scoped>
-/* Copied styles from original */
-.stop-btn {
-    background-color: #ef4444;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-weight: bold;
-    font-size: 14px;
-    transition: all 0.2s;
-    border: none;
-    cursor: pointer;
-}
-.stop-btn:hover {
-    background-color: #dc2626;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-}
-
-.stats-card {
-    background: rgba(20, 20, 20, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 20px;
-    padding: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.stats-card:hover {
-    background: rgba(26, 26, 26, 0.8);
-    border-color: rgba(34, 197, 94, 0.3);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-.stats-icon-wrapper {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    transition: all 0.3s ease;
-}
-.stats-icon-wrapper.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
-.stats-icon-wrapper.green { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
-.stats-icon-wrapper.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-.stats-icon-wrapper.yellow { background: rgba(234, 179, 8, 0.1); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.2); }
-
-.glow-green-text { text-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
-.text-zenix-green { color: #22C55E; }
-
-.pulse { animation: pulse 2s infinite; }
-@keyframes pulse {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-}
-
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
-.animate-fadeIn {
-    animation: fadeIn 0.3s ease-out forwards;
+
+@keyframes float-particle {
+    0%, 100% { transform: translateY(0) translateX(0); }
+    33% { transform: translateY(-20px) translateX(10px); }
+    66% { transform: translateY(10px) translateX(-15px); }
 }
 
-/* Custom Scrollbar */
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: #0F0F0F; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
+.animate-fadeIn {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.gradient-border {
+    position: relative;
+}
+
+.gradient-border::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), transparent, rgba(255, 255, 255, 0.05));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34, 197, 94, 0.1); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(34, 197, 94, 0.2); }
 </style>
+

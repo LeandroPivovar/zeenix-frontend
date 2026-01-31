@@ -149,11 +149,11 @@ export default {
         handleStartMonitoring(config) {
             // Map incoming config from StrategyManager
             // Ensure we have the full strategy config structure
-            const strategyKey = (config.strategy || 'Apollo').toLowerCase();
+            const strategyKey = (config.strategyName || config.strategy || 'Apollo').toLowerCase();
             const fullConfig = strategyConfigs[strategyKey]?.config || strategyConfigs['apollo'].config;
 
             this.form = {
-                strategy: config.strategy || 'Apollo',
+                strategy: config.strategyName || config.strategy || 'Apollo',
                 stake: config.form?.initialStake || 0.35,
                 market: config.form?.market || 'R_100',
                 profitTarget: config.form?.profitTarget || 10,
@@ -170,10 +170,19 @@ export default {
 
             // Initialize Risk Session
             this.sessionState = RiskManager.initSession(this.form.initialStake);
+            
+            // Populate extra fields for MonitoringDashboard UI
+            this.sessionState.strategy = this.form.strategy;
+            this.sessionState.mode = this.sessionState.negotiationMode || 'VELOZ';
+            this.sessionState.modoMartingale = config.form?.riskProfile || 'Moderado';
+            this.sessionState.stake = this.form.initialStake;
+            this.sessionState.profitTarget = this.form.profitTarget;
+            this.sessionState.lossLimit = this.form.stopLoss;
+            this.sessionState.stoplossBlindado = config.form?.useBlindado || false;
             this.sessionState.activeStrategy = 'PRINCIPAL';
 
             this.monitoringStats = {
-                balance: 0,
+                balance: this.balance || 0, // Use current balance if available
                 profit: 0,
                 wins: 0,
                 losses: 0,
