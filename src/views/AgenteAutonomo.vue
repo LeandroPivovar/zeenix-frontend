@@ -500,10 +500,10 @@
           const initialStake = configData?.initialStake || this.goalValue || 10.0;
           const dailyProfitTarget = configData?.goalValue || this.goalValue || 200.0;
           const dailyLossLimit = configData?.stopValue || this.stopValue || 240.0;
-          const market = configData?.mercado || 'volatility_75';
+          const market = configData?.mercado || 'volatility_100';
           const strategy = configData?.estrategia || 'arion';
           const riskLevel = configData?.risco || 'balanced';
-          const symbol = marketToSymbol[market] || 'R_75';
+          const symbol = marketToSymbol[market] || 'R_100';
           
           // Usar saldo atual da conta como initialBalance (valor total da conta configurada)
           // Se accountBalance não estiver disponível, usar 0 (o backend tentará buscar o saldo)

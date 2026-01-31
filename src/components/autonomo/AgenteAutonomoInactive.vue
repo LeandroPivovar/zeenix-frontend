@@ -481,7 +481,7 @@ export default {
 		return {
 			// Estado de seleção inicial (Baseado na imagem)
 			selectedAgent: null, 
-			selectedMarket: 'volatility_75', 
+			selectedMarket: 'volatility_100',  // ✅ FIX: Default to R_100 per agent requirement 
 			stopLossBlindado: false, 
 			selectedRisk: 'balanced',
 			selectedTradingMode: 'rapido', // Novo: Modo de Negociação
@@ -580,7 +580,7 @@ export default {
 					
 					// Atualizar valores se existirem
 					if (config.symbol) {
-						this.selectedMarket = symbolToMarket[config.symbol] || 'volatility_75';
+						this.selectedMarket = symbolToMarket[config.symbol] || 'volatility_100';
 					}
 					if (config.riskLevel) {
 						this.selectedRisk = config.riskLevel;
