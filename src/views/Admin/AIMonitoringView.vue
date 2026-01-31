@@ -120,73 +120,73 @@
                     </div>
                 </div>
 
-                <!-- Configuration Card (Relocated above tabs) -->
-                <div class="mt-4 md:mt-6 lg:mt-8 w-full">
-                    <div class="card-glass rounded-2xl border border-border/50 p-4 md:p-6 lg:p-8 gradient-border">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
-                            <!-- Strategy & Mode -->
-                            <div class="p-4 rounded-xl bg-secondary/60 border border-border/60 flex flex-col justify-center">
-                                <div class="flex items-center gap-3 mb-3">
-                                    <div class="w-10 h-10 rounded-lg bg-success/10 border border-success/30 flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain w-5 h-5 text-success"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"></path><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"></path><path d="M3.477 10.896a4 4 0 0 1 .585-.396"></path><path d="M19.938 10.5a4 4 0 0 1 .585.396"></path><path d="M6 18a4 4 0 0 1-1.967-.516"></path><path d="M19.967 17.484A4 4 0 0 1 18 18"></path></svg>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-sm font-black text-foreground tracking-wider uppercase">IA {{ currentConfig.strategy.toUpperCase() }}</h3>
-                                        <p class="text-[10px] text-muted-foreground">Especialista em probabilidade</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center justify-between pt-2 border-t border-border/40">
-                                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Modo</span>
-                                    <span class="text-xs font-black text-foreground uppercase">{{ currentConfig.mode }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Parameters -->
-                            <div class="p-4 rounded-xl bg-secondary/60 border border-border/60 flex flex-col justify-between">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Entrada</span>
-                                    <span class="text-sm font-black text-foreground">${{ currentConfig.stake.toFixed(2) }}</span>
-                                </div>
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Gestão</span>
-                                    <span class="text-xs font-black text-foreground uppercase">{{ currentConfig.modoMartingale || 'Moderado' }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Limits & Protections -->
-                            <div class="p-4 rounded-xl bg-secondary/60 border border-border/60 flex flex-col justify-between">
-                                <div class="flex justify-between items-center mb-2">
-                                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Meta/Loss</span>
-                                    <span class="text-xs font-black">
-                                        <span class="text-success">${{ (currentConfig.profitTarget || 0).toFixed(2) }}</span>
-                                        <span class="text-muted-foreground/30 mx-1">/</span>
-                                        <span class="text-red-500">${{ (currentConfig.lossLimit || 0).toFixed(2) }}</span>
-                                    </span>
-                                </div>
-                                <div class="flex items-center justify-between pt-2 border-t border-border/40">
-                                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Stop Blindado</span>
-                                    <span class="text-[10px] font-black text-success uppercase tracking-[0.1em]">
-                                        {{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Control Button -->
-                            <div class="flex items-center justify-center">
-                                <button @click="stopIA" :disabled="isStopping" class="group flex items-center justify-center w-full h-full min-h-[52px] md:min-h-[auto] bg-success text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 shadow-xl shadow-success/30 active:scale-[0.98] disabled:opacity-50">
-                                    <div class="flex items-center gap-3">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
-                                        <span class="mt-0.5">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
-                                    </div>
-                                </button>
-                            </div>
+                <!-- Mobile Configuration Cards Stack (Visible only on Mobile) -->
+                <div v-if="isMobile" class="mt-4 flex flex-col gap-3">
+                    <!-- Card 1: AI Identity -->
+                    <div class="p-4 bg-secondary/40 rounded-2xl border border-border/40 flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-black text-foreground tracking-wide uppercase">IA {{ currentConfig.strategy.toUpperCase() }}</h3>
+                            <p class="text-xs text-muted-foreground">Especialista em probabilidade</p>
                         </div>
                     </div>
+
+                    <!-- Card 2: Strategy Mode -->
+                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
+                                <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Modo</span>
+                            </div>
+                            <span class="text-sm font-black text-foreground uppercase tracking-wider">{{ currentConfig.mode }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                                <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Gestão</span>
+                            </div>
+                            <span class="text-sm font-black text-foreground uppercase tracking-wider">{{ currentConfig.modoMartingale || 'Moderado' }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Parameters -->
+                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Entrada</span>
+                            <span class="text-sm font-black text-foreground tracking-wider">${{ currentConfig.stake.toFixed(2).replace('.', ',') }}</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
+                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Alvo</span>
+                            <span class="text-sm font-black text-success tracking-wider">${{ (currentConfig.profitTarget || 0).toFixed(2).replace('.', ',') }}</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
+                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Limite</span>
+                            <span class="text-sm font-black text-foreground tracking-wider">${{ (currentConfig.lossLimit || 0).toFixed(2).replace('.', ',') }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Protection -->
+                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-success/5 border border-success/20 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            </div>
+                            <span class="text-xs font-black text-foreground tracking-wider uppercase">Stoploss Blindado</span>
+                        </div>
+                        <span class="text-xs font-black text-success uppercase tracking-widest">{{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}</span>
+                    </div>
+
+                    <!-- Mobile Pause Button -->
+                    <button @click="stopIA" :disabled="isStopping" class="w-full mt-2 py-4 bg-success text-black font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all duration-300 shadow-xl shadow-success/20 active:scale-[0.98] disabled:opacity-50">
+                        {{ isStopping ? 'Parando...' : 'Pausar IA' }}
+                    </button>
                 </div>
 
-                <!-- Main Content Body (Tabs) -->
-                <div class="mt-4 md:mt-6 lg:mt-8 w-full flex-1">
-                    <!-- Left: Chart & History -->
+                <!-- Main Content Layout (70/30 Split on Desktop, stack on Mobile) -->
+                <div class="mt-4 md:mt-6 lg:mt-8 flex flex-col lg:flex-row gap-4 lg:gap-6 w-full flex-1">
+                    <!-- Left Column: Tabs & Content (Chart/History/Logs) -->
                     <div class="w-full lg:w-[72%] card-glass rounded-2xl border border-border/50 p-4 md:p-6 lg:p-8 fade-in-delay-1 gradient-border flex flex-col">
                         <div class="w-full flex-1 flex flex-col">
                             <!-- Custom Tabs -->
@@ -342,7 +342,27 @@
 
                             <!-- Logs Tab -->
                             <div v-if="activeMonitoringTab === 'logs'" class="animate-fadeIn">
-                                <div class="mb-8 px-1 flex items-end justify-between">
+                                <!-- Mobile Logs Header -->
+                                <div v-if="isMobile" class="mb-6 space-y-4">
+                                    <div class="space-y-1">
+                                        <h3 style="font-size: 18px; color: #FFFFFF;" class="font-black uppercase tracking-tight">Registros da IA</h3>
+                                        <p style="font-size: 14px; color: #a6a6a6;">Acompanhe cada ação realizada pelo sistema</p>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <button @click="clearLogs" class="flex-1 px-4 py-3 bg-secondary/20 hover:bg-secondary/40 border border-border/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-all">
+                                            LIMPAR LOGS
+                                        </button>
+                                        <button @click="exportLogs" class="flex-1 px-4 py-3 bg-success/10 hover:bg-success/20 border border-success/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-success transition-all">
+                                            EXPORTAR LOGS
+                                        </button>
+                                    </div>
+                                    <div class="text-[10px] text-muted-foreground/60 font-black uppercase tracking-[0.2em] text-right">
+                                        {{ monitoringLogs.length }} ENTRADAS
+                                    </div>
+                                </div>
+
+                                <!-- Desktop Logs Header -->
+                                <div v-else class="mb-8 px-1 flex items-end justify-between">
                                     <div class="space-y-1">
                                         <h3 style="font-size: 18px; color: #FFFFFF;" class="font-bold tracking-tight">Registros da IA</h3>
                                         <p style="font-size: 14px; color: #a6a6a6;">Acompanhe cada ação realizada pelo sistema</p>
@@ -362,7 +382,36 @@
                                 <div class="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar-zenix pr-2">
                                     <div v-for="log in monitoringLogs" :key="log.id" 
                                          class="group relative p-5 bg-[#0D0D0D] rounded-xl border border-border/10 hover:border-success/20 transition-all duration-300">
-                                        <div class="flex items-start gap-4">
+                                        <!-- Mobile Item: Inline Timestamp -->
+                                        <div v-if="isMobile">
+                                            <div class="flex items-center gap-2.5 mb-2.5">
+                                                <span class="text-[10px] font-mono text-muted-foreground/40 mt-0.5">[{{ log.time }}]</span>
+                                                <div class="w-1.5 h-1.5 rounded-full" 
+                                                     :class="{ 
+                                                        'bg-success shadow-[0_0_10px_#22C55E]': log.type === 'success', 
+                                                        'bg-red-500 shadow-[0_0_10px_#EF4444]': log.type === 'error', 
+                                                        'bg-blue-400 shadow-[0_0_10px_#60A5FA]': log.type === 'info', 
+                                                        'bg-yellow-400 shadow-[0_0_10px_#FACC15]': log.type === 'warning' 
+                                                     }"></div>
+                                                <h4 class="text-[11px] font-black uppercase tracking-[0.14em]"
+                                                    :class="{ 
+                                                        'text-success': log.type === 'success', 
+                                                        'text-red-500': log.type === 'error', 
+                                                        'text-blue-400 font-bold': log.type === 'info', 
+                                                        'text-yellow-400': log.type === 'warning' 
+                                                    }">
+                                                    {{ log.title }}
+                                                </h4>
+                                            </div>
+                                            <ul class="space-y-1.5 ml-4 border-l border-border/10 pl-3">
+                                                <li v-for="(line, idx) in log.details.filter(l => l.toLowerCase() !== 'info')" :key="idx" class="flex items-start gap-3">
+                                                    <span class="text-muted-foreground/20 mt-1">•</span>
+                                                    <span class="text-[10px] font-medium text-[#d1d1d6] leading-relaxed">{{ line }}</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <!-- Desktop Item -->
+                                        <div v-else class="flex items-start gap-4">
                                             <span class="text-[11px] font-mono text-muted-foreground/40 mt-1">[{{ log.time }}]</span>
                                             <div class="flex-1">
                                                 <div class="flex items-center gap-2.5 mb-2.5">
@@ -396,10 +445,91 @@
                                         Aguardando primeiros logs...
                                     </div>
                                 </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Sidebar (Visible only on Desktop) -->
+                    <div v-if="!isMobile" class="w-full lg:w-[28%] flex flex-col gap-4 lg:gap-6">
+                        <div class="h-full card-glass rounded-2xl border border-border/50 p-5 flex flex-col gradient-border">
+                            <!-- Header Info -->
+                            <div class="p-4 rounded-xl bg-secondary/60 border border-border/60">
+                                <div class="flex items-center gap-3">
+                                    <div class="relative">
+                                        <div class="w-11 h-11 rounded-lg bg-success/10 border border-success/30 flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain w-5 h-5 text-success"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"></path><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"></path><path d="M3.477 10.896a4 4 0 0 1 .585-.396"></path><path d="M19.938 10.5a4 4 0 0 1 .585.396"></path><path d="M6 18a4 4 0 0 1-1.967-.516"></path><path d="M19.967 17.484A4 4 0 0 1 18 18"></path></svg>
+                                        </div>
+                                        <div class="absolute inset-0 rounded-lg bg-success/20 blur-lg -z-10"></div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-base font-bold text-foreground tracking-wide uppercase">IA {{ currentConfig.strategy.toUpperCase() }}</h3>
+                                        <p class="text-xs text-muted-foreground">Especialista em probabilidade</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mode & Risk -->
+                            <div class="mt-3 p-4 rounded-xl bg-secondary/60 border border-border/60">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap w-3.5 h-3.5 text-muted-foreground"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
+                                        <span class="text-xs text-muted-foreground uppercase tracking-wider">Modo</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-foreground uppercase">{{ currentConfig.mode }}</span>
+                                </div>
+                                <div class="border-t border-border/40 mt-3 pt-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up w-3.5 h-3.5 text-muted-foreground"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                                        <span class="text-xs text-muted-foreground uppercase tracking-wider">Gestão</span>
+                                    </div>
+                                    <span class="text-sm font-bold text-foreground uppercase">{{ currentConfig.modoMartingale || 'Moderado' }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Parameters -->
+                            <div class="mt-3 p-4 rounded-xl bg-secondary/60 border border-border/60 space-y-2.5">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-muted-foreground uppercase tracking-wider">Entrada</span>
+                                    <span class="text-sm font-bold text-foreground">${{ currentConfig.stake.toFixed(2) }}</span>
+                                </div>
+                                <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
+                                    <span class="text-xs text-muted-foreground uppercase tracking-wider">Alvo</span>
+                                    <span class="text-sm font-bold text-success">${{ (currentConfig.profitTarget || 0).toFixed(2) }}</span>
+                                </div>
+                                <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
+                                    <span class="text-xs text-muted-foreground uppercase tracking-wider">Limite</span>
+                                    <span class="text-sm font-bold text-foreground">${{ (currentConfig.lossLimit || 0).toFixed(2) }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Protections -->
+                            <div class="mt-3 p-4 rounded-xl bg-success/5 border border-success/30 hover:bg-success/10 transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center border border-success/30">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check w-4 h-4 text-success"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                                        </div>
+                                        <span class="text-sm font-bold text-foreground">Stoploss Blindado</span>
+                                    </div>
+                                    <span class="text-[10px] font-black text-success uppercase tracking-[0.1em]">
+                                        {{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="flex-1 min-h-[40px]"></div>
+
+                            <!-- Desktop Pause Button -->
+                            <div class="mt-auto px-1 pt-6 border-t border-border/40">
+                                <button @click="stopIA" :disabled="isStopping" class="group flex items-center justify-center w-full h-[52px] bg-success text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 shadow-xl shadow-success/30 active:scale-[0.98] disabled:opacity-50">
+                                    <div class="flex items-center gap-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
+                                        <span class="mt-0.5">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
+                                    </div>
+                                </button>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </main>
             <DesktopBottomNav />
