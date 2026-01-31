@@ -2,27 +2,23 @@
     <div class="sidebar-wrapper">
         <aside class="sidebar noise-bg" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <div class="sidebar-brand">
-            <span class="logo-z">Z</span>
-            <span class="logo-full">ZENIX</span>
-        </div>
-
-        <nav class="menu">
-            <!-- Grupo de Alunos Button -->
+            <div class="brand-logo-container">
+                <span class="logo-z">Z</span>
+                <span class="logo-full">ZENIX</span>
+            </div>
+            
+            <!-- Grupo de Alunos Button - Now next to ZENIX title and only when open -->
             <a 
-                v-if="studentGroupConfig.show"
+                v-if="studentGroupConfig.show && !isCollapsed"
                 :href="studentGroupConfig.link"
                 target="_blank"
-                class="student-group-btn"
-                :class="{ 'collapsed': isCollapsed }"
+                class="student-group-brand-btn"
             >
-                <div class="icon-container">
-                    <img v-if="studentGroupConfig.icon" :src="resolveImageUrl(studentGroupConfig.icon)" class="w-4 h-4 object-contain">
-                    <i v-else class="fa-brands fa-whatsapp text-lg"></i>
-                </div>
-                <span class="label">{{ studentGroupConfig.text }}</span>
+                <img v-if="studentGroupConfig.icon" :src="resolveImageUrl(studentGroupConfig.icon)" class="w-4 h-4 object-contain">
+                <i v-else class="fa-brands fa-whatsapp"></i>
             </a>
-            
-            <div class="separator-light" v-if="studentGroupConfig.show"></div>
+        </div>
+
             <template v-if="!isAdminFlow">
                 <a
                     href="#"
