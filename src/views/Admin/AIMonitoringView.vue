@@ -549,6 +549,7 @@ import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import LineChart from '../../components/LineChart.vue';
 import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
+import { RiskManager } from '../../utils/RiskManager';
 
 // Import strategy configurations
 import apolloStrategy from '../../utils/strategies/apollo.json';
@@ -597,6 +598,50 @@ export default {
             tickCount: 0,
             tickHistory: [],
             digitHistory: [],
+
+           // ✅ RiskManager State
+            sessionState: {
+                isRecoveryMode: false,
+                isStopped: false,
+                peakProfit: 0,
+                stopBlindadoActive: false,
+                stopBlindadoFloor: 0,
+                
+                // RiskManager Variables
+                analysisType: 'PRINCIPAL',
+                negotiationMode: 'VELOZ',
+                activeStrategy: 'PRINCIPAL',
+                lastResultWin: false,
+                lastProfit: 0,
+                lastStake: 0,
+                lastPayoutPrincipal: null,
+                lastProfitPrincipal: 0,
+                lastStakePrincipal: 0,
+                lastPayoutRecovery: null,
+                lastProfitRecovery: 0,
+                lastStakeRecovery: 0,
+                consecutiveLosses: 0,
+                consecutiveWins: 0,
+                lossStreakRecovery: 0,
+                totalLossAccumulated: 0,
+                recoveredAmount: 0,
+                skipSorosNext: false,
+                lastContractType: null
+            },
+
+            // ✅ Recovery Configuration
+            recoveryConfig: {
+                tradeType: 'DIGITUNDER',
+                prediction: 4,
+                duration: 1,
+                durationUnit: 't',
+                market: 'R_100',
+                expectedPayout: 1.26,
+                attackFilters: [],
+                pauseFilters: [],
+                lossesToActivate: 1,
+                riskProfile: 'moderado'
+            },
 
             monitoringStats: {
                 balance: 0,
@@ -841,6 +886,32 @@ export default {
                 this.executeAITrade(strategyConfig);
             }
         },
+        calculateNextStake() {
+            const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
+            const config = isRecovery ? this.recoveryConfig : this.currentConfig;
+            
+            console.log('[AIMonitoring] calculateNextStake:', {
+                isRecovery,
+                consecutiveWins: this.sessionState.consecutiveWins,
+                lastResultWin: this.sessionState.lastResultWin,
+                skipSorosNext: this.sessionState.skipSorosNext,
+                totalLossAccumulated: this.sessionState.totalLossAccumulated
+            });
+            
+            const stake = RiskManager.calculateNextStake(this.sessionState, config);
+            
+            // Log Soros if active
+            if (!isRecovery && this.sessionState.consecutiveWins === 2 && this.sessionState.lastResultWin) {
+                this.addLog('Gestão Soros', [
+                    `🚀 SOROS ATIVADO`,
+                    `Stake: Base + Lucro = $${stake.toFixed(2)}`,
+                    `Sequência: ${this.sessionState.consecutiveWins} vitórias`
+                ], 'info');
+            }
+            
+            console.log('[AIMonitoring] Calculated stake:', stake);
+            return stake;
+        },
         executeAITrade(strategyConfig) {
             if (!this.isAuthorized) {
                 this.addLog('⚠️ Entrada negada: Não autorizado', 'warning');
@@ -850,8 +921,15 @@ export default {
                 this.addLog('⏳ Sinal ignorado: Operação em andamento', 'info');
                 return;
             }
-            const form = strategyConfig.config.form;
-            const stake = this.currentConfig.stake;
+            
+            // ✅ USE RISKMANAGER
+            const isFinancialRecovery = this.sessionState.analysisType === 'RECUPERACAO';
+            const config = isFinancialRecovery ? this.recoveryConfig : strategyConfig.config;
+            const form = config.form || config;
+            
+            // ✅ Calculate stake dynamically
+            const stake = this.calculateNextStake();
+            
             const buyParams = {
                 buy: 1,
                 price: stake,
@@ -862,13 +940,22 @@ export default {
                     currency: 'USD',
                     duration: form.duration,
                     duration_unit: form.durationUnit,
-                    symbol: form.market
+                    symbol: form.market || 'R_100'
                 }
             };
+            
             if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)) {
-                buyParams.parameters.barrier = form.prediction.toString();
+                buyParams.parameters.barrier = (form.prediction || 8).toString();
             }
-            this.addLog(`💸 Executando: ${form.tradeType} em ${form.market} | Stake: $${stake}`, 'info');
+            
+            const mode = isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL';
+            this.addLog('Execução de Ordem', [
+                `Modo: ${mode}`,
+                `Contrato: ${form.tradeType}`,
+                `Mercado: ${buyParams.parameters.symbol}`,
+                `Stake: $${stake.toFixed(2)}`
+            ], 'info');
+            
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                 this.ws.send(JSON.stringify(buyParams));
             } else {
@@ -883,6 +970,7 @@ export default {
         handleContractUpdate(contract) {
             const id = contract.contract_id;
             let trade = this.monitoringOperations.find(o => o.id === id);
+            
             if (!trade) {
                 trade = {
                     id: id,
@@ -892,33 +980,99 @@ export default {
                     type: contract.contract_type.includes('CALL') ? 'CALL' : (contract.contract_type.includes('PUT') ? 'PUT' : 'CALL'),
                     stake: contract.buy_price,
                     pnl: contract.profit || 0,
-                    result: 'OPEN'
+                    analysisType: this.sessionState.analysisType, // ✅ CRITICAL
+                    result: 'OPEN',
+                    barrier: contract.barrier,
+                    fastResultApplied: false
                 };
                 this.monitoringOperations.unshift(trade);
                 this.activeContracts.set(id, trade);
             } else {
                 trade.pnl = contract.profit || 0;
             }
+            
             if (contract.is_sold) {
-                trade.result = contract.status.toUpperCase() === 'WON' ? 'WIN' : 'LOSS';
+                trade.result = contract.status.toUpperCase(); // 'WON' or 'LOST'
                 trade.pnl = parseFloat(contract.profit || 0);
-                if (trade.result === 'WIN') {
-                    this.monitoringStats.wins++;
+
+                // ✅ CRITICAL: Process result with RiskManager
+                if (trade.fastResultApplied) {
+                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
+                } else {
+                    trade.fastResultApplied = true;
+                    if (trade.result === 'WON') this.monitoringStats.wins++;
+                    else this.monitoringStats.losses++;
+                    
+                    // Store old analysis type for logging
+                    const oldAnalysis = this.sessionState.analysisType;
+                    
+                    RiskManager.processTradeResult(
+                        this.sessionState, 
+                        trade.result === 'WON', 
+                        trade.pnl, 
+                        trade.stake, 
+                        trade.analysisType, 
+                        this.recoveryConfig.lossesToActivate
+                    );
+
+                    this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
+
+                    // Recovery Logs
+                    if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
+                         const lossSum = this.sessionState.totalLossAccumulated || this.sessionState.lastStakePrincipal;
+                         this.addLog('Ativação de Recuperação', [
+                             `⚠️ Modo MARTINGALE ativado`,
+                             `Perda acumulada: $${lossSum.toFixed(2)}`,
+                             `Próximo stake: Calculado automaticamente`
+                         ], 'warning');
+                    } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
+                         this.addLog('Recuperação Concluída', [
+                             `✅ SUCESSO na recuperação`,
+                             `Voltando ao modo PRINCIPAL`,
+                             `Stake resetado para base`
+                         ], 'success');
+                    } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST') {
+                         this.addLog('Ajuste Martingale', [
+                             `📉 Loss durante recuperação`,
+                             `Ajustando stake automaticamente`,
+                             `Total acumulado: $${this.sessionState.totalLossAccumulated.toFixed(2)}`
+                         ], 'warning');
+                    }
+                    
+                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake);
+                }
+                
+                // Update payout history
+                if (trade.result === 'WON') {
+                     const payoutRate = (trade.pnl + trade.stake) / trade.stake;
+                     const prefix = (trade.analysisType === 'RECUPERACAO') ? 'RECUPERACAO_' : 'PRINCIPAL_';
+                     let barrierSuffix = '';
+                     if (trade.barrier !== undefined) {
+                         barrierSuffix = '_' + trade.barrier;
+                     } 
+                     RiskManager.updatePayoutHistory(prefix + trade.contract + barrierSuffix, payoutRate);
+                }
+
+                // Result Logs
+                if (trade.result === 'WON') {
                     this.addLog('Resultado da Operação', [
                         `Status: WIN`,
                         `Contrato ID: ${id}`,
                         `Resultado Financeiro: +$${trade.pnl.toFixed(2)}`,
-                        `Saldo Atual: $${this.monitoringStats.balance.toFixed(2)}`
+                        `Stake: $${trade.stake.toFixed(2)}`,
+                        `Saldo Atual: $${(this.monitoringStats.balance + trade.pnl).toFixed(2)}`
                     ], 'success');
                 } else {
-                    this.monitoringStats.losses++;
                     this.addLog('Resultado da Operação', [
                         `Status: LOSS`,
                         `Contrato ID: ${id}`,
                         `Resultado Financeiro: -$${Math.abs(trade.pnl).toFixed(2)}`,
-                        `Saldo Atual: $${this.monitoringStats.balance.toFixed(2)}`
+                        `Stake: $${trade.stake.toFixed(2)}`,
+                        `Saldo Atual: $${(this.monitoringStats.balance + trade.pnl).toFixed(2)}`
                     ], 'error');
                 }
+                
+                // Update stats
                 this.monitoringStats.profit += trade.pnl;
                 this.profitHistory.push(parseFloat(this.monitoringStats.profit.toFixed(2)));
                 if (this.profitHistory.length > 50) this.profitHistory.shift();
