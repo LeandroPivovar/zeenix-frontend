@@ -57,8 +57,15 @@ export const RiskManager = {
                 return baseStake;
             }
 
+            // Estimate Payout: Use provided explicit, or history, OR DEFAULTS based on config
+            // Critical: If moving from Principal (Payout 0.19) to Recovery (Payout 1.25), 
+            // we must NOT use the 0.19 history or we get huge stakes.
+            let payoutToUse = explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType];
+
+
+
             // Calculate Stake to recover ALL losses + profit margin
-            const lossToRecover = state.totalLossAccumulated - state.recoveredAmount;
+            const lossToRecover = state.totalLossAccumulated; // Target full accumulated loss
 
             // Formula: Stake = Target / Payout
             // Target = TotalLoss + (TotalLoss * ProfitMargin) -> Simple aggressive recovery
@@ -122,23 +129,14 @@ export const RiskManager = {
 
                 console.log(`[RiskManager] Recovery Progress: ${state.recoveredAmount.toFixed(2)} / ${state.totalLossAccumulated.toFixed(2)}`);
 
-                // STRICT RESET: Only if we covered the loss
-                // Note: Apollo uses >=. Since we might have slight calc diffs, > is safer or >=.
-                if (state.recoveredAmount >= state.totalLossAccumulated - 0.01) { // Tolerance for float
-                    console.log('[RiskManager] -> FULL RECOVERY! Resetting state.');
-                    state.analysisType = 'PRINCIPAL';
-                    state.negotiationMode = 'VELOZ';
-                    state.consecutiveLosses = 0;
-                    state.totalLossAccumulated = 0;
-                    state.recoveredAmount = 0;
-                    state.skipSorosNext = true; // Apollo sets this to true after recovery
-                } else {
-                    console.log('[RiskManager] -> Partial Recovery. Continuing in Recovery Mode.');
-                    // Do NOT reset analysisType.
-                    // Do NOT reset totalLossAccumulated (unless we prefer to decrement it? Apollo logic keeps total and compares recoveredAmount)
-                    // Apollo: stake = (totalLoss - recoveredAmount) ...
-                    // So we are good.
-                }
+                // FORCE RESET ON FIRST WIN (User Request)
+                console.log('[RiskManager] -> Recovery Win! Resetting state immediately (Fixed Rule).');
+                state.analysisType = 'PRINCIPAL';
+                state.negotiationMode = 'VELOZ';
+                state.consecutiveLosses = 0;
+                state.totalLossAccumulated = 0;
+                state.recoveredAmount = 0;
+                state.skipSorosNext = true;
             } else {
                 console.log('[RiskManager] -> Principal Win Block Triggered.');
                 state.lastPayoutPrincipal = currentPayout;

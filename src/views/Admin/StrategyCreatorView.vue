@@ -2023,7 +2023,13 @@ export default {
                             console.log(`[WS] Sucesso! ID: ${msg.buy.contract_id}, Entrada: $${stake}, Payout: $${payout} (${profitPercent}%)`);
                             
                             const profitExpected = (payout - stake).toFixed(2);
-                            const contractType = this.sessionState.lastContractType || 'Desconhecido';
+                            let contractType = this.sessionState.lastContractType || 'Desconhecido';
+                            
+                            // Append Barrier if available (Critical for user to see contract switch)
+                            const config = (this.sessionState.analysisType === 'RECUPERACAO') ? this.recoveryConfig : this.form;
+                            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(contractType)) {
+                                 contractType += ` (${config.prediction})`;
+                            }
 
                             const purchaseLog = `🚀 COMPRA REALIZADA!<br>` +
                                 `• Contrato: ${contractType}<br>` +
