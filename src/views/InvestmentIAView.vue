@@ -1,5 +1,12 @@
 ﻿<template>
     <div class="zenix-layout">
+        <AppSidebar 
+            :is-open="isSidebarOpen" 
+            :is-collapsed="isSidebarCollapsed" 
+            @toggle-collapse="toggleSidebarCollapse"
+            @close-sidebar="closeSidebar"
+        />
+        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
 
         
 
@@ -476,16 +483,13 @@
             @confirm="handleStrategyRequiredConfirm"
         />
     </div>
+    </div>
+        </div>
+    </div>
     <DesktopBottomNav />
     
     <!-- Sidebar Overlay & Component positioned at the very end to be on top of everything -->
     <div class="sidebar-overlay" v-if="isSidebarOpen" @click="closeSidebar"></div>
-    <AppSidebar 
-        :is-open="isSidebarOpen" 
-        :is-collapsed="isSidebarCollapsed" 
-        @toggle-collapse="toggleSidebarCollapse"
-        @close-sidebar="closeSidebar"
-    />
 </template>
 
 <script>

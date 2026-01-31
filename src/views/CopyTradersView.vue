@@ -8,6 +8,7 @@
         @toggle-collapse="toggleSidebarCollapse"
         @close-sidebar="closeSidebar"
       />
+      <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="accountBalance"
@@ -159,6 +160,7 @@
           :session="activeSession"
           @pause-copy="handlePauseCopy"
         />
+      </div>
       </div>
       <DesktopBottomNav />
     </div>
@@ -387,7 +389,7 @@
   
   .box {
     width: 100%;
-    padding: 70px 20px 10px 20px;
+    padding: 20px 20px 10px 20px;
     margin: 0;
   }
   

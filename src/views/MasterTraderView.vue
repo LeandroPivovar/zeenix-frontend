@@ -6,32 +6,32 @@
             @close-sidebar="closeSidebar"
         />
         
-        <TopNavbar 
-            :is-sidebar-collapsed="isSidebarCollapsed"
-            :balance="currentBalance?.balance || info?.balance"
-            :account-type="accountType"
-            :balances-by-currency-real="balancesByCurrencyReal"
-            :balances-by-currency-demo="balancesByCurrencyDemo"
-            :currency-prefix="preferredCurrencyPrefix"
-            @open-settings="toggleSettingsModal"
-            @account-type-changed="switchAccount"
-            @toggle-sidebar-collapse="toggleSidebarCollapse"
-            @toggle-sidebar="toggleSidebar"
-        />
-        
-        <!-- Settings Sidebar -->
-        <SettingsSidebar
-            :is-open="showSettingsModal"
-            :balance="info?.balance"
-            :account-type="accountType"
-            :balances-by-currency-real="balancesByCurrencyReal"
-            :balances-by-currency-demo="balancesByCurrencyDemo"
-            :currency-prefix="preferredCurrencyPrefix"
-            @close="closeSettingsModal"
-            @account-type-changed="switchAccount"
-        />
+        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+            <TopNavbar 
+                :is-sidebar-collapsed="isSidebarCollapsed"
+                :balance="currentBalance?.balance || info?.balance"
+                :account-type="accountType"
+                :balances-by-currency-real="balancesByCurrencyReal"
+                :balances-by-currency-demo="balancesByCurrencyDemo"
+                :currency-prefix="preferredCurrencyPrefix"
+                @open-settings="toggleSettingsModal"
+                @account-type-changed="switchAccount"
+                @toggle-sidebar-collapse="toggleSidebarCollapse"
+                @toggle-sidebar="toggleSidebar"
+            />
+            
+            <!-- Settings Sidebar -->
+            <SettingsSidebar
+                :is-open="showSettingsModal"
+                :balance="info?.balance"
+                :account-type="accountType"
+                :balances-by-currency-real="balancesByCurrencyReal"
+                :balances-by-currency-demo="balancesByCurrencyDemo"
+                :currency-prefix="preferredCurrencyPrefix"
+                @close="closeSettingsModal"
+                @account-type-changed="switchAccount"
+            />
 
-        <div class="content-wrapper">
             <!-- Layout Desktop -->
             <section class="master-trader-status-nav desktop-layout">
                 <div class="top-status-bar">
@@ -118,49 +118,47 @@
                 <!-- Card combinado: Header + Métricas -->
                 <div class="mobile-header-metrics-card">
                     <!-- Título e Descrição -->
-                    <div class="mobile-header-section">
-                        <h1 class="mobile-main-title">Copy Trading Mestre</h1>
-                        <p class="mobile-description">Execute suas operações e gerencie os copiadores conectados à sua conta.</p>
-                    </div>
+                    <h1 class="mobile-main-title">Copy Trading Mestre</h1>
+                    <p class="mobile-description">Execute suas operações e gerencie os copiadores conectados à sua conta.</p>
+                </div>
 
-                    <!-- Seção Superior: Métricas em Grid 2x2 -->
-                    <div class="mobile-metrics-grid">
-                        <div class="mobile-metric-card">
-                            <div class="mobile-metric-header">
-                                <span class="mobile-metric-label">Copiers</span>
-                                <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('copiers')">
-                                    <i :class="visibleCards.copiers ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
-                                </button>
-                            </div>
-                            <span class="mobile-metric-value">{{ visibleCards.copiers ? copiersCount : '***' }}</span>
+                <!-- Seção Superior: Métricas em Grid 2x2 -->
+                <div class="mobile-metrics-grid">
+                    <div class="mobile-metric-card">
+                        <div class="mobile-metric-header">
+                            <span class="mobile-metric-label">Copiers</span>
+                            <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('copiers')">
+                                <i :class="visibleCards.copiers ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
+                            </button>
                         </div>
-                        <div class="mobile-metric-card">
-                            <div class="mobile-metric-header">
-                                <span class="mobile-metric-label">Gerenciado</span>
-                                <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('managed')">
-                                    <i :class="visibleCards.managed ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
-                                </button>
-                            </div>
-                            <span class="mobile-metric-value">{{ visibleCards.managed ? formatCurrency(copierStats.managedBalance) : '***' }}</span>
+                        <span class="mobile-metric-value">{{ visibleCards.copiers ? copiersCount : '***' }}</span>
+                    </div>
+                    <div class="mobile-metric-card">
+                        <div class="mobile-metric-header">
+                            <span class="mobile-metric-label">Gerenciado</span>
+                            <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('managed')">
+                                <i :class="visibleCards.managed ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
+                            </button>
                         </div>
-                        <div class="mobile-metric-card">
-                            <div class="mobile-metric-header">
-                                <span class="mobile-metric-label">Lucro Hoje</span>
-                                <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('profit')">
-                                    <i :class="visibleCards.profit ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
-                                </button>
-                            </div>
-                            <span class="mobile-metric-value profit">{{ visibleCards.profit ? formatCurrency(copierStats.todayProfit) : '***' }}</span>
+                        <span class="mobile-metric-value">{{ visibleCards.managed ? formatCurrency(copierStats.managedBalance) : '***' }}</span>
+                    </div>
+                    <div class="mobile-metric-card">
+                        <div class="mobile-metric-header">
+                            <span class="mobile-metric-label">Lucro Hoje</span>
+                            <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('profit')">
+                                <i :class="visibleCards.profit ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
+                            </button>
                         </div>
-                        <div class="mobile-metric-card">
-                            <div class="mobile-metric-header">
-                                <span class="mobile-metric-label">Volume</span>
-                                <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('volume')">
-                                    <i :class="visibleCards.volume ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
-                                </button>
-                            </div>
-                            <span class="mobile-metric-value">{{ visibleCards.volume ? formatCurrency(copierStats.totalVolume) : '***' }}</span>
+                        <span class="mobile-metric-value profit">{{ visibleCards.profit ? formatCurrency(copierStats.todayProfit) : '***' }}</span>
+                    </div>
+                    <div class="mobile-metric-card">
+                        <div class="mobile-metric-header">
+                            <span class="mobile-metric-label">Volume</span>
+                            <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('volume')">
+                                <i :class="visibleCards.volume ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
+                            </button>
                         </div>
+                        <span class="mobile-metric-value">{{ visibleCards.volume ? formatCurrency(copierStats.totalVolume) : '***' }}</span>
                     </div>
                 </div>
 
@@ -256,8 +254,8 @@
                     :show-title="currentViewComponent === 'AgenteAutonomoView' ? false : true"
                 />
             </main>
+            <DesktopBottomNav />
         </div>
-        <DesktopBottomNav />
     </div>
 </template>
 

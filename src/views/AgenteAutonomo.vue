@@ -1,10 +1,5 @@
 <template>
-    <div>
-      <div
-        class="layout-agente-autnomo"
-      >
-
-  
+    <div class="layout-agente-autnomo">
         <AppSidebar
           :is-open="isSidebarOpen"
           :is-collapsed="isSidebarCollapsed"
@@ -12,52 +7,53 @@
           @close-sidebar="closeSidebar"
           @toggle-collapse="toggleSidebarCollapse"
         />
-  
-        <TopNavbar
-          :is-sidebar-collapsed="isSidebarCollapsed"
-          :balance="accountBalance"
-          :account-type="isDemo ? 'demo' : 'real'"
-          :currency="accountCurrency"
-          :balances-by-currency-real="balancesByCurrencyReal"
-          :balances-by-currency-demo="balancesByCurrencyDemo"
-          @account-type-changed="handleAccountTypeChange"
-          @toggle-sidebar="toggleMobileSidebar"
-          @toggle-sidebar-collapse="toggleSidebarCollapse"
-          @open-settings="toggleSettingsModal"
-        />
 
-        <SettingsSidebar
-          :is-open="isSettingsOpen"
-          :balance="accountBalance"
-          :account-type="isDemo ? 'demo' : 'real'"
-          :balances-by-currency-real="balancesByCurrencyReal"
-          :balances-by-currency-demo="balancesByCurrencyDemo"
-          :active-service="'agent'"
-          @close="isSettingsOpen = false"
-          @account-type-changed="handleAccountTypeChange"
-        />
-  
-        <div class="container-componentes">
-          <component
-            :is="componenteAtual"
-            :agente-data="agenteData"
-            :tempo-ativo="agenteData.tempoAtivo"
-            :session-stats="sessionStats"
-            :trade-history="tradeHistoryData"
-            :user-id="currentUserId"
-            :plan-features="planFeatures"
-            :is-mobile="isMobile"
-            @pausar-agente="toggleAgenteStatus('componenteAtivo')"
-            @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
-            @change-agent="handleChangeAgent"
-            @live-balance-update="handleLiveBalanceUpdate"
+        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+          <TopNavbar
+            :is-sidebar-collapsed="isSidebarCollapsed"
+            :balance="accountBalance"
+            :account-type="isDemo ? 'demo' : 'real'"
+            :currency="accountCurrency"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
+            @account-type-changed="handleAccountTypeChange"
+            @toggle-sidebar="toggleMobileSidebar"
+            @toggle-sidebar-collapse="toggleSidebarCollapse"
+            @open-settings="toggleSettingsModal"
           />
-        </div>
 
-        <DesktopBottomNav />
-      </div>
+          <SettingsSidebar
+            :is-open="isSettingsOpen"
+            :balance="accountBalance"
+            :account-type="isDemo ? 'demo' : 'real'"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
+            :active-service="'agent'"
+            @close="isSettingsOpen = false"
+            @account-type-changed="handleAccountTypeChange"
+          />
+
+          <div class="container-componentes">
+            <component
+              :is="componenteAtual"
+              :agente-data="agenteData"
+              :tempo-ativo="agenteData.tempoAtivo"
+              :session-stats="sessionStats"
+              :trade-history="tradeHistoryData"
+              :user-id="currentUserId"
+              :plan-features="planFeatures"
+              :is-mobile="isMobile"
+              @pausar-agente="toggleAgenteStatus('componenteAtivo')"
+              @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
+              @change-agent="handleChangeAgent"
+              @live-balance-update="handleLiveBalanceUpdate"
+            />
+          </div>
+
+          <DesktopBottomNav />
+        </div>
     </div>
-  </template>
+</template>
   
   <script>
   import AppSidebar from "../components/Sidebar.vue";
