@@ -26,7 +26,7 @@
                         <p class="text-sm text-[#7D7D7D]">{{ isMonitoring ? 'Acompanhe a atividade do robô em tempo real.' : 'Configure sua estratégia automatizada para execução no mercado.' }}</p>
                     </div>
 
-                    <div v-else class="flex flex-wrap items-center gap-3">
+                    <div v-if="!isMonitoring" class="flex flex-wrap items-center gap-3">
                         <div class="flex items-center gap-2 bg-[#141414] border border-[#333] rounded-lg p-1">
                             <select 
                                 v-model="selectedSavedStrategyId" 
