@@ -68,6 +68,8 @@ export const RiskManager = {
 
             const stake = (lossToRecover * (1 + profitFactor)) / estimatedPayout;
 
+            console.log(`[RiskManager] Recovery Calc: Loss=$${lossToRecover.toFixed(2)}, Payout=${estimatedPayout.toFixed(2)}, Key=${historyKey}, Stake=$${stake.toFixed(2)}`);
+
             // Safety: Min stake 0.35, Round up to 2 decimals
             return Math.max(0.35, Math.ceil(stake * 100) / 100);
         }
