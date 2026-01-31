@@ -5,36 +5,7 @@
     style="width: 100%; background: #0B0B0B; padding: 0;"
   >
     <!-- Desktop Layout -->
-    <div v-if="!isMobile" class="h-full flex items-center justify-between desktop-nav">
-      <div class="flex items-center space-x-4 mr-10">
-        <!-- Botão de toggle do menu (apenas desktop, sempre visível) -->
-        <button 
-          @click="toggleSidebarCollapse"
-          class="toggle-menu-btn-header p-[6px]"
-          :title="isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'"
-        >
-          <i class="fas fa-bars text-[#DFDFDF]"></i>
-        </button>
-        
-        <!-- Título ZENIX (apenas desktop, sempre visível) -->
-        <div class="header-brand-text">
-          <span class="text-white font-bold text-xl">ZEN</span>
-          <span class="text-white font-bold text-xl">I</span>
-          <span class="text-[#22C55E] font-bold text-xl">X</span>
-        </div>
-        
-        <!-- Botão Grupo de Alunos (apenas desktop, sempre visível) -->
-        <a 
-          v-if="studentGroupConfig.show"
-          :href="studentGroupConfig.link" 
-          target="_blank"
-          class="header-whatsapp-button bg-transparent hover:bg-[#0E0E0E] text-[#A1A1A1] hover:text-[#25D366] font-medium px-3 py-1.5 rounded-lg text-xs inline-flex items-center space-x-2 transition-all duration-200 border border-[#1C1C1C] hover:border-[#25D366]/30"
-        >
-          <img v-if="studentGroupConfig.icon" :src="resolveImageUrl(studentGroupConfig.icon)" style="width: 14px; height: 14px; object-fit: contain;">
-          <i v-else class="fa-brands fa-whatsapp text-xs"></i>
-          <span>{{ studentGroupConfig.text }}</span>
-        </a>
-      </div>
+    <div v-if="!isMobile" class="h-full flex items-center justify-end desktop-nav">
       <div class="flex items-center space-x-6 pr-6">
         <button 
           @click="openDepositFlow" 
@@ -334,13 +305,8 @@ export default {
       tokenDemoCurrency: 'USD',
       demoAmount: 0,
             
-      // Configuração Grupo de Alunos
-      studentGroupConfig: {
-        show: false,
-        text: 'Grupo de Alunos',
-        link: 'https://wa.me/5511999999999',
-        icon: null
-      },
+      // Configuração Grupo de Alunos - MOVIDO PARA SIDEBAR
+      // studentGroupConfig removido daqui
       renderedBalance: 0
     }
   },
@@ -491,7 +457,8 @@ export default {
     
     // Carregar configurações antes de liberar o saldo
     await this.loadMasterTraderSettings();
-    await this.loadStudentGroupConfig();
+    await this.loadMasterTraderSettings();
+    // await this.loadStudentGroupConfig(); // Movido para Sidebar
 
     // Delay de segurança: 200ms para conta fictícia (conforme solicitado), 300ms para contas normais
     const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
@@ -1171,48 +1138,7 @@ export default {
       this.fictitiousBalance = amount;
       console.log('[TopNavbar] Saldo fictício atualizado:', { enabled, amount });
     },
-    async loadStudentGroupConfig() {
-      try {
-        const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-        const response = await fetch(`${baseUrl}/support/config/student_group_button`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.value) {
-            this.studentGroupConfig = {
-              show: true,
-              text: data.value.text || 'Grupo de Alunos',
-              link: data.value.link || 'https://wa.me/5511999999999',
-              icon: data.value.icon || null
-            };
-          } else {
-             // Se não tiver config salva, usar default
-             this.studentGroupConfig.show = true;
-          }
-        }
-      } catch (e) {
-        console.error('Erro ao carregar config do grupo:', e);
-         this.studentGroupConfig.show = true;
-      }
-    },
-    resolveImageUrl(path) {
-      if (!path) return '';
-      if (path.startsWith('http')) return path;
-      const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-      const cleanBaseStart = baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl; 
-      // O backend retorna paths como /uploads/..., então precisamos de BASE_URL (sem /api se for o caso)
-      // Mas o backend serve estáticos em /api/uploads se configurado assim, ou na raiz.
-      // O uploadImage retorna paths que já podem ser usados.
-      // Assumindo que o path retornado pelo uploadImage é relativo à raiz do servidor de arquivos.
-      if (path.startsWith('/uploads') || path.startsWith('uploads')) {
-        // Ajuste simples: concatenar com a base do backend
-        // Se o backend serve em localhost:3000/uploads...
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-        // Se o path já tem /api/uploads
-        if (path.startsWith('/api/')) return `${cleanBaseStart}${path}`;
-        return `${apiBase}${path.startsWith('/') ? '' : '/'}${path}`;
-      }
-      return path;
-    }
+    // resolveImageUrl removido pois era usado apenas pelo studentGroupConfig
   }
 }
 </script>

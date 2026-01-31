@@ -1,7 +1,34 @@
 <template>
     <div class="sidebar-wrapper">
         <aside class="sidebar noise-bg" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
+        <div class="sidebar-brand">
+            <div class="logo-z">
+                <span class="text-white font-bold text-2xl">Z</span>
+            </div>
+            <div class="logo-full">
+                <span class="text-white font-bold text-xl">ZEN</span>
+                <span class="text-white font-bold text-xl">I</span>
+                <span class="text-[#22C55E] font-bold text-xl">X</span>
+            </div>
+        </div>
+
         <nav class="menu">
+            <!-- Grupo de Alunos Button -->
+            <a 
+                v-if="studentGroupConfig.show"
+                :href="studentGroupConfig.link"
+                target="_blank"
+                class="student-group-btn"
+                :class="{ 'collapsed': isCollapsed }"
+            >
+                <div class="icon-container">
+                    <img v-if="studentGroupConfig.icon" :src="resolveImageUrl(studentGroupConfig.icon)" class="w-4 h-4 object-contain">
+                    <i v-else class="fa-brands fa-whatsapp text-lg"></i>
+                </div>
+                <span class="label">{{ studentGroupConfig.text }}</span>
+            </a>
+            
+            <div class="separator-light" v-if="studentGroupConfig.show"></div>
             <template v-if="!isAdminFlow">
                 <a
                     href="#"
@@ -320,7 +347,13 @@ export default {
     data() {
         return { 
             showUserMenu: false,
-            showDevModal: false
+            showDevModal: false,
+            studentGroupConfig: {
+                show: false,
+                text: 'Grupo de Alunos',
+                link: 'https://wa.me/5511999999999',
+                icon: null
+            }
         }
     },
     computed: {
@@ -441,9 +474,10 @@ export default {
             }
         }
     },
-    mounted() {
+    async mounted() {
         // Verificação silenciosa de acesso admin (sem logs excessivos)
         // Os logs de debug foram removidos para reduzir poluição no console
+        await this.loadStudentGroupConfig();
     },
     methods: {
         close() { if (this.isOpen) { this.$emit('close-sidebar') } },
@@ -604,6 +638,41 @@ export default {
                     }
                 });
             }
+        },
+        async loadStudentGroupConfig() {
+            try {
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const response = await fetch(`${baseUrl}/support/config/student_group_button`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.value) {
+                        this.studentGroupConfig = {
+                            show: true,
+                            text: data.value.text || 'Grupo de Alunos',
+                            link: data.value.link || 'https://wa.me/5511999999999',
+                            icon: data.value.icon || null
+                        };
+                    } else {
+                        // Se não tiver config salva, usar default
+                        this.studentGroupConfig.show = true;
+                    }
+                }
+            } catch (e) {
+                console.error('Erro ao carregar config do grupo:', e);
+                this.studentGroupConfig.show = true;
+            }
+        },
+        resolveImageUrl(path) {
+            if (!path) return '';
+            if (path.startsWith('http')) return path;
+            const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+            const cleanBaseStart = baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl; 
+            if (path.startsWith('/uploads') || path.startsWith('uploads')) {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                if (path.startsWith('/api/')) return `${cleanBaseStart}${path}`;
+                return `${apiBase}${path.startsWith('/') ? '' : '/'}${path}`;
+            }
+            return path;
         }
     }
 }

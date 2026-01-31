@@ -564,7 +564,7 @@ export default {
     return {
       isSidebarOpen: true,
       isMobile: false,
-      localSidebarCollapsed: this.isSidebarCollapsed || false,
+      localSidebarCollapsed: true,
       accountType: 'real',
       showIAsModal: false,
       showSettingsModal: false,
