@@ -187,8 +187,7 @@
                 <!-- Main Content Layout (70/30 Split on Desktop, stack on Mobile) -->
                 <div class="mt-4 md:mt-6 lg:mt-8 flex flex-col lg:flex-row gap-4 lg:gap-6 w-full flex-1">
                     <!-- Left Column: Tabs & Content (Chart/History/Logs) -->
-                    <div :class="activeMonitoringTab === 'logs' ? 'w-full' : 'w-full lg:w-[72%]'" 
-                         class="card-glass rounded-2xl border border-border/50 p-4 md:p-6 lg:p-8 fade-in-delay-1 gradient-border flex flex-col">
+                    <div class="w-full lg:w-[72%] card-glass rounded-2xl border border-border/50 p-4 md:p-6 lg:p-8 fade-in-delay-1 gradient-border flex flex-col">
                         <div class="w-full flex-1 flex flex-col">
                             <!-- Custom Tabs -->
                             <div class="flex items-center justify-start text-muted-foreground border-b border-border mb-6 gap-6 h-auto p-0">
@@ -450,8 +449,8 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Sidebar (Visible only on Desktop and non-logs tab) -->
-                    <div v-if="!isMobile && activeMonitoringTab !== 'logs'" class="w-full lg:w-[28%] flex flex-col gap-4 lg:gap-6">
+                <!-- Right Column: Sidebar (Visible only on Desktop) -->
+                    <div v-if="!isMobile" class="w-full lg:w-[28%] flex flex-col gap-4 lg:gap-6">
                         <div class="h-full card-glass rounded-2xl border border-border/50 p-5 flex flex-col gradient-border">
                             <!-- Header Info -->
                             <div class="p-4 rounded-xl bg-secondary/60 border border-border/60">
