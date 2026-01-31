@@ -22,6 +22,7 @@
                 }
             ],
             "initialStake": 1,
+            "expectedPayout": 1.92,
             "profitTarget": 100,
             "stopLoss": 100,
             "useBlindado": false
@@ -31,6 +32,7 @@
             "market": "R_100",
             "tradeType": "DIGITUNDER",
             "prediction": 4,
+            "expectedPayout": 1.26,
             "lossesToActivate": 1,
             "attackFilters": [
                 {
