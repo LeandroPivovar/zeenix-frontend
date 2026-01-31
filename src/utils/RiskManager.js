@@ -94,22 +94,22 @@ export const RiskManager = {
         }
 
         // ✅ SOROS LOGIC (Standard): Apply immediately after win, up to Config Level
-        // Win1: consecutiveWins = 1 → Apply Soros (if Level >= 1)
-        // Win2: consecutiveWins = 2 → Apply Soros (if Level >= 2)
-        // ...
         const sorosLevel = config.sorosLevel || 1;
+
+        // Debug Log to Console
+        console.warn('[RiskManager] Checking Soros:', {
+            wins: state.consecutiveWins,
+            level: sorosLevel,
+            lastProfit: state.lastProfitPrincipal,
+            isWin: state.lastResultWin
+        });
+
         const willApplySoros = state.lastResultWin &&
             state.lastProfitPrincipal > 0 &&
             state.consecutiveWins >= 1 &&
             state.consecutiveWins <= sorosLevel;
 
-        console.log('[RiskManager] Soros Check:', {
-            lastResultWin: state.lastResultWin,
-            lastProfitPrincipal: state.lastProfitPrincipal,
-            consecutiveWins: state.consecutiveWins,
-            sorosLevel: sorosLevel,
-            willApplySoros: willApplySoros
-        });
+        console.log('[RiskManager] Soros Decision:', willApplySoros);
 
         if (willApplySoros) {
             // Check if we just exceeded the level (should restart)
@@ -178,8 +178,8 @@ export const RiskManager = {
             } else {
                 console.log('[RiskManager] -> Principal Win Block Triggered.');
                 state.lastPayoutPrincipal = currentPayout;
-                state.lastProfitPrincipal = profit;
-                state.lastStakePrincipal = stakeUsed;
+                state.lastProfitPrincipal = parseFloat(profit);
+                state.lastStakePrincipal = parseFloat(stakeUsed);
                 // Main Mode Win
                 state.consecutiveLosses = 0;
                 state.totalLossAccumulated = 0;
@@ -191,7 +191,7 @@ export const RiskManager = {
         } else {
             // LOSS
             state.consecutiveWins = 0;
-            const absoluteLoss = Math.abs(profit);
+            const absoluteLoss = Math.abs(parseFloat(profit));
             state.totalLossAccumulated += absoluteLoss;
 
             if (state.analysisType === 'RECUPERACAO') {

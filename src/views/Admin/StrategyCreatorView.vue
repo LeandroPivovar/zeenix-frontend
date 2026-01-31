@@ -1751,8 +1751,11 @@ export default {
             // Deep clone and merge to ensure new fields (like expectedPayout) are present
             const savedForm = JSON.parse(JSON.stringify(strategy.config.form));
             this.form = { ...this.form, ...savedForm };
-            // Ensure expectedPayout fallback for legacy saves
+            // Ensure expectedPayout and sorosLevel fallback for legacy saves
             if (!this.form.expectedPayout) this.form.expectedPayout = 1.20;
+            if (this.form.sorosLevel === undefined) this.form.sorosLevel = 1;
+            if (!this.form.duration) this.form.duration = 5; // Default safety
+            if (!this.form.durationUnit) this.form.durationUnit = 't';
 
             const savedRecovery = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
             this.recoveryConfig = { ...this.recoveryConfig, ...savedRecovery };
@@ -1835,6 +1838,10 @@ export default {
                         const importedForm = JSON.parse(JSON.stringify(data.config.form));
                         this.form = { ...this.form, ...importedForm };
                         if (!this.form.expectedPayout) this.form.expectedPayout = 1.20;
+                        if (this.form.sorosLevel === undefined) this.form.sorosLevel = 1;
+                        // Duration defaults
+                        if (!this.form.duration) this.form.duration = 5; 
+                        if (!this.form.durationUnit) this.form.durationUnit = 't';
 
                         const importedRecovery = JSON.parse(JSON.stringify(data.config.recoveryConfig));
                         this.recoveryConfig = { ...this.recoveryConfig, ...importedRecovery };
