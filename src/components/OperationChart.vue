@@ -64,7 +64,7 @@
           </div>
 
           <!-- Gráfico -->
-          <div v-show="activeTab === 'chart'" id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%; margin: 0; padding: 0;">
+          <div v-if="activeTab === 'chart'" id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%; margin: 0; padding: 0;">
             <!-- Blocking Loader Overlay -->
             <div v-if="isGlobalLoading" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0B0B0B]" style="z-index: 50;">
               <div class="relative w-16 h-16 mb-4">
@@ -2346,13 +2346,27 @@ export default {
     setTab(tab) {
         this.activeTab = tab;
         this.$emit('tab-changed', tab);
-        // Se voltar para o gráfico, garantir que ele redimensione
+        
         if (tab === 'chart') {
-            setTimeout(() => {
-                if (this.chart) {
+            // Re-inicializar gráfico pois o container foi removido do DOM (v-if)
+            this.$nextTick(() => {
+                if (!this.chart) {
+                    this.initChart();
+                    // Pequeno delay para garantir renderização correta
+                    setTimeout(() => {
+                         this.updateChartData(); 
+                    }, 50);
+                } else {
                     this.chart.resize(this.$refs.chartContainer.clientWidth, this.$refs.chartContainer.clientHeight);
                 }
-            }, 100);
+            });
+        } else {
+            // Limpar referência do gráfico ao sair da aba
+            if (this.chart) {
+                this.chart.remove();
+                this.chart = null;
+                this.chartSeries = null;
+            }
         }
     },
     openMarketModal() {
