@@ -18,7 +18,7 @@ export const RiskManager = {
      */
     payoutHistory: {},
 
-    calculateNextStake(state, config) {
+    calculateNextStake(state, config, explicitPayout = null) {
         const baseStake = config.initialStake || 0.35;
         const riskProfile = config.riskProfile || 'moderado';
         // Normalize contract type to avoid mismatches
@@ -29,7 +29,6 @@ export const RiskManager = {
         if (riskProfile === 'conservador') profitFactor = 0.02;
         else if (riskProfile === 'agressivo') profitFactor = 0.30;
 
-        // Determine best payout estimate
         // Determine best payout estimate
         // Use composite key to separate Principal vs Recovery payouts AND Barriers
         // e.g. DIGITUNDER_8 != DIGITUNDER_4
@@ -44,10 +43,11 @@ export const RiskManager = {
 
         const historyKey = modePrefix + tradeType + barrierSuffix;
 
-        // 1. Check history for this specific mode+contract
-        // 2. Fallback to generic contract history
-        // 3. Defaults
-        const estimatedPayout = this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
+        // 1. Explicit Override (Real-time from Proposal)
+        // 2. Check history for this specific mode+contract
+        // 3. Fallback to generic contract history
+        // 4. Defaults
+        const estimatedPayout = explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
 
         // 1. RECOVERY MODE
         if (state.analysisType === 'RECUPERACAO') {
