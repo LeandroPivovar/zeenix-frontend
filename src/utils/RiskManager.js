@@ -18,6 +18,37 @@ export const RiskManager = {
      */
     payoutHistory: {},
 
+    initSession(initialStake) {
+        return {
+            isRecoveryMode: false,
+            isStopped: false,
+            peakProfit: 0,
+            stopBlindadoActive: false,
+            stopBlindadoFloor: 0,
+
+            // RiskManager Variables
+            analysisType: 'PRINCIPAL',
+            negotiationMode: 'VELOZ',
+            activeStrategy: 'PRINCIPAL',
+            lastResultWin: false,
+            lastProfit: 0,
+            lastStake: 0,
+            lastPayoutPrincipal: null,
+            lastProfitPrincipal: 0,
+            lastStakePrincipal: 0,
+            lastPayoutRecovery: null,
+            lastProfitRecovery: 0,
+            lastStakeRecovery: 0,
+            consecutiveLosses: 0,
+            consecutiveWins: 0,
+            lossStreakRecovery: 0,
+            totalLossAccumulated: 0,
+            recoveredAmount: 0,
+            skipSorosNext: false,
+            lastContractType: null
+        };
+    },
+
     calculateNextStake(state, config, explicitPayout = null) {
         const baseStake = config.initialStake || 0.35;
         const riskProfile = config.riskProfile || 'moderado';
