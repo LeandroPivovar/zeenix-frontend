@@ -303,14 +303,14 @@
                                                         <td class="px-4 py-4 text-foreground font-medium">$ {{ op.stake.toFixed(2) }}</td>
                                                         <td class="px-4 py-4 text-foreground font-medium">
                                                             <span v-if="op.result === 'OPEN'" class="text-yellow-500 font-bold uppercase tracking-tight">OPEN</span>
-                                                            <span v-else :class="op.result === 'WIN' ? 'text-success' : 'text-red-500'" class="font-bold">
+                                                            <span v-else :class="op.result === 'WON' ? 'text-success' : 'text-red-500'" class="font-bold">
                                                                 {{ op.result }}
                                                             </span>
                                                         </td>
                                                         <td class="px-4 py-4 text-right">
                                                             <span v-if="op.result === 'OPEN'" class="text-muted-foreground/40 font-bold">-</span>
-                                                            <span v-else class="font-bold" :class="op.result === 'WIN' ? 'text-success' : 'text-red-500'">
-                                                                {{ op.result === 'WIN' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
+                                                            <span v-else class="font-bold" :class="op.result === 'WON' ? 'text-success' : 'text-red-500'">
+                                                                {{ op.result === 'WON' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
                                                             </span>
                                                         </td>
                                                     </tr>
@@ -324,7 +324,7 @@
                                                 <div class="flex items-center justify-between">
                                                     <span class="text-xs font-mono text-muted-foreground font-bold">{{ op.time }}</span>
                                                     <span v-if="op.result === 'OPEN'" class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">PENDENTE</span>
-                                                    <span v-else :class="op.result === 'WIN' ? 'bg-success/10 text-success border-success/20' : 'bg-red-500/10 text-red-500 border-red-500/20'" 
+                                                    <span v-else :class="op.result === 'WON' ? 'bg-success/10 text-success border-success/20' : 'bg-red-500/10 text-red-500 border-red-500/20'" 
                                                           class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase border">
                                                         {{ op.result }}
                                                     </span>
@@ -343,8 +343,8 @@
                                                     <div class="flex flex-col items-end">
                                                         <span class="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-0.5">Resultado</span>
                                                         <span v-if="op.result === 'OPEN'" class="text-xs font-bold text-muted-foreground">-</span>
-                                                        <span v-else class="text-xs font-black" :class="op.result === 'WIN' ? 'text-success' : 'text-red-500'">
-                                                            {{ op.result === 'WIN' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
+                                                        <span v-else class="text-xs font-black" :class="op.result === 'WON' ? 'text-success' : 'text-red-500'">
+                                                            {{ op.result === 'WON' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
                                                         </span>
                                                     </div>
                                                 </div>
