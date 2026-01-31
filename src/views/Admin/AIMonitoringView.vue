@@ -543,19 +543,19 @@
 </template>
 
 <script>
-import AppSidebar from '../components/Sidebar.vue';
-import TopNavbar from '../components/TopNavbar.vue';
-import DesktopBottomNav from '../components/DesktopBottomNav.vue';
-import SettingsSidebar from '../components/SettingsSidebar.vue';
-import LineChart from '../components/Charts/LineChart.vue';
-import { StrategyAnalysis } from '../utils/StrategyAnalysis';
-import RiskManager from '../utils/RiskManager';
+import AppSidebar from '../../components/Sidebar.vue';
+import TopNavbar from '../../components/TopNavbar.vue';
+import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
+import LineChart from '../../components/Charts/LineChart.vue';
+import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
+import RiskManager from '../../utils/RiskManager';
 // Import strategy configurations
-import apolloStrategy from '../utils/strategies/apollo.json';
-import atlasStrategy from '../utils/strategies/atlas.json';
-import nexusStrategy from '../utils/strategies/nexus.json';
-import orionStrategy from '../utils/strategies/orion.json';
-import titanStrategy from '../utils/strategies/titan.json';
+import apolloStrategy from '../../utils/strategies/apollo.json';
+import atlasStrategy from '../../utils/strategies/atlas.json';
+import nexusStrategy from '../../utils/strategies/nexus.json';
+import orionStrategy from '../../utils/strategies/orion.json';
+import titanStrategy from '../../utils/strategies/titan.json';
 
 const strategyConfigs = {
 	apollo: apolloStrategy,
@@ -975,7 +975,7 @@ export default {
             console.log('[AIMonitoring] Calculated stake:', stake);
             return stake;
         },
-        executeAITrade(strategyConfig) {
+        executeAITrade() {
             if (!this.isAuthorized) {
                 this.addLog('⚠️ Entrada negada: Não autorizado', 'warning');
                 return;
