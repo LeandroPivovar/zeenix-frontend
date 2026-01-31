@@ -1018,7 +1018,7 @@ export default {
                 tradeType: null,
                 prediction: 0, 
                 sorosLevel: 1,
-                expectedPayout: 1.19, // Default for DIGITUNDER 8 (bet $1, get $1.19 total)
+                expectedPayout: 1.92, // Default for DIGITUNDER 8 (bet $1, get $1.92 total)
                 attackFilters: []
             },
 
@@ -1068,7 +1068,7 @@ export default {
                 pauseLosses: 6,
                 pauseVolatility: 50,
                 pauseTime: 5,
-                expectedPayout: 2.26, // Default for DIGITUNDER 4 (bet $1, get $2.26 total)
+                expectedPayout: 1.26, // Default for DIGITUNDER 4 (bet $1, get $1.26 total)
                 initialStake: 1.00,
                 riskProfile: 'moderado',
                 attackFilters: []
