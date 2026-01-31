@@ -75,12 +75,12 @@ aside.sidebar,
 
 	/* Logo Transition - Unified and Fluid */
 	.sidebar-brand {
-		height: 80px;
+		height: 60px;
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
 		border-bottom: 1px solid #1C1C1C;
-		margin-bottom: 25px;
+		margin-bottom: 0;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 		padding: 0 24px;
 		position: relative;
