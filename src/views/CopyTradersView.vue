@@ -367,12 +367,12 @@
     width: calc(100% - 280px);
     margin-left: 280px;
     position: relative;
-    transition: margin-left 0.3s ease, width 0.3s ease;
+    transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1), width 1s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .layout-copy-traders.sidebar-collapsed {
-    margin-left: 0;
-    width: 100%;
+    margin-left: 80px;
+    width: calc(100% - 80px);
   }
 
   /* Overlay */

@@ -65,12 +65,14 @@ aside.sidebar,
 		height: 80px;
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
+		/* Estabilidade */
 		border-bottom: 1px solid #1C1C1C;
 		margin-bottom: 30px;
-		/* Mais espaço abaixo do logo */
 		transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
-		padding: 0 20px;
+		padding: 0 32px;
+		/* Ajuste para centralizar o Z de ~16px na barra de 80px */
+		position: relative;
 	}
 
 	.sidebar-wrapper:hover .sidebar-brand {
@@ -80,24 +82,27 @@ aside.sidebar,
 	.logo-z {
 		display: block;
 		opacity: 1;
-		transition: opacity 0.3s ease;
+		transition: opacity 0.5s ease;
+		position: absolute;
+		left: 32px;
 	}
 
 	.logo-full {
-		display: none;
+		display: block;
 		opacity: 0;
-		transition: opacity 0.3s ease 0.1s;
+		visibility: hidden;
+		transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
 		white-space: nowrap;
 	}
 
 	.sidebar-wrapper:hover .logo-z {
-		display: none;
 		opacity: 0;
+		visibility: hidden;
 	}
 
 	.sidebar-wrapper:hover .logo-full {
-		display: block;
 		opacity: 1;
+		visibility: visible;
 	}
 
 	/* Student Group Button Transition */
@@ -158,18 +163,16 @@ aside.sidebar,
 		margin: 0 16px 16px 16px;
 	}
 
-	/* Menu Text Visibility */
 	.sidebar-wrapper:not(:hover) .menu-item span,
 	.sidebar-wrapper:not(:hover) .menu-item i.ml-auto {
-		display: none;
 		opacity: 0;
+		visibility: hidden;
+		width: 0;
+		margin-right: 0;
 	}
 
 	.sidebar-wrapper:not(:hover) .menu-item {
-		justify-content: center;
-		padding: 12px;
-		margin-bottom: 15px;
-		/* Mais gap entre icones quando recolhido */
+		margin-bottom: 25px;
 	}
 
 	.sidebar-wrapper:not(:hover) .menu-item i {
@@ -388,7 +391,8 @@ aside.sidebar,
 
 .menu-item {
 	text-align: left;
-	padding: 12px 16px;
+	padding: 18px 32px;
+	/* 32px roughly centers a 16-20px icon in 80px sidebar (80-16)/2 = 32 */
 	border-radius: 8px;
 	background: transparent;
 	color: #A1A1A1;
@@ -398,11 +402,14 @@ aside.sidebar,
 	overflow: hidden;
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	transition: all 0.2s ease;
+	gap: 20px;
+	/* Aumentado o gap para o texto não ficar colado */
+	transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
 	font-size: 14px;
 	font-weight: 500;
 	text-decoration: none;
+	margin-bottom: 20px;
+	/* Gap consistente entre botões */
 }
 
 .menu-item:hover {
