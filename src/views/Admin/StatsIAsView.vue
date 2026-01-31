@@ -1251,7 +1251,8 @@ export default {
         },
         
         toggleSidebarCollapse() {
-            this.isSidebarCollapsed = !this.isSidebarCollapsed;
+            this.localSidebarCollapsed = !this.localSidebarCollapsed;
+            localStorage.setItem('sidebarCollapsed', this.localSidebarCollapsed.toString());
         },
         
         toggleSettingsModal() {
@@ -1413,19 +1414,6 @@ export default {
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao buscar ticks:', error);
             }
-        },
-
-        toggleSidebarCollapse() {
-            this.localSidebarCollapsed = !this.localSidebarCollapsed;
-            localStorage.setItem('sidebarCollapsed', this.localSidebarCollapsed.toString());
-        },
-
-        toggleSidebar() {
-            this.isSidebarOpen = !this.isSidebarOpen;
-        },
-
-        closeSidebar() {
-            this.isSidebarOpen = false;
         },
 
         async checkAIStatus() {
