@@ -1831,8 +1831,14 @@ export default {
                 try {
                     const data = JSON.parse(e.target.result);
                     if (data.config && data.config.form && data.config.recoveryConfig) {
-                        this.form = JSON.parse(JSON.stringify(data.config.form));
-                        this.recoveryConfig = JSON.parse(JSON.stringify(data.config.recoveryConfig));
+                        // Merge logic to preserve new fields
+                        const importedForm = JSON.parse(JSON.stringify(data.config.form));
+                        this.form = { ...this.form, ...importedForm };
+                        if (!this.form.expectedPayout) this.form.expectedPayout = 1.20;
+
+                        const importedRecovery = JSON.parse(JSON.stringify(data.config.recoveryConfig));
+                        this.recoveryConfig = { ...this.recoveryConfig, ...importedRecovery };
+                        if (!this.recoveryConfig.expectedPayout) this.recoveryConfig.expectedPayout = 2.26;
                         
                         // Sync filter active states
                         this.filters.forEach(f => {
