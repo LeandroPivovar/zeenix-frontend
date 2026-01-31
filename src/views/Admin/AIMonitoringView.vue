@@ -621,7 +621,9 @@ export default {
             isAuthorized: false,
             tickCount: 0,
             tickHistory: [],
+            tickHistory: [],
             digitHistory: [],
+            isNegotiating: false,
 
            // ✅ RiskManager State
             sessionState: {
@@ -869,6 +871,7 @@ export default {
                                     `Motivo: ${msg.error.message}`,
                                     `Ação: Entrada cancelada`
                                 ], 'error');
+                                this.isNegotiating = false;
                                 return;
                             }
                             
@@ -897,6 +900,7 @@ export default {
                                     `Motivo: Erro na compra`,
                                     `Mensagem: ${msg.error.message}`
                                 ], 'error');
+                                this.isNegotiating = false;
                             } else {
                                 const payout = msg.buy.payout;
                                 const contractType = this.sessionState.lastContractType || 'Contrato'; // Saved in state
@@ -908,6 +912,7 @@ export default {
                                     `Status: aguardar execução`
                                 ], 'success');
                                 this.subscribeToContract(msg.buy.contract_id);
+                                this.isNegotiating = false;
                             }
                         }
 
@@ -1048,7 +1053,9 @@ export default {
                 this.addLog('⚠️ Entrada negada: Não autorizado', 'warning');
                 return;
             }
-            if (this.activeContracts.size > 0) return;
+            if (this.activeContracts.size > 0 || this.isNegotiating) return;
+            
+            this.isNegotiating = true;
             
             // ✅ USE RISKMANAGER & CONFIGS
             const isFinancialRecovery = this.sessionState.analysisType === 'RECUPERACAO';
