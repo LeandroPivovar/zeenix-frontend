@@ -1,5 +1,5 @@
 ﻿<template>
-    <div class="dashboard-layout">
+    <div class="zenix-layout">
         <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="localSidebarCollapsed" 
@@ -7,7 +7,7 @@
             @toggle-collapse="toggleSidebarCollapse"
             @close-sidebar="closeSidebar"
         />
-        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
+        <div class="dashboard-content-wrapper transition-all duration-300" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="localSidebarCollapsed"
                 :balance="info?.balance"
@@ -508,7 +508,7 @@ export default {
     data() {
         return {
             isSidebarOpen: false,
-            localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+            localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') !== 'false',
 
             showDevModal: false,
             isMobile: false,

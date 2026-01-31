@@ -17,7 +17,7 @@ svg:not(:root).svg-inline--fa {
 /* Sidebar background is handled globally/via deep override if needed */
 
 
-.dashboard-layout {
+.zenix-layout {
     min-height: 100vh;
     background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
     color: #DFDFDF;
@@ -25,7 +25,7 @@ svg:not(:root).svg-inline--fa {
 
 /* Desktop: remover gradiente e aplicar #0e0e0e nos cards */
 @media (min-width: 1025px) {
-    .dashboard-layout {
+    .zenix-layout {
         background: #0b0b0b;
     }
 

@@ -4,7 +4,7 @@
         
 
 
-        <div class="min-h-screen flex flex-col transition-all duration-300" :style="{ marginLeft: isMobile ? '0' : (isSidebarCollapsed ? '0' : '280px') }">
+        <div class="min-h-screen flex flex-col transition-all duration-300" :style="{ marginLeft: isMobile ? '0' : (localSidebarCollapsed ? '80px' : '280px') }">
         <TopNavbar 
             :is-sidebar-collapsed="isSidebarCollapsed"
             :balance="info?.balance"
@@ -482,7 +482,7 @@
     <div class="sidebar-overlay" v-if="isSidebarOpen" @click="closeSidebar"></div>
     <AppSidebar 
         :is-open="isSidebarOpen" 
-        :is-collapsed="isSidebarCollapsed" 
+        :is-collapsed="localSidebarCollapsed" 
         @toggle-collapse="toggleSidebarCollapse"
         @close-sidebar="closeSidebar"
     />
@@ -526,7 +526,7 @@ export default {
     data() {
         return {
             isSidebarOpen: false,
-            isSidebarCollapsed: false,
+            localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
             isMobile: false,
             isInvestmentActive: false,
             isActivating: false,
@@ -1413,6 +1413,19 @@ export default {
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao buscar ticks:', error);
             }
+        },
+
+        toggleSidebarCollapse() {
+            this.localSidebarCollapsed = !this.localSidebarCollapsed;
+            localStorage.setItem('sidebarCollapsed', this.localSidebarCollapsed.toString());
+        },
+
+        toggleSidebar() {
+            this.isSidebarOpen = !this.isSidebarOpen;
+        },
+
+        closeSidebar() {
+            this.isSidebarOpen = false;
         },
 
         async checkAIStatus() {
