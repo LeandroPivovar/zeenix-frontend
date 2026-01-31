@@ -2322,16 +2322,6 @@ export default {
             const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
             const config = isRecovery ? this.recoveryConfig : this.form;
             
-            // Debug: Log current state before calculating
-            console.log('[StrategyCreator] calculateNextStake INPUT:', {
-                isRecovery,
-                consecutiveWins: this.sessionState.consecutiveWins,
-                lastResultWin: this.sessionState.lastResultWin,
-                lastProfit: this.sessionState.lastProfitPrincipal,
-                configSorosLevel: config.sorosLevel,
-                configPayout: config.expectedPayout
-            });
-            
             const stake = RiskManager.calculateNextStake(this.sessionState, config);
             
             // Log if Soros is active (Principal mode only)

@@ -96,14 +96,6 @@ export const RiskManager = {
         // ✅ SOROS LOGIC (Standard): Apply immediately after win, up to Config Level
         const sorosLevel = config.sorosLevel || 1;
 
-        // Debug Log to Console
-        console.warn('[RiskManager] Checking Soros:', {
-            wins: state.consecutiveWins,
-            level: sorosLevel,
-            lastProfit: state.lastProfitPrincipal,
-            isWin: state.lastResultWin
-        });
-
         const willApplySoros = state.lastResultWin &&
             state.lastProfitPrincipal > 0 &&
             state.consecutiveWins >= 1 &&
@@ -113,7 +105,7 @@ export const RiskManager = {
 
         if (willApplySoros) {
             // Check if we just exceeded the level (should restart)
-            // Actually, if wins > level, the check above (<= sorosLevel) fails, so we return base. 
+            // Actually, if wins > level, the check above (<= sorosLevel) fails, so we return base.
             // So this block only runs if we are WITHIN the sequence.
 
             const profit = state.lastProfitPrincipal;
@@ -123,13 +115,12 @@ export const RiskManager = {
 
         // Reset if sequence finished
         if (state.consecutiveWins > sorosLevel) {
-            // Log that we are resetting due to level cap
             console.log(`[RiskManager] Soros Level ${sorosLevel} reached. Resetting to base stake.`);
+            state.consecutiveWins = 0; // ✅ RESET Counter to start new cycle
             return baseStake;
         }
 
         // Default Fallback
-        console.log(`[RiskManager] Calc Default Stake: Base=${baseStake}, Wins=${state.consecutiveWins}, LastProfit=${state.lastProfitPrincipal}, Skip=${state.skipSorosNext}`);
         return baseStake;
     },
 
