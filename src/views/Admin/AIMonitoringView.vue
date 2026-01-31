@@ -80,7 +80,7 @@
                                     {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.balance - monitoringStats.profit || 1)) * 100).toFixed(1) }}%
                                 </span>
                             </div>
-                            <div class="mt-2 lg:mt-3 h-1 w-6 lg:w-8 mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
+                            <div class="mt-2 lg:mt-3 h-1 w-[100px] mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
                                  :class="monitoringStats.profit >= 0 ? 'from-success/70 via-success/40 to-transparent' : 'from-red-500/70 via-red-500/40 to-transparent'"></div>
                         </div>
 
@@ -246,16 +246,19 @@
 
                             <!-- Logs Tab -->
                             <div v-if="activeMonitoringTab === 'logs'" class="animate-fadeIn">
-                                <div class="flex items-center justify-between mb-4 px-1">
-                                    <div class="flex items-center gap-2">
-                                        <button @click="clearLogs" class="px-3 py-1.5 bg-secondary/20 hover:bg-secondary/40 border border-border/30 rounded-lg text-[10px] font-black uppercase tracking-wider text-muted-foreground transition-all">
-                                            Limpar Logs
-                                        </button>
-                                        <button @click="exportLogs" class="px-3 py-1.5 bg-success/10 hover:bg-success/20 border border-success/30 rounded-lg text-[10px] font-black uppercase tracking-wider text-success transition-all">
-                                            Exportar Logs
-                                        </button>
+                                <div class="mb-5 px-1">
+                                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-3">Registro da IA</h3>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[10px] text-muted-foreground/60 font-black uppercase tracking-[0.1em]">{{ monitoringLogs.length }} entradas</span>
+                                        <div class="flex items-center gap-2">
+                                            <button @click="clearLogs" class="px-3 py-1.5 bg-secondary/20 hover:bg-secondary/40 border border-border/30 rounded-lg text-[10px] font-black uppercase tracking-wider text-muted-foreground transition-all">
+                                                Limpar Logs
+                                            </button>
+                                            <button @click="exportLogs" class="px-3 py-1.5 bg-success/10 hover:bg-success/20 border border-success/30 rounded-lg text-[10px] font-black uppercase tracking-wider text-success transition-all">
+                                                Exportar Logs
+                                            </button>
+                                        </div>
                                     </div>
-                                    <span class="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">{{ monitoringLogs.length }} entradas</span>
                                 </div>
                                 <div class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar-zenix pr-2">
                                     <div v-for="log in monitoringLogs" :key="log.id" 
@@ -371,10 +374,10 @@
 
                             <!-- Desktop Pause Button -->
                             <div class="mt-auto px-1 pt-6 border-t border-border/40">
-                                <button @click="stopIA" :disabled="isStopping" class="group relative flex items-center justify-center gap-2.5 w-full h-12 bg-success hover:bg-success/90 text-black font-bold text-sm rounded-xl transition-all duration-300 shadow-lg shadow-success/20 active:scale-[0.98] disabled:opacity-50">
-                                    <div class="flex items-center gap-2.5">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
-                                        <span class="tracking-tight">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
+                                <button @click="stopIA" :disabled="isStopping" class="group flex items-center justify-center w-full h-[52px] bg-success text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 shadow-xl shadow-success/30 active:scale-[0.98] disabled:opacity-50">
+                                    <div class="flex items-center gap-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
+                                        <span class="mt-0.5">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
                                     </div>
                                 </button>
                             </div>
@@ -489,9 +492,9 @@ export default {
                     
                     // Initial Logs according to ZENIX protocol
                     this.addLog('Início de Sessão', [
-                        `Saldo Inicial: $${this.monitoringStats.balance}`,
-                        `Meta de Lucro: $${this.currentConfig.profitTarget || 100}`,
-                        `Stop Loss: $${this.currentConfig.lossLimit || 100}`,
+                        `Saldo Inicial: $${this.monitoringStats.balance.toFixed(2)}`,
+                        `Meta de Lucro: $${(this.currentConfig.profitTarget || 100).toFixed(2)}`,
+                        `Stop Loss: $${(this.currentConfig.lossLimit || 100).toFixed(2)}`,
                         `Estratégia: ${this.currentConfig.strategy.toUpperCase()}`,
                         `Status: aguardando ticks suficientes`
                     ], 'info');
@@ -572,7 +575,7 @@ export default {
                                 this.monitoringStats.balance = msg.authorize.balance;
                                 this.addLog('Execução Confirmada', [
                                     `Status: Autorizado`,
-                                    `Saldo: $${this.monitoringStats.balance}`,
+                                    `Saldo: $${this.monitoringStats.balance.toFixed(2)}`,
                                     `Conta: ${msg.authorize.loginid}`
                                 ], 'success');
                                 this.subscribeTicks();
@@ -754,7 +757,7 @@ export default {
                         `Status: WIN`,
                         `Contrato ID: ${id}`,
                         `Resultado Financeiro: +$${trade.pnl.toFixed(2)}`,
-                        `Saldo Atual: $${this.monitoringStats.balance}`
+                        `Saldo Atual: $${this.monitoringStats.balance.toFixed(2)}`
                     ], 'success');
                 } else {
                     this.monitoringStats.losses++;
@@ -762,7 +765,7 @@ export default {
                         `Status: LOSS`,
                         `Contrato ID: ${id}`,
                         `Resultado Financeiro: -$${Math.abs(trade.pnl).toFixed(2)}`,
-                        `Saldo Atual: $${this.monitoringStats.balance}`
+                        `Saldo Atual: $${this.monitoringStats.balance.toFixed(2)}`
                     ], 'error');
                 }
                 this.monitoringStats.profit += trade.pnl;
