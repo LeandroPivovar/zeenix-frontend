@@ -1954,7 +1954,8 @@ export default {
                                 // console.log('DEBUG PAYOUT:', cType, RiskManager.payoutHistory[cType]);
 
                                 // We manually temporarily inject the just-learned payout history into the calculation
-                                const exactStake = RiskManager.calculateNextStake(this.sessionState, config);
+                                // BETTER: We now pass it explicitly to ensure precision regardless of history state
+                                const exactStake = RiskManager.calculateNextStake(this.sessionState, config, realProfitRate);
                                 
                                 // Tolerance check
                                 if (Math.abs(exactStake - stakeValue) > 0.02) {
