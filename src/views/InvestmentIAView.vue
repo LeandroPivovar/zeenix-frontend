@@ -1018,12 +1018,14 @@ export default {
                 localStorage.setItem('ai_active_config', JSON.stringify(config));
                 console.log('[InvestmentIAView] ✅ Configuração salva no localStorage:', config);
 
-                this.$root.$toast.success(`IA ${strategyPreset.name} ativada! Redirecionando...`);
-
-                // ✅ Redirecionar para página de monitoramento
-                setTimeout(() => {
-                    this.$router.push('/StatsIAs/monitoring');
-                }, 500);
+                this.$root.$toast.success(`IA ${strategyPreset.name} ativada com sucesso!`);
+                
+                // ✅ Mostrar dashboard de monitoramento localmente
+                this.isInvestmentActive = true;
+                this.isActivating = false;
+                
+                // Opcional: Rolar para cima para ver o gráfico
+                window.scrollTo({ top: 0, behavior: 'smooth' });
 
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', error);
