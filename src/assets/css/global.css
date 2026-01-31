@@ -163,3 +163,34 @@ body,
 .sidebar-overlay {
   z-index: 9998 !important;
 }
+
+/* Sidebar Layout Stability & Synchronization */
+@media (min-width: 1025px) {
+
+  /* Alvo de todos os wrappers de conteúdo da plataforma */
+  .dashboard-content-wrapper,
+  .layout-agente-autnomo,
+  .content-wrapper,
+  .main-content-wrapper,
+  .layout-master-trader,
+  .layout-copy-traders,
+  .operation-main,
+  .box-content {
+    margin-left: 280px !important;
+    width: calc(100% - 280px) !important;
+    transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1), width 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  /* Quando a sidebar está recolhida */
+  .sidebar-collapsed.dashboard-content-wrapper,
+  .sidebar-collapsed.layout-agente-autnomo,
+  .sidebar-collapsed.content-wrapper,
+  .sidebar-collapsed.main-content-wrapper,
+  .sidebar-collapsed.layout-master-trader,
+  .sidebar-collapsed.layout-copy-traders,
+  .sidebar-collapsed.operation-main,
+  .sidebar-collapsed.box-content {
+    margin-left: 80px !important;
+    width: calc(100% - 80px) !important;
+  }
+}

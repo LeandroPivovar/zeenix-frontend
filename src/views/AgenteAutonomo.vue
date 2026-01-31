@@ -1454,7 +1454,7 @@
   .layout-agente-autnomo {
     background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
     min-height: 100vh;
-    transition: margin-left 0.3s ease, width 0.3s ease;
+    transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1), width 1s cubic-bezier(0.16, 1, 0.3, 1);
     padding-bottom: 80px;
     width: calc(100% - 280px);
     margin-left: 280px;
@@ -1489,8 +1489,8 @@
   }
   
   .layout-agente-autnomo.sidebar-collapsed {
-    width: 100%;
-    margin-left: 0;
+    width: calc(100% - 80px);
+    margin-left: 80px;
   }
   
   .layout-agente-autnomo.sidebar-collapsed .top-header {

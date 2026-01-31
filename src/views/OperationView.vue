@@ -1088,14 +1088,14 @@ export default {
   margin-left: 280px;
   padding: 0;
   min-height: 100vh;
-  transition: margin-left 0.3s ease, width 0.3s ease;
+  transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1), width 1s cubic-bezier(0.16, 1, 0.3, 1);
   width: calc(100% - 280px);
   box-sizing: border-box;
 }
 
 .content-wrapper.sidebar-collapsed {
-  margin-left: 0;
-  width: 100%;
+  margin-left: 80px;
+  width: calc(100% - 80px);
 }
 
 /* Top Header */
