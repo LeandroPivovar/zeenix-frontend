@@ -2301,18 +2301,24 @@ export default {
         calculateNextStake() {
             const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
             const config = isRecovery ? this.recoveryConfig : this.form;
+            
+            // Debug: Log current state before calculating
+            console.log('[StrategyCreator] calculateNextStake:', {
+                isRecovery,
+                consecutiveWins: this.sessionState.consecutiveWins,
+                lastResultWin: this.sessionState.lastResultWin,
+                skipSorosNext: this.sessionState.skipSorosNext
+            });
+            
             const stake = RiskManager.calculateNextStake(this.sessionState, config);
             
             // Log if Soros is active (Principal mode only)
-            if (!isRecovery) {
-                const sorosLevel = this.form.sorosLevel || 1;
-                const cyclePosition = this.sessionState.consecutiveWins % (sorosLevel + 1);
-                
-                if (cyclePosition > 0 && this.sessionState.lastResultWin) {
-                    this.addLog(`🚀 SOROS ATIVADO (Mão ${cyclePosition}/${sorosLevel}): $${stake}`, 'info');
-                }
+            // Soros is applied when consecutiveWins === 2 (after 1st win, before 2nd trade)
+            if (!isRecovery && this.sessionState.consecutiveWins === 2 && this.sessionState.lastResultWin) {
+                this.addLog(`🚀 SOROS ATIVADO: Stake base + último lucro = $${stake.toFixed(2)}`, 'info');
             }
 
+            console.log('[StrategyCreator] Calculated stake:', stake);
             return stake;
         },
         stopMonitoring(reason = 'Finalizado pelo usuário') {

@@ -97,8 +97,17 @@ export const RiskManager = {
         // Win1: consecutiveWins = 1 → Próximo stake = BASE
         // Win2: consecutiveWins = 2 → Próximo stake = BASE + LUCRO (Soros)
         // Win3: consecutiveWins = 3 → Reset → BASE
+        console.log('[RiskManager] Soros Check:', {
+            lastResultWin: state.lastResultWin,
+            lastProfitPrincipal: state.lastProfitPrincipal,
+            consecutiveWins: state.consecutiveWins,
+            skipSorosNext: state.skipSorosNext,
+            willApplySoros: state.lastResultWin && state.lastProfitPrincipal > 0 && state.consecutiveWins === 2
+        });
+
         if (state.lastResultWin && state.lastProfitPrincipal > 0 && state.consecutiveWins === 2) {
             const profit = state.lastProfitPrincipal;
+            console.log(`[RiskManager] 🚀 SOROS APPLIED! Base: ${baseStake}, Profit: ${profit}, Total: ${baseStake + profit}`);
             return parseFloat((baseStake + profit).toFixed(2));
         }
 
