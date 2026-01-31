@@ -141,8 +141,8 @@
                             <div v-show="activeMonitoringTab === 'chart'" class="space-y-6 animate-fadeIn flex-1 flex flex-col">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <h3 class="text-base font-bold text-foreground tracking-tight">Evolução do Resultado da IA {{ currentConfig.strategy.toUpperCase() }}</h3>
-                                        <p class="text-xs text-muted-foreground mt-1">Desempenho financeiro em tempo real</p>
+                                        <h3 style="font-size: 18px; color: #FFFFFF;" class="font-bold tracking-tight">Evolução do Resultado da IA {{ currentConfig.strategy.toUpperCase() }}</h3>
+                                        <p style="font-size: 14px; color: #a6a6a6;" class="mt-1">Desempenho financeiro em tempo real</p>
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <div class="w-8 h-0.5 bg-gradient-to-r from-success to-success/40 rounded-full"></div>
@@ -170,16 +170,16 @@
                                 <div class="space-y-6">
                                     <div class="flex items-start justify-between">
                                         <div>
-                                            <h3 class="text-xl font-semibold text-foreground mb-1 flex items-center gap-2">
+                                            <h3 style="font-size: 18px; color: #FFFFFF;" class="font-bold mb-1 flex items-center gap-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-5 h-5 text-muted-foreground"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                                                 Histórico de Operações
                                             </h3>
-                                            <p class="text-sm text-muted-foreground">Extrato oficial das operações executadas pela IA</p>
+                                            <p style="font-size: 14px; color: #a6a6a6;">Extrato oficial das operações executadas pela IA</p>
                                         </div>
                                     </div>
 
                                     <div class="rounded-xl border border-border/30 overflow-hidden bg-[#0B0B0B]">
-                                        <div class="relative w-full overflow-auto max-h-[450px] custom-scrollbar-zenix">
+                                        <div class="relative w-full overflow-auto max-h-[600px] custom-scrollbar-zenix">
                                             <table class="w-full text-sm border-collapse">
                                                 <thead class="sticky top-0 bg-[#161616] z-10 text-xs text-muted-foreground uppercase font-semibold tracking-wider border-b border-border/30">
                                                     <tr>
@@ -246,9 +246,12 @@
 
                             <!-- Logs Tab -->
                             <div v-if="activeMonitoringTab === 'logs'" class="animate-fadeIn">
-                                <div class="mb-5 px-1">
-                                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-3">Registro da IA</h3>
-                                    <div class="flex items-center justify-between">
+                                <div class="mb-5 px-1 flex items-start justify-between">
+                                    <div>
+                                        <h3 style="font-size: 18px; color: #FFFFFF;" class="font-bold mb-1">Registros da IA</h3>
+                                        <p style="font-size: 14px; color: #a6a6a6;">Acompanhe cada ação realizada pelo sistema</p>
+                                    </div>
+                                    <div class="flex flex-col items-end gap-2">
                                         <span class="text-[10px] text-muted-foreground/60 font-black uppercase tracking-[0.1em]">{{ monitoringLogs.length }} entradas</span>
                                         <div class="flex items-center gap-2">
                                             <button @click="clearLogs" class="px-3 py-1.5 bg-secondary/20 hover:bg-secondary/40 border border-border/30 rounded-lg text-[10px] font-black uppercase tracking-wider text-muted-foreground transition-all">
@@ -260,7 +263,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar-zenix pr-2">
+                                <div class="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar-zenix pr-2">
                                     <div v-for="log in monitoringLogs" :key="log.id" 
                                          class="p-4 bg-secondary/15 rounded-xl border border-border/20 font-mono text-[11px] hover:bg-secondary/20 transition-all">
                                         <div class="flex items-start gap-4">
