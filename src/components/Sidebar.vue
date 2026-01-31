@@ -3,7 +3,7 @@
         <div v-if="isOpen && isMobile" class="sidebar-overlay" @click="$emit('close-sidebar')"></div>
         <aside class="sidebar noise-bg" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <div class="sidebar-brand">
-            <div class="brand-logo-container">
+            <div v-if="!isMobile" class="brand-logo-container">
                 <span class="logo-text">
                     <span class="logo-z">Z</span>
                     <span class="logo-suffix">
