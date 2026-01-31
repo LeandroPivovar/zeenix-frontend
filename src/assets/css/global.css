@@ -179,33 +179,43 @@ body,
   .zenix-layout {
     margin-left: 280px !important;
     width: calc(100% - 280px) !important;
-    transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      width 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
-  /* Quando a sidebar está recolhida */
+  /* Robust sidebar-collapsed handling (works if class is on parent or on the element itself) */
   .sidebar-collapsed.dashboard-content-wrapper,
+  .sidebar-collapsed .dashboard-content-wrapper,
   .sidebar-collapsed.layout-agente-autnomo,
+  .sidebar-collapsed .layout-agente-autnomo,
   .sidebar-collapsed.content-wrapper,
+  .sidebar-collapsed .content-wrapper,
   .sidebar-collapsed.main-content-wrapper,
+  .sidebar-collapsed .main-content-wrapper,
   .sidebar-collapsed.layout-master-trader,
+  .sidebar-collapsed .layout-master-trader,
   .sidebar-collapsed.layout-copy-traders,
+  .sidebar-collapsed .layout-copy-traders,
   .sidebar-collapsed.operation-main,
+  .sidebar-collapsed .operation-main,
   .sidebar-collapsed.box-content,
-  .sidebar-collapsed.zenix-layout {
+  .sidebar-collapsed .box-content,
+  .sidebar-collapsed.zenix-layout,
+  .sidebar-collapsed .zenix-layout {
     margin-left: 80px !important;
     width: calc(100% - 80px) !important;
   }
 
   /* Hover expansion synchronization */
-  .sidebar-wrapper:hover+.dashboard-content-wrapper,
-  .sidebar-wrapper:hover+.layout-agente-autnomo,
-  .sidebar-wrapper:hover+.content-wrapper,
-  .sidebar-wrapper:hover+.main-content-wrapper,
-  .sidebar-wrapper:hover+.layout-master-trader,
-  .sidebar-wrapper:hover+.layout-copy-traders,
-  .sidebar-wrapper:hover+.operation-main,
-  .sidebar-wrapper:hover+.box-content,
-  .sidebar-wrapper:hover+.zenix-layout {
+  .sidebar-wrapper:hover~.dashboard-content-wrapper,
+  .sidebar-wrapper:hover~.layout-agente-autnomo,
+  .sidebar-wrapper:hover~.content-wrapper,
+  .sidebar-wrapper:hover~.main-content-wrapper,
+  .sidebar-wrapper:hover~.layout-master-trader,
+  .sidebar-wrapper:hover~.layout-copy-traders,
+  .sidebar-wrapper:hover~.operation-main,
+  .sidebar-wrapper:hover~.box-content,
+  .sidebar-wrapper:hover~.zenix-layout {
     margin-left: 280px !important;
     width: calc(100% - 280px) !important;
   }

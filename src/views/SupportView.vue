@@ -470,7 +470,6 @@ export default {
   background-color: #0E0E0E;
   border-bottom: 1px solid #1C1C1C;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  transition: left 0.3s ease;
   width: 100%;
   box-sizing: border-box;
 }

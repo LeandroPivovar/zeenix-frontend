@@ -1489,13 +1489,9 @@
   }
   
   .layout-agente-autnomo.sidebar-collapsed {
-    width: calc(100% - 80px);
-    margin-left: 80px;
   }
   
   .layout-agente-autnomo.sidebar-collapsed .top-header {
-    left: 0;
-    width: 100% !important;
   }
   
   .container-componentes {
@@ -1528,7 +1524,6 @@
     background-color: #0e0e0e;
     border-bottom: 1px solid #1c1c1c;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    transition: left 0.3s ease;
     box-sizing: border-box;
   }
   
@@ -1717,7 +1712,6 @@
       height: 100vh;
       z-index: 1000; /* Z-index ACIMA do overlay (998) */
       transform: translateX(-100%); /* Joga para fora da tela */
-      transition: transform 0.3s ease-out;
     }
   
     /* 2. Quando o AppSidebar tiver a classe .is-open, ela aparece */

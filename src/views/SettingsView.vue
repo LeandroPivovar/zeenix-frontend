@@ -11,7 +11,7 @@
 
     <!-- Main Content -->
     <div 
-      class="min-h-screen flex flex-col transition-all content-wrapper"
+      class="min-h-screen flex flex-col content-wrapper"
       :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
     >
       <TopNavbar 

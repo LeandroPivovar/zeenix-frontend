@@ -86,9 +86,7 @@
 }
 
 .main-content-wrapper {
-    margin-left: 280px;
     min-height: 100vh;
-    width: calc(100% - 280px);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
