@@ -454,6 +454,18 @@
                                                 min="1"
                                             />
                                         </div>
+                                        <div>
+                                            <label class="block text-white font-bold mb-2 text-sm">Payout Min. Rec.</label>
+                                            <div class="relative">
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="recoveryConfig.expectedPayout" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    step="0.01"
+                                                    placeholder="Ex: 2.26"
+                                                />
+                                            </div>
+                                        </div>
                                         <div class="flex items-end gap-2">
                                              <button 
                                                 type="button" 
@@ -543,6 +555,19 @@
                                             <span class="text-[10px] text-gray-500 uppercase">Piso</span>
                                         </div>
                                     </div>
+                                </div>
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Payout Mínimo (x)</label>
+                                    <div class="relative">
+                                        <input 
+                                            type="number" 
+                                            v-model.number="form.expectedPayout" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 focus:outline-none focus:border-zenix-green transition-colors"
+                                            step="0.01"
+                                            placeholder="Ex: 1.95"
+                                        />
+                                    </div>
+                                    <p class="mt-1 text-gray-500 text-xs font-bold">Base para cálculo</p>
                                 </div>
                             </div>
                         </div>
