@@ -18,7 +18,7 @@ export const RiskManager = {
      */
     payoutHistory: {},
 
-    initSession(initialStake) {
+    initSession() {
         return {
             isRecoveryMode: false,
             isStopped: false,
