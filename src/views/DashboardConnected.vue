@@ -2121,7 +2121,7 @@ export default {
 .dashboard-content-wrapper {
   margin-left: 280px;
   min-height: 100vh;
-  transition: margin-left 0.6s cubic-bezier(0.16, 1, 0.3, 1), width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1), width 1s cubic-bezier(0.16, 1, 0.3, 1);
   width: calc(100% - 280px);
   box-sizing: border-box;
   display: flex;

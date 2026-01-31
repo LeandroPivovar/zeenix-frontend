@@ -21,7 +21,7 @@ aside.sidebar,
 	/* z-index aumentado para ficar acima de outros overlays se necessário */
 	z-index: 1001 !important;
 	box-sizing: border-box;
-	transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1), left 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+	transition: width 1s cubic-bezier(0.16, 1, 0.3, 1), left 1s cubic-bezier(0.16, 1, 0.3, 1);
 	font-family: 'Inter', sans-serif;
 	overflow: visible;
 	padding: 0 !important;
@@ -50,12 +50,14 @@ aside.sidebar,
 	/* Expansão do conteúdo principal */
 	.sidebar-wrapper:hover~.dashboard-content-wrapper {
 		margin-left: 280px !important;
+		transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
 	/* Expansão e deslocamento do TopNavbar */
 	.sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
 		left: 280px !important;
 		width: calc(100% - 280px) !important;
+		transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
 	/* Logo Transition */
@@ -65,8 +67,9 @@ aside.sidebar,
 		align-items: center;
 		justify-content: center;
 		border-bottom: 1px solid #1C1C1C;
-		margin-bottom: 10px;
-		transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+		margin-bottom: 30px;
+		/* Mais espaço abaixo do logo */
+		transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
 		padding: 0 20px;
 	}
 
@@ -165,6 +168,8 @@ aside.sidebar,
 	.sidebar-wrapper:not(:hover) .menu-item {
 		justify-content: center;
 		padding: 12px;
+		margin-bottom: 15px;
+		/* Mais gap entre icones quando recolhido */
 	}
 
 	.sidebar-wrapper:not(:hover) .menu-item i {

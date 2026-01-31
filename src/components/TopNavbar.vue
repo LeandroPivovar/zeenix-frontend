@@ -3,7 +3,7 @@
     id="top-navbar" 
     class="fixed top-0 right-0 h-[60px] z-[1000] mobile-header" 
     :class="{ 'md:left-[80px] md:w-[calc(100%-80px)]': isSidebarCollapsed, 'md:left-[280px] md:w-[calc(100%-280px)]': !isSidebarCollapsed }"
-    style="background: #0B0B0B; padding: 0; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);"
+    style="background: #0B0B0B; padding: 0; transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);"
   >
     <!-- Desktop Layout -->
     <div v-if="!isMobile" class="h-full flex items-center justify-end desktop-nav">
