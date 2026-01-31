@@ -1,9 +1,9 @@
 <template>
   <div class="operation-chart-wrapper">
     <!-- Main Layout -->
-    <div class="operation-layout">
+    <div class="operation-layout flex w-full overflow-hidden">
       <!-- Chart Column -->
-      <div class="col-chart flex-1 flex flex-col gap-5">
+      <div class="col-chart flex-1 min-w-0 flex flex-col gap-5">
         <!-- Chart Container -->
         <div 
           class="bg-zenix-card border border-zenix-border rounded-xl flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card"
@@ -244,7 +244,7 @@
       </div>
 
       <!-- Sidebar Panel -->
-      <div class="max-w-[400px] w-[400px] flex-shrink-0 bg-[#0D0D0D] border border-white/5 p-8 overflow-y-auto sidebar-panel rounded-xl">
+      <div class="sidebar-panel w-[400px] flex-shrink-0 bg-[#0D0D0D] border border-white/5 p-8 overflow-y-auto rounded-xl">
         <div class="pb-6 mb-6 border-b border-white/5">
           <div class="flex flex-col gap-4">
             <h2 class="text-xl font-black text-white text-left leading-tight tracking-wide">

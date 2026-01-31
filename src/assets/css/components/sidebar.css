@@ -150,27 +150,43 @@ aside.sidebar,
 		display: none !important;
 	}
 
-	/* Labels só somem se NÃO estiver em hover E a sidebar estiver em estado colapsado */
-	.sidebar-wrapper:not(:hover) .sidebar.collapsed .menu-item span,
-	.sidebar-wrapper:not(:hover) .sidebar.collapsed .menu-item i.ml-auto {
+	/* Labels transition logic */
+	.menu-item span,
+	.menu-item i.ml-auto {
+		opacity: 1;
+		transform: translateX(0);
+		transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s ease;
+		white-space: nowrap;
+		display: inline-block;
+		overflow: hidden;
+	}
+
+	.sidebar.collapsed:not(:hover) .menu-item span,
+	.sidebar.collapsed:not(:hover) .menu-item i.ml-auto {
 		opacity: 0;
-		visibility: hidden;
 		width: 0;
-		margin-right: 0;
+		margin: 0;
+		transform: translateX(-10px);
 		pointer-events: none;
 	}
 
-	.sidebar-wrapper:not(:hover) .menu-item {
+	/* Keep icons aligned */
+	.menu-item {
+		justify-content: flex-start !important;
+		padding: 18px 32px !important;
 		margin-bottom: 2px;
-		justify-content: center;
-		padding: 18px 0;
 	}
 
-	.sidebar-wrapper:not(:hover) .menu-item i,
-	.sidebar-wrapper:not(:hover) .menu-item svg {
-		margin-right: 0;
+	.menu-item i,
+	.menu-item svg {
+		margin-right: 12px;
 		font-size: 16px;
-		margin-bottom: 0 !important;
+		flex-shrink: 0;
+	}
+
+	.sidebar.collapsed:not(:hover) .menu-item i,
+	.sidebar.collapsed:not(:hover) .menu-item svg {
+		margin-right: 0;
 	}
 }
 
@@ -429,7 +445,7 @@ aside.sidebar,
 	margin-bottom: 0 !important;
 }
 
-/* Estado Ativo */
+/* Estado Ativo - No background when collapsed and not hovered */
 .menu-item.active {
 	background-color: rgba(34, 197, 94, 0.15);
 	color: #DFDFDF;
@@ -437,8 +453,8 @@ aside.sidebar,
 	border-left: 2px solid #22C55E;
 }
 
-/* Esconde barra verde lateral no modo colapsado quando não em hover */
 .sidebar.collapsed:not(:hover) .menu-item.active {
+	background-color: transparent;
 	border-left-color: transparent;
 }
 
