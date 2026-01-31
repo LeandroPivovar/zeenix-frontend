@@ -287,7 +287,8 @@ export default {
     data() {
         return {
             isSidebarOpen: false, 
-            isSidebarCollapsed: false,
+            isSidebarCollapsed: true,
+            showDevModal: false,
             showSettingsModal: false,
             // Variável de estado para controlar o modo ativo
             activeMode: 'Detalhes Copiadores',
@@ -499,6 +500,12 @@ export default {
                 this.copiersCount = 0;
                 this.copierStats = { managedBalance: 0, todayProfit: 0, totalVolume: 0 };
             }
+        },
+        toggleMobileSidebar() {
+            this.isSidebarOpen = !this.isSidebarOpen;
+        },
+        openDevModal() {
+            this.showDevModal = true;
         }
     },
     mounted() {

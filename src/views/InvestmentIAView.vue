@@ -530,6 +530,8 @@ export default {
     data() {
         return {
             isSidebarOpen: false,
+        isSidebarCollapsed: true,
+        showDevModal: false,
             isSidebarCollapsed: false,
             isMobile: false,
             isInvestmentActive: false,

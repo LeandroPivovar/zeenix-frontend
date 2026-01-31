@@ -7,18 +7,6 @@
         </div>
         
         <nav class="menu">
-            <!-- Grupo de Alunos Button -->
-            <a 
-                v-if="studentGroupConfig.show"
-                :href="studentGroupConfig.link"
-                target="_blank"
-                class="student-group-menu-btn"
-            >
-                <i class="fa-brands fa-whatsapp text-lg"></i>
-                <span class="label">{{ studentGroupConfig.text }}</span>
-            </a>
-
-            <div class="separator-light" v-if="studentGroupConfig.show"></div>
 
             <template v-if="!isAdminFlow">
                 <a

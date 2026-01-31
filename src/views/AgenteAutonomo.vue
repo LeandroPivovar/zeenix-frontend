@@ -132,7 +132,7 @@
   
         // Estado do Sidebar
         isSidebarOpen: false, // Começa fechado no mobile
-        isSidebarCollapsed: false,
+        isSidebarCollapsed: true, // Começa recolhido no desktop para premium feel
         isMobile: false,
   
         // Intervalos de Simulação
@@ -1189,6 +1189,10 @@
         } else {
           this.isSidebarOpen = true;
         }
+      },
+  
+      openDevModal() {
+        this.showDevModal = true;
       },
   
       getPreferredCurrency() {
