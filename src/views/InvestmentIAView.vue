@@ -1,5 +1,4 @@
-﻿<template>
-    <div class="zenix-layout">
+﻿    <div class="dashboard-layout">
         <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="localSidebarCollapsed" 
