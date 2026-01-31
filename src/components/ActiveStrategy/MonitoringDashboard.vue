@@ -111,7 +111,7 @@
                     <!-- History View -->
                     <div v-show="activeTab === 'history'" class="animate-fadeIn h-full">
                         <div class="rounded-xl border border-[rgba(255,255,255,0.05)] overflow-hidden bg-[#0B0B0B]/50">
-                            <div class="overflow-x-auto custom-scrollbar">
+                            <div class="overflow-x-auto overflow-y-auto max-h-[500px] custom-scrollbar">
                                 <table class="w-full text-sm border-collapse">
                                     <thead class="bg-[#161616]/80 text-[10px] text-gray-500 uppercase font-black tracking-[0.15em] border-b border-[rgba(255,255,255,0.05)]">
                                         <tr>
