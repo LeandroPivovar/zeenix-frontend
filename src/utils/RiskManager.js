@@ -51,13 +51,11 @@ export const RiskManager = {
         const configPayout = config.expectedPayout || null;
         let estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
 
-        // CRITICAL: User inputs payout as TOTAL MULTIPLIER (e.g., 1.26 means $1 → $1.26)
-        // But calculations need PROFIT RATE (e.g., 0.26 means 26% profit)
-        // If payout >= 1, it's a multiplier, convert to profit rate
-        if (estimatedPayout >= 1) {
-            const originalPayout = estimatedPayout;
-            estimatedPayout = estimatedPayout - 1; // Convert 1.26 → 0.26
-            console.log(`[RiskManager] Converted payout ${originalPayout.toFixed(2)}x to profit rate ${estimatedPayout.toFixed(2)}`);
+        // CRITICAL: Ensure payout is a MULTIPLIER (e.g., 1.26 means $1 → $1.26)
+        // If user configured profit rate (0.26), convert to multiplier
+        if (estimatedPayout < 1 && estimatedPayout > 0) {
+            estimatedPayout = estimatedPayout + 1; // Convert 0.26 → 1.26
+            console.log(`[RiskManager] Converted profit rate ${(estimatedPayout - 1).toFixed(2)} to multiplier ${estimatedPayout.toFixed(2)}x`);
         }
 
         // 1. RECOVERY MODE
@@ -68,22 +66,19 @@ export const RiskManager = {
                 return baseStake;
             }
 
-
-
-
-
             // Calculate Stake to recover ALL losses + profit margin
-            const lossToRecover = state.totalLossAccumulated; // Target full accumulated loss
+            const lossToRecover = state.totalLossAccumulated;
 
-            // Formula: Stake = Target / Payout
-            // Target = TotalLoss + (TotalLoss * ProfitMargin) -> Simple aggressive recovery
-            // Or better: Stake * Payout = TotalLoss + (Stake + TotalLoss) * Margin? 
-            // Standard Martingale: Stake = Loss / Payout. (Breakeven).
-            // With Profit: Stake = (Loss * (1 + margin)) / Payout.
+            // Formula: Stake * Payout = Target
+            // Target = Loss * (1 + profitMargin)
+            // Stake = Target / Payout
+            // With payout as multiplier (e.g., 1.26):
+            //   Stake = (Loss * (1 + margin)) / 1.26
+            // Example: ($1.00 * 1.15) / 1.26 = $0.91 ✅
 
             const stake = (lossToRecover * (1 + profitFactor)) / estimatedPayout;
 
-            console.log(`[RiskManager] Recovery Calc: Loss=$${lossToRecover.toFixed(2)}, Payout=${estimatedPayout.toFixed(2)}, Key=${historyKey}, Stake=$${stake.toFixed(2)}`);
+            console.log(`[RiskManager] Recovery Calc: Loss=$${lossToRecover.toFixed(2)}, Payout=${estimatedPayout.toFixed(2)}x, Margin=${(profitFactor * 100).toFixed(0)}%, Stake=$${stake.toFixed(2)}`);
 
             // Safety: Min stake 0.35, Round up to 2 decimals
             return Math.max(0.35, Math.ceil(stake * 100) / 100);
