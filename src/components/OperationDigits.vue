@@ -267,18 +267,18 @@
                         </div>
                     </div>
                     
-                    <div class="flex flex-wrap md:grid md:grid-cols-[repeat(15,minmax(0,1fr))] gap-1 justify-center">
+                    <div class="flex flex-wrap md:flex-nowrap gap-2 justify-start">
                         <div 
                             v-for="(digit, index) in recentDigits.slice(0, 15)" 
                             :key="'recent-'+index"
-                            class="h-9 w-9 md:w-full max-w-[40px] bg-[#080808] border border-white/5 rounded-xl flex items-center justify-center font-black text-sm transition-all duration-300"
+                            class="h-10 w-10 md:h-12 md:w-12 bg-[#080808] border border-white/5 rounded-xl flex items-center justify-center font-black text-lg transition-all duration-300 flex-shrink-0"
                             :class="[
                                 index === 0 ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/50 shadow-[0_0_15px_#22C55E33]' : 'text-white/40'
                             ]"
                         >
                             {{ digit }}
                         </div>
-                        <div v-if="recentDigits.length === 0" class="text-white/20 text-xs italic tracking-widest py-2 w-full text-center">Sincronizando dados...</div>
+                        <div v-if="recentDigits.length === 0" class="text-white/20 text-xs italic tracking-widest py-2 w-full text-left ml-2">Sincronizando dados...</div>
                     </div>
                 </div>
 
@@ -811,24 +811,47 @@ export default {
             
             const frequencies = this.digitFrequencies;
             
+            // Encontrar max e min percentagem
+            let maxP = -1;
+            let minP = 101;
+            
+            frequencies.forEach(item => {
+                if (item.percentage > maxP) maxP = item.percentage;
+                if (item.percentage < minP) minP = item.percentage;
+            });
+            
+            // Flags para garantir apenas um de cada
+            let maxFound = false;
+            let minFound = false;
+            
             return frequencies.map(item => {
                 const p = item.percentage;
+                let isMax = false;
+                let isMin = false;
                 let statusClass = 'status-normal';
 
-                if (p > 10) {
+                // Prioridade para Max/Min (apenas o primeiro encontrado)
+                if (p === maxP && !maxFound) {
+                    isMax = true;
+                    maxFound = true;
                     statusClass = 'status-max';
-                } else if (p >= 5) {
-                    statusClass = 'status-heated';
-                } else {
+                } else if (p === minP && !minFound) {
+                    isMin = true;
+                    minFound = true;
                     statusClass = 'status-min';
+                } else {
+                     // Manter lógica de aquecimento secundário se desejar, ou simplificar
+                     if (p >= 5) {
+                        statusClass = 'status-heated';
+                     }
                 }
                 
                 return {
                     digit: item.digit,
                     percentage: item.percentage.toFixed(1),
                     statusClass,
-                    isMax: p > 10,
-                    isMin: p < 5,
+                    isMax,
+                    isMin,
                     isHighlighted: false
                 };
             });
