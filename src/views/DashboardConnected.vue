@@ -11,7 +11,7 @@
       @toggle-collapse="toggleSidebarCollapse" 
     />
     
-    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
+    <div class="dashboard-content-wrapper">
       <!-- Top Navbar -->
       <TopNavbar 
         v-if="!isMobile"
@@ -2119,18 +2119,14 @@ export default {
 }
 
 .dashboard-content-wrapper {
-  margin-left: 280px;
   min-height: 100vh;
-  transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  width: calc(100% - 280px);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
 }
 
-.dashboard-content-wrapper.sidebar-collapsed {
-}
+
 
 @media (max-width: 1024px) {
   .dashboard-layout {
@@ -2138,15 +2134,8 @@ export default {
   }
 
   .dashboard-content-wrapper {
-    margin-left: 0 !important;
-    width: 100% !important;
     max-width: 100vw;
     overflow-x: hidden;
-  }
-  
-  .dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 0 !important;
-    width: 100% !important;
   }
 }
 

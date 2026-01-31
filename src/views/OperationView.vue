@@ -2,7 +2,7 @@
   <div class="zenix-layout">
     <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
 
-    <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <div class="content-wrapper">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="currentBalance?.balance || info?.balance"
@@ -1345,8 +1345,6 @@ export default {
   }
 
   .content-wrapper {
-    margin-left: 0 !important;
-    width: 100% !important;
     max-width: 100% !important;
   }
 

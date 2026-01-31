@@ -1,5 +1,5 @@
   <template>
-    <div class="layout-copy-traders" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <div class="layout-copy-traders">
 
 
       <AppSidebar 
@@ -8,6 +8,7 @@
         @toggle-collapse="toggleSidebarCollapse"
         @close-sidebar="closeSidebar"
       />
+      <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="accountBalance"
@@ -30,7 +31,7 @@
         @account-type-changed="handleAccountTypeChange"
       />
   
-      <div class="box" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+      <div class="box">
         <!-- Header Copy Trading -->
         <!-- Mobile Header Copy Trading (Config Mode) -->
         <div class="mb-6 md:hidden px-1 mt-4" v-if="!hasActiveSession">
@@ -159,6 +160,7 @@
           :session="activeSession"
           @pause-copy="handlePauseCopy"
         />
+      </div>
       </div>
       <DesktopBottomNav />
     </div>
@@ -364,15 +366,10 @@
     color: #f0f6fc;
     font-family: 'Inter', sans-serif;
     padding: 0;
-    width: calc(100% - 280px);
-    margin-left: 280px;
     position: relative;
   }
 
-  .layout-copy-traders.sidebar-collapsed {
-    margin-left: 80px;
-    width: calc(100% - 80px);
-  }
+
 
   /* Overlay */
   .sidebar-overlay {
@@ -392,7 +389,7 @@
   
   .box {
     width: 100%;
-    padding: 70px 20px 10px 20px;
+    padding: 20px 20px 10px 20px;
     margin: 0;
   }
   
