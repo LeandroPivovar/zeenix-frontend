@@ -73,7 +73,7 @@ aside.sidebar,
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
-	/* Logo Transition - Unified and Fluid */
+	/* --- Brand/Logo --- */
 	.sidebar-brand {
 		height: 60px;
 		display: flex;
@@ -202,23 +202,6 @@ aside.sidebar,
 /* Remove old collapsed styles that hid everything */
 
 
-/* --- Brand/Logo --- */
-
-.brand {
-	display: none;
-	/* Oculto por padrão (desktop) */
-	align-items: center;
-	padding: 0 15px;
-	height: 60px;
-	min-height: 60px;
-	max-height: 60px;
-	box-sizing: border-box;
-	flex-direction: row;
-	border-bottom: none;
-	position: relative;
-	justify-content: flex-start;
-	overflow: visible;
-}
 
 .brand-content {
 	display: flex;
@@ -522,10 +505,6 @@ aside.sidebar,
 		padding-top: 0 !important;
 	}
 
-	/* Mostrar título Zenix apenas no mobile */
-	.brand {
-		display: flex !important;
-	}
 
 	/* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
 	.sidebar.is-open {
