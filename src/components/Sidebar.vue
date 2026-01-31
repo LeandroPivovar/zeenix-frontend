@@ -46,13 +46,12 @@
                 <a
                     href="#"
                     class="menu-item"
-                    :class="{ active: isStatsIAsActive, disabled: !isAdmin }"
-                    @click.prevent="isAdmin ? navigateAndClose('/adminStatsIAs') : openDevModal()"
+                    :class="{ active: isInvestmentIAActive }"
+                    @click.prevent="navigateAndClose('/Investments-IA')"
                     data-text="IAs de Investimento"
                 >
                     <i class="fa-solid fa-brain w-5 opacity-85"></i>
                     <span>IA's de Investimento</span>
-                    <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
                 </a>
 
                 <a
@@ -191,7 +190,7 @@
                     href="#"
                     class="menu-item"
                     :class="{ active: isAdminStatsIAsActive }"
-                    @click.prevent="navigateAndClose('/AdminStatsIAs')"
+                    @click.prevent="navigateAndClose('/adminStatsIAs')"
                     data-text="Estatísticas IAs"
                 >
                     <i class="fa-solid fa-chart-bar w-5 opacity-85"></i>
