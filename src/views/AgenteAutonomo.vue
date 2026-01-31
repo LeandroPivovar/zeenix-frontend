@@ -501,8 +501,15 @@
           const dailyProfitTarget = configData?.goalValue || this.goalValue || 200.0;
           const dailyLossLimit = configData?.stopValue || this.stopValue || 240.0;
           const market = configData?.mercado || 'volatility_100';
-          const strategy = configData?.estrategia || 'arion';
+          // ✅ FIX: Derive strategy from agentType if not explicitly provided
+          let strategy = configData?.estrategia;
+          if (!strategy && configData?.agentType) {
+             strategy = configData.agentType; 
+          }
+          if (!strategy) strategy = 'arion'; // Fallback
+
           const riskLevel = configData?.risco || 'balanced';
+          const stopLossType = configData?.stopLossType || 'normal'; // ✅ FIX: Include stopLossType
           const symbol = marketToSymbol[market] || 'R_100';
           
           // Usar saldo atual da conta como initialBalance (valor total da conta configurada)
@@ -525,6 +532,7 @@
               symbol,
               strategy,
               riskLevel,
+              stopLossType, // ✅ FIX: Pass to backend
             };
           console.log('[AgenteAutonomo] Sending POST request to:', url);
           console.log('[AgenteAutonomo] Request Body:', body);
