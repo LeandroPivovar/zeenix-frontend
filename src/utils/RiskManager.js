@@ -88,6 +88,8 @@ export const RiskManager = {
     },
 
     processTradeResult(state, win, profit, stakeUsed, tradeMode = 'PRINCIPAL', recoveryThreshold = 1) {
+        console.log(`[RiskManager] Process Result: ${win ? 'WIN' : 'LOSS'} | Mode: ${tradeMode} | Pnl: ${profit} | AccumLoss(Before): ${state.totalLossAccumulated}`);
+
         state.lastProfit = profit;
         state.lastStake = stakeUsed;
         state.lastResultWin = win;
@@ -97,6 +99,7 @@ export const RiskManager = {
 
             // Track stats specifically by trade mode to avoid pollution
             if (tradeMode === 'RECUPERACAO') {
+                console.log('[RiskManager] -> Recovery Win Block Triggered. Resetting state.');
                 state.lastPayoutRecovery = currentPayout;
                 state.lastProfitRecovery = profit;
                 state.lastStakeRecovery = stakeUsed;
@@ -111,6 +114,7 @@ export const RiskManager = {
                 state.totalLossAccumulated = 0;
                 state.recoveredAmount = 0;
             } else {
+                console.log('[RiskManager] -> Principal Win Block Triggered.');
                 state.lastPayoutPrincipal = currentPayout;
                 state.lastProfitPrincipal = profit;
                 state.lastStakePrincipal = stakeUsed;
