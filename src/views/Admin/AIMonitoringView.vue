@@ -178,10 +178,10 @@
                                         </div>
                                     </div>
 
-                                    <div class="rounded-xl border border-border/30 overflow-hidden bg-secondary/20">
+                                    <div class="rounded-xl border border-border/30 overflow-hidden bg-[#0B0B0B]">
                                         <div class="relative w-full overflow-auto max-h-[450px] custom-scrollbar">
                                             <table class="w-full text-sm border-collapse">
-                                                <thead class="sticky top-0 bg-secondary/50 backdrop-blur-md z-10 text-xs text-muted-foreground uppercase font-semibold tracking-wider border-b border-border/30">
+                                                <thead class="sticky top-0 bg-[#161616] z-10 text-xs text-muted-foreground uppercase font-semibold tracking-wider border-b border-border/30">
                                                     <tr>
                                                         <th class="px-4 py-4 text-left font-semibold">
                                                             <div class="flex items-center gap-2">
