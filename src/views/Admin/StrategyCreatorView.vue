@@ -2416,6 +2416,16 @@ export default {
                     trade.fastResultApplied = true;
                     if (trade.result === 'WON') this.monitoringStats.wins++;
                     else this.monitoringStats.losses++;
+                    
+                    // CRITICAL: Must notify RiskManager to update state (Reset Recovery, etc.)
+                    RiskManager.processTradeResult(
+                        this.sessionState, 
+                        trade.result === 'WON', 
+                        trade.pnl, 
+                        trade.stake, 
+                        trade.analysisType, 
+                        this.recoveryConfig.lossesToActivate
+                    );
 
                     
                     const oldAnalysis = this.sessionState.analysisType;
