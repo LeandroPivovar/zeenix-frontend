@@ -1,4 +1,5 @@
-﻿    <div class="dashboard-layout">
+﻿<template>
+    <div class="dashboard-layout">
         <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="localSidebarCollapsed" 
@@ -507,7 +508,7 @@ export default {
     data() {
         return {
             isSidebarOpen: false,
-            localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') !== 'false',
+            localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
 
             showDevModal: false,
             isMobile: false,
