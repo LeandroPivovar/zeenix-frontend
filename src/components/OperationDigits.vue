@@ -127,7 +127,7 @@
 
                 <div class="cards-grid">
                     <!-- Linha 1: Frequência Geral (Meta Design) -->
-                    <div class="frequency-meta-card bg-black border border-white/5 rounded-xl p-6 mb-6">
+                    <div class="frequency-meta-card bg-black border border-white/5 rounded-xl p-6 mb-6 h-fit">
                         <div class="flex items-center justify-between mb-8">
                             <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Frequência dos Dígitos</h3>
                         </div>
@@ -138,10 +138,8 @@
                                 :key="'meta-'+item.digit" 
                                 class="digit-meta-item flex flex-col items-center p-2 rounded-xl transition-all duration-500 bg-[#0F0F0F] border border-white/5"
                                 :class="[
-                                    item.statusClass, 
                                     item.isMax ? 'meta-highest-freq' : '',
-                                    item.isMin ? 'meta-lowest-freq' : '',
-                                    item.isHighlighted ? 'meta-highlight' : ''
+                                    item.isMin ? 'meta-lowest-freq' : ''
                                 ]"
                             >
                                 <span class="meta-digit-number text-3xl font-black mb-1" :style="{ color: item.statusClass === 'status-max' ? '#22C55E' : (item.statusClass === 'status-heated' ? '#F59E0B' : (item.statusClass === 'status-min' ? '#EF4444' : 'rgba(255,255,255,0.4)')) }">{{ item.digit }}</span>
@@ -260,7 +258,7 @@
                     </div>
                 </div>
 
-                <div class="recent-history-card bg-[#0D0D0D] border border-white/5 p-6 rounded-2xl mb-4">
+                <div class="recent-history-card bg-[#0D0D0D] border border-white/5 p-6 rounded-2xl mb-4 h-fit">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Histórico Recente</h3>
                         <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
@@ -269,18 +267,18 @@
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-[repeat(15,minmax(0,1fr))] gap-2">
+                    <div class="flex flex-wrap md:grid md:grid-cols-[repeat(15,minmax(0,1fr))] gap-1 justify-center">
                         <div 
                             v-for="(digit, index) in recentDigits.slice(0, 15)" 
                             :key="'recent-'+index"
-                            class="h-9 w-9 bg-[#080808] border border-white/5 rounded-xl flex items-center justify-center font-black text-sm transition-all duration-300 mx-auto"
+                            class="h-9 w-9 md:w-full max-w-[40px] bg-[#080808] border border-white/5 rounded-xl flex items-center justify-center font-black text-sm transition-all duration-300"
                             :class="[
                                 index === 0 ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/50 shadow-[0_0_15px_#22C55E33]' : 'text-white/40'
                             ]"
                         >
                             {{ digit }}
                         </div>
-                        <div v-if="recentDigits.length === 0" class="text-white/20 text-xs italic tracking-widest py-2">Sincronizando dados...</div>
+                        <div v-if="recentDigits.length === 0" class="text-white/20 text-xs italic tracking-widest py-2 w-full text-center">Sincronizando dados...</div>
                     </div>
                 </div>
 
