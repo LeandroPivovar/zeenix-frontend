@@ -80,7 +80,7 @@
                                     {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.balance - monitoringStats.profit || 1)) * 100).toFixed(1) }}%
                                 </span>
                             </div>
-                            <div class="mt-2 lg:mt-3 h-1 w-14 lg:w-20 mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
+                            <div class="mt-2 lg:mt-3 h-1 w-8 lg:w-12 mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
                                  :class="monitoringStats.profit >= 0 ? 'from-success/70 via-success/40 to-transparent' : 'from-red-500/70 via-red-500/40 to-transparent'"></div>
                         </div>
 
@@ -333,11 +333,9 @@
 
                             <!-- Desktop Pause Button -->
                             <div class="mt-auto px-1 pt-6 border-t border-border/40">
-                                <button @click="stopIA" :disabled="isStopping" class="group relative flex items-center justify-center gap-3 w-full h-12 bg-success hover:bg-success/90 text-black font-bold text-sm rounded-xl transition-all duration-300 shadow-lg shadow-success/20 active:scale-[0.98] disabled:opacity-50">
-                                    <div class="absolute left-4 w-5 h-5 flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
-                                    </div>
-                                    <span class="flex-1 text-center pr-5">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
+                                <button @click="stopIA" :disabled="isStopping" class="group relative flex items-center justify-center gap-2.5 w-full h-12 bg-success hover:bg-success/90 text-black font-bold text-sm rounded-xl transition-all duration-300 shadow-lg shadow-success/20 active:scale-[0.98] disabled:opacity-50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
+                                    <span class="tracking-tight">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
                                 </button>
                             </div>
                         </div>
