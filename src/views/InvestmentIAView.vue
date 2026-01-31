@@ -1020,10 +1020,10 @@ export default {
 
                 this.$root.$toast.success(`IA ${strategyPreset.name} ativada com sucesso!`);
                 
-                // ✅ Redirecionar para página de monitoramento (USER MONITORING)
-                setTimeout(() => {
-                    this.$router.push('/Investments-IA/monitoring');
-                }, 500);
+                // ✅ Ativar localmente sem redirecionar
+                this.isInvestmentActive = true;
+                this.isMonitoring = true;
+                this.initTickConnection();
 
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', error);

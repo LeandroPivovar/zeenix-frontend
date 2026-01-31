@@ -169,15 +169,15 @@ const routes = [
     meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
-    path: '/Investments-IA',
-    name: 'InvestmentIAView',
-    component: InvestmentIAView,
+    path: '/iaTeste',
+    name: 'iaTeste',
+    component: InvestmentActiveStrategyView,
     meta: { requiresAuth: true }
   },
   {
-    path: '/Investments-IA/monitoring',
-    name: 'InvestmentMonitoring',
-    component: InvestmentActiveStrategyView,
+    path: '/Investments-IA',
+    name: 'InvestmentIAView',
+    component: InvestmentIAView,
     meta: { requiresAuth: true }
   },
   {
