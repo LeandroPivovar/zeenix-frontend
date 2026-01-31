@@ -1018,7 +1018,7 @@ export default {
                 tradeType: null,
                 prediction: 0, 
                 sorosLevel: 1,
-                expectedPayout: 1.92, // Default for DIGITUNDER 8 (bet $1, get $1.92 total)
+                expectedPayout: 1.20, // Default for DIGITUNDER 8 (bet $1, get $1.20 total)
                 attackFilters: []
             },
 
@@ -1068,7 +1068,7 @@ export default {
                 pauseLosses: 6,
                 pauseVolatility: 50,
                 pauseTime: 5,
-                expectedPayout: 1.26, // Default for DIGITUNDER 4 (bet $1, get $1.26 total)
+                expectedPayout: 2.26, // Default for DIGITUNDER 4 (bet $1, get $2.26 total)
                 initialStake: 1.00,
                 riskProfile: 'moderado',
                 attackFilters: []
@@ -1748,8 +1748,15 @@ export default {
             if (!strategy) return;
 
             // Deep clone to avoid proxy issues
-            this.form = JSON.parse(JSON.stringify(strategy.config.form));
-            this.recoveryConfig = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
+            // Deep clone and merge to ensure new fields (like expectedPayout) are present
+            const savedForm = JSON.parse(JSON.stringify(strategy.config.form));
+            this.form = { ...this.form, ...savedForm };
+            // Ensure expectedPayout fallback for legacy saves
+            if (!this.form.expectedPayout) this.form.expectedPayout = 1.20;
+
+            const savedRecovery = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
+            this.recoveryConfig = { ...this.recoveryConfig, ...savedRecovery };
+            if (!this.recoveryConfig.expectedPayout) this.recoveryConfig.expectedPayout = 2.26;
             
             // Restore filters active state for main
             this.filters.forEach(f => {
