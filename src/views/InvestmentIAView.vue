@@ -1235,6 +1235,7 @@ export default {
         
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
+            localStorage.setItem('sidebarCollapsed', this.isSidebarCollapsed);
         },
         
         toggleSettingsModal() {
@@ -1676,9 +1677,15 @@ export default {
     },
     created() {
         this.checkMobile();
-        window.addEventListener('resize', this.checkMobile);
     },
     async mounted() {
+        // Recuperar estado da sidebar
+        const savedState = localStorage.getItem('sidebarCollapsed');
+        if (savedState !== null) {
+            this.isSidebarCollapsed = savedState === 'true';
+        }
+
+        window.addEventListener('resize', this.checkMobile);
         console.log('[InvestmentIAView] mounted() - Modo 100% Frontend');
         await this.loadAvailableAccounts();
         

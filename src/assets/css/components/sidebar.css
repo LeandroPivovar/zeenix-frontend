@@ -73,7 +73,7 @@ aside.sidebar,
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
-	/* --- Brand/Logo --- */
+	/* --- Brand/Logo Global Styles --- */
 	.sidebar-brand {
 		height: 60px;
 		display: flex;
@@ -97,11 +97,9 @@ aside.sidebar,
 		align-items: center;
 		position: relative;
 		width: 100%;
-		/* Changed from 100px to 100% for better centering */
 		height: 30px;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 		justify-content: center;
-		/* Added to help centering */
 	}
 
 	.logo-z {

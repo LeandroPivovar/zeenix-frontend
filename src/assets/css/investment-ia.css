@@ -2473,13 +2473,21 @@ svg:not(:root).svg-inline--fa {
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.7);
-    z-index: 998;
+    z-index: 9999;
+    /* Ensure it is above TopNavbar (1000) */
     backdrop-filter: blur(2px);
 }
 
 @media (max-width: 1024px) {
     .sidebar-overlay {
         display: block;
+    }
+
+    .container-componentes {
+        padding: 5rem 1rem 2rem 1rem;
+        /* More top padding for header breathing room */
+        margin-top: 0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%);
     }
 }
 
