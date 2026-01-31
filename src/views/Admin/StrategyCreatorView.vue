@@ -1998,6 +1998,9 @@ export default {
                                 buy: proposalId,
                                 price: stakeValue
                             }));
+                            
+                            // Successful negotiation logic resets the retry flag
+                            this.retryingProposal = false;  
                         }
                     }
 
@@ -2011,6 +2014,7 @@ export default {
                             console.error('[WS] Erro na compra:', msg.error);
                             this.addLog(`❌ ERRO NA COMPRA: ${msg.error.message}`, 'error');
                             this.isNegotiating = false; // Reset lock on buy error
+                            this.retryingProposal = false; // Ensure flag is cleared
                         } else {
                             const payout = msg.buy.payout;
                             const stake = msg.buy.buy_price;
