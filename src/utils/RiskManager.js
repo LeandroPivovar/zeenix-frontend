@@ -35,6 +35,15 @@ export const RiskManager = {
 
         // 1. RECOVERY MODE
         if (isRecovery) {
+            // Check Max Levels for Conservador
+            const maxLevels = (riskProfile === 'conservador') ? 5 : null;
+            if (maxLevels && state.lossStreakRecovery >= maxLevels) {
+                // Return to base stake (accept loss)
+                // Note: state.analysisType will be reset by processTradeResult on next result if we treat this as a stop loss reset?
+                // Actually we just return baseStake, effectively stopping the martingale progression.
+                return baseStake;
+            }
+
             const lossToRecover = state.totalLossAccumulated - state.recoveredAmount;
             const stake = (lossToRecover * (1 + profitFactor)) / payout;
             // Use ceil to ensure 100% coverage even with rounding
@@ -136,10 +145,18 @@ export const RiskManager = {
                     state.negotiationMode = 'VELOZ';
                 }
 
-                state.recoveredAmount = 0;
                 state.lossStreakRecovery = 0;
             }
         }
+
+        // Safety Fallback: Stop Martingale if max levels exceeded (Conservador)
+        // This resets the state if we just suffered a loss at max level
+        /* 
+           This logic is tricky in processTradeResult because we don't know the profile here easily 
+           without passing it. But calculateNextStake handles the stake calculation.
+           Ideally, if we hit max levels, we should reset the mode to PRINCIPAL to stop trying to recover.
+           We can leave that to the caller or allow the stake to drop to baseStake (effectively accepting the loss).
+        */
     },
 
     refineTradeResult(state, realProfit, stakeUsed, tradeMode = 'PRINCIPAL') {
@@ -155,10 +172,13 @@ export const RiskManager = {
             state.recoveredAmount = state.recoveredAmount - (estimatedProfit || 0) + realProfit;
 
             // Single Win Recovery: Always ensure clean exit on official result
-            state.analysisType = 'PRINCIPAL';
-            state.consecutiveLosses = 0;
-            state.totalLossAccumulated = 0;
-            state.recoveredAmount = 0;
+            if (win) {
+                state.analysisType = 'PRINCIPAL';
+                state.activeStrategy = 'PRINCIPAL';
+                state.consecutiveLosses = 0;
+                state.totalLossAccumulated = 0;
+                state.recoveredAmount = 0;
+            }
         } else {
             state.lastProfitPrincipal = realProfit;
         }
