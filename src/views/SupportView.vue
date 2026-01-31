@@ -452,17 +452,12 @@ export default {
 
 .main-content-wrapper {
   margin: 0;
-  margin-left: 280px;
   padding: 0;
   min-height: 100vh;
-  transition: margin-left 0.3s ease, width 0.3s ease;
-  width: calc(100% - 280px);
   box-sizing: border-box;
 }
 
 .main-content-wrapper.sidebar-collapsed {
-  margin-left: 0;
-  width: 100%;
 }
 
 /* Top Header */

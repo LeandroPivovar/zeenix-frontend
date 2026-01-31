@@ -671,7 +671,6 @@ export default {
     color: #f0f6fc; /* Texto principal claro */
     width: calc(100% - 280px);
     margin-left: 280px;
-    transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1), width 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .layout-master-trader.sidebar-collapsed {

@@ -21,7 +21,7 @@ aside.sidebar,
 	/* z-index aumentado para ficar acima de outros overlays se necessário */
 	z-index: 1001 !important;
 	box-sizing: border-box;
-	transition: width 1s cubic-bezier(0.16, 1, 0.3, 1), left 1s cubic-bezier(0.16, 1, 0.3, 1);
+	transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	font-family: 'Inter', sans-serif;
 	overflow: visible;
 	padding: 0 !important;
@@ -50,14 +50,14 @@ aside.sidebar,
 	/* Expansão do conteúdo principal */
 	.sidebar-wrapper:hover~.dashboard-content-wrapper {
 		margin-left: 280px !important;
-		transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+		transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
 	/* Expansão e deslocamento do TopNavbar */
 	.sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
 		left: 280px !important;
 		width: calc(100% - 280px) !important;
-		transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
 	/* Logo Transition */
@@ -69,7 +69,7 @@ aside.sidebar,
 		/* Estabilidade */
 		border-bottom: 1px solid #1C1C1C;
 		margin-bottom: 30px;
-		transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 		padding: 0 32px;
 		/* Ajuste para centralizar o Z de ~16px na barra de 80px */
 		position: relative;
@@ -380,7 +380,7 @@ aside.sidebar,
 	width: 0 !important;
 	overflow: hidden !important;
 	white-space: nowrap;
-	transition: opacity 1s ease, width 1s ease;
+	transition: opacity 0.4s ease, width 0.4s ease;
 	pointer-events: none;
 }
 
@@ -414,7 +414,7 @@ aside.sidebar,
 	align-items: center;
 	gap: 20px;
 	/* Aumentado o gap para o texto não ficar colado */
-	transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	font-size: 14px;
 	font-weight: 500;
 	text-decoration: none;

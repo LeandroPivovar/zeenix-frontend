@@ -10,7 +10,10 @@
     />
 
     <!-- Main Content -->
-    <div class="min-h-screen flex flex-col transition-all duration-300" :style="{ marginLeft: isMobile ? '0' : (isSidebarCollapsed ? '0' : '280px') }">
+    <div 
+      class="min-h-screen flex flex-col transition-all content-wrapper"
+      :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
+    >
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="currentBalance?.balance || info?.balance"

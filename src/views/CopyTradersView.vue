@@ -367,7 +367,6 @@
     width: calc(100% - 280px);
     margin-left: 280px;
     position: relative;
-    transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1), width 1s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .layout-copy-traders.sidebar-collapsed {
