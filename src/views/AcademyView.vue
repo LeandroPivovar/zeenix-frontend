@@ -10,7 +10,7 @@
       @toggle-collapse="toggleSidebarCollapse" 
     />
 
-    <div class="main-content-wrapper">
+    <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
         <TopNavbar 
           :is-sidebar-collapsed="isSidebarCollapsed"
           :balance="balance"
@@ -18,7 +18,7 @@
           :currency="accountCurrency"
           :balances-by-currency-real="balancesByCurrencyReal"
           :balances-by-currency-demo="balancesByCurrencyDemo"
-          @toggle-sidebar="toggleSidebar"
+          @toggle-sidebar="toggleMobileSidebar"
           @toggle-sidebar-collapse="toggleSidebarCollapse"
           @open-settings="toggleSettingsModal"
         />
@@ -140,8 +140,8 @@ export default {
       loading: true,
       error: null,
       courseProgress: {}, 
-      isSidebarOpen: window.innerWidth > 768, // Inicia aberto apenas em desktop
-      isSidebarCollapsed: false, // Controla menu Desktop mini
+      isSidebarOpen: false, // Começa fechado
+      isSidebarCollapsed: true, // Começa recolhido
       showSettingsModal: false,
       balance: 0,
       accountCurrency: 'USD',
@@ -159,6 +159,7 @@ export default {
     
     // Adiciona listener para fechar menu ao redimensionar para desktop
     window.addEventListener('resize', this.handleResize);
+    this.handleResize(); // Initial check
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.handleResize);
@@ -168,12 +169,12 @@ export default {
       this.windowWidth = window.innerWidth;
       this.isMobile = this.windowWidth <= 768;
       
-      // Em desktop, mantém sidebar aberto; em mobile, fecha
       if (!this.isMobile) {
-        this.isSidebarOpen = true;
-      } else if (this.isSidebarOpen) {
-        // Se estava aberto em desktop e passou para mobile, fecha
-        this.isSidebarOpen = false;
+        // Desktop: sidebar should be collapsed by default, not open
+        this.isSidebarOpen = false; // Ensure mobile sidebar is closed
+      } else {
+        // Mobile: sidebar should be closed by default
+        this.isSidebarCollapsed = false; // Ensure desktop collapse is off
       }
     },
     loadFontAwesome() {
@@ -194,19 +195,16 @@ export default {
         const colors = ['#22C55E', '#0099FF', '#FFD058', '#FF4747'];
         return colors[index % colors.length];
     },
-    toggleSidebar() {
+    toggleSidebarCollapse() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed
+    },
+    toggleMobileSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen
     },
     closeSidebar() {
       // Fecha sidebar apenas em mobile
-      if (window.innerWidth <= 768) {
+      if (this.isMobile) {
         this.isSidebarOpen = false
-      }
-    },
-    toggleSidebarCollapse() {
-      // Apenas funciona em Desktop
-      if (window.innerWidth > 1024) {
-        this.isSidebarCollapsed = !this.isSidebarCollapsed
       }
     },
     toggleSettingsModal() {

@@ -9,7 +9,7 @@
             @toggle-collapse="toggleSidebarCollapse" 
         />
 
-        <div class="main-content-wrapper">
+        <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
@@ -239,8 +239,8 @@ export default {
             isPlaying: false,
             
             // Controle Sidebar Desktop
-            isSidebarOpen: true,
-            isSidebarCollapsed: false,
+            isSidebarOpen: false,
+            isSidebarCollapsed: true, // Começa recolhido
             
             // Controle Menu Mobile
             isMobile: false,
@@ -289,8 +289,14 @@ export default {
         checkMobile() {
             this.isMobile = window.innerWidth <= 1024;
         },
+        closeSidebar() {
+            this.isSidebarOpen = false;
+        },
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        },
+        toggleMobileSidebar() {
+            this.isSidebarOpen = !this.isSidebarOpen;
         },
         toggleMobileMenu() {
             this.isMobileMenuOpen = !this.isMobileMenuOpen;
