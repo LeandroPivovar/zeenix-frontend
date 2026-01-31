@@ -2,14 +2,14 @@
     <div class="zenix-layout">
         <AppSidebar 
             :is-open="isSidebarOpen" 
-            :is-collapsed="isSidebarCollapsed" 
+            :is-collapsed="localSidebarCollapsed" 
             :is-mobile="isMobile"
             @toggle-collapse="toggleSidebarCollapse"
             @close-sidebar="closeSidebar"
         />
-        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
             <TopNavbar 
-                :is-sidebar-collapsed="isSidebarCollapsed"
+                :is-sidebar-collapsed="localSidebarCollapsed"
                 :balance="info?.balance"
                 :account-type="accountType"
                 :balances-by-currency-real="balancesByCurrencyReal"
@@ -508,7 +508,8 @@ export default {
     data() {
         return {
             isSidebarOpen: false,
-            isSidebarCollapsed: true, // Começa recolhido
+            localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'false' ? false : true, // Default to true (collapsed) if not set, or persist
+
             showDevModal: false,
             isMobile: false,
             isInvestmentActive: false,
@@ -1234,8 +1235,8 @@ export default {
         },
         
         toggleSidebarCollapse() {
-            this.isSidebarCollapsed = !this.isSidebarCollapsed;
-            localStorage.setItem('sidebarCollapsed', this.isSidebarCollapsed);
+            this.localSidebarCollapsed = !this.localSidebarCollapsed;
+            localStorage.setItem('sidebarCollapsed', this.localSidebarCollapsed);
         },
         
         toggleSettingsModal() {

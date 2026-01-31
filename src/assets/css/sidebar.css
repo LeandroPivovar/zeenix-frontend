@@ -17,7 +17,7 @@
     left: 0;
     top: 0;
     height: 100vh;
-    z-index: 1;
+    z-index: 100 !important;
     box-sizing: border-box;
     transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
 }
@@ -114,7 +114,21 @@
     transition: opacity 0.2s ease, width 0.2s ease;
 }
 
-/* No footer-row, garantir que o texto "Sair" também seja ocultado */
+/* Ajuste específico para esconder o logo full e manter o Z (se desejado) ou esconder ambos e mostrar ícone menor */
+.sidebar.collapsed .brand-logo-container .logo-full {
+    display: none;
+}
+
+.sidebar.collapsed .brand-logo-container {
+    justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-brand {
+    justify-content: center;
+    padding: 0;
+}
+
+
 .sidebar.collapsed .footer-row .sair-text {
     opacity: 0;
     width: 0;
@@ -148,6 +162,39 @@
 
 /* --- Brand/Logo (ZENIX PRO) --- */
 
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    padding: 0 4px;
+    margin-bottom: 16px;
+}
+
+.brand-logo-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-z {
+    font-size: 24px;
+    font-weight: 800;
+    color: #22c55e;
+    /* Zenix Green */
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: -1px;
+}
+
+.logo-full {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 1px;
+}
+
+/* Legacy .brand support if needed */
 .brand {
     display: flex;
     align-items: center;
@@ -310,19 +357,59 @@
     color: #9ca3af;
 }
 
+/* --- Sidebar Overlay --- */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 9999;
+    opacity: 0;
+    animation: fadeInOverlay 0.3s forwards;
+}
+
+@keyframes fadeInOverlay {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
 /* --- Media Queries (Mobile) --- */
 
 @media (max-width: 768px) {
     .sidebar {
-        left: -240px;
+        left: -280px;
+        /* Fully hidden */
         box-shadow: none;
         z-index: 10000 !important;
+        width: 260px;
+        /* Slightly smaller on mobile if desired, or keep 280 */
     }
 
     /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
     .sidebar.is-open {
         left: 0;
         z-index: 10000 !important;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+    }
+
+    /* REMOVER O Z DO BRAND NO MOBILE */
+    .logo-z {
+        display: none !important;
+    }
+
+    /* Ajustar padding ou alinhamento se o Z sumir */
+    .sidebar-brand {
+        justify-content: flex-start;
     }
 
     .sidebar.is-open.collapsed {
