@@ -132,7 +132,7 @@
                                             <td class="px-6 py-4 text-white">
                                                 <span v-if="op.result === 'OPEN' || op.result === 'PENDING' || !op.result" class="text-yellow-500 font-bold uppercase tracking-tight text-xs">PENDENTE</span>
                                                 <span v-else :class="op.result.toUpperCase() === 'WIN' || op.result.toUpperCase() === 'WON' ? 'text-[#22C55E]' : 'text-[#EF4444]'" class="font-bold text-xs uppercase">
-                                                    {{ op.result }}
+                                                    {{ op.result.toUpperCase() === 'WON' ? 'WIN' : op.result.toUpperCase() }}
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 text-right">
