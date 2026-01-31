@@ -19,7 +19,7 @@
                 @open-settings="showSettingsModal = true"
             />
 
-            <main class="flex-1 overflow-auto flex flex-col justify-start w-full p-4 md:p-6 lg:p-8">
+            <main class="flex-1 overflow-auto flex flex-col justify-start w-full" style="padding: 5rem 2rem;">
                 <!-- Header Stats Card -->
                 <div class="w-full bg-gradient-to-br from-secondary/60 via-secondary/40 to-secondary/20 rounded-2xl border border-border/30 p-4 md:p-6 lg:p-8 relative overflow-hidden fade-in shadow-2xl shadow-black/40">
                     <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
@@ -259,7 +259,7 @@
                     <div class="w-full lg:w-[28%]">
                         <div class="h-full card-glass rounded-2xl border border-border/50 p-5 flex flex-col gradient-border">
                             <!-- Header Info -->
-                            <div class="p-4 rounded-xl bg-secondary/30 border border-border/40">
+                            <div class="p-4 rounded-xl bg-secondary/40 border border-border">
                                 <div class="flex items-center gap-3">
                                     <div class="relative">
                                         <div class="w-11 h-11 rounded-lg bg-success/10 border border-success/30 flex items-center justify-center">
@@ -268,51 +268,51 @@
                                         <div class="absolute inset-0 rounded-lg bg-success/20 blur-lg -z-10"></div>
                                     </div>
                                     <div>
-                                        <h3 class="text-base font-bold text-foreground tracking-wide">IA {{ currentConfig.strategy.toUpperCase() }}</h3>
+                                        <h3 class="text-base font-bold text-foreground tracking-wide uppercase">IA {{ currentConfig.strategy.toUpperCase() }}</h3>
                                         <p class="text-xs text-muted-foreground">Especialista em probabilidade</p>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Mode & Risk -->
-                            <div class="mt-3 p-4 rounded-xl bg-secondary/30 border border-border/40">
+                            <div class="mt-3 p-4 rounded-xl bg-secondary/40 border border-border">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap w-3.5 h-3.5 text-muted-foreground"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
                                         <span class="text-xs text-muted-foreground uppercase tracking-wider">Modo</span>
                                     </div>
-                                    <span class="text-sm font-semibold text-foreground uppercase">{{ currentConfig.mode }}</span>
+                                    <span class="text-sm font-bold text-foreground uppercase">{{ currentConfig.mode }}</span>
                                 </div>
-                                <div class="border-t border-border/30 mt-3 pt-3 flex items-center justify-between">
+                                <div class="border-t border-border/40 mt-3 pt-3 flex items-center justify-between">
                                     <div class="flex items-center gap-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up w-3.5 h-3.5 text-muted-foreground"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
                                         <span class="text-xs text-muted-foreground uppercase tracking-wider">Gestão</span>
                                     </div>
-                                    <span class="text-sm font-semibold text-foreground uppercase">{{ currentConfig.modoMartingale || 'Moderado' }}</span>
+                                    <span class="text-sm font-bold text-foreground uppercase">{{ currentConfig.modoMartingale || 'Moderado' }}</span>
                                 </div>
                             </div>
 
                             <!-- Parameters -->
-                            <div class="mt-3 p-4 rounded-xl bg-secondary/30 border border-border/40 space-y-2.5">
+                            <div class="mt-3 p-4 rounded-xl bg-secondary/40 border border-border space-y-2.5">
                                 <div class="flex justify-between items-center">
                                     <span class="text-xs text-muted-foreground uppercase tracking-wider">Entrada</span>
                                     <span class="text-sm font-bold text-foreground">${{ currentConfig.stake.toFixed(2) }}</span>
                                 </div>
-                                <div class="border-t border-border/30 pt-2.5 flex justify-between items-center">
+                                <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
                                     <span class="text-xs text-muted-foreground uppercase tracking-wider">Alvo</span>
                                     <span class="text-sm font-bold text-success">${{ (currentConfig.profitTarget || 0).toFixed(2) }}</span>
                                 </div>
-                                <div class="border-t border-border/30 pt-2.5 flex justify-between items-center">
+                                <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
                                     <span class="text-xs text-muted-foreground uppercase tracking-wider">Limite</span>
                                     <span class="text-sm font-bold text-foreground">${{ (currentConfig.lossLimit || 0).toFixed(2) }}</span>
                                 </div>
                             </div>
 
                             <!-- Protections -->
-                            <div class="mt-3 p-4 rounded-xl bg-success/5 border border-success/20 hover:bg-success/10 transition-colors">
+                            <div class="mt-3 p-4 rounded-xl bg-success/5 border border-success/30 hover:bg-success/10 transition-colors">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center border border-success/20">
+                                        <div class="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center border border-success/30">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check w-4 h-4 text-success"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
                                         </div>
                                         <span class="text-sm font-bold text-foreground">Stoploss Blindado</span>
@@ -326,13 +326,12 @@
                             <div class="flex-1 min-h-[40px]"></div>
 
                             <!-- Desktop Pause Button -->
-                            <div class="mt-auto px-1">
-                                <button @click="stopIA" :disabled="isStopping" class="group relative flex items-center justify-center gap-3 w-full h-14 bg-success hover:bg-success/90 text-white font-black text-sm uppercase tracking-widest rounded-xl transition-all duration-300 shadow-[0_8px_20px_rgba(34,197,94,0.3)] hover:shadow-[0_12px_25px_rgba(34,197,94,0.4)] active:scale-[0.98] disabled:opacity-50">
-                                    <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    <div class="w-6 h-6 flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause w-5 h-5"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
+                            <div class="mt-auto px-1 pt-6 border-t border-border/40">
+                                <button @click="stopIA" :disabled="isStopping" class="group relative flex items-center justify-center gap-3 w-full h-12 bg-success hover:bg-success/90 text-black font-bold text-sm rounded-xl transition-all duration-300 shadow-lg shadow-success/20 active:scale-[0.98] disabled:opacity-50">
+                                    <div class="w-5 h-5 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
                                     </div>
-                                    {{ isStopping ? 'Parando...' : 'Pausar IA' }}
+                                    <span class="tracking-tight">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
                                 </button>
                             </div>
                         </div>
