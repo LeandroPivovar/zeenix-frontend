@@ -486,17 +486,17 @@
 </template>
 
 <script>
-import AppSidebar from '../../components/Sidebar.vue';
-import TopNavbar from '../../components/TopNavbar.vue';
-import SettingsSidebar from '../../components/SettingsSidebar.vue';
+import AppSidebar from '@/components/Sidebar.vue';
+import TopNavbar from '@/components/TopNavbar.vue';
+import SettingsSidebar from '@/components/SettingsSidebar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import ZenixTooltip from '@/components/ZenixTooltip.vue';
-import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
-import accountBalanceMixin from '../../mixins/accountBalanceMixin';
-import { loadAvailableAccounts } from '../../utils/accountsLoader';
-import InsufficientBalanceModal from '../../components/InsufficientBalanceModal.vue';
-import MinimumStakeModal from '../../components/modals/MinimumStakeModal.vue';
-import StrategyRequiredModal from '../../components/modals/StrategyRequiredModal.vue';
+import DesktopBottomNav from '@/components/DesktopBottomNav.vue';
+import accountBalanceMixin from '@/mixins/accountBalanceMixin';
+import { loadAvailableAccounts } from '@/utils/accountsLoader';
+import InsufficientBalanceModal from '@/components/InsufficientBalanceModal.vue';
+import MinimumStakeModal from '@/components/modals/MinimumStakeModal.vue';
+import StrategyRequiredModal from '@/components/modals/StrategyRequiredModal.vue';
 import { StrategyAnalysis } from '@/utils/StrategyAnalysis';
 import apolloConfig from '@/utils/strategies/apollo.json';
 import atlasConfig from '@/utils/strategies/atlas.json';
