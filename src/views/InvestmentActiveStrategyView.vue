@@ -593,7 +593,7 @@ export default {
 
 .layout-content {
     flex-grow: 1;
-    padding: 20px;
+    padding: 20px 0; /* Changed to 0 horizontal padding for 100% width effect */
     padding-top: 50px;
     padding-bottom: 40px;
     background-color: #0B0B0B;

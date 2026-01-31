@@ -199,8 +199,8 @@ svg:not(:root).svg-inline--fa {
 /* Main Content - Desktop & Mobile Adjustments */
 .main-content {
     margin-top: 60px;
-    padding: 30px 15px !important;
-    /* Default desktop padding adjusted to 30px */
+    padding: 30px 0 !important;
+    /* Removed horizontal padding (from 15px) for 100% width */
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -1486,6 +1486,7 @@ svg:not(:root).svg-inline--fa {
     flex-direction: column;
     gap: 0.75rem;
 }
+
 
 @media (min-width: 768px) {
     .footer-bottom {
