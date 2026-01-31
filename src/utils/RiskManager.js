@@ -144,7 +144,13 @@ export const RiskManager = {
                 console.log(`[RiskManager] Recovery Progress: ${state.recoveredAmount.toFixed(2)} / ${state.totalLossAccumulated.toFixed(2)}`);
 
                 // FORCE RESET ON FIRST WIN (User Request)
-                console.log('[RiskManager] -> Recovery Win! Resetting state immediately (Fixed Rule).');
+                console.log('%c[RiskManager] ✅ RECOVERY WIN! Resetting to PRINCIPAL mode', 'background: #00ff00; color: #000; font-weight: bold; padding: 4px;');
+                console.log('[RiskManager] -> Before Reset:', {
+                    totalLossAccumulated: state.totalLossAccumulated,
+                    recoveredAmount: state.recoveredAmount,
+                    analysisType: state.analysisType
+                });
+
                 state.analysisType = 'PRINCIPAL';
                 state.negotiationMode = 'VELOZ';
                 state.consecutiveLosses = 0;
@@ -152,6 +158,12 @@ export const RiskManager = {
                 state.recoveredAmount = 0;
                 state.skipSorosNext = true;
                 state.consecutiveWins = 0; // Reset para começar nova sequência de Soros
+
+                console.log('[RiskManager] -> After Reset:', {
+                    totalLossAccumulated: state.totalLossAccumulated,
+                    recoveredAmount: state.recoveredAmount,
+                    analysisType: state.analysisType
+                });
             } else {
                 console.log('[RiskManager] -> Principal Win Block Triggered.');
                 state.lastPayoutPrincipal = currentPayout;
