@@ -1,12 +1,17 @@
 ﻿<template>
     <div class="zenix-layout">
+        <!-- Sidebar -->
+        <AppSidebar 
+            :is-open="isSidebarOpen" 
+            :is-collapsed="localSidebarCollapsed" 
+            :is-mobile="isMobile"
+            @toggle-collapse="toggleSidebarCollapse"
+            @close-sidebar="closeSidebar"
+        />
 
-        
-
-
-        <div class="min-h-screen flex flex-col transition-all duration-300" :style="{ marginLeft: isMobile ? '0' : (localSidebarCollapsed ? '80px' : '280px') }">
-        <TopNavbar 
-            :is-sidebar-collapsed="isSidebarCollapsed"
+        <div class="dashboard-content-wrapper transition-all duration-300" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
+            <TopNavbar 
+                :is-sidebar-collapsed="localSidebarCollapsed"
             :balance="info?.balance"
             :account-type="accountType"
             :balances-by-currency-real="balancesByCurrencyReal"
@@ -478,14 +483,6 @@
     </div>
     <DesktopBottomNav />
     
-    <!-- Sidebar Overlay & Component positioned at the very end to be on top of everything -->
-    <div class="sidebar-overlay" v-if="isSidebarOpen" @click="closeSidebar"></div>
-    <AppSidebar 
-        :is-open="isSidebarOpen" 
-        :is-collapsed="localSidebarCollapsed" 
-        @toggle-collapse="toggleSidebarCollapse"
-        @close-sidebar="closeSidebar"
-    />
 </template>
 
 <script>

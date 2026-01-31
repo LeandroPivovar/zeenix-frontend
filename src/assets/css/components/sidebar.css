@@ -98,10 +98,41 @@ aside.sidebar,
 	.brand-logo-container {
 		display: flex;
 		align-items: center;
+		flex-shrink: 0;
 		height: 48px;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 		justify-content: flex-start;
 		overflow: hidden;
+	}
+
+	.collapse-toggle-btn {
+		background: #0E0E0E;
+		border: 1px solid #1C1C1C;
+		color: #7A7A7A;
+		width: 24px;
+		height: 24px;
+		border-radius: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		font-size: 10px;
+		position: absolute;
+		right: 15px;
+		z-index: 10;
+	}
+
+	.collapse-toggle-btn:hover {
+		color: #22C55E;
+		border-color: #22C55E;
+		background: #111;
+	}
+
+	.sidebar.collapsed:not(:hover) .collapse-toggle-btn {
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
 	}
 
 	.sidebar.collapsed:not(:hover) .brand-logo-container {

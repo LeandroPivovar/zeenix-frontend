@@ -508,7 +508,7 @@ export default {
     data() {
         return {
             isSidebarOpen: false,
-            localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') !== 'false',
+            localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
 
             showDevModal: false,
             isMobile: false,
@@ -1686,11 +1686,6 @@ export default {
         this.checkMobile();
     },
     async mounted() {
-        // Recuperar estado da sidebar
-        const savedState = localStorage.getItem('sidebarCollapsed');
-        if (savedState !== null) {
-            this.isSidebarCollapsed = savedState === 'true';
-        }
 
         window.addEventListener('resize', this.checkMobile);
         console.log('[InvestmentIAView] mounted() - Modo 100% Frontend');

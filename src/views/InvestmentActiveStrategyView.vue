@@ -11,7 +11,7 @@
             @open-settings="showSettingsModal = true" 
         />
 
-        <div class="dashboard-content-wrapper">
+        <div class="dashboard-content-wrapper transition-all duration-300" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
@@ -80,7 +80,7 @@ export default {
     data() {
         return {
             isSidebarOpen: true,
-            isSidebarCollapsed: false,
+            isSidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
             isMobile: false,
             showSettingsModal: false,
             
@@ -143,6 +143,7 @@ export default {
         },
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
+            localStorage.setItem('sidebarCollapsed', this.isSidebarCollapsed.toString());
         },
         
         handleStartMonitoring(config) {

@@ -217,11 +217,11 @@ body,
   }
 
   /* Sincronização do TopNavbar (Header fixo) no Hover */
-  .sidebar-wrapper:hover+.dashboard-content-wrapper #top-navbar,
-  .sidebar-wrapper:hover+.content-wrapper #top-navbar,
-  .sidebar-wrapper:hover+.main-content-wrapper #top-navbar,
-  .sidebar-wrapper:hover+.operation-main #top-navbar,
-  .sidebar-wrapper:hover+.box-content #top-navbar {
+  .sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar,
+  .sidebar-wrapper:hover~.content-wrapper #top-navbar,
+  .sidebar-wrapper:hover~.main-content-wrapper #top-navbar,
+  .sidebar-wrapper:hover~.operation-main #top-navbar,
+  .sidebar-wrapper:hover~.box-content #top-navbar {
     left: 280px !important;
     width: calc(100% - 280px) !important;
   }
