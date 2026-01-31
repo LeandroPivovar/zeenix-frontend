@@ -231,20 +231,20 @@
                                         </div>
                                     </div>
                                     <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
-                                        <LineChart 
-                                           v-if="activeChartMode === 'profit'"
-                                           chartId="monitoring-profit-chart" 
-                                           :data="profitHistory" 
-                                           :height="320"
-                                           color="#22C55E"
-                                        />
-                                        <LineChart 
-                                           v-else
-                                           chartId="monitoring-tick-chart" 
-                                           :data="[...tickHistory].reverse()" 
-                                           :height="320"
-                                           color="#60A5FA"
-                                        />
+                                        <div class="relative w-full h-[320px]">
+                                     <LineChart 
+                                        v-if="activeChartMode === 'profit'"
+                                        chartId="monitoring-profit-chart" 
+                                        :data="profitHistory" 
+                                        :height="320"
+                                        color="#22C55E"
+                                    />
+                                    <div 
+                                        v-else
+                                        ref="chartContainer"
+                                        class="w-full h-[320px] rounded-lg overflow-hidden relative"
+                                    ></div>
+                                </div>        
                                         <div v-if="(activeChartMode === 'profit' && profitHistory.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500">
                                             <div class="text-center">
                                                <i class="fas fa-chart-line text-5xl text-muted-foreground/20 mb-4 block animate-bounce"></i>
@@ -580,6 +580,7 @@ import atlasStrategy from '../../utils/strategies/atlas.json';
 import nexusStrategy from '../../utils/strategies/nexus.json';
 import orionStrategy from '../../utils/strategies/orion.json';
 import titanStrategy from '../../utils/strategies/titan.json';
+import { createChart, ColorType } from 'lightweight-charts';
 
 const strategyConfigs = {
 	apollo: apolloStrategy,
@@ -642,6 +643,10 @@ export default {
                 lastStakePrincipal: 0,
                 lastPayoutRecovery: null,
                 lastProfitRecovery: 0,
+                lastProfitPrincipal: 0,
+                lastStakePrincipal: 0,
+                lastPayoutRecovery: null,
+                lastProfitRecovery: 0,
                 lastStakeRecovery: 0,
                 consecutiveLosses: 0,
                 consecutiveWins: 0,
@@ -681,7 +686,29 @@ export default {
             activeContracts: new Map(),
             
             // Chart Controls
-            activeChartMode: 'profit' // 'profit' or 'tick'
+            activeChartMode: 'profit', // 'profit' or 'tick'
+            chart: null,
+            series: null,
+            tickChartData: []
+        }
+    },
+    watch: {
+        activeChartMode(val) {
+            if (val === 'tick') {
+                this.$nextTick(() => {
+                    this.initLightweightChart();
+                });
+            } else {
+                // Cleanup chart if switching away? Optional, but good practice
+                if (this.chart) {
+                     // We keep it in memory or destroy it. 
+                     // If we destroy, we need to rebuild. 
+                     // Let's keep simpler: just destroy to save resources if hidden
+                    this.chart.remove();
+                    this.chart = null;
+                    this.series = null;
+                }
+            }
         }
     },
     mounted() {
@@ -943,10 +970,25 @@ export default {
             if (msg.msg_type === 'tick' && msg.tick) {
                 this.tickCount++;
                 const price = msg.tick.quote;
+                const time = msg.tick.epoch;
+                
                 if (msg.subscription) this.tickSubscriptionId = msg.subscription.id;
                 if (this.tickCount % 10 === 0) this.addLog(`📈 Tick #${this.tickCount}: ${price}`, 'info');
+                
+                // 1. Maintain Logic Compatibility
                 this.tickHistory.unshift(price);
                 if (this.tickHistory.length > 100) this.tickHistory.pop();
+                
+                // 2. Update Chart Data
+                const tickObj = { time: time, value: price };
+                this.tickChartData.push(tickObj);
+                if (this.tickChartData.length > 1000) this.tickChartData.shift(); // Keep more history for chart
+                
+                // 3. Update Chart Series Realtime
+                if (this.series) {
+                    this.series.update(tickObj);
+                }
+                
                 const lastDigit = parseInt(price.toString().slice(-1));
                 this.digitHistory.unshift(lastDigit);
                 if (this.digitHistory.length > 100) this.digitHistory.pop();
@@ -1222,6 +1264,51 @@ export default {
                 type
             });
             if (this.monitoringLogs.length > 100) this.monitoringLogs = this.monitoringLogs.slice(0, 100);
+        },
+        initLightweightChart() {
+            if (this.chart) return;
+            
+            const container = this.$refs.chartContainer;
+            if (!container) return;
+            
+            // Match styles from InvestmentActive.vue
+            this.chart = createChart(container, {
+                width: container.clientWidth,
+                height: 320, // Match height prop passed to LineChart
+                layout: {
+                    background: { type: ColorType.Solid, color: '#0B0B0B' }, // Match bg
+                    textColor: '#D9D9D9',
+                },
+                grid: {
+                    vertLines: { color: '#2A2A2A' },
+                    horzLines: { color: '#2A2A2A' },
+                },
+                timeScale: {
+                    timeVisible: true,
+                    secondsVisible: true,
+                    borderColor: '#2A2A2A',
+                },
+                rightPriceScale: {
+                    borderColor: '#2A2A2A',
+                },
+            });
+            
+            this.series = this.chart.addLineSeries({
+                color: '#22C55E', // Match Green Line
+                lineWidth: 2,
+            });
+            
+            if (this.tickChartData.length > 0) {
+                this.series.setData(this.tickChartData);
+            }
+            
+            // Handle Resize
+            const resizeObserver = new ResizeObserver(entries => {
+                if (entries.length === 0 || !entries[0].contentRect) return;
+                const { width } = entries[0].contentRect;
+                this.chart.applyOptions({ width });
+            });
+            resizeObserver.observe(container);
         }
     }
 }
