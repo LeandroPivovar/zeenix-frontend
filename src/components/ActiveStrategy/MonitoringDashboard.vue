@@ -175,8 +175,7 @@
                                                     'bg-blue-400 shadow-[0_0_10px_#60A5FA]': log.type === 'info', 
                                                     'bg-yellow-400 shadow-[0_0_10px_#FACC15]': log.type === 'warning' 
                                                  }"></div>
-                                            <span class="text-xs font-bold" :class="{ 'text-[#22C55E]': log.type === 'success', 'text-[#EF4444]': log.type === 'error', 'text-blue-400': log.type === 'info', 'text-yellow-400': log.type === 'warning' }">
-                                                {{ log.message }}
+                                            <span class="text-xs font-bold" :class="{ 'text-[#22C55E]': log.type === 'success', 'text-[#EF4444]': log.type === 'error', 'text-blue-400': log.type === 'info', 'text-yellow-400': log.type === 'warning' }" v-html="log.message">
                                             </span>
                                         </div>
                                     </div>

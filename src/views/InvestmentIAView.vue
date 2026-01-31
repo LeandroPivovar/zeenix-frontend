@@ -1,5 +1,6 @@
 ﻿<template>
     <div class="zenix-layout">
+        <!-- Sidebar -->
         <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="localSidebarCollapsed" 
@@ -7,35 +8,35 @@
             @toggle-collapse="toggleSidebarCollapse"
             @close-sidebar="closeSidebar"
         />
+
         <div class="dashboard-content-wrapper transition-all duration-300" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="localSidebarCollapsed"
-                :balance="info?.balance"
-                :account-type="accountType"
-                :balances-by-currency-real="balancesByCurrencyReal"
-                :balances-by-currency-demo="balancesByCurrencyDemo"
-                :currency-prefix="preferredCurrencyPrefix"
-                @open-settings="toggleSettingsModal"
-                @account-type-changed="handleAccountTypeChange"
-                @toggle-sidebar="toggleSidebar"
-                @toggle-sidebar-collapse="toggleSidebarCollapse"
-            />
-            
-            <!-- Settings Sidebar -->
-            <SettingsSidebar
-                :is-open="showSettingsModal"
-                :balance="info?.balance"
-                :account-type="accountType"
-                :balances-by-currency-real="balancesByCurrencyReal"
-                :balances-by-currency-demo="balancesByCurrencyDemo"
-                :currency-prefix="preferredCurrencyPrefix"
-                :active-service="'ia'"
-                @close="closeSettingsModal"
-                @account-type-changed="handleAccountTypeChange"
-            />
+            :balance="info?.balance"
+            :account-type="accountType"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
+            :currency-prefix="preferredCurrencyPrefix"
+            @open-settings="toggleSettingsModal"
+            @account-type-changed="handleAccountTypeChange"
+            @toggle-sidebar="toggleSidebar"
+            @toggle-sidebar-collapse="toggleSidebarCollapse"
+        />
+        
+        <!-- Settings Sidebar -->
+        <SettingsSidebar
+            :is-open="showSettingsModal"
+            :balance="info?.balance"
+            :account-type="accountType"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
+            :currency-prefix="preferredCurrencyPrefix"
+            :active-service="'ia'"
+            @close="closeSettingsModal"
+            @account-type-changed="handleAccountTypeChange"
+        />
 
-            <div class="container-componentes">
-                <main class="main-content">
+            <main class="main-content" style="margin-top: 0px;">
                 <!-- AI Vision Panel - Only show when IA is inactive -->
                 <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
                     <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
@@ -460,28 +461,42 @@
                 />
                 </section>
 
-            </main>
-            <DesktopBottomNav />
-            </div>
+        </main>
+
         </div>
-        
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" v-if="isSidebarOpen" @click="closeSidebar"></div>
+        <InsufficientBalanceModal
+            :visible="showInsufficientBalanceModal"
+            :currentBalance="balanceNumeric"
+            :entryValue="entryValue"
+            :currency="tradeCurrency"
+            @confirm="showInsufficientBalanceModal = false"
+        />
+        <MinimumStakeModal
+            :visible="showMinimumStakeModal"
+            @confirm="showMinimumStakeModal = false"
+        />
+        <StrategyRequiredModal
+            :visible="showStrategyRequiredModal"
+            @close="showStrategyRequiredModal = false"
+            @confirm="handleStrategyRequiredConfirm"
+        />
     </div>
+    <DesktopBottomNav />
+    
 </template>
 
 <script>
-import AppSidebar from '../components/Sidebar.vue';
-import TopNavbar from '../components/TopNavbar.vue';
-import SettingsSidebar from '../components/SettingsSidebar.vue';
+import AppSidebar from '../../components/Sidebar.vue';
+import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import ZenixTooltip from '@/components/ZenixTooltip.vue';
-import DesktopBottomNav from '../components/DesktopBottomNav.vue';
-import accountBalanceMixin from '../mixins/accountBalanceMixin';
-import { loadAvailableAccounts } from '../utils/accountsLoader';
-import InsufficientBalanceModal from '../components/InsufficientBalanceModal.vue';
-import MinimumStakeModal from '../components/modals/MinimumStakeModal.vue';
-import StrategyRequiredModal from '../components/modals/StrategyRequiredModal.vue';
+import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
+import accountBalanceMixin from '../../mixins/accountBalanceMixin';
+import { loadAvailableAccounts } from '../../utils/accountsLoader';
+import InsufficientBalanceModal from '../../components/InsufficientBalanceModal.vue';
+import MinimumStakeModal from '../../components/modals/MinimumStakeModal.vue';
+import StrategyRequiredModal from '../../components/modals/StrategyRequiredModal.vue';
 import { StrategyAnalysis } from '@/utils/StrategyAnalysis';
 import apolloConfig from '@/utils/strategies/apollo.json';
 import atlasConfig from '@/utils/strategies/atlas.json';
@@ -509,8 +524,6 @@ export default {
         return {
             isSidebarOpen: false,
             localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
-
-            showDevModal: false,
             isMobile: false,
             isInvestmentActive: false,
             isActivating: false,
@@ -919,12 +932,6 @@ export default {
         
         checkMobile() {
             this.isMobile = window.innerWidth <= 1024;
-            if (this.isMobile) {
-                this.isSidebarOpen = false;
-                this.localSidebarCollapsed = false;
-            } else {
-                this.isSidebarOpen = true;
-            }
         },
         
         async handleToggleChange(event) {
@@ -1242,7 +1249,7 @@ export default {
         
         toggleSidebarCollapse() {
             this.localSidebarCollapsed = !this.localSidebarCollapsed;
-            localStorage.setItem('sidebarCollapsed', this.localSidebarCollapsed);
+            localStorage.setItem('sidebarCollapsed', this.localSidebarCollapsed.toString());
         },
         
         toggleSettingsModal() {
@@ -1684,10 +1691,9 @@ export default {
     },
     created() {
         this.checkMobile();
+        window.addEventListener('resize', this.checkMobile);
     },
     async mounted() {
-
-        window.addEventListener('resize', this.checkMobile);
         console.log('[InvestmentIAView] mounted() - Modo 100% Frontend');
         await this.loadAvailableAccounts();
         
