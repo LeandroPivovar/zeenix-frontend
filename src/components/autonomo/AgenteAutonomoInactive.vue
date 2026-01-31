@@ -2530,3 +2530,4 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
         padding: 0.6rem 2rem;
     }
 }
+</style>
