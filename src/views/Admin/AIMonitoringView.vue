@@ -954,7 +954,7 @@ export default {
         },
         subscribeTicks() {
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                const market = this.currentConfig.market || 'R_100';
+                const market = this.resolveMarketSymbol(this.currentConfig.market || 'R_100');
                 this.addLog(`Monitorando Mercado`, [`Símbolo: ${market}`], 'info');
                 
                 this.ws.send(JSON.stringify({
@@ -1077,7 +1077,7 @@ export default {
                 currency: 'USD',
                 duration: config.duration || 1,
                 duration_unit: config.durationUnit || 't',
-                symbol: config.market || 'R_100'
+                symbol: this.resolveMarketSymbol(config.market || 'R_100')
             };
             
             if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(config.tradeType)) {
@@ -1262,15 +1262,28 @@ export default {
             a.click();
             window.URL.revokeObjectURL(url);
         },
-        addLog(title, details = [], type = 'info') {
-            this.monitoringLogs.unshift({
-                id: Date.now() + Math.random(),
-                time: new Date().toLocaleTimeString(),
-                title,
-                details: Array.isArray(details) ? details : [details],
-                type
-            });
+        addLog(title, messages, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            this.monitoringLogs.unshift({ title, details: Array.isArray(messages) ? messages : [messages], type, time });
             if (this.monitoringLogs.length > 100) this.monitoringLogs = this.monitoringLogs.slice(0, 100);
+        },
+
+        resolveMarketSymbol(symbol) {
+            const mapping = {
+                'vol10': 'R_10',
+                'vol25': 'R_25',
+                'vol50': 'R_50',
+                'vol75': 'R_75',
+                'vol100': 'R_100',
+                'vol10_1s': '1HZ10V',
+                'vol25_1s': '1HZ25V',
+                'vol50_1s': '1HZ50V',
+                'vol75_1s': '1HZ75V',
+                'vol100_1s': '1HZ100V',
+                'bear': 'RDBEAR',
+                'bull': 'RDBULL'
+            };
+            return mapping[symbol] || symbol;
         },
         initLightweightChart() {
             if (this.chart) return;
