@@ -19,7 +19,8 @@
                 @open-settings="showSettingsModal = true"
             />
 
-            <main class="flex-1 overflow-auto flex flex-col justify-start w-full" style="padding: 5rem 2rem;">
+            <main class="flex-1 overflow-auto flex flex-col justify-start w-full transition-all duration-300" 
+                  :style="{ padding: isMobile ? '5rem 1rem 8rem 1rem' : '5rem 2rem' }">
                 <!-- Header Stats Card -->
                 <div class="w-full bg-gradient-to-br from-secondary/60 via-secondary/40 to-secondary/20 rounded-2xl border border-border/30 p-4 md:p-6 lg:p-8 relative overflow-hidden fade-in shadow-2xl shadow-black/40">
                     <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
@@ -119,8 +120,72 @@
                     </div>
                 </div>
 
-                <!-- Main Content Body -->
-                <div class="mt-4 md:mt-6 lg:mt-8 flex flex-col lg:flex-row gap-4 lg:gap-6 w-full flex-1">
+                <!-- Configuration Card (Relocated above tabs) -->
+                <div class="mt-4 md:mt-6 lg:mt-8 w-full">
+                    <div class="card-glass rounded-2xl border border-border/50 p-4 md:p-6 lg:p-8 gradient-border">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+                            <!-- Strategy & Mode -->
+                            <div class="p-4 rounded-xl bg-secondary/60 border border-border/60 flex flex-col justify-center">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-10 h-10 rounded-lg bg-success/10 border border-success/30 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain w-5 h-5 text-success"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"></path><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"></path><path d="M3.477 10.896a4 4 0 0 1 .585-.396"></path><path d="M19.938 10.5a4 4 0 0 1 .585.396"></path><path d="M6 18a4 4 0 0 1-1.967-.516"></path><path d="M19.967 17.484A4 4 0 0 1 18 18"></path></svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-black text-foreground tracking-wider uppercase">IA {{ currentConfig.strategy.toUpperCase() }}</h3>
+                                        <p class="text-[10px] text-muted-foreground">Especialista em probabilidade</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between pt-2 border-t border-border/40">
+                                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Modo</span>
+                                    <span class="text-xs font-black text-foreground uppercase">{{ currentConfig.mode }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Parameters -->
+                            <div class="p-4 rounded-xl bg-secondary/60 border border-border/60 flex flex-col justify-between">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Entrada</span>
+                                    <span class="text-sm font-black text-foreground">${{ currentConfig.stake.toFixed(2) }}</span>
+                                </div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Gestão</span>
+                                    <span class="text-xs font-black text-foreground uppercase">{{ currentConfig.modoMartingale || 'Moderado' }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Limits & Protections -->
+                            <div class="p-4 rounded-xl bg-secondary/60 border border-border/60 flex flex-col justify-between">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Meta/Loss</span>
+                                    <span class="text-xs font-black">
+                                        <span class="text-success">${{ (currentConfig.profitTarget || 0).toFixed(2) }}</span>
+                                        <span class="text-muted-foreground/30 mx-1">/</span>
+                                        <span class="text-red-500">${{ (currentConfig.lossLimit || 0).toFixed(2) }}</span>
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between pt-2 border-t border-border/40">
+                                    <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Stop Blindado</span>
+                                    <span class="text-[10px] font-black text-success uppercase tracking-[0.1em]">
+                                        {{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Control Button -->
+                            <div class="flex items-center justify-center">
+                                <button @click="stopIA" :disabled="isStopping" class="group flex items-center justify-center w-full h-full min-h-[52px] md:min-h-[auto] bg-success text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 shadow-xl shadow-success/30 active:scale-[0.98] disabled:opacity-50">
+                                    <div class="flex items-center gap-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
+                                        <span class="mt-0.5">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Body (Tabs) -->
+                <div class="mt-4 md:mt-6 lg:mt-8 w-full flex-1">
                     <!-- Left: Chart & History -->
                     <div class="w-full lg:w-[72%] card-glass rounded-2xl border border-border/50 p-4 md:p-6 lg:p-8 fade-in-delay-1 gradient-border flex flex-col">
                         <div class="w-full flex-1 flex flex-col">
@@ -179,7 +244,8 @@
                                     </div>
 
                                     <div class="rounded-xl border border-border/30 overflow-hidden bg-[#0B0B0B]">
-                                        <div class="relative w-full overflow-auto max-h-[600px] custom-scrollbar-zenix">
+                                        <!-- Desktop Table -->
+                                        <div class="relative w-full overflow-auto max-h-[600px] custom-scrollbar-zenix hidden md:block">
                                             <table class="w-full text-sm border-collapse">
                                                 <thead class="sticky top-0 bg-[#161616] z-10 text-xs text-muted-foreground uppercase font-semibold tracking-wider border-b border-border/30">
                                                     <tr>
@@ -202,15 +268,11 @@
                                                         :class="index % 2 === 0 ? 'bg-transparent' : 'bg-secondary/10'">
                                                         <td class="px-4 py-4 font-mono font-medium text-foreground">{{ op.time }}</td>
                                                         <td class="px-4 py-4">
-                                                            <span v-if="op.result === 'OPEN'" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border border-yellow-500/30 bg-yellow-500/10 text-yellow-500">
-                                                                <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
-                                                                Pendente
-                                                            </span>
-                                                            <span v-else :class="op.result === 'WIN' ? 'bg-success/10 text-success border-success/20' : 'bg-red-500/10 text-red-500/70 border-red-500/20'" 
-                                                                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border">
-                                                                <svg v-if="op.result === 'WIN'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up w-3 h-3"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                                                            <span :class="op.type === 'CALL' ? 'bg-success/10 text-success border-success/20' : 'bg-red-500/10 text-red-500/70 border-red-500/20'" 
+                                                                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border uppercase tracking-wider">
+                                                                <svg v-if="op.type === 'CALL'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up w-3 h-3"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
                                                                 <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down w-3 h-3"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
-                                                                {{ op.result === 'WIN' ? 'Compra' : 'Venda' }}
+                                                                {{ op.type === 'CALL' ? 'Compra' : 'Venda' }}
                                                             </span>
                                                         </td>
                                                         <td class="px-4 py-4 text-muted-foreground font-mono">{{ op.market }}</td>
@@ -228,14 +290,48 @@
                                                             </span>
                                                         </td>
                                                     </tr>
-                                                    <tr v-if="monitoringOperations.length === 0">
-                                                        <td colspan="6" class="text-center py-20 text-muted-foreground/50 uppercase text-[10px] font-black tracking-[0.2em]">
-                                                            Aguardando primeira operação...
-                                                        </td>
-                                                    </tr>
                                                 </tbody>
                                             </table>
                                         </div>
+
+                                        <!-- Mobile Card View -->
+                                        <div class="md:hidden max-h-[600px] overflow-auto custom-scrollbar-zenix p-3 space-y-3">
+                                            <div v-for="op in monitoringOperations" :key="op.id" class="p-4 bg-secondary/15 rounded-xl border border-border/20 space-y-3">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-xs font-mono text-muted-foreground font-bold">{{ op.time }}</span>
+                                                    <span v-if="op.result === 'OPEN'" class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">PENDENTE</span>
+                                                    <span v-else :class="op.result === 'WIN' ? 'bg-success/10 text-success border-success/20' : 'bg-red-500/10 text-red-500 border-red-500/20'" 
+                                                          class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase border">
+                                                        {{ op.result }}
+                                                    </span>
+                                                </div>
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex flex-col">
+                                                        <span class="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-0.5">Mercado / Tipo</span>
+                                                        <span class="text-xs font-bold text-foreground">{{ op.market }} / {{ op.type === 'CALL' ? 'COMPRA' : 'VENDA' }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center justify-between pt-2 border-t border-border/10">
+                                                    <div class="flex flex-col">
+                                                        <span class="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-0.5">Investido</span>
+                                                        <span class="text-xs font-bold text-foreground">$ {{ op.stake.toFixed(2) }}</span>
+                                                    </div>
+                                                    <div class="flex flex-col items-end">
+                                                        <span class="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-0.5">Resultado</span>
+                                                        <span v-if="op.result === 'OPEN'" class="text-xs font-bold text-muted-foreground">-</span>
+                                                        <span v-else class="text-xs font-black" :class="op.result === 'WIN' ? 'text-success' : 'text-red-500'">
+                                                            {{ op.result === 'WIN' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <tr v-if="monitoringOperations.length === 0">
+                                            <div class="text-center py-20 text-muted-foreground/30 uppercase text-[10px] font-black tracking-[0.2em] w-full">
+                                                Aguardando primeira operação...
+                                            </div>
+                                        </tr>
                                     </div>
                                     <div class="flex items-center justify-between text-xs text-muted-foreground/60 pt-2">
                                         <span>Atualizado em tempo real</span>
@@ -246,52 +342,51 @@
 
                             <!-- Logs Tab -->
                             <div v-if="activeMonitoringTab === 'logs'" class="animate-fadeIn">
-                                <div class="mb-5 px-1 flex items-start justify-between">
-                                    <div>
-                                        <h3 style="font-size: 18px; color: #FFFFFF;" class="font-bold mb-1">Registros da IA</h3>
+                                <div class="mb-8 px-1 flex items-end justify-between">
+                                    <div class="space-y-1">
+                                        <h3 style="font-size: 18px; color: #FFFFFF;" class="font-bold tracking-tight">Registros da IA</h3>
                                         <p style="font-size: 14px; color: #a6a6a6;">Acompanhe cada ação realizada pelo sistema</p>
                                     </div>
-                                    <div class="flex flex-col items-end gap-2">
-                                        <span class="text-[10px] text-muted-foreground/60 font-black uppercase tracking-[0.1em]">{{ monitoringLogs.length }} entradas</span>
-                                        <div class="flex items-center gap-2">
-                                            <button @click="clearLogs" class="px-3 py-1.5 bg-secondary/20 hover:bg-secondary/40 border border-border/30 rounded-lg text-[10px] font-black uppercase tracking-wider text-muted-foreground transition-all">
-                                                Limpar Logs
+                                    <div class="flex flex-col items-end gap-3">
+                                        <span class="text-[10px] text-muted-foreground/60 font-black uppercase tracking-[0.2em]">{{ monitoringLogs.length }} ENTRADAS</span>
+                                        <div class="flex items-center gap-3">
+                                            <button @click="clearLogs" class="px-5 py-2.5 bg-secondary/10 hover:bg-secondary/20 border border-border/20 rounded-lg text-[10px] font-bold uppercase tracking-widest text-muted-foreground transition-all">
+                                                LIMPAR LOGS
                                             </button>
-                                            <button @click="exportLogs" class="px-3 py-1.5 bg-success/10 hover:bg-success/20 border border-success/30 rounded-lg text-[10px] font-black uppercase tracking-wider text-success transition-all">
-                                                Exportar Logs
+                                            <button @click="exportLogs" class="px-5 py-2.5 bg-success/5 hover:bg-success/15 border border-success/30 rounded-lg text-[10px] font-bold uppercase tracking-widest text-success transition-all">
+                                                EXPORTAR LOGS
                                             </button>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar-zenix pr-2">
+                                <div class="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar-zenix pr-2">
                                     <div v-for="log in monitoringLogs" :key="log.id" 
-                                         class="p-4 bg-secondary/15 rounded-xl border border-border/20 font-mono text-[11px] hover:bg-secondary/20 transition-all">
+                                         class="group relative p-5 bg-[#0D0D0D] rounded-xl border border-border/10 hover:border-success/20 transition-all duration-300">
                                         <div class="flex items-start gap-4">
-                                            <span class="text-muted-foreground/50 whitespace-nowrap mt-0.5">[{{ log.time }}]</span>
-                                            <div class="flex-1 space-y-2">
-                                                <div class="flex items-center gap-2">
-                                                    <!-- Dynamic Icon/Circle based on type -->
-                                                    <div class="w-2 h-2 rounded-full" 
+                                            <span class="text-[11px] font-mono text-muted-foreground/40 mt-1">[{{ log.time }}]</span>
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-2.5 mb-2.5">
+                                                    <div class="w-1.5 h-1.5 rounded-full" 
                                                          :class="{ 
-                                                            'bg-success shadow-[0_0_8px_rgba(34,197,94,0.5)]': log.type === 'success', 
-                                                            'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]': log.type === 'error', 
-                                                            'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]': log.type === 'info', 
-                                                            'bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]': log.type === 'warning' 
+                                                            'bg-success shadow-[0_0_10px_#22C55E]': log.type === 'success', 
+                                                            'bg-red-500 shadow-[0_0_10px_#EF4444]': log.type === 'error', 
+                                                            'bg-blue-400 shadow-[0_0_10px_#60A5FA]': log.type === 'info', 
+                                                            'bg-yellow-400 shadow-[0_0_10px_#FACC15]': log.type === 'warning' 
                                                          }"></div>
-                                                    <h4 class="font-black uppercase tracking-[0.1em]"
+                                                    <h4 class="text-[12px] font-black uppercase tracking-[0.15em]"
                                                         :class="{ 
                                                             'text-success': log.type === 'success', 
                                                             'text-red-500': log.type === 'error', 
-                                                            'text-blue-400': log.type === 'info', 
+                                                            'text-blue-400 font-bold': log.type === 'info', 
                                                             'text-yellow-400': log.type === 'warning' 
                                                         }">
                                                         {{ log.title }}
                                                     </h4>
                                                 </div>
-                                                <ul class="space-y-1 ml-4 text-[#d1d1d6]">
-                                                    <li v-for="(line, idx) in log.details.filter(l => l.toLowerCase() !== 'info')" :key="idx" class="flex items-start gap-2">
-                                                        <span class="opacity-40 select-none">•</span>
-                                                        <span class="leading-relaxed opacity-90">{{ line }}</span>
+                                                <ul class="space-y-1.5 ml-[1.125rem]">
+                                                    <li v-for="(line, idx) in log.details.filter(l => l.toLowerCase() !== 'info')" :key="idx" class="flex items-start gap-3">
+                                                        <span class="text-muted-foreground/20 select-none mt-1">•</span>
+                                                        <span class="text-[11px] font-medium text-[#d1d1d6] leading-relaxed">{{ line }}</span>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -305,89 +400,9 @@
                         </div>
                     </div>
 
-                    <!-- Right Sidebar: Info & Controls -->
-                    <div class="w-full lg:w-[28%]">
-                        <div class="h-full card-glass rounded-2xl border border-border/50 p-5 flex flex-col gradient-border">
-                            <!-- Header Info -->
-                            <div class="p-4 rounded-xl bg-secondary/60 border border-border/60">
-                                <div class="flex items-center gap-3">
-                                    <div class="relative">
-                                        <div class="w-11 h-11 rounded-lg bg-success/10 border border-success/30 flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain w-5 h-5 text-success"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"></path><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"></path><path d="M3.477 10.896a4 4 0 0 1 .585-.396"></path><path d="M19.938 10.5a4 4 0 0 1 .585.396"></path><path d="M6 18a4 4 0 0 1-1.967-.516"></path><path d="M19.967 17.484A4 4 0 0 1 18 18"></path></svg>
-                                        </div>
-                                        <div class="absolute inset-0 rounded-lg bg-success/20 blur-lg -z-10"></div>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-base font-bold text-foreground tracking-wide uppercase">IA {{ currentConfig.strategy.toUpperCase() }}</h3>
-                                        <p class="text-xs text-muted-foreground">Especialista em probabilidade</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Mode & Risk -->
-                            <div class="mt-3 p-4 rounded-xl bg-secondary/60 border border-border/60">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap w-3.5 h-3.5 text-muted-foreground"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
-                                        <span class="text-xs text-muted-foreground uppercase tracking-wider">Modo</span>
-                                    </div>
-                                    <span class="text-sm font-bold text-foreground uppercase">{{ currentConfig.mode }}</span>
-                                </div>
-                                <div class="border-t border-border/40 mt-3 pt-3 flex items-center justify-between">
-                                    <div class="flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up w-3.5 h-3.5 text-muted-foreground"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-                                        <span class="text-xs text-muted-foreground uppercase tracking-wider">Gestão</span>
-                                    </div>
-                                    <span class="text-sm font-bold text-foreground uppercase">{{ currentConfig.modoMartingale || 'Moderado' }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Parameters -->
-                            <div class="mt-3 p-4 rounded-xl bg-secondary/60 border border-border/60 space-y-2.5">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs text-muted-foreground uppercase tracking-wider">Entrada</span>
-                                    <span class="text-sm font-bold text-foreground">${{ currentConfig.stake.toFixed(2) }}</span>
-                                </div>
-                                <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
-                                    <span class="text-xs text-muted-foreground uppercase tracking-wider">Alvo</span>
-                                    <span class="text-sm font-bold text-success">${{ (currentConfig.profitTarget || 0).toFixed(2) }}</span>
-                                </div>
-                                <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
-                                    <span class="text-xs text-muted-foreground uppercase tracking-wider">Limite</span>
-                                    <span class="text-sm font-bold text-foreground">${{ (currentConfig.lossLimit || 0).toFixed(2) }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Protections -->
-                            <div class="mt-3 p-4 rounded-xl bg-success/5 border border-success/30 hover:bg-success/10 transition-colors">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center border border-success/30">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check w-4 h-4 text-success"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-                                        </div>
-                                        <span class="text-sm font-bold text-foreground">Stoploss Blindado</span>
-                                    </div>
-                                    <span class="text-[10px] font-black text-success uppercase tracking-[0.1em]">
-                                        {{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="flex-1 min-h-[40px]"></div>
-
-                            <!-- Desktop Pause Button -->
-                            <div class="mt-auto px-1 pt-6 border-t border-border/40">
-                                <button @click="stopIA" :disabled="isStopping" class="group flex items-center justify-center w-full h-[52px] bg-success text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 shadow-xl shadow-success/30 active:scale-[0.98] disabled:opacity-50">
-                                    <div class="flex items-center gap-3">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
-                                        <span class="mt-0.5">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </main>
+            <DesktopBottomNav />
         </div>
 
         <SettingsSidebar 
@@ -400,6 +415,7 @@
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import LineChart from '../../components/LineChart.vue';
 import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
@@ -424,6 +440,7 @@ export default {
     components: {
         AppSidebar,
         TopNavbar,
+        DesktopBottomNav,
         SettingsSidebar,
         LineChart
     },
@@ -742,6 +759,7 @@ export default {
                     time: new Date(contract.date_start * 1000).toLocaleTimeString(),
                     market: contract.display_name,
                     contract: contract.contract_type,
+                    type: contract.contract_type.includes('CALL') ? 'CALL' : (contract.contract_type.includes('PUT') ? 'PUT' : 'CALL'),
                     stake: contract.buy_price,
                     pnl: contract.profit || 0,
                     result: 'OPEN'
