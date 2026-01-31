@@ -1927,8 +1927,10 @@ export default {
                             }
                             
                             // Normalize Key to match RiskManager
-                            const cType = msg.proposal.contract_type.toUpperCase();
-                            RiskManager.updatePayoutHistory(cType, realProfitRate);
+                            const cType = (msg.proposal.contract_type || '').toUpperCase();
+                            if (cType) {
+                                RiskManager.updatePayoutHistory(cType, realProfitRate);
+                            }
 
                             // 2. CHECK IF STAKE ADJUSTMENT IS NEEDED
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
@@ -2023,6 +2025,7 @@ export default {
 
                 } catch (e) {
                     console.error('[WS] Erro JSON:', e);
+                    this.isNegotiating = false; // Emergency Unlock
                 }
             };
 
