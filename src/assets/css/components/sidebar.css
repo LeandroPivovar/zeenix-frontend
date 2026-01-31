@@ -20,7 +20,7 @@ aside.sidebar,
 	height: 100vh;
 	z-index: 1001 !important;
 	box-sizing: border-box;
-	transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+	transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
 	font-family: 'Inter', sans-serif;
 	overflow: visible;
 	padding: 0 !important;
@@ -58,9 +58,12 @@ aside.sidebar,
 	}
 
 	/* Expansão do conteúdo principal */
+	.sidebar-wrapper .sidebar~.dashboard-content-wrapper {
+		transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	}
+
 	.sidebar-wrapper:hover~.dashboard-content-wrapper {
 		margin-left: 280px !important;
-		transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
 	/* Expansão e deslocamento do TopNavbar */
@@ -70,43 +73,43 @@ aside.sidebar,
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
-	/* Logo Transition */
+	/* Logo Transition - Unified and Fluid */
 	.sidebar-brand {
 		height: 80px;
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
-		/* Default para expandido */
 		border-bottom: 1px solid #1C1C1C;
-		margin-bottom: 30px;
+		margin-bottom: 25px;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-		padding: 0 32px;
+		padding: 0 24px;
 		position: relative;
+		gap: 12px;
 	}
 
-	.sidebar.collapsed .sidebar-brand {
-		justify-content: center;
+	.sidebar.collapsed:not(:hover) .sidebar-brand {
 		padding: 0;
+		justify-content: center;
 	}
 
 	.brand-logo-container {
 		display: flex;
 		align-items: center;
 		position: relative;
-	}
-
-	.sidebar-wrapper:hover .sidebar-brand {
-		justify-content: flex-start;
+		width: 100px;
+		/* Base width for ZENIX text */
+		height: 30px;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 
 	.logo-z {
 		display: block;
 		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.8);
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 		position: absolute;
-		left: 0;
-		right: 0;
-		text-align: center;
+		left: 50%;
+		top: 50%;
 		font-size: 24px;
 		font-weight: 700;
 		color: #fff;
@@ -114,15 +117,15 @@ aside.sidebar,
 
 	.sidebar.collapsed:not(:hover) .logo-z {
 		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
 	}
 
 	.logo-full {
 		display: block;
 		opacity: 1;
+		transform: translateX(0);
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-		position: absolute;
-		left: 32px;
-		font-size: 22px;
+		font-size: 20px;
 		font-weight: 800;
 		letter-spacing: 2px;
 		color: #22C55E;
@@ -131,17 +134,8 @@ aside.sidebar,
 
 	.sidebar.collapsed:not(:hover) .logo-full {
 		opacity: 0;
-		visibility: hidden;
-	}
-
-	.sidebar-wrapper:hover .logo-z {
-		opacity: 0;
-		visibility: hidden;
-	}
-
-	.sidebar-wrapper:hover .logo-full {
-		opacity: 1;
-		visibility: visible;
+		transform: translateX(10px);
+		pointer-events: none;
 	}
 
 	/* Cleanup of old buttons */
@@ -179,9 +173,17 @@ aside.sidebar,
 
 	.menu-item i,
 	.menu-item svg {
-		margin-right: 12px;
+		margin-right: 15px;
+		/* Increased gap as requested */
 		font-size: 16px;
 		flex-shrink: 0;
+		width: 20px;
+		text-align: center;
+	}
+
+	.sidebar.collapsed:not(:hover) .menu-item {
+		padding: 18px 0 !important;
+		justify-content: center !important;
 	}
 
 	.sidebar.collapsed:not(:hover) .menu-item i,
@@ -660,4 +662,42 @@ aside.sidebar,
 	.sidebar-mobile-overlay {
 		display: block;
 	}
+}
+
+/* --- Student Group Badge (Brand Segment) --- */
+.student-group-badge {
+	height: 36px;
+	width: 85px;
+	background: rgba(34, 197, 94, 0.05);
+	border: 1px solid rgba(34, 197, 94, 0.3);
+	border-radius: 100px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	color: #22C55E;
+	text-decoration: none;
+	font-size: 11px;
+	font-weight: 700;
+	transition: all 0.3s ease;
+	flex-shrink: 0;
+	opacity: 1;
+	transform: translateX(0);
+}
+
+.student-group-badge:hover {
+	background: rgba(34, 197, 94, 0.15);
+	border-color: #22C55E;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+}
+
+.student-group-badge span {
+	white-space: nowrap;
+}
+
+.sidebar.collapsed:not(:hover) .student-group-badge {
+	opacity: 0;
+	transform: translateX(10px);
+	pointer-events: none;
 }

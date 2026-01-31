@@ -3,6 +3,7 @@
         <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="isSidebarCollapsed" 
+            :is-mobile="isMobile"
             @toggle-collapse="toggleSidebarCollapse"
             @close-sidebar="closeSidebar"
         />
