@@ -380,9 +380,9 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar-zenix pr-2">
+                                <div class="flex flex-col space-y-4 w-full max-h-[600px] overflow-y-auto custom-scrollbar-zenix pr-2">
                                     <div v-for="log in monitoringLogs" :key="log.id" 
-                                         class="group relative p-5 bg-[#0D0D0D] rounded-xl border border-border/10 hover:border-success/20 transition-all duration-300">
+                                         class="w-full group relative p-5 bg-[#0D0D0D] rounded-xl border border-border/10 hover:border-success/20 transition-all duration-300">
                                         <!-- Mobile Item: Inline Timestamp -->
                                         <div v-if="isMobile">
                                             <div class="flex items-center gap-2.5 mb-2.5">
