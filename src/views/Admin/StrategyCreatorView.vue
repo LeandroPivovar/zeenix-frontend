@@ -2105,7 +2105,8 @@ export default {
 
                 // --- Fast Result Calculation ---
                 // DISABLED as per user request
-                if (false && this.pendingFastResult && this.pendingFastResult.active) {
+                /*
+                if (this.pendingFastResult && this.pendingFastResult.active) {
                     const lastDigit = parseInt(price.toString().slice(-1));
                     const { contractId, barrier, contractType, stake } = this.pendingFastResult;
                     
@@ -2149,6 +2150,7 @@ export default {
                     
                     this.checkLimits();
                 }
+                */
                 
                 // --- Real-time Analysis Integration ---
                 // Add to history buffers (limit to 100 for performance)
