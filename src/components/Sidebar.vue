@@ -18,7 +18,8 @@
                 <i v-else class="fa-brands fa-whatsapp"></i>
             </a>
         </div>
-
+        
+        <nav class="menu">
             <template v-if="!isAdminFlow">
                 <a
                     href="#"
