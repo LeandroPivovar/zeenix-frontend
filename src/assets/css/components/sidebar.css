@@ -82,17 +82,24 @@ aside.sidebar,
 	.logo-z {
 		display: block;
 		opacity: 1;
-		transition: opacity 0.5s ease;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 		position: absolute;
 		left: 32px;
+		font-size: 24px;
+		font-weight: 700;
+		color: #fff;
 	}
 
 	.logo-full {
 		display: block;
 		opacity: 0;
 		visibility: hidden;
-		transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 		white-space: nowrap;
+		font-size: 20px;
+		font-weight: 700;
+		color: #fff;
+		letter-spacing: 1px;
 	}
 
 	.sidebar-wrapper:hover .logo-z {
@@ -163,12 +170,14 @@ aside.sidebar,
 		margin: 0 16px 16px 16px;
 	}
 
-	.sidebar-wrapper:not(:hover) .menu-item span,
-	.sidebar-wrapper:not(:hover) .menu-item i.ml-auto {
+	/* Labels só somem se NÃO estiver em hover E a sidebar estiver em estado colapsado */
+	.sidebar-wrapper:not(:hover) .sidebar.collapsed .menu-item span,
+	.sidebar-wrapper:not(:hover) .sidebar.collapsed .menu-item i.ml-auto {
 		opacity: 0;
 		visibility: hidden;
 		width: 0;
 		margin-right: 0;
+		pointer-events: none;
 	}
 
 	.sidebar-wrapper:not(:hover) .menu-item {
@@ -371,7 +380,8 @@ aside.sidebar,
 	width: 0 !important;
 	overflow: hidden !important;
 	white-space: nowrap;
-	transition: opacity 0.2s ease, width 0.2s ease;
+	transition: opacity 1s ease, width 1s ease;
+	pointer-events: none;
 }
 
 .sidebar.collapsed .whatsapp-button {
