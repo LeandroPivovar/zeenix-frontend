@@ -1027,6 +1027,9 @@ export default {
                 isStopped: false
             },
             
+            // Internal State
+            retryingProposal: false,
+            
             recoveryConfig: {
                 enabled: true,
                 market: '',
@@ -1935,18 +1938,28 @@ export default {
                                     this.addLog(`⚠️ Recalibrando Martingale: Payout Real ${realPayoutRate.toFixed(2)}x exige Stake $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
                                     
                                     // RE-REQUEST PROPOSAL with corrected stake
-                                    // LIMITATION: Avoid infinite loop. 
-                                    // How to track we are retrying? 
-                                    // We can add a flag to sessionState or similar. But msg.echo_req contains the request params.
-                                    // For simplicity, we just send a new buy if the difference is small, but for 100% recovery we must be strict.
+                                    // Track retries using a request ID based mechanism or simple session state flag (less robust but works for single thread)
+                                    // Better: We see the echo_req has 'req_id'. We can skip based on that? No.
+                                    // Use a temporary Set of retried proposal IDs to avoid loops if the new proposal also mismatches slightly?
+                                    // Or simply check if we just did a retry?
                                     
-                                    if (!msg.echo_req.is_retry) { // Simple flag check? We can't easily add props to echo_req without modify send.
-                                        // Let's just send a new proposal request and ignore this one.
-                                        const newParams = { ...msg.echo_req, amount: exactStake, is_retry: 1 };
-                                        delete newParams.req_id; // remove request id
+                                    // Current hack: msg.echo_req.passthrough (if Deriv supports it) or just trust that exactStake calculation is stable.
+                                    // Problem: If payout changes AGAIN, we might loop.
+                                    // Let's rely on checking if the NEW stake is the same as the PREVIOUS stake we just rejected? No, that's not it.
+                                    // We need to know if THIS request was already a correction.
+                                    
+                                    // Solution: Do not send is_retry to API. Store it in a class property map.
+                                    if (!this.retryingProposal) {
+                                        this.retryingProposal = true; // Set flag
+                                        
+                                        const newParams = { ...msg.echo_req, amount: exactStake };
+                                        delete newParams.req_id; 
+                                        delete newParams.is_retry; // Ensure it's gone
+                                        
                                         this.ws.send(JSON.stringify(newParams));
-                                        return; // ABORT BUY for this outdated proposal
+                                        return; // ABORT BUY
                                     } else {
+                                        this.retryingProposal = false; // Reset flag
                                         this.addLog(`⚠️ Stake ajustado novamente. Aceitando $${stakeValue} para evitar loop.`, 'warning');
                                     }
                                 }
