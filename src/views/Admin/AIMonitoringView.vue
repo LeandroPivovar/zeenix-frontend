@@ -543,20 +543,19 @@
 </template>
 
 <script>
-import AppSidebar from '../../components/Sidebar.vue';
-import TopNavbar from '../../components/TopNavbar.vue';
-import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
-import SettingsSidebar from '../../components/SettingsSidebar.vue';
-import LineChart from '../../components/LineChart.vue';
-import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
-import { RiskManager } from '../../utils/RiskManager';
-
+import AppSidebar from '../components/Sidebar.vue';
+import TopNavbar from '../components/TopNavbar.vue';
+import DesktopBottomNav from '../components/DesktopBottomNav.vue';
+import SettingsSidebar from '../components/SettingsSidebar.vue';
+import LineChart from '../components/Charts/LineChart.vue';
+import { StrategyAnalysis } from '../utils/StrategyAnalysis';
+import RiskManager from '../utils/RiskManager';
 // Import strategy configurations
-import apolloStrategy from '../../utils/strategies/apollo.json';
-import atlasStrategy from '../../utils/strategies/atlas.json';
-import nexusStrategy from '../../utils/strategies/nexus.json';
-import orionStrategy from '../../utils/strategies/orion.json';
-import titanStrategy from '../../utils/strategies/titan.json';
+import apolloStrategy from '../utils/strategies/apollo.json';
+import atlasStrategy from '../utils/strategies/atlas.json';
+import nexusStrategy from '../utils/strategies/nexus.json';
+import orionStrategy from '../utils/strategies/orion.json';
+import titanStrategy from '../utils/strategies/titan.json';
 
 const strategyConfigs = {
 	apollo: apolloStrategy,
@@ -683,7 +682,38 @@ export default {
             const savedConfig = localStorage.getItem('ai_active_config');
             if (savedConfig) {
                 try {
-                    this.currentConfig = JSON.parse(savedConfig);
+                    const parsed = JSON.parse(savedConfig);
+                    const strategyKey = (parsed.strategy || 'apollo').toLowerCase();
+                    
+                    // 1. Carregar Configuração Base do Arquivo (Apollo/Atlas/etc)
+                    const baseStrategy = strategyConfigs[strategyKey] || strategyConfigs['apollo'];
+                    const baseConfig = baseStrategy.config; // { form: ..., recoveryConfig: ... }
+
+                    // 2. Merge Estratégia Principal
+                    // Prioridade: Salvo no localStorage > Base do Arquivo
+                    this.currentConfig = {
+                        ...baseConfig.form,
+                        ...parsed, // Overwrite with saved values (stake, stopLoss, etc)
+                        // Garantir defaults importantes se faltarem no salvo
+                        expectedPayout: parsed.expectedPayout || baseConfig.form.expectedPayout || 1.20,
+                        sorosLevel: parsed.sorosLevel !== undefined ? parsed.sorosLevel : (baseConfig.form.sorosLevel || 1),
+                        attackFilters: baseConfig.form.attackFilters // Sempre usar filtros do arquivo base para integridade
+                    };
+
+                    // 3. Merge Configuração de Recuperação
+                    // Prioridade: Base do Arquivo (para garantir estrutura) > Ajustes se necessário
+                    this.recoveryConfig = {
+                        ...baseConfig.recoveryConfig,
+                        // Se quisermos permitir override via UI no futuro:
+                        // ...parsed.recoveryConfig
+                    };
+                    
+                    // Garantir types corretos
+                    this.currentConfig.initialStake = parseFloat(this.currentConfig.initialStake || this.currentConfig.stake);
+                    
+                    // Inicializar Risk Session com valores corretos
+                    this.sessionState = RiskManager.initSession(this.currentConfig.initialStake);
+                    this.sessionState.activeStrategy = 'PRINCIPAL';
                     
                     // Initial Logs according to ZENIX protocol
                     this.addLog('Início de Sessão', [
@@ -691,18 +721,19 @@ export default {
                         `Meta de Lucro: $${(this.currentConfig.profitTarget || 100).toFixed(2)}`,
                         `Stop Loss: $${(this.currentConfig.lossLimit || 100).toFixed(2)}`,
                         `Estratégia: ${this.currentConfig.strategy.toUpperCase()}`,
-                        `Status: aguardando ticks suficientes`
+                        `Payout Mínimo: ${this.currentConfig.expectedPayout}x`
                     ], 'info');
 
                     this.addLog('Configuração Inicial', [
                         `Agente: ${this.currentConfig.strategy.toUpperCase()}`,
                         `Modo: ${this.currentConfig.mode.toUpperCase()}`,
-                        `Stake: $${this.currentConfig.stake.toFixed(2)}`,
-                        `Stop Blindado: ${this.currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO'}`
+                        `Stake: $${this.currentConfig.initialStake.toFixed(2)}`,
+                        `Soros Level: ${this.currentConfig.sorosLevel}`
                     ], 'info');
 
                 } catch (e) {
                     console.error('Error loading config:', e);
+                    this.addLog('Erro Config', `Falha ao carregar configuração: ${e.message}`, 'error');
                 }
             }
         },
@@ -780,6 +811,35 @@ export default {
                         if (msg.msg_type === 'tick') {
                             this.handleTickMessage(msg);
                         }
+                        
+                        // ✅ PROPOSAL RESPONSE (Validate Payout)
+                        if (msg.msg_type === 'proposal') {
+                            if (msg.error) {
+                                this.addLog('Proposta Negada', [
+                                    `Motivo: ${msg.error.message}`,
+                                    `Ação: Entrada cancelada`
+                                ], 'error');
+                                return;
+                            }
+                            
+                            const proposalId = msg.proposal.id;
+                            const payout = msg.proposal.payout;
+                            const stakeValue = msg.proposal.ask_price;
+                            
+                            // Debug Info
+                            this.addLog('Proposta Recebida', [
+                                `Payout: $${payout} (${((payout - stakeValue)/stakeValue*100).toFixed(1)}%)`,
+                                `Stake: $${stakeValue}`,
+                                `ID: ${proposalId}`
+                            ], 'info');
+                            
+                            // BUY
+                            this.addLog('Executando Compra', [`Comprando ID: ${proposalId}`], 'info');
+                            this.ws.send(JSON.stringify({
+                                buy: proposalId,
+                                price: stakeValue
+                            }));
+                        }
 
                         if (msg.msg_type === 'buy') {
                             if (msg.error) {
@@ -789,9 +849,12 @@ export default {
                                 ], 'error');
                             } else {
                                 const payout = msg.buy.payout;
+                                const contractType = this.sessionState.lastContractType || 'Contrato'; // Saved in state
+                                
                                 this.addLog('Contrato Criado', [
                                     `Contrato ID: ${msg.buy.contract_id}`,
-                                    `Payout: $${payout}`,
+                                    `Tipo: ${contractType}`,
+                                    `Payout Potencial: $${payout}`,
                                     `Status: aguardar execução`
                                 ], 'success');
                                 this.subscribeToContract(msg.buy.contract_id);
@@ -917,47 +980,44 @@ export default {
                 this.addLog('⚠️ Entrada negada: Não autorizado', 'warning');
                 return;
             }
-            if (this.activeContracts.size > 0) {
-                this.addLog('⏳ Sinal ignorado: Operação em andamento', 'info');
-                return;
-            }
+            if (this.activeContracts.size > 0) return;
             
-            // ✅ USE RISKMANAGER
+            // ✅ USE RISKMANAGER & CONFIGS
             const isFinancialRecovery = this.sessionState.analysisType === 'RECUPERACAO';
-            const config = isFinancialRecovery ? this.recoveryConfig : strategyConfig.config;
-            const form = config.form || config;
+            // Determine active config (use merged configs from this, not raw strategyConfig)
+            const config = isFinancialRecovery ? this.recoveryConfig : this.currentConfig;
             
             // ✅ Calculate stake dynamically
             const stake = this.calculateNextStake();
             
-            const buyParams = {
-                buy: 1,
-                price: stake,
-                parameters: {
-                    amount: stake,
-                    basis: 'stake',
-                    contract_type: form.tradeType,
-                    currency: 'USD',
-                    duration: form.duration,
-                    duration_unit: form.durationUnit,
-                    symbol: form.market || 'R_100'
-                }
+            // Update Contract Type state for logging
+            this.sessionState.lastContractType = config.tradeType;
+            
+            const proposalParams = {
+                proposal: 1,
+                amount: stake,
+                basis: 'stake',
+                contract_type: config.tradeType,
+                currency: 'USD',
+                duration: config.duration || 1,
+                duration_unit: config.durationUnit || 't',
+                symbol: config.market || 'R_100'
             };
             
-            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)) {
-                buyParams.parameters.barrier = (form.prediction || 8).toString();
+            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(config.tradeType)) {
+                proposalParams.barrier = (config.prediction || 8).toString();
             }
             
             const mode = isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL';
-            this.addLog('Execução de Ordem', [
+            this.addLog('Solicitando Proposta', [
                 `Modo: ${mode}`,
-                `Contrato: ${form.tradeType}`,
-                `Mercado: ${buyParams.parameters.symbol}`,
+                `Contrato: ${config.tradeType}`,
+                `Mercado: ${proposalParams.symbol}`,
                 `Stake: $${stake.toFixed(2)}`
             ], 'info');
             
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                this.ws.send(JSON.stringify(buyParams));
+                this.ws.send(JSON.stringify(proposalParams));
             } else {
                 this.addLog('❌ WebSocket não conectado', 'error');
             }
