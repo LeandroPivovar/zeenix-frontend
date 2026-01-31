@@ -161,12 +161,16 @@ aside.sidebar,
 	}
 
 	.sidebar-wrapper:not(:hover) .menu-item {
-		margin-bottom: 25px;
+		margin-bottom: 2px;
+		justify-content: center;
+		padding: 18px 0;
 	}
 
-	.sidebar-wrapper:not(:hover) .menu-item i {
+	.sidebar-wrapper:not(:hover) .menu-item i,
+	.sidebar-wrapper:not(:hover) .menu-item svg {
 		margin-right: 0;
-		font-size: 20px;
+		font-size: 16px;
+		margin-bottom: 0 !important;
 	}
 }
 
@@ -393,13 +397,11 @@ aside.sidebar,
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	/* Reduzido o gap de 12px para 10px */
 	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	font-size: 14px;
 	font-weight: 500;
 	text-decoration: none;
 	margin-bottom: 2px;
-	/* Gap mínimo entre botões */
 }
 
 .menu-item:hover {
@@ -419,10 +421,12 @@ aside.sidebar,
 	color: #A1A1A1;
 }
 
-.menu-item i {
+.menu-item i,
+.menu-item svg {
 	width: 20px;
 	opacity: 0.85;
 	transition: opacity 0.2s ease;
+	margin-bottom: 0 !important;
 }
 
 /* Estado Ativo */
@@ -431,6 +435,11 @@ aside.sidebar,
 	color: #DFDFDF;
 	font-weight: 600;
 	border-left: 2px solid #22C55E;
+}
+
+/* Esconde barra verde lateral no modo colapsado quando não em hover */
+.sidebar.collapsed:not(:hover) .menu-item.active {
+	border-left-color: transparent;
 }
 
 .menu-item.active i {

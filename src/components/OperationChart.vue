@@ -4293,6 +4293,28 @@ export default {
     box-sizing: border-box !important;
   }
 
+.operation-chart-wrapper {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.operation-layout {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .operation-layout {
+    flex-direction: column;
+    gap: 16px !important;
+    margin-bottom: 1.5rem !important;
+  }
+}
   /* Signal generator header mobile adjustments */
   .signal-generator-header {
     flex-direction: column !important;

@@ -11,7 +11,6 @@
         
 
 
-        <div class="content-wrapper">
         <TopNavbar 
             :is-sidebar-collapsed="isSidebarCollapsed"
             :balance="info?.balance"
@@ -465,26 +464,6 @@
 
         </main>
 
-        </div>
-        <InsufficientBalanceModal
-            :visible="showInsufficientBalanceModal"
-            :currentBalance="balanceNumeric"
-            :entryValue="entryValue"
-            :currency="tradeCurrency"
-            @confirm="showInsufficientBalanceModal = false"
-        />
-        <MinimumStakeModal
-            :visible="showMinimumStakeModal"
-            @confirm="showMinimumStakeModal = false"
-        />
-        <StrategyRequiredModal
-            :visible="showStrategyRequiredModal"
-            @close="showStrategyRequiredModal = false"
-            @confirm="handleStrategyRequiredConfirm"
-        />
-    </div>
-    </div>
-        </div>
     </div>
     <DesktopBottomNav />
     
