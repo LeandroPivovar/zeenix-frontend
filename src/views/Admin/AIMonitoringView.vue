@@ -80,7 +80,7 @@
                                     {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.balance - monitoringStats.profit || 1)) * 100).toFixed(1) }}%
                                 </span>
                             </div>
-                            <div class="mt-2 lg:mt-3 h-1 w-8 lg:w-12 mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
+                            <div class="mt-2 lg:mt-3 h-1 w-6 lg:w-8 mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
                                  :class="monitoringStats.profit >= 0 ? 'from-success/70 via-success/40 to-transparent' : 'from-red-500/70 via-red-500/40 to-transparent'"></div>
                         </div>
 
@@ -179,7 +179,7 @@
                                     </div>
 
                                     <div class="rounded-xl border border-border/30 overflow-hidden bg-[#0B0B0B]">
-                                        <div class="relative w-full overflow-auto max-h-[450px] custom-scrollbar">
+                                        <div class="relative w-full overflow-auto max-h-[450px] custom-scrollbar-zenix">
                                             <table class="w-full text-sm border-collapse">
                                                 <thead class="sticky top-0 bg-[#161616] z-10 text-xs text-muted-foreground uppercase font-semibold tracking-wider border-b border-border/30">
                                                     <tr>
@@ -246,7 +246,18 @@
 
                             <!-- Logs Tab -->
                             <div v-if="activeMonitoringTab === 'logs'" class="animate-fadeIn">
-                                <div class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                                <div class="flex items-center justify-between mb-4 px-1">
+                                    <div class="flex items-center gap-2">
+                                        <button @click="clearLogs" class="px-3 py-1.5 bg-secondary/20 hover:bg-secondary/40 border border-border/30 rounded-lg text-[10px] font-black uppercase tracking-wider text-muted-foreground transition-all">
+                                            Limpar Logs
+                                        </button>
+                                        <button @click="exportLogs" class="px-3 py-1.5 bg-success/10 hover:bg-success/20 border border-success/30 rounded-lg text-[10px] font-black uppercase tracking-wider text-success transition-all">
+                                            Exportar Logs
+                                        </button>
+                                    </div>
+                                    <span class="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.1em]">{{ monitoringLogs.length }} entradas</span>
+                                </div>
+                                <div class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar-zenix pr-2">
                                     <div v-for="log in monitoringLogs" :key="log.id" 
                                          class="p-4 bg-secondary/15 rounded-xl border border-border/20 font-mono text-[11px] hover:bg-secondary/20 transition-all">
                                         <div class="flex items-start gap-4">
@@ -272,7 +283,7 @@
                                                     </h4>
                                                 </div>
                                                 <ul class="space-y-1 ml-4 text-[#d1d1d6]">
-                                                    <li v-for="(line, idx) in log.details" :key="idx" class="flex items-start gap-2">
+                                                    <li v-for="(line, idx) in log.details.filter(l => l.toLowerCase() !== 'info')" :key="idx" class="flex items-start gap-2">
                                                         <span class="opacity-40 select-none">•</span>
                                                         <span class="leading-relaxed opacity-90">{{ line }}</span>
                                                     </li>
@@ -361,8 +372,10 @@
                             <!-- Desktop Pause Button -->
                             <div class="mt-auto px-1 pt-6 border-t border-border/40">
                                 <button @click="stopIA" :disabled="isStopping" class="group relative flex items-center justify-center gap-2.5 w-full h-12 bg-success hover:bg-success/90 text-black font-bold text-sm rounded-xl transition-all duration-300 shadow-lg shadow-success/20 active:scale-[0.98] disabled:opacity-50">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
-                                    <span class="tracking-tight">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
+                                    <div class="flex items-center gap-2.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
+                                        <span class="tracking-tight">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
+                                    </div>
                                 </button>
                             </div>
                         </div>
@@ -770,6 +783,41 @@ export default {
             localStorage.removeItem('ai_active_config');
             setTimeout(() => { this.$router.push('/StatsIAs'); }, 1000);
         },
+        clearLogs() {
+            this.monitoringLogs = [];
+        },
+        exportLogs() {
+            if (this.monitoringLogs.length === 0) return;
+            
+            const formatDate = (date) => {
+                const d = new Date(date);
+                return `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}_${d.getHours()}h${d.getMinutes()}m`;
+            };
+
+            const fileName = `zenix-${this.currentConfig.strategy}-${this.currentConfig.mode}-${this.currentConfig.market || 'volatlity'}-${this.currentConfig.risk || 'normal'}-${formatDate(new Date())}.txt`;
+            
+            let content = `📘 ZENIX LOG EXPORT\n`;
+            content += `Estratégia: ${this.currentConfig.strategy}\n`;
+            content += `Modo: ${this.currentConfig.mode}\n`;
+            content += `Data: ${new Date().toLocaleString()}\n`;
+            content += `------------------------------------------\n\n`;
+
+            this.monitoringLogs.forEach(log => {
+                content += `[${log.time}] [${log.type.toUpperCase()}] ${log.title}\n`;
+                log.details.filter(l => l.toLowerCase() !== 'info').forEach(detail => {
+                    content += `  • ${detail}\n`;
+                });
+                content += `\n`;
+            });
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        },
         addLog(title, details = [], type = 'info') {
             this.monitoringLogs.unshift({
                 id: Date.now() + Math.random(),
@@ -884,4 +932,29 @@ export default {
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+.custom-scrollbar-zenix::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+.custom-scrollbar-zenix::-webkit-scrollbar-track {
+    background: rgba(0, 255, 128, 0.02);
+    border-radius: 10px;
+}
+
+.custom-scrollbar-zenix::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 128, 0.2);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 255, 128, 0.05);
+}
+
+.custom-scrollbar-zenix::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 128, 0.4);
+}
+
+.custom-scrollbar-zenix {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 255, 128, 0.2) rgba(0, 255, 128, 0.02);
+}
 </style>
