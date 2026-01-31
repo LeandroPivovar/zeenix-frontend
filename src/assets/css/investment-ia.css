@@ -14,10 +14,8 @@ svg:not(:root).svg-inline--fa {
 
 
 
-/* Force Sidebar Background on Mobile */
-:deep(.sidebar) {
-    background-color: #0d0d0c !important;
-}
+/* Sidebar background is handled globally/via deep override if needed */
+
 
 .zenix-layout {
     min-height: 100vh;
@@ -60,6 +58,23 @@ svg:not(:root).svg-inline--fa {
 }
 
 /* Obsolete styles removed: .content-wrapper, .top-header */
+.container-componentes {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 20px;
+    margin: 20px 0;
+    background: transparent;
+    position: relative;
+    z-index: 1;
+}
+
+@media (max-width: 1024px) {
+    .container-componentes {
+        padding: 0 1rem 20px 1rem;
+        margin-top: 0;
+    }
+}
+
 
 .header-content {
     padding: 1rem 20px;
@@ -2449,47 +2464,25 @@ svg:not(:root).svg-inline--fa {
     }
 }
 
-/* Ajustes para mobile */
+/* Sidebar and Header overrides removed in favor of global styles and AgenteAutonomo-like structure */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 998;
+    backdrop-filter: blur(2px);
+}
+
 @media (max-width: 1024px) {
-
-
-    /* Sidebar como drawer no mobile */
-    :deep(.sidebar) {
-        position: fixed;
-        width: 280px !important;
-        height: 100vh;
-        z-index: 999;
-        transform: translateX(-100%);
-        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
-    :deep(.sidebar.is-open) {
-        transform: translateX(0);
-        z-index: 99999999 !important;
-    }
-
-    /* Modal de Settings deve sobrepor tudo no mobile, incluindo TopNavbar */
-    /* ForÃ§ar z-index muito alto para garantir que sobreponha o TopNavbar (z-index: 1002) */
-    :deep(.settings-modal-overlay) {
-        z-index: 100000 !important;
-        top: 0 !important;
-        height: 100vh !important;
-        position: fixed !important;
-    }
-
-    :deep(.settings-modal-content) {
-        z-index: 100000 !important;
-        top: 0 !important;
-        height: 100vh !important;
-        position: fixed !important;
-    }
-
-    /* Garantir que TopNavbar fique abaixo do modal quando aberto */
-    #top-navbar {
-        z-index: 1002 !important;
+    .sidebar-overlay {
+        display: block;
     }
 }
+
 
 /* Header Mobile - Escondido no desktop */
 #ai-vision-panel .ai-vision-header-mobile {

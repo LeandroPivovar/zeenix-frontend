@@ -58,7 +58,7 @@ aside.sidebar,
 	}
 
 	/* Expansão do conteúdo principal */
-	.sidebar-wrapper .sidebar~.dashboard-content-wrapper {
+	.sidebar-wrapper~.dashboard-content-wrapper {
 		transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
@@ -96,10 +96,12 @@ aside.sidebar,
 		display: flex;
 		align-items: center;
 		position: relative;
-		width: 100px;
-		/* Base width for ZENIX text */
+		width: 100%;
+		/* Changed from 100px to 100% for better centering */
 		height: 30px;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+		justify-content: center;
+		/* Added to help centering */
 	}
 
 	.logo-z {

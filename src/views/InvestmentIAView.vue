@@ -34,7 +34,8 @@
                 @account-type-changed="handleAccountTypeChange"
             />
 
-            <main class="main-content">
+            <div class="container-componentes">
+                <main class="main-content">
                 <!-- AI Vision Panel - Only show when IA is inactive -->
                 <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
                     <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
@@ -459,13 +460,14 @@
                 />
                 </section>
 
-        </main>
-
+            </main>
+            <DesktopBottomNav />
+            </div>
+        </div>
+        
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" v-if="isSidebarOpen" @click="closeSidebar"></div>
     </div>
-    <DesktopBottomNav />
-    
-    <!-- Sidebar Overlay & Component positioned at the very end to be on top of everything -->
-    <div class="sidebar-overlay" v-if="isSidebarOpen" @click="closeSidebar"></div>
 </template>
 
 <script>
