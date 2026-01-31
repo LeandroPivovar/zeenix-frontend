@@ -2024,12 +2024,15 @@ export default {
                             this.addLog(`🚀 COMPRA REALIZADA! | Entrada: $${stake.toFixed(2)} | Payout: $${payout.toFixed(2)} (${profitPercent}%)`, 'success');
                             
                             // Activate fast result calculation if it's 1-tick
+                            /* 
+                                DISABLED FAST RESULT: User requested to rely on official broker response only.
                             if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
                                 this.pendingFastResult.contractId = msg.buy.contract_id;
                                 this.pendingFastResult.payout = payout; // Store real payout for fast result estimation
                                 this.pendingFastResult.active = true;
                                 console.log('[FastResult] Monitoramento rápido ativado para o próximo tick.');
                             }
+                            */
                             
                             this.isNegotiating = false; // Reset lock on success
                             this.subscribeToContract(msg.buy.contract_id);
@@ -2101,7 +2104,8 @@ export default {
                 this.addLog(`📈 Tick recebido: ${price} - Tick #${this.tickCount}`, 'info');
 
                 // --- Fast Result Calculation ---
-                if (this.pendingFastResult && this.pendingFastResult.active) {
+                // DISABLED as per user request
+                if (false && this.pendingFastResult && this.pendingFastResult.active) {
                     const lastDigit = parseInt(price.toString().slice(-1));
                     const { contractId, barrier, contractType, stake } = this.pendingFastResult;
                     
@@ -2331,7 +2335,7 @@ export default {
                 contractId: null,
                 barrier: config.prediction,
                 contractType: config.tradeType,
-                active: false,
+                active: false, // DISABLED FAST RESULT as per user request
                 stake: stake,
                 analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
                 payout: null, // Will be filled when proposal arrives
