@@ -74,16 +74,30 @@ export const RiskManager = {
             return Math.max(0.35, Math.ceil(stake * 100) / 100);
         }
 
-        // 2. PRINCIPAL MODE (Standard)
-        const sorosLevel = config.sorosLevel || 1;
-        const cyclePosition = state.consecutiveWins % (sorosLevel + 1);
+        // 4. CÁLCULO DE STAKE — META (PRINCIPAL)
 
-        // B. SOROS TRADES
-        if (state.lastResultWin && state.lastProfitPrincipal > 0 && cyclePosition > 0 && !state.skipSorosNext) {
-            return Math.max(0.35, parseFloat((state.lastStakePrincipal + state.lastProfitPrincipal).toFixed(2)));
+        // ✅ RESET APÓS RECUPERAÇÃO: Se a flag estiver ativa, ignora Soros desta vez
+        if (state.skipSorosNext) {
+            state.skipSorosNext = false; // Consumed
+            state.consecutiveWins = 0; // Reset wins so next win starts Soros
+            return baseStake;
         }
 
-        // C. DEFAULT
+        // ✅ SOROS LEVEL 1 (Apollo Style):
+        // Only if consecutiveWins == 1 (The second trade is the Soros trade)
+        if (state.lastResultWin && state.lastProfitPrincipal > 0 && state.consecutiveWins === 1) {
+            const profit = state.lastProfitPrincipal;
+            return parseFloat((baseStake + profit).toFixed(2));
+        }
+
+        // Reset after Soros (Apollo prevents > Level 1)
+        if (state.consecutiveWins >= 2) {
+            state.consecutiveWins = 0;
+            return baseStake;
+        }
+
+        // Default
+        console.log(`[RiskManager] Calc Default Stake: Base=${baseStake}, Wins=${state.consecutiveWins}, LastProfit=${state.lastProfitPrincipal}, Skip=${state.skipSorosNext}`);
         return baseStake;
     },
 
@@ -99,20 +113,32 @@ export const RiskManager = {
 
             // Track stats specifically by trade mode to avoid pollution
             if (tradeMode === 'RECUPERACAO') {
-                console.log('[RiskManager] -> Recovery Win Block Triggered. Resetting state.');
                 state.lastPayoutRecovery = currentPayout;
                 state.lastProfitRecovery = profit;
                 state.lastStakeRecovery = stakeUsed;
                 state.recoveredAmount += profit;
                 state.lossStreakRecovery = 0;
-                state.skipSorosNext = true;
+                // Don't modify consecutiveWins here, let the else block handle it or separate logic
 
-                // Reset to initial mode after any win
-                state.analysisType = 'PRINCIPAL';
-                state.negotiationMode = 'VELOZ';
-                state.consecutiveLosses = 0;
-                state.totalLossAccumulated = 0;
-                state.recoveredAmount = 0;
+                console.log(`[RiskManager] Recovery Progress: ${state.recoveredAmount.toFixed(2)} / ${state.totalLossAccumulated.toFixed(2)}`);
+
+                // STRICT RESET: Only if we covered the loss
+                // Note: Apollo uses >=. Since we might have slight calc diffs, > is safer or >=.
+                if (state.recoveredAmount >= state.totalLossAccumulated - 0.01) { // Tolerance for float
+                    console.log('[RiskManager] -> FULL RECOVERY! Resetting state.');
+                    state.analysisType = 'PRINCIPAL';
+                    state.negotiationMode = 'VELOZ';
+                    state.consecutiveLosses = 0;
+                    state.totalLossAccumulated = 0;
+                    state.recoveredAmount = 0;
+                    state.skipSorosNext = true; // Apollo sets this to true after recovery
+                } else {
+                    console.log('[RiskManager] -> Partial Recovery. Continuing in Recovery Mode.');
+                    // Do NOT reset analysisType.
+                    // Do NOT reset totalLossAccumulated (unless we prefer to decrement it? Apollo logic keeps total and compares recoveredAmount)
+                    // Apollo: stake = (totalLoss - recoveredAmount) ...
+                    // So we are good.
+                }
             } else {
                 console.log('[RiskManager] -> Principal Win Block Triggered.');
                 state.lastPayoutPrincipal = currentPayout;
