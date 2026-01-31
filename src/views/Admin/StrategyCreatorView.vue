@@ -275,6 +275,17 @@
                                     </div>
                                 </div>
                                 <div>
+                                    <label class="block text-white font-bold mb-2 text-sm">Payout Rec. (Lucro %)</label>
+                                    <input 
+                                        type="number" 
+                                        v-model.number="recoveryConfig.expectedPayout" 
+                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                        step="0.01"
+                                        min="0"
+                                        placeholder="Ex: 1.26 (126% lucro)"
+                                    />
+                                </div>
+                                <div>
                                     <label class="block text-white font-bold mb-2">Nível de Soros</label>
                                     <input 
                                         type="number" 
@@ -296,6 +307,17 @@
                                             <i class="fa-solid fa-chevron-down text-gray-400"></i>
                                         </div>
                                     </div>
+                                </div>
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Payout Esperado (Lucro %)</label>
+                                    <input 
+                                        type="number" 
+                                        v-model.number="form.expectedPayout" 
+                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                        step="0.01"
+                                        min="0"
+                                        placeholder="Ex: 0.19 (19% lucro)"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -996,6 +1018,7 @@ export default {
                 tradeType: null,
                 prediction: 0, 
                 sorosLevel: 1,
+                expectedPayout: 0.19, // Default for DIGITUNDER 8 or similar low-barrier contracts
                 attackFilters: []
             },
 
@@ -1045,6 +1068,9 @@ export default {
                 pauseLosses: 6,
                 pauseVolatility: 50,
                 pauseTime: 5,
+                expectedPayout: 1.26, // Default for higher payout recovery contracts (DIGITUNDER 4)
+                initialStake: 1.00,
+                riskProfile: 'moderado',
                 attackFilters: []
             },
             recoveryContracts: [],

@@ -43,11 +43,13 @@ export const RiskManager = {
 
         const historyKey = modePrefix + tradeType + barrierSuffix;
 
-        // 1. Explicit Override (Real-time from Proposal)
-        // 2. Check history for this specific mode+contract
-        // 3. Fallback to generic contract history
-        // 4. Defaults
-        const estimatedPayout = explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
+        // 1. User-Configured Expected Payout (Highest Priority)
+        // 2. Explicit Override (Real-time from Proposal)
+        // 3. Check history for this specific mode+contract
+        // 4. Fallback to generic contract history
+        // 5. System Defaults
+        const configPayout = config.expectedPayout || null;
+        const estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
 
         // 1. RECOVERY MODE
         if (state.analysisType === 'RECUPERACAO') {
