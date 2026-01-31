@@ -48,7 +48,7 @@ export const RiskManager = {
         // 3. Check history for this specific mode+contract
         // 4. Fallback to generic contract history
         // 5. System Defaults
-        const configPayout = config.expectedPayout || null;
+        const configPayout = config.expectedPayout || S;
         let estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
 
         // CRITICAL: User inputs payout as TOTAL MULTIPLIER (e.g., 1.26 means $1 → $1.26)
@@ -94,19 +94,21 @@ export const RiskManager = {
         // ✅ RESET APÓS RECUPERAÇÃO: Se a flag estiver ativa, ignora Soros desta vez
         if (state.skipSorosNext) {
             state.skipSorosNext = false; // Consumed
-            state.consecutiveWins = 0; // Reset wins so next win starts Soros
+            // ❌ NÃO resetar consecutiveWins aqui! Deixa incrementar naturalmente
             return baseStake;
         }
 
-        // ✅ SOROS LEVEL 1 (Apollo Style):
-        // Only if consecutiveWins == 1 (The second trade is the Soros trade)
-        if (state.lastResultWin && state.lastProfitPrincipal > 0 && state.consecutiveWins === 1) {
+        // ✅ SOROS LEVEL 1 (Apollo Style): Aplica no SEGUNDO WIN (consecutiveWins === 2)
+        // Win1: consecutiveWins = 1 → Próximo stake = BASE
+        // Win2: consecutiveWins = 2 → Próximo stake = BASE + LUCRO (Soros)
+        // Win3: consecutiveWins = 3 → Reset → BASE
+        if (state.lastResultWin && state.lastProfitPrincipal > 0 && state.consecutiveWins === 2) {
             const profit = state.lastProfitPrincipal;
             return parseFloat((baseStake + profit).toFixed(2));
         }
 
         // Reset after Soros (Apollo prevents > Level 1)
-        if (state.consecutiveWins >= 2) {
+        if (state.consecutiveWins >= 3) {
             state.consecutiveWins = 0;
             return baseStake;
         }
