@@ -98,22 +98,23 @@ export const RiskManager = {
 
             if (state.analysisType === 'RECUPERACAO') {
                 state.lossStreakRecovery++;
+
+                // Mode Switching during Recovery
+                // Total Losses = 1 (Principal) + lossStreakRecovery
+                const totalEstimatedLosses = 1 + state.lossStreakRecovery;
+
+                if (totalEstimatedLosses >= 4) { // 4th loss
+                    state.negotiationMode = 'PRECISO';
+                } else if (totalEstimatedLosses >= 2) { // 2nd loss
+                    state.negotiationMode = 'NORMAL';
+                }
+
             } else {
                 state.consecutiveLosses++;
 
-                // Transition logic:
-                // 1. Loss 1: Stay in VELOZ (Principal)
-                // 2. Loss 2: Switch to NORMAL (Principal)
-                // 3. Loss 4: Switch to PRECISO (Recovery)
-
-                if (state.consecutiveLosses >= 4) {
-                    state.negotiationMode = 'PRECISO';
-                    state.analysisType = 'RECUPERACAO';
-                } else if (state.consecutiveLosses >= 2) {
-                    state.negotiationMode = 'NORMAL';
-                } else {
-                    state.negotiationMode = 'VELOZ';
-                }
+                // Immediate Transition to Recovery (Martingale Active)
+                state.analysisType = 'RECUPERACAO';
+                state.negotiationMode = 'VELOZ'; // Starts in VELOZ even in recovery until 2nd loss
 
                 state.recoveredAmount = 0;
                 state.lossStreakRecovery = 0;
