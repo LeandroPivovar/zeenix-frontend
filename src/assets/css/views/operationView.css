@@ -200,18 +200,20 @@
 
 
 
-.header-operation {
-    padding: 1rem;
-}
+@media (max-width: 1200px) {
+    .header-operation {
+        padding: 1rem;
+    }
 
-.view-toggle-bar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-}
+    .view-toggle-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
 
-.operation-content {
-    padding: 20px;
+    .operation-content {
+        padding: 20px;
+    }
 }
 
 
