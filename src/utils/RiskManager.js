@@ -16,52 +16,58 @@ export const RiskManager = {
     /**
      * Calculates the next stake based on current session state and user config.
      */
+    payoutHistory: {},
+
     calculateNextStake(state, config) {
         const baseStake = config.initialStake || 0.35;
         const riskProfile = config.riskProfile || 'moderado';
-        const tradeType = config.tradeType || 'CALL';
+        // Normalize contract type to avoid mismatches
+        const tradeType = (config.tradeType || 'CALL').toUpperCase();
 
         // Profit Margin Factor based on Risk Profile
         let profitFactor = 0.15; // Moderado
         if (riskProfile === 'conservador') profitFactor = 0.02;
         else if (riskProfile === 'agressivo') profitFactor = 0.30;
 
-        // Determine which payout tracker to use based on mode
-        const isRecovery = state.analysisType === 'RECUPERACAO';
-        const lastPayout = isRecovery ? state.lastPayoutRecovery : state.lastPayoutPrincipal;
-
-        // Use last tracked payout, or fallback to default for this contract type
-        const payout = lastPayout || this.payoutDefaults[tradeType] || 0.95;
+        // Determine best payout estimate
+        // 1. Check history for this specific contract type
+        // 2. Check defaults
+        // 3. Fallback to 0.95 (standard rise/fall)
+        const estimatedPayout = this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
 
         // 1. RECOVERY MODE
-        if (isRecovery) {
+        if (state.analysisType === 'RECUPERACAO') {
             // Check Max Levels for Conservador
             const maxLevels = (riskProfile === 'conservador') ? 5 : null;
             if (maxLevels && state.lossStreakRecovery >= maxLevels) {
-                // Return to base stake (accept loss)
-                // Note: state.analysisType will be reset by processTradeResult on next result if we treat this as a stop loss reset?
-                // Actually we just return baseStake, effectively stopping the martingale progression.
                 return baseStake;
             }
 
+            // Calculate Stake to recover ALL losses + profit margin
             const lossToRecover = state.totalLossAccumulated - state.recoveredAmount;
-            const stake = (lossToRecover * (1 + profitFactor)) / payout;
-            // Use ceil to ensure 100% coverage even with rounding
+
+            // Formula: Stake = Target / Payout
+            // Target = TotalLoss + (TotalLoss * ProfitMargin) -> Simple aggressive recovery
+            // Or better: Stake * Payout = TotalLoss + (Stake + TotalLoss) * Margin? 
+            // Standard Martingale: Stake = Loss / Payout. (Breakeven).
+            // With Profit: Stake = (Loss * (1 + margin)) / Payout.
+
+            const stake = (lossToRecover * (1 + profitFactor)) / estimatedPayout;
+
+            // Safety: Min stake 0.35, Round up to 2 decimals
             return Math.max(0.35, Math.ceil(stake * 100) / 100);
         }
 
         // 2. PRINCIPAL MODE (Standard)
         const sorosLevel = config.sorosLevel || 1;
-
-        // Cycle Logic:
         const cyclePosition = state.consecutiveWins % (sorosLevel + 1);
 
-        // B. SOROS TRADES (Compounding)
+        // B. SOROS TRADES
         if (state.lastResultWin && state.lastProfitPrincipal > 0 && cyclePosition > 0 && !state.skipSorosNext) {
             return Math.max(0.35, parseFloat((state.lastStakePrincipal + state.lastProfitPrincipal).toFixed(2)));
         }
 
-        // C. DEFAULT: Base Stake (Start of Cycle)
+        // C. DEFAULT
         return baseStake;
     },
 
@@ -186,11 +192,25 @@ export const RiskManager = {
         // 2. Update payout rate with official data
         if (win) {
             const currentPayout = realProfit / stakeUsed;
+            // Save to generic trackers
             if (tradeMode === 'RECUPERACAO') {
                 state.lastPayoutRecovery = currentPayout;
             } else {
                 state.lastPayoutPrincipal = currentPayout;
             }
+
+            // Save to granular history if contract type is available in state (needs updates in View to pass it)
+            // For now, we rely on the View passing context or we assume the last used?
+            // Since we don't have contract type here easily, we can't update the specific table perfectly 
+            // unless we change signature. 
+            // BUT, we can make 'processTradeResult' update it? 
+        }
+    },
+
+    // Helper to update specific contract history (called from View)
+    updatePayoutHistory(contractType, payoutRate) {
+        if (contractType && payoutRate > 0) {
+            this.payoutHistory[contractType.toUpperCase()] = payoutRate;
         }
     }
 };

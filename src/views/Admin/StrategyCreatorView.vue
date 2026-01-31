@@ -1911,10 +1911,45 @@ export default {
                             this.addLog(`🔍 Proposta recebida: Payout $${payout} (Stake: $${stakeValue})`, 'info');
                             
                             // 1. Update sessionState with the real payout for accuracy in next calculations
+                            const realPayoutRate = payout / stakeValue;
+                            
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
-                                this.sessionState.lastPayoutRecovery = payout / stakeValue;
+                                this.sessionState.lastPayoutRecovery = realPayoutRate;
                             } else {
-                                this.sessionState.lastPayoutPrincipal = payout / stakeValue;
+                                this.sessionState.lastPayoutPrincipal = realPayoutRate;
+                            }
+                            RiskManager.updatePayoutHistory(msg.proposal.contract_type, realPayoutRate);
+
+                            // 2. CHECK IF STAKE ADJUSTMENT IS NEEDED
+                            // If we are in Recovery mode, the stake MUST be precise to ensure coverage.
+                            // We now have the REAL payout rate. Let's ask RiskManager what the stake SHOULD be.
+                            if (this.sessionState.analysisType === 'RECUPERACAO') {
+                                const activeStrategy = this.sessionState.activeStrategy === 'RECUPERACAO' ? 'RECUPERACAO' : 'PRINCIPAL';
+                                const config = activeStrategy === 'RECUPERACAO' ? this.recoveryConfig : this.form;
+                                // We manually temporarily inject the just-learned payout history into the calculation
+                                const exactStake = RiskManager.calculateNextStake(this.sessionState, config);
+                                
+                                // Tolerance check: If current proposal stake is significantly different (> 1 cent diff?)
+                                // RiskManager returns rounded stakes (2 decimal).
+                                if (Math.abs(exactStake - stakeValue) > 0.02) {
+                                    this.addLog(`⚠️ Recalibrando Martingale: Payout Real ${realPayoutRate.toFixed(2)}x exige Stake $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
+                                    
+                                    // RE-REQUEST PROPOSAL with corrected stake
+                                    // LIMITATION: Avoid infinite loop. 
+                                    // How to track we are retrying? 
+                                    // We can add a flag to sessionState or similar. But msg.echo_req contains the request params.
+                                    // For simplicity, we just send a new buy if the difference is small, but for 100% recovery we must be strict.
+                                    
+                                    if (!msg.echo_req.is_retry) { // Simple flag check? We can't easily add props to echo_req without modify send.
+                                        // Let's just send a new proposal request and ignore this one.
+                                        const newParams = { ...msg.echo_req, amount: exactStake, is_retry: 1 };
+                                        delete newParams.req_id; // remove request id
+                                        this.ws.send(JSON.stringify(newParams));
+                                        return; // ABORT BUY for this outdated proposal
+                                    } else {
+                                        this.addLog(`⚠️ Stake ajustado novamente. Aceitando $${stakeValue} para evitar loop.`, 'warning');
+                                    }
+                                }
                             }
 
                             // 2. Prepare for fast result calculation with the EXACT payout
@@ -2298,7 +2333,16 @@ export default {
                 // Refinar resultado se já processado pelo resultado rápido
                 if (trade.fastResultApplied) {
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
-                } else {
+                } 
+                
+                // Always update payout history for this contract type (Win or Loss? Payout is mostly constant per type unless barrier changes)
+                // For a loss, we don't know the real payout unless we saved it from proposal. 
+                // But for a WIN, we know exactly.
+                if (trade.result === 'WON') {
+                     const payoutRate = trade.pnl / trade.stake;
+                     RiskManager.updatePayoutHistory(trade.contract, payoutRate);
+                }
+                else {
                     // Se não foi processado pelo rápido, marcar como processado e atualizar lógica
                     trade.fastResultApplied = true;
                     if (trade.result === 'WON') this.monitoringStats.wins++;
