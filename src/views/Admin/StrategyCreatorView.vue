@@ -2358,7 +2358,6 @@ export default {
                     stake: contract.buy_price,
                     pnl: contract.profit || 0,
                     analysisType: this.sessionState.analysisType,
-                    analysisType: this.sessionState.analysisType,
                     result: 'OPEN',
                     // Save Barrier for history key update later
                     barrier: contract.barrier
