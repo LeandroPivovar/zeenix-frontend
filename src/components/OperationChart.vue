@@ -221,15 +221,15 @@
                      <span class="text-[10px] font-bold text-white/60">Últimos 15</span>
                    </div>
                  </div>
-                  <div v-if="recentDigits.length > 0" class="recent-digits-grid flex flex-wrap md:grid md:grid-cols-[repeat(15,minmax(0,1fr))] gap-1 justify-center">
+                  <div v-if="recentDigits.length > 0" class="flex flex-wrap gap-2 justify-start">
                     <div 
                      v-for="(digit, idx) in recentDigits.slice(0, 15)" 
                      :key="'recent-'+idx"
-                     class="h-9 w-9 md:w-full max-w-[40px] bg-[#080808] border border-white/5 rounded-xl flex items-center justify-center font-black text-sm transition-all duration-300"
-                    :class="[
-                      idx === 0 ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/50 shadow-[0_0_15px_#22C55E33]' : 'text-white/40'
-                    ]"
-                   >
+                     class="h-10 w-10 md:h-12 md:w-12 bg-[#080808] border border-white/5 rounded-xl flex items-center justify-center font-black text-lg transition-all duration-300 flex-shrink-0"
+                     :class="[
+                       idx === 0 ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/50 shadow-[0_0_15px_#22C55E33]' : 'text-white/40'
+                     ]"
+                    >
                      {{ digit }}
                    </div>
                    <div v-if="recentDigits.length === 0" class="text-xs text-white/20 uppercase font-black tracking-widest py-4 w-full text-center">
@@ -990,57 +990,59 @@ export default {
         return Array.from({ length: 10 }, (_, i) => ({
           digit: i,
           percentage: 0,
-          zScore: 0,
           statusClass: 'status-normal',
-          statusText: 'Normal',
-          barHeight: 42,
+          isMax: false,
+          isMin: false,
           isHighlighted: false
         }));
       }
       
-      const expected = totalDigits / 10;
       const frequencies = this.digitFrequencies;
       
+      // Encontrar max e min percentagem
+      let maxP = -1;
+      let minP = 101;
+      
+      frequencies.forEach(item => {
+          if (item.percentage > maxP) maxP = item.percentage;
+          if (item.percentage < minP) minP = item.percentage;
+      });
+      
+      // Flags para garantir apenas um de cada
+      let maxFound = false;
+      let minFound = false;
+      
       return frequencies.map(item => {
-        const count = (item.percentage / 100) * totalDigits;
-        const zScore = expected > 0 ? ((count - expected) / Math.sqrt(expected)).toFixed(1) : 0;
-        const z = parseFloat(zScore);
-        
-        
-
+        const p = item.percentage;
+        let isMax = false;
+        let isMin = false;
+        // Default status
         let statusClass = 'status-normal';
-        
-        // Regra do Usuário: 30% acima verde, 10% pra cima amarelo, 0% pra cima vermelho
-        // Assumindo que:
-        // >= 30: green (max)
-        // >= 10: yellow (heated)
-        // < 10: red (min) seems to be the intent for "0% pra cima" usually implying standard, but user context implies low freq red. 
-        // Actually, "0% pra cima vermelho" essentially means everything else is red if it's not yellow/green.
-        // Wait, "0% pra cima vermelho" implies >0 is red. But surely 30% is >0. So order matters.
-        // >30 -> Green
-        // >10 -> Yellow
-        // >0 -> Red
-        
-        if (item.percentage > 10) {
-            statusClass = 'status-max'; // Green (Acima de 10%)
-        } else if (item.percentage >= 5) {
-            statusClass = 'status-heated'; // Yellow (Abaixo de 10% e acima/igual a 5%)
-        } else {
-            statusClass = 'status-min'; // Red (Abaixo de 5%)
-        }
 
-        const isHighlighted = item.digit === 7 && z < -1.5; // Manter lógica de destaque se necessário, ou remover
+        // Prioridade para Max/Min (apenas o primeiro encontrado)
+        // Se empatar, apenas o primeiro ganha o status principal
+        if (p === maxP && !maxFound) {
+            isMax = true;
+            maxFound = true;
+            statusClass = 'status-max';
+        } else if (p === minP && !minFound) {
+            isMin = true;
+            minFound = true;
+            statusClass = 'status-min';
+        } else {
+             // Secundário: se não é max/min absoluto, pode ser heated
+             if (p >= 10) {
+                statusClass = 'status-heated';
+             }
+        }
         
         return {
           digit: item.digit,
           percentage: item.percentage.toFixed(1),
-          zScore: zScore,
           statusClass,
-          statusText: '', // Not used anymore
-          barHeight: 0, // Not used
-          isHighlighted,
-          isMax: item.percentage >= 30, // Compatibilidade
-          isMin: item.percentage < 10
+          isMax,
+          isMin,
+          isHighlighted: false
         };
       });
     },
