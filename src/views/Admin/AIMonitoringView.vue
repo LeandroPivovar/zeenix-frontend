@@ -246,15 +246,42 @@
 
                             <!-- Logs Tab -->
                             <div v-if="activeMonitoringTab === 'logs'" class="animate-fadeIn">
-                                <div class="space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar">
-                                    <div v-for="log in monitoringLogs" :key="log.id" class="p-3 bg-secondary/40 rounded-lg border border-border/30 font-mono text-xs flex gap-3">
-                                        <span class="text-muted-foreground">[{{ log.time }}]</span>
-                                        <span :class="{ 'text-success': log.type === 'success', 'text-red-500': log.type === 'error', 'text-blue-400': log.type === 'info', 'text-yellow-400': log.type === 'warning' }">
-                                            {{ log.message }}
-                                        </span>
+                                <div class="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                                    <div v-for="log in monitoringLogs" :key="log.id" 
+                                         class="p-4 bg-secondary/15 rounded-xl border border-border/20 font-mono text-[11px] hover:bg-secondary/20 transition-all">
+                                        <div class="flex items-start gap-4">
+                                            <span class="text-muted-foreground/50 whitespace-nowrap mt-0.5">[{{ log.time }}]</span>
+                                            <div class="flex-1 space-y-2">
+                                                <div class="flex items-center gap-2">
+                                                    <!-- Dynamic Icon/Circle based on type -->
+                                                    <div class="w-2 h-2 rounded-full" 
+                                                         :class="{ 
+                                                            'bg-success shadow-[0_0_8px_rgba(34,197,94,0.5)]': log.type === 'success', 
+                                                            'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]': log.type === 'error', 
+                                                            'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]': log.type === 'info', 
+                                                            'bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.5)]': log.type === 'warning' 
+                                                         }"></div>
+                                                    <h4 class="font-black uppercase tracking-[0.1em]"
+                                                        :class="{ 
+                                                            'text-success': log.type === 'success', 
+                                                            'text-red-500': log.type === 'error', 
+                                                            'text-blue-400': log.type === 'info', 
+                                                            'text-yellow-400': log.type === 'warning' 
+                                                        }">
+                                                        {{ log.title }}
+                                                    </h4>
+                                                </div>
+                                                <ul class="space-y-1 ml-4 text-[#d1d1d6]">
+                                                    <li v-for="(line, idx) in log.details" :key="idx" class="flex items-start gap-2">
+                                                        <span class="opacity-40 select-none">•</span>
+                                                        <span class="leading-relaxed opacity-90">{{ line }}</span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div v-if="monitoringLogs.length === 0" class="text-center py-12 text-muted-foreground">
-                                        Nenhum log registrado ainda.
+                                    <div v-if="monitoringLogs.length === 0" class="text-center py-20 text-muted-foreground/30 uppercase text-[10px] font-black tracking-[0.2em]">
+                                        Aguardando primeiros logs...
                                     </div>
                                 </div>
                             </div>
@@ -446,6 +473,23 @@ export default {
             if (savedConfig) {
                 try {
                     this.currentConfig = JSON.parse(savedConfig);
+                    
+                    // Initial Logs according to ZENIX protocol
+                    this.addLog('Início de Sessão', [
+                        `Saldo Inicial: $${this.monitoringStats.balance}`,
+                        `Meta de Lucro: $${this.currentConfig.profitTarget || 100}`,
+                        `Stop Loss: $${this.currentConfig.lossLimit || 100}`,
+                        `Estratégia: ${this.currentConfig.strategy.toUpperCase()}`,
+                        `Status: aguardando ticks suficientes`
+                    ], 'info');
+
+                    this.addLog('Configuração Inicial', [
+                        `Agente: ${this.currentConfig.strategy.toUpperCase()}`,
+                        `Modo: ${this.currentConfig.mode.toUpperCase()}`,
+                        `Stake: $${this.currentConfig.stake.toFixed(2)}`,
+                        `Stop Blindado: ${this.currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO'}`
+                    ], 'info');
+
                 } catch (e) {
                     console.error('Error loading config:', e);
                 }
@@ -483,13 +527,19 @@ export default {
                 this.ws = new WebSocket(endpoint);
 
                 this.ws.onopen = () => {
-                    this.addLog('🔌 Conectado ao mercado', 'success');
+                    this.addLog('Conexão Estabelecida', [
+                        'Status: Conectado ao mercado',
+                        'Servidor: Deriv WebSocket v3'
+                    ], 'success');
                     const token = this.getDerivToken();
                     
                     if (token) {
                         this.ws.send(JSON.stringify({ authorize: token }));
                     } else {
-                        this.addLog('⚠️ Token não encontrado. Modo observação.', 'warning');
+                        this.addLog('Erro de Autorização', [
+                            'Motivo: Token não encontrado',
+                            'Ação: Modo observação'
+                        ], 'warning');
                         this.subscribeTicks();
                     }
                 };
@@ -500,11 +550,18 @@ export default {
                         
                         if (msg.msg_type === 'authorize') {
                             if (msg.error) {
-                                this.addLog(`❌ Erro de autorização: ${msg.error.message}`, 'error');
+                                this.addLog('Erro de Sessão', [
+                                    `Tipo: Erro de autorização`,
+                                    `Mensagem: ${msg.error.message}`
+                                ], 'error');
                             } else {
                                 this.isAuthorized = true;
                                 this.monitoringStats.balance = msg.authorize.balance;
-                                this.addLog(`✅ Autorizado! Saldo: $${this.monitoringStats.balance}`, 'success');
+                                this.addLog('Execução Confirmada', [
+                                    `Status: Autorizado`,
+                                    `Saldo: $${this.monitoringStats.balance}`,
+                                    `Conta: ${msg.authorize.loginid}`
+                                ], 'success');
                                 this.subscribeTicks();
                             }
                         }
@@ -515,10 +572,17 @@ export default {
 
                         if (msg.msg_type === 'buy') {
                             if (msg.error) {
-                                this.addLog(`❌ Erro na compra: ${msg.error.message}`, 'error');
+                                this.addLog('Entrada Bloqueada', [
+                                    `Motivo: Erro na compra`,
+                                    `Mensagem: ${msg.error.message}`
+                                ], 'error');
                             } else {
                                 const payout = msg.buy.payout;
-                                this.addLog(`🚀 Compra realizada! ID: ${msg.buy.contract_id} | Payout: $${payout}`, 'success');
+                                this.addLog('Contrato Criado', [
+                                    `Contrato ID: ${msg.buy.contract_id}`,
+                                    `Payout: $${payout}`,
+                                    `Status: aguardar execução`
+                                ], 'success');
                                 this.subscribeToContract(msg.buy.contract_id);
                             }
                         }
@@ -537,7 +601,10 @@ export default {
                 };
 
                 this.ws.onclose = () => {
-                    this.addLog('📡 Conexão encerrada. Reconectando...', 'info');
+                    this.addLog('Erro de Conexão', [
+                        'Tipo: Conexão encerrada',
+                        'Ação: Reconectando automaticamente'
+                    ], 'info');
                     setTimeout(() => this.initTickConnection(), 3000);
                 };
             } catch (error) {
@@ -567,7 +634,9 @@ export default {
         },
         handleTickMessage(msg) {
             if (msg.error) {
-                this.addLog(`❌ Erro: ${msg.error.message}`, 'error');
+                this.addLog('Erro de Coleta', [
+                    `Mensagem: ${msg.error.message}`
+                ], 'error');
                 return;
             }
             if (msg.msg_type === 'tick' && msg.tick) {
@@ -597,7 +666,12 @@ export default {
             const allPassed = results.every(r => r.pass);
             results.forEach(res => { if (!res.pass) this.addLog(`🔍 ${res.reason}`, 'info'); });
             if (allPassed) {
-                this.addLog('🎯 SINAL GERADO! Todos os filtros confirmados.', 'success');
+                this.addLog('Sinal de Entrada', [
+                    `Análise: PRINCIPAL`,
+                    `Direção: CONFIRMADA`,
+                    `Contrato: EVALUATING`,
+                    `Ação: Executar ordem`
+                ], 'success');
                 this.executeAITrade(strategyConfig);
             }
         },
@@ -663,10 +737,20 @@ export default {
                 trade.pnl = parseFloat(contract.profit || 0);
                 if (trade.result === 'WIN') {
                     this.monitoringStats.wins++;
-                    this.addLog(`💰 WIN! +$${trade.pnl.toFixed(2)}`, 'success');
+                    this.addLog('Resultado da Operação', [
+                        `Status: WIN`,
+                        `Contrato ID: ${id}`,
+                        `Resultado Financeiro: +$${trade.pnl.toFixed(2)}`,
+                        `Saldo Atual: $${this.monitoringStats.balance}`
+                    ], 'success');
                 } else {
                     this.monitoringStats.losses++;
-                    this.addLog(`🔴 LOSS: -$${Math.abs(trade.pnl).toFixed(2)}`, 'error');
+                    this.addLog('Resultado da Operação', [
+                        `Status: LOSS`,
+                        `Contrato ID: ${id}`,
+                        `Resultado Financeiro: -$${Math.abs(trade.pnl).toFixed(2)}`,
+                        `Saldo Atual: $${this.monitoringStats.balance}`
+                    ], 'error');
                 }
                 this.monitoringStats.profit += trade.pnl;
                 this.profitHistory.push(parseFloat(this.monitoringStats.profit.toFixed(2)));
@@ -679,15 +763,19 @@ export default {
         async stopIA() {
             this.isStopping = true;
             this.stopTickConnection();
-            this.addLog('⏹️ IA parada pelo usuário', 'info');
+            this.addLog('Encerramento de Sessão', [
+                `Motivo: parada pelo usuário`,
+                `Status: Finalizado`
+            ], 'info');
             localStorage.removeItem('ai_active_config');
             setTimeout(() => { this.$router.push('/StatsIAs'); }, 1000);
         },
-        addLog(message, type) {
+        addLog(title, details = [], type = 'info') {
             this.monitoringLogs.unshift({
                 id: Date.now() + Math.random(),
                 time: new Date().toLocaleTimeString(),
-                message,
+                title,
+                details: Array.isArray(details) ? details : [details],
                 type
             });
             if (this.monitoringLogs.length > 100) this.monitoringLogs = this.monitoringLogs.slice(0, 100);
