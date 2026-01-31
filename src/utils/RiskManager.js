@@ -48,7 +48,7 @@ export const RiskManager = {
         // 3. Check history for this specific mode+contract
         // 4. Fallback to generic contract history
         // 5. System Defaults
-        const configPayout = config.expectedPayout || S;
+        const configPayout = config.expectedPayout || null;
         let estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
 
         // CRITICAL: User inputs payout as TOTAL MULTIPLIER (e.g., 1.26 means $1 → $1.26)
