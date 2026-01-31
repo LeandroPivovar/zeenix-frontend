@@ -2124,7 +2124,7 @@ svg:not(:root).svg-inline--fa {
     display: flex;
     align-items: center;
     padding: 1rem;
-    background: #111;
+    background: linear-gradient(260deg, #03410B1A, #0000008F);
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
     gap: 0;
