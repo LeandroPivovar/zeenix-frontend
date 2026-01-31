@@ -2,14 +2,8 @@
     <div class="sidebar-wrapper">
         <aside class="sidebar noise-bg" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <div class="sidebar-brand">
-            <div class="logo-z">
-                <span class="text-white font-bold text-2xl">Z</span>
-            </div>
-            <div class="logo-full">
-                <span class="text-white font-bold text-xl">ZEN</span>
-                <span class="text-white font-bold text-xl">I</span>
-                <span class="text-[#22C55E] font-bold text-xl">X</span>
-            </div>
+            <span class="logo-z">Z</span>
+            <span class="logo-full">ZENIX</span>
         </div>
 
         <nav class="menu">
