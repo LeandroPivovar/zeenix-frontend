@@ -2467,9 +2467,6 @@ export default {
                     
                     const oldAnalysis = this.sessionState.analysisType;
                     const oldMode = this.sessionState.negotiationMode;
-
-                    // Update State via Risk Manager
-                    RiskManager.processTradeResult(this.sessionState, trade.result === 'WON', trade.pnl, trade.stake, trade.analysisType, this.recoveryConfig.lossesToActivate);
                     
                     // Sync legacy mode
                     this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
