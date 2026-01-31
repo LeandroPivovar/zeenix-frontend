@@ -2021,7 +2021,17 @@ export default {
                             const profitPercent = (((payout - stake) / stake) * 100).toFixed(0);
                             
                             console.log(`[WS] Sucesso! ID: ${msg.buy.contract_id}, Entrada: $${stake}, Payout: $${payout} (${profitPercent}%)`);
-                            this.addLog(`🚀 COMPRA REALIZADA! | Entrada: $${stake.toFixed(2)} | Payout: $${payout.toFixed(2)} (${profitPercent}%)`, 'success');
+                            
+                            const profitExpected = (payout - stake).toFixed(2);
+                            const contractType = this.sessionState.lastContractType || 'Desconhecido';
+
+                            const purchaseLog = `🚀 COMPRA REALIZADA!<br>` +
+                                `• Contrato: ${contractType}<br>` +
+                                `• Investimento: $${stake.toFixed(2)}<br>` +
+                                `• Payout Esperado: $${payout.toFixed(2)} (${profitPercent}%)<br>` +
+                                `• Lucro Esperado: $${profitExpected}`;
+                                
+                            this.addLog(purchaseLog, 'success');
                             
                             // Activate fast result calculation if it's 1-tick
                             /* 
