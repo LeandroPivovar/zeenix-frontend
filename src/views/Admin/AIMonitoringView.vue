@@ -547,7 +547,6 @@ import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
-import Link from '../../components/Link.vue'; /* Assuming Link is not used but preserving structure if needed, or just LineChart */
 import LineChart from '../../components/LineChart.vue';
 import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
 import RiskManager from '../../utils/RiskManager';
