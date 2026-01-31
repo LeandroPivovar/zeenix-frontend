@@ -16,12 +16,12 @@ aside.sidebar,
 	flex-direction: column;
 	position: fixed;
 	left: 0;
-	top: 60px;
-	height: calc(100vh - 60px);
-	/* z-index reduzido no desktop para evitar sobreposição desnecessária */
-	z-index: 100 !important;
+	top: 0;
+	height: 100vh;
+	/* z-index aumentado para ficar acima de outros overlays se necessário */
+	z-index: 1001 !important;
 	box-sizing: border-box;
-	transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: width 1s cubic-bezier(0.16, 1, 0.3, 1), left 1s cubic-bezier(0.16, 1, 0.3, 1);
 	font-family: 'Inter', sans-serif;
 	overflow: visible;
 	padding: 0 !important;
@@ -39,10 +39,25 @@ aside.sidebar,
 
 /* --- Hover Expansion (Desktop Only) --- */
 @media (min-width: 769px) {
-	.sidebar:hover {
+
+	/* O wrapper controla o hover para sincronizar com o conteúdo */
+	.sidebar-wrapper:hover .sidebar {
 		width: 280px !important;
 		min-width: 280px !important;
 		max-width: 280px !important;
+	}
+
+	/* Expansão do conteúdo principal */
+	.sidebar-wrapper:hover~.dashboard-content-wrapper {
+		margin-left: 280px !important;
+		transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	}
+
+	/* Expansão e deslocamento do TopNavbar */
+	.sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
+		left: 280px !important;
+		width: calc(100% - 280px) !important;
+		transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
 	/* Logo Transition */
@@ -51,37 +66,36 @@ aside.sidebar,
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		/* Centralizado quando recolhido (Z) */
 		border-bottom: 1px solid #1C1C1C;
-		margin-bottom: 10px;
-		transition: all 0.3s ease;
+		margin-bottom: 30px;
+		/* Mais espaço abaixo do logo */
+		transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
 		padding: 0 20px;
 	}
 
-	.sidebar:hover .sidebar-brand {
+	.sidebar-wrapper:hover .sidebar-brand {
 		justify-content: flex-start;
-		/* Alinhado a esquerda quando expandido */
 	}
 
 	.logo-z {
 		display: block;
 		opacity: 1;
-		transition: opacity 0.2s ease;
+		transition: opacity 0.3s ease;
 	}
 
 	.logo-full {
 		display: none;
 		opacity: 0;
-		transition: opacity 0.2s ease 0.1s;
+		transition: opacity 0.3s ease 0.1s;
 		white-space: nowrap;
 	}
 
-	.sidebar:hover .logo-z {
+	.sidebar-wrapper:hover .logo-z {
 		display: none;
 		opacity: 0;
 	}
 
-	.sidebar:hover .logo-full {
+	.sidebar-wrapper:hover .logo-full {
 		display: block;
 		opacity: 1;
 	}
@@ -102,7 +116,7 @@ aside.sidebar,
 		color: #22C55E;
 	}
 
-	.sidebar:not(:hover) .student-group-btn {
+	.sidebar-wrapper:not(:hover) .student-group-btn {
 		background: transparent;
 		border-color: transparent;
 		width: 48px;
@@ -110,7 +124,7 @@ aside.sidebar,
 		margin: 0 auto 12px auto;
 	}
 
-	.sidebar:not(:hover) .student-group-btn:hover {
+	.sidebar-wrapper:not(:hover) .student-group-btn:hover {
 		background: rgba(34, 197, 94, 0.1);
 	}
 
@@ -129,10 +143,10 @@ aside.sidebar,
 		font-size: 14px;
 		white-space: nowrap;
 		opacity: 1;
-		transition: opacity 0.2s ease 0.1s;
+		transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
 	}
 
-	.sidebar:not(:hover) .student-group-btn .label {
+	.sidebar-wrapper:not(:hover) .student-group-btn .label {
 		display: none;
 		opacity: 0;
 		width: 0;
@@ -145,18 +159,20 @@ aside.sidebar,
 	}
 
 	/* Menu Text Visibility */
-	.sidebar:not(:hover) .menu-item span,
-	.sidebar:not(:hover) .menu-item i.ml-auto {
+	.sidebar-wrapper:not(:hover) .menu-item span,
+	.sidebar-wrapper:not(:hover) .menu-item i.ml-auto {
 		display: none;
 		opacity: 0;
 	}
 
-	.sidebar:not(:hover) .menu-item {
+	.sidebar-wrapper:not(:hover) .menu-item {
 		justify-content: center;
 		padding: 12px;
+		margin-bottom: 15px;
+		/* Mais gap entre icones quando recolhido */
 	}
 
-	.sidebar:not(:hover) .menu-item i {
+	.sidebar-wrapper:not(:hover) .menu-item i {
 		margin-right: 0;
 		font-size: 20px;
 	}

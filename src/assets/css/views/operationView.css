@@ -68,6 +68,12 @@
 }
 
 @media (min-width: 1025px) {
+    .operation-main {
+        margin-left: 280px !important;
+        width: calc(100% - 280px) !important;
+        transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
     .operation-main.sidebar-collapsed {
         margin-left: 80px !important;
         width: calc(100% - 80px) !important;
