@@ -121,9 +121,9 @@
                 </div>
 
                 <!-- Mobile Configuration Cards Stack (Visible only on Mobile) -->
-                <div v-if="isMobile" class="mt-4 flex flex-col gap-3">
+                <div v-if="isMobile" class="mt-4 flex flex-col gap-3 w-full">
                     <!-- Card 1: AI Identity -->
-                    <div class="p-4 bg-secondary/40 rounded-2xl border border-border/40 flex items-center gap-4">
+                    <div class="p-4 bg-secondary/40 rounded-2xl border border-border/40 flex items-center gap-4 w-full">
                         <div class="w-14 h-14 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path></svg>
                         </div>
@@ -134,7 +134,7 @@
                     </div>
 
                     <!-- Card 2: Strategy Mode -->
-                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4">
+                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
@@ -152,7 +152,7 @@
                     </div>
 
                     <!-- Card 3: Parameters -->
-                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4">
+                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Entrada</span>
                             <span class="text-sm font-black text-foreground tracking-wider">${{ currentConfig.stake.toFixed(2).replace('.', ',') }}</span>
@@ -168,7 +168,7 @@
                     </div>
 
                     <!-- Card 4: Protection -->
-                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 flex items-center justify-between">
+                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 flex items-center justify-between w-full">
                         <div class="flex items-center gap-4">
                             <div class="w-10 h-10 rounded-lg bg-success/5 border border-success/20 flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
@@ -187,7 +187,8 @@
                 <!-- Main Content Layout (70/30 Split on Desktop, stack on Mobile) -->
                 <div class="mt-4 md:mt-6 lg:mt-8 flex flex-col lg:flex-row gap-4 lg:gap-6 w-full flex-1">
                     <!-- Left Column: Tabs & Content (Chart/History/Logs) -->
-                    <div class="w-full lg:w-[72%] card-glass rounded-2xl border border-border/50 p-4 md:p-6 lg:p-8 fade-in-delay-1 gradient-border flex flex-col">
+                    <div :class="activeMonitoringTab === 'logs' ? 'w-full' : 'w-full lg:w-[72%]'" 
+                         class="card-glass rounded-2xl border border-border/50 p-4 md:p-6 lg:p-8 fade-in-delay-1 gradient-border flex flex-col">
                         <div class="w-full flex-1 flex flex-col">
                             <!-- Custom Tabs -->
                             <div class="flex items-center justify-start text-muted-foreground border-b border-border mb-6 gap-6 h-auto p-0">
@@ -393,7 +394,7 @@
                                                         'bg-blue-400 shadow-[0_0_10px_#60A5FA]': log.type === 'info', 
                                                         'bg-yellow-400 shadow-[0_0_10px_#FACC15]': log.type === 'warning' 
                                                      }"></div>
-                                                <h4 class="text-[11px] font-black uppercase tracking-[0.14em]"
+                                                <h4 class="text-[10px] font-black uppercase tracking-[0.14em]"
                                                     :class="{ 
                                                         'text-success': log.type === 'success', 
                                                         'text-red-500': log.type === 'error', 
@@ -422,7 +423,7 @@
                                                             'bg-blue-400 shadow-[0_0_10px_#60A5FA]': log.type === 'info', 
                                                             'bg-yellow-400 shadow-[0_0_10px_#FACC15]': log.type === 'warning' 
                                                          }"></div>
-                                                    <h4 class="text-[12px] font-black uppercase tracking-[0.15em]"
+                                                    <h4 class="text-[11px] font-black uppercase tracking-[0.15em]"
                                                         :class="{ 
                                                             'text-success': log.type === 'success', 
                                                             'text-red-500': log.type === 'error', 
@@ -449,8 +450,8 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Sidebar (Visible only on Desktop) -->
-                    <div v-if="!isMobile" class="w-full lg:w-[28%] flex flex-col gap-4 lg:gap-6">
+                <!-- Right Column: Sidebar (Visible only on Desktop and non-logs tab) -->
+                    <div v-if="!isMobile && activeMonitoringTab !== 'logs'" class="w-full lg:w-[28%] flex flex-col gap-4 lg:gap-6">
                         <div class="h-full card-glass rounded-2xl border border-border/50 p-5 flex flex-col gradient-border">
                             <!-- Header Info -->
                             <div class="p-4 rounded-xl bg-secondary/60 border border-border/60">
