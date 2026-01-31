@@ -11,7 +11,7 @@
 
     <!-- Main Content -->
     <div 
-      class="min-h-screen flex flex-col content-wrapper"
+      class="min-h-screen flex flex-col content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
     >
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
@@ -565,7 +565,7 @@ export default {
       showChangePhotoModal: false,
       sidebarIsOpen: false,
       isMobile: false,
-      isSidebarCollapsed: false,
+      isSidebarCollapsed: true, // Começa recolhido
       accountBalance: 0,
       accountCurrency: 'USD',
       accountLoginid: null,
@@ -625,6 +625,18 @@ export default {
   methods: {
     checkMobile() {
       this.isMobile = window.innerWidth <= 1024; // Adjusted for lg breakpoint
+    },
+    toggleSidebarCollapse() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    },
+    toggleMobileSidebar() {
+      this.sidebarIsOpen = !this.sidebarIsOpen;
+    },
+    closeSidebar() {
+      this.sidebarIsOpen = false;
+    },
+    toggleSidebar() {
+      this.sidebarIsOpen = !this.sidebarIsOpen;
     },
     async loadAccountBalance() {
       try {
@@ -1036,15 +1048,6 @@ export default {
       const hours = String(d.getHours()).padStart(2, '0')
       const minutes = String(d.getMinutes()).padStart(2, '0')
       return `${day}/${month}/${d.getFullYear()} às ${hours}:${minutes}`
-    },
-    toggleSidebar() {
-      this.sidebarIsOpen = !this.sidebarIsOpen;
-    },
-    closeSidebar() {
-      this.sidebarIsOpen = false;
-    },
-    toggleSidebarCollapse() {
-      this.isSidebarCollapsed = !this.isSidebarCollapsed;
     },
     toggleSettingsModal() {
       this.showSettingsModal = !this.showSettingsModal;

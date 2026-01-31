@@ -337,15 +337,6 @@ export default {
             const val = parseFloat(value);
             return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
-        toggleSidebar() {
-            this.isSidebarOpen = !this.isSidebarOpen
-        },
-        closeSidebar() {
-            this.isSidebarOpen = false
-        },
-        toggleSidebarCollapse() {
-            this.isSidebarCollapsed = !this.isSidebarCollapsed
-        },
         toggleSettingsModal() {
             this.showSettingsModal = !this.showSettingsModal;
         },
@@ -500,9 +491,6 @@ export default {
                 this.copiersCount = 0;
                 this.copierStats = { managedBalance: 0, todayProfit: 0, totalVolume: 0 };
             }
-        },
-        toggleMobileSidebar() {
-            this.isSidebarOpen = !this.isSidebarOpen;
         },
         openDevModal() {
             this.showDevModal = true;

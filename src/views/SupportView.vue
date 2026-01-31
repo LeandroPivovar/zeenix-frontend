@@ -16,7 +16,7 @@
       @close-sidebar="closeMobileMenu"
     />
 
-    <div class="main-content-wrapper">
+    <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="accountBalance"
@@ -212,8 +212,8 @@ export default {
       loading: true,
       error: null,
       searchTimeout: null,
-      isSidebarOpen: true,
-      isSidebarCollapsed: false,
+      isSidebarOpen: false,
+      isSidebarCollapsed: true,
       isMobile: false,
       isMobileMenuOpen: false,
       showSuggestions: false,
@@ -272,7 +272,15 @@ export default {
     toggleMobileMenu() {
       this.isMobileMenuOpen = !this.isMobileMenuOpen
     },
+    toggleMobileSidebar() {
+      this.isSidebarOpen = !this.isSidebarOpen
+    },
+    closeSidebar() {
+      this.isSidebarOpen = false
+      this.isMobileMenuOpen = false
+    },
     closeMobileMenu() {
+      this.isSidebarOpen = false
       this.isMobileMenuOpen = false
     },
     getDerivToken() {

@@ -336,12 +336,6 @@ export default {
           return currency ? `${currency} ` : '$';
       }
     },
-    closeSidebar() {
-      this.isSidebarOpen = false;
-    },
-    toggleSidebarCollapse() {
-      this.isSidebarCollapsed = !this.isSidebarCollapsed;
-    },
     toggleSettingsModal() {
       this.showSettingsModal = !this.showSettingsModal;
     },
