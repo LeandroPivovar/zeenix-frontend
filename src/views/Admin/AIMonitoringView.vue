@@ -302,15 +302,15 @@
                                                         <td class="px-4 py-4 text-muted-foreground font-mono">{{ op.market }}</td>
                                                         <td class="px-4 py-4 text-foreground font-medium">$ {{ op.stake.toFixed(2) }}</td>
                                                         <td class="px-4 py-4 text-foreground font-medium">
-                                                            <span v-if="op.result === 'OPEN'" class="text-yellow-500 font-bold uppercase tracking-tight">OPEN</span>
-                                                            <span v-else :class="op.result === 'WON' ? 'text-success' : 'text-red-500'" class="font-bold">
-                                                                {{ op.result }}
+                                                            <span v-if="op.result === 'OPEN' || op.result === 'PENDING'" class="text-yellow-500 font-bold uppercase tracking-tight">PENDENTE</span>
+                                                            <span v-else :class="op.result === 'WON' || op.result === 'WIN' ? 'text-success' : 'text-red-500'" class="font-bold">
+                                                                {{ op.result === 'WON' || op.result === 'WIN' ? 'WIN' : op.result }}
                                                             </span>
                                                         </td>
                                                         <td class="px-4 py-4 text-right">
-                                                            <span v-if="op.result === 'OPEN'" class="text-muted-foreground/40 font-bold">-</span>
-                                                            <span v-else class="font-bold" :class="op.result === 'WON' ? 'text-success' : 'text-red-500'">
-                                                                {{ op.result === 'WON' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
+                                                            <span v-if="op.result === 'OPEN' || op.result === 'PENDING'" class="text-muted-foreground/40 font-bold">-</span>
+                                                            <span v-else class="font-bold" :class="op.result === 'WON' || op.result === 'WIN' ? 'text-success' : 'text-red-500'">
+                                                                {{ op.result === 'WON' || op.result === 'WIN' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
                                                             </span>
                                                         </td>
                                                     </tr>
@@ -1226,7 +1226,7 @@ export default {
                 `Status: Finalizado`
             ], 'info');
             localStorage.removeItem('ai_active_config');
-            setTimeout(() => { this.$router.push('/StatsIAs'); }, 1000);
+            setTimeout(() => { this.$router.push('/Investments-IA'); }, 1000);
         },
         clearLogs() {
             this.monitoringLogs = [];

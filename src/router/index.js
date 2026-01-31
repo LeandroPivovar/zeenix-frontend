@@ -181,6 +181,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/Investments-IA/active',
+    name: 'InvestmentMonitoringActive',
+    component: () => import('../views/Admin/AIMonitoringView.vue'),
+    meta: { requiresAuth: true, requiresDeriv: true }
+  },
+  {
     path: '/MasterTrader',
     name: 'MasterTraderView',
     component: MasterTraderView,
