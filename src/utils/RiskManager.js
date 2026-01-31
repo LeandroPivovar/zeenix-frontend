@@ -97,6 +97,7 @@ export const RiskManager = {
         }
 
         // Default
+        console.log(`[RiskManager] Calc Default Stake: Base=${baseStake}, Wins=${state.consecutiveWins}, LastProfit=${state.lastProfitPrincipal}, Skip=${state.skipSorosNext}`);
         return baseStake;
     },
 
