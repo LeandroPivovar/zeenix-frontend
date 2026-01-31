@@ -1020,9 +1020,9 @@ export default {
 
                 this.$root.$toast.success(`IA ${strategyPreset.name} ativada com sucesso!`);
                 
-                // ✅ Redirecionar para página de monitoramento correta
+                // ✅ Redirecionar para página de monitoramento (ADMIN/MONITORING)
                 setTimeout(() => {
-                    this.$router.push('/iaTeste');
+                    this.$router.push('/StatsIAs/monitoring');
                 }, 500);
 
             } catch (error) {

@@ -88,12 +88,11 @@ aside.sidebar,
 	}
 
 	.sidebar.collapsed:not(:hover) .sidebar-brand {
-		padding: 0 20px;
-		/* Further reduced padding-top to 0 */
+		padding: 10px 20px 0 20px;
+		/* Increased top padding to 10px to lower the logo */
 		height: 48px;
-		/* Slightly reduced height */
-		margin-top: -5px;
-		/* Shifted up slightly to total ~20-25px higher than original 24px padding */
+		margin-top: 0;
+		/* Removed negative margin to help lower it */
 		display: flex;
 		flex-direction: column;
 		gap: 0;

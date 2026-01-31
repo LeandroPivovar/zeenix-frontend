@@ -1,5 +1,5 @@
 <template>
-    <div class="monitoring-dashboard-wrapper h-full animate-fadeIn" :class="{ 'px-4': isMobile }">
+    <div class="monitoring-dashboard-wrapper h-full animate-fadeIn w-full" :class="{ 'px-4': isMobile }">
         <!-- Header Stats Card -->
         <div class="w-full bg-gradient-to-br from-[#161616]/60 via-[#161616]/40 to-[#161616]/20 rounded-2xl border border-[rgba(255,255,255,0.05)] p-4 md:p-6 lg:p-8 relative overflow-hidden shadow-2xl shadow-black/40 mb-6">
             <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
