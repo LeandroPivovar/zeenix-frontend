@@ -1913,29 +1913,35 @@ export default {
                             
                             this.addLog(`🔍 Proposta recebida: Payout $${payout} (Stake: $${stakeValue})`, 'info');
                             
-                            // 1. Update sessionState with the real payout for accuracy in next calculations
-                            const realPayoutRate = payout / stakeValue;
+                            // 1. Update sessionState with the real PROFIT RATE for accuracy in next calculations
+                            // Deriv Payout = Stake + Profit. 
+                            // We need Profit Rate = (Payout - Stake) / Stake.
+                            const realProfitRate = (payout - stakeValue) / stakeValue;
                             
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
-                                this.sessionState.lastPayoutRecovery = realPayoutRate;
+                                this.sessionState.lastPayoutRecovery = realProfitRate;
                             } else {
-                                this.sessionState.lastPayoutPrincipal = realPayoutRate;
+                                this.sessionState.lastPayoutPrincipal = realProfitRate;
                             }
-                            RiskManager.updatePayoutHistory(msg.proposal.contract_type, realPayoutRate);
+                            
+                            // Normalize Key to match RiskManager
+                            const cType = msg.proposal.contract_type.toUpperCase();
+                            RiskManager.updatePayoutHistory(cType, realProfitRate);
 
                             // 2. CHECK IF STAKE ADJUSTMENT IS NEEDED
-                            // If we are in Recovery mode, the stake MUST be precise to ensure coverage.
-                            // We now have the REAL payout rate. Let's ask RiskManager what the stake SHOULD be.
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
                                 const activeStrategy = this.sessionState.activeStrategy === 'RECUPERACAO' ? 'RECUPERACAO' : 'PRINCIPAL';
                                 const config = activeStrategy === 'RECUPERACAO' ? this.recoveryConfig : this.form;
+                                
+                                // Debug: Check if PayoutHistory was updated
+                                // console.log('DEBUG PAYOUT:', cType, RiskManager.payoutHistory[cType]);
+
                                 // We manually temporarily inject the just-learned payout history into the calculation
                                 const exactStake = RiskManager.calculateNextStake(this.sessionState, config);
                                 
-                                // Tolerance check: If current proposal stake is significantly different (> 1 cent diff?)
-                                // RiskManager returns rounded stakes (2 decimal).
+                                // Tolerance check
                                 if (Math.abs(exactStake - stakeValue) > 0.02) {
-                                    this.addLog(`⚠️ Recalibrando Martingale: Payout Real ${realPayoutRate.toFixed(2)}x exige Stake $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
+                                    this.addLog(`⚠️ Calibrando Martingale: Payout ${realProfitRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
                                     
                                     // RE-REQUEST PROPOSAL with corrected stake
                                     // Track retries using a request ID based mechanism or simple session state flag (less robust but works for single thread)
