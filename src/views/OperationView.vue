@@ -2,7 +2,7 @@
   <div class="zenix-layout">
     <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
 
-    <div class="content-wrapper">
+    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="currentBalance?.balance || info?.balance"
