@@ -7,7 +7,7 @@
                 <span class="logo-full">ZENIX</span>
             </div>
             <a 
-                v-if="!isCollapsed && studentGroupConfig.show" 
+                v-if="studentGroupConfig.show" 
                 :href="studentGroupConfig.link" 
                 target="_blank" 
                 class="student-group-badge"

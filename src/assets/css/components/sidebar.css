@@ -138,6 +138,12 @@ aside.sidebar,
 		pointer-events: none;
 	}
 
+	.sidebar.collapsed:not(:hover) .student-group-badge {
+		opacity: 0;
+		transform: translateX(10px);
+		pointer-events: none;
+	}
+
 	/* Cleanup of old buttons */
 	.student-group-brand-btn,
 	.student-group-menu-btn {
