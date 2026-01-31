@@ -376,61 +376,66 @@
 								:class="{ 'active': selectedAgent === agent.id }"
 								@click="selectAgent(agent.id)"
 							>
-								<!-- Left Section: Avatar & Branding -->
-								<div class="agent-card-left">
-									<div class="agent-avatar-box" :class="agent.id">
-										<video 
-											v-if="agent.video" 
-											:src="agent.video" 
-											class="agent-avatar-video" 
-											autoplay 
-											loop 
-											muted 
-											playsinline
-										></video>
-										<div v-else class="agent-avatar-fallback">
-											<i class="fas fa-robot"></i>
-										</div>
+								<!-- Left Section: Avatar (Tall & Rounded) -->
+								<div class="agent-card-left-tall">
+									<video 
+										v-if="agent.video" 
+										:src="agent.video" 
+										class="agent-video-tall" 
+										autoplay 
+										loop 
+										muted 
+										playsinline
+									></video>
+									<div v-else class="agent-avatar-fallback-tall">
+										<i class="fas fa-robot"></i>
 									</div>
 								</div>
 
-								<!-- Middle Section: Info & Benefits -->
-								<div class="agent-card-middle">
-									<div class="agent-name-row">
-										<h4 class="agent-name-premium">{{ agent.title.replace('Agente ', '') }}</h4>
+								<!-- Middle Section: Info & Stats -->
+								<div class="agent-card-content">
+									<div class="agent-header-row">
+										<div class="agent-title-col">
+											<h4 class="agent-name-premium">{{ agent.title.replace('Agente ', '') }}</h4>
+											<p class="agent-description-premium">{{ agent.subtitle }}</p>
+										</div>
 										<span class="agent-profile-badge" :class="agent.profileBadge.toLowerCase()">
 											{{ agent.profileBadge }}
 										</span>
 									</div>
-									<p class="agent-description-premium">{{ agent.subtitle }}</p>
 									
-									<div class="agent-benefits-list">
-										<div class="benefits-label">Ideal para:</div>
-										<div class="benefits-grid">
-											<div v-for="(benefit, idx) in agent.benefits" :key="idx" class="benefit-item-premium">
-												<i class="fas fa-check-circle check-icon"></i>
-												<span>{{ benefit }}</span>
-											</div>
+									<div class="agent-tech-details">
+										<div class="tech-item">
+											<span class="tech-label">Assertividade</span>
+											<span class="tech-value">{{ agent.assertiveness }}</span>
+										</div>
+										<div class="tech-item">
+											<span class="tech-label">Retorno</span>
+											<span class="tech-value">{{ agent.return }}</span>
+										</div>
+										<div class="tech-item full-width">
+											<span class="tech-label">Análise</span>
+											<span class="tech-value analysis-text">{{ agent.analysis }}</span>
 										</div>
 									</div>
 								</div>
 
-								<!-- Right Section: Stats & Action -->
-								<div class="agent-card-right">
-									<div class="agent-performance-box">
-										<span class="perf-value-premium">{{ agent.percentage }}</span>
-										<span class="perf-label-premium">{{ agent.percentageLabel }}</span>
+								<!-- Right Section: Select Button -->
+								<div class="agent-card-action">
+									<div class="agent-performance-badget">
+										<span class="perf-val">{{ agent.percentage }}</span>
+										<span class="perf-lbl">Performance</span>
 									</div>
 									<button 
 										class="agent-select-btn-premium" 
 										:class="{ 'selected': selectedAgent === agent.id }"
 									>
-										{{ selectedAgent === agent.id ? 'Selecionado' : 'Selecionar ' + agent.title.replace('Agente ', '') }}
+										{{ selectedAgent === agent.id ? 'Selecionado' : 'Selecionar' }}
 									</button>
 								</div>
 								
-								<!-- Selection Glow Effect -->
-								<div class="selection-glow" v-if="selectedAgent === agent.id"></div>
+								<!-- Glow Effect -->
+								<div class="selection-glow"></div>
 							</div>
 						</div>
 					</div>
@@ -2264,4 +2269,264 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     content: none !important;
 }
 
-</style>
+/* --- NEW AGENT SELECTION MODAL STYLES (REVISED) --- */
+
+.agent-selection-card {
+    display: flex;
+    background: linear-gradient(190deg, #1c1b1b00, #0d390d2e, #25e34200);
+    border: 1px solid #1C1C1C;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    height: 250px; /* Request: 250px height */
+    box-sizing: border-box;
+    align-items: stretch;
+}
+
+.agent-selection-card:hover {
+    border-color: #22C55E;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), 0 0 15px rgba(34, 197, 94, 0.15);
+    background: linear-gradient(190deg, #1c1b1b00, #0d390d2e, #25e34200);
+    transform: translateY(-2px);
+}
+
+.agent-selection-card.active {
+    border-color: #22C55E;
+    box-shadow: 0 0 0 1px #22C55E, 0 0 20px rgba(34, 197, 94, 0.2);
+    background: linear-gradient(190deg, #1c1b1b00, #0d390d40, #25e3420a);
+}
+
+/* Section Left: Tall Image with Radius */
+.agent-card-left-tall {
+    width: 150px;
+    flex-shrink: 0;
+    position: relative;
+    padding: 10px; /* Slight padding so radius is visible */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+.agent-video-tall {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 16px; /* Request: 16px radius */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.agent-avatar-fallback-tall {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #111;
+    color: #333;
+    font-size: 2rem;
+    border-radius: 16px;
+}
+
+/* Section Middle: Content */
+.agent-card-content {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    justify-content: center;
+}
+
+.agent-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.agent-title-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.agent-name-premium {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #FFF;
+    margin: 0;
+}
+
+.agent-description-premium {
+    font-size: 0.9rem;
+    color: #888;
+    margin: 0.25rem 0 0;
+}
+
+.agent-profile-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: #1A1A1A;
+    color: #666;
+    border: 1px solid #333;
+    white-space: nowrap;
+}
+
+.agent-profile-badge.ofensivo {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22C55E;
+    border-color: rgba(34, 197, 94, 0.2);
+}
+
+.agent-profile-badge.defensivo {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3B82F6;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Tech Info Grid */
+.agent-tech-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #181818;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.tech-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tech-item.full-width {
+    grid-column: span 2;
+    border-top: 1px solid #181818;
+    padding-top: 0.75rem;
+    margin-top: 0px;
+}
+
+.tech-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #555;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.tech-value {
+    font-size: 13px;
+    color: #EEE;
+    font-weight: 500;
+}
+
+.tech-value.analysis-text {
+    color: #AAA; 
+}
+
+/* Section Right: Actions */
+.agent-card-action {
+    width: 160px;
+    flex-shrink: 0;
+    padding: 1.5rem;
+    border-left: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    background: rgba(0,0,0,0.2);
+}
+
+.agent-performance-badget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.perf-val {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #22C55E;
+}
+
+.perf-lbl {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #555;
+}
+
+.agent-select-btn-premium {
+    width: 100%;
+    padding: 0.75rem 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: #111;
+    border: 1px solid #333;
+    color: #FFF;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.agent-select-btn-premium:hover {
+    background: #222;
+    border-color: #555;
+    transform: translateY(-1px);
+}
+
+.agent-select-btn-premium.selected {
+    background: #22C55E;
+    border-color: #22C55E;
+    color: #000;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.selection-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.05);
+    pointer-events: none;
+    z-index: 10;
+}
+
+@media (max-width: 768px) {
+    .agent-selection-card {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .agent-card-left-tall {
+        width: 100%;
+        height: 200px;
+        border-right: none;
+        border-bottom: 1px solid #1C1C1C;
+        padding: 15px;
+    }
+    
+    .agent-video-tall {
+        border-radius: 12px;
+    }
+
+    .agent-card-action {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid #1C1C1C;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 1rem;
+    }
+    
+    .agent-select-btn-premium {
+        width: auto;
+        padding: 0.6rem 2rem;
+    }
+}
