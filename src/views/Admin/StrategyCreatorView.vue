@@ -1998,6 +1998,9 @@ export default {
                                 buy: proposalId,
                                 price: stakeValue
                             }));
+                            
+                            // Successful negotiation logic resets the retry flag
+                            this.retryingProposal = false;  
                         }
                     }
 
@@ -2011,6 +2014,7 @@ export default {
                             console.error('[WS] Erro na compra:', msg.error);
                             this.addLog(`❌ ERRO NA COMPRA: ${msg.error.message}`, 'error');
                             this.isNegotiating = false; // Reset lock on buy error
+                            this.retryingProposal = false; // Ensure flag is cleared
                         } else {
                             const payout = msg.buy.payout;
                             const stake = msg.buy.buy_price;
@@ -2020,12 +2024,15 @@ export default {
                             this.addLog(`🚀 COMPRA REALIZADA! | Entrada: $${stake.toFixed(2)} | Payout: $${payout.toFixed(2)} (${profitPercent}%)`, 'success');
                             
                             // Activate fast result calculation if it's 1-tick
+                            /* 
+                                DISABLED FAST RESULT: User requested to rely on official broker response only.
                             if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
                                 this.pendingFastResult.contractId = msg.buy.contract_id;
                                 this.pendingFastResult.payout = payout; // Store real payout for fast result estimation
                                 this.pendingFastResult.active = true;
                                 console.log('[FastResult] Monitoramento rápido ativado para o próximo tick.');
                             }
+                            */
                             
                             this.isNegotiating = false; // Reset lock on success
                             this.subscribeToContract(msg.buy.contract_id);
@@ -2097,6 +2104,8 @@ export default {
                 this.addLog(`📈 Tick recebido: ${price} - Tick #${this.tickCount}`, 'info');
 
                 // --- Fast Result Calculation ---
+                // DISABLED as per user request
+                /*
                 if (this.pendingFastResult && this.pendingFastResult.active) {
                     const lastDigit = parseInt(price.toString().slice(-1));
                     const { contractId, barrier, contractType, stake } = this.pendingFastResult;
@@ -2141,6 +2150,7 @@ export default {
                     
                     this.checkLimits();
                 }
+                */
                 
                 // --- Real-time Analysis Integration ---
                 // Add to history buffers (limit to 100 for performance)
@@ -2327,7 +2337,7 @@ export default {
                 contractId: null,
                 barrier: config.prediction,
                 contractType: config.tradeType,
-                active: false,
+                active: false, // DISABLED FAST RESULT as per user request
                 stake: stake,
                 analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
                 payout: null, // Will be filled when proposal arrives
@@ -2406,6 +2416,16 @@ export default {
                     trade.fastResultApplied = true;
                     if (trade.result === 'WON') this.monitoringStats.wins++;
                     else this.monitoringStats.losses++;
+                    
+                    // CRITICAL: Must notify RiskManager to update state (Reset Recovery, etc.)
+                    RiskManager.processTradeResult(
+                        this.sessionState, 
+                        trade.result === 'WON', 
+                        trade.pnl, 
+                        trade.stake, 
+                        trade.analysisType, 
+                        this.recoveryConfig.lossesToActivate
+                    );
 
                     
                     const oldAnalysis = this.sessionState.analysisType;
