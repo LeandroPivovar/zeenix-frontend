@@ -23,12 +23,7 @@
                 target="_blank" 
                 class="student-group-badge-premium"
             >
-                <div class="badge-icon-bg">
-                    <i v-if="studentGroupConfig.icon" :class="studentGroupConfig.icon"></i>
-                    <i v-else class="fa-solid fa-users"></i>
-                </div>
                 <span>Comunidade</span>
-                <i class="fa-solid fa-arrow-up-right-from-square external-icon text-[8px] opacity-40 ml-1"></i>
             </a>
         </div>
         

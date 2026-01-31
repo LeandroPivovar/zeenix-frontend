@@ -564,7 +564,7 @@ export default {
     return {
       isSidebarOpen: true,
       isMobile: false,
-      localSidebarCollapsed: true,
+      localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') !== 'false',
       accountType: 'real',
       showIAsModal: false,
       showSettingsModal: false,
@@ -1089,6 +1089,7 @@ export default {
     toggleSidebarCollapse() {
       if (!this.isMobile) {
         this.localSidebarCollapsed = !this.localSidebarCollapsed;
+        localStorage.setItem('sidebarCollapsed', this.localSidebarCollapsed);
       }
     },
     checkMobile() {

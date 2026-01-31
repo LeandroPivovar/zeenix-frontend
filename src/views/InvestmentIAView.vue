@@ -508,7 +508,7 @@ export default {
     data() {
         return {
             isSidebarOpen: false,
-            localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'false' ? false : true, // Default to true (collapsed) if not set, or persist
+            localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') !== 'false',
 
             showDevModal: false,
             isMobile: false,
@@ -919,6 +919,12 @@ export default {
         
         checkMobile() {
             this.isMobile = window.innerWidth <= 1024;
+            if (this.isMobile) {
+                this.isSidebarOpen = false;
+                this.localSidebarCollapsed = false;
+            } else {
+                this.isSidebarOpen = true;
+            }
         },
         
         async handleToggleChange(event) {
