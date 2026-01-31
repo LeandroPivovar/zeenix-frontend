@@ -6,8 +6,8 @@
       <div class="col-chart flex-1 flex flex-col gap-5">
         <!-- Chart Container -->
         <div 
-          class="bg-zenix-card border border-zenix-border rounded-xl flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card h-full"
-          :class="{ 'overflow-hidden': activeTab === 'chart' }"
+          class="bg-zenix-card border border-zenix-border rounded-xl flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card"
+          :class="[{ 'overflow-hidden': activeTab === 'chart' }, activeTab === 'chart' ? 'h-full' : 'h-fit']"
         >
           <!-- Card Header for Chart Controls -->
           <div v-if="activeTab === 'chart'" class="flex items-center justify-end px-6 py-4 flex-shrink-0 border-b border-white/5">
