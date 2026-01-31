@@ -686,6 +686,14 @@ export default {
 
 		selectAgent(agentId) {
 			this.selectedAgent = agentId;
+			
+			// ✅ FIX: Auto-select correct market based on agent requirement
+			if (agentId === 'falcon') {
+				this.selectedMarket = 'volatility_10';
+			} else {
+				this.selectedMarket = 'volatility_100';
+			}
+			
 			this.closeAgentSelectorModal();
 		},
 
