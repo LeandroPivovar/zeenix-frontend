@@ -190,8 +190,9 @@
     data() {
       return {
         activeTab: 'config',
-        isSidebarOpen: true,
-        isSidebarCollapsed: false,
+        isSidebarOpen: false,
+        isSidebarCollapsed: true, // Começa recolhido
+        showDevModal: false,
         isSettingsOpen: false,
         isMobile: false,
         loading: true,
@@ -238,6 +239,9 @@
         } else {
           this.isSidebarOpen = true;
         }
+      },
+      openDevModal() {
+        this.showDevModal = true;
       },
       async loadAccountBalance() {
         try {

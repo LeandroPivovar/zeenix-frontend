@@ -173,24 +173,27 @@ body,
   .main-content-wrapper,
   .operation-main,
   .box-content {
-    margin-left: 80px !important;
-    width: calc(100% - 80px) !important;
+    margin-left: 280px !important;
+    width: calc(100% - 280px) !important;
     transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       width 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
-  /* Quando NÃO estiver colapsado (apenas se a classe for omitida ou removida) */
-  .dashboard-content-wrapper:not(.sidebar-collapsed),
-  .content-wrapper:not(.sidebar-collapsed),
-  .main-content-wrapper:not(.sidebar-collapsed),
-  .operation-main:not(.sidebar-collapsed),
-  .box-content:not(.sidebar-collapsed) {
-    margin-left: 280px !important;
-    width: calc(100% - 280px) !important;
+  /* Quando estiver colapsado (usando a classe explicitamente) */
+  .sidebar-collapsed.dashboard-content-wrapper,
+  .sidebar-collapsed .dashboard-content-wrapper,
+  .sidebar-collapsed.content-wrapper,
+  .sidebar-collapsed .content-wrapper,
+  .sidebar-collapsed.main-content-wrapper,
+  .sidebar-collapsed .main-content-wrapper,
+  .sidebar-collapsed.operation-main,
+  .sidebar-collapsed .operation-main,
+  .sidebar-collapsed.box-content,
+  .sidebar-collapsed .box-content {
+    margin-left: 80px !important;
+    width: calc(100% - 80px) !important;
   }
 
-  /* Robust sidebar-collapsed handling (works if class is on parent or on the element itself) */
-  /* Regra redundante removida pois o padrão agora é 80px */
 
   /* Hover expansion synchronization */
   .sidebar-wrapper:hover~.dashboard-content-wrapper,

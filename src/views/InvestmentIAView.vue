@@ -530,7 +530,8 @@ export default {
     data() {
         return {
             isSidebarOpen: false,
-            isSidebarCollapsed: false,
+            isSidebarCollapsed: true, // Começa recolhido
+            showDevModal: false,
             isMobile: false,
             isInvestmentActive: false,
             isActivating: false,

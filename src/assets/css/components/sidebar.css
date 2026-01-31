@@ -2,10 +2,10 @@
 
 aside.sidebar,
 .sidebar {
-	/* Estado inicial - recolhido no desktop */
-	width: 80px !important;
-	min-width: 80px !important;
-	max-width: 80px !important;
+	/* Estado inicial - expandido no desktop */
+	width: 280px !important;
+	min-width: 280px !important;
+	max-width: 280px !important;
 	background: #0b0b0b;
 	border-right: 1px solid #1C1C1C !important;
 	border-left: none !important;
@@ -18,13 +18,23 @@ aside.sidebar,
 	left: 0;
 	top: 0;
 	height: 100vh;
-	/* z-index aumentado para ficar acima de outros overlays se necessário */
 	z-index: 1001 !important;
 	box-sizing: border-box;
 	transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	font-family: 'Inter', sans-serif;
 	overflow: visible;
 	padding: 0 !important;
+}
+
+/* Estado Colapsado */
+.sidebar.collapsed {
+	width: 80px !important;
+	min-width: 80px !important;
+	max-width: 80px !important;
+}
+
+.sidebar.collapsed:hover {
+	width: 280px !important;
 }
 
 .sidebar::after {
@@ -65,14 +75,18 @@ aside.sidebar,
 		height: 80px;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		/* Espaçamento entre logo e botão */
+		justify-content: flex-start;
+		/* Default para expandido */
 		border-bottom: 1px solid #1C1C1C;
 		margin-bottom: 30px;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-		padding: 0 20px 0 32px;
-		/* Reduzido o padding right para o botão caber melhor */
+		padding: 0 32px;
 		position: relative;
+	}
+
+	.sidebar.collapsed .sidebar-brand {
+		justify-content: center;
+		padding: 0;
 	}
 
 	.brand-logo-container {
@@ -87,25 +101,37 @@ aside.sidebar,
 
 	.logo-z {
 		display: block;
-		opacity: 1;
+		opacity: 0;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 		position: absolute;
-		left: 32px;
+		left: 0;
+		right: 0;
+		text-align: center;
 		font-size: 24px;
 		font-weight: 700;
 		color: #fff;
 	}
 
+	.sidebar.collapsed:not(:hover) .logo-z {
+		opacity: 1;
+	}
+
 	.logo-full {
 		display: block;
+		opacity: 1;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+		position: absolute;
+		left: 32px;
+		font-size: 22px;
+		font-weight: 800;
+		letter-spacing: 2px;
+		color: #22C55E;
+		white-space: nowrap;
+	}
+
+	.sidebar.collapsed:not(:hover) .logo-full {
 		opacity: 0;
 		visibility: hidden;
-		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-		white-space: nowrap;
-		font-size: 20px;
-		font-weight: 700;
-		color: #fff;
-		letter-spacing: 1px;
 	}
 
 	.sidebar-wrapper:hover .logo-z {
@@ -118,29 +144,10 @@ aside.sidebar,
 		visibility: visible;
 	}
 
-	/* Small Student Group Button in Brand Area */
-	.student-group-brand-btn {
-		width: 32px;
-		height: 32px;
-		background: rgba(34, 197, 94, 0.1);
-		border: 1px solid rgba(34, 197, 94, 0.2);
-		border-radius: 8px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: #22C55E;
-		text-decoration: none;
-		transition: all 0.2s ease;
-		flex-shrink: 0;
-	}
-
-	.student-group-brand-btn:hover {
-		background: rgba(34, 197, 94, 0.2);
-		transform: scale(1.05);
-	}
-
-	.student-group-brand-btn i {
-		font-size: 16px;
+	/* Cleanup of old buttons */
+	.student-group-brand-btn,
+	.student-group-menu-btn {
+		display: none !important;
 	}
 
 	/* Labels só somem se NÃO estiver em hover E a sidebar estiver em estado colapsado */
@@ -385,14 +392,14 @@ aside.sidebar,
 	overflow: hidden;
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	/* Reduzido o gap */
+	gap: 10px;
+	/* Reduzido o gap de 12px para 10px */
 	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	font-size: 14px;
 	font-weight: 500;
 	text-decoration: none;
-	margin-bottom: 4px;
-	/* Reduzido o gap entre botões */
+	margin-bottom: 2px;
+	/* Gap mínimo entre botões */
 }
 
 .menu-item:hover {
@@ -420,7 +427,7 @@ aside.sidebar,
 
 /* Estado Ativo */
 .menu-item.active {
-	background-color: rgba(34, 197, 94, 0.1);
+	background-color: rgba(34, 197, 94, 0.15);
 	color: #DFDFDF;
 	font-weight: 600;
 	border-left: 2px solid #22C55E;
