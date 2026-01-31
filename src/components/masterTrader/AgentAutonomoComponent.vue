@@ -1,71 +1,21 @@
-<template>
-  <div>
-    <div
-      class="layout-agente-autnomo"
-      :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
-    >
-      <div
-        v-if="isSidebarOpen && isMobile"
-        class="sidebar-overlay"
-        @click="closeSidebar"
-      ></div>
-
-      <AppSidebar
-        :is-open="isSidebarOpen"
-        :is-collapsed="isSidebarCollapsed"
-        :is-mobile="isMobile"
-        @close-sidebar="closeSidebar"
-        @toggle-collapse="toggleSidebarCollapse"
+  <div class="layout-agente-autnomo">
+    <div class="container-componentes">
+      <component
+        :is="componenteAtual"
+        :agente-data="agenteData"
+        :tempo-ativo="agenteData.tempoAtivo"
+        :session-stats="sessionStats"
+        :trade-history="tradeHistoryData"
+        :show-title="showTitle"
+        @pausar-agente="toggleAgenteStatus('componenteAtivo')"
+        @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
       />
-
-      <TopNavbar
-        :is-sidebar-collapsed="isSidebarCollapsed"
-        :balance="accountBalance"
-        :account-type="isDemo ? 'demo' : 'real'"
-        :currency="accountCurrency"
-        :balances-by-currency-real="balancesByCurrencyReal"
-        :balances-by-currency-demo="balancesByCurrencyDemo"
-        @account-type-changed="handleAccountTypeChange"
-        @toggle-sidebar="toggleMobileSidebar"
-        @toggle-sidebar-collapse="toggleSidebarCollapse"
-        @open-settings="toggleSettingsModal"
-      />
-
-      <SettingsSidebar
-        :is-open="isSettingsOpen"
-        :balance="accountBalance"
-        :account-type="isDemo ? 'demo' : 'real'"
-        :balances-by-currency-real="balancesByCurrencyReal"
-        :balances-by-currency-demo="balancesByCurrencyDemo"
-        @close="isSettingsOpen = false"
-        @account-type-changed="handleAccountTypeChange"
-      />
-
-      <div class="container-componentes">
-        <component
-          :is="componenteAtual"
-          :agente-data="agenteData"
-          :tempo-ativo="agenteData.tempoAtivo"
-          :session-stats="sessionStats"
-          :trade-history="tradeHistoryData"
-          :show-title="showTitle"
-          @pausar-agente="toggleAgenteStatus('componenteAtivo')"
-          @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
-        />
-      </div>
-
-      <DesktopBottomNav />
     </div>
   </div>
-</template>
 
 <script>
-import AppSidebar from "../Sidebar.vue";
-import TopNavbar from "../TopNavbar.vue";
 import AgenteAutonomoActive from "../autonomo/AgenteAutonomoActive.vue";
 import AgenteAutonomoInactive from "../autonomo/AgenteAutonomoInactive.vue";
-import SettingsSidebar from "../SettingsSidebar.vue";
-import DesktopBottomNav from "../DesktopBottomNav.vue";
 import { loadAccountBalance, reloadAccountBalance } from '../../utils/balanceLoader';
 
 export default {
@@ -73,10 +23,6 @@ export default {
   components: {
     AgenteAutonomoActive,
     AgenteAutonomoInactive,
-    AppSidebar,
-    TopNavbar,
-    SettingsSidebar,
-    DesktopBottomNav,
   },
   data() {
     return {

@@ -393,7 +393,7 @@
   
   .box {
     width: 100%;
-    padding: 20px 20px 10px 20px;
+    padding: 90px 20px 10px 20px;
     margin: 0;
   }
   

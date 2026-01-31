@@ -1,32 +1,8 @@
 <template>
   <div class="zenix-layout">
-    <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
 
     <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-      <TopNavbar 
-        :is-sidebar-collapsed="isSidebarCollapsed"
-        :balance="currentBalance?.balance || info?.balance"
-        :account-type="accountType"
-        @open-settings="toggleSettingsModal"
-        @account-type-changed="switchAccount"
-        :balances-by-currency-real="balancesByCurrencyReal"
-        :balances-by-currency-demo="balancesByCurrencyDemo"
-        :currency-prefix="preferredCurrencyPrefix"
-        @toggle-sidebar="handleHamburgerClick"
-        @toggle-sidebar-collapse="toggleSidebarCollapse"
-      />
-      
-      <!-- Settings Sidebar -->
-      <SettingsSidebar
-        :is-open="showSettingsModal"
-        :balance="info?.balance"
-        :account-type="accountType"
-        :balances-by-currency-real="balancesByCurrencyReal"
-        :balances-by-currency-demo="balancesByCurrencyDemo"
-        :currency-prefix="preferredCurrencyPrefix"
-        @close="closeSettingsModal"
-        @account-type-changed="switchAccount"
-      />
+
 
       <main class="main-content" style="margin-top: 60px;">
         <!-- Mobile Header (only visible on mobile) -->
@@ -87,33 +63,24 @@
         </div>
       </main>
     </div>
-    <DesktopBottomNav />
   </div>
 </template>
 
 <script>
-import AppSidebar from '../Sidebar.vue';
-import TopNavbar from '../TopNavbar.vue';
-import SettingsSidebar from '../SettingsSidebar.vue';
 import OperationChart from '../OperationChart.vue';
 import OperationDigits from '../OperationDigits.vue';
 import OperationLogs from '../OperationLogs.vue';
 import OperationLastOrders from '../OperationLastOrders.vue';
-import DesktopBottomNav from '../DesktopBottomNav.vue';
 import accountBalanceMixin from '../../mixins/accountBalanceMixin';
 
 export default {
   name: 'OperationView',
   mixins: [accountBalanceMixin],
   components: {
-    AppSidebar,
-    TopNavbar,
-    SettingsSidebar,
     OperationChart,
     OperationDigits,
     OperationLogs,
     OperationLastOrders,
-    DesktopBottomNav
   },
   data() {
     return {

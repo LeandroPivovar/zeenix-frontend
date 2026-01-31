@@ -1,7 +1,6 @@
+</template>
 <template>
     <div class="zenix-layout">
-
-
         <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <main class="main-content" style="margin-top: 0px;">
                 <!-- AI Vision Panel - Only show when IA is inactive -->
@@ -350,13 +349,11 @@
             @confirm="showInsufficientBalanceModal = false"
         />
     </div>
-    <DesktopBottomNav />
 </template>
 
 <script>
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import ZenixTooltip from '../ZenixTooltip.vue';
-import DesktopBottomNav from '../DesktopBottomNav.vue';
 import accountBalanceMixin from '../../mixins/accountBalanceMixin';
 import InsufficientBalanceModal from '../InsufficientBalanceModal.vue';
 
@@ -366,7 +363,6 @@ export default {
     components: {
         InvestmentActive,
         ZenixTooltip,
-        DesktopBottomNav,
         InsufficientBalanceModal
     },
     data() {

@@ -159,6 +159,7 @@ aside.sidebar,
 		opacity: 0;
 		transform: translateX(10px);
 		pointer-events: none;
+		display: none !important;
 	}
 
 	/* Cleanup of old buttons */

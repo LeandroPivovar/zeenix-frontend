@@ -587,12 +587,19 @@ export default {
 /* Remove margens e ajusta largura dos wrappers internos dos componentes filhos */
 .layout-master-trader .content-wrapper,
 .layout-master-trader .layout-content-agent-autonomo,
-.layout-master-trader .zenix-layout,
-.layout-master-trader .master-trader-main-content {
+.layout-master-trader .zenix-layout {
     margin-left: 0 !important;
     margin-right: 0 !important;
     width: 100% !important;
     padding: 0 !important;
+    max-width: none !important;
+}
+
+.layout-master-trader .master-trader-main-content {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    padding: 0 20px !important;
     max-width: none !important;
 }
 
@@ -708,7 +715,7 @@ export default {
     align-items: stretch;
     background-color: #0d0c0c;
     border-radius: 0;
-    padding: 10px 0;
+    padding: 90px 20px;
     margin: 0; 
     border-bottom: 1px solid #30363d;
     position: sticky; 
