@@ -2247,7 +2247,7 @@ export default {
                 contractType: config.tradeType,
                 active: false,
                 stake: stake,
-                analysisType: isRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
+                analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
                 payout: null, // Will be filled when proposal arrives
                 duration: this.form.duration,
                 durationUnit: this.form.durationUnit
