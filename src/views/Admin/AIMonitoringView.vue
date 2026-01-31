@@ -204,31 +204,55 @@
 
                             <!-- Chart Tab -->
                             <div v-show="activeMonitoringTab === 'chart'" class="space-y-6 animate-fadeIn flex-1 flex flex-col">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <h3 style="font-size: 18px; color: #FFFFFF;" class="font-bold tracking-tight">Evolução do Resultado da IA {{ currentConfig.strategy.toUpperCase() }}</h3>
-                                        <p style="font-size: 14px; color: #a6a6a6;" class="mt-1">Desempenho financeiro em tempo real</p>
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h3 style="font-size: 18px; color: #FFFFFF;" class="font-bold tracking-tight">
+                                                {{ activeChartMode === 'profit' ? `Evolução do Resultado da IA ${currentConfig.strategy.toUpperCase()}` : 'Movimentação do Mercado (Ticks)' }}
+                                            </h3>
+                                            <p style="font-size: 14px; color: #a6a6a6;" class="mt-1">
+                                                {{ activeChartMode === 'profit' ? 'Desempenho financeiro em tempo real' : `Monitorando ${currentConfig.market || 'R_100'} em tempo real` }}
+                                            </p>
+                                        </div>
+                                        <div class="flex items-center gap-2 bg-secondary/20 p-1 rounded-lg border border-border/20">
+                                            <button 
+                                                @click="activeChartMode = 'profit'"
+                                                :class="activeChartMode === 'profit' ? 'bg-success/20 text-success border-success/30' : 'text-muted-foreground hover:text-white border-transparent'"
+                                                class="px-3 py-1 text-xs font-bold rounded-md border transition-all"
+                                            >
+                                                Resultado ($)
+                                            </button>
+                                            <button 
+                                                @click="activeChartMode = 'tick'"
+                                                :class="activeChartMode === 'tick' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'text-muted-foreground hover:text-white border-transparent'"
+                                                class="px-3 py-1 text-xs font-bold rounded-md border transition-all"
+                                            >
+                                                Ticks (Preço)
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-8 h-0.5 bg-gradient-to-r from-success to-success/40 rounded-full"></div>
-                                        <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Resultado ($)</span>
+                                    <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
+                                        <LineChart 
+                                           v-if="activeChartMode === 'profit'"
+                                           chartId="monitoring-profit-chart" 
+                                           :data="profitHistory" 
+                                           :height="320"
+                                           color="#22C55E"
+                                        />
+                                        <LineChart 
+                                           v-else
+                                           chartId="monitoring-tick-chart" 
+                                           :data="[...tickHistory].reverse()" 
+                                           :height="320"
+                                           color="#60A5FA"
+                                        />
+                                        <div v-if="(activeChartMode === 'profit' && profitHistory.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500">
+                                            <div class="text-center">
+                                               <i class="fas fa-chart-line text-5xl text-muted-foreground/20 mb-4 block animate-bounce"></i>
+                                               <p class="text-muted-foreground text-sm font-medium">Aguardando dados...</p>
+                                           </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
-                                    <LineChart 
-                                       chartId="monitoring-profit-chart" 
-                                       :data="profitHistory" 
-                                       :height="320"
-                                       color="#22C55E"
-                                    />
-                                    <div v-if="profitHistory.length <= 1" class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500">
-                                        <div class="text-center">
-                                           <i class="fas fa-chart-line text-5xl text-success/20 mb-4 block animate-bounce"></i>
-                                           <p class="text-muted-foreground text-sm font-medium">Aguardando primeira operação...</p>
-                                       </div>
-                                    </div>
-                                </div>
-                            </div>
 
                             <!-- History Tab -->
                             <div v-if="activeMonitoringTab === 'history'" class="animate-fadeIn flex-1 flex flex-col">
@@ -549,7 +573,7 @@ import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import LineChart from '../../components/LineChart.vue';
 import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
-import RiskManager from '../../utils/RiskManager';
+import { RiskManager } from '../../utils/RiskManager';
 // Import strategy configurations
 import apolloStrategy from '../../utils/strategies/apollo.json';
 import atlasStrategy from '../../utils/strategies/atlas.json';
@@ -652,9 +676,13 @@ export default {
             },
 
             monitoringLogs: [],
+            monitoringLogs: [],
             monitoringOperations: [],
             profitHistory: [0], // Start with 0 profit
-            activeContracts: new Map()
+            activeContracts: new Map(),
+            
+            // Chart Controls
+            activeChartMode: 'profit' // 'profit' or 'tick'
         }
     },
     mounted() {
