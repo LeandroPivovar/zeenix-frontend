@@ -7,38 +7,33 @@
             @close-sidebar="closeSidebar"
         />
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+            <TopNavbar 
+                :is-sidebar-collapsed="isSidebarCollapsed"
+                :balance="info?.balance"
+                :account-type="accountType"
+                :balances-by-currency-real="balancesByCurrencyReal"
+                :balances-by-currency-demo="balancesByCurrencyDemo"
+                :currency-prefix="preferredCurrencyPrefix"
+                @open-settings="toggleSettingsModal"
+                @account-type-changed="handleAccountTypeChange"
+                @toggle-sidebar="toggleSidebar"
+                @toggle-sidebar-collapse="toggleSidebarCollapse"
+            />
+            
+            <!-- Settings Sidebar -->
+            <SettingsSidebar
+                :is-open="showSettingsModal"
+                :balance="info?.balance"
+                :account-type="accountType"
+                :balances-by-currency-real="balancesByCurrencyReal"
+                :balances-by-currency-demo="balancesByCurrencyDemo"
+                :currency-prefix="preferredCurrencyPrefix"
+                :active-service="'ia'"
+                @close="closeSettingsModal"
+                @account-type-changed="handleAccountTypeChange"
+            />
 
-        
-
-
-        <div class="content-wrapper">
-        <TopNavbar 
-            :is-sidebar-collapsed="isSidebarCollapsed"
-            :balance="info?.balance"
-            :account-type="accountType"
-            :balances-by-currency-real="balancesByCurrencyReal"
-            :balances-by-currency-demo="balancesByCurrencyDemo"
-            :currency-prefix="preferredCurrencyPrefix"
-            @open-settings="toggleSettingsModal"
-            @account-type-changed="handleAccountTypeChange"
-            @toggle-sidebar="toggleSidebar"
-            @toggle-sidebar-collapse="toggleSidebarCollapse"
-        />
-        
-        <!-- Settings Sidebar -->
-        <SettingsSidebar
-            :is-open="showSettingsModal"
-            :balance="info?.balance"
-            :account-type="accountType"
-            :balances-by-currency-real="balancesByCurrencyReal"
-            :balances-by-currency-demo="balancesByCurrencyDemo"
-            :currency-prefix="preferredCurrencyPrefix"
-            :active-service="'ia'"
-            @close="closeSettingsModal"
-            @account-type-changed="handleAccountTypeChange"
-        />
-
-            <main class="main-content" style="margin-top: 0px;">
+            <main class="main-content">
                 <!-- AI Vision Panel - Only show when IA is inactive -->
                 <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
                     <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
@@ -465,26 +460,6 @@
 
         </main>
 
-        </div>
-        <InsufficientBalanceModal
-            :visible="showInsufficientBalanceModal"
-            :currentBalance="balanceNumeric"
-            :entryValue="entryValue"
-            :currency="tradeCurrency"
-            @confirm="showInsufficientBalanceModal = false"
-        />
-        <MinimumStakeModal
-            :visible="showMinimumStakeModal"
-            @confirm="showMinimumStakeModal = false"
-        />
-        <StrategyRequiredModal
-            :visible="showStrategyRequiredModal"
-            @close="showStrategyRequiredModal = false"
-            @confirm="handleStrategyRequiredConfirm"
-        />
-    </div>
-    </div>
-        </div>
     </div>
     <DesktopBottomNav />
     

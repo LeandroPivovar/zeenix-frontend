@@ -128,6 +128,18 @@
                 </a>
 
                 <a
+                    v-if="studentGroupConfig.show && !isCollapsed"
+                    :href="studentGroupConfig.link"
+                    target="_blank"
+                    class="menu-item"
+                    data-text="Grupo de Alunos"
+                >
+                    <i v-if="studentGroupConfig.icon" :class="studentGroupConfig.icon + ' w-5 opacity-85'"></i>
+                    <i v-else class="fa-solid fa-users-rectangle w-5 opacity-85"></i>
+                    <span>{{ studentGroupConfig.text }}</span>
+                </a>
+
+                <a
                     href="#"
                     class="menu-item"
                     @click.prevent="logout"
