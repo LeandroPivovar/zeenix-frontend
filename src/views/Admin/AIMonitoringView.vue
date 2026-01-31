@@ -950,6 +950,7 @@ export default {
                 this.ws = null;
             }
             this.tickSubscriptionId = null;
+            this.isNegotiating = false; // Reset lock
         },
         subscribeTicks() {
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
