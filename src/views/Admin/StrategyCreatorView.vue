@@ -2316,19 +2316,29 @@ export default {
             const config = isRecovery ? this.recoveryConfig : this.form;
             
             // Debug: Log current state before calculating
-            console.log('[StrategyCreator] calculateNextStake:', {
+            console.log('[StrategyCreator] calculateNextStake INPUT:', {
                 isRecovery,
                 consecutiveWins: this.sessionState.consecutiveWins,
                 lastResultWin: this.sessionState.lastResultWin,
-                skipSorosNext: this.sessionState.skipSorosNext
+                lastProfit: this.sessionState.lastProfitPrincipal,
+                configSorosLevel: config.sorosLevel,
+                configPayout: config.expectedPayout
             });
             
             const stake = RiskManager.calculateNextStake(this.sessionState, config);
             
             // Log if Soros is active (Principal mode only)
-            // Soros is applied when consecutiveWins === 2 (after 1st win, before 2nd trade)
-            if (!isRecovery && this.sessionState.consecutiveWins === 2 && this.sessionState.lastResultWin) {
-                this.addLog(`🚀 SOROS ATIVADO: Stake base + último lucro = $${stake.toFixed(2)}`, 'info');
+            // Updated to match RiskManager logic: Active if wins >= 1 AND wins <= level
+            const sorosLevel = config.sorosLevel || 1;
+            if (!isRecovery && 
+                this.sessionState.consecutiveWins >= 1 && 
+                this.sessionState.consecutiveWins <= sorosLevel &&
+                this.sessionState.lastResultWin) {
+                
+                // Only log if stake is actually > initialStake to avoid confusion
+                if (stake > config.initialStake) {
+                     this.addLog(`🚀 SOROS ATIVADO: Stake base + último lucro = $${stake.toFixed(2)}`, 'info');
+                }
             }
 
             console.log('[StrategyCreator] Calculated stake:', stake);
