@@ -11,7 +11,7 @@
             @open-settings="showSettingsModal = true" 
         />
 
-        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <div class="dashboard-content-wrapper">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
@@ -458,14 +458,12 @@ export default {
 
 .dashboard-content-wrapper {
     flex-grow: 1;
-    margin-left: 280px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-.dashboard-content-wrapper.sidebar-collapsed {
-}
+
 
 .layout-content {
     flex-grow: 1;
@@ -478,8 +476,6 @@ export default {
 }
 
 @media (max-width: 1024px) {
-    .dashboard-content-wrapper { margin-left: 0; }
-    .dashboard-content-wrapper.sidebar-collapsed { margin-left: 0; }
     .layout-content { padding-top: 70px; }
 }
 </style>

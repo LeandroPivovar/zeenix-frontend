@@ -4,7 +4,7 @@
         
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @close-sidebar="isSidebarOpen = false" @toggle-collapse="toggleSidebarCollapse" @open-settings="showSettingsModal = true" />
 
-        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <div class="dashboard-content-wrapper">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
@@ -540,16 +540,12 @@ export default {
 
 .dashboard-content-wrapper {
     flex-grow: 1;
-    margin-left: 280px;
-    width: calc(100% - 280px);
-    transition: margin-left 0.3s ease;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 80px;
 }
 
 .layout-content {
@@ -570,14 +566,6 @@ export default {
 
 /* Responsividade */
 @media (max-width: 1024px) {
-    .dashboard-content-wrapper {
-        margin-left: 0;
-    }
-    
-    .dashboard-content-wrapper.sidebar-collapsed {
-        margin-left: 0;
-    }
-    
     .layout-content {
         padding-top: 70px;
     }

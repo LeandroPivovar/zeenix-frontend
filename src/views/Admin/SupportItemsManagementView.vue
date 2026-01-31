@@ -4,7 +4,7 @@
         
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @toggle-collapse="toggleSidebarCollapse" @close-sidebar="isSidebarOpen = false" @open-settings="showSettingsModal = true" />
         
-        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <div class="dashboard-content-wrapper">
             <TopNavbar 
                 v-if="!isMobile"
                 :is-sidebar-collapsed="isSidebarCollapsed"

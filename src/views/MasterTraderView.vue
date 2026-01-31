@@ -1,5 +1,5 @@
 <template>
-    <div class="layout-master-trader" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">    <AppSidebar 
+    <div class="layout-master-trader">    <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="isSidebarCollapsed" 
             @toggle-collapse="toggleSidebarCollapse"

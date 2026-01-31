@@ -30,7 +30,7 @@
                 @open-settings="showSettingsModal = true"
             />
 
-            <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+            <div class="dashboard-content-wrapper">
                 <main class="layout-content">
                     <div class="admin-dashboard">
                 <header class="dashboard-header">
@@ -2154,14 +2154,14 @@ export default {
 /* Para Tablets e Telas Médias (max-width: 1024px) */
 @media (max-width: 1024px) {
     .dashboard-content-wrapper {
-        margin-left: 0;
-        width: 100%;
-        max-width: 100%;
+        min-height: 100vh;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #0b0b0b;
     }
     
     .dashboard-content-wrapper.sidebar-collapsed {
-        margin-left: 0;
-        width: 100%;
         max-width: 100%;
     }
     

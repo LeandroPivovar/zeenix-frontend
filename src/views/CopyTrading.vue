@@ -2,14 +2,14 @@
     <div class="layout">
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
 
-        <main class="copy-trading-content loading-content" v-if="loading" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <main class="dashboard-content-wrapper loading-content" v-if="loading">
             <div class="background-glow"></div>
             <div class="background-grid"></div>
             <div class="loading-spinner"></div>
             <p class="loading-text">Carregando dados do Copy Trading...</p>
         </main>
 
-        <main class="copy-trading-content" v-else :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <main class="dashboard-content-wrapper" v-else>
             <div class="background-glow"></div>
             <div class="background-grid"></div>
             <CopyTradingComponent
@@ -182,20 +182,14 @@ export default {
     backdrop-filter: blur(2px);
 }
 
-.copy-trading-content {
+.dashboard-content-wrapper {
     flex: 1;
     padding: 20px;
-    margin-left: 280px;
-    width: calc(100% - 280px);
-    transition: margin-left 0.3s ease, width 0.3s ease;
     position: relative;
     overflow: hidden;
 }
 
-.copy-trading-content.sidebar-collapsed {
-    margin-left: 0;
-    width: 100%;
-}
+
 
 .loading-content {
     display: flex;
@@ -226,10 +220,7 @@ export default {
 }
 
 @media (min-width: 769px) {
-    .copy-trading-content.sidebar-collapsed {
-        margin-left: 0;
-        width: 100%;
-    }
+
 }
 
 .background-glow {

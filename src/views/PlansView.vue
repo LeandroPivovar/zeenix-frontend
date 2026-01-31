@@ -9,7 +9,7 @@
             @toggle-collapse="toggleSidebarCollapse" 
         />
 
-        <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <div class="main-content-wrapper">
             
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"

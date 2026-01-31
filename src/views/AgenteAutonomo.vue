@@ -2,7 +2,6 @@
     <div>
       <div
         class="layout-agente-autnomo"
-        :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
       >
 
   
@@ -1454,10 +1453,7 @@
   .layout-agente-autnomo {
     background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
     min-height: 100vh;
-    transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1), width 1s cubic-bezier(0.16, 1, 0.3, 1);
     padding-bottom: 80px;
-    width: calc(100% - 280px);
-    margin-left: 280px;
   }
 
   @media (min-width: 1025px) {
@@ -1488,8 +1484,7 @@
     }
   }
   
-  .layout-agente-autnomo.sidebar-collapsed {
-  }
+
   
   .layout-agente-autnomo.sidebar-collapsed .top-header {
   }
@@ -1672,18 +1667,13 @@
   /* Responsividade Tablet */
   @media screen and (max-width: 1024px) {
     .layout-agente-autnomo {
-      width: 100% !important;
-      margin-left: 0 !important;
     }
   
     .layout-agente-autnomo.sidebar-collapsed {
-      width: 100% !important;
-      margin-left: 0 !important;
     }
   
     .layout-agente-autnomo.sidebar-collapsed .top-header {
       left: 0;
-      width: 100% !important;
     }
   
     .container-componentes {

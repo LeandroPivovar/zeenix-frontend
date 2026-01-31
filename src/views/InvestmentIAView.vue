@@ -4,7 +4,7 @@
         
 
 
-        <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <div class="content-wrapper">
         <TopNavbar 
             :is-sidebar-collapsed="isSidebarCollapsed"
             :balance="info?.balance"

@@ -16,7 +16,7 @@
       @close-sidebar="closeMobileMenu"
     />
 
-    <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <div class="main-content-wrapper">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="accountBalance"
@@ -465,7 +465,6 @@ export default {
   position: fixed;
   top: 0;
   right: 0;
-  left: 280px;
   z-index: 40;
   background-color: #0E0E0E;
   border-bottom: 1px solid #1C1C1C;
@@ -475,8 +474,6 @@ export default {
 }
 
 .main-content-wrapper.sidebar-collapsed .top-header {
-  left: 0;
-  width: 100%;
 }
 
 .header-content {

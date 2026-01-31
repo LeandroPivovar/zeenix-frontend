@@ -11,7 +11,7 @@
             @open-settings="showSettingsModal = true" 
         />
 
-        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <div class="dashboard-content-wrapper">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
@@ -19,7 +19,7 @@
                 @open-settings="showSettingsModal = true"
             />
 
-            <main class="flex-1 overflow-auto flex flex-col justify-start w-full transition-all duration-300" 
+            <main class="flex-1 overflow-auto flex flex-col justify-start w-full" 
                   :style="{ padding: isMobile ? '5rem 1rem 8rem 1rem' : '5rem 2rem' }">
                 <!-- Header Stats Card -->
                 <div class="w-full bg-gradient-to-br from-secondary/60 via-secondary/40 to-secondary/20 rounded-2xl border border-border/30 p-4 md:p-6 lg:p-8 relative overflow-hidden fade-in shadow-2xl shadow-black/40">
