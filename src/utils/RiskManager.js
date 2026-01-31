@@ -57,10 +57,7 @@ export const RiskManager = {
                 return baseStake;
             }
 
-            // Estimate Payout: Use provided explicit, or history, OR DEFAULTS based on config
-            // Critical: If moving from Principal (Payout 0.19) to Recovery (Payout 1.25), 
-            // we must NOT use the 0.19 history or we get huge stakes.
-            let payoutToUse = explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType];
+
 
 
 
