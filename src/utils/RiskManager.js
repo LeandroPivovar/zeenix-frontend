@@ -49,7 +49,16 @@ export const RiskManager = {
         // 4. Fallback to generic contract history
         // 5. System Defaults
         const configPayout = config.expectedPayout || null;
-        const estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
+        let estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
+
+        // CRITICAL: User inputs payout as TOTAL MULTIPLIER (e.g., 1.26 means $1 → $1.26)
+        // But calculations need PROFIT RATE (e.g., 0.26 means 26% profit)
+        // If payout >= 1, it's a multiplier, convert to profit rate
+        if (estimatedPayout >= 1) {
+            const originalPayout = estimatedPayout;
+            estimatedPayout = estimatedPayout - 1; // Convert 1.26 → 0.26
+            console.log(`[RiskManager] Converted payout ${originalPayout.toFixed(2)}x to profit rate ${estimatedPayout.toFixed(2)}`);
+        }
 
         // 1. RECOVERY MODE
         if (state.analysisType === 'RECUPERACAO') {
