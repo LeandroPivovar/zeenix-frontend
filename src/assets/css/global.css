@@ -175,10 +175,11 @@ body,
   .layout-master-trader,
   .layout-copy-traders,
   .operation-main,
-  .box-content {
+  .box-content,
+  .zenix-layout {
     margin-left: 280px !important;
     width: calc(100% - 280px) !important;
-    transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1), width 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
 
   /* Quando a sidebar está recolhida */
@@ -189,12 +190,13 @@ body,
   .sidebar-collapsed.layout-master-trader,
   .sidebar-collapsed.layout-copy-traders,
   .sidebar-collapsed.operation-main,
-  .sidebar-collapsed.box-content {
+  .sidebar-collapsed.box-content,
+  .sidebar-collapsed.zenix-layout {
     margin-left: 80px !important;
     width: calc(100% - 80px) !important;
   }
 
-  /* Sincronização de Hover: Empurra o conteúdo quando o mouse está sobre a sidebar recolhida */
+  /* Hover expansion synchronization */
   .sidebar-wrapper:hover+.dashboard-content-wrapper,
   .sidebar-wrapper:hover+.layout-agente-autnomo,
   .sidebar-wrapper:hover+.content-wrapper,
@@ -202,7 +204,8 @@ body,
   .sidebar-wrapper:hover+.layout-master-trader,
   .sidebar-wrapper:hover+.layout-copy-traders,
   .sidebar-wrapper:hover+.operation-main,
-  .sidebar-wrapper:hover+.box-content {
+  .sidebar-wrapper:hover+.box-content,
+  .sidebar-wrapper:hover+.zenix-layout {
     margin-left: 280px !important;
     width: calc(100% - 280px) !important;
   }

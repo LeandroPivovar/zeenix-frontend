@@ -58,7 +58,6 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    transition: margin-left 0.3s ease;
     background: #0d0d0c;
     width: 100%;
     min-width: 0;
@@ -69,14 +68,13 @@
 
 @media (min-width: 1025px) {
     .operation-main {
-        margin-left: 280px !important;
-        width: calc(100% - 280px) !important;
-        transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        margin-left: 280px;
+        width: calc(100% - 280px);
     }
 
     .operation-main.sidebar-collapsed {
-        margin-left: 80px !important;
-        width: calc(100% - 80px) !important;
+        margin-left: 80px;
+        width: calc(100% - 80px);
     }
 }
 
