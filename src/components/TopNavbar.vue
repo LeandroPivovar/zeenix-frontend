@@ -79,41 +79,65 @@
       </button>
       
       <!-- Logo ZENIX -->
-      <div class="mobile-logo">
+      <div class="mobile-logo flex-shrink-0">
         <span class="text-white font-bold text-xl">ZEN</span>
         <span class="text-white font-bold text-xl">I</span>
         <span class="text-[#22C55E] font-bold text-xl">X</span>
       </div>
-      
-      <!-- Botão de Notificação (Mobile) -->
-      <div class="relative">
+
+      <!-- Saldo (Mobile) -->
+      <div class="flex items-center gap-2 bg-[#0E0E0E] px-3 py-1.5 rounded-full border border-[#1C1C1C]">
+        <span id="balanceDisplayMobile" class="text-xs font-semibold text-[#DFDFDF] inline-flex items-center gap-1">
+          <span v-if="isBalanceReady && !balanceHidden" class="inline-flex items-center gap-0.5 animate-fadeIn">
+            <span v-if="uiAccountType !== 'demo' || showDollarSign">
+              {{ isFictitiousBalanceActive ? '$' : currencyPrefix }}
+            </span>
+            <span v-else>Đ</span>
+            {{ formattedBalance }}
+          </span>
+          <span v-else>••••••</span>
+        </span>
         <button 
-          @click="toggleNotifications" 
-          class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 relative"
+          @click="toggleBalance" 
+          class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
           type="button"
         >
-          <i class="fas fa-bell text-[#DFDFDF] text-sm"></i>
-          <span 
-            v-if="hasUnreadNotifications" 
-            class="absolute top-0 right-0 w-2 h-2 bg-[#22C55E] rounded-full border border-[#0E0E0E]"
-          ></span>
+          <i v-if="balanceHidden" class="fas fa-eye-slash text-[10px]"></i>
+          <i v-else class="fas fa-eye text-[10px]"></i>
         </button>
       </div>
       
-      <!-- Perfil -->
-      <div class="relative">
-        <button 
-          @click="handleProfileClick" 
-          class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 overflow-hidden"
-        >
-          <img 
-            v-if="userProfilePicture" 
-            :src="userProfilePicture" 
-            :alt="userName"
-            class="w-full h-full object-cover rounded-full"
-          />
-          <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
-        </button>
+      <div class="flex items-center gap-2">
+        <!-- Botão de Notificação (Mobile) -->
+        <div class="relative">
+          <button 
+            @click="toggleNotifications" 
+            class="w-8 h-8 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] transition-all duration-200 relative"
+            type="button"
+          >
+            <i class="fas fa-bell text-[#DFDFDF] text-xs"></i>
+            <span 
+              v-if="hasUnreadNotifications" 
+              class="absolute top-0 right-0 w-1.5 h-1.5 bg-[#22C55E] rounded-full border border-[#0E0E0E]"
+            ></span>
+          </button>
+        </div>
+        
+        <!-- Perfil -->
+        <div class="relative">
+          <button 
+            @click="handleProfileClick" 
+            class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 overflow-hidden"
+          >
+            <img 
+              v-if="userProfilePicture" 
+              :src="userProfilePicture" 
+              :alt="userName"
+              class="w-full h-full object-cover rounded-full"
+            />
+            <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
+          </button>
+        </div>
       </div>
     </div>
 

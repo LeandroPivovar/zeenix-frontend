@@ -64,7 +64,7 @@
                         <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center md:border-l border-border/50 md:pl-4 lg:pl-6">
                             <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Capital</p>
                             <p class="text-xl lg:text-3xl font-bold text-foreground tracking-tight">
-                                R$ {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }}<span class="text-base lg:text-xl text-muted-foreground hidden md:inline">,{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}</span>
+                                {{ currencySymbol }} {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }}<span class="text-base lg:text-xl text-muted-foreground hidden md:inline">,{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}</span>
                             </p>
                         </div>
 
@@ -74,7 +74,7 @@
                             <div class="flex items-baseline justify-center gap-1 lg:gap-3">
                                 <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)]"
                                    :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}${{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ currencySymbol }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
                                 </p>
                                 <span class="text-xs lg:text-lg font-semibold px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
                                       :class="monitoringStats.profit >= 0 ? 'text-success/80 bg-success/10' : 'text-red-500/80 bg-red-500/10'">
@@ -155,15 +155,15 @@
                     <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
                         <div class="flex items-center justify-between">
                             <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Entrada</span>
-                            <span class="text-sm font-black text-foreground tracking-wider">${{ currentConfig.stake.toFixed(2).replace('.', ',') }}</span>
+                            <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ currentConfig.stake.toFixed(2).replace('.', ',') }}</span>
                         </div>
                         <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
                             <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Alvo</span>
-                            <span class="text-sm font-black text-success tracking-wider">${{ (currentConfig.profitTarget || 0).toFixed(2).replace('.', ',') }}</span>
+                            <span class="text-sm font-black text-success tracking-wider">{{ currencySymbol }}{{ (currentConfig.profitTarget || 0).toFixed(2).replace('.', ',') }}</span>
                         </div>
                         <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
                             <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Limite</span>
-                            <span class="text-sm font-black text-foreground tracking-wider">${{ (currentConfig.lossLimit || 0).toFixed(2).replace('.', ',') }}</span>
+                            <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ (currentConfig.lossLimit || 0).toFixed(2).replace('.', ',') }}</span>
                         </div>
                     </div>
 
@@ -219,7 +219,7 @@
                                                 :class="activeChartMode === 'profit' ? 'bg-success/20 text-success border-success/30' : 'text-muted-foreground hover:text-white border-transparent'"
                                                 class="px-3 py-1 text-xs font-bold rounded-md border transition-all"
                                             >
-                                                Resultado ($)
+                                                Resultado ({{ currencySymbol }})
                                             </button>
                                             <button 
                                                 @click="activeChartMode = 'tick'"
@@ -293,11 +293,11 @@
                                                         </td>
                                                         <td class="px-4 py-4 text-foreground font-medium">{{ op.entryPrice || '-' }}</td>
                                                         <td class="px-4 py-4 text-foreground font-medium">{{ op.exitPrice || '-' }}</td>
-                                                        <td class="px-4 py-4 text-foreground font-medium">$ {{ op.stake.toFixed(2) }}</td>
+                                                        <td class="px-4 py-4 text-foreground font-medium">{{ currencySymbol }} {{ op.stake.toFixed(2) }}</td>
                                                         <td class="px-4 py-4 text-right">
                                                             <span v-if="op.result === 'OPEN' || op.result === 'PENDING'" class="text-yellow-500 font-bold uppercase tracking-tight">PENDENTE</span>
                                                             <span v-else class="font-bold whitespace-nowrap" :class="op.result === 'WON' || op.result === 'WIN' ? 'text-success' : 'text-red-500'">
-                                                                {{ op.result === 'WON' || op.result === 'WIN' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
+                                                                {{ op.result === 'WON' || op.result === 'WIN' ? '+' : '' }}{{ currencySymbol }}{{ op.pnl.toFixed(2) }}
                                                             </span>
                                                         </td>
                                                     </tr>
@@ -501,15 +501,15 @@
                             <div class="mt-3 p-4 rounded-xl bg-secondary/60 border border-border/60 space-y-2.5">
                                 <div class="flex justify-between items-center">
                                     <span class="text-xs text-muted-foreground uppercase tracking-wider">Entrada</span>
-                                    <span class="text-sm font-bold text-foreground">${{ currentConfig.stake.toFixed(2) }}</span>
+                                    <span class="text-sm font-bold text-foreground">{{ currencySymbol }}{{ currentConfig.stake.toFixed(2) }}</span>
                                 </div>
                                 <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
                                     <span class="text-xs text-muted-foreground uppercase tracking-wider">Alvo</span>
-                                    <span class="text-sm font-bold text-success">${{ (currentConfig.profitTarget || 0).toFixed(2) }}</span>
+                                    <span class="text-sm font-bold text-success">{{ currencySymbol }}{{ (currentConfig.profitTarget || 0).toFixed(2) }}</span>
                                 </div>
                                 <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
                                     <span class="text-xs text-muted-foreground uppercase tracking-wider">Limite</span>
-                                    <span class="text-sm font-bold text-foreground">${{ (currentConfig.lossLimit || 0).toFixed(2) }}</span>
+                                    <span class="text-sm font-bold text-foreground">{{ currencySymbol }}{{ (currentConfig.lossLimit || 0).toFixed(2) }}</span>
                                 </div>
                             </div>
 
@@ -595,6 +595,11 @@ export default {
             isStopping: false,
             activeMonitoringTab: 'chart',
 
+            // Master Trader Settings & Account Type
+            isFictitiousBalanceActive: false,
+            showDollarSign: false,
+            accountType: 'real',
+
             // Strategy Config (loaded from local storage)
             currentConfig: {
                 strategy: 'Apollo',
@@ -677,6 +682,14 @@ export default {
             tickChartData: []
         }
     },
+    computed: {
+        currencySymbol() {
+            if (this.isFictitiousBalanceActive || this.showDollarSign) {
+                return '$';
+            }
+            return this.accountType === 'demo' ? 'Đ' : '$';
+        }
+    },
     watch: {
         activeChartMode(val) {
             if (val === 'tick') {
@@ -707,6 +720,7 @@ export default {
         }
 
         this.loadConfiguration();
+        this.loadMasterTraderSettings();
         this.initTickConnection();
     },
     beforeUnmount() {
@@ -765,9 +779,9 @@ export default {
                     
                     // Initial Logs according to ZENIX protocol
                     this.addLog('Início de Sessão', [
-                        `Saldo Inicial: $${this.monitoringStats.balance.toFixed(2)}`,
-                        `Meta de Lucro: $${(this.currentConfig.profitTarget || 100).toFixed(2)}`,
-                        `Stop Loss: $${(this.currentConfig.lossLimit || 100).toFixed(2)}`,
+                        `Saldo Inicial: ${this.currencySymbol}${this.monitoringStats.balance.toFixed(2)}`,
+                        `Meta de Lucro: ${this.currencySymbol}${(this.currentConfig.profitTarget || 100).toFixed(2)}`,
+                        `Stop Loss: ${this.currencySymbol}${(this.currentConfig.lossLimit || 100).toFixed(2)}`,
                         `Estratégia: ${this.currentConfig.strategy.toUpperCase()}`,
                         `Payout Mínimo: ${this.currentConfig.expectedPayout}x`
                     ], 'info');
@@ -775,7 +789,7 @@ export default {
                     this.addLog('Configuração Inicial', [
                         `Agente: ${this.currentConfig.strategy.toUpperCase()}`,
                         `Modo: ${this.currentConfig.mode.toUpperCase()}`,
-                        `Stake: $${this.currentConfig.initialStake.toFixed(2)}`,
+                        `Stake: ${this.currencySymbol}${this.currentConfig.initialStake.toFixed(2)}`,
                         `Soros Level: ${this.currentConfig.sorosLevel}`
                     ], 'info');
 
@@ -804,6 +818,29 @@ export default {
             } catch (e) {
                 console.error('Error getting token:', e);
                 return null;
+            }
+        },
+        async loadMasterTraderSettings() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const res = await fetch(`${apiBaseUrl}/settings`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.isFictitiousBalanceActive !== undefined) this.isFictitiousBalanceActive = data.isFictitiousBalanceActive;
+                    if (data.showDollarSign !== undefined) this.showDollarSign = data.showDollarSign;
+                }
+            } catch (error) {
+                console.error('[AIMonitoringView] Erro ao carregar configurações de Master Trader:', error);
             }
         },
         async initTickConnection() {
@@ -847,9 +884,10 @@ export default {
                             } else {
                                 this.isAuthorized = true;
                                 this.monitoringStats.balance = msg.authorize.balance;
+                                this.accountType = msg.authorize.is_virtual ? 'demo' : 'real';
                                 this.addLog('Execução Confirmada', [
                                     `Status: Autorizado`,
-                                    `Saldo: $${this.monitoringStats.balance.toFixed(2)}`,
+                                    `Saldo: ${this.currencySymbol}${this.monitoringStats.balance.toFixed(2)}`,
                                     `Conta: ${msg.authorize.loginid}`
                                 ], 'success');
                                 this.subscribeTicks();
@@ -877,8 +915,8 @@ export default {
                             
                             // Debug Info
                             this.addLog('Proposta Recebida', [
-                                `Payout: $${payout} (${((payout - stakeValue)/stakeValue*100).toFixed(1)}%)`,
-                                `Stake: $${stakeValue}`,
+                                `Payout: ${this.currencySymbol}${payout} (${((payout - stakeValue)/stakeValue*100).toFixed(1)}%)`,
+                                `Stake: ${this.currencySymbol}${stakeValue}`,
                                 `ID: ${proposalId}`
                             ], 'info');
                             
@@ -904,7 +942,7 @@ export default {
                                 this.addLog('Contrato Criado', [
                                     `Contrato ID: ${msg.buy.contract_id}`,
                                     `Tipo: ${contractType}`,
-                                    `Payout Potencial: $${payout}`,
+                                    `Payout Potencial: ${this.currencySymbol}${payout}`,
                                     `Status: aguardar execução`
                                 ], 'success');
                                 this.subscribeToContract(msg.buy.contract_id);
@@ -1037,7 +1075,7 @@ export default {
             if (!isRecovery && this.sessionState.consecutiveWins === 2 && this.sessionState.lastResultWin) {
                 this.addLog('Gestão Soros', [
                     `🚀 SOROS ATIVADO`,
-                    `Stake: Base + Lucro = $${stake.toFixed(2)}`,
+                    `Stake: Base + Lucro = ${this.currencySymbol}${stake.toFixed(2)}`,
                     `Sequência: ${this.sessionState.consecutiveWins} vitórias`
                 ], 'info');
             }
@@ -1085,7 +1123,7 @@ export default {
                 `Modo: ${mode}`,
                 `Contrato: ${config.tradeType}`,
                 `Mercado: ${proposalParams.symbol}`,
-                `Stake: $${stake.toFixed(2)}`
+                `Stake: ${this.currencySymbol}${stake.toFixed(2)}`
             ], 'info');
             
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
