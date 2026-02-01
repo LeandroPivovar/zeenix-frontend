@@ -1,5 +1,5 @@
 ﻿<template>
-	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ paddingTop: isMobile ? '10px' : '1rem' }">
+	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ paddingTop: isMobile ? '40px' : '2.8rem' }">
 		<!-- Header -->
 		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-4 gap-4 md:mt-4 mt-2 fade-in">
 			<!-- Title Section -->
@@ -196,63 +196,69 @@
 								v-for="agent in runningAgents" 
 								:key="agent.id"
 								@click="selectAgent(agent.id)"
-								class="w-full grid grid-cols-[60px_1fr] items-center gap-4 p-4 cursor-pointer transition-all rounded-xl mb-3 last:mb-0 relative group shadow-lg border"
+								class="w-full flex flex-col p-4 cursor-pointer transition-all rounded-xl mb-3 last:mb-0 relative group shadow-lg border"
 								:class="currentAgentId === agent.id ? 'bg-[#092012]/15 border-[#22c55e]/50 shadow-[#22c55e]/10' : 'bg-[#141414] border-[#27272a] hover:border-[#333] shadow-black/20'"
-                                style="display: grid !important; grid-template-columns: 60px 1fr !important; align-items: center !important;"
 							>
-                                <!-- Col 1: Icon -->
-								<div class="w-14 h-14 rounded-lg bg-[#0c0c0c] flex items-center justify-center relative shrink-0 border border-[#27272a] overflow-visible">
-									<img 
-                                        v-if="agent.id === 'zeus'"
-                                        src="/img/agents/zeus.png"
-                                        class="w-full h-full object-cover rounded-md"
-                                    />
-                                    <img 
-                                        v-else-if="agent.id === 'falcon'"
-                                        src="/img/agents/falcon.png"
-                                        class="w-full h-full object-cover rounded-md"
-                                    />
-                                    <div v-else class="strategy-icons-inline text-2xl">
-										{{ agent.emoji }}
-									</div>
-
-                                    <!-- Checkmark on Icon Corner -->
-                                    <div 
-                                        v-if="currentAgentId === agent.id" 
-                                        class="absolute -top-1.5 -right-1.5 w-[20px] h-[20px] bg-[#22c55e] rounded-full flex items-center justify-center z-20 border-2 border-[#0c0c0c] shadow-lg"
-                                    >
-                                        <i class="fas fa-check text-[#000000] text-[10px] font-black"></i>
-                                    </div>
+								<!-- Ativo Badge in Top Right Corner -->
+								<div 
+									v-if="currentAgentId === agent.id" 
+									class="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-[#1b3324] border border-[#22c55e]/40 shadow-sm z-30"
+								>
+									<span class="text-[8px] text-[#22c55e] font-black uppercase tracking-widest">ATIVO</span>
 								</div>
 
-                                <!-- Col 2: Info -->
-								<div class="min-w-0 flex flex-col justify-center items-center gap-2">
-									<div class="flex flex-col items-center gap-1 w-full">
-                                        <h5 class="text-[14px] font-bold truncate text-center transition-colors" :class="currentAgentId === agent.id ? 'text-[#22c55e]' : 'text-[#DFDFDF]'">
-                                            {{ agent.title.toUpperCase() }}
-                                        </h5>
-                                        
-                                        <!-- Centered Ativo Badge -->
-                                        <div 
-                                            v-if="currentAgentId === agent.id" 
-                                            class="px-3 py-1 rounded-xl bg-[#1b3324]/80 border border-[#22c55e]/40 shadow-sm inline-flex items-center"
-                                        >
-                                            <span class="text-[9px] text-[#22c55e] font-black uppercase tracking-wider">ATIVO</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex flex-col items-center gap-0.5 w-full">
-                                        <p class="text-[11px] text-[#A1A1AA] text-center leading-tight">
-                                            <span class="font-bold text-[#DFDFDF]">Retorno:</span> 
-                                            <span class="text-[#22c55e] ml-1 font-bold">{{ agent.description.match(/Retorno: (.*)%/)?.[1] || (agent.id === 'zeus' ? '85' : '63.5') }}%</span>
-                                        </p>
-                                        <p class="text-[11px] text-[#A1A1AA] text-center leading-tight">
-                                            <span class="font-bold">Assertividade:</span> {{ agent.description.match(/Assertividade: (.*)%/)?.[1] || (agent.id === 'zeus' ? '90' : '70') }}%
-                                        </p>
-                                        <p class="text-[11px] text-[#A1A1AA] text-center leading-tight truncate opacity-60">
-                                            <span class="font-bold">Análise:</span> {{ agent.description.split('\n')[0].replace('Análise: ', '') }}
-                                        </p>
-                                    </div>
+								<!-- Top Section: Icon + Title + Chevron -->
+								<div class="flex items-center gap-4 mb-3">
+									<!-- Icon Container -->
+									<div class="w-12 h-12 rounded-lg bg-[#0c0c0c] flex items-center justify-center relative shrink-0 border border-[#27272a]">
+										<img 
+											v-if="agent.id === 'zeus'"
+											src="/img/agents/zeus.png"
+											class="w-full h-full object-cover rounded-md"
+										/>
+										<img 
+											v-else-if="agent.id === 'falcon'"
+											src="/img/agents/falcon.png"
+											class="w-full h-full object-cover rounded-md"
+										/>
+										<div v-else class="strategy-icons-inline text-2xl">
+											{{ agent.emoji }}
+										</div>
+									</div>
+
+									<!-- Title and Description -->
+									<div class="flex-1 min-w-0">
+										<h5 class="text-[13px] font-bold text-[#f0f0f0] uppercase tracking-wide mb-0.5">
+											{{ agent.title.toUpperCase() }}
+										</h5>
+										<p class="text-[10px] text-[#A1A1AA] leading-tight truncate">
+											{{ agent.description.split('\n')[0].replace('Análise: ', '') }}
+										</p>
+									</div>
+
+									<!-- Chevron -->
+									<div class="text-[#71717a] group-hover:text-[#22c55e] transition-colors pr-1">
+										<i class="fas fa-chevron-right text-[10px]"></i>
+									</div>
+								</div>
+
+								<!-- Divider -->
+								<div class="h-px w-full bg-[#27272a] mb-3"></div>
+
+								<!-- Bottom Section: Stats -->
+								<div class="flex items-center gap-8">
+									<div class="flex flex-col">
+										<span class="text-[8px] text-[#71717a] font-bold uppercase tracking-tight mb-0.5">ASSERTIVIDADE</span>
+										<span class="text-[12px] font-black text-[#f0f0f0]">
+											{{ agent.description.match(/Assertividade: (.*)%/)?.[1] || (agent.id === 'zeus' ? '90' : '70') }}%
+										</span>
+									</div>
+									<div class="flex flex-col">
+										<span class="text-[8px] text-[#71717a] font-bold uppercase tracking-tight mb-0.5">RETORNO</span>
+										<span class="text-[12px] font-black text-[#22c55e]">
+											{{ agent.description.match(/Retorno: (.*)%/)?.[1] || (agent.id === 'zeus' ? '85' : '63.5') }}%
+										</span>
+									</div>
 								</div>
 							</div>
 						</div>
