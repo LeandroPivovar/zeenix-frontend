@@ -2,7 +2,7 @@
   <div class="zenix-layout">
     <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
 
-    <div class="dashboard-content-wrapper full-immersion-layout" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }" style="padding-left: 0 !important;">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="currentBalance?.balance || info?.balance"
@@ -35,13 +35,13 @@
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
-        <div class="desktop-only immersion-content" style="text-align: left; padding: 10px 38px 0px 38px; width: 100%;">
+        <div class="desktop-only" style="text-align: left; padding: 10px 38px 0px 38px; width: 100%;">
           <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
           <p class="text-sm text-[#A1A1AA] mt-0 max-w-2xl">
             Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
           </p>
         </div>
-        <div class="view-toggle-bar-wrapper immersion-content">
+        <div class="view-toggle-bar-wrapper">
           <div class="view-toggle-bar">
             <button
               class="px-6 py-3 bg-zenix-card text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300 desktop-only"
@@ -78,7 +78,7 @@
           </div>
         </div>
 
-        <div class="operation-content immersion-content">
+        <div class="operation-content">
           <component
             :is="currentView"
             ref="operationComponent"

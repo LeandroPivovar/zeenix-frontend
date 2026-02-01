@@ -173,8 +173,16 @@
                         </div>
                     </div>
 
+                    <!-- IA Status Info -->
+                    <div class="mt-2 mb-4">
+                        <h4 class="text-[13px] font-bold text-[#D4D4D4] uppercase mb-1">IA Em Funcionamento</h4>
+                        <p class="text-[11px] text-[#AAAAAA] leading-snug">
+                            Monitorando o mercado e executando apenas quando há vantagem estatística.
+                        </p>
+                    </div>
+
                     <!-- Mobile Pause Button -->
-                    <button @click="stopIA" :disabled="isStopping" class="w-full mt-2 py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
+                    <button @click="stopIA" :disabled="isStopping" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
                         {{ isStopping ? 'Parando...' : 'Pausar IA' }}
                     </button>
                 </div>
@@ -474,6 +482,14 @@
                             </div>
 
                             <div class="flex-1 min-h-[40px]"></div>
+
+                            <!-- IA EM FUNCIONAMENTO / Footer -->
+                            <div class="mt-4 mb-5 relative z-10 px-1">
+                                <h4 class="text-[13px] font-bold text-[#D4D4D4] uppercase mb-1 text-left">IA Em Funcionamento</h4>
+                                <p class="text-[11px] text-[#AAAAAA] leading-snug text-left">
+                                    Monitorando o mercado e executando apenas quando há vantagem estatística.
+                                </p>
+                            </div>
 
                             <!-- Desktop Pause Button -->
                             <div class="mt-auto px-1 pt-6 border-t border-border/40">
