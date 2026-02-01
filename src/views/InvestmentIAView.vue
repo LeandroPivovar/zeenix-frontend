@@ -480,6 +480,63 @@
             @close="showStrategyRequiredModal = false"
             @confirm="handleStrategyRequiredConfirm"
         />
+
+        <!-- Account Selection Modal -->
+        <Teleport to="body">
+            <div 
+                v-if="showAccountModal" 
+                class="modal-overlay" 
+                @click.self="showAccountModal = false"
+            >
+                <div class="modal-content" style="max-width: 500px">
+                    <div class="modal-header">
+                        <h3 class="modal-title font-bold text-white">Selecionar Conta</h3>
+                        <button @click="showAccountModal = false" class="modal-close-btn">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-if="isLoadingAccounts" class="flex flex-col items-center justify-center py-10 gap-4">
+                            <div class="w-10 h-10 border-4 border-zenix-green/30 border-t-zenix-green rounded-full animate-spin"></div>
+                            <p class="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Carregando contas disponíveis...</p>
+                        </div>
+                        <div v-else-if="availableAccounts.length === 0" class="text-center py-10">
+                            <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-3xl mb-4"></i>
+                            <p class="text-white font-bold uppercase">Nenhuma conta encontrada</p>
+                            <p class="text-gray-400 text-xs mt-2 font-bold uppercase">Certifique-se de que você está conectado à Deriv.</p>
+                        </div>
+                        <div v-else class="space-y-3">
+                            <p class="text-xs text-gray-500 mb-4 font-bold uppercase tracking-widest">Escolha a conta para iniciar as operações:</p>
+                            <div 
+                                v-for="account in availableAccounts" 
+                                :key="account.loginid"
+                                @click="selectAccount(account)"
+                                class="p-4 rounded-xl border border-[#333] bg-[#111] hover:border-zenix-green hover:bg-zenix-green/5 transition-all cursor-pointer group flex items-center justify-between"
+                            >
+                                <div class="flex items-center gap-4">
+                                    <div 
+                                        class="w-10 h-10 rounded-full flex items-center justify-center border border-[#333]"
+                                        :class="account.isDemo ? 'bg-orange-500/10 text-orange-500' : 'bg-zenix-green/10 text-zenix-green'"
+                                    >
+                                        <i class="fa-solid" :class="account.isDemo ? 'fa-vial' : 'fa-dollar-sign'"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-white font-bold">{{ account.loginid }}</div>
+                                        <div class="text-[10px] uppercase font-bold" :class="account.isDemo ? 'text-orange-500' : 'text-zenix-green'">
+                                            {{ account.isDemo ? 'Conta Demo' : 'Conta Real' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-white font-bold tracking-tight">{{ account.currency }} {{ account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
+                                    <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Saldo Disponível</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
     <DesktopBottomNav />
     
@@ -532,8 +589,11 @@ export default {
             showMinimumStakeModal: false,
 
             showStrategyRequiredModal: false,
+            showAccountModal: false,
+            isLoadingAccounts: false,
             availableAccounts: [],
-            loadingAccounts: false,
+            selectedToken: null,
+            activationEvent: null,
 
             ticks: [],
             currentPrice: null,
@@ -660,6 +720,16 @@ export default {
         },
         selectedMarket(newValue) {
             console.log('[InvestmentIAView] 📊 Mercado selecionado:', newValue);
+        },
+        showAccountModal(newValue) {
+            // Se o modal de conta for fechado e a IA ainda não estiver ativa,
+            // certificar-se de resetar o checkbox/estado de ativação
+            if (!newValue && !this.isInvestmentActive && this.activationEvent) {
+                console.log('[InvestmentIAView] Modal fechado sem seleção, resetando toggle.');
+                if (this.activationEvent.target) {
+                    this.activationEvent.target.checked = false;
+                }
+            }
         }
     },
     computed: {
@@ -939,16 +1009,8 @@ export default {
             console.log('[InvestmentIAView] 🔄 Toggle alterado:', isChecked ? 'Ativar' : 'Desativar');
             
             if (isChecked && !this.isInvestmentActive) {
-                // Ativando IA
-                await this.activateIA();
-                
-                // ✅ FIX: Se a ativação falhar (isInvestmentActive continuar false),
-                // forçar o checkbox a voltar para unchecked.
-                if (!this.isInvestmentActive) {
-                    console.log('[InvestmentIAView] ⚠️ Ativação falhou ou cancelada, revertendo toggle.');
-                    // Forçar atualização do DOM caso o Vue não detecte a mudança (já que o model já era false)
-                    event.target.checked = false;
-                }
+                // Ativando IA - Mostra modal de seleção de conta
+                this.handleStartClick(event);
             } else if (!isChecked && this.isInvestmentActive) {
                 // Desativando IA
                 await this.deactivateIA();
@@ -1112,7 +1174,83 @@ export default {
             }
         },
 
+        async handleStartClick(event) {
+             this.isLoadingAccounts = true;
+             this.showAccountModal = true;
+             this.availableAccounts = [];
+             this.activationEvent = event;
+             
+             try {
+                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                 const userToken = localStorage.getItem('token');
+                 
+                 if (!userToken) {
+                     this.$root.$toast.error('Sessão expirada. Faça login novamente.');
+                     if (event && event.target) event.target.checked = false;
+                     this.showAccountModal = false;
+                     return;
+                 }
+
+                 const response = await fetch(`${apiBase}/settings`, {
+                     headers: {
+                         'Authorization': `Bearer ${userToken}`,
+                         'Content-Type': 'application/json'
+                     }
+                 });
+
+                 if (!response.ok) throw new Error('Falha ao buscar configurações do backend');
+
+                 const data = await response.json();
+                 const accounts = [];
+
+                 if (data.tokenReal) {
+                     accounts.push({
+                         loginid: data.idRealAccount || 'Conta Real',
+                         token: data.tokenReal,
+                         balance: Number(data.realAmount) || 0,
+                         currency: data.tokenRealCurrency || 'USD',
+                         isDemo: false
+                     });
+                 }
+
+                 if (data.tokenDemo) {
+                     accounts.push({
+                         loginid: data.idDemoAccount || 'Conta Demo',
+                         token: data.tokenDemo,
+                         balance: Number(data.demoAmount) || 0,
+                         currency: data.tokenDemoCurrency || 'USD',
+                         isDemo: true
+                     });
+                 }
+
+                 this.availableAccounts = accounts;
+             } catch (error) {
+                 console.error('[InvestmentIAView] Erro ao carregar contas:', error);
+                 this.$root.$toast.error('Erro ao conectar com o servidor.');
+                 if (event && event.target) event.target.checked = false;
+                 this.showAccountModal = false;
+             } finally {
+                 this.isLoadingAccounts = false;
+             }
+        },
+
+        async selectAccount(account) {
+            console.log('[InvestmentIAView] Conta selecionada:', account.loginid);
+            this.selectedToken = account.token;
+            this.accountType = account.isDemo ? 'demo' : 'real';
+            localStorage.setItem('deriv_account_type', this.accountType);
+            
+            this.showAccountModal = false;
+            
+            // Chamar a ativação original
+            await this.activateIA();
+        },
+
         getDerivToken() {
+            if (this.selectedToken) {
+                console.log('[InvestmentIAView] ✓ Usando token selecionado no modal');
+                return this.selectedToken;
+            }
             console.log('[InvestmentIAView] Buscando token Deriv para conta:', this.accountType);
 
             try {
