@@ -2779,13 +2779,24 @@ export default {
 
 /* Dashboard específico - Cor #050705 apenas no desktop */
 @media (min-width: 1025px) {
-  /* Sidebar com box-shadow para transição suave entre sidebar e conteúdo do vídeo */
-  .dashboard-layout .sidebar,
-  .dashboard-layout aside.sidebar {
-    background: transparent !important;
-    box-shadow: 10px 0 80px rgba(5, 7, 5, 0),
-                10px 0 120px rgba(5, 7, 5, 0.445) !important;
-  }
+  /* No seu sidebar.css */
+
+aside.sidebar,
+.sidebar,
+#app-sidebar-main.sidebar-glass-effect {
+    width: 280px !important;
+    /* Mude de transparent para um preto translúcido (0.5 ou 0.3) */
+    background: rgba(11, 11, 11, 0.5) !important; 
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    
+    /* Remova box-shadow e fundos sólidos */
+    box-shadow: none !important;
+    background-image: none !important;
+    
+    /* ... outras propriedades mantidas ... */
+}
   
   /* Overlay no conteúdo principal para transição suave do vídeo para a sidebar */
   .dashboard-layout .main-content::before {
@@ -4635,24 +4646,5 @@ export default {
   }
 }
 
-/* Localize a classe .sidebar e garanta que ela NÃO tenha fundo sólido */
-.sidebar {
-    /* REMOVA qualquer background: #141515 ou similar */
-    background: transparent !important; 
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Localize ou adicione a classe sidebar-glass-effect */
-.sidebar-glass-effect {
-    background: rgba(11, 11, 11, 0.5) !important; /* Cor escura mas com transparência (0.5) */
-    backdrop-filter: blur(20px) !important; /* O efeito de desfoque igual ao TopNav */
-    -webkit-backdrop-filter: blur(20px) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
-}
-
-/* MUITO IMPORTANTE: Verifique se não existe um wrapper interno com fundo */
-.sidebar-wrapper {
-    background: transparent !important;
-}
 
 </style>
