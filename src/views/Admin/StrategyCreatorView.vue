@@ -799,6 +799,124 @@
                                         <input type="number" v-model.number="filter.config.minDelta" step="0.01" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                 </div>
+
+                                <!-- Parity Sequence Config -->
+                                <div v-if="filter.id === 'parity_sequence'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tamanho da Sequência</label>
+                                        <input type="number" v-model.number="filter.config.length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Paridade</label>
+                                        <select v-model="filter.config.parity" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="even">Par</option>
+                                            <option value="odd">Ímpar</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Over/Under Sequence Config -->
+                                <div v-if="filter.id === 'over_under_sequence'" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tamanho</label>
+                                        <input type="number" v-model.number="filter.config.length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tipo</label>
+                                        <select v-model="filter.config.type" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="over">Acima (Over)</option>
+                                            <option value="under">Abaixo (Under)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Valor Limite</label>
+                                        <select v-model.number="filter.config.threshold" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Price vs MA Config -->
+                                <div v-if="filter.id === 'price_ma'" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Período</label>
+                                        <input type="number" v-model.number="filter.config.period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tipo</label>
+                                        <select v-model="filter.config.type" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="SMA">SMA (Simples)</option>
+                                            <option value="EMA">EMA (Exponencial)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Condição (Preço)</label>
+                                        <select v-model="filter.config.op" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value=">">Acima da Média</option>
+                                            <option value="<">Abaixo da Média</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Digit Absence Config -->
+                                <div v-if="filter.id === 'digit_absence'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Período (Ticks)</label>
+                                        <input type="number" v-model.number="filter.config.period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Dígito Ausente</label>
+                                        <select v-model.number="filter.config.digit" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- MA Crossover Config -->
+                                <div v-if="filter.id === 'ma_crossover'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Média Curta</label>
+                                        <input type="number" v-model.number="filter.config.periodShort" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Média Longa</label>
+                                        <input type="number" v-model.number="filter.config.periodLong" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tipo</label>
+                                        <select v-model="filter.config.type" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="SMA">SMA</option>
+                                            <option value="EMA">EMA</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Cruzamento</label>
+                                        <select v-model="filter.config.direction" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="up">Para Cima (Alta)</option>
+                                            <option value="down">Para Baixo (Baixa)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- RSI Config -->
+                                <div v-if="filter.id === 'rsi'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Período RSI</label>
+                                        <input type="number" v-model.number="filter.config.period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Condição</label>
+                                        <select v-model="filter.config.condition" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="<">Abaixo de (Sobrevenda)</option>
+                                            <option value=">">Acima de (Sobrecompra)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Nível do RSI</label>
+                                        <input type="number" v-model.number="filter.config.level" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+
+                                </div>
                             </div>
 
                             <button @click="saveFilters" class="w-full bg-zenix-green hover:bg-green-600 shadow-xl shadow-green-500/5 text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2 mt-8 transition-all">
@@ -1045,6 +1163,56 @@ export default {
                     type: 'price',
                     desc: 'Analisa a força e direção dos tiques de preço.',
                     config: { window: 10, ticksToConfirm: 2, minDelta: 0.1 }
+                },
+                // Phase 1 Filters
+                {
+                    id: 'parity_sequence',
+                    name: 'Sequência de Paridade',
+                    active: false,
+                    type: 'digit',
+                    desc: 'Verifica se os últimos X dígitos têm a mesma paridade.',
+                    config: { length: 3, parity: 'even' }
+                },
+                {
+                    id: 'over_under_sequence',
+                    name: 'Sequência Over/Under',
+                    active: false,
+                    type: 'digit',
+                    desc: 'Verifica se os últimos X dígitos estão acima ou abaixo de um valor.',
+                    config: { length: 3, type: 'under', threshold: 5 }
+                },
+                {
+                    id: 'price_ma',
+                    name: 'Preço vs. Média Móvel',
+                    active: false,
+                    type: 'price',
+                    desc: 'Verifica se o preço está acima ou abaixo da média móvel.',
+                    config: { period: 14, type: 'SMA', op: '>' }
+                },
+                // Phase 2 Filters
+                {
+                    id: 'digit_absence',
+                    name: 'Ausência de Dígito',
+                    active: false,
+                    type: 'digit',
+                    desc: 'Verifica se um dígito não apareceu nos últimos X ticks.',
+                    config: { period: 10, digit: 0 }
+                },
+                {
+                    id: 'ma_crossover',
+                    name: 'Cruzamento de Médias',
+                    active: false,
+                    type: 'price',
+                    desc: 'Verifica cruzamento de médias móveis.',
+                    config: { periodShort: 9, periodLong: 21, type: 'EMA', direction: 'up' }
+                },
+                {
+                    id: 'rsi',
+                    name: 'Índice de Força Relativa (RSI)',
+                    active: false,
+                    type: 'price',
+                    desc: 'Verifica níveis de sobrecompra ou sobrevenda.',
+                    config: { period: 14, level: 30, condition: '<' }
                 }
             ],
             // Hardcoded Category Data (Expanded for Specific Contracts)
