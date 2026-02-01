@@ -11,7 +11,7 @@
       @toggle-collapse="toggleSidebarCollapse" 
     />
     
-    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }" style="padding-left: 0 !important; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
       <!-- Top Navbar -->
       <TopNavbar 
         v-if="!isMobile"
@@ -28,11 +28,12 @@
       />
     
     <!-- Main Content -->
-    <main class="main-content bg-transparent noise-bg font-inter overflow-y-auto" style="width: 100vw; padding-left: var(--sidebar-width); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+    <main class="main-content bg-transparent noise-bg font-inter overflow-y-auto w-full">
       <!-- Hero Onboarding Section -->
-      <section id="hero-section" class="w-full mt-0 py-12 relative group h-[640px]" style="overflow: visible;">
+      <!-- Hero Onboarding Section -->
+      <section id="hero-section" class="w-full mt-0 py-12 relative group h-[640px] full-bleed-section" style="overflow: visible;">
       <!-- Video/Background Container skewed back to cover sidebar area -->
-      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent full-immersion" style="width: 100vw; left: calc(var(--sidebar-width) * -1); transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
+      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent full-immersion">
         <!-- Video Background - Desktop Only (Dual Video for Seamless Loop) -->
         <template v-if="!isMobile">
           <video 
@@ -91,7 +92,7 @@
       </section>
       
       <!-- Ticker Section -->
-      <section id="ticker-section" class="py-3 relative border-t border-[#22C55E]/20 bg-[rgba(11,11,11,0.8)] backdrop-blur-sm w-full" style="overflow: visible;">
+      <section id="ticker-section" class="py-3 relative border-t border-[#22C55E]/20 bg-[rgba(11,11,11,0.8)] backdrop-blur-sm w-full full-bleed-section" style="overflow: visible;">
         <div class="absolute inset-0 z-0 bg-[rgba(11,11,11,0.8)] full-immersion" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);"></div>
         <div class="relative z-10 w-full">
           <div class="relative overflow-hidden w-full">
@@ -191,7 +192,7 @@
         </section>
         
         <!-- Best IAs Section -->
-        <section id="best-ai-section" class="pt-0 pb-0 relative w-full" style="overflow: visible;">
+        <section id="best-ai-section" class="pt-0 pb-0 relative w-full full-bleed-section" style="overflow: visible;">
           <div class="absolute inset-0 z-0 bg-gradient-to-b from-[#020302] via-[#030403] to-[#020302] opacity-60 pointer-events-none full-immersion"></div>
           <div class="relative z-10 w-full px-6 md:px-10">
             <!-- Desktop Header -->
@@ -286,7 +287,7 @@
       </section>
       
       <!-- Overall Performance Section -->
-      <section id="performance-section" class="pt-4 pb-36 relative w-full" style="overflow: visible;">
+      <section id="performance-section" class="pt-4 pb-36 relative w-full full-bleed-section" style="overflow: visible;">
         <div class="absolute inset-0 z-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none full-immersion"></div>
         <div class="relative z-10 w-full px-6 md:px-10">
           <!-- Desktop Header -->
@@ -4634,6 +4635,20 @@ export default {
     transform: scale(1.05);
     box-shadow: 0 0 40px rgba(34, 197, 94, 0.4);
   }
+}
+
+
+.full-bleed-section {
+  width: 100vw;
+  margin-left: calc(var(--sidebar-width) * -1);
+  padding-left: var(--sidebar-width);
+  transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-collapsed .full-bleed-section {
+  /* Ensure variable update is respected */
+  margin-left: calc(var(--sidebar-width) * -1);
+  padding-left: var(--sidebar-width);
 }
 
 </style>
