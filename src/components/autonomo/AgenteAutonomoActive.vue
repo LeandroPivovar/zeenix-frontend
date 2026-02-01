@@ -163,12 +163,12 @@
 							<div class="p-2 bg-[#1a1a1a] rounded-md overflow-hidden flex items-center justify-center w-10 h-10 border border-[#27272a]">
                                 <img 
                                     v-if="currentAgentId === 'zeus'"
-                                    src="C:/Users/patov/.gemini/antigravity/brain/61f11728-a4a0-4522-9fc6-65e0b52ff4a8/uploaded_media_1_1769948535549.png"
+                                    src="/img/agents/zeus.png"
                                     class="w-full h-full object-cover rounded-sm"
                                 />
                                 <img 
                                     v-else-if="currentAgentId === 'falcon'"
-                                    src="C:/Users/patov/.gemini/antigravity/brain/61f11728-a4a0-4522-9fc6-65e0b52ff4a8/uploaded_media_0_1769948535549.png"
+                                    src="/img/agents/falcon.png"
                                     class="w-full h-full object-cover rounded-sm"
                                 />
                                 <div v-else class="strategy-icons-inline text-lg">
@@ -204,12 +204,12 @@
 								<div class="w-14 h-14 rounded-lg bg-[#0c0c0c] flex items-center justify-center relative shrink-0 border border-[#27272a] overflow-visible">
 									<img 
                                         v-if="agent.id === 'zeus'"
-                                        src="C:/Users/patov/.gemini/antigravity/brain/61f11728-a4a0-4522-9fc6-65e0b52ff4a8/uploaded_media_1_1769948535549.png"
+                                        src="/img/agents/zeus.png"
                                         class="w-full h-full object-cover rounded-md"
                                     />
                                     <img 
                                         v-else-if="agent.id === 'falcon'"
-                                        src="C:/Users/patov/.gemini/antigravity/brain/61f11728-a4a0-4522-9fc6-65e0b52ff4a8/uploaded_media_0_1769948535549.png"
+                                        src="/img/agents/falcon.png"
                                         class="w-full h-full object-cover rounded-md"
                                     />
                                     <div v-else class="strategy-icons-inline text-2xl">
