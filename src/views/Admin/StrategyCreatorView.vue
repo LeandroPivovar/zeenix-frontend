@@ -91,7 +91,28 @@
 
                 <!-- CONFIGURATION FORM -->
                 <div v-else class="strategy-creator-form-container px-4">
-                    <form @submit.prevent="submitForm" class="space-y-8">
+                     <!-- Tabs -->
+                     <div class="flex items-center gap-4 mb-6 border-b border-[#333] pb-4">
+                        <button 
+                            type="button"
+                            @click="activeTab = 'config'"
+                            class="text-sm font-bold uppercase tracking-wider pb-2 border-b-2 transition-all"
+                            :class="activeTab === 'config' ? 'text-zenix-green border-zenix-green' : 'text-gray-500 border-transparent hover:text-white'"
+                        >
+                            Configuração
+                        </button>
+                        <button 
+                            type="button"
+                            @click="activeTab = 'validator'"
+                            class="text-sm font-bold uppercase tracking-wider pb-2 border-b-2 transition-all flex items-center gap-2"
+                            :class="activeTab === 'validator' ? 'text-zenix-green border-zenix-green' : 'text-gray-500 border-transparent hover:text-white'"
+                        >
+                            <i class="fa-solid fa-clipboard-check"></i>
+                            Validador
+                        </button>
+                    </div>
+
+                    <form v-show="activeTab === 'config'" @submit.prevent="submitForm" class="space-y-8">
                         <div class="grid grid-cols-12 gap-6">
                             <!-- Mercado e Tipo de Negociação -->
                             <div class="col-span-12 md:col-span-6">
@@ -469,6 +490,134 @@
                         </div>
                     </div>
                 </form>
+
+                <!-- VALIDATOR TAB CONTENT -->
+                <div v-show="activeTab === 'validator'" class="space-y-6 animate-fadeIn pb-20">
+                    <div class="bg-[#141414] border border-[#333] rounded-xl p-6">
+                        <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-zenix-green"></i>
+                            Checklist de Validação
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Static Item 1 -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.aiStarted" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA iniciou</span>
+                            </label>
+
+                            <!-- Attack Filter -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.attackFilterCorrect" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">
+                                    IA esta aplicando o filtro de ataque corretamente 
+                                    <span class="text-zenix-green text-sm ml-1" v-if="form.attackFilters.length">({{ activeAttackFilterNames }})</span>
+                                    <span class="text-gray-500 text-xs ml-1" v-else>(Nenhum filtro)</span>
+                                </span>
+                            </label>
+
+                            <!-- Base Stake -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.baseStakeCorrect" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA esta usando corretamente o stake base</span>
+                            </label>
+
+                            <!-- Soros Applied -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.sorosApplied" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA aplicou o soros</span>
+                            </label>
+
+                            <!-- Soros Reset -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.sorosReset" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA resetou para o stake base após ganhar no soros</span>
+                            </label>
+
+                            <!-- Recovery Mode Entered -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.recoveryModeEntered" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA entrou no modo de recuperação</span>
+                            </label>
+
+                            <!-- Recovery Contract Switched -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.recoveryContractSwitched" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA trocou o contrato no modo de recuperação</span>
+                            </label>
+
+                            <!-- Recovery Filters (Dynamic) -->
+                            <div v-if="recoveryConfig.attackFilters && recoveryConfig.attackFilters.length > 0">
+                                <label v-for="filter in recoveryConfig.attackFilters" :key="filter.id" class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors mb-4">
+                                    <div class="relative flex items-center">
+                                        <input type="checkbox" v-model="validator.recoveryFilters[filter.id]" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                        <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                            <i class="fa-solid fa-check text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <span class="text-white font-medium">
+                                        A IA usou corretamente o filtro 
+                                        <span class="text-zenix-green text-sm ml-1">({{ filter.name }})</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div v-else class="p-4 bg-[#1E1E1E] rounded-lg border border-[#333] opacity-60">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-info-circle text-gray-500"></i>
+                                    <span class="text-gray-400 font-medium">Nenhum filtro de recuperação configurado para validar.</span>
+                                </div>
+                            </div>
+
+
+                            <!-- Martingale 100% -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.martingale100" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA esta recuperando 100% no martingale</span>
+                            </label>
+
+                        </div>
+                    </div>
+                </div>
             </div>
             </main>
         </div>
@@ -1212,42 +1361,26 @@
             </div>
         </Teleport>
 
-        <!-- Stop Result Modal -->
+        <!-- Stop Modals -->
         <Teleport to="body">
-            <div v-if="showStopModal" class="modal-overlay" @click.self="showStopModal = false">
-                <div class="modal-content animate-popIn text-center" style="max-width: 450px; border-color: var(--modal-border)">
-                    
-                    <div class="flex justify-center mb-6">
-                        <div class="w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-[0_0_30px_rgba(0,0,0,0.5)] border-4"
-                             :class="{
-                                 'bg-green-500/20 text-green-500 border-green-500': stopResult.type === 'success',
-                                 'bg-red-500/20 text-red-500 border-red-500': stopResult.type === 'error',
-                                 'bg-yellow-500/20 text-yellow-500 border-yellow-500': stopResult.type === 'warning'
-                             }">
-                             <i v-if="stopResult.type === 'success'" class="fa-solid fa-trophy"></i>
-                             <i v-if="stopResult.type === 'error'" class="fa-solid fa-skull"></i>
-                             <i v-if="stopResult.type === 'warning'" class="fa-solid fa-shield-halved"></i>
-                        </div>
-                    </div>
+            <StopLossModal
+                :visible="showStopModal && stopResult.type === 'error'"
+                :result="stopResult.profit"
+                :loss-limit="form.stopLoss"
+                @confirm="showStopModal = false"
+            />
 
-                    <h3 class="text-2xl font-bold text-white mb-2">{{ stopResult.title }}</h3>
-                    <p class="text-gray-400 mb-6">{{ stopResult.message }}</p>
+            <TargetProfitModal
+                :visible="showStopModal && stopResult.type === 'success'"
+                :result="stopResult.profit"
+                @confirm="showStopModal = false"
+            />
 
-                    <div class="bg-[#111] rounded-xl p-4 mb-8 border border-[#333]">
-                        <p class="text-xs text-gray-500 uppercase font-bold mb-1">Resultado Final</p>
-                        <p class="text-3xl font-mono font-bold" 
-                           :class="stopResult.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-                           {{ stopResult.profit >= 0 ? '+' : '' }}${{ stopResult.profit.toFixed(2) }}
-                        </p>
-                    </div>
-
-                    <div class="flex gap-3">
-                         <button @click="showStopModal = false" class="flex-1 bg-[#333] hover:bg-[#444] text-white py-3 rounded-lg font-bold transition-colors">
-                            Fechar
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <StopBlindadoAjusteModal
+                :visible="showStopModal && stopResult.type === 'warning'"
+                :result="stopResult.profit"
+                @confirm="showStopModal = false"
+            />
         </Teleport>
     </div>
 </template>
@@ -1264,6 +1397,9 @@ import orionConfig from '@/utils/strategies/orion.json';
 import titanConfig from '@/utils/strategies/titan.json';
 import { RiskManager } from '../../utils/RiskManager';
 import MonitoringDashboard from '../../components/ActiveStrategy/MonitoringDashboard.vue';
+import StopLossModal from '../../components/StopLossModal.vue';
+import TargetProfitModal from '../../components/TargetProfitModal.vue';
+import StopBlindadoAjusteModal from '../../components/StopBlindadoAjusteModal.vue';
 
 const defaultStrategies = [apolloConfig, atlasConfig, nexusConfig, orionConfig, titanConfig];
 
@@ -1273,7 +1409,10 @@ export default {
         AppSidebar,
         TopNavbar,
         SettingsSidebar,
-        MonitoringDashboard
+        MonitoringDashboard,
+        StopLossModal,
+        TargetProfitModal,
+        StopBlindadoAjusteModal
     },
     data() {
         return {
@@ -1298,6 +1437,18 @@ export default {
             recoveryFilters: [],
             modalContext: 'main', // 'main' or 'recovery'
             filterStep: 1, // 1: Selection, 2: Configuration
+            activeTab: 'config',
+            validator: {
+                aiStarted: false,
+                attackFilterCorrect: false,
+                baseStakeCorrect: false,
+                sorosApplied: false,
+                sorosReset: false,
+                recoveryModeEntered: false,
+                recoveryContractSwitched: false,
+                recoveryFilters: {}, // Dynamic keys based on filter.id
+                martingale100: false
+            },
 
             markets: [],
             contracts: [],
@@ -1814,6 +1965,10 @@ export default {
                 if (item && item.icon) return `/deriv_icons/${item.icon}`;
             }
             return null;
+        },
+        activeAttackFilterNames() {
+            if (!this.form.attackFilters || !this.form.attackFilters.length) return '';
+            return this.form.attackFilters.map(f => f.name).join(', ');
         }
     },
     mounted() {
@@ -2215,7 +2370,8 @@ export default {
                 name: name,
                 config: {
                     form: JSON.parse(JSON.stringify(this.form)),
-                    recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig))
+                    recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
+                    validator: JSON.parse(JSON.stringify(this.validator))
                 }
             };
 
@@ -2243,6 +2399,11 @@ export default {
             this.recoveryConfig = { ...this.recoveryConfig, ...savedRecovery };
             if (!this.recoveryConfig.expectedPayout) this.recoveryConfig.expectedPayout = 2.26;
             
+            if (strategy.config.validator) {
+                const savedValidator = JSON.parse(JSON.stringify(strategy.config.validator));
+                this.validator = { ...this.validator, ...savedValidator };
+            }
+
             // Restore filters active state for main
             this.filters.forEach(f => {
                 const active = this.form.attackFilters.find(af => af.id === f.id);
@@ -2268,7 +2429,8 @@ export default {
 
             strategy.config = {
                 form: JSON.parse(JSON.stringify(this.form)),
-                recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig))
+                recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
+                validator: JSON.parse(JSON.stringify(this.validator))
             };
 
             localStorage.setItem('zeenix_saved_strategies', JSON.stringify(this.savedStrategies));
@@ -2290,7 +2452,8 @@ export default {
                 timestamp: new Date().toISOString(),
                 config: {
                     form: this.form,
-                    recoveryConfig: this.recoveryConfig
+                    recoveryConfig: this.recoveryConfig,
+                    validator: this.validator
                 }
             };
 
@@ -2329,6 +2492,11 @@ export default {
                         this.recoveryConfig = { ...this.recoveryConfig, ...importedRecovery };
                         if (!this.recoveryConfig.expectedPayout) this.recoveryConfig.expectedPayout = 2.26;
                         
+                        if (data.config.validator) {
+                            const importedValidator = JSON.parse(JSON.stringify(data.config.validator));
+                            this.validator = { ...this.validator, ...importedValidator };
+                        }
+
                         // Sync filter active states
                         this.filters.forEach(f => {
                             const active = this.form.attackFilters.find(af => af.id === f.id);
