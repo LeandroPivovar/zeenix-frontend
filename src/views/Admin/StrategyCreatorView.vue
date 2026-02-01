@@ -1909,19 +1909,23 @@ export default {
             this.showFilterModal = true;
         },
         toggleFilter(filter) {
-            if (filter.active) {
-                filter.active = false;
+            const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
+            const targetFilter = targetArray.find(f => f.id === filter.id);
+            
+            if (!targetFilter) return;
+
+            if (targetFilter.active) {
+                targetFilter.active = false;
                 return;
             }
 
-            const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
             const activeCount = targetArray.filter(f => f.active).length;
             if (activeCount >= 2) {
                 this.$root.$toast.warning('Selecione no máximo 2 filtros.');
                 return;
             }
 
-            filter.active = true;
+            targetFilter.active = true;
         },
         nextFilterStep() {
             const sourceArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
