@@ -4638,17 +4638,17 @@ export default {
 }
 
 
+
 .full-bleed-section {
   width: 100vw;
-  margin-left: calc(var(--sidebar-width) * -1);
-  padding-left: var(--sidebar-width);
+  margin-left: -280px;
+  padding-left: 280px !important;
   transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sidebar-collapsed .full-bleed-section {
-  /* Ensure variable update is respected */
-  margin-left: calc(var(--sidebar-width) * -1);
-  padding-left: var(--sidebar-width);
+  margin-left: -80px;
+  padding-left: 80px !important;
 }
 
 </style>
