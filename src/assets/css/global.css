@@ -248,25 +248,20 @@ body,
 
 /* Background Immersion (100vw media) */
 .full-immersion {
+  position: absolute !important;
+  inset: 0 !important;
   width: 100vw !important;
   max-width: none !important;
-  left: calc(-1 * var(--sidebar-width, 280px)) !important;
-  position: absolute !important;
-  transform: none !important;
-  transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  left: 0 !important;
   z-index: 0;
+  pointer-events: none !important;
 }
 
 /* New Layout: Decouples background from sidebar padding */
 .full-immersion-layout {
   padding-left: 0 !important;
   overflow-x: hidden !important;
-}
-
-.full-immersion-layout .full-immersion {
-  left: 0 !important;
   width: 100% !important;
-  position: fixed !important;
 }
 
 .immersion-content {
@@ -277,18 +272,17 @@ body,
 
 @media (max-width: 1024px) {
   .immersion-content {
-    padding-left: 0;
+    padding-left: 0 !important;
+  }
+
+  .full-immersion {
+    width: 100% !important;
   }
 }
 
-.sidebar-collapsed .full-immersion,
-.sbt-collapsed .full-immersion,
-.sbt-sidebar-wrapper.sbt-collapsed:not(:hover)~.dashboard-content-wrapper .full-immersion {
+.sidebar-collapsed .full-immersion-layout,
+.sbt-collapsed .full-immersion-layout {
   --sidebar-width: 80px;
-}
-
-.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper .full-immersion {
-  --sidebar-width: 280px;
 }
 
 .dashboard-content-wrapper {

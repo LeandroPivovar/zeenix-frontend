@@ -11,7 +11,7 @@
       @toggle-collapse="toggleSidebarCollapse" 
     />
     
-    <div class="dashboard-content-wrapper full-immersion-layout" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
+    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }" style="padding-left: 0 !important; width: 100% !important; overflow-x: hidden !important;">
       <!-- Top Navbar -->
       <TopNavbar 
         v-if="!isMobile"
@@ -31,7 +31,7 @@
     <main class="main-content bg-transparent noise-bg font-inter overflow-y-auto w-full">
       <!-- Hero Onboarding Section -->
       <section id="hero-section" class="w-full mt-0 py-12 relative group h-[640px]" style="overflow: visible;">
-      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent full-immersion">
+      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent full-immersion" style="width: 100vw; left: 0;">
         <!-- Video Background - Desktop Only (Dual Video for Seamless Loop) -->
         <template v-if="!isMobile">
           <video 
@@ -110,7 +110,7 @@
         </div>
       </section>
       
-      <div class="py-0 w-full" style="padding-left: 0; padding-right: 0;">
+      <div class="py-0 w-full immersion-content" style="padding-right: 0;">
         <!-- Mobile Account Summary -->
         <section class="mobile-account-summary">
           <div class="mobile-account-user">
