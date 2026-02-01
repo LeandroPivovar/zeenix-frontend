@@ -557,6 +557,7 @@ aside.sidebar,
 	flex-grow: 1;
 	padding: 16px;
 	overflow-y: auto;
+	background: transparent !important;
 }
 
 .menu-item {
@@ -665,7 +666,9 @@ aside.sidebar,
 /* --- Media Queries (Mobile) --- */
 
 @media (max-width: 1024px) {
-	.sidebar {
+
+	.sidebar,
+	#app-sidebar-main.sidebar-glass-effect {
 		left: -300px;
 		top: 0 !important;
 		height: 100vh !important;
@@ -674,6 +677,15 @@ aside.sidebar,
 		/* Acima do header (1000) e desktopbottomnav (1000) */
 		margin: 0 !important;
 		padding-top: 0 !important;
+		/* Mobile: fundo sólido, não transparente */
+		background: #0B0B0B !important;
+		background-color: #0B0B0B !important;
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+	}
+
+	.menu {
+		background: transparent !important;
 	}
 
 
