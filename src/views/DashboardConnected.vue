@@ -11,7 +11,7 @@
       @toggle-collapse="toggleSidebarCollapse" 
     />
     
-    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
+    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }" style="padding-left: 0 !important; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
       <!-- Top Navbar -->
       <TopNavbar 
         v-if="!isMobile"
@@ -28,10 +28,11 @@
       />
     
     <!-- Main Content -->
-    <main class="main-content bg-transparent noise-bg font-inter overflow-y-auto w-full">
+    <main class="main-content bg-transparent noise-bg font-inter overflow-y-auto" style="width: 100vw; padding-left: var(--sidebar-width); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
       <!-- Hero Onboarding Section -->
       <section id="hero-section" class="w-full mt-0 py-12 relative group h-[640px]" style="overflow: visible;">
-      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent full-immersion">
+      <!-- Video/Background Container skewed back to cover sidebar area -->
+      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent full-immersion" style="width: 100vw; left: calc(var(--sidebar-width) * -1); transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);">
         <!-- Video Background - Desktop Only (Dual Video for Seamless Loop) -->
         <template v-if="!isMobile">
           <video 
