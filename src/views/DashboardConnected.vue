@@ -1,9 +1,9 @@
 <template>
-  <div class="dashboard-layout">
+  <div class="dashboard-layout relative">
 
 
      <!-- Global Video Background (Hero Area Only) -->
-    <div class="absolute top-0 left-0 w-full h-[640px] z-0 bg-black pointer-events-none overflow-hidden">
+    <div class="fixed top-0 left-0 w-full h-[640px] z-0 pointer-events-none overflow-hidden">
          <template v-if="!isMobile">
           <video 
             ref="heroVideo1"
