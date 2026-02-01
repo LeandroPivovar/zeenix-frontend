@@ -32,13 +32,15 @@ aside.sidebar,
 }
 
 /* Estado Colapsado */
-.sidebar.collapsed {
+.sidebar.collapsed,
+#app-sidebar-main.sidebar-glass-effect.collapsed {
 	width: 80px !important;
 	min-width: 80px !important;
 	max-width: 80px !important;
 }
 
-.sidebar.collapsed:hover {
+.sidebar.collapsed:hover,
+#app-sidebar-main.sidebar-glass-effect.collapsed:hover {
 	width: 280px !important;
 }
 
@@ -56,7 +58,8 @@ aside.sidebar,
 @media (min-width: 769px) {
 
 	/* O wrapper controla o hover para sincronizar com o conteúdo */
-	.sidebar-wrapper:hover .sidebar {
+	.sidebar-wrapper:hover .sidebar,
+	.sidebar-wrapper:hover #app-sidebar-main.sidebar-glass-effect {
 		width: 280px !important;
 		min-width: 280px !important;
 		max-width: 280px !important;
