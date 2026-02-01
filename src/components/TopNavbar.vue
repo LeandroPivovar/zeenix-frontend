@@ -356,6 +356,22 @@ export default {
       return value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     },
     balanceNumeric() {
+      // Prioridade 0: Fallback para o prop 'balance' (Sincronização em tempo real para IA/Monitoramento)
+      // Se o prop balance for passado e for diferente de zero, usá-lo como fonte de verdade absoluta
+      const raw = this.balance;
+      let propValue = 0;
+      if (typeof raw === 'number') propValue = raw;
+      else if (typeof raw === 'string') {
+        const parsed = Number(raw);
+        propValue = isNaN(parsed) ? 0 : parsed;
+      } else if (raw !== null && raw !== undefined) {
+        const val = raw?.value ?? raw?.balance ?? 0;
+        const num = Number(val);
+        propValue = isNaN(num) ? 0 : num;
+      }
+
+      if (propValue > 0) return propValue;
+
       // Prioridade 1: Saldo Demo + Fictício se ativo E conta for demo
       if (this.accountType === 'demo') {
         const demoBalance = this.balancesByCurrencyDemo['USD'] || 0;
@@ -376,16 +392,7 @@ export default {
         if (Number(balance) > 0) return Number(balance);
       }
 
-      // Fallback para o prop 'balance'
-      const raw = this.balance;
-      if (typeof raw === 'number') return raw;
-      if (typeof raw === 'string') {
-        const parsed = Number(raw);
-        return isNaN(parsed) ? 0 : parsed;
-      }
-      const val = raw?.value ?? raw?.balance ?? 0;
-      const num = Number(val);
-      return isNaN(num) ? 0 : num;
+      return propValue; // Retorna o valor do prop mesmo se for 0, se chegarmos aqui
     },
     userName() {
       const userInfo = localStorage.getItem('user');

@@ -76,7 +76,7 @@
                             <div class="flex items-baseline justify-center gap-1 lg:gap-3">
                                 <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)]"
                                    :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ currencySymbol }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ profitCurrencySymbol }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
                                 </p>
                                 <span class="text-xs lg:text-lg font-semibold px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
                                       :class="monitoringStats.profit >= 0 ? 'text-success/80 bg-success/10' : 'text-red-500/80 bg-red-500/10'">
@@ -240,7 +240,7 @@
                                         :data="profitHistory" 
                                         :height="320"
                                         color="#22C55E"
-                                        :currency-symbol="currencySymbol"
+                                        :currency-symbol="profitCurrencySymbol"
                                     />
                                     <div 
                                         v-else
@@ -334,7 +334,7 @@
                                                         <span class="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-0.5">Resultado</span>
                                                         <span v-if="op.result === 'OPEN'" class="text-xs font-bold text-muted-foreground">-</span>
                                                         <span v-else class="text-xs font-black" :class="op.result === 'WON' ? 'text-success' : 'text-red-500'">
-                                                            {{ op.result === 'WON' ? '+' : '' }}{{ currencySymbol }}{{ op.pnl.toFixed(2) }}
+                                                            {{ op.result === 'WON' ? '+' : '' }}{{ profitCurrencySymbol }}{{ op.pnl.toFixed(2) }}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -691,6 +691,14 @@ export default {
                 return '$';
             }
             return this.accountType === 'demo' ? 'Đ' : '$';
+        },
+        profitCurrencySymbol() {
+            if (this.isFictitiousBalanceActive || this.showDollarSign) {
+                return '$';
+            }
+            // "não precisa do D no resulta apenas no capital"
+            // Por isso, sempre retornamos $ ou nada para lucro/resultado
+            return '$';
         }
     },
     watch: {
