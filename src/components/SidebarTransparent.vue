@@ -1,5 +1,5 @@
 <template>
-    <div class="sidebar-wrapper">
+    <div class="sidebar-wrapper" style="background: transparent !important;">
         <div v-if="isOpen && isMobile" class="sidebar-overlay" @click="$emit('close-sidebar')"></div>
         <aside 
             id="app-sidebar-main"

@@ -143,7 +143,7 @@ body,
     background-color: transparent !important;
     transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
     position: relative;
-    overflow-x: hidden;
+    overflow-x: visible;
   }
 
   .slider:before {
@@ -174,13 +174,15 @@ body,
   /* Impede que o conteúdo seja cortado e permite que fundos passem por trás da sidebar */
   .full-immersion {
     width: 100vw !important;
-    max-width: none !important;
+    max-width: 100vw !important;
     position: absolute !important;
     left: calc(-1 * var(--sidebar-width)) !important;
     top: 0 !important;
     height: 100% !important;
     z-index: 0 !important;
     pointer-events: none !important;
+    margin: 0 !important;
+    display: block !important;
   }
 }
 
