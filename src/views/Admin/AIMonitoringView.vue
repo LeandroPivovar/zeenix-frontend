@@ -66,7 +66,7 @@
                         <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center md:border-l border-border/50 md:pl-4 lg:pl-6">
                             <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Capital</p>
                             <p class="text-xl lg:text-3xl font-bold text-foreground tracking-tight">
-                                {{ currencySymbol }} {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }}<span class="text-base lg:text-xl text-muted-foreground hidden md:inline">,{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}</span>
+                                {{ currencySymbol }} {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }},{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}
                             </p>
                         </div>
 
@@ -693,12 +693,9 @@ export default {
             return this.accountType === 'demo' ? 'Đ' : '$';
         },
         profitCurrencySymbol() {
-            if (this.isFictitiousBalanceActive || this.showDollarSign) {
-                return '$';
-            }
             // "não precisa do D no resulta apenas no capital"
-            // Por isso, sempre retornamos $ ou nada para lucro/resultado
-            return '$';
+            // "o resultado tire o prefixo de $, nao deve ter prefixo nenhum"
+            return '';
         }
     },
     watch: {
