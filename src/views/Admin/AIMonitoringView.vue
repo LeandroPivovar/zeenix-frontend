@@ -107,7 +107,7 @@
                                 </div>
                                 <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
                                 <div class="text-center">
-                                    <span class="text-lg lg:text-xl font-semibold text-success/90">
+                                    <span class="font-semibold text-success/90" style="font-size: 1.25rem; line-height: 1.75rem; background: #8080800f; padding: 0.2rem 0.3rem; border-radius: 8px;">
                                         {{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%
                                     </span>
                                     <span class="text-[10px] lg:text-xs text-muted-foreground block">WR</span>
@@ -355,16 +355,13 @@
                                         <h3 style="font-size: 18px; color: #FFFFFF;" class="font-black uppercase tracking-tight">Registros da IA</h3>
                                         <p style="font-size: 14px; color: #a6a6a6;">Acompanhe cada ação realizada pelo sistema</p>
                                     </div>
-                                    <div class="flex items-center gap-3">
-                                        <button @click="clearLogs" class="flex-1 px-4 py-3 bg-[#1C1C1C] hover:bg-[#252525] border border-border/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-all">
-                                            LIMPAR LOGS
-                                        </button>
-                                        <button @click="exportLogs" class="flex-1 px-4 py-3 bg-success/20 hover:bg-success/30 border border-success/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-success transition-all">
+                                    <div class="flex items-center justify-between">
+                                        <div class="text-[10px] text-muted-foreground/60 font-black uppercase tracking-[0.2em]">
+                                            {{ monitoringLogs.length }} EVENTOS
+                                        </div>
+                                        <button @click="exportLogs" class="px-4 py-3 bg-success/20 hover:bg-success/30 border border-success/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-success transition-all">
                                             EXPORTAR LOGS
                                         </button>
-                                    </div>
-                                    <div class="text-[10px] text-muted-foreground/60 font-black uppercase tracking-[0.2em] text-right">
-                                        {{ monitoringLogs.length }} EVENTOS
                                     </div>
                                 </div>
 
@@ -376,76 +373,37 @@
                                     </div>
                                     <div class="flex flex-col items-end gap-3">
                                         <span class="text-[10px] text-muted-foreground/60 font-black uppercase tracking-[0.2em]">{{ monitoringLogs.length }} EVENTOS</span>
-                                        <div class="flex items-center gap-3">
-                                            <button @click="clearLogs" class="px-5 py-2.5 bg-[#1C1C1C] hover:bg-[#252525] border border-border/20 rounded-lg text-[10px] font-bold uppercase tracking-widest text-muted-foreground transition-all">
-                                                LIMPAR LOGS
-                                            </button>
-                                            <button @click="exportLogs" class="px-5 py-2.5 bg-success/20 hover:bg-success/30 border border-success/30 rounded-lg text-[10px] font-bold uppercase tracking-widest text-success transition-all">
-                                                EXPORTAR LOGS
-                                            </button>
-                                        </div>
+                                        <button @click="exportLogs" class="px-5 py-2.5 bg-success/20 hover:bg-success/30 border border-success/30 rounded-lg text-[10px] font-bold uppercase tracking-widest text-success transition-all">
+                                            EXPORTAR LOGS
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="flex flex-col space-y-4 w-full max-h-[600px] overflow-y-auto custom-scrollbar-zenix pr-2">
-                                    <div v-for="log in monitoringLogs" :key="log.id" 
-                                         class="w-full group relative p-5 bg-[#0D0D0D] rounded-xl border border-border/10 hover:border-success/20 transition-all duration-300">
-                                        <!-- Mobile Item: Inline Timestamp -->
-                                        <div v-if="isMobile">
-                                            <div class="flex items-center gap-2.5 mb-2.5">
-                                                <span class="text-[10px] font-mono text-muted-foreground/40 mt-0.5">[{{ log.time }}]</span>
-                                                <div class="w-1.5 h-1.5 rounded-full" 
-                                                     :class="{ 
-                                                        'bg-success shadow-[0_0_10px_#22C55E]': log.type === 'success', 
-                                                        'bg-red-500 shadow-[0_0_10px_#EF4444]': log.type === 'error', 
-                                                        'bg-blue-400 shadow-[0_0_10px_#60A5FA]': log.type === 'info', 
-                                                        'bg-yellow-400 shadow-[0_0_10px_#FACC15]': log.type === 'warning' 
-                                                     }"></div>
-                                                <h4 class="text-[10px] font-black uppercase tracking-[0.14em]"
-                                                    :class="{ 
-                                                        'text-success': log.type === 'success', 
-                                                        'text-red-500': log.type === 'error', 
-                                                        'text-blue-400 font-bold': log.type === 'info', 
-                                                        'text-yellow-400': log.type === 'warning' 
-                                                    }">
-                                                    {{ log.title }}
-                                                </h4>
-                                            </div>
-                                            <ul class="space-y-1.5 ml-4 border-l border-border/10 pl-3">
-                                                <li v-for="(line, idx) in log.details.filter(l => l.toLowerCase() !== 'info')" :key="idx" class="flex items-start gap-3">
-                                                    <span class="text-muted-foreground/20 mt-1">•</span>
+                                <div class="flex flex-col space-y-2 w-full max-h-[600px] overflow-y-auto custom-scrollbar-zenix pr-2">
+                                    <div v-for="log in monitoringLogs" :key="log.id" class="w-full flex items-start gap-3 py-2 border-b border-border/5 hover:bg-secondary/10 transition-colors">
+                                        <span class="text-[10px] font-mono text-muted-foreground/40 mt-0.5 min-w-[60px]">[{{ log.time }}]</span>
+                                        <div class="w-1.5 h-1.5 rounded-full mt-1.5" 
+                                             :class="{ 
+                                                'bg-success shadow-[0_0_10px_#22C55E]': log.type === 'success', 
+                                                'bg-red-500 shadow-[0_0_10px_#EF4444]': log.type === 'error', 
+                                                'bg-blue-400 shadow-[0_0_10px_#60A5FA]': log.type === 'info', 
+                                                'bg-yellow-400 shadow-[0_0_10px_#FACC15]': log.type === 'warning' 
+                                             }"></div>
+                                        <div class="flex-1">
+                                            <h4 class="text-[10px] font-black uppercase tracking-[0.14em] mb-1"
+                                                :class="{ 
+                                                    'text-success': log.type === 'success', 
+                                                    'text-red-500': log.type === 'error', 
+                                                    'text-blue-400': log.type === 'info', 
+                                                    'text-yellow-400': log.type === 'warning' 
+                                                }">
+                                                {{ log.title }}
+                                            </h4>
+                                            <ul class="space-y-0.5">
+                                                <li v-for="(line, idx) in log.details.filter(l => l.toLowerCase() !== 'info')" :key="idx" class="flex items-start gap-2">
+                                                    <span class="text-muted-foreground/20 text-[8px] mt-0.5">•</span>
                                                     <span class="text-[10px] font-medium text-[#d1d1d6] leading-relaxed">{{ line }}</span>
                                                 </li>
                                             </ul>
-                                        </div>
-                                        <!-- Desktop Item -->
-                                        <div v-else class="flex items-start gap-4">
-                                            <span class="text-[11px] font-mono text-muted-foreground/40 mt-1">[{{ log.time }}]</span>
-                                            <div class="flex-1">
-                                                <div class="flex items-center gap-2.5 mb-2.5">
-                                                    <div class="w-1.5 h-1.5 rounded-full" 
-                                                         :class="{ 
-                                                            'bg-success shadow-[0_0_10px_#22C55E]': log.type === 'success', 
-                                                            'bg-red-500 shadow-[0_0_10px_#EF4444]': log.type === 'error', 
-                                                            'bg-blue-400 shadow-[0_0_10px_#60A5FA]': log.type === 'info', 
-                                                            'bg-yellow-400 shadow-[0_0_10px_#FACC15]': log.type === 'warning' 
-                                                         }"></div>
-                                                    <h4 class="text-[11px] font-black uppercase tracking-[0.15em]"
-                                                        :class="{ 
-                                                            'text-success': log.type === 'success', 
-                                                            'text-red-500': log.type === 'error', 
-                                                            'text-blue-400 font-bold': log.type === 'info', 
-                                                            'text-yellow-400': log.type === 'warning' 
-                                                        }">
-                                                        {{ log.title }}
-                                                    </h4>
-                                                </div>
-                                                <ul class="space-y-1.5 ml-[1.125rem]">
-                                                    <li v-for="(line, idx) in log.details.filter(l => l.toLowerCase() !== 'info')" :key="idx" class="flex items-start gap-3">
-                                                        <span class="text-muted-foreground/20 select-none mt-1">•</span>
-                                                        <span class="text-[11px] font-medium text-[#d1d1d6] leading-relaxed">{{ line }}</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
                                         </div>
                                     </div>
                                     <div v-if="monitoringLogs.length === 0" class="text-center py-20 text-muted-foreground/30 uppercase text-[10px] font-black tracking-[0.2em]">

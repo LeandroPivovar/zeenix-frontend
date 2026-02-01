@@ -2782,7 +2782,7 @@ export default {
   /* Sidebar com box-shadow para transição suave entre sidebar e conteúdo do vídeo */
   .dashboard-layout .sidebar,
   .dashboard-layout aside.sidebar {
-    background: #050705 !important;
+    background: transparent !important;
     box-shadow: 10px 0 80px rgba(5, 7, 5, 0),
                 10px 0 120px rgba(5, 7, 5, 0.445) !important;
   }
