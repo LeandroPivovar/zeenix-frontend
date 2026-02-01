@@ -5,12 +5,12 @@
             id="app-sidebar-main"
             class="sbt-sidebar sbt-sidebar-glass-effect" 
             :class="{ 'sbt-is-open': isOpen, 'sbt-collapsed': isCollapsed }"
-            style="background: rgba(0, 0, 0, 0) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; border-right: 1px solid rgba(255, 255, 255, 0.03) !important;"
+            style="background: transparent !important; background-color: transparent !important;"
         >
         <div class="sbt-sidebar-brand">
             <div class="sbt-brand-logo-container">
                 <span class="sbt-logo-text font-bold">
-                    <span class="sbt-logo-z sbt-white">Z</span><span class="sbt-logo-suffix"><span class="sbt-white">ENI</span><span class="sbt-green text-[#22C55E]">X</span></span>
+                    <span class="sbt-logo-z sbt-white">Z</span><span class="sbt-logo-suffix"><span class="sbt-white">ZENI</span><span class="sbt-green text-[#22C55E]">X</span></span>
                 </span>
             </div>
 
