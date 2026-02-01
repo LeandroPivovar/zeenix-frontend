@@ -11,7 +11,7 @@
       @toggle-collapse="toggleSidebarCollapse" 
     />
     
-    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
+    <div class="dashboard-content-wrapper bg-transparent" :class="{ 'sidebar-collapsed': localSidebarCollapsed }" style="background: transparent !important;">
       <!-- Top Navbar -->
       <TopNavbar 
         v-if="!isMobile"
@@ -4642,13 +4642,15 @@ export default {
 .full-bleed-section {
   width: 100vw;
   margin-left: -280px;
-  padding-left: 280px !important;
+  /* Increased padding to 340px (280px sidebar + 60px gap) to ensure content is fully visible */
+  padding-left: 340px !important;
   transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sidebar-collapsed .full-bleed-section {
   margin-left: -80px;
-  padding-left: 80px !important;
+  /* Increased/Adjusted padding to 120px (80px sidebar + 40px gap) */
+  padding-left: 120px !important;
 }
 
 </style>
