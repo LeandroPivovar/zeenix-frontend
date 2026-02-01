@@ -1473,6 +1473,7 @@ export default {
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
+    padding-left: 280px; /* Default sidebar width */
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
@@ -1482,6 +1483,7 @@ export default {
 @media (max-width: 1024px) {
 	.dashboard-content-wrapper { 
 		width: 100%;
+        padding-left: 0 !important;
 	}
 }
 

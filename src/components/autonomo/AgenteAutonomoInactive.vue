@@ -2525,4 +2525,10 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
         padding: 0.6rem 2rem;
     }
 }
+
+.config-card {
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
 </style>
