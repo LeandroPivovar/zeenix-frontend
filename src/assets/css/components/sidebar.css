@@ -7,8 +7,8 @@ aside.sidebar,
 	width: 280px !important;
 	min-width: 280px !important;
 	max-width: 280px !important;
-	background: rgba(11, 11, 11, 0.05) !important;
-	background-color: rgba(11, 11, 11, 0.05) !important;
+	background: transparent !important;
+	background-color: transparent !important;
 	backdrop-filter: blur(20px) !important;
 	-webkit-backdrop-filter: blur(20px) !important;
 	border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
