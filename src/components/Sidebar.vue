@@ -317,6 +317,15 @@
                 </a>
             </template>
 
+            <!-- Toggle Button (Desktop Only) -->
+            <button 
+                v-if="!isMobile" 
+                class="sidebar-toggle-btn" 
+                @click="$emit('toggle-collapse')"
+                title="Recolher/Expandir Menu"
+            >
+                <i class="fa-solid" :class="isCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
+            </button>
         </nav>
     </aside>
 

@@ -2715,3 +2715,25 @@ svg:not(:root).svg-inline--fa {
         color: #C5C5C5 !important;
     }
 }
+
+/* FIX: Enforce equal height for config cards */
+.config-grid {
+    align-items: stretch !important;
+}
+
+.config-card {
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.config-card .card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure content inside stretches if needed */
+.config-card .card-content>*:last-child {
+    margin-bottom: 0;
+}
