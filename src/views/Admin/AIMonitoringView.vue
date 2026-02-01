@@ -273,17 +273,13 @@
                                             <table class="w-full text-sm border-collapse">
                                                 <thead class="sticky top-0 bg-[#161616] z-10 text-xs text-muted-foreground uppercase font-semibold tracking-wider border-b border-border/30">
                                                     <tr>
-                                                        <th class="px-4 py-4 text-left font-semibold">
-                                                            <div class="flex items-center gap-2">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock w-3.5 h-3.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                                                Horário
-                                                            </div>
-                                                        </th>
-                                                        <th class="px-4 py-4 text-left font-semibold">Tipo</th>
-                                                        <th class="px-4 py-4 text-left font-semibold">Mercado</th>
-                                                        <th class="px-4 py-4 text-left font-semibold">Investido</th>
-                                                        <th class="px-4 py-4 text-left font-semibold">Status</th>
-                                                        <th class="px-4 py-4 text-right font-semibold">Resultado</th>
+                                                        <th class="px-4 py-4 text-left font-semibold">HORARIO</th>
+                                                        <th class="px-4 py-4 text-left font-semibold">MERCADO</th>
+                                                        <th class="px-4 py-4 text-left font-semibold">ORDEM</th>
+                                                        <th class="px-4 py-4 text-left font-semibold">PREÇO DE ENTRADA</th>
+                                                        <th class="px-4 py-4 text-left font-semibold">PREÇO DE SAIDA</th>
+                                                        <th class="px-4 py-4 text-left font-semibold">INVESTIMENTO</th>
+                                                        <th class="px-4 py-4 text-right font-semibold">RESULTADO</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody class="text-[13px]">
@@ -291,25 +287,16 @@
                                                         class="border-b border-border/20 transition-colors hover:bg-secondary/30"
                                                         :class="index % 2 === 0 ? 'bg-transparent' : 'bg-secondary/10'">
                                                         <td class="px-4 py-4 font-mono font-medium text-foreground">{{ op.time }}</td>
-                                                        <td class="px-4 py-4">
-                                                            <span :class="op.type === 'CALL' ? 'bg-success/10 text-success border-success/20' : 'bg-red-500/10 text-red-500/70 border-red-500/20'" 
-                                                                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border uppercase tracking-wider">
-                                                                <svg v-if="op.type === 'CALL'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up w-3 h-3"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-                                                                <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down w-3 h-3"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
-                                                                {{ op.type === 'CALL' ? 'Compra' : 'Venda' }}
-                                                            </span>
-                                                        </td>
                                                         <td class="px-4 py-4 text-muted-foreground font-mono">{{ op.market }}</td>
-                                                        <td class="px-4 py-4 text-foreground font-medium">$ {{ op.stake.toFixed(2) }}</td>
-                                                        <td class="px-4 py-4 text-foreground font-medium">
-                                                            <span v-if="op.result === 'OPEN' || op.result === 'PENDING'" class="text-yellow-500 font-bold uppercase tracking-tight">PENDENTE</span>
-                                                            <span v-else :class="op.result === 'WON' || op.result === 'WIN' ? 'text-success' : 'text-red-500'" class="font-bold">
-                                                                {{ op.result === 'WON' || op.result === 'WIN' ? 'WIN' : op.result }}
-                                                            </span>
+                                                        <td class="px-4 py-4">
+                                                            <span class="text-foreground font-bold">{{ getContractDisplayName(op.contract) }}</span>
                                                         </td>
+                                                        <td class="px-4 py-4 text-foreground font-medium">{{ op.entryPrice || '-' }}</td>
+                                                        <td class="px-4 py-4 text-foreground font-medium">{{ op.exitPrice || '-' }}</td>
+                                                        <td class="px-4 py-4 text-foreground font-medium">$ {{ op.stake.toFixed(2) }}</td>
                                                         <td class="px-4 py-4 text-right">
-                                                            <span v-if="op.result === 'OPEN' || op.result === 'PENDING'" class="text-muted-foreground/40 font-bold">-</span>
-                                                            <span v-else class="font-bold" :class="op.result === 'WON' || op.result === 'WIN' ? 'text-success' : 'text-red-500'">
+                                                            <span v-if="op.result === 'OPEN' || op.result === 'PENDING'" class="text-yellow-500 font-bold uppercase tracking-tight">PENDENTE</span>
+                                                            <span v-else class="font-bold whitespace-nowrap" :class="op.result === 'WON' || op.result === 'WIN' ? 'text-success' : 'text-red-500'">
                                                                 {{ op.result === 'WON' || op.result === 'WIN' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
                                                             </span>
                                                         </td>
@@ -1128,12 +1115,16 @@ export default {
                     analysisType: this.sessionState.analysisType, // ✅ CRITICAL
                     result: 'OPEN',
                     barrier: contract.barrier,
+                    entryPrice: contract.entry_tick_display_value,
+                    exitPrice: contract.exit_tick_display_value,
                     fastResultApplied: false
                 };
                 this.monitoringOperations.unshift(trade);
                 this.activeContracts.set(id, trade);
             } else {
                 trade.pnl = contract.profit || 0;
+                if (contract.entry_tick_display_value) trade.entryPrice = contract.entry_tick_display_value;
+                if (contract.exit_tick_display_value) trade.exitPrice = contract.exit_tick_display_value;
             }
             
             if (contract.is_sold) {
@@ -1275,6 +1266,20 @@ export default {
             const time = new Date().toLocaleTimeString();
             this.monitoringLogs.unshift({ title, details: Array.isArray(messages) ? messages : [messages], type, time });
             if (this.monitoringLogs.length > 100) this.monitoringLogs = this.monitoringLogs.slice(0, 100);
+        },
+        getContractDisplayName(type) {
+            if (!type) return 'Operação';
+            const mapping = {
+                'CALL': 'Rise (Compra)',
+                'PUT': 'Fall (Venda)',
+                'DIGITOVER': 'Over (Acima)',
+                'DIGITUNDER': 'Under (Abaixo)',
+                'DIGITDIFF': 'Diff (Diferente)',
+                'DIGITMATCH': 'Match (Igual)',
+                'DIGITEVEN': 'Even (Par)',
+                'DIGITODD': 'Odd (Ímpar)'
+            };
+            return mapping[type] || type;
         },
 
         resolveMarketSymbol(symbol) {
