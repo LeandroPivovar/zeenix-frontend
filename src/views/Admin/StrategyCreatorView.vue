@@ -1632,10 +1632,14 @@ export default {
                 defaultStrategies.forEach(def => {
                     const index = userStrategies.findIndex(s => s.id === def.id);
                     if (index !== -1) {
-                        // Update existing default strategy
-                        userStrategies[index] = def;
+                        // Strategy exists in user storage.
+                        // We preserve the USER's version, but we might want to ensure new fields are present (?)
+                        // For now, "Update IA" means the user wants THEIR version to be the source of truth.
+                        // So we DO NOT overwrite it with 'def'.
+                        // We only overwrite if we really wanted to force an update (versioning logic maybe?), but simple is better.
+                        console.log(`[StrategyCreator] Loaded user version of strategy: ${def.name}`);
                     } else {
-                        // Add new default strategy
+                        // Add new default strategy that doesn't exist yet in user storage
                         userStrategies.push(def);
                     }
                 });
