@@ -61,7 +61,7 @@
         <div v-if="!isMobile && !localSidebarCollapsed" class="hidden md:block absolute inset-0 bg-gradient-to-r from-[rgb(20_17_17/0.35)] to-transparent">
         </div>
       </div>
-      <div class="relative z-10 h-full w-full">
+      <div class="relative z-10 h-full w-full px-6 md:px-10">
         <div class="flex justify-between items-center h-full gap-20">
           <div class="flex flex-col justify-center space-y-10 flex-shrink-0">
             <div class="space-y-6 text-left">

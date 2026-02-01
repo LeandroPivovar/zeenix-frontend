@@ -14,6 +14,7 @@ aside.sidebar,
 	border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
 	border-left: none !important;
 	background-image: none !important;
+	box-shadow: none !important;
 	border-top: none;
 	border-bottom: none;
 	color: #DFDFDF;
