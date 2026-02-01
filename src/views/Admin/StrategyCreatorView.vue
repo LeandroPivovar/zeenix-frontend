@@ -2889,7 +2889,32 @@ export default {
                 floor: this.sessionState.stopBlindadoFloor || 0
             };
 
+            // Log Protected Amount if Active
+            if (blindadoState.active) {
+                 this.addLog(`🛡️ VALIDAÇÃO DE ENTRADA: Protegendo $${blindadoState.floor.toFixed(2)} do lucro acumulado.`, 'info');
+            }
+
             stake = RiskManager.applySurvivalMode(stake, currentProfit, globalConfig, payoutRate, blindadoState);
+            
+            // CRITICAL: Stop if stake is too low (Survival Mode Triggered Hard)
+            if (stake < 0.35) {
+                this.addLog(`⚠️ VISÃO DE SOBREVIVÊNCIA: Ajuste de stake ($${stake.toFixed(2)}) menor que o mínimo ($0.35). Parando para proteger capital.`, 'warning');
+                
+                let stopReason = 'Stop de Segurança (Stake Mínimo)';
+                if (blindadoState.active && (currentProfit - stake < blindadoState.floor)) {
+                    stopReason = 'Stop Blindado (Margem Insuficiente)';
+                }
+                
+                this.stopMonitoring(stopReason);
+                this.stopResult = {
+                    title: 'Proteção Ativada 🛡️',
+                    message: `O robô parou porque a próxima entrada arriscaria seu lucro protegido ou limite de perda.`,
+                    profit: currentProfit,
+                    type: 'warning'
+                };
+                this.showStopModal = true;
+                return 0; // Return 0 to signal caller
+            }
             // ---------------------
 
             const sorosLevel = config.sorosLevel || 1;
@@ -2941,6 +2966,11 @@ export default {
             }
             this.sessionState.lastContractType = config.tradeType;
             const stake = this.calculateNextStake();
+
+            if (!stake || stake <= 0) {
+                console.warn('[StrategyCreator] Stake inválido (0 ou Cancelado). Abortando entrada.');
+                return;
+            }
 
             this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
             
