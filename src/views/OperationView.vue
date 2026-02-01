@@ -1261,6 +1261,7 @@ export default {
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 70px);
+  background-color: transparent !important;
 }
 
 .view-toggle-bar-wrapper {

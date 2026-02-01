@@ -1455,7 +1455,7 @@ export default {
 .dashboard-layout {
 	display: flex;
 	min-height: 100vh;
-	background-color: #0B0B0B;
+	background-color: transparent !important;
 	color: #fff;
 	font-family: 'Inter', sans-serif;
 }
@@ -1469,8 +1469,6 @@ export default {
 
 .dashboard-content-wrapper {
 	flex-grow: 1;
-	margin-left: 280px;
-	width: calc(100% - 280px);
 	transition: all 0.3s ease;
 	min-height: 100vh;
 	display: flex;
@@ -1478,8 +1476,7 @@ export default {
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
-	margin-left: 0;
-	width: 100%;
+	padding-left: 80px;
 }
 
 @media (max-width: 1024px) {

@@ -1258,7 +1258,7 @@ export default {
     padding: 10px;
     overflow-y: auto;
     overflow-x: hidden;
-    background-color: #0b0b0b;
+    background-color: transparent !important;
     box-sizing: border-box;
     width: 100%;
 }
@@ -1276,8 +1276,10 @@ export default {
 /* --- Sticky Header --- */
 .admin-sticky-header {
     height: 60px;
-    background-color: #0b0b0b;
-    border-bottom: 1px solid #1C1C1C;
+    background-color: rgba(11, 11, 11, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
     justify-content: space-between;

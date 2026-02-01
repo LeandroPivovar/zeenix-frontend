@@ -20,14 +20,14 @@ svg:not(:root).svg-inline--fa {
 
 .zenix-layout {
     min-height: 100vh;
-    background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
+    background: transparent;
     color: #DFDFDF;
 }
 
 /* Desktop: remover gradiente e aplicar #0e0e0e nos cards */
 @media (min-width: 1025px) {
     .zenix-layout {
-        background: #0b0b0b;
+        background: transparent;
     }
 
     .main-content {
