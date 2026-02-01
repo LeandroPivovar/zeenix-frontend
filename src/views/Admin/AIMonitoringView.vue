@@ -156,7 +156,7 @@
                     <!-- Card 3: Parameters -->
                     <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Entrada</span>
+                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Eventos</span>
                             <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ currentConfig.stake.toFixed(2).replace('.', ',') }}</span>
                         </div>
                         <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
@@ -167,21 +167,14 @@
                             <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Limite</span>
                             <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ (currentConfig.lossLimit || 0).toFixed(2).replace('.', ',') }}</span>
                         </div>
-                    </div>
-
-                    <!-- Card 4: Protection -->
-                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 flex items-center justify-between w-full">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-lg bg-success/5 border border-success/20 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                            </div>
-                            <span class="text-xs font-black text-foreground tracking-wider uppercase">Stoploss Blindado</span>
+                        <div class="flex items-center justify-between pt-1 mt-1">
+                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Stop Blindado</span>
+                            <span class="text-xs font-black uppercase tracking-widest" :class="currentConfig.stoplossBlindado ? 'text-success' : 'text-muted-foreground'">{{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}</span>
                         </div>
-                        <span class="text-xs font-black text-success uppercase tracking-widest">{{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}</span>
                     </div>
 
                     <!-- Mobile Pause Button -->
-                    <button @click="stopIA" :disabled="isStopping" class="w-full mt-2 py-4 bg-success text-black font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all duration-300 shadow-xl shadow-success/20 active:scale-[0.98] disabled:opacity-50">
+                    <button @click="stopIA" :disabled="isStopping" class="w-full mt-2 py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all duration-300 shadow-xl shadow-yellow-500/20 active:scale-[0.98] disabled:opacity-50">
                         {{ isStopping ? 'Parando...' : 'Pausar IA' }}
                     </button>
                 </div>
@@ -363,15 +356,15 @@
                                         <p style="font-size: 14px; color: #a6a6a6;">Acompanhe cada ação realizada pelo sistema</p>
                                     </div>
                                     <div class="flex items-center gap-3">
-                                        <button @click="clearLogs" class="flex-1 px-4 py-3 bg-secondary/20 hover:bg-secondary/40 border border-border/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-all">
+                                        <button @click="clearLogs" class="flex-1 px-4 py-3 bg-[#1C1C1C] hover:bg-[#252525] border border-border/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-all">
                                             LIMPAR LOGS
                                         </button>
-                                        <button @click="exportLogs" class="flex-1 px-4 py-3 bg-success/10 hover:bg-success/20 border border-success/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-success transition-all">
+                                        <button @click="exportLogs" class="flex-1 px-4 py-3 bg-success/20 hover:bg-success/30 border border-success/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-success transition-all">
                                             EXPORTAR LOGS
                                         </button>
                                     </div>
                                     <div class="text-[10px] text-muted-foreground/60 font-black uppercase tracking-[0.2em] text-right">
-                                        {{ monitoringLogs.length }} ENTRADAS
+                                        {{ monitoringLogs.length }} EVENTOS
                                     </div>
                                 </div>
 
@@ -382,12 +375,12 @@
                                         <p style="font-size: 14px; color: #a6a6a6;">Acompanhe cada ação realizada pelo sistema</p>
                                     </div>
                                     <div class="flex flex-col items-end gap-3">
-                                        <span class="text-[10px] text-muted-foreground/60 font-black uppercase tracking-[0.2em]">{{ monitoringLogs.length }} ENTRADAS</span>
+                                        <span class="text-[10px] text-muted-foreground/60 font-black uppercase tracking-[0.2em]">{{ monitoringLogs.length }} EVENTOS</span>
                                         <div class="flex items-center gap-3">
-                                            <button @click="clearLogs" class="px-5 py-2.5 bg-secondary/10 hover:bg-secondary/20 border border-border/20 rounded-lg text-[10px] font-bold uppercase tracking-widest text-muted-foreground transition-all">
+                                            <button @click="clearLogs" class="px-5 py-2.5 bg-[#1C1C1C] hover:bg-[#252525] border border-border/20 rounded-lg text-[10px] font-bold uppercase tracking-widest text-muted-foreground transition-all">
                                                 LIMPAR LOGS
                                             </button>
-                                            <button @click="exportLogs" class="px-5 py-2.5 bg-success/5 hover:bg-success/15 border border-success/30 rounded-lg text-[10px] font-bold uppercase tracking-widest text-success transition-all">
+                                            <button @click="exportLogs" class="px-5 py-2.5 bg-success/20 hover:bg-success/30 border border-success/30 rounded-lg text-[10px] font-bold uppercase tracking-widest text-success transition-all">
                                                 EXPORTAR LOGS
                                             </button>
                                         </div>
@@ -503,7 +496,7 @@
                             <!-- Parameters -->
                             <div class="mt-3 p-4 rounded-xl bg-secondary/60 border border-border/60 space-y-2.5">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-xs text-muted-foreground uppercase tracking-wider">Entrada</span>
+                                    <span class="text-xs text-muted-foreground uppercase tracking-wider">Eventos</span>
                                     <span class="text-sm font-bold text-foreground">{{ currencySymbol }}{{ currentConfig.stake.toFixed(2) }}</span>
                                 </div>
                                 <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
@@ -514,18 +507,9 @@
                                     <span class="text-xs text-muted-foreground uppercase tracking-wider">Limite</span>
                                     <span class="text-sm font-bold text-foreground">{{ currencySymbol }}{{ (currentConfig.lossLimit || 0).toFixed(2) }}</span>
                                 </div>
-                            </div>
-
-                            <!-- Protections -->
-                            <div class="mt-3 p-4 rounded-xl bg-success/5 border border-success/30 hover:bg-success/10 transition-colors">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center border border-success/30">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check w-4 h-4 text-success"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
-                                        </div>
-                                        <span class="text-sm font-bold text-foreground">Stoploss Blindado</span>
-                                    </div>
-                                    <span class="text-[10px] font-black text-success uppercase tracking-[0.1em]">
+                                <div class="pt-2.5 flex justify-between items-center">
+                                    <span class="text-xs text-muted-foreground uppercase tracking-wider">Stop Blindado</span>
+                                    <span class="text-[10px] font-black uppercase tracking-[0.1em]" :class="currentConfig.stoplossBlindado ? 'text-success' : 'text-muted-foreground'">
                                         {{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}
                                     </span>
                                 </div>
@@ -535,7 +519,7 @@
 
                             <!-- Desktop Pause Button -->
                             <div class="mt-auto px-1 pt-6 border-t border-border/40">
-                                <button @click="stopIA" :disabled="isStopping" class="group flex items-center justify-center w-full h-[52px] bg-success text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 shadow-xl shadow-success/30 active:scale-[0.98] disabled:opacity-50">
+                                <button @click="stopIA" :disabled="isStopping" class="group flex items-center justify-center w-full h-[52px] bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 shadow-xl shadow-yellow-500/30 active:scale-[0.98] disabled:opacity-50">
                                     <div class="flex items-center gap-3">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
                                         <span class="mt-0.5">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>

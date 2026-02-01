@@ -103,6 +103,9 @@
                     <button @click="activeTab = 'logs'" :class="{ 'border-[#22C55E] text-[#22C55E]': activeTab === 'logs' }" class="inline-flex items-center justify-center py-2 text-sm font-bold border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-white whitespace-nowrap">
                         <i class="fas fa-list-ul mr-2"></i> Registros
                     </button>
+                    <button v-if="isAdmin" @click="activeTab = 'validator'" :class="{ 'border-[#22C55E] text-[#22C55E]': activeTab === 'validator' }" class="inline-flex items-center justify-center py-2 text-sm font-bold border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-white whitespace-nowrap">
+                        <i class="fas fa-clipboard-check mr-2"></i> Validador
+                    </button>
                 </div>
 
                 <!-- Content Area -->
@@ -187,6 +190,81 @@
                             <div v-if="logs.length === 0" class="py-20 text-center text-gray-600 uppercase text-[10px] font-black tracking-widest">
                                 Nenhum log registrado na sessão.
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Validator View -->
+                    <div v-show="activeTab === 'validator'" class="animate-fadeIn h-full overflow-y-auto custom-scrollbar pr-2">
+                        <div class="space-y-4">
+                            <!-- Static Item 1 -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-[#22C55E] transition-colors">
+                                <input type="checkbox" v-model="localValidator.aiStarted" class="form-checkbox h-5 w-5 text-[#22C55E] rounded border-gray-600 bg-[#2b2b2b] focus:ring-[#22C55E] focus:ring-offset-0 focus:ring-2" />
+                                <span class="text-white font-medium select-none">A IA iniciou</span>
+                            </label>
+
+                            <!-- Attack Filter -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-[#22C55E] transition-colors">
+                                <input type="checkbox" v-model="localValidator.attackFilterCorrect" class="form-checkbox h-5 w-5 text-[#22C55E] rounded border-gray-600 bg-[#2b2b2b] focus:ring-[#22C55E] focus:ring-offset-0 focus:ring-2" />
+                                <span class="text-white font-medium select-none">
+                                    IA esta aplicando o filtro de ataque corretamente 
+                                    <span class="text-[#22C55E] text-sm ml-1" v-if="attackFilters && attackFilters.length">({{ activeAttackFilterNames }})</span>
+                                    <span class="text-gray-500 text-xs ml-1" v-else>(Nenhum filtro)</span>
+                                </span>
+                            </label>
+
+                            <!-- Base Stake -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-[#22C55E] transition-colors">
+                                <input type="checkbox" v-model="localValidator.baseStakeCorrect" class="form-checkbox h-5 w-5 text-[#22C55E] rounded border-gray-600 bg-[#2b2b2b] focus:ring-[#22C55E] focus:ring-offset-0 focus:ring-2" />
+                                <span class="text-white font-medium select-none">A IA esta usando corretamente o stake base</span>
+                            </label>
+
+                            <!-- Soros Applied -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-[#22C55E] transition-colors">
+                                <input type="checkbox" v-model="localValidator.sorosApplied" class="form-checkbox h-5 w-5 text-[#22C55E] rounded border-gray-600 bg-[#2b2b2b] focus:ring-[#22C55E] focus:ring-offset-0 focus:ring-2" />
+                                <span class="text-white font-medium select-none">A IA aplicou o soros</span>
+                            </label>
+
+                            <!-- Soros Reset -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-[#22C55E] transition-colors">
+                                <input type="checkbox" v-model="localValidator.sorosReset" class="form-checkbox h-5 w-5 text-[#22C55E] rounded border-gray-600 bg-[#2b2b2b] focus:ring-[#22C55E] focus:ring-offset-0 focus:ring-2" />
+                                <span class="text-white font-medium select-none">A IA resetou para o stake base após ganhar no soros</span>
+                            </label>
+
+                            <!-- Recovery Mode Entered -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-[#22C55E] transition-colors">
+                                <input type="checkbox" v-model="localValidator.recoveryModeEntered" class="form-checkbox h-5 w-5 text-[#22C55E] rounded border-gray-600 bg-[#2b2b2b] focus:ring-[#22C55E] focus:ring-offset-0 focus:ring-2" />
+                                <span class="text-white font-medium select-none">A IA entrou no modo de recuperação</span>
+                            </label>
+
+                            <!-- Recovery Contract Switched -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-[#22C55E] transition-colors">
+                                <input type="checkbox" v-model="localValidator.recoveryContractSwitched" class="form-checkbox h-5 w-5 text-[#22C55E] rounded border-gray-600 bg-[#2b2b2b] focus:ring-[#22C55E] focus:ring-offset-0 focus:ring-2" />
+                                <span class="text-white font-medium select-none">A IA trocou o contrato no modo de recuperação</span>
+                            </label>
+
+                            <!-- Recovery Filters (Dynamic) -->
+                            <div v-if="recoveryConfig.attackFilters && recoveryConfig.attackFilters.length > 0">
+                                <label v-for="filter in recoveryConfig.attackFilters" :key="filter.id" class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-[#22C55E] transition-colors mb-4">
+                                    <input type="checkbox" v-model="localValidator.recoveryFilters[filter.id]" class="form-checkbox h-5 w-5 text-[#22C55E] rounded border-gray-600 bg-[#2b2b2b] focus:ring-[#22C55E] focus:ring-offset-0 focus:ring-2" />
+                                    <span class="text-white font-medium select-none">
+                                        A IA usou corretamente o filtro 
+                                        <span class="text-[#22C55E] text-sm ml-1">({{ filter.name }})</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div v-else class="p-4 bg-[#1E1E1E] rounded-lg border border-[#333] opacity-60">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-info-circle text-gray-500"></i>
+                                    <span class="text-gray-500 text-sm">Sem filtros de recuperação configurados</span>
+                                </div>
+                            </div>
+
+                             <!-- Martingale 100% -->
+                             <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-[#22C55E] transition-colors">
+                                <input type="checkbox" v-model="localValidator.martingale100" class="form-checkbox h-5 w-5 text-[#22C55E] rounded border-gray-600 bg-[#2b2b2b] focus:ring-[#22C55E] focus:ring-offset-0 focus:ring-2" />
+                                <span class="text-white font-medium select-none">Quando o Martingale passa de 6 o Robô para e espera o filtro de saída</span>
+                            </label>
+                            
                         </div>
                     </div>
                 </div>
@@ -294,13 +372,40 @@ export default {
         sessionState: {
             type: Object,
             required: true
+        },
+        validator: {
+            type: Object,
+            required: true
+        },
+        attackFilters: {
+            type: Array,
+            default: () => []
+        },
+        recoveryConfig: {
+            type: Object,
+            default: () => ({})
         }
     },
-    emits: ['stop', 'clear-logs'],
+    emits: ['stop', 'clear-logs', 'update:validator'],
     data() {
         return {
             activeTab: 'history',
-            isMobile: false
+            isMobile: false,
+            localValidator: { ...this.validator }
+        }
+    },
+    watch: {
+        validator: {
+            handler(newVal) {
+                this.localValidator = { ...newVal };
+            },
+            deep: true
+        },
+        localValidator: {
+            handler(newVal) {
+                this.$emit('update:validator', newVal);
+            },
+            deep: true
         }
     },
     mounted() {
@@ -340,6 +445,41 @@ export default {
         clearLogs() {
             if (confirm('Tem certeza que deseja limpar todos os registros?')) {
                 this.$emit('clear-logs');
+            }
+        }
+    },
+    computed: {
+        activeAttackFilterNames() {
+            if (!this.attackFilters || !this.attackFilters.length) return '';
+            return this.attackFilters.map(f => f.name).join(', ');
+        },
+        isAdmin() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+                
+                // Decodificar JWT token
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                
+                // Verificar se o usuário tem role de admin
+                const role = payload.role || payload.roles || payload.userRole || payload.user_role;
+                const isAdminFlag = payload.isAdmin || payload.is_admin;
+                
+                // Verificar se role contém 'admin' ou se isAdmin é true
+                if (isAdminFlag === true || isAdminFlag === 'true') {
+                    return true;
+                }
+                
+                if (role) {
+                    const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
+                    const result = roleStr.includes('admin') || roleStr === 'admin';
+                    return result;
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('[MonitoringDashboard] Erro ao verificar se usuário é admin:', error);
+                return false;
             }
         }
     }
@@ -393,4 +533,3 @@ export default {
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34, 197, 94, 0.1); border-radius: 10px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(34, 197, 94, 0.2); }
 </style>
-

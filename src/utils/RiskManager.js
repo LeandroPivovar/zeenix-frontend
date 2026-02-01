@@ -326,7 +326,7 @@ export const RiskManager = {
      * @param {number} estimatedPayout - The estimated payout rate (multiplier, e.g., 1.95).
      * @returns {number} - The adjusted stake.
      */
-    applySurvivalMode(stake, currentProfit, config, estimatedPayout = 0.95) {
+    applySurvivalMode(stake, currentProfit, config, estimatedPayout = 0.95, blindadoState = null) {
         let adjustedStake = stake;
         const { stopLoss, profitTarget } = config;
 
@@ -336,19 +336,31 @@ export const RiskManager = {
         // Let's standardize: if > 1, subtract 1.
         const payoutRate = estimatedPayout > 1 ? estimatedPayout - 1 : estimatedPayout;
 
-        // 1. Check Stop Loss
+        // 1. Check Stop Blindado (High Priority Protection)
+        if (blindadoState && blindadoState.active) {
+            const floor = blindadoState.floor;
+            // We want (currentProfit - stake) >= floor
+            // Stake <= currentProfit - floor
+            const maxStakeBlindado = currentProfit - floor;
+
+            if (adjustedStake > maxStakeBlindado) {
+                console.log(`[Survival] 🛡️ Clamping Stake for Stop Blindado: ${adjustedStake} -> ${maxStakeBlindado.toFixed(2)} (Floor: ${floor})`);
+                adjustedStake = maxStakeBlindado;
+            }
+        }
+
+        // 2. Check Stop Loss (Standard)
         // Limit: -stopLoss
         // Scenario: Loss -> PnL becomes (currentProfit - stake)
         // We want (currentProfit - stake) >= -(stopLoss * 1.01) (1% tolerance)
         if (stopLoss > 0) {
             const limit = -(stopLoss * 1.01);
-            const projectedLoss = currentProfit - stake;
 
-            if (projectedLoss < limit) {
+            // Re-calc projected loss with current adjusted stake
+            if ((currentProfit - adjustedStake) < limit) {
                 // Determine max stake allowed
                 // currentProfit - maxStake = limit
                 // maxStake = currentProfit - limit
-                // Example: Curr=-90, Limit=-101. MaxStake = -90 - (-101) = 11.
                 const maxStake = currentProfit - limit;
                 if (maxStake < adjustedStake) {
                     console.log(`[Survival] Clamping Stake for Stop Loss: ${adjustedStake} -> ${maxStake.toFixed(2)}`);
@@ -357,18 +369,17 @@ export const RiskManager = {
             }
         }
 
-        // 2. Check Profit Target
+        // 3. Check Profit Target
         // Limit: profitTarget
         // Scenario: Win -> PnL becomes (currentProfit + (stake * payoutRate))
         // We want (currentProfit + (stake * payoutRate)) <= (profitTarget * 1.01)
         if (profitTarget > 0) {
             const limit = profitTarget * 1.01;
-            const projectedWin = currentProfit + (stake * payoutRate);
+            const projectedWin = currentProfit + (adjustedStake * payoutRate);
 
             if (projectedWin > limit) {
                 // Determine max stake allowed
                 // currentProfit + (maxStake * payoutRate) = limit
-                // maxStake * payoutRate = limit - currentProfit
                 // maxStake = (limit - currentProfit) / payoutRate
                 const maxStake = (limit - currentProfit) / payoutRate;
                 if (maxStake < adjustedStake) {
@@ -378,10 +389,10 @@ export const RiskManager = {
             }
         }
 
-        // Ensure we don't return negative stake or below min absolute (0.35)
-        // If survival requires < 0.35, we might need to stop or just return min.
-        // Usually brokers reject < 0.35.
-        // If Survival implies 0 stake, it means we are already dead or passed target?
-        return Math.max(0.35, parseFloat(adjustedStake.toFixed(2)));
+        // Ensure we don't return negative stake. 
+        // We DO NOT round up to 0.35 here if the survival math requires less.
+        // We return the raw LOW value so the caller knows it's too risky.
+        // Actually, let's return 2 decimal precision.
+        return parseFloat(adjustedStake.toFixed(2));
     }
 };

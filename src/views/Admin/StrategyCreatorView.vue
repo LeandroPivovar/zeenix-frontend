@@ -79,19 +79,36 @@
                 </div>
 
                 <!-- MONITORING DASHBOARD -->
+                <!-- MONITORING DASHBOARD -->
                 <MonitoringDashboard 
                     v-if="isMonitoring" 
                     :stats="monitoringStats" 
                     :logs="monitoringLogs" 
                     :operations="monitoringOperations" 
                     :session-state="sessionState"
+                    :validator="validator"
+                    :attack-filters="form.attackFilters"
+                    :recovery-config="recoveryConfig"
                     @stop="stopMonitoring"
                     @clear-logs="monitoringLogs = []"
+                    @update:validator="validator = $event"
                 />
 
                 <!-- CONFIGURATION FORM -->
                 <div v-else class="strategy-creator-form-container px-4">
-                    <form @submit.prevent="submitForm" class="space-y-8">
+                     <!-- Tabs -->
+                     <div class="flex items-center gap-4 mb-6 border-b border-[#333] pb-4">
+                        <button 
+                            type="button"
+                            @click="activeTab = 'config'"
+                            class="text-sm font-bold uppercase tracking-wider pb-2 border-b-2 transition-all"
+                            :class="activeTab === 'config' ? 'text-zenix-green border-zenix-green' : 'text-gray-500 border-transparent hover:text-white'"
+                        >
+                            Configuração
+                        </button>
+                    </div>
+
+                    <form v-show="activeTab === 'config'" @submit.prevent="submitForm" class="space-y-8">
                         <div class="grid grid-cols-12 gap-6">
                             <!-- Mercado e Tipo de Negociação -->
                             <div class="col-span-12 md:col-span-6">
@@ -469,6 +486,9 @@
                         </div>
                     </div>
                 </form>
+
+
+
             </div>
             </main>
         </div>
@@ -1212,42 +1232,26 @@
             </div>
         </Teleport>
 
-        <!-- Stop Result Modal -->
+        <!-- Stop Modals -->
         <Teleport to="body">
-            <div v-if="showStopModal" class="modal-overlay" @click.self="showStopModal = false">
-                <div class="modal-content animate-popIn text-center" style="max-width: 450px; border-color: var(--modal-border)">
-                    
-                    <div class="flex justify-center mb-6">
-                        <div class="w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-[0_0_30px_rgba(0,0,0,0.5)] border-4"
-                             :class="{
-                                 'bg-green-500/20 text-green-500 border-green-500': stopResult.type === 'success',
-                                 'bg-red-500/20 text-red-500 border-red-500': stopResult.type === 'error',
-                                 'bg-yellow-500/20 text-yellow-500 border-yellow-500': stopResult.type === 'warning'
-                             }">
-                             <i v-if="stopResult.type === 'success'" class="fa-solid fa-trophy"></i>
-                             <i v-if="stopResult.type === 'error'" class="fa-solid fa-skull"></i>
-                             <i v-if="stopResult.type === 'warning'" class="fa-solid fa-shield-halved"></i>
-                        </div>
-                    </div>
+            <StopLossModal
+                :visible="showStopModal && stopResult.type === 'error'"
+                :result="stopResult.profit"
+                :loss-limit="form.stopLoss"
+                @confirm="showStopModal = false"
+            />
 
-                    <h3 class="text-2xl font-bold text-white mb-2">{{ stopResult.title }}</h3>
-                    <p class="text-gray-400 mb-6">{{ stopResult.message }}</p>
+            <TargetProfitModal
+                :visible="showStopModal && stopResult.type === 'success'"
+                :result="stopResult.profit"
+                @confirm="showStopModal = false"
+            />
 
-                    <div class="bg-[#111] rounded-xl p-4 mb-8 border border-[#333]">
-                        <p class="text-xs text-gray-500 uppercase font-bold mb-1">Resultado Final</p>
-                        <p class="text-3xl font-mono font-bold" 
-                           :class="stopResult.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-                           {{ stopResult.profit >= 0 ? '+' : '' }}${{ stopResult.profit.toFixed(2) }}
-                        </p>
-                    </div>
-
-                    <div class="flex gap-3">
-                         <button @click="showStopModal = false" class="flex-1 bg-[#333] hover:bg-[#444] text-white py-3 rounded-lg font-bold transition-colors">
-                            Fechar
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <StopBlindadoAjusteModal
+                :visible="showStopModal && stopResult.type === 'warning'"
+                :result="stopResult.profit"
+                @confirm="showStopModal = false"
+            />
         </Teleport>
     </div>
 </template>
@@ -1264,6 +1268,9 @@ import orionConfig from '@/utils/strategies/orion.json';
 import titanConfig from '@/utils/strategies/titan.json';
 import { RiskManager } from '../../utils/RiskManager';
 import MonitoringDashboard from '../../components/ActiveStrategy/MonitoringDashboard.vue';
+import StopLossModal from '../../components/StopLossModal.vue';
+import TargetProfitModal from '../../components/TargetProfitModal.vue';
+import StopBlindadoAjusteModal from '../../components/StopBlindadoAjusteModal.vue';
 
 const defaultStrategies = [apolloConfig, atlasConfig, nexusConfig, orionConfig, titanConfig];
 
@@ -1273,7 +1280,10 @@ export default {
         AppSidebar,
         TopNavbar,
         SettingsSidebar,
-        MonitoringDashboard
+        MonitoringDashboard,
+        StopLossModal,
+        TargetProfitModal,
+        StopBlindadoAjusteModal
     },
     data() {
         return {
@@ -1298,6 +1308,18 @@ export default {
             recoveryFilters: [],
             modalContext: 'main', // 'main' or 'recovery'
             filterStep: 1, // 1: Selection, 2: Configuration
+            activeTab: 'config',
+            validator: {
+                aiStarted: false,
+                attackFilterCorrect: false,
+                baseStakeCorrect: false,
+                sorosApplied: false,
+                sorosReset: false,
+                recoveryModeEntered: false,
+                recoveryContractSwitched: false,
+                recoveryFilters: {}, // Dynamic keys based on filter.id
+                martingale100: false
+            },
 
             markets: [],
             contracts: [],
@@ -1814,6 +1836,10 @@ export default {
                 if (item && item.icon) return `/deriv_icons/${item.icon}`;
             }
             return null;
+        },
+        activeAttackFilterNames() {
+            if (!this.form.attackFilters || !this.form.attackFilters.length) return '';
+            return this.form.attackFilters.map(f => f.name).join(', ');
         }
     },
     mounted() {
@@ -2215,7 +2241,8 @@ export default {
                 name: name,
                 config: {
                     form: JSON.parse(JSON.stringify(this.form)),
-                    recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig))
+                    recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
+                    validator: JSON.parse(JSON.stringify(this.validator))
                 }
             };
 
@@ -2243,6 +2270,11 @@ export default {
             this.recoveryConfig = { ...this.recoveryConfig, ...savedRecovery };
             if (!this.recoveryConfig.expectedPayout) this.recoveryConfig.expectedPayout = 2.26;
             
+            if (strategy.config.validator) {
+                const savedValidator = JSON.parse(JSON.stringify(strategy.config.validator));
+                this.validator = { ...this.validator, ...savedValidator };
+            }
+
             // Restore filters active state for main
             this.filters.forEach(f => {
                 const active = this.form.attackFilters.find(af => af.id === f.id);
@@ -2268,7 +2300,8 @@ export default {
 
             strategy.config = {
                 form: JSON.parse(JSON.stringify(this.form)),
-                recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig))
+                recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
+                validator: JSON.parse(JSON.stringify(this.validator))
             };
 
             localStorage.setItem('zeenix_saved_strategies', JSON.stringify(this.savedStrategies));
@@ -2290,7 +2323,8 @@ export default {
                 timestamp: new Date().toISOString(),
                 config: {
                     form: this.form,
-                    recoveryConfig: this.recoveryConfig
+                    recoveryConfig: this.recoveryConfig,
+                    validator: this.validator
                 }
             };
 
@@ -2329,6 +2363,11 @@ export default {
                         this.recoveryConfig = { ...this.recoveryConfig, ...importedRecovery };
                         if (!this.recoveryConfig.expectedPayout) this.recoveryConfig.expectedPayout = 2.26;
                         
+                        if (data.config.validator) {
+                            const importedValidator = JSON.parse(JSON.stringify(data.config.validator));
+                            this.validator = { ...this.validator, ...importedValidator };
+                        }
+
                         // Sync filter active states
                         this.filters.forEach(f => {
                             const active = this.form.attackFilters.find(af => af.id === f.id);
@@ -2850,7 +2889,32 @@ export default {
                 floor: this.sessionState.stopBlindadoFloor || 0
             };
 
+            // Log Protected Amount if Active
+            if (blindadoState.active) {
+                 this.addLog(`🛡️ VALIDAÇÃO DE ENTRADA: Protegendo $${blindadoState.floor.toFixed(2)} do lucro acumulado.`, 'info');
+            }
+
             stake = RiskManager.applySurvivalMode(stake, currentProfit, globalConfig, payoutRate, blindadoState);
+            
+            // CRITICAL: Stop if stake is too low (Survival Mode Triggered Hard)
+            if (stake < 0.35) {
+                this.addLog(`⚠️ VISÃO DE SOBREVIVÊNCIA: Ajuste de stake ($${stake.toFixed(2)}) menor que o mínimo ($0.35). Parando para proteger capital.`, 'warning');
+                
+                let stopReason = 'Stop de Segurança (Stake Mínimo)';
+                if (blindadoState.active && (currentProfit - stake < blindadoState.floor)) {
+                    stopReason = 'Stop Blindado (Margem Insuficiente)';
+                }
+                
+                this.stopMonitoring(stopReason);
+                this.stopResult = {
+                    title: 'Proteção Ativada 🛡️',
+                    message: `O robô parou porque a próxima entrada arriscaria seu lucro protegido ou limite de perda.`,
+                    profit: currentProfit,
+                    type: 'warning'
+                };
+                this.showStopModal = true;
+                return 0; // Return 0 to signal caller
+            }
             // ---------------------
 
             const sorosLevel = config.sorosLevel || 1;
@@ -2879,62 +2943,76 @@ export default {
             this.addLog(`⏹️ Monitoramento parado: ${stopReason}`, 'info');
         },
         executeRealTrade() {
-            if (!this.isAuthorized) {
-                this.addLog('⚠️ Entrada negada: Não autorizado (Token inválido ou ausente).', 'warning');
-                return;
+            try {
+                if (!this.isAuthorized) {
+                    this.addLog('⚠️ Entrada negada: Não autorizado (Token inválido ou ausente).', 'warning');
+                    return;
+                }
+
+                if (this.checkLimits()) return;
+
+                // Note: isRecovery for logic is based on activeStrategy (filters/contracts)
+                const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
+                // Note: isRecovery for financial (stake) is based on analysisType (Martingale)
+                const isFinancialRecovery = this.sessionState.analysisType === 'RECUPERACAO';
+
+                // CRITICAL: If we are in Financial Recovery (Martingale), we MUST use the Recovery Contract 
+                // to ensure the Payout (e.g. 126%) matches the Stake Calculation.
+                // So we override 'config' to recoveryConfig if isFinancialRecovery is true.
+                const config = (isFinancialRecovery || isRecoveryStrategy) ? this.recoveryConfig : this.form;
+                
+                // Check for Contract Switch
+                if (this.sessionState.lastContractType && this.sessionState.lastContractType !== config.tradeType) {
+                    this.addLog(`📊 CONTRATO ALTERADO: ${this.sessionState.lastContractType} ➔ ${config.tradeType}`, 'info');
+                }
+                this.sessionState.lastContractType = config.tradeType;
+                
+                // Debug Log
+                console.log('[StrategyCreator] Calculando stake...');
+                const stake = this.calculateNextStake();
+
+                if (!stake || stake <= 0) {
+                    console.warn('[StrategyCreator] Stake inválido (0 ou Cancelado). Abortando entrada.');
+                    return;
+                }
+
+                this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
+                
+                // Step 1: Request Proposal to get exact payout
+                const proposalParams = {
+                    proposal: 1,
+                    amount: stake,
+                    basis: 'stake',
+                    contract_type: config.tradeType,
+                    currency: 'USD',
+                    duration: this.form.duration,
+                    duration_unit: this.form.durationUnit,
+                    symbol: config.market || this.form.market
+                };
+
+                if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(config.tradeType)) {
+                    proposalParams.barrier = config.prediction.toString(); 
+                }
+
+                // Store current context for fast result (will be activated on buy response)
+                this.pendingFastResult = {
+                    contractId: null,
+                    barrier: config.prediction,
+                    contractType: config.tradeType,
+                    active: false, // DISABLED FAST RESULT as per user request
+                    stake: stake,
+                    analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
+                    payout: null, // Will be filled when proposal arrives
+                    duration: this.form.duration,
+                    durationUnit: this.form.durationUnit
+                };
+
+                this.ws.send(JSON.stringify(proposalParams));
+
+            } catch (err) {
+                console.error('[StrategyCreator] Erro fatal em executeRealTrade:', err);
+                this.addLog(`❌ ERRO NO SISTEMA: ${err.message}`, 'error');
             }
-
-            if (this.checkLimits()) return;
-
-            // Note: isRecovery for logic is based on activeStrategy (filters/contracts)
-            const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
-            // Note: isRecovery for financial (stake) is based on analysisType (Martingale)
-            const isFinancialRecovery = this.sessionState.analysisType === 'RECUPERACAO';
-
-            // CRITICAL: If we are in Financial Recovery (Martingale), we MUST use the Recovery Contract 
-            // to ensure the Payout (e.g. 126%) matches the Stake Calculation.
-            // So we override 'config' to recoveryConfig if isFinancialRecovery is true.
-            const config = (isFinancialRecovery || isRecoveryStrategy) ? this.recoveryConfig : this.form;
-            
-            // Check for Contract Switch
-            if (this.sessionState.lastContractType && this.sessionState.lastContractType !== config.tradeType) {
-                this.addLog(`📊 CONTRATO ALTERADO: ${this.sessionState.lastContractType} ➔ ${config.tradeType}`, 'info');
-            }
-            this.sessionState.lastContractType = config.tradeType;
-            const stake = this.calculateNextStake();
-
-            this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
-            
-            // Step 1: Request Proposal to get exact payout
-            const proposalParams = {
-                proposal: 1,
-                amount: stake,
-                basis: 'stake',
-                contract_type: config.tradeType,
-                currency: 'USD',
-                duration: this.form.duration,
-                duration_unit: this.form.durationUnit,
-                symbol: config.market || this.form.market
-            };
-
-            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(config.tradeType)) {
-                proposalParams.barrier = config.prediction.toString(); 
-            }
-
-            // Store current context for fast result (will be activated on buy response)
-            this.pendingFastResult = {
-                contractId: null,
-                barrier: config.prediction,
-                contractType: config.tradeType,
-                active: false, // DISABLED FAST RESULT as per user request
-                stake: stake,
-                analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
-                payout: null, // Will be filled when proposal arrives
-                duration: this.form.duration,
-                durationUnit: this.form.durationUnit
-            };
-
-            this.ws.send(JSON.stringify(proposalParams));
         },
         subscribeToContract(contractId) {
             this.ws.send(JSON.stringify({
