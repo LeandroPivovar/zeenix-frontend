@@ -4644,8 +4644,9 @@ export default {
   width: 100vw;
   /* Sidebar Open (280px) */
   margin-left: -280px;
-  /* Content Padding: 280px (Sidebar) + 80px (Gap) = 360px */
-  padding-left: 360px !important; 
+  /* Content Padding: 280px (Sidebar) + 140px (Gap) = 420px */
+  padding-left: 420px !important; 
+  padding-right: 40px !important;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   z-index: 0; /* Ensure it stays behind fixed sidebar */
@@ -4654,8 +4655,9 @@ export default {
 .sidebar-collapsed .full-bleed-section {
   /* Sidebar Collapsed (80px) */
   margin-left: -80px;
-  /* Content Padding: 80px (Sidebar) + 80px (Gap) = 160px */
-  padding-left: 160px !important;
+  /* Content Padding: 80px (Sidebar) + 100px (Gap) = 180px */
+  padding-left: 180px !important;
+  padding-right: 40px !important;
 }
 
 </style>
