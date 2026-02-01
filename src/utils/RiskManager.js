@@ -18,7 +18,7 @@ export const RiskManager = {
      */
     payoutHistory: {},
 
-    initSession(initialNegotiationMode = 'VELOZ') {
+    initSession(initialNegotiationMode = 'VELOZ', strategyName = null) {
         return {
             isRecoveryMode: false,
             isStopped: false,
@@ -30,6 +30,7 @@ export const RiskManager = {
             analysisType: 'PRINCIPAL',
             negotiationMode: initialNegotiationMode,
             initialNegotiationMode: initialNegotiationMode, // Store for reset after recovery
+            strategy: strategyName, // Strategy name for display
             activeStrategy: 'PRINCIPAL',
             lastResultWin: false,
             lastProfit: 0,

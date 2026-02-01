@@ -2454,7 +2454,7 @@ export default {
             const profile = this.form.riskProfile || 'MODERADO';
             
             const configLog = `⚙️ CONFIGURAÇÃO INICIAL<br>` +
-                `• Agente: ZEUS (Strategy Creator)<br>` +
+                `• Agente: ${this.sessionState.strategy?.toUpperCase() || 'CUSTOM'} (Strategy Creator)<br>` +
                 `• Modo: ${mode}<br>` +
                 `• Perfil: ${profile.toUpperCase()}<br>` +
                 `• Meta Lucro: $${this.form.profitTarget.toFixed(2)}<br>` +

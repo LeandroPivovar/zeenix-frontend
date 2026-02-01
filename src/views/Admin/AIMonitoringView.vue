@@ -495,6 +495,30 @@
             :is-open="showSettingsModal" 
             @close="showSettingsModal = false" 
         />
+
+        <!-- Modals -->
+        <Teleport to="body">
+            <StopLossModal
+                v-if="showStopModal && stopResult.type === 'info'"
+                :visible="showStopModal"
+                :result="stopResult.profit"
+                @confirm="showStopModal = false"
+            />
+
+            <TargetProfitModal
+                v-if="showStopModal && stopResult.type === 'success'"
+                :visible="showStopModal"
+                :result="stopResult.profit"
+                @confirm="showStopModal = false"
+            />
+
+            <StopBlindadoAjusteModal
+                v-if="showStopModal && stopResult.type === 'warning'"
+                :visible="showStopModal"
+                :result="stopResult.profit"
+                @confirm="showStopModal = false"
+            />
+        </Teleport>
     </div>
 </template>
 
@@ -529,7 +553,10 @@ export default {
         TopNavbar,
         DesktopBottomNav,
         SettingsSidebar,
-        LineChart
+        LineChart,
+        StopLossModal: () => import('../../components/StopLossModal.vue'),
+        TargetProfitModal: () => import('../../components/TargetProfitModal.vue'),
+        StopBlindadoAjusteModal: () => import('../../components/StopBlindadoAjusteModal.vue')
     },
     data() {
         return {
@@ -562,34 +589,16 @@ export default {
             digitHistory: [],
             isNegotiating: false,
 
-           // ✅ RiskManager State
-            sessionState: {
-                isRecoveryMode: false,
-                isStopped: false,
-                peakProfit: 0,
-                stopBlindadoActive: false,
-                stopBlindadoFloor: 0,
-                
-                // RiskManager Variables
-                analysisType: 'PRINCIPAL',
-                negotiationMode: 'VELOZ',
-                activeStrategy: 'PRINCIPAL',
-                lastResultWin: false,
-                lastProfit: 0,
-                lastStake: 0,
-                lastPayoutPrincipal: null,
-                lastProfitPrincipal: 0,
-                lastStakePrincipal: 0,
-                lastPayoutRecovery: null,
-                lastProfitRecovery: 0,
-                lastStakeRecovery: 0,
-                consecutiveLosses: 0,
-                consecutiveWins: 0,
-                lossStreakRecovery: 0,
-                totalLossAccumulated: 0,
-                recoveredAmount: 0,
-                skipSorosNext: false,
-                lastContractType: null
+           // ✅ RiskManager State (initialized with RiskManager.initSession)
+            sessionState: RiskManager.initSession('VELOZ'),
+
+            // Modal States
+            showStopModal: false,
+            stopResult: {
+                title: '',
+                message: '',
+                profit: 0,
+                type: 'info' // 'info', 'warning', 'success'
             },
 
             // ✅ Recovery Configuration
