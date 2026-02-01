@@ -9,7 +9,8 @@
 svg:not(:host).svg-inline--fa,
 svg:not(:root).svg-inline--fa {
     box-sizing: content-box;
-    color: currentColor;
+    color: #22C55E !important;
+    fill: #22C55E !important;
 }
 
 
@@ -735,15 +736,15 @@ svg:not(:root).svg-inline--fa {
 .config-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 1.5rem;
     margin-bottom: 1.5rem;
     margin-top: 0;
-    /* Remove margem superior extra */
     margin-left: 0;
     margin-right: 0;
     width: 100%;
     box-sizing: border-box;
-    align-items: stretch;
+    align-items: stretch !important;
+    /* Force equal height on desktop */
 }
 
 /* Order para desktop - ordem padrÃ£o */
@@ -828,13 +829,14 @@ svg:not(:root).svg-inline--fa {
     background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     border: 2px solid #1C1C1C;
     border-radius: 0.75rem;
-    padding: 1.25rem;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    padding: 1.5rem;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
     width: 100%;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    /* Force stretch */
 }
 
 /* Garantir que todos os cards tenham o mesmo gradiente */
