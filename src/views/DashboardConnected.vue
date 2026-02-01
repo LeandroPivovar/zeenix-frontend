@@ -3,7 +3,7 @@
 
 
     <!-- Sidebar -->
-    <AppSidebar 
+    <AppSidebarTransparent 
       :is-open="isSidebarOpen" 
       :is-collapsed="localSidebarCollapsed"
       :is-mobile="isMobile"
@@ -533,7 +533,7 @@
 <script>
 import TopNavbar from '../components/TopNavbar.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
-import AppSidebar from '../components/Sidebar.vue'
+import AppSidebarTransparent from '../components/SidebarTransparent.vue'
 import SettingsSidebar from '../components/SettingsSidebar.vue'
 import { loadAvailableAccounts } from '../utils/accountsLoader'
 import FirstAccessVideoModal from '../components/modals/FirstAccessVideoModal.vue'
@@ -546,7 +546,7 @@ export default {
   components: {
     TopNavbar,
     DesktopBottomNav,
-    AppSidebar,
+    AppSidebarTransparent,
     SettingsSidebar,
     FirstAccessVideoModal
 
