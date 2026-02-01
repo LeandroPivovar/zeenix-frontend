@@ -1212,6 +1212,43 @@
             </div>
         </Teleport>
 
+        <!-- Stop Result Modal -->
+        <Teleport to="body">
+            <div v-if="showStopModal" class="modal-overlay" @click.self="showStopModal = false">
+                <div class="modal-content animate-popIn text-center" style="max-width: 450px; border-color: var(--modal-border)">
+                    
+                    <div class="flex justify-center mb-6">
+                        <div class="w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-[0_0_30px_rgba(0,0,0,0.5)] border-4"
+                             :class="{
+                                 'bg-green-500/20 text-green-500 border-green-500': stopResult.type === 'success',
+                                 'bg-red-500/20 text-red-500 border-red-500': stopResult.type === 'error',
+                                 'bg-yellow-500/20 text-yellow-500 border-yellow-500': stopResult.type === 'warning'
+                             }">
+                             <i v-if="stopResult.type === 'success'" class="fa-solid fa-trophy"></i>
+                             <i v-if="stopResult.type === 'error'" class="fa-solid fa-skull"></i>
+                             <i v-if="stopResult.type === 'warning'" class="fa-solid fa-shield-halved"></i>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">{{ stopResult.title }}</h3>
+                    <p class="text-gray-400 mb-6">{{ stopResult.message }}</p>
+
+                    <div class="bg-[#111] rounded-xl p-4 mb-8 border border-[#333]">
+                        <p class="text-xs text-gray-500 uppercase font-bold mb-1">Resultado Final</p>
+                        <p class="text-3xl font-mono font-bold" 
+                           :class="stopResult.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+                           {{ stopResult.profit >= 0 ? '+' : '' }}${{ stopResult.profit.toFixed(2) }}
+                        </p>
+                    </div>
+
+                    <div class="flex gap-3">
+                         <button @click="showStopModal = false" class="flex-1 bg-[#333] hover:bg-[#444] text-white py-3 rounded-lg font-bold transition-colors">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
@@ -1251,6 +1288,8 @@ export default {
             showFilterModal: false,
             showPauseModal: false,
             showAccountModal: false,
+            showStopModal: false, // New Stop Result Modal
+            stopResult: { title: '', message: '', profit: 0, type: 'info' }, // Data for Stop Modal
             isLoadingAccounts: false,
             availableAccounts: [],
             selectedToken: null,
@@ -2677,9 +2716,8 @@ export default {
                 
             if (activeFilters.length === 0) return;
             
-            // Prevent spamming analysis if we are already in a trade or negotiating one
+            // Prevent spamming analysis
             if (this.activeContracts.size > 0 || this.isNegotiating) return;
-            // Also pendingFastResult might be active but contract not yet in activeContracts list?
             if (this.pendingFastResult && this.pendingFastResult.active) return;
 
             const data = {
@@ -2693,18 +2731,13 @@ export default {
 
             const allPassed = results.every(r => r.pass);
             
-            // Log details for each filter
             results.forEach(res => {
                 if (!res.pass) {
-                    // Log blocked entry with reason (Zeus style)
-                    // Reducing spam: only log if it's a specific "Entry Blocked" scenario, or simplify
-                    // For now, simpler concise log
                      this.addLog(`⏸️ ENTRADA BLOQUEADA: ${res.reason}`, 'warning');
                 }
             });
 
             if (allPassed) {
-                // Detailed Analysis Log (Zeus style)
                 const mode = this.sessionState.negotiationMode;
                 const isRec = this.sessionState.activeStrategy === 'RECUPERACAO';
                 
@@ -2719,6 +2752,12 @@ export default {
                     analysisLog += `• ${filterName}: ${res.reason}<br>`;
                 });
                 
+                // --- Stop Blindado Info ---
+                if (this.sessionState.stopBlindadoActive) {
+                    analysisLog += `<br>🛡️ BLINDADO ATIVO: Protegendo $${this.sessionState.stopBlindadoFloor.toFixed(2)}`;
+                }
+                // --------------------------
+
                 this.addLog(analysisLog, 'info');
                 this.executeRealTrade(); 
             }
@@ -2734,25 +2773,45 @@ export default {
             if (target > 0 && lucroAtual >= target) {
                 this.addLog(`🎯 META ATINGIDA: +$${lucroAtual.toFixed(2)}`, 'success');
                 this.stopMonitoring('Meta atingida');
+                this.stopResult = {
+                    title: 'Meta Batida! 🚀',
+                    message: 'Parabéns! Você atingiu sua meta de lucro.',
+                    profit: lucroAtual,
+                    type: 'success'
+                };
+                this.showStopModal = true;
                 return true;
             }
 
-            // 2. Stop Blindado
+            // 2. Stop Blindado (Updated Logic)
             if (this.form.useBlindado && target > 0) {
-                const activationThreshold = target * 0.40;
+                // Trigger: 50% of Target
+                const activationThreshold = target * 0.50;
                 const currentPeak = this.sessionState.peakProfit;
+                const protectedAmount = currentPeak * 0.40; // Protect 40% of Peak
 
                 if (currentPeak >= activationThreshold) {
                     if (!this.sessionState.stopBlindadoActive) {
                         this.sessionState.stopBlindadoActive = true;
-                        const factor = (this.form.stopBlindadoPercent || 50) / 100;
-                        this.sessionState.stopBlindadoFloor = activationThreshold * factor;
-                        this.addLog(`🛡️ STOP BLINDADO ATIVADO! Piso: $${this.sessionState.stopBlindadoFloor.toFixed(2)}`, 'info');
+                        this.sessionState.stopBlindadoFloor = protectedAmount;
+                        this.addLog(`🛡️ STOP BLINDADO ATIVADO! (Meta > 50%) - Protegendo: $${protectedAmount.toFixed(2)}`, 'info');
+                    } else {
+                        // Update floor if peak increases (Trailing)
+                        if (protectedAmount > this.sessionState.stopBlindadoFloor) {
+                            this.sessionState.stopBlindadoFloor = protectedAmount;
+                        }
                     }
 
                     if (lucroAtual <= this.sessionState.stopBlindadoFloor) {
                         this.addLog(`🛡️ STOP BLINDADO ATINGIDO: Protegendo $${lucroAtual.toFixed(2)}`, 'warning');
                         this.stopMonitoring('Stop Blindado atingido');
+                        this.stopResult = {
+                            title: 'Stop Blindado 🛡️',
+                            message: `Parada de segurança acionada. Você garantiu $${lucroAtual.toFixed(2)} de lucro!`,
+                            profit: lucroAtual,
+                            type: 'warning'
+                        };
+                        this.showStopModal = true;
                         return true;
                     }
                 }
@@ -2762,6 +2821,13 @@ export default {
             if (stopLoss > 0 && lucroAtual <= -stopLoss) {
                 this.addLog(`🛑 STOP LOSS ATINGIDO: -$${Math.abs(lucroAtual).toFixed(2)}`, 'error');
                 this.stopMonitoring('Stop Loss atingido');
+                this.stopResult = {
+                    title: 'Stop Loss Atingido 🛑',
+                    message: 'Limite de perda alcançado. Respeite seu gerenciamento.',
+                    profit: lucroAtual,
+                    type: 'error'
+                };
+                this.showStopModal = true;
                 return true;
             }
 
@@ -2771,17 +2837,28 @@ export default {
             const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
             const config = isRecovery ? this.recoveryConfig : this.form;
             
-            const stake = RiskManager.calculateNextStake(this.sessionState, config);
+            let stake = RiskManager.calculateNextStake(this.sessionState, config);
             
-            // Log if Soros is active (Principal mode only)
-            // Updated to match RiskManager logic: Active if wins >= 1 AND wins <= level
+            // --- Survival Mode ---
+            const currentProfit = this.monitoringStats.profit;
+            const globalConfig = this.form; 
+            const payoutRate = isRecovery ? (this.sessionState.lastPayoutRecovery || 0.95) : (this.sessionState.lastPayoutPrincipal || 0.95);
+            
+            // Pass Stop Blindado State
+            const blindadoState = {
+                active: this.sessionState.stopBlindadoActive || false,
+                floor: this.sessionState.stopBlindadoFloor || 0
+            };
+
+            stake = RiskManager.applySurvivalMode(stake, currentProfit, globalConfig, payoutRate, blindadoState);
+            // ---------------------
+
             const sorosLevel = config.sorosLevel || 1;
             if (!isRecovery && 
                 this.sessionState.consecutiveWins >= 1 && 
                 this.sessionState.consecutiveWins <= sorosLevel &&
                 this.sessionState.lastResultWin) {
                 
-                // Only log if stake is actually > initialStake to avoid confusion
                 if (stake > config.initialStake) {
                      this.addLog(`🚀 SOROS ATIVADO: Stake base + último lucro = $${stake.toFixed(2)}`, 'info');
                 }
