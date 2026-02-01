@@ -28,10 +28,10 @@
       />
     
     <!-- Main Content -->
-    <main class="main-content bg-transparent noise-bg font-inter overflow-y-auto w-full" style="overflow-x: hidden;">
+    <main class="main-content bg-transparent noise-bg font-inter overflow-y-auto w-full">
       <!-- Hero Onboarding Section -->
       <section id="hero-section" class="w-full mt-0 py-12 relative group h-[560px]" style="overflow: visible;">
-      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent" style="margin-left: calc(-1 * var(--sidebar-width)); width: 100vw;">
+      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent full-immersion">
         <!-- Video Background - Desktop Only (Dual Video for Seamless Loop) -->
         <template v-if="!isMobile">
           <video 
@@ -91,7 +91,7 @@
       
       <!-- Ticker Section -->
       <section id="ticker-section" class="py-3 relative border-t border-[#22C55E]/20 bg-[rgba(11,11,11,0.8)] backdrop-blur-sm w-full" style="overflow: visible;">
-        <div class="absolute inset-0 z-0 bg-[rgba(11,11,11,0.8)]" style="margin-left: calc(-1 * var(--sidebar-width)); width: 100vw; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);"></div>
+        <div class="absolute inset-0 z-0 bg-[rgba(11,11,11,0.8)] full-immersion" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);"></div>
         <div class="relative z-10 w-full">
           <div class="relative overflow-hidden w-full">
             <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
@@ -191,7 +191,7 @@
         
         <!-- Best IAs Section -->
         <section id="best-ai-section" class="pt-0 pb-0 relative w-full" style="overflow: visible;">
-          <div class="absolute inset-0 z-0 bg-gradient-to-b from-[#020302] via-[#030403] to-[#020302] opacity-60 pointer-events-none" style="margin-left: calc(-1 * var(--sidebar-width)); width: 100vw;"></div>
+          <div class="absolute inset-0 z-0 bg-gradient-to-b from-[#020302] via-[#030403] to-[#020302] opacity-60 pointer-events-none full-immersion"></div>
           <div class="relative z-10 w-full px-6 md:px-10">
             <!-- Desktop Header -->
             <div class="text-left mb-8 space-y-2 desktop-ias-header">
@@ -286,7 +286,7 @@
       
       <!-- Overall Performance Section -->
       <section id="performance-section" class="pt-4 pb-36 relative w-full" style="overflow: visible;">
-        <div class="absolute inset-0 z-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none" style="margin-left: calc(-1 * var(--sidebar-width)); width: 100vw;"></div>
+        <div class="absolute inset-0 z-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none full-immersion"></div>
         <div class="relative z-10 w-full px-6 md:px-10">
           <!-- Desktop Header -->
           <div class="text-left mb-8 space-y-2 desktop-performance-header">
