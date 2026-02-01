@@ -68,8 +68,8 @@
 				<!-- Capital Inicial -->
 				<div v-if="!isMobile" class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
 					<div class="flex items-center mb-4 gap-2">
-						<div class="p-2 rounded-lg border border-[#22C55E] bg-[#22C55E]/10 flex items-center justify-center">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign text-white"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+						<div class="p-2 rounded-lg bg-[#22C55E]/10 flex items-center justify-center">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign text-[#22C55E]"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
 						</div>
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium">Entrada Inicial</span>
 					</div>
@@ -81,8 +81,8 @@
 				<!-- Capital Final -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
 					<div class="flex items-center gap-2 mb-3">
-						<div class="p-2 rounded-lg border border-[#22C55E] bg-[#22C55E]/10 flex items-center justify-center">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet text-white"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
+						<div class="p-2 rounded-lg bg-[#22C55E]/10 flex items-center justify-center">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet text-[#22C55E]"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
 						</div>
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital Final</span>
 					</div>
@@ -161,15 +161,16 @@
 					>
 						<div class="flex items-center gap-3">
 							<div class="p-2 bg-[#1a1a1a] rounded-md overflow-hidden flex items-center justify-center w-10 h-10 border border-[#27272a]">
-                                <video 
-                                    v-if="runningAgents.find(a => a.id === currentAgentId)?.video"
-                                    :src="runningAgents.find(a => a.id === currentAgentId)?.video"
-                                    class="w-full h-full object-cover rounded-sm scale-150"
-                                    autoplay 
-                                    loop 
-                                    muted 
-                                    playsinline
-                                ></video>
+                                <img 
+                                    v-if="currentAgentId === 'zeus'"
+                                    src="C:/Users/patov/.gemini/antigravity/brain/61f11728-a4a0-4522-9fc6-65e0b52ff4a8/uploaded_media_1_1769948535549.png"
+                                    class="w-full h-full object-cover rounded-sm"
+                                />
+                                <img 
+                                    v-else-if="currentAgentId === 'falcon'"
+                                    src="C:/Users/patov/.gemini/antigravity/brain/61f11728-a4a0-4522-9fc6-65e0b52ff4a8/uploaded_media_0_1769948535549.png"
+                                    class="w-full h-full object-cover rounded-sm"
+                                />
                                 <div v-else class="strategy-icons-inline text-lg">
                                     {{ runningAgents.find(a => a.id === currentAgentId)?.emoji || '⚡' }}
                                 </div>
@@ -201,15 +202,16 @@
 							>
                                 <!-- Col 1: Icon -->
 								<div class="w-14 h-14 rounded-lg bg-[#0c0c0c] flex items-center justify-center relative shrink-0 border border-[#27272a] overflow-visible">
-									<video 
-                                        v-if="agent.video"
-                                        :src="agent.video"
+									<img 
+                                        v-if="agent.id === 'zeus'"
+                                        src="C:/Users/patov/.gemini/antigravity/brain/61f11728-a4a0-4522-9fc6-65e0b52ff4a8/uploaded_media_1_1769948535549.png"
                                         class="w-full h-full object-cover rounded-md"
-                                        autoplay 
-                                        loop 
-                                        muted 
-                                        playsinline
-                                    ></video>
+                                    />
+                                    <img 
+                                        v-else-if="agent.id === 'falcon'"
+                                        src="C:/Users/patov/.gemini/antigravity/brain/61f11728-a4a0-4522-9fc6-65e0b52ff4a8/uploaded_media_0_1769948535549.png"
+                                        class="w-full h-full object-cover rounded-md"
+                                    />
                                     <div v-else class="strategy-icons-inline text-2xl">
 										{{ agent.emoji }}
 									</div>
@@ -226,7 +228,7 @@
                                 <!-- Col 2: Info -->
 								<div class="min-w-0 flex flex-col justify-center gap-0.5">
 									<h5 class="text-[14px] font-bold truncate text-left transition-colors" :class="currentAgentId === agent.id ? 'text-[#22c55e]' : 'text-[#DFDFDF]'">
-                                        {{ agent.title.toUpperCase() }} - Digits
+                                        {{ agent.title.toUpperCase() }}
                                     </h5>
                                     
                                     <div class="flex flex-col gap-0.5">
@@ -247,7 +249,7 @@
                                 <div class="flex justify-end pr-1">
                                     <div 
                                         v-if="currentAgentId === agent.id" 
-                                        class="px-3 py-1.5 rounded-full bg-[#1b3324]/80 border border-[#22c55e]/40 shadow-sm"
+                                        class="px-3 py-1.5 rounded-xl bg-[#1b3324]/80 border border-[#22c55e]/40 shadow-sm"
                                     >
                                         <span class="text-[9px] text-[#22c55e] font-black uppercase tracking-wider">ATIVO</span>
                                     </div>
@@ -274,8 +276,8 @@
 
 				<!-- Operacoes Hoje -->
 				<div class="flex items-center gap-3">
-					<div class="p-2 rounded-lg border border-[#22C55E] bg-[#22C55E]/10 flex items-center justify-center">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity text-white"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
+					<div class="p-2 rounded-lg bg-[#22C55E]/10 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity text-[#22C55E]"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
 					</div>
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">OPERAÇÕES HOJE</div>
@@ -285,8 +287,8 @@
 
 				<!-- Tempo Ativo -->
 				<div class="flex items-center gap-3">
-					<div class="p-2 rounded-lg border border-[#22C55E] bg-[#22C55E]/10 flex items-center justify-center">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock text-white"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+					<div class="p-2 rounded-lg bg-[#22C55E]/10 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock text-[#22C55E]"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
 					</div>
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Tempo ativo</div>
