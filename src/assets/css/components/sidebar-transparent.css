@@ -7,8 +7,8 @@ aside.sbt-sidebar,
 	width: 280px !important;
 	min-width: 280px !important;
 	max-width: 280px !important;
-	background: rgba(0, 0, 0, 0) !important;
-	background-color: rgba(0, 0, 0, 0) !important;
+	background: transparent !important;
+	background-color: transparent !important;
 	backdrop-filter: blur(10px) !important;
 	-webkit-backdrop-filter: blur(10px) !important;
 	border-right: 1px solid rgba(255, 255, 255, 0.03) !important;
@@ -38,6 +38,8 @@ aside.sbt-sidebar,
 	width: 80px !important;
 	min-width: 80px !important;
 	max-width: 80px !important;
+	background: transparent !important;
+	background-color: transparent !important;
 }
 
 .sbt-sidebar.sbt-collapsed:hover,
@@ -66,20 +68,35 @@ aside.sbt-sidebar,
 		max-width: 280px !important;
 	}
 
-	/* Expansão do conteúdo principal */
-	.sidebar-wrapper~.dashboard-content-wrapper {
-		transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	/* Expansão do conteúdo principal via padding */
+	.sbt-sidebar-wrapper~.dashboard-content-wrapper {
+		transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+		padding-left: 280px !important;
+		/* Default expandido */
 	}
 
-	.sidebar-wrapper:hover~.dashboard-content-wrapper {
+	.sbt-sidebar-wrapper.sbt-collapsed:not(:hover)~.dashboard-content-wrapper {
+		padding-left: 80px !important;
+	}
+
+	.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper {
 		padding-left: 280px !important;
 	}
 
 	/* Expansão e deslocamento do TopNavbar */
-	.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
+	.sbt-sidebar-wrapper~.dashboard-content-wrapper #top-navbar {
 		padding-left: 280px !important;
 		width: 100% !important;
-		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+		transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+		left: 0 !important;
+	}
+
+	.sbt-sidebar-wrapper.sbt-collapsed:not(:hover)~.dashboard-content-wrapper #top-navbar {
+		padding-left: 80px !important;
+	}
+
+	.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
+		padding-left: 280px !important;
 	}
 
 	/* --- Brand/Logo Global Styles --- */

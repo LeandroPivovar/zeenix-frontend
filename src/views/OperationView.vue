@@ -35,9 +35,9 @@
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
-        <div class="desktop-only" style="text-align: left; padding: 25px 38px 10px 38px; width: 100%;">
+        <div class="desktop-only" style="text-align: left; padding: 10px 38px 0px 38px; width: 100%;">
           <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
-          <p class="text-sm text-[#A1A1AA] mt-1 max-w-2xl">
+          <p class="text-sm text-[#A1A1AA] mt-0 max-w-2xl">
             Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
           </p>
         </div>

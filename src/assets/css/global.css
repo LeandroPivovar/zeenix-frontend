@@ -230,18 +230,37 @@ body,
 
 
   /* Hover expansion synchronization */
-  .sidebar-wrapper:hover~.dashboard-content-wrapper,
-  .sidebar-wrapper:hover~.content-wrapper,
-  .sidebar-wrapper:hover~.main-content-wrapper,
-  .sidebar-wrapper:hover~.operation-main,
-  .sidebar-wrapper:hover~.box-content,
-  .sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar,
-  .sidebar-wrapper:hover~.content-wrapper #top-navbar,
-  .sidebar-wrapper:hover~.main-content-wrapper #top-navbar,
-  .sidebar-wrapper:hover~.operation-main #top-navbar,
-  .sidebar-wrapper:hover~.box-content #top-navbar {
+  .sbt-sidebar-wrapper:hover~.dashboard-content-wrapper,
+  .sbt-sidebar-wrapper:hover~.content-wrapper,
+  .sbt-sidebar-wrapper:hover~.main-content-wrapper,
+  .sbt-sidebar-wrapper:hover~.operation-main,
+  .sbt-sidebar-wrapper:hover~.box-content,
+  .sbt-sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar,
+  .sbt-sidebar-wrapper:hover~.content-wrapper #top-navbar,
+  .sbt-sidebar-wrapper:hover~.main-content-wrapper #top-navbar,
+  .sbt-sidebar-wrapper:hover~.operation-main #top-navbar,
+  .sbt-sidebar-wrapper:hover~.box-content #top-navbar {
     --sidebar-width: 280px;
     padding-left: var(--sidebar-width) !important;
     width: 100% !important;
   }
+}
+
+/* Background Immersion (100vw media) */
+.full-immersion {
+  width: 100vw !important;
+  max-width: none !important;
+  left: 0 !important;
+  position: absolute !important;
+  transform: translateX(calc(-1 * var(--sidebar-width, 280px)));
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-collapsed .full-immersion,
+.sbt-collapsed .full-immersion {
+  --sidebar-width: 80px;
+}
+
+.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper .full-immersion {
+  --sidebar-width: 280px;
 }
