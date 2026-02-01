@@ -2317,7 +2317,7 @@ export default {
 .noise-bg {
   background: radial-gradient(circle at 85% 15%, rgba(34, 197, 94, 0.03) 0%, transparent 50%),
               radial-gradient(circle at 15% 85%, rgba(34, 197, 94, 0.02) 0%, transparent 50%),
-              #0B0B0B;
+              transparent;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.015'/%3E%3C/svg%3E");
 }
 
@@ -2784,9 +2784,8 @@ export default {
 aside.sidebar,
 .sidebar,
 #app-sidebar-main.sidebar-glass-effect {
-    width: 280px !important;
-    /* Mude de transparent para um preto translúcido (0.5 ou 0.3) */
-    background: transparent!important; 
+    /* Mude de transparent para um preto translúcido (0.05) */
+    background: rgba(11, 11, 11, 0.05) !important; 
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.05) !important;

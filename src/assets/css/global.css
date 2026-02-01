@@ -177,6 +177,7 @@ body,
     max-width: none !important;
     position: absolute !important;
     left: 0 !important;
+    margin-left: calc(-1 * var(--sidebar-width, 280px)) !important;
     top: 0 !important;
     height: 100% !important;
     z-index: 0 !important;
@@ -198,8 +199,17 @@ body,
   .main-content-wrapper,
   .operation-main,
   .box-content {
-    padding-left: var(--sidebar-width);
+    padding-left: 0;
     width: 100%;
+    transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Reposicionar o padding nos conteúdos reais */
+  .main-content,
+  .dashboard-content,
+  .operation-content,
+  .admin-content {
+    padding-left: var(--sidebar-width);
     transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -222,7 +232,11 @@ body,
   .sidebar-collapsed .operation-main,
   .sidebar-collapsed.box-content,
   .sidebar-collapsed .box-content,
-  .sidebar-collapsed #top-navbar {
+  .sidebar-collapsed #top-navbar,
+  .sidebar-collapsed .main-content,
+  .sidebar-collapsed .dashboard-content,
+  .sidebar-collapsed .operation-content,
+  .sidebar-collapsed .admin-content {
     --sidebar-width: 80px;
     padding-left: var(--sidebar-width) !important;
     width: 100% !important;
@@ -230,16 +244,15 @@ body,
 
 
   /* Hover expansion synchronization */
-  .sidebar-wrapper:hover~.dashboard-content-wrapper,
-  .sidebar-wrapper:hover~.content-wrapper,
-  .sidebar-wrapper:hover~.main-content-wrapper,
-  .sidebar-wrapper:hover~.operation-main,
-  .sidebar-wrapper:hover~.box-content,
+  .sidebar-wrapper:hover~.dashboard-content-wrapper .main-content,
+  .sidebar-wrapper:hover~.dashboard-content-wrapper .dashboard-content,
+  .sidebar-wrapper:hover~.dashboard-content-wrapper .operation-content,
+  .sidebar-wrapper:hover~.dashboard-content-wrapper .admin-content,
   .sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar,
-  .sidebar-wrapper:hover~.content-wrapper #top-navbar,
-  .sidebar-wrapper:hover~.main-content-wrapper #top-navbar,
-  .sidebar-wrapper:hover~.operation-main #top-navbar,
-  .sidebar-wrapper:hover~.box-content #top-navbar {
+  .sidebar-wrapper:hover~.content-wrapper .main-content,
+  .sidebar-wrapper:hover~.main-content-wrapper .main-content,
+  .sidebar-wrapper:hover~.operation-main .main-content,
+  .sidebar-wrapper:hover~.box-content .main-content {
     --sidebar-width: 280px;
     padding-left: var(--sidebar-width) !important;
     width: 100% !important;
