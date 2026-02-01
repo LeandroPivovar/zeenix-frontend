@@ -575,6 +575,7 @@ aside.sbt-sidebar,
 	padding: 16px;
 	overflow-y: auto;
 	background: transparent !important;
+	background-color: transparent !important;
 }
 
 .sbt-menu-item {
@@ -656,6 +657,7 @@ aside.sbt-sidebar,
 	padding: 16px;
 	border-top: 1px solid rgba(255, 255, 255, 0.05);
 	background: transparent !important;
+	background-color: transparent !important;
 }
 
 .footer-row {
