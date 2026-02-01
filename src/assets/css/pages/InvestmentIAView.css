@@ -26,7 +26,7 @@
     }
 
     .main-content {
-        margin-top: 60px!important;
+        margin-top: 60px !important;
         justify-content: flex-start !important;
         display: flex;
         flex-direction: column;
@@ -177,8 +177,9 @@
 
 /* Main Content - Desktop & Mobile Adjustments */
 .main-content {
-    margin-top: 60px; 
-    padding: 30px 15px !important; /* Default desktop padding adjusted to 30px */
+    margin-top: 60px;
+    padding: 30px 15px !important;
+    /* Default desktop padding adjusted to 30px */
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -190,7 +191,8 @@
 
 @media (max-width: 1024px) {
     .main-content {
-        padding: 60px 15px !important; /* Mobile padding */
+        padding: 60px 15px !important;
+        /* Mobile padding */
     }
 }
 
@@ -644,6 +646,7 @@
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -653,7 +656,7 @@
 .ai-vision-header {
     display: flex;
     align-items: flex-start;
-    justify-content: space-between; 
+    justify-content: space-between;
     margin-bottom: 1.5rem;
 }
 
@@ -760,7 +763,7 @@
 .animated-grid {
     position: absolute;
     inset: 0;
-    background-image: 
+    background-image:
         linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
         linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px);
     background-size: 20px 20px;
@@ -772,6 +775,7 @@
     0% {
         background-position: 0 0;
     }
+
     100% {
         background-position: 20px 20px;
     }
@@ -807,6 +811,7 @@
     from {
         transform: rotate(0deg);
     }
+
     to {
         transform: rotate(360deg);
     }
@@ -814,8 +819,8 @@
 
 /* AI Vision Panel Specific Animations */
 #i9dlnn {
-    background-image: linear-gradient(rgba(34, 197, 94, 0.15) 1px, transparent 1px), 
-                        linear-gradient(90deg, rgba(34, 197, 94, 0.15) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(34, 197, 94, 0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 197, 94, 0.15) 1px, transparent 1px);
     background-size: 20px 20px;
     animation: gridMove 20s linear infinite;
     opacity: 1;
@@ -903,9 +908,12 @@
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.5;
     }
@@ -925,10 +933,13 @@
 }
 
 @keyframes brainPulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         opacity: 1;
     }
+
     50% {
         transform: scale(1.1);
         opacity: 0.9;
@@ -986,9 +997,12 @@
 }
 
 @keyframes ringPulse {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), 0 0 40px rgba(34, 197, 94, 0.1);
     }
+
     50% {
         box-shadow: 0 0 40px rgba(34, 197, 94, 0.4), 0 0 80px rgba(34, 197, 94, 0.2);
     }
@@ -1024,6 +1038,7 @@
     0% {
         transform: rotate(0deg) translateX(5rem) rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg) translateX(5rem) rotate(-360deg);
     }
@@ -1033,6 +1048,7 @@
     0% {
         transform: rotate(0deg) translateX(4rem) rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg) translateX(4rem) rotate(-360deg);
     }
@@ -1042,6 +1058,7 @@
     0% {
         transform: rotate(0deg) translateX(3rem) rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg) translateX(3rem) rotate(-360deg);
     }
@@ -1094,9 +1111,12 @@
 }
 
 @keyframes float {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0);
     }
+
     50% {
         transform: translateY(-10px);
     }
@@ -1141,9 +1161,11 @@
         left: -20px;
         opacity: 0;
     }
+
     50% {
         opacity: 1;
     }
+
     100% {
         left: 100%;
         opacity: 0;
@@ -1198,7 +1220,8 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
-    margin-top: 0; /* Remove margem superior extra */
+    margin-top: 0;
+    /* Remove margem superior extra */
     margin-left: 0;
     margin-right: 0;
     width: 100%;
@@ -1316,7 +1339,8 @@
 .card-content {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem; /* Reduzindo gap de 1rem para 0.5rem */
+    gap: 0.5rem;
+    /* Reduzindo gap de 1rem para 0.5rem */
 }
 
 .form-group {
@@ -1389,7 +1413,7 @@
     border-color: #22C55E;
 }
 
-.form-group input{
+.form-group input {
     margin-bottom: 0rem;
 }
 
@@ -1476,7 +1500,7 @@
 .risk-header {
     display: flex;
     align-items: center;
-        justify-content: space-between;
+    justify-content: space-between;
     margin-bottom: 0.5rem;
 }
 
@@ -1522,7 +1546,8 @@
     background-color: #0b0b0b;
     border: 1px solid #1C1C1C;
     border-radius: 0.5rem;
-    height: 38px; /* Standardize desktop input height */
+    height: 38px;
+    /* Standardize desktop input height */
     box-sizing: border-box;
 }
 
@@ -1554,7 +1579,7 @@
     width: 1.25rem;
 }
 
-.stoploss-toggle input:checked + .toggle-slider::before {
+.stoploss-toggle input:checked+.toggle-slider::before {
     transform: translateX(calc(4rem - 1.25rem - 6px));
 }
 
@@ -1583,7 +1608,7 @@
 .animated-grid-ai {
     position: absolute;
     inset: 0;
-    background-image: 
+    background-image:
         linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
         linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px);
     background-size: 20px 20px;
@@ -1764,12 +1789,12 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.toggle-switch input:checked + .toggle-slider {
+.toggle-switch input:checked+.toggle-slider {
     background-color: #22C55E;
     border-color: #22C55E;
 }
 
-.toggle-switch input:checked + .toggle-slider::before {
+.toggle-switch input:checked+.toggle-slider::before {
     transform: translateX(calc(4rem - 1.5rem - 6px));
 }
 
@@ -1821,13 +1846,13 @@
     box-sizing: border-box;
 }
 
-    .ai-status-info label{
-        margin: 0 !important;
-        font-size: 0.9rem !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        color: #C5C5C5 !important;
-    }
+.ai-status-info label {
+    margin: 0 !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    color: #C5C5C5 !important;
+}
 
 /* Ensure all cards and divs occupy 100% width */
 .ai-vision-card,
@@ -1948,8 +1973,8 @@
 @media (min-width: 768px) {
     .footer-bottom {
         flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+        justify-content: space-between;
+        align-items: center;
     }
 }
 
@@ -1985,44 +2010,44 @@
         margin-left: 0;
         width: 100%;
     }
-    
+
     .content-wrapper.sidebar-collapsed {
         margin-left: 0;
         width: 100%;
     }
-    
+
     .main-content {
         padding: 1rem 15px;
         padding-bottom: 90px !important;
     }
-    
+
     .config-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .grid.grid-cols-12 {
         grid-template-columns: 1fr;
     }
-    
+
     .col-span-5,
     .col-span-7 {
         grid-column: span 1;
     }
-    
+
     .col-span-7 .grid.grid-cols-2 {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .footer-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     #ai-vision-panel {
         margin-left: 0;
         margin-right: 0;
     }
-    
+
     .chart-section {
         margin-left: -15px;
         margin-right: -15px;
@@ -2036,7 +2061,7 @@
         background-color: transparent !important;
         position: relative;
     }
-    
+
     .zenix-layout::before {
         content: '';
         position: absolute;
@@ -2048,29 +2073,29 @@
         pointer-events: none;
         z-index: 0;
     }
-    
-    .zenix-layout > * {
+
+    .zenix-layout>* {
         position: relative;
         z-index: 1;
     }
-    
+
     /* SettingsSidebar nÃ£o deve ser afetado pelo z-index do zenix-layout */
-    .zenix-layout > :deep(.settings-modal-overlay) {
+    .zenix-layout> :deep(.settings-modal-overlay) {
         position: fixed !important;
         z-index: 100000 !important;
     }
-    
+
     .content-wrapper {
         margin-left: 0;
         width: 100%;
         background: transparent !important;
     }
-    
+
     .content-wrapper.sidebar-collapsed {
         margin-left: 0;
         width: 100%;
     }
-    
+
     /* Gradiente no fundo da pÃ¡gina - apenas mobile */
     .main-content {
         margin-top: 0px;
@@ -2078,53 +2103,53 @@
         background: transparent !important;
         position: relative;
     }
-    
+
     /* Gradiente nos cards de configuraÃ§Ã£o - apenas mobile */
     .config-card {
         background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
         background-color: transparent !important;
     }
-    
-    
+
+
     #ai-vision-panel {
         margin-bottom: 1rem;
     }
-    
+
     .grid.grid-cols-12 {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .col-span-5 {
         grid-column: span 1;
         height: 180px;
     }
-    
+
     .col-span-7 {
         grid-column: span 1;
     }
-    
+
     .col-span-7 .grid.grid-cols-2 {
         grid-template-columns: repeat(2, 1fr);
         gap: 0.75rem;
     }
-    
+
     .col-span-7 .bg-zenix-bg {
         padding: 0.875rem;
     }
-    
+
     .col-span-7 .text-\[10px\] {
         font-size: 9px;
     }
-    
+
     .col-span-7 .text-base {
         font-size: 0.875rem;
     }
-    
+
     .col-span-7 .text-sm {
         font-size: 0.8125rem;
     }
-    
+
     .config-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
@@ -2132,26 +2157,26 @@
         display: flex;
         flex-direction: column;
     }
-    
+
     /* ReorganizaÃ§Ã£o da ordem no mobile */
     #market-strategy-card {
         order: 1;
     }
-    
+
     #entry-params-card {
         order: 2;
     }
-    
+
     #ai-control-card {
         order: 3;
     }
-    
+
     .risk-management-section {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     /* Mostrar apenas o texto descritivo no mobile, esconder barra e header */
     .risk-management-section .risk-indicator {
         display: block !important;
@@ -2160,12 +2185,12 @@
         padding: 0.5rem 0 !important;
         margin-top: 0.5rem;
     }
-    
+
     .risk-management-section .risk-header,
     .risk-management-section .risk-bar-container {
         display: none !important;
     }
-    
+
     .risk-management-section .risk-description {
         display: block !important;
         font-size: 0.75rem;
@@ -2174,33 +2199,33 @@
         text-align: center;
         margin: 0;
     }
-    
+
     /* Gradiente nos cards de configuraÃ§Ã£o - apenas mobile */
     .config-card {
         padding: 1rem;
         background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     }
-    
+
     .card-content {
         gap: 0.875rem;
     }
-    
+
     .form-group {
         gap: 0.375rem;
     }
-    
+
     .card-title {
         font-size: 0.8125rem;
         margin-bottom: 0.875rem;
     }
-    
+
     .form-label {
         font-size: 0.875rem;
         font-weight: 600;
         text-transform: uppercase;
         color: #DFDFDF;
     }
-    
+
     .form-select,
     .form-input {
         font-size: 0.875rem;
@@ -2211,11 +2236,11 @@
         color: #FFFFFF !important;
         font-weight: 600;
     }
-    
+
     .form-input {
         padding-left: 2rem;
     }
-    
+
     .input-prefix {
         left: 0;
         top: 0;
@@ -2228,50 +2253,50 @@
         font-weight: 600;
         line-height: normal;
     }
-    
+
     .form-help {
         font-size: 0.8125rem;
     }
-    
+
     .mode-buttons {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.5rem;
     }
-    
+
     .mode-btn {
         padding: 0.75rem 0.75rem;
         font-size: 0.75rem;
     }
-    
+
     .risk-buttons {
         grid-template-columns: repeat(2, 1fr);
         gap: 0.5rem;
     }
-    
+
     .risk-btn {
         padding: 0.75rem 0.75rem;
         font-size: 0.75rem;
     }
-    
+
     .risk-indicator {
         padding: 0.875rem;
     }
-    
+
     .risk-label,
     .risk-level-text {
         font-size: 0.7rem;
     }
-    
+
     .risk-description {
         font-size: 0.7rem;
     }
-    
+
     .ai-status-group {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     .ai-status-control-simple {
         flex-direction: row;
         align-items: center;
@@ -2282,17 +2307,17 @@
         border: 1px solid #1C1C1C;
         margin-bottom: 0;
     }
-    
+
     .ai-status-info {
         flex: 1;
     }
-    
+
     .ai-status-toggle-wrapper {
         flex-shrink: 0;
         justify-content: flex-end;
         gap: 0.75rem;
     }
-    
+
     .ai-status-title {
         font-size: 1rem;
         font-weight: 600;
@@ -2300,18 +2325,18 @@
         margin-bottom: 0.25rem;
         text-align: left;
     }
-    
+
     .ai-status-subtitle {
         font-size: 0.875rem;
         color: #A1A1A1;
         text-align: left;
     }
-    
+
     .ai-status-text {
         font-size: 0.8125rem;
         display: none;
     }
-    
+
     .ai-status-message {
         display: block;
         margin-top: 1rem;
@@ -2320,86 +2345,86 @@
         border: 1px solid #1C1C1C;
         border-radius: 0.5rem;
     }
-    
+
     .ai-message-text {
         font-size: 0.875rem;
         text-align: center;
     }
-    
+
     .toggle-switch {
         width: 3.5rem;
         height: 1.75rem;
     }
-    
+
     .toggle-slider {
         width: 3.5rem;
         height: 1.75rem;
     }
-    
+
     .toggle-slider::before {
         height: 1.25rem;
         width: 1.25rem;
     }
-    
-    .toggle-switch input:checked + .toggle-slider::before {
+
+    .toggle-switch input:checked+.toggle-slider::before {
         transform: translateX(calc(3.5rem - 1.25rem - 6px));
     }
-    
+
     .footer-grid {
         grid-template-columns: 1fr;
         gap: 2rem;
     }
-    
+
     .chart-section {
         margin-left: -15px;
         margin-right: -15px;
         width: calc(100% + 30px);
     }
-    
+
     .p-6 {
         padding: 1rem;
     }
-    
+
     .mb-6 {
         margin-bottom: 1rem;
     }
-    
+
     .text-xl {
         font-size: 1.125rem;
     }
-    
+
     .h-\[220px\] {
         height: 180px;
     }
-    
+
     .w-40 {
         width: 8rem;
     }
-    
+
     .h-40 {
         height: 8rem;
     }
-    
+
     .w-32 {
         width: 6rem;
     }
-    
+
     .h-32 {
         height: 6rem;
     }
-    
+
     .w-24 {
         width: 4.5rem;
     }
-    
+
     .h-24 {
         height: 4.5rem;
     }
-    
+
     .text-5xl {
         font-size: 2rem;
     }
-    
+
     .ai-brain-glow i {
         font-size: 2rem !important;
     }
@@ -2412,7 +2437,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.85); /* Increased opacity instead of blur */
+    background-color: rgba(0, 0, 0, 0.85);
+    /* Increased opacity instead of blur */
     z-index: 10001;
     cursor: pointer;
 }
@@ -2427,10 +2453,12 @@
     color: #fff;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 48px; /* Reduced from 64px */
+    min-height: 48px;
+    /* Reduced from 64px */
     height: auto;
     box-sizing: border-box;
-    display: flex; /* Ensure flex behavior for centering */
+    display: flex;
+    /* Ensure flex behavior for centering */
     align-items: center;
 }
 
@@ -2512,7 +2540,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.85); /* Increased opacity instead of blur */
+    background-color: rgba(0, 0, 0, 0.85);
+    /* Increased opacity instead of blur */
     z-index: 10000;
     display: flex;
     align-items: center;
@@ -2636,12 +2665,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px; /* Reduced from 48px */
-    height: 32px; /* Reduced from 48px */
-    background-color: rgba(34, 197, 94, 0.15); /* zenix-green with opacity */
-    border-radius: 8px; /* Slightly reduced radius */
+    width: 32px;
+    /* Reduced from 48px */
+    height: 32px;
+    /* Reduced from 48px */
+    background-color: rgba(34, 197, 94, 0.15);
+    /* zenix-green with opacity */
+    border-radius: 8px;
+    /* Slightly reduced radius */
     color: #FFFFFF;
-    font-size: 1rem; /* Reduced from 1.5rem */
+    font-size: 1rem;
+    /* Reduced from 1.5rem */
 }
 
 .agent-option-text-col {
@@ -2670,13 +2704,13 @@
 /* Animations */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
-  transition: all 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .slide-fade-enter-from,
 .slide-fade-leave-to {
-  transform: translateY(-10px);
-  opacity: 0;
+    transform: translateY(-10px);
+    opacity: 0;
 }
 
 /* Responsive */
@@ -2688,11 +2722,12 @@
         justify-content: flex-start !important;
         gap: 1.25rem !important;
     }
-    
+
     .agent-option-premium {
         width: calc(50% - 0.7rem);
         flex-grow: 1;
-        max-width: 48%; /* Ensure 2 per row mostly */
+        max-width: 48%;
+        /* Ensure 2 per row mostly */
     }
 }
 
@@ -2702,12 +2737,12 @@
         margin-left: 0 !important;
         width: 100% !important;
     }
-    
+
     .content-wrapper.sidebar-collapsed {
         margin-left: 0 !important;
         width: 100% !important;
     }
-    
+
     /* Sidebar como drawer no mobile */
     :deep(.sidebar) {
         position: fixed;
@@ -2717,13 +2752,13 @@
         transform: translateX(-100%);
         transition: transform 0.3s ease-out;
     }
-    
+
     /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
     :deep(.sidebar.is-open) {
         transform: translateX(0);
         z-index: 99999999 !important;
     }
-    
+
     /* Modal de Settings deve sobrepor tudo no mobile, incluindo TopNavbar */
     /* ForÃ§ar z-index muito alto para garantir que sobreponha o TopNavbar (z-index: 1002) */
     :deep(.settings-modal-overlay) {
@@ -2732,14 +2767,14 @@
         height: 100vh !important;
         position: fixed !important;
     }
-    
+
     :deep(.settings-modal-content) {
         z-index: 100000 !important;
         top: 0 !important;
         height: 100vh !important;
         position: fixed !important;
     }
-    
+
     /* Garantir que TopNavbar fique abaixo do modal quando aberto */
     #top-navbar {
         z-index: 1002 !important;
@@ -2753,6 +2788,7 @@
 
 /* Estilos especÃ­ficos para VisÃ£o da IA no Mobile */
 @media (max-width: 768px) {
+
     /* Remove o fundo do container principal da VisÃ£o da IA */
     #ai-vision-panel .ai-vision-container {
         background: transparent !important;
@@ -2760,12 +2796,12 @@
         box-shadow: none !important;
         padding: 0 !important;
     }
-    
+
     /* Esconde header desktop, mostra mobile */
     #ai-vision-panel .ai-vision-header-desktop {
         display: none !important;
     }
-    
+
     #ai-vision-panel .ai-vision-header-mobile {
         display: block !important;
         margin-bottom: 0;
@@ -2773,19 +2809,19 @@
         border-radius: .75rem;
         padding: 1rem 0 0;
     }
-    
+
     #ai-vision-panel .ai-vision-header-mobile h1 {
         font-size: 1.5rem;
         font-weight: 700;
         color: #DFDFDF;
         margin-bottom: 0.25rem;
     }
-    
+
     #ai-vision-panel .ai-vision-header-mobile p {
         font-size: 0.875rem;
         color: #A1A1A1;
     }
-    
+
     #ai-vision-panel .ai-chip-icon-mobile {
         display: flex;
         align-items: center;
@@ -2796,26 +2832,26 @@
         width: auto;
         height: auto;
     }
-    
+
     /* Esconde a Ã¡rea de visualizaÃ§Ã£o AI completa no mobile */
     #ai-vision-panel .ai-visualization-area {
         display: none !important;
     }
-    
+
     /* Ajusta o grid para ocupar toda a largura no mobile */
     #ai-vision-panel .grid {
         grid-template-columns: 1fr !important;
     }
-    
+
     #ai-vision-panel .col-span-7 {
         grid-column: span 1 !important;
     }
-    
+
     /* Modifica os cards de status para mobile */
     #ai-vision-panel .status-cards-container {
         display: none !important;
     }
-    
+
     #ai-vision-panel .status-card-mobile {
         background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
         background-color: transparent !important;
@@ -2827,23 +2863,23 @@
         flex-direction: column;
         justify-content: flex-start;
     }
-    
+
     /* Remove textos descritivos (status-description) no mobile */
     #ai-vision-panel .status-description {
         display: none !important;
     }
-    
+
     /* Alinha labels e valores Ã  esquerda */
     #ai-vision-panel .status-label {
         text-align: left !important;
         margin: 0 !important;
-        color: #FFFFFF !important;
+        color: #22C55E !important;
         font-size: 0.625rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-    
+
     #ai-vision-panel .status-value {
         text-align: left !important;
         color: #FFFFFF !important;
@@ -2852,42 +2888,42 @@
         margin-top: 0.5rem;
         margin-bottom: 0;
     }
-    
+
     /* Ajusta os Ã­cones nos cards */
     #ai-vision-panel .status-card-mobile .flex.items-center {
         justify-content: flex-start !important;
         margin-bottom: 0.5rem;
         align-items: center;
     }
-    
+
     #ai-vision-panel .status-card-mobile .flex.items-center i {
         color: #22C55E !important;
         font-size: 1.125rem;
     }
-    
+
     #ai-vision-panel .status-card-mobile .asset-icon {
         opacity: 1 !important;
         width: 18px !important;
         height: 18px !important;
         filter: brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(96%) contrast(88%);
     }
-    
+
     /* Esconde o Central AI Core no mobile */
     #ai-vision-panel .ai-core-mobile {
         display: none !important;
     }
-    
+
     /* Remove gap do grid no mobile */
     #ai-vision-panel .grid.gap-5 {
         gap: 0 !important;
     }
-    
+
     /* Remove h3 (card-title) no mobile */
     .config-card .card-title,
     .config-card h3 {
         display: none !important;
     }
-    
+
     /* Remove ai-status-title no mobile */
     .ai-status-title {
         display: none !important;
@@ -2914,12 +2950,12 @@
         display: flex !important;
         flex-direction: column !important;
     }
-    
+
     .loss-stoploss-row .form-input {
         height: 100% !important;
         min-height: 48px !important;
     }
-    
+
     /* Label styling: 0.725rem, uppercase, #C5C5C5 */
     .form-label {
         font-size: 0.725rem !important;
@@ -2938,7 +2974,7 @@
         min-height: 48px !important;
     }
 
-    .ai-status-info label{
+    .ai-status-info label {
         margin: 0 !important;
         font-size: 0.9rem !important;
         font-weight: 700 !important;
