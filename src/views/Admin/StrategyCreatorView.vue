@@ -2943,67 +2943,76 @@ export default {
             this.addLog(`⏹️ Monitoramento parado: ${stopReason}`, 'info');
         },
         executeRealTrade() {
-            if (!this.isAuthorized) {
-                this.addLog('⚠️ Entrada negada: Não autorizado (Token inválido ou ausente).', 'warning');
-                return;
+            try {
+                if (!this.isAuthorized) {
+                    this.addLog('⚠️ Entrada negada: Não autorizado (Token inválido ou ausente).', 'warning');
+                    return;
+                }
+
+                if (this.checkLimits()) return;
+
+                // Note: isRecovery for logic is based on activeStrategy (filters/contracts)
+                const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
+                // Note: isRecovery for financial (stake) is based on analysisType (Martingale)
+                const isFinancialRecovery = this.sessionState.analysisType === 'RECUPERACAO';
+
+                // CRITICAL: If we are in Financial Recovery (Martingale), we MUST use the Recovery Contract 
+                // to ensure the Payout (e.g. 126%) matches the Stake Calculation.
+                // So we override 'config' to recoveryConfig if isFinancialRecovery is true.
+                const config = (isFinancialRecovery || isRecoveryStrategy) ? this.recoveryConfig : this.form;
+                
+                // Check for Contract Switch
+                if (this.sessionState.lastContractType && this.sessionState.lastContractType !== config.tradeType) {
+                    this.addLog(`📊 CONTRATO ALTERADO: ${this.sessionState.lastContractType} ➔ ${config.tradeType}`, 'info');
+                }
+                this.sessionState.lastContractType = config.tradeType;
+                
+                // Debug Log
+                console.log('[StrategyCreator] Calculando stake...');
+                const stake = this.calculateNextStake();
+
+                if (!stake || stake <= 0) {
+                    console.warn('[StrategyCreator] Stake inválido (0 ou Cancelado). Abortando entrada.');
+                    return;
+                }
+
+                this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
+                
+                // Step 1: Request Proposal to get exact payout
+                const proposalParams = {
+                    proposal: 1,
+                    amount: stake,
+                    basis: 'stake',
+                    contract_type: config.tradeType,
+                    currency: 'USD',
+                    duration: this.form.duration,
+                    duration_unit: this.form.durationUnit,
+                    symbol: config.market || this.form.market
+                };
+
+                if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(config.tradeType)) {
+                    proposalParams.barrier = config.prediction.toString(); 
+                }
+
+                // Store current context for fast result (will be activated on buy response)
+                this.pendingFastResult = {
+                    contractId: null,
+                    barrier: config.prediction,
+                    contractType: config.tradeType,
+                    active: false, // DISABLED FAST RESULT as per user request
+                    stake: stake,
+                    analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
+                    payout: null, // Will be filled when proposal arrives
+                    duration: this.form.duration,
+                    durationUnit: this.form.durationUnit
+                };
+
+                this.ws.send(JSON.stringify(proposalParams));
+
+            } catch (err) {
+                console.error('[StrategyCreator] Erro fatal em executeRealTrade:', err);
+                this.addLog(`❌ ERRO NO SISTEMA: ${err.message}`, 'error');
             }
-
-            if (this.checkLimits()) return;
-
-            // Note: isRecovery for logic is based on activeStrategy (filters/contracts)
-            const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
-            // Note: isRecovery for financial (stake) is based on analysisType (Martingale)
-            const isFinancialRecovery = this.sessionState.analysisType === 'RECUPERACAO';
-
-            // CRITICAL: If we are in Financial Recovery (Martingale), we MUST use the Recovery Contract 
-            // to ensure the Payout (e.g. 126%) matches the Stake Calculation.
-            // So we override 'config' to recoveryConfig if isFinancialRecovery is true.
-            const config = (isFinancialRecovery || isRecoveryStrategy) ? this.recoveryConfig : this.form;
-            
-            // Check for Contract Switch
-            if (this.sessionState.lastContractType && this.sessionState.lastContractType !== config.tradeType) {
-                this.addLog(`📊 CONTRATO ALTERADO: ${this.sessionState.lastContractType} ➔ ${config.tradeType}`, 'info');
-            }
-            this.sessionState.lastContractType = config.tradeType;
-            const stake = this.calculateNextStake();
-
-            if (!stake || stake <= 0) {
-                console.warn('[StrategyCreator] Stake inválido (0 ou Cancelado). Abortando entrada.');
-                return;
-            }
-
-            this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
-            
-            // Step 1: Request Proposal to get exact payout
-            const proposalParams = {
-                proposal: 1,
-                amount: stake,
-                basis: 'stake',
-                contract_type: config.tradeType,
-                currency: 'USD',
-                duration: this.form.duration,
-                duration_unit: this.form.durationUnit,
-                symbol: config.market || this.form.market
-            };
-
-            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(config.tradeType)) {
-                proposalParams.barrier = config.prediction.toString(); 
-            }
-
-            // Store current context for fast result (will be activated on buy response)
-            this.pendingFastResult = {
-                contractId: null,
-                barrier: config.prediction,
-                contractType: config.tradeType,
-                active: false, // DISABLED FAST RESULT as per user request
-                stake: stake,
-                analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
-                payout: null, // Will be filled when proposal arrives
-                duration: this.form.duration,
-                durationUnit: this.form.durationUnit
-            };
-
-            this.ws.send(JSON.stringify(proposalParams));
         },
         subscribeToContract(contractId) {
             this.ws.send(JSON.stringify({
