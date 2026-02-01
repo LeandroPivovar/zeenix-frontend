@@ -11,7 +11,7 @@ aside.sbt-sidebar,
 	background-color: transparent !important;
 	backdrop-filter: blur(10px) !important;
 	-webkit-backdrop-filter: blur(10px) !important;
-	border-right: 1px solid rgba(255, 255, 255, 0.03) !important;
+	border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
 	border-left: none !important;
 	background-image: none !important;
 	box-shadow: none !important;
