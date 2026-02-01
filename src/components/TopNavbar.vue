@@ -3,7 +3,7 @@
     id="top-navbar" 
     class="fixed top-0 right-0 h-[60px] z-[1000] mobile-header" 
     :class="{ 'md:left-[80px] md:w-[calc(100%-80px)]': isSidebarCollapsed, 'md:left-[280px] md:w-[calc(100%-280px)]': !isSidebarCollapsed }"
-    style="background: rgba(11, 11, 11, 0.5); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border-bottom: 1px solid rgba(255, 255, 255, 0.05);"
+    style="background: rgba(11, 11, 11, 0.15); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border-bottom: 1px solid rgba(255, 255, 255, 0.05);"
   >
     <!-- Desktop Layout -->
     <div v-if="!isMobile" class="h-full flex items-center justify-end desktop-nav">
