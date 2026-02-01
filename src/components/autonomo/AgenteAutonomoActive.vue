@@ -196,9 +196,9 @@
 								v-for="agent in runningAgents" 
 								:key="agent.id"
 								@click="selectAgent(agent.id)"
-								class="w-full grid grid-cols-[60px_1fr_80px] items-center gap-4 p-4 cursor-pointer transition-all rounded-xl mb-3 last:mb-0 relative group shadow-lg border"
+								class="w-full grid grid-cols-[60px_1fr] items-center gap-4 p-4 cursor-pointer transition-all rounded-xl mb-3 last:mb-0 relative group shadow-lg border"
 								:class="currentAgentId === agent.id ? 'bg-[#092012]/15 border-[#22c55e]/50 shadow-[#22c55e]/10' : 'bg-[#141414] border-[#27272a] hover:border-[#333] shadow-black/20'"
-                                style="display: grid !important; grid-template-columns: 60px 1fr 80px !important; align-items: center !important;"
+                                style="display: grid !important; grid-template-columns: 60px 1fr !important; align-items: center !important;"
 							>
                                 <!-- Col 1: Icon -->
 								<div class="w-14 h-14 rounded-lg bg-[#0c0c0c] flex items-center justify-center relative shrink-0 border border-[#27272a] overflow-visible">
@@ -226,35 +226,34 @@
 								</div>
 
                                 <!-- Col 2: Info -->
-								<div class="min-w-0 flex flex-col justify-center gap-0.5">
-									<h5 class="text-[14px] font-bold truncate text-left transition-colors" :class="currentAgentId === agent.id ? 'text-[#22c55e]' : 'text-[#DFDFDF]'">
-                                        {{ agent.title.toUpperCase() }}
-                                    </h5>
+								<div class="min-w-0 flex flex-col justify-center items-center gap-2">
+									<div class="flex flex-col items-center gap-1 w-full">
+                                        <h5 class="text-[14px] font-bold truncate text-center transition-colors" :class="currentAgentId === agent.id ? 'text-[#22c55e]' : 'text-[#DFDFDF]'">
+                                            {{ agent.title.toUpperCase() }}
+                                        </h5>
+                                        
+                                        <!-- Centered Ativo Badge -->
+                                        <div 
+                                            v-if="currentAgentId === agent.id" 
+                                            class="px-3 py-1 rounded-xl bg-[#1b3324]/80 border border-[#22c55e]/40 shadow-sm inline-flex items-center"
+                                        >
+                                            <span class="text-[9px] text-[#22c55e] font-black uppercase tracking-wider">ATIVO</span>
+                                        </div>
+                                    </div>
                                     
-                                    <div class="flex flex-col gap-0.5">
-                                        <p class="text-[11px] text-[#A1A1AA] text-left leading-tight">
+                                    <div class="flex flex-col items-center gap-0.5 w-full">
+                                        <p class="text-[11px] text-[#A1A1AA] text-center leading-tight">
                                             <span class="font-bold text-[#DFDFDF]">Retorno:</span> 
                                             <span class="text-[#22c55e] ml-1 font-bold">{{ agent.description.match(/Retorno: (.*)%/)?.[1] || (agent.id === 'zeus' ? '85' : '63.5') }}%</span>
                                         </p>
-                                        <p class="text-[11px] text-[#A1A1AA] text-left leading-tight">
+                                        <p class="text-[11px] text-[#A1A1AA] text-center leading-tight">
                                             <span class="font-bold">Assertividade:</span> {{ agent.description.match(/Assertividade: (.*)%/)?.[1] || (agent.id === 'zeus' ? '90' : '70') }}%
                                         </p>
-                                        <p class="text-[11px] text-[#A1A1AA] text-left leading-tight truncate opacity-60">
+                                        <p class="text-[11px] text-[#A1A1AA] text-center leading-tight truncate opacity-60">
                                             <span class="font-bold">Análise:</span> {{ agent.description.split('\n')[0].replace('Análise: ', '') }}
                                         </p>
                                     </div>
 								</div>
-
-                                <!-- Col 3: Badge -->
-                                <div class="flex justify-end pr-1">
-                                    <div 
-                                        v-if="currentAgentId === agent.id" 
-                                        class="px-3 py-1.5 rounded-xl bg-[#1b3324]/80 border border-[#22c55e]/40 shadow-sm"
-                                    >
-                                        <span class="text-[9px] text-[#22c55e] font-black uppercase tracking-wider">ATIVO</span>
-                                    </div>
-                                    <div v-else class="w-[50px]"></div>
-                                </div>
 							</div>
 						</div>
 					</div>
