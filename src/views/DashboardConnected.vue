@@ -1,34 +1,6 @@
 <template>
-  <div class="dashboard-layout relative">
+  <div class="dashboard-layout">
 
-
-     <!-- Global Video Background (Hero Area Only) -->
-    <div class="absolute top-0 left-0 w-full h-[640px] z-0 pointer-events-none overflow-hidden">
-         <template v-if="!isMobile">
-          <video 
-            ref="heroVideo1"
-            class="hidden md:block absolute inset-0 w-full h-full object-cover opacity-60"
-            autoplay 
-            muted 
-            playsinline
-            preload="auto"
-          >
-            <source src="@/assets/video/hero_background.mp4" type="video/mp4">
-          </video>
-           <video 
-            ref="heroVideo2"
-            class="hidden md:block absolute inset-0 w-full h-full object-cover opacity-60"
-            muted 
-            playsinline
-            preload="auto"
-          >
-            <source src="@/assets/video/hero_background.mp4" type="video/mp4">
-          </video>
-        </template>
-        <!-- Fallback Background for Mobile -->
-        <div v-else class="md:hidden absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
-        </div>
-    </div>
 
     <!-- Sidebar -->
     <AppSidebar 
@@ -59,7 +31,32 @@
     <main class="main-content bg-transparent noise-bg font-inter overflow-y-auto w-full">
       <!-- Hero Onboarding Section -->
       <section id="hero-section" class="w-full mt-0 py-12 relative group h-[640px]" style="overflow: visible;">
-      <div class="absolute inset-0 z-0 bg-gradient-to-r from-transparent to-transparent full-immersion">
+      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent full-immersion">
+        <!-- Video Background - Desktop Only (Dual Video for Seamless Loop) -->
+        <template v-if="!isMobile">
+          <video 
+            ref="heroVideo1"
+            class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-1"
+            autoplay 
+            muted 
+            playsinline
+            preload="auto"
+          >
+            <source src="@/assets/video/hero_background.mp4" type="video/mp4">
+          </video>
+          <video 
+            ref="heroVideo2"
+            class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-2"
+            muted 
+            playsinline
+            preload="auto"
+          >
+            <source src="@/assets/video/hero_background.mp4" type="video/mp4">
+          </video>
+        </template>
+        <!-- Fallback Background for Mobile -->
+        <div v-else class="md:hidden absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
+        </div>
         <!-- Overlay for Desktop - desaparece quando sidebar está colapsada -->
         <div v-if="!isMobile && !localSidebarCollapsed" class="hidden md:block absolute inset-0 bg-gradient-to-r from-[rgb(20_17_17/0.35)] to-transparent">
         </div>
