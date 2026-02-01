@@ -2608,8 +2608,10 @@ svg:not(:root).svg-inline--fa {
         align-items: center;
     }
 
-    #ai-vision-panel .status-card-mobile .flex.items-center i {
+    #ai-vision-panel .status-card-mobile .flex.items-center i,
+    #ai-vision-panel .status-card-mobile .flex.items-center svg {
         color: #22C55E !important;
+        fill: #22C55E !important;
         font-size: 1.125rem;
     }
 
