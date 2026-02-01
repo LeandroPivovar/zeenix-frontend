@@ -65,13 +65,13 @@ aside.sidebar,
 	}
 
 	.sidebar-wrapper:hover~.dashboard-content-wrapper {
-		margin-left: 280px !important;
+		padding-left: 280px !important;
 	}
 
 	/* Expansão e deslocamento do TopNavbar */
 	.sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
-		left: 280px !important;
-		width: calc(100% - 280px) !important;
+		padding-left: 280px !important;
+		width: 100% !important;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 

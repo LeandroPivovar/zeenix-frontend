@@ -1,8 +1,8 @@
 <template>
   <nav 
     id="top-navbar" 
-    class="fixed top-0 right-0 h-[60px] z-[1000] mobile-header" 
-    :class="{ 'md:left-[80px] md:w-[calc(100%-80px)]': isSidebarCollapsed, 'md:left-[280px] md:w-[calc(100%-280px)]': !isSidebarCollapsed }"
+    class="fixed top-0 left-0 w-full h-[60px] z-[1000] mobile-header" 
+    :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
     style="background: transparent !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border-bottom: 1px solid rgba(255, 255, 255, 0.05);"
   >
     <!-- Desktop Layout -->

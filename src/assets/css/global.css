@@ -187,8 +187,15 @@ body,
   .box-content {
     padding-left: 280px;
     width: 100%;
-    transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-      width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Sincronização do TopNavbar */
+  #top-navbar {
+    left: 0 !important;
+    width: 100% !important;
+    padding-left: 280px;
+    transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   /* Quando estiver colapsado (usando a classe explicitamente) */
@@ -201,7 +208,8 @@ body,
   .sidebar-collapsed.operation-main,
   .sidebar-collapsed .operation-main,
   .sidebar-collapsed.box-content,
-  .sidebar-collapsed .box-content {
+  .sidebar-collapsed .box-content,
+  .sidebar-collapsed #top-navbar {
     padding-left: 80px !important;
     width: 100% !important;
   }
@@ -212,18 +220,13 @@ body,
   .sidebar-wrapper:hover~.content-wrapper,
   .sidebar-wrapper:hover~.main-content-wrapper,
   .sidebar-wrapper:hover~.operation-main,
-  .sidebar-wrapper:hover~.box-content {
-    padding-left: 280px !important;
-    width: 100% !important;
-  }
-
-  /* Sincronização do TopNavbar (Header fixo) no Hover */
+  .sidebar-wrapper:hover~.box-content,
   .sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar,
   .sidebar-wrapper:hover~.content-wrapper #top-navbar,
   .sidebar-wrapper:hover~.main-content-wrapper #top-navbar,
   .sidebar-wrapper:hover~.operation-main #top-navbar,
   .sidebar-wrapper:hover~.box-content #top-navbar {
-    left: 280px !important;
-    width: calc(100% - 280px) !important;
+    padding-left: 280px !important;
+    width: 100% !important;
   }
 }

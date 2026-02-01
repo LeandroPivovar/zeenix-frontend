@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-zenix-bg noise-bg gradient-glow min-h-screen font-inter text-zenix-text">
+  <div class="noise-bg gradient-glow min-h-screen font-inter text-zenix-text" style="background-color: #0b0b0b !important;">
 
     <!-- Sidebar (using existing AppSidebar component but wrapped or positioned if needed) -->
     <AppSidebar 
@@ -1100,8 +1100,7 @@ main {
 /* Mobile Styles */
 @media screen and (max-width: 768px) {
   .mobile-settings-container {
-    background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
-    background-blend-mode: normal;
+    background: #0b0b0b !important;
     position: relative;
     padding: 0rem 1rem 6rem;
     min-height: calc(100vh - 80px);
