@@ -1,35 +1,35 @@
 <template>
-    <div class="sidebar-wrapper" style="background: transparent !important;">
-        <div v-if="isOpen && isMobile" class="sidebar-overlay" @click="$emit('close-sidebar')"></div>
+    <div class="sbt-sidebar-wrapper" style="background: transparent !important;">
+        <div v-if="isOpen && isMobile" class="sbt-sidebar-overlay" @click="$emit('close-sidebar')"></div>
         <aside 
             id="app-sidebar-main"
-            class="sidebar sidebar-glass-effect" 
-            :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }"
+            class="sbt-sidebar sbt-sidebar-glass-effect" 
+            :class="{ 'sbt-is-open': isOpen, 'sbt-collapsed': isCollapsed }"
             style="background: rgba(0, 0, 0, 0) !important; backdrop-filter: blur(10px) !important; -webkit-backdrop-filter: blur(10px) !important; border-right: 1px solid rgba(255, 255, 255, 0.03) !important;"
         >
-        <div class="sidebar-brand">
-            <div class="brand-logo-container">
-                <span class="logo-text font-bold">
-                    <span class="logo-z white">Z</span><span class="logo-suffix"><span class="white">ENI</span><span class="green text-[#22C55E]">X</span></span>
+        <div class="sbt-sidebar-brand">
+            <div class="sbt-brand-logo-container">
+                <span class="sbt-logo-text font-bold">
+                    <span class="sbt-logo-z sbt-white">Z</span><span class="sbt-logo-suffix"><span class="sbt-white">ENI</span><span class="sbt-green text-[#22C55E]">X</span></span>
                 </span>
             </div>
 
 
             
-            <button v-if="isMobile" class="close-sidebar-btn" @click="$emit('close-sidebar')">
+            <button v-if="isMobile" class="sbt-close-sidebar-btn" @click="$emit('close-sidebar')">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
 
         </div>
         
-        <nav class="menu">
+        <nav class="sbt-menu">
 
             <template v-if="!isAdminFlow">
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isDashboardActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isDashboardActive }"
                     @click.prevent="navigateAndClose('/dashboard')"
                     data-text="Dashboard"
                 >
@@ -39,8 +39,8 @@
                 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isInvestmentIAActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isInvestmentIAActive }"
                     @click.prevent="navigateAndClose('/Investments-IA')"
                     data-text="IAs de Investimento"
                 >
@@ -50,8 +50,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isAutonomousAgentActive, disabled: !isAdmin }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isAutonomousAgentActive, 'sbt-disabled': !isAdmin }"
                     @click.prevent="isAdmin ? navigateAndClose('/agente-autonomo') : openDevModal()"
                     data-text="Agente Autônomo"
                 >
@@ -62,8 +62,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isCopyTradingActive, disabled: !canAccessCopyTrader }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isCopyTradingActive, 'sbt-disabled': !canAccessCopyTrader }"
                     :title="!canAccessCopyTrader ? 'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.' : ''"
                     @click.prevent="canAccessCopyTrader ? navigateAndClose('/copy-trading') : openDevModal()"
                     data-text="Copy Trading"
@@ -75,8 +75,8 @@
 
                 <a 
                     href="#"
-                    class="menu-item" 
-                    :class="{ active: isOperationActive, disabled: !isAdmin }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isOperationActive, 'sbt-disabled': !isAdmin }"
                     @click.prevent="isAdmin ? navigateAndClose('/operation') : openDevModal()"
                     data-text="Sinais com IA"
                 >
@@ -88,8 +88,8 @@
                 <a
                     v-if="isAdmin"
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isMasterTraderActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isMasterTraderActive }"
                     @click.prevent="navigateAndClose('/MasterTrader')"
                     data-text="Trader Mestre"
                 >
@@ -97,12 +97,12 @@
                     <span>Trader Mestre</span>
                 </a>
 
-                <div class="separator"></div>
+                <div class="sbt-separator"></div>
                 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isAcademyActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isAcademyActive }"
                     @click.prevent="navigateAndClose('/academy')"
                     data-text="Zenix Academy"
                 >
@@ -112,8 +112,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isPlansActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isPlansActive }"
                     @click.prevent="navigateAndClose('/plans')"
                     data-text="Planos"
                 >
@@ -123,8 +123,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isSettingsActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isSettingsActive }"
                     @click.prevent="isAdminFlow ? $emit('open-settings') : navigateAndClose('/settings')"
                     data-text="Configuração"
                 >
@@ -134,8 +134,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isSupportActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isSupportActive }"
                     @click.prevent="navigateAndClose('/support')"
                     data-text="Suporte"
                 >
@@ -147,7 +147,7 @@
                     v-if="studentGroupConfig.show" 
                     :href="studentGroupConfig.link"
                     target="_blank"
-                    class="menu-item"
+                    class="sbt-menu-item"
                     data-text="Grupo de Alunos"
                 >
                     <i class="fab fa-whatsapp w-5 opacity-85 text-green-500"></i>
@@ -158,7 +158,7 @@
 
                 <a
                     href="#"
-                    class="menu-item"
+                    class="sbt-menu-item"
                     @click.prevent="logout"
                     data-text="Sair"
                 >
@@ -171,8 +171,8 @@
             <template v-if="isAdminFlow && isAdmin">
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isMarkupActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isMarkupActive }"
                     @click.prevent="navigateAndClose('/markup')"
                     data-text="Markup"
                 >
@@ -182,8 +182,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isAdminViewActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isAdminViewActive }"
                     @click.prevent="navigateAndClose('/Admin')"
                     data-text="Admin"
                 >
@@ -193,8 +193,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isAdminStatsIAsActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isAdminStatsIAsActive }"
                     @click.prevent="navigateAndClose('/adminStatsIAs')"
                     data-text="Estatísticas IAs"
                 >
@@ -204,8 +204,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isExpertsActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isExpertsActive }"
                     @click.prevent="navigateAndClose('/Experts')"
                     data-text="Experts"
                 >
@@ -215,8 +215,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isClientesActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isClientesActive }"
                     @click.prevent="navigateAndClose('/Clientes')"
                     data-text="Clientes"
                 >
@@ -226,8 +226,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isWebhooksActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isWebhooksActive }"
                     @click.prevent="navigateAndClose('/Webhooks')"
                     data-text="Webhooks"
                 >
@@ -237,8 +237,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isMarketsActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isMarketsActive }"
                     @click.prevent="navigateAndClose('/admin/markets')"
                     data-text="Mercados"
                 >
@@ -248,8 +248,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isAcademyManagementActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isAcademyManagementActive }"
                     @click.prevent="navigateAndClose('/AcademyManagement')"
                     data-text="Gerenciar Academia"
                 >
@@ -259,8 +259,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isStrategyCreatorActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isStrategyCreatorActive }"
                     @click.prevent="navigateAndClose('/admin/strategies/create')"
                     data-text="Criador de Estratégias [BETA]"
                 >
@@ -270,8 +270,8 @@
 
                 <a
                     href="#"
-                    class="menu-item"
-                    :class="{ active: isSupportItemsActive }"
+                    class="sbt-menu-item"
+                    :class="{ 'sbt-active': isSupportItemsActive }"
                     @click.prevent="navigateAndClose('/SupportItems')"
                     data-text="Itens de Suporte"
                 >
@@ -283,8 +283,8 @@
 
                     <a
                         href="#"
-                        class="menu-item"
-                        :class="{ active: isPlansManagementActive }"
+                        class="sbt-menu-item"
+                        :class="{ 'sbt-active': isPlansManagementActive }"
                         @click.prevent="navigateAndClose('/PlansManagement')"
                         data-text="Gerenciar Planos"
                     >
@@ -294,8 +294,8 @@
                     
                     <a
                         href="#"
-                        class="menu-item"
-                        :class="{ active: isNotificationsAdminActive }"
+                        class="sbt-menu-item"
+                        :class="{ 'sbt-active': isNotificationsAdminActive }"
                         @click.prevent="navigateAndClose('/admin/notifications')"
                         data-text="Notificações"
                     >
@@ -308,7 +308,7 @@
                 <!-- Sair no fluxo de admin fica abaixo de Gerenciar Planos -->
                 <a
                     href="#"
-                    class="menu-item"
+                    class="sbt-menu-item"
                     @click.prevent="logout"
                     data-text="Sair"
                 >
@@ -321,17 +321,17 @@
     </aside>
 
         <!-- Modal de Funcionalidade em Desenvolvimento -->
-        <div v-if="showDevModal" class="dev-modal-overlay" @click.self="showDevModal = false">
-            <div class="dev-modal-content">
-                <div class="dev-modal-header">
-                    <i class="fa-solid fa-screwdriver-wrench text-zenix-green text-4xl mb-4"></i>
+        <div v-if="showDevModal" class="sbt-dev-modal-overlay" @click.self="showDevModal = false">
+            <div class="sbt-dev-modal-content">
+                <div class="sbt-dev-modal-header">
+                    <i class="fa-solid fa-screwdriver-wrench sbt-text-zenix-green text-4xl mb-4"></i>
                     <h2>Funcionalidade em desenvolvimento</h2>
                 </div>
-                <div class="dev-modal-body">
+                <div class="sbt-dev-modal-body">
                     <p>Para seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade.</p>
                     <p class="mt-2 text-sm opacity-70">Logo quando terminarmos você será avisado!</p>
                 </div>
-                <button class="dev-modal-button" @click="showDevModal = false">Entendi</button>
+                <button class="sbt-dev-modal-button" @click="showDevModal = false">Entendi</button>
             </div>
         </div>
     </div>

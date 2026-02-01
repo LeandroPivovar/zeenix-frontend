@@ -1,8 +1,8 @@
 /* --- Sidebar Principal e Layout --- */
 
-aside.sidebar,
-.sidebar,
-#app-sidebar-main.sidebar-glass-effect {
+aside.sbt-sidebar,
+.sbt-sidebar,
+#app-sidebar-main.sbt-sidebar-glass-effect {
 	/* Estado inicial - expandido no desktop */
 	width: 280px !important;
 	min-width: 280px !important;
@@ -33,19 +33,19 @@ aside.sidebar,
 }
 
 /* Estado Colapsado */
-.sidebar.collapsed,
-#app-sidebar-main.sidebar-glass-effect.collapsed {
+.sbt-sidebar.sbt-collapsed,
+#app-sidebar-main.sbt-sidebar-glass-effect.sbt-collapsed {
 	width: 80px !important;
 	min-width: 80px !important;
 	max-width: 80px !important;
 }
 
-.sidebar.collapsed:hover,
-#app-sidebar-main.sidebar-glass-effect.collapsed:hover {
+.sbt-sidebar.sbt-collapsed:hover,
+#app-sidebar-main.sbt-sidebar-glass-effect.sbt-collapsed:hover {
 	width: 280px !important;
 }
 
-.sidebar::after {
+.sbt-sidebar::after {
 	content: '';
 	position: absolute;
 	top: 0;
@@ -59,8 +59,8 @@ aside.sidebar,
 @media (min-width: 769px) {
 
 	/* O wrapper controla o hover para sincronizar com o conteúdo */
-	.sidebar-wrapper:hover .sidebar,
-	.sidebar-wrapper:hover #app-sidebar-main.sidebar-glass-effect {
+	.sbt-sidebar-wrapper:hover .sbt-sidebar,
+	.sbt-sidebar-wrapper:hover #app-sidebar-main.sbt-sidebar-glass-effect {
 		width: 280px !important;
 		min-width: 280px !important;
 		max-width: 280px !important;
@@ -76,14 +76,14 @@ aside.sidebar,
 	}
 
 	/* Expansão e deslocamento do TopNavbar */
-	.sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
+	.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
 		padding-left: 280px !important;
 		width: 100% !important;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
 	/* --- Brand/Logo Global Styles --- */
-	.sidebar-brand {
+	.sbt-sidebar-brand {
 		height: 60px;
 		display: flex;
 		align-items: center;
@@ -97,7 +97,7 @@ aside.sidebar,
 		gap: 10px;
 	}
 
-	.sidebar.collapsed:not(:hover) .sidebar-brand {
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-sidebar-brand {
 		padding: 10px 20px 0 20px;
 		/* Increased top padding to 10px to lower the logo */
 		height: 48px;
@@ -110,7 +110,7 @@ aside.sidebar,
 		border-bottom: none !important;
 	}
 
-	.brand-logo-container {
+	.sbt-brand-logo-container {
 		display: flex;
 		align-items: center;
 		flex-shrink: 0;
@@ -120,7 +120,7 @@ aside.sidebar,
 		overflow: hidden;
 	}
 
-	.collapse-toggle-btn {
+	.sbt-collapse-toggle-btn {
 		background: #0E0E0E;
 		border: 1px solid #1C1C1C;
 		color: #7A7A7A;
@@ -138,23 +138,23 @@ aside.sidebar,
 		z-index: 10;
 	}
 
-	.collapse-toggle-btn:hover {
+	.sbt-collapse-toggle-btn:hover {
 		color: #22C55E;
 		border-color: #22C55E;
 		background: #111;
 	}
 
-	.sidebar.collapsed:not(:hover) .collapse-toggle-btn {
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-collapse-toggle-btn {
 		opacity: 0;
 		visibility: hidden;
 		pointer-events: none;
 	}
 
-	.sidebar.collapsed:not(:hover) .brand-logo-container {
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-brand-logo-container {
 		justify-content: center;
 	}
 
-	.logo-text {
+	.sbt-logo-text {
 		display: flex;
 		align-items: center;
 		font-size: 20px;
@@ -166,23 +166,23 @@ aside.sidebar,
 		line-height: normal;
 	}
 
-	.logo-z,
-	.logo-zeni,
-	.logo-text .white {
+	.sbt-logo-z,
+	.sbt-logo-zeni,
+	.sbt-logo-text .sbt-white {
 		color: #fff !important;
 		opacity: 1 !important;
 		visibility: visible !important;
 		display: inline-block !important;
 	}
 
-	.logo-x,
-	.logo-text .green {
+	.sbt-logo-x,
+	.sbt-logo-text .sbt-green {
 		color: #22C55E !important;
 		opacity: 1 !important;
 		visibility: visible !important;
 	}
 
-	.logo-suffix {
+	.sbt-logo-suffix {
 		display: inline-flex;
 		opacity: 1;
 		width: auto;
@@ -191,35 +191,35 @@ aside.sidebar,
 		pointer-events: auto;
 	}
 
-	.logo-suffix .white,
-	.logo-text .white {
+	.sbt-logo-suffix .sbt-white,
+	.sbt-logo-text .sbt-white {
 		color: #fff;
 	}
 
-	.logo-suffix .green,
-	.logo-text .green {
+	.sbt-logo-suffix .sbt-green,
+	.sbt-logo-text .sbt-green {
 		color: #22C55E;
 	}
 
-	.sidebar.collapsed:not(:hover) .logo-suffix {
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-logo-suffix {
 		opacity: 0;
 		width: 0;
 		transform: translateX(10px);
 		pointer-events: none;
 	}
 
-	.sidebar.collapsed:not(:hover) .logo-text {
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-logo-text {
 		transform: translateX(0);
 	}
 
-	.sidebar.collapsed:not(:hover) .student-group-badge-premium {
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-student-group-badge-premium {
 		opacity: 0;
 		transform: translateX(10px);
 		pointer-events: none;
 		display: none !important;
 	}
 
-	.student-group-badge-premium {
+	.sbt-student-group-badge-premium {
 		display: flex;
 		align-items: center;
 		gap: 0;
@@ -233,14 +233,14 @@ aside.sidebar,
 		overflow: hidden;
 	}
 
-	.student-group-badge-premium:hover {
+	.sbt-student-group-badge-premium:hover {
 		background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%);
 		border-color: rgba(34, 197, 94, 0.4);
 		transform: translateY(-1px);
 		box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
 	}
 
-	.badge-icon-bg {
+	.sbt-badge-icon-bg {
 		width: 28px;
 		height: 28px;
 		background: rgba(34, 197, 94, 0.2);
@@ -250,13 +250,13 @@ aside.sidebar,
 		justify-content: center;
 	}
 
-	.badge-icon-bg i {
+	.sbt-badge-icon-bg i {
 		color: #22C55E;
 		font-size: 14px;
 		filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.5));
 	}
 
-	.student-group-badge-premium span {
+	.sbt-student-group-badge-premium span {
 		color: #fff;
 		font-size: 11px;
 		/* Reduced from 13px */
@@ -265,7 +265,7 @@ aside.sidebar,
 	}
 
 	@media (max-width: 1024px) {
-		.sidebar-brand {
+		.sbt-sidebar-brand {
 			flex-direction: column;
 			height: auto !important;
 			padding: 24px 20px 10px 20px !important;
@@ -274,19 +274,19 @@ aside.sidebar,
 			gap: 8px !important;
 		}
 
-		.brand-logo-container {
+		.sbt-brand-logo-container {
 			padding: 0 !important;
 			margin-bottom: 4px;
 		}
 
-		.logo-text {
+		.sbt-logo-text {
 			font-size: 16px !important;
 			font-weight: 700 !important;
 			color: #fff !important;
 			letter-spacing: 0.5px !important;
 		}
 
-		.student-group-badge-premium {
+		.sbt-student-group-badge-premium {
 			width: auto !important;
 			justify-content: flex-start !important;
 			background: transparent !important;
@@ -295,7 +295,7 @@ aside.sidebar,
 			margin-top: -2px;
 		}
 
-		.student-group-badge-premium span {
+		.sbt-student-group-badge-premium span {
 			color: #dfdfdf !important;
 			font-size: 14px !important;
 			font-weight: 500 !important;
@@ -304,24 +304,24 @@ aside.sidebar,
 		}
 	}
 
-	.student-group-badge-premium .external-icon {
+	.sbt-student-group-badge-premium .sbt-external-icon {
 		transition: transform 0.3s ease;
 	}
 
-	.student-group-badge-premium:hover .external-icon {
+	.sbt-student-group-badge-premium:hover .sbt-external-icon {
 		transform: translate(2px, -2px);
 		opacity: 0.8;
 	}
 
 	/* Cleanup of old buttons */
-	.student-group-brand-btn,
-	.student-group-menu-btn {
+	.sbt-student-group-brand-btn,
+	.sbt-student-group-menu-btn {
 		display: none !important;
 	}
 
 	/* Labels transition logic */
-	.menu-item span,
-	.menu-item i.ml-auto {
+	.sbt-menu-item span,
+	.sbt-menu-item i.ml-auto {
 		opacity: 1;
 		transform: translateX(0);
 		transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s ease;
@@ -330,8 +330,8 @@ aside.sidebar,
 		overflow: hidden;
 	}
 
-	.sidebar.collapsed:not(:hover) .menu-item span,
-	.sidebar.collapsed:not(:hover) .menu-item i.ml-auto {
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-menu-item span,
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-menu-item i.ml-auto {
 		opacity: 0;
 		width: 0;
 		margin: 0;
@@ -340,14 +340,14 @@ aside.sidebar,
 	}
 
 	/* Keep icons aligned */
-	.menu-item {
+	.sbt-menu-item {
 		justify-content: flex-start !important;
 		padding: 18px 32px !important;
 		margin-bottom: 2px;
 	}
 
-	.menu-item i,
-	.menu-item svg {
+	.sbt-menu-item i,
+	.sbt-menu-item svg {
 		margin-right: 15px;
 		/* Increased gap as requested */
 		font-size: 16px;
@@ -356,13 +356,13 @@ aside.sidebar,
 		text-align: center;
 	}
 
-	.sidebar.collapsed:not(:hover) .menu-item {
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-menu-item {
 		padding: 18px 0 !important;
 		justify-content: center !important;
 	}
 
-	.sidebar.collapsed:not(:hover) .menu-item i,
-	.sidebar.collapsed:not(:hover) .menu-item svg {
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-menu-item i,
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-menu-item svg {
 		margin-right: 0;
 	}
 }
@@ -372,7 +372,7 @@ aside.sidebar,
 
 
 
-.brand-content {
+.sbt-brand-content {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -383,7 +383,7 @@ aside.sidebar,
 }
 
 /* Botão de toggle do menu - esconde quando colapsado (vai para o header) */
-.toggle-menu-btn {
+.sbt-toggle-menu-btn {
 	background: transparent;
 	border: none;
 	color: #DFDFDF;
@@ -401,27 +401,27 @@ aside.sidebar,
 }
 
 /* Esconde o botão de toggle quando colapsado */
-.sidebar.collapsed .toggle-menu-btn {
+.sbt-sidebar.sbt-collapsed .sbt-toggle-menu-btn {
 	display: none !important;
 }
 
-.toggle-menu-btn:hover {
+.sbt-toggle-menu-btn:hover {
 	background: rgba(255, 255, 255, 0.05);
 	color: #22C55E;
 }
 
-.toggle-menu-btn i {
+.sbt-toggle-menu-btn i {
 	font-size: 16px;
 }
 
 /* Esconde o botão de toggle no mobile */
 @media (max-width: 1024px) {
-	.toggle-menu-btn {
+	.sbt-toggle-menu-btn {
 		display: none;
 	}
 }
 
-.brand-text {
+.sbt-brand-text {
 	font-size: 1.8rem !important;
 	font-weight: 700;
 	color: #DFDFDF;
@@ -439,7 +439,7 @@ aside.sidebar,
 }
 
 /* Brand Mobile - Mostra "Menu" e botão X */
-.brand-mobile {
+.sbt-brand-mobile {
 	display: none;
 	/* Oculto por padrão (desktop) */
 	align-items: center;
@@ -448,14 +448,14 @@ aside.sidebar,
 	padding: 0 15px;
 }
 
-.brand-text-mobile {
+.sbt-brand-text-mobile {
 	font-size: 1.2rem !important;
 	font-weight: 600;
 	color: #DFDFDF;
 	letter-spacing: 0;
 }
 
-.close-sidebar-btn {
+.sbt-close-sidebar-btn {
 	background: transparent;
 	border: none;
 	color: #DFDFDF;
@@ -476,12 +476,12 @@ aside.sidebar,
 	color: #22C55E;
 }
 
-.close-sidebar-btn i {
+.sbt-close-sidebar-btn i {
 	font-size: 18px;
 }
 
 /* Desktop: mostra brand-text-desktop, esconde brand-mobile */
-.brand-text-desktop {
+.sbt-brand-text-desktop {
 	display: flex;
 }
 
@@ -495,11 +495,11 @@ aside.sidebar,
 	}
 }
 
-.text-zenix-green {
+.sbt-text-zenix-green {
 	color: #22C55E;
 }
 
-.whatsapp-button {
+.sbt-whatsapp-button {
 	width: auto;
 	justify-content: center;
 	text-decoration: none;
@@ -516,14 +516,14 @@ aside.sidebar,
 }
 
 /* Modo colapsado - mantém layout horizontal */
-.sidebar.collapsed .brand-content {
+.sbt-sidebar.sbt-collapsed .sbt-brand-content {
 	align-items: center;
 	justify-content: flex-start;
 	gap: 12px;
 }
 
 /* Mantém o texto ZENIX visível quando colapsado (sobrescreve regra anterior) */
-.sidebar.collapsed .brand-text {
+.sbt-sidebar.sbt-collapsed .sbt-brand-text {
 	opacity: 1 !important;
 	width: auto !important;
 	overflow: visible !important;
@@ -535,7 +535,7 @@ aside.sidebar,
 }
 
 /* Esconde o botão WhatsApp quando colapsado (vai para o header) */
-.sidebar.collapsed .whatsapp-text {
+.sbt-sidebar.sbt-collapsed .sbt-whatsapp-text {
 	opacity: 0 !important;
 	width: 0 !important;
 	overflow: hidden !important;
@@ -544,13 +544,13 @@ aside.sidebar,
 	pointer-events: none;
 }
 
-.sidebar.collapsed .whatsapp-button {
+.sbt-sidebar.sbt-collapsed .sbt-whatsapp-button {
 	display: none !important;
 }
 
 /* --- Menu de Navegação --- */
 
-.menu {
+.sbt-menu {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
@@ -560,7 +560,7 @@ aside.sidebar,
 	background: transparent !important;
 }
 
-.menu-item {
+.sbt-menu-item {
 	text-align: left;
 	padding: 18px 32px;
 	/* 32px roughly centers a 16-20px icon in 80px sidebar (80-16)/2 = 32 */
@@ -667,8 +667,8 @@ aside.sidebar,
 
 @media (max-width: 1024px) {
 
-	.sidebar,
-	#app-sidebar-main.sidebar-glass-effect {
+	.sbt-sidebar,
+	#app-sidebar-main.sbt-sidebar-glass-effect {
 		left: -300px;
 		top: 0 !important;
 		height: 100vh !important;
@@ -684,18 +684,18 @@ aside.sidebar,
 		-webkit-backdrop-filter: blur(15px) !important;
 	}
 
-	.menu {
+	.sbt-menu {
 		background: transparent !important;
 	}
 
 
 	/* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
-	.sidebar.is-open {
+	.sbt-sidebar.sbt-is-open {
 		left: 0;
 		z-index: 1000000 !important;
 	}
 
-	.sidebar-overlay {
+	.sbt-sidebar-overlay {
 		position: fixed !important;
 		top: 0 !important;
 		left: 0 !important;
@@ -709,7 +709,7 @@ aside.sidebar,
 		display: block !important;
 	}
 
-	.close-sidebar-btn {
+	.sbt-close-sidebar-btn {
 		position: absolute;
 		top: 20px;
 		right: 20px;
@@ -726,39 +726,39 @@ aside.sidebar,
 		transition: all 0.2s ease;
 	}
 
-	.close-sidebar-btn:hover {
+	.sbt-close-sidebar-btn:hover {
 		background: rgba(255, 255, 255, 0.1);
 		transform: scale(1.05);
 	}
 
 	/* No mobile, a sidebar deve estar sempre expandida quando aberta. */
-	.sidebar.is-open.collapsed {
+	.sbt-sidebar.sbt-is-open.sbt-collapsed {
 		width: 350px;
 		min-width: 350px;
 	}
 
 	/* Desativa a lógica de ocultar texto no mobile */
-	.sidebar.is-open.collapsed .brand-text,
-	.sidebar.is-open.collapsed .user-info,
-	.sidebar.is-open.collapsed .footer-row .online-text,
-	.sidebar.is-open.collapsed .version {
+	.sbt-sidebar.sbt-is-open.sbt-collapsed .sbt-brand-text,
+	.sbt-sidebar.sbt-is-open.sbt-collapsed .sbt-user-info,
+	.sbt-sidebar.sbt-is-open.sbt-collapsed .sbt-footer-row .sbt-online-text,
+	.sbt-sidebar.sbt-is-open.sbt-collapsed .sbt-version {
 		opacity: 1;
 		width: auto;
 	}
 
 	/* No mobile, esconde brand-text-desktop e mostra brand-mobile */
-	.brand-text-desktop {
+	.sbt-brand-text-desktop {
 		display: none !important;
 	}
 
-	.brand-mobile {
+	.sbt-brand-mobile {
 		display: flex !important;
 	}
 }
 
 /* Garantir tamanho fixo em todas as resoluções */
 @media (min-width: 769px) {
-	.brand-text {
+	.sbt-brand-text {
 		font-size: 1.5rem !important;
 		/* Reduced from 1.8rem */
 	}
@@ -777,7 +777,7 @@ aside.sidebar,
 }
 
 /* --- Modal de Desenvolvimento --- */
-.dev-modal-overlay {
+.sbt-dev-modal-overlay {
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -816,19 +816,19 @@ aside.sidebar,
 	}
 }
 
-.dev-modal-header h2 {
+.sbt-dev-modal-header h2 {
 	color: #FFF;
 	font-size: 20px;
 	font-weight: 600;
 	margin-bottom: 20px;
 }
 
-.dev-modal-body p {
+.sbt-dev-modal-body p {
 	color: #A1A1A1;
 	line-height: 1.6;
 }
 
-.dev-modal-button {
+.sbt-dev-modal-button {
 	margin-top: 30px;
 	background: #22C55E;
 	color: #000;
@@ -841,7 +841,7 @@ aside.sidebar,
 	width: 100%;
 }
 
-.dev-modal-button:hover {
+.sbt-dev-modal-button:hover {
 	background: #1eb054;
 	transform: translateY(-2px);
 	box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
@@ -850,7 +850,7 @@ aside.sidebar,
 
 
 /* --- Student Group Badge (Brand Segment) --- */
-.student-group-badge {
+.sbt-student-group-badge {
 	height: 36px;
 	width: 85px;
 	background: rgba(34, 197, 94, 0.05);
@@ -870,18 +870,18 @@ aside.sidebar,
 	transform: translateX(0);
 }
 
-.student-group-badge:hover {
+.sbt-student-group-badge:hover {
 	background: rgba(34, 197, 94, 0.15);
 	border-color: #22C55E;
 	transform: translateY(-1px);
 	box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
 }
 
-.student-group-badge span {
+.sbt-student-group-badge span {
 	white-space: nowrap;
 }
 
-.sidebar.collapsed:not(:hover) .student-group-badge {
+.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-student-group-badge {
 	opacity: 0;
 	transform: translateX(10px);
 	pointer-events: none;

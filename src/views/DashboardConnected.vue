@@ -2094,7 +2094,7 @@ export default {
   background: transparent !important;
   min-height: 100vh !important;
   position: relative !important;
-  overflow-x: visible !important;
+  overflow-x: hidden !important;
 }
 
 .layout-home .dashboard-layout::before {
@@ -2125,7 +2125,7 @@ export default {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  overflow-x: visible;
+  overflow-x: hidden;
 }
 
 
@@ -2137,7 +2137,7 @@ export default {
 
   .dashboard-content-wrapper {
     max-width: 100vw;
-    overflow-x: visible;
+    overflow-x: hidden;
   }
 }
 
@@ -2276,14 +2276,14 @@ export default {
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
-  overflow-x: visible;
+  overflow-x: hidden;
 }
 
 @media (max-width: 1024px) {
   .main-content {
     width: 100%;
     max-width: 100vw;
-    overflow-x: visible;
+    overflow-x: hidden;
   }
 }
 
