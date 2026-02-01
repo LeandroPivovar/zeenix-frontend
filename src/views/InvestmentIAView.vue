@@ -523,7 +523,7 @@ export default {
     data() {
         return {
             isSidebarOpen: false,
-            localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+            localSidebarCollapsed: true,
             isMobile: false,
             isInvestmentActive: false,
             isActivating: false,

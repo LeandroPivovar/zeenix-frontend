@@ -592,7 +592,7 @@ export default {
     data() {
         return {
             isSidebarOpen: false,
-            isSidebarCollapsed: false,
+            isSidebarCollapsed: true,
             isMobile: false,
             showSettingsModal: false,
             isStopping: false,
@@ -722,10 +722,11 @@ export default {
         window.addEventListener('resize', this.checkMobile);
         
         // Sincronizar estado do sidebar com localStorage
-        const savedSidebarState = localStorage.getItem('sidebar_collapsed');
-        if (savedSidebarState !== null) {
-            this.isSidebarCollapsed = savedSidebarState === 'true';
-        }
+        // Sincronizar estado do sidebar com localStorage - REMOVIDO para forçar collapse inicial
+        // const savedSidebarState = localStorage.getItem('sidebar_collapsed');
+        // if (savedSidebarState !== null) {
+        //     this.isSidebarCollapsed = savedSidebarState === 'true';
+        // }
 
         this.loadConfiguration();
         this.loadMasterTraderSettings();

@@ -565,7 +565,7 @@ export default {
     return {
       isSidebarOpen: true,
       isMobile: false,
-      localSidebarCollapsed: localStorage.getItem('sidebarCollapsed') !== 'false',
+      localSidebarCollapsed: true,
       accountType: 'real',
       showIAsModal: false,
       showSettingsModal: false,
