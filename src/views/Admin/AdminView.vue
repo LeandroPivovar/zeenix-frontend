@@ -30,7 +30,7 @@
                 @open-settings="showSettingsModal = true"
             />
 
-            <div class="dashboard-content-wrapper">
+            <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
                 <main class="layout-content">
                     <div class="admin-dashboard">
                 <header class="dashboard-header">

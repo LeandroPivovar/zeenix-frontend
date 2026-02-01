@@ -120,7 +120,7 @@
             </div>
 
             <!-- Page Header -->
-            <div class="page-header-experts" v-if="!isFormVisible" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; margin-top: 2rem; width: 100%;">
+            <div class="page-header-experts" v-if="!isFormVisible" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-top: 2rem; width: 100%;">
                 <div class="header-text" style="text-align: left;">
                     <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #ffffff;">Experts</h1>
                     <p style="font-size: 14px; color: #a0a0a0; margin: 0;">Professores, Copy Traders e Influencers cadastrados no sistema</p>

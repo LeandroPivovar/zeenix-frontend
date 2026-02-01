@@ -184,9 +184,9 @@ body,
   .main-content-wrapper,
   .operation-main,
   .box-content {
-    margin-left: 280px;
-    width: calc(100% - 280px);
-    transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    padding-left: 280px;
+    width: 100%;
+    transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -201,8 +201,8 @@ body,
   .sidebar-collapsed .operation-main,
   .sidebar-collapsed.box-content,
   .sidebar-collapsed .box-content {
-    margin-left: 80px !important;
-    width: calc(100% - 80px) !important;
+    padding-left: 80px !important;
+    width: 100% !important;
   }
 
 
@@ -212,8 +212,8 @@ body,
   .sidebar-wrapper:hover~.main-content-wrapper,
   .sidebar-wrapper:hover~.operation-main,
   .sidebar-wrapper:hover~.box-content {
-    margin-left: 280px !important;
-    width: calc(100% - 280px) !important;
+    padding-left: 280px !important;
+    width: 100% !important;
   }
 
   /* Sincronização do TopNavbar (Header fixo) no Hover */
