@@ -174,7 +174,7 @@
                     </div>
 
                     <!-- Mobile Pause Button -->
-                    <button @click="stopIA" :disabled="isStopping" class="w-full mt-2 py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all duration-300 shadow-xl shadow-yellow-500/20 active:scale-[0.98] disabled:opacity-50">
+                    <button @click="stopIA" :disabled="isStopping" class="w-full mt-2 py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
                         {{ isStopping ? 'Parando...' : 'Pausar IA' }}
                     </button>
                 </div>
@@ -477,7 +477,7 @@
 
                             <!-- Desktop Pause Button -->
                             <div class="mt-auto px-1 pt-6 border-t border-border/40">
-                                <button @click="stopIA" :disabled="isStopping" class="group flex items-center justify-center w-full h-[52px] bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 shadow-xl shadow-yellow-500/30 active:scale-[0.98] disabled:opacity-50">
+                                <button @click="stopIA" :disabled="isStopping" class="group flex items-center justify-center w-full h-[52px] bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
                                     <div class="flex items-center gap-3">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
                                         <span class="mt-0.5">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
