@@ -2782,7 +2782,7 @@ export default {
   /* Sidebar com box-shadow para transição suave entre sidebar e conteúdo do vídeo */
   .dashboard-layout .sidebar,
   .dashboard-layout aside.sidebar {
-    background: #050705 !important;
+    background: transparent !important;
     box-shadow: 10px 0 80px rgba(5, 7, 5, 0),
                 10px 0 120px rgba(5, 7, 5, 0.445) !important;
   }
@@ -4633,6 +4633,26 @@ export default {
     transform: scale(1.05);
     box-shadow: 0 0 40px rgba(34, 197, 94, 0.4);
   }
+}
+
+/* Localize a classe .sidebar e garanta que ela NÃO tenha fundo sólido */
+.sidebar {
+    /* REMOVA qualquer background: #141515 ou similar */
+    background: transparent !important; 
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Localize ou adicione a classe sidebar-glass-effect */
+.sidebar-glass-effect {
+    background: rgba(11, 11, 11, 0.5) !important; /* Cor escura mas com transparência (0.5) */
+    backdrop-filter: blur(20px) !important; /* O efeito de desfoque igual ao TopNav */
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* MUITO IMPORTANTE: Verifique se não existe um wrapper interno com fundo */
+.sidebar-wrapper {
+    background: transparent !important;
 }
 
 </style>

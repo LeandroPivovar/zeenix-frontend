@@ -2148,7 +2148,7 @@ svg:not(:root).svg-inline--fa {
     display: flex;
     align-items: center;
     padding: 1rem;
-    background: linear-gradient(260deg, #03410B1A, #0000008F);
+    background: linear-gradient(180deg, #03410b1f, #0000008f);
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
     gap: 0;
@@ -2160,7 +2160,7 @@ svg:not(:root).svg-inline--fa {
 
 .agent-option-premium:hover {
     border-color: rgba(34, 197, 94, 0.4);
-    background: #161616;
+    background: linear-gradient(180deg, #03410b1f, #0000008f);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(34, 197, 94, 0.1);
 }
