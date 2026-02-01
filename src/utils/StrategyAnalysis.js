@@ -9,64 +9,80 @@ export const StrategyAnalysis = {
      * Main evaluate method
      * @param {Object} filter - Filter object { id, config }
      * @param {Object} data - Analysis data { tickHistory, digitHistory }
+     * @param {String} mode - Negotiation Mode ('VELOZ', 'MODERADO', 'PRECISO')
      * @returns {Object} { pass: boolean, reason: string }
      */
-    evaluate(filter, data) {
+    evaluate(filter, data, mode = 'VELOZ') {
         const { id, config } = filter;
         const { tickHistory, digitHistory } = data;
+
+        // Select correct config based on Mode (Veloz, Normal, Preciso)
+        let activeConfig = config;
+
+        // Normalize Mode String
+        const modeKey = (mode || 'VELOZ').toLowerCase(); // veloz, moderado, preciso...
+
+        // Map 'moderado' to 'normal' key if used in config
+        let configKey = modeKey;
+        if (modeKey === 'moderado') configKey = 'normal';
+
+        // Check if config has Tripled Structure
+        if (config && config.veloz && config.normal && config.preciso) {
+            activeConfig = config[configKey] || config.veloz; // fallback to veloz
+        }
 
         // If filter has a specific target direction, we can validate it here or in the view
         // For now, checks are generic pass/fail based on the condition
 
         switch (id) {
             case 'digit_density':
-                return this.digitDensity(config, digitHistory);
+                return this.digitDensity(activeConfig, digitHistory);
             case 'digit_sequence':
-                return this.digitSequence(config, digitHistory);
+                return this.digitSequence(activeConfig, digitHistory);
             case 'parity_majority':
-                return this.parityMajority(config, digitHistory);
+                return this.parityMajority(activeConfig, digitHistory);
             case 'price_momentum':
-                return this.priceMomentum(config, tickHistory);
+                return this.priceMomentum(activeConfig, tickHistory);
             case 'parity_sequence':
-                return this.paritySequence(config, digitHistory);
+                return this.paritySequence(activeConfig, digitHistory);
             case 'over_under_sequence':
-                return this.overUnderSequence(config, digitHistory);
+                return this.overUnderSequence(activeConfig, digitHistory);
             case 'price_ma':
-                return this.priceMA(config, tickHistory);
+                return this.priceMA(activeConfig, tickHistory);
             case 'digit_absence':
-                return this.digitAbsence(config, digitHistory);
+                return this.digitAbsence(activeConfig, digitHistory);
             case 'ma_crossover':
-                return this.maCrossover(config, tickHistory);
+                return this.maCrossover(activeConfig, tickHistory);
             case 'rsi':
-                return this.rsi(config, tickHistory);
+                return this.rsi(activeConfig, tickHistory);
             case 'digit_equal_sequence':
-                return this.digitEqualSequence(config, digitHistory);
+                return this.digitEqualSequence(activeConfig, digitHistory);
             case 'digit_diff_sequence':
-                return this.digitDiffSequence(config, digitHistory);
+                return this.digitDiffSequence(activeConfig, digitHistory);
             case 'parity_alternation':
-                return this.parityAlternation(config, digitHistory);
+                return this.parityAlternation(activeConfig, digitHistory);
             case 'digit_frequency':
-                return this.digitFrequency(config, digitHistory);
+                return this.digitFrequency(activeConfig, digitHistory);
             case 'digit_average':
-                return this.digitAverage(config, digitHistory);
+                return this.digitAverage(activeConfig, digitHistory);
             case 'digit_position_return':
-                return this.digitPositionReturn(config, digitHistory);
+                return this.digitPositionReturn(activeConfig, digitHistory);
             case 'ma_slope':
-                return this.maSlope(config, tickHistory);
+                return this.maSlope(activeConfig, tickHistory);
             case 'macd':
-                return this.macd(config, tickHistory);
+                return this.macd(activeConfig, tickHistory);
             case 'stochastic':
-                return this.stochastic(config, tickHistory);
+                return this.stochastic(activeConfig, tickHistory);
             case 'bollinger_bands':
-                return this.bollingerBands(config, tickHistory);
+                return this.bollingerBands(activeConfig, tickHistory);
             case 'bb_width':
-                return this.bbWidth(config, tickHistory);
+                return this.bbWidth(activeConfig, tickHistory);
             case 'price_action':
-                return this.priceAction(config, tickHistory);
+                return this.priceAction(activeConfig, tickHistory);
             case 'spike_detect':
-                return this.spikeDetect(config, tickHistory);
+                return this.spikeDetect(activeConfig, tickHistory);
             case 'step_pattern':
-                return this.stepPattern(config, tickHistory);
+                return this.stepPattern(activeConfig, tickHistory);
             default:
                 return { pass: false, reason: 'Filtro desconhecido' };
         }
