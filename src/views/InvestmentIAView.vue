@@ -221,8 +221,8 @@
                                                         <h4 class="agent-option-title">{{ strategy.title }}</h4>
                                                         <p class="agent-option-desc">{{ strategy.description }}</p>
                                                     </div>
-                                                    <div class="agent-option-arrow">
-                                                        <i class="fas fa-chevron-right"></i>
+                                                    <div v-if="selectedStrategy === strategy.id" class="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-[#1b3324] border border-[#22c55e]/40 shadow-sm z-30 flex items-center justify-center min-w-[50px]">
+                                                        <span class="text-[10px] font-bold text-[#22c55e] uppercase tracking-wider text-center w-full">Ativo</span>
                                                     </div>
                                                 </div>
                                                 <div class="agent-option-footer-stats">
