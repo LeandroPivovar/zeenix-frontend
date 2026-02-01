@@ -103,6 +103,9 @@
                     <button @click="activeTab = 'logs'" :class="{ 'border-[#22C55E] text-[#22C55E]': activeTab === 'logs' }" class="inline-flex items-center justify-center py-2 text-sm font-bold border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-white whitespace-nowrap">
                         <i class="fas fa-list-ul mr-2"></i> Registros
                     </button>
+                    <button v-if="isAdmin" @click="activeTab = 'validator'" :class="{ 'border-[#22C55E] text-[#22C55E]': activeTab === 'validator' }" class="inline-flex items-center justify-center py-2 text-sm font-bold border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-white whitespace-nowrap">
+                        <i class="fas fa-clipboard-check mr-2"></i> Validador
+                    </button>
                 </div>
 
                 <!-- Content Area -->
@@ -187,6 +190,127 @@
                             <div v-if="logs.length === 0" class="py-20 text-center text-gray-600 uppercase text-[10px] font-black tracking-widest">
                                 Nenhum log registrado na sessão.
                             </div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Validator View -->
+                    <div v-show="activeTab === 'validator'" class="animate-fadeIn h-full overflow-y-auto custom-scrollbar pr-2">
+                        <div class="space-y-4">
+                            <!-- Static Item 1 -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.aiStarted" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA iniciou</span>
+                            </label>
+
+                            <!-- Attack Filter -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.attackFilterCorrect" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">
+                                    IA esta aplicando o filtro de ataque corretamente 
+                                    <span class="text-zenix-green text-sm ml-1" v-if="attackFilters && attackFilters.length">({{ activeAttackFilterNames }})</span>
+                                    <span class="text-gray-500 text-xs ml-1" v-else>(Nenhum filtro)</span>
+                                </span>
+                            </label>
+
+                            <!-- Base Stake -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.baseStakeCorrect" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA esta usando corretamente o stake base</span>
+                            </label>
+
+                            <!-- Soros Applied -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.sorosApplied" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA aplicou o soros</span>
+                            </label>
+
+                            <!-- Soros Reset -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.sorosReset" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA resetou para o stake base após ganhar no soros</span>
+                            </label>
+
+                            <!-- Recovery Mode Entered -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.recoveryModeEntered" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA entrou no modo de recuperação</span>
+                            </label>
+
+                            <!-- Recovery Contract Switched -->
+                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.recoveryContractSwitched" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">A IA trocou o contrato no modo de recuperação</span>
+                            </label>
+
+                            <!-- Recovery Filters (Dynamic) -->
+                            <div v-if="recoveryConfig.attackFilters && recoveryConfig.attackFilters.length > 0">
+                                <label v-for="filter in recoveryConfig.attackFilters" :key="filter.id" class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors mb-4">
+                                    <div class="relative flex items-center">
+                                        <input type="checkbox" v-model="validator.recoveryFilters[filter.id]" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                        <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                            <i class="fa-solid fa-check text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <span class="text-white font-medium">
+                                        A IA usou corretamente o filtro 
+                                        <span class="text-zenix-green text-sm ml-1">({{ filter.name }})</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div v-else class="p-4 bg-[#1E1E1E] rounded-lg border border-[#333] opacity-60">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-info-circle text-gray-500"></i>
+                                    <span class="text-gray-500 text-sm">Sem filtros de recuperação configurados</span>
+                                </div>
+                            </div>
+
+                             <!-- Martingale 100% -->
+                             <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
+                                <div class="relative flex items-center">
+                                    <input type="checkbox" v-model="validator.martingale100" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
+                                        <i class="fa-solid fa-check text-xs"></i>
+                                    </div>
+                                </div>
+                                <span class="text-white font-medium">Quando o Martingale passa de 6 o Robô para e espera o filtro de saída</span>
+                            </label>
+                            
                         </div>
                     </div>
                 </div>
@@ -294,6 +418,18 @@ export default {
         sessionState: {
             type: Object,
             required: true
+        },
+        validator: {
+            type: Object,
+            required: true
+        },
+        attackFilters: {
+            type: Array,
+            default: () => []
+        },
+        recoveryConfig: {
+            type: Object,
+            default: () => ({})
         }
     },
     emits: ['stop', 'clear-logs'],
@@ -340,6 +476,41 @@ export default {
         clearLogs() {
             if (confirm('Tem certeza que deseja limpar todos os registros?')) {
                 this.$emit('clear-logs');
+            }
+        }
+    },
+    computed: {
+        activeAttackFilterNames() {
+            if (!this.attackFilters || !this.attackFilters.length) return '';
+            return this.attackFilters.map(f => f.name).join(', ');
+        },
+        isAdmin() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+                
+                // Decodificar JWT token
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                
+                // Verificar se o usuário tem role de admin
+                const role = payload.role || payload.roles || payload.userRole || payload.user_role;
+                const isAdminFlag = payload.isAdmin || payload.is_admin;
+                
+                // Verificar se role contém 'admin' ou se isAdmin é true
+                if (isAdminFlag === true || isAdminFlag === 'true') {
+                    return true;
+                }
+                
+                if (role) {
+                    const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
+                    const result = roleStr.includes('admin') || roleStr === 'admin';
+                    return result;
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('[MonitoringDashboard] Erro ao verificar se usuário é admin:', error);
+                return false;
             }
         }
     }
@@ -393,4 +564,3 @@ export default {
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(34, 197, 94, 0.1); border-radius: 10px; }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(34, 197, 94, 0.2); }
 </style>
-

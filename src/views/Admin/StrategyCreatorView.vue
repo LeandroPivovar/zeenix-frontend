@@ -79,12 +79,16 @@
                 </div>
 
                 <!-- MONITORING DASHBOARD -->
+                <!-- MONITORING DASHBOARD -->
                 <MonitoringDashboard 
                     v-if="isMonitoring" 
                     :stats="monitoringStats" 
                     :logs="monitoringLogs" 
                     :operations="monitoringOperations" 
                     :session-state="sessionState"
+                    :validator="validator"
+                    :attack-filters="form.attackFilters"
+                    :recovery-config="recoveryConfig"
                     @stop="stopMonitoring"
                     @clear-logs="monitoringLogs = []"
                 />
@@ -100,15 +104,6 @@
                             :class="activeTab === 'config' ? 'text-zenix-green border-zenix-green' : 'text-gray-500 border-transparent hover:text-white'"
                         >
                             Configuração
-                        </button>
-                        <button 
-                            type="button"
-                            @click="activeTab = 'validator'"
-                            class="text-sm font-bold uppercase tracking-wider pb-2 border-b-2 transition-all flex items-center gap-2"
-                            :class="activeTab === 'validator' ? 'text-zenix-green border-zenix-green' : 'text-gray-500 border-transparent hover:text-white'"
-                        >
-                            <i class="fa-solid fa-clipboard-check"></i>
-                            Validador
                         </button>
                     </div>
 
@@ -491,133 +486,8 @@
                     </div>
                 </form>
 
-                <!-- VALIDATOR TAB CONTENT -->
-                <div v-show="activeTab === 'validator'" class="space-y-6 animate-fadeIn pb-20">
-                    <div class="bg-[#141414] border border-[#333] rounded-xl p-6">
-                        <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                            <i class="fa-solid fa-list-check text-zenix-green"></i>
-                            Checklist de Validação
-                        </h3>
-                        
-                        <div class="space-y-4">
-                            <!-- Static Item 1 -->
-                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
-                                <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.aiStarted" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
-                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
-                                        <i class="fa-solid fa-check text-xs"></i>
-                                    </div>
-                                </div>
-                                <span class="text-white font-medium">A IA iniciou</span>
-                            </label>
-
-                            <!-- Attack Filter -->
-                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
-                                <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.attackFilterCorrect" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
-                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
-                                        <i class="fa-solid fa-check text-xs"></i>
-                                    </div>
-                                </div>
-                                <span class="text-white font-medium">
-                                    IA esta aplicando o filtro de ataque corretamente 
-                                    <span class="text-zenix-green text-sm ml-1" v-if="form.attackFilters.length">({{ activeAttackFilterNames }})</span>
-                                    <span class="text-gray-500 text-xs ml-1" v-else>(Nenhum filtro)</span>
-                                </span>
-                            </label>
-
-                            <!-- Base Stake -->
-                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
-                                <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.baseStakeCorrect" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
-                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
-                                        <i class="fa-solid fa-check text-xs"></i>
-                                    </div>
-                                </div>
-                                <span class="text-white font-medium">A IA esta usando corretamente o stake base</span>
-                            </label>
-
-                            <!-- Soros Applied -->
-                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
-                                <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.sorosApplied" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
-                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
-                                        <i class="fa-solid fa-check text-xs"></i>
-                                    </div>
-                                </div>
-                                <span class="text-white font-medium">A IA aplicou o soros</span>
-                            </label>
-
-                            <!-- Soros Reset -->
-                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
-                                <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.sorosReset" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
-                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
-                                        <i class="fa-solid fa-check text-xs"></i>
-                                    </div>
-                                </div>
-                                <span class="text-white font-medium">A IA resetou para o stake base após ganhar no soros</span>
-                            </label>
-
-                            <!-- Recovery Mode Entered -->
-                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
-                                <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.recoveryModeEntered" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
-                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
-                                        <i class="fa-solid fa-check text-xs"></i>
-                                    </div>
-                                </div>
-                                <span class="text-white font-medium">A IA entrou no modo de recuperação</span>
-                            </label>
-
-                            <!-- Recovery Contract Switched -->
-                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
-                                <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.recoveryContractSwitched" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
-                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
-                                        <i class="fa-solid fa-check text-xs"></i>
-                                    </div>
-                                </div>
-                                <span class="text-white font-medium">A IA trocou o contrato no modo de recuperação</span>
-                            </label>
-
-                            <!-- Recovery Filters (Dynamic) -->
-                            <div v-if="recoveryConfig.attackFilters && recoveryConfig.attackFilters.length > 0">
-                                <label v-for="filter in recoveryConfig.attackFilters" :key="filter.id" class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors mb-4">
-                                    <div class="relative flex items-center">
-                                        <input type="checkbox" v-model="validator.recoveryFilters[filter.id]" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
-                                        <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
-                                            <i class="fa-solid fa-check text-xs"></i>
-                                        </div>
-                                    </div>
-                                    <span class="text-white font-medium">
-                                        A IA usou corretamente o filtro 
-                                        <span class="text-zenix-green text-sm ml-1">({{ filter.name }})</span>
-                                    </span>
-                                </label>
-                            </div>
-                            <div v-else class="p-4 bg-[#1E1E1E] rounded-lg border border-[#333] opacity-60">
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-info-circle text-gray-500"></i>
-                                    <span class="text-gray-400 font-medium">Nenhum filtro de recuperação configurado para validar.</span>
-                                </div>
-                            </div>
 
 
-                            <!-- Martingale 100% -->
-                            <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
-                                <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.martingale100" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
-                                    <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
-                                        <i class="fa-solid fa-check text-xs"></i>
-                                    </div>
-                                </div>
-                                <span class="text-white font-medium">A IA esta recuperando 100% no martingale</span>
-                            </label>
-
-                        </div>
-                    </div>
-                </div>
             </div>
             </main>
         </div>
