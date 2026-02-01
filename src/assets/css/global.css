@@ -257,6 +257,30 @@ body,
   z-index: 0;
 }
 
+/* New Layout: Decouples background from sidebar padding */
+.full-immersion-layout {
+  padding-left: 0 !important;
+  overflow-x: hidden !important;
+}
+
+.full-immersion-layout .full-immersion {
+  left: 0 !important;
+  width: 100% !important;
+  position: fixed !important;
+}
+
+.immersion-content {
+  padding-left: var(--sidebar-width);
+  transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .immersion-content {
+    padding-left: 0;
+  }
+}
+
 .sidebar-collapsed .full-immersion,
 .sbt-collapsed .full-immersion,
 .sbt-sidebar-wrapper.sbt-collapsed:not(:hover)~.dashboard-content-wrapper .full-immersion {

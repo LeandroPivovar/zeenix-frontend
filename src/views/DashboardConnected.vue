@@ -11,7 +11,7 @@
       @toggle-collapse="toggleSidebarCollapse" 
     />
     
-    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
+    <div class="dashboard-content-wrapper full-immersion-layout" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
       <!-- Top Navbar -->
       <TopNavbar 
         v-if="!isMobile"
@@ -61,7 +61,7 @@
         <div v-if="!isMobile && !localSidebarCollapsed" class="hidden md:block absolute inset-0 bg-gradient-to-r from-[rgb(20_17_17/0.35)] to-transparent">
         </div>
       </div>
-      <div class="relative z-10 h-full w-full px-6 md:px-10">
+      <div class="relative z-10 h-full w-full px-6 md:px-10 immersion-content">
         <div class="flex justify-between items-center h-full gap-20">
           <div class="flex flex-col justify-center space-y-10 flex-shrink-0">
             <div class="space-y-6 text-left">
@@ -92,7 +92,7 @@
       <!-- Ticker Section -->
       <section id="ticker-section" class="py-3 relative border-t border-[#22C55E]/20 bg-[rgba(11,11,11,0.8)] backdrop-blur-sm w-full" style="overflow: visible;">
         <div class="absolute inset-0 z-0 bg-[rgba(11,11,11,0.8)] full-immersion" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);"></div>
-        <div class="relative z-10 w-full">
+        <div class="relative z-10 w-full immersion-content">
           <div class="relative overflow-hidden w-full">
             <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
             <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
@@ -192,7 +192,7 @@
         <!-- Best IAs Section -->
         <section id="best-ai-section" class="pt-0 pb-0 relative w-full" style="overflow: visible;">
           <div class="absolute inset-0 z-0 bg-gradient-to-b from-[#020302] via-[#030403] to-[#020302] opacity-60 pointer-events-none full-immersion"></div>
-          <div class="relative z-10 w-full px-6 md:px-10">
+          <div class="relative z-10 w-full px-6 md:px-10 immersion-content">
             <!-- Desktop Header -->
             <div class="text-left mb-8 space-y-2 desktop-ias-header">
               <div class="flex justify-between items-center mb-2">
@@ -287,7 +287,7 @@
       <!-- Overall Performance Section -->
       <section id="performance-section" class="pt-4 pb-36 relative w-full" style="overflow: visible;">
         <div class="absolute inset-0 z-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none full-immersion"></div>
-        <div class="relative z-10 w-full px-6 md:px-10">
+        <div class="relative z-10 w-full px-6 md:px-10 immersion-content">
           <!-- Desktop Header -->
           <div class="text-left mb-8 space-y-2 desktop-performance-header">
             <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)] desktop-performance-title">Desempenho <span class="desktop-green-text">Geral</span></h2>
