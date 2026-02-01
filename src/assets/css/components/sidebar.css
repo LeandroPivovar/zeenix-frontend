@@ -156,11 +156,13 @@ aside.sidebar,
 		line-height: normal;
 	}
 
+	.logo-z,
 	.logo-zeni,
 	.logo-text .white {
 		color: #fff !important;
 		opacity: 1 !important;
 		visibility: visible !important;
+		display: inline-block !important;
 	}
 
 	.logo-x,

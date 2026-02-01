@@ -5,7 +5,7 @@
         <div class="sidebar-brand">
             <div class="brand-logo-container">
                 <span class="logo-text font-bold">
-                    <span class="white">ZENI</span><span class="green text-[#22C55E]">X</span>
+                    <span class="logo-z white">Z</span><span class="logo-suffix"><span class="white">ENI</span><span class="green text-[#22C55E]">X</span></span>
                 </span>
             </div>
 
