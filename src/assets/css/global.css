@@ -4,6 +4,7 @@
 
 :root {
   --font-default: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  --sidebar-width: 280px;
 }
 
 /* Reset básico para remover espaços padrão */
@@ -185,7 +186,7 @@ body,
   .main-content-wrapper,
   .operation-main,
   .box-content {
-    padding-left: 280px;
+    padding-left: var(--sidebar-width);
     width: 100%;
     transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -194,7 +195,7 @@ body,
   #top-navbar {
     left: 0 !important;
     width: 100% !important;
-    padding-left: 280px;
+    padding-left: var(--sidebar-width);
     transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -210,7 +211,8 @@ body,
   .sidebar-collapsed.box-content,
   .sidebar-collapsed .box-content,
   .sidebar-collapsed #top-navbar {
-    padding-left: 80px !important;
+    --sidebar-width: 80px;
+    padding-left: var(--sidebar-width) !important;
     width: 100% !important;
   }
 
@@ -226,7 +228,8 @@ body,
   .sidebar-wrapper:hover~.main-content-wrapper #top-navbar,
   .sidebar-wrapper:hover~.operation-main #top-navbar,
   .sidebar-wrapper:hover~.box-content #top-navbar {
-    padding-left: 280px !important;
+    --sidebar-width: 280px;
+    padding-left: var(--sidebar-width) !important;
     width: 100% !important;
   }
 }
