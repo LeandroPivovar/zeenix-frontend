@@ -391,19 +391,27 @@ export default {
         return {
             activeTab: 'history',
             isMobile: false,
-            localValidator: { ...this.validator }
+            localValidator: JSON.parse(JSON.stringify(this.validator))
         }
     },
     watch: {
         validator: {
             handler(newVal) {
-                this.localValidator = { ...newVal };
+                const currentLocal = JSON.stringify(this.localValidator);
+                const incoming = JSON.stringify(newVal);
+                if (currentLocal !== incoming) {
+                    this.localValidator = JSON.parse(incoming);
+                }
             },
             deep: true
         },
         localValidator: {
             handler(newVal) {
-                this.$emit('update:validator', newVal);
+                const currentProp = JSON.stringify(this.validator);
+                const local = JSON.stringify(newVal);
+                if (currentProp !== local) {
+                    this.$emit('update:validator', JSON.parse(local));
+                }
             },
             deep: true
         }

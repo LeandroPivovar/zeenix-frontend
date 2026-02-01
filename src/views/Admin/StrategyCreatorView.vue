@@ -2328,7 +2328,11 @@ export default {
             
             if (strategy.config.validator) {
                 const savedValidator = JSON.parse(JSON.stringify(strategy.config.validator));
-                this.validator = { ...this.validator, ...savedValidator };
+                this.validator = { 
+                    ...this.validator, 
+                    ...savedValidator,
+                    recoveryFilters: { ...(this.validator.recoveryFilters || {}), ...(savedValidator.recoveryFilters || {}) }
+                };
             }
 
             // Restore filters active state for main
@@ -2421,7 +2425,11 @@ export default {
                         
                         if (data.config.validator) {
                             const importedValidator = JSON.parse(JSON.stringify(data.config.validator));
-                            this.validator = { ...this.validator, ...importedValidator };
+                            this.validator = { 
+                                ...this.validator, 
+                                ...importedValidator,
+                                recoveryFilters: { ...(this.validator.recoveryFilters || {}), ...(importedValidator.recoveryFilters || {}) }
+                            };
                         }
 
                         // Sync filter active states
