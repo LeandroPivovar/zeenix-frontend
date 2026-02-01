@@ -28,14 +28,14 @@
         @account-type-changed="handleAccountTypeChange"
       />
 
-      <main class="main-content" style="margin-top: 60px;">
+      <main class="main-content">
         <!-- Mobile Header (only visible on mobile) -->
         <div class="mobile-header mobile-only">
           <h1 class="mobile-title">{{ mobileTitle }}</h1>
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
-        <div class="desktop-only" style="text-align: left; padding-left: 38px; width: 100%; padding-top: 25px;">
+        <div class="desktop-only" style="text-align: left; padding: 25px 38px 10px 38px; width: 100%;">
           <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
           <p class="text-sm text-[#A1A1AA] mt-1 max-w-2xl">
             Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
@@ -1253,21 +1253,21 @@ export default {
 
 /* Main Content */
 .main-content {
-  margin-top: 70px;
+  margin-top: 60px;
   padding: 0;
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - 60px);
   background-color: transparent !important;
 }
 
 .view-toggle-bar-wrapper {
   display: flex;
   gap: 1.5rem;
-  margin-left: 20px;
+  padding: 0 38px;
   margin-top: 1.5rem;
   margin-bottom: 1rem;
   align-items: flex-start;

@@ -28,7 +28,7 @@
       />
     
     <!-- Main Content -->
-    <main class="main-content bg-zenix-bg noise-bg font-inter overflow-y-auto w-full" style="overflow-x: hidden;">
+    <main class="main-content bg-transparent noise-bg font-inter overflow-y-auto w-full" style="overflow-x: hidden;">
       <!-- Hero Onboarding Section -->
       <section id="hero-section" class="w-full mt-16 py-12 relative overflow-visible group h-[560px]">
       <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent" style="left: -32px; width: calc(100% + 64px);">

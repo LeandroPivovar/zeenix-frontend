@@ -1481,10 +1481,8 @@ export default {
 
 @media (max-width: 1024px) {
 	.dashboard-content-wrapper { 
-		margin-left: 0; 
 		width: 100%;
 	}
-	.dashboard-content-wrapper.sidebar-collapsed { margin-left: 0; }
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }

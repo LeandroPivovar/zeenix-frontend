@@ -785,7 +785,7 @@ export default {
 	flex-grow: 1;
 	padding: 20px;
 	padding-top: 50px;
-	background-color: #0b0b0b;
+	background-color: transparent !important;
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-start;
@@ -1357,8 +1357,7 @@ p {
 
 @media (min-width: 1025px) {
     .modal-content {
-        margin-left: 280px;
-        width: calc(100% - 280px);
+        width: 100%;
     }
 }
 

@@ -4662,6 +4662,7 @@ tbody tr:hover {
 		overflow-x: hidden;
 		box-sizing: border-box;
 		width: 100%;
+		background-color: transparent !important;
 	}
 
 	/* Sidebar mobile */
@@ -4692,6 +4693,7 @@ tbody tr:hover {
 		overflow-x: hidden;
 		box-sizing: border-box;
 		width: 100%;
+		background-color: transparent !important;
 	}
 }
 </style>
