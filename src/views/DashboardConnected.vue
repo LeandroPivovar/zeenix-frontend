@@ -4635,4 +4635,24 @@ export default {
   }
 }
 
+/* Localize a classe .sidebar e garanta que ela NÃO tenha fundo sólido */
+.sidebar {
+    /* REMOVA qualquer background: #141515 ou similar */
+    background: transparent !important; 
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Localize ou adicione a classe sidebar-glass-effect */
+.sidebar-glass-effect {
+    background: rgba(11, 11, 11, 0.5) !important; /* Cor escura mas com transparência (0.5) */
+    backdrop-filter: blur(20px) !important; /* O efeito de desfoque igual ao TopNav */
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* MUITO IMPORTANTE: Verifique se não existe um wrapper interno com fundo */
+.sidebar-wrapper {
+    background: transparent !important;
+}
+
 </style>
