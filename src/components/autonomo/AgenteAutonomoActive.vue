@@ -1,7 +1,7 @@
 ﻿<template>
-	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ paddingTop: isMobile ? '20px' : '2rem' }">
+	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ paddingTop: isMobile ? '10px' : '1rem' }">
 		<!-- Header -->
-		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-8 gap-4 md:mt-8 mt-4 fade-in">
+		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-4 gap-4 md:mt-4 mt-2 fade-in">
 			<!-- Title Section -->
 			<div v-if="showTitle" class="text-left">
 				<h1 class="text-xl font-bold text-zenix-text mb-1">Monitoramento do Agente</h1>
@@ -51,7 +51,7 @@
 			</div>
 		</div>
 
-		<div class="mb-6">
+		<div class="mb-4">
 			<div class="flex justify-end mb-2">
 				<button 
 					@click="hideValues = !hideValues"
@@ -408,7 +408,11 @@
 									{{ week.percent >= 0 ? '+' : '' }}{{ week.percent.toFixed(2) }}%
 								</td>
 								<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">{{ week.ops }}</td>
-								<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">{{ week.winRate.toFixed(1) }}%</td>
+								<td class="text-right py-2.5 px-1 tabular-nums">
+									<span class="bg-white/5 text-[#FAFAFA] border border-white/10 px-2 py-0.5 rounded text-[10px]">
+										{{ week.winRate.toFixed(1) }}%
+									</span>
+								</td>
 							</tr>
 						</tbody>
 					</table>
@@ -453,9 +457,13 @@
 									</td>
 									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">${{ formatPrice(day.capital) }}</td>
 									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">{{ day.ops }}</td>
-									<td class="text-right py-3 px-1 tabular-nums font-medium" 
-										:class="day.winRate >= 70 ? 'text-green-500' : day.winRate >= 50 ? 'text-[#FAFAFA]' : 'text-red-500'">
-										{{ day.winRate.toFixed(1) }}%
+									<td class="text-right py-3 px-1 tabular-nums font-medium">
+										<span 
+											class="px-2 py-0.5 rounded text-[10px] border"
+											:class="day.winRate >= 70 ? 'text-green-500 bg-green-500/10 border-green-500/20' : day.winRate >= 50 ? 'text-[#FAFAFA] bg-white/5 border-white/10' : 'text-red-500 bg-red-500/10 border-red-500/20'"
+										>
+											{{ day.winRate.toFixed(1) }}%
+										</span>
 									</td>
 									<td class="text-right py-3 px-1 tabular-nums text-[#A1A1AA]">{{ day.avgTime }}</td>
 								</tr>

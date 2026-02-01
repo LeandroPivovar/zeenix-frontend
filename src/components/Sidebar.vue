@@ -4,12 +4,8 @@
         <aside class="sidebar noise-bg" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <div class="sidebar-brand">
             <div class="brand-logo-container">
-                <span class="logo-text">
-                    <span class="logo-z">Z</span>
-                    <span class="logo-suffix">
-                        <span class="white">ENI</span>
-                        <span class="green">X</span>
-                    </span>
+                <span class="logo-text font-bold">
+                    <span class="white">ZENI</span><span class="green text-[#22C55E]">X</span>
                 </span>
             </div>
 
@@ -19,14 +15,7 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
-            <a 
-                v-if="studentGroupConfig.show" 
-                :href="studentGroupConfig.link" 
-                target="_blank" 
-                class="student-group-badge-premium"
-            >
-                <span>Comunidade</span>
-            </a>
+
         </div>
         
         <nav class="menu">
@@ -84,10 +73,10 @@
                     class="menu-item" 
                     :class="{ active: isOperationActive, disabled: !isAdmin }"
                     @click.prevent="isAdmin ? navigateAndClose('/operation') : openDevModal()"
-                    data-text="Operação Manual"
+                    data-text="Sinais com IA"
                 >
                     <i class="fa-solid fa-hand-pointer w-5 opacity-85"></i>
-                    <span>Operação Manual</span>
+                    <span>Sinais com IA</span>
                     <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
                 </a>
 
@@ -147,6 +136,17 @@
                 >
                     <i class="fa-solid fa-headset w-5 opacity-85"></i>
                     <span>Suporte</span>
+                </a>
+
+                <a 
+                    v-if="studentGroupConfig.show" 
+                    :href="studentGroupConfig.link"
+                    target="_blank"
+                    class="menu-item"
+                    data-text="Grupo de Alunos"
+                >
+                    <i class="fab fa-whatsapp w-5 opacity-85 text-green-500"></i>
+                    <span>{{ studentGroupConfig.text }}</span>
                 </a>
 
                 <!-- removed old student group menu item -->

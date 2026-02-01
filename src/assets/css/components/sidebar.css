@@ -156,13 +156,18 @@ aside.sidebar,
 		line-height: normal;
 	}
 
-	.logo-z {
-		display: inline-block !important;
+	.logo-zeni,
+	.logo-text .white {
+		color: #fff !important;
 		opacity: 1 !important;
 		visibility: visible !important;
-		color: #22C55E;
-		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-		flex-shrink: 0;
+	}
+
+	.logo-x,
+	.logo-text .green {
+		color: #22C55E !important;
+		opacity: 1 !important;
+		visibility: visible !important;
 	}
 
 	.logo-suffix {
@@ -174,12 +179,14 @@ aside.sidebar,
 		pointer-events: auto;
 	}
 
-	.logo-suffix .white {
+	.logo-suffix .white,
+	.logo-text .white {
 		color: #fff;
 	}
 
-	.logo-suffix .green {
-		color: #fff;
+	.logo-suffix .green,
+	.logo-text .green {
+		color: #22C55E;
 	}
 
 	.sidebar.collapsed:not(:hover) .logo-suffix {
