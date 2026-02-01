@@ -1,7 +1,7 @@
 ﻿<template>
-	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ paddingTop: isMobile ? '40px' : '2.8rem' }">
+	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ paddingTop: isMobile ? '30px' : '2.2rem' }">
 		<!-- Header -->
-		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-4 gap-4 md:mt-4 mt-2 fade-in">
+		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-2 gap-4 md:mt-2 mt-2 fade-in">
 			<!-- Title Section -->
 			<div v-if="showTitle" class="text-left">
 				<h1 class="text-xl font-bold text-zenix-text mb-1">Monitoramento do Agente</h1>
@@ -51,7 +51,7 @@
 			</div>
 		</div>
 
-		<div class="mb-4">
+		<div class="mb-2">
 			<div class="flex justify-end mb-2">
 				<button 
 					@click="hideValues = !hideValues"
@@ -202,12 +202,12 @@
 								<!-- Ativo Badge in Top Right Corner -->
 								<div 
 									v-if="currentAgentId === agent.id" 
-									class="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-[#1b3324] border border-[#22c55e]/40 shadow-sm z-30"
+									class="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-[#1b3324] border border-[#22c55e]/40 shadow-sm z-30 flex items-center justify-center"
 								>
-									<span class="text-[8px] text-[#22c55e] font-black uppercase tracking-widest">ATIVO</span>
+									<span class="text-[8px] text-[#22c55e] font-black uppercase tracking-widest text-center">ATIVO</span>
 								</div>
 
-								<!-- Top Section: Icon + Title + Chevron -->
+								<!-- Top Section: Icon + Title -->
 								<div class="flex items-center gap-4 mb-3">
 									<!-- Icon Container -->
 									<div class="w-12 h-12 rounded-lg bg-[#0c0c0c] flex items-center justify-center relative shrink-0 border border-[#27272a]">
@@ -235,26 +235,21 @@
 											{{ agent.description.split('\n')[0].replace('Análise: ', '') }}
 										</p>
 									</div>
-
-									<!-- Chevron -->
-									<div class="text-[#71717a] group-hover:text-[#22c55e] transition-colors pr-1">
-										<i class="fas fa-chevron-right text-[10px]"></i>
-									</div>
 								</div>
 
 								<!-- Divider -->
 								<div class="h-px w-full bg-[#27272a] mb-3"></div>
 
-								<!-- Bottom Section: Stats -->
-								<div class="flex items-center gap-8">
-									<div class="flex flex-col">
-										<span class="text-[8px] text-[#71717a] font-bold uppercase tracking-tight mb-0.5">ASSERTIVIDADE</span>
+								<!-- Bottom Section: Stats Inline and Centered -->
+								<div class="flex items-center justify-center gap-6">
+									<div class="flex items-center gap-2">
+										<span class="text-[8px] text-[#71717a] font-bold uppercase tracking-tight">ASSERTIVIDADE</span>
 										<span class="text-[12px] font-black text-[#f0f0f0]">
 											{{ agent.description.match(/Assertividade: (.*)%/)?.[1] || (agent.id === 'zeus' ? '90' : '70') }}%
 										</span>
 									</div>
-									<div class="flex flex-col">
-										<span class="text-[8px] text-[#71717a] font-bold uppercase tracking-tight mb-0.5">RETORNO</span>
+									<div class="flex items-center gap-2">
+										<span class="text-[8px] text-[#71717a] font-bold uppercase tracking-tight">RETORNO</span>
 										<span class="text-[12px] font-black text-[#22c55e]">
 											{{ agent.description.match(/Retorno: (.*)%/)?.[1] || (agent.id === 'zeus' ? '85' : '63.5') }}%
 										</span>

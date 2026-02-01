@@ -60,8 +60,8 @@ svg:not(:root).svg-inline--fa {
 
 /* Obsolete styles removed: .content-wrapper, .top-header */
 .container-componentes {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
     padding-bottom: 20px;
     margin: 20px 0;
     background: transparent;
@@ -71,14 +71,14 @@ svg:not(:root).svg-inline--fa {
 
 @media (max-width: 1024px) {
     .container-componentes {
-        padding: 0 1rem 20px 1rem;
+        padding: 0 20px 20px 20px;
         margin-top: 0;
     }
 }
 
 
 .header-content {
-    padding: 1rem 20px;
+    padding: 8px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
