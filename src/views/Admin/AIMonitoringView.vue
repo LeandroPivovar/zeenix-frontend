@@ -50,7 +50,7 @@
                                 <div class="flex items-center gap-2 lg:gap-2.5 mb-1">
                                     <span class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_hsl(142,76%,45%,0.6)]"></span>
                                      <span class="text-lg lg:text-2xl font-bold text-success tracking-wide drop-shadow-[0_0_12px_hsl(142,76%,45%,0.4)]">
-                                        IA {{ currentConfig.strategy.toUpperCase() }}
+                                        Configuração Ativa
                                     </span>
                                 </div>
                                 <div class="h-5 overflow-hidden">
@@ -58,7 +58,7 @@
                                         {{ activeContracts.size > 0 ? 'Operação em curso' : (monitoringOperations.length > 0 ? 'Coletando dados' : 'Analisando tiques em tempo real') }}
                                     </p>
                                 </div>
-                                <p class="text-[9px] lg:text-[10px] text-muted-foreground mt-1 uppercase tracking-wider hidden md:block">Sistema operando automaticamente</p>
+                                <p class="text-[9px] lg:text-[10px] text-muted-foreground mt-1 uppercase tracking-wider hidden md:block">Resumo</p>
                             </div>
                         </div>
 
