@@ -2711,7 +2711,13 @@ export default {
                 let analysisLog = `🧠 ANÁLISE DO MERCADO<br>` +
                     `• MODO: ${mode} ${isRec ? '(RECUPERAÇÃO)' : ''}<br>` +
                     `• STATUS: Confirmado<br>` +
-                    `• GATILHO: Filtros de Ataque Atendidos`;
+                    `• GATILHO: Filtros de Ataque Atendidos<br><br>` +
+                    `📝 DETALHES:<br>`;
+
+                results.forEach((res, index) => {
+                    const filterName = activeFilters[index].name;
+                    analysisLog += `• ${filterName}: ${res.reason}<br>`;
+                });
                 
                 this.addLog(analysisLog, 'info');
                 this.executeRealTrade(); 
