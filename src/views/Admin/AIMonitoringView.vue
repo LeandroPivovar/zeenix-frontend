@@ -14,6 +14,8 @@
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
+                :balance="monitoringStats.balance"
+                :account-type="accountType"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
                 @open-settings="showSettingsModal = true"
@@ -238,6 +240,7 @@
                                         :data="profitHistory" 
                                         :height="320"
                                         color="#22C55E"
+                                        :currency-symbol="currencySymbol"
                                     />
                                     <div 
                                         v-else
@@ -325,13 +328,13 @@
                                                 <div class="flex items-center justify-between pt-2 border-t border-border/10">
                                                     <div class="flex flex-col">
                                                         <span class="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-0.5">Investido</span>
-                                                        <span class="text-xs font-bold text-foreground">$ {{ op.stake.toFixed(2) }}</span>
+                                                        <span class="text-xs font-bold text-foreground">{{ currencySymbol }} {{ op.stake.toFixed(2) }}</span>
                                                     </div>
                                                     <div class="flex flex-col items-end">
                                                         <span class="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-0.5">Resultado</span>
                                                         <span v-if="op.result === 'OPEN'" class="text-xs font-bold text-muted-foreground">-</span>
                                                         <span v-else class="text-xs font-black" :class="op.result === 'WON' ? 'text-success' : 'text-red-500'">
-                                                            {{ op.result === 'WON' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
+                                                            {{ op.result === 'WON' ? '+' : '' }}{{ currencySymbol }}{{ op.pnl.toFixed(2) }}
                                                         </span>
                                                     </div>
                                                 </div>

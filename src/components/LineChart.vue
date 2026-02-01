@@ -14,7 +14,8 @@ export default {
     chartId: { type: String, required: true },
     data: { type: Array, required: true }, 
     color: { type: String, default: '#10B981' },
-    height: { type: Number, default: 80 }
+    height: { type: Number, default: 80 },
+    currencySymbol: { type: String, default: '$' }
   },
   data() {
     return {
@@ -51,6 +52,10 @@ export default {
           }
         }
       }
+    },
+    currencySymbol() {
+      // Se o símbolo mudar, recriar o gráfico para aplicar as novas labels
+      this.renderChart();
     }
   },
   methods: {
@@ -103,6 +108,7 @@ export default {
         return;
       }
       
+      const self = this;
       try {
         this.chart = new Chart(ctx, {
           type: 'line',
@@ -140,7 +146,7 @@ export default {
                 displayColors: false,
                 callbacks: {
                     label: function(context) {
-                        return '$ ' + context.parsed.y.toFixed(2);
+                        return self.currencySymbol + ' ' + context.parsed.y.toFixed(2);
                     }
                 }
               }
@@ -168,7 +174,7 @@ export default {
                     color: 'rgba(255, 255, 255, 0.4)',
                     font: { size: 10 },
                     callback: function(value) {
-                        return '$' + value;
+                        return self.currencySymbol + value;
                     }
                 }
               }
