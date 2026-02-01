@@ -2786,7 +2786,7 @@ aside.sidebar,
 #app-sidebar-main.sidebar-glass-effect {
     width: 280px !important;
     /* Mude de transparent para um preto translúcido (0.5 ou 0.3) */
-    background: rgba(11, 11, 11, 0.5) !important; 
+    background: transparent!important; 
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
