@@ -915,8 +915,237 @@
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Nível do RSI</label>
                                         <input type="number" v-model.number="filter.config.level" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
-
                                 </div>
+
+                                <!-- Digit Equal Sequence -->
+                                <div v-if="filter.id === 'digit_equal_sequence'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tamanho da Sequência</label>
+                                        <input type="number" v-model.number="filter.config.length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Dígito Alvo</label>
+                                        <select v-model.number="filter.config.digit" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Digit Diff Sequence -->
+                                <div v-if="filter.id === 'digit_diff_sequence'" class="grid grid-cols-1">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tamanho da Sequência (Diferentes)</label>
+                                        <input type="number" v-model.number="filter.config.length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                </div>
+
+                                <!-- Parity Alternation -->
+                                <div v-if="filter.id === 'parity_alternation'" class="grid grid-cols-1">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tamanho da Sequência (Alternada)</label>
+                                        <input type="number" v-model.number="filter.config.length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                </div>
+
+                                <!-- Digit Frequency -->
+                                <div v-if="filter.id === 'digit_frequency'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Dígito</label>
+                                        <select v-model.number="filter.config.digit" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Período</label>
+                                        <input type="number" v-model.number="filter.config.period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Operador</label>
+                                        <select v-model="filter.config.op" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value=">=">&gt;=</option>
+                                            <option value="<=">&lt;=</option>
+                                            <option value="==">==</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Contagem</label>
+                                        <input type="number" v-model.number="filter.config.count" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                </div>
+
+                                <!-- Digit Average -->
+                                <div v-if="filter.id === 'digit_average'" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Período</label>
+                                        <input type="number" v-model.number="filter.config.period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Condição</label>
+                                        <select v-model="filter.config.op" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value=">">Maior que</option>
+                                            <option value="<">Menor que</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Valor</label>
+                                        <input type="number" v-model.number="filter.config.threshold" step="0.1" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                </div>
+
+                                <!-- Digit Position Return -->
+                                <div v-if="filter.id === 'digit_position_return'" class="grid grid-cols-1">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Ticks Atrás (X)</label>
+                                        <input type="number" v-model.number="filter.config.period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                </div>
+
+                                <!-- MA Slope -->
+                                <div v-if="filter.id === 'ma_slope'" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Período MM</label>
+                                        <input type="number" v-model.number="filter.config.period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Lookback</label>
+                                        <input type="number" v-model.number="filter.config.lookback" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Direção</label>
+                                        <select v-model="filter.config.direction" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="up">Subindo</option>
+                                            <option value="down">Descendo</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- MACD -->
+                                <div v-if="filter.id === 'macd'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Rápida (Fast)</label>
+                                        <input type="number" v-model.number="filter.config.fast" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Lenta (Slow)</label>
+                                        <input type="number" v-model.number="filter.config.slow" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Sinal</label>
+                                        <input type="number" v-model.number="filter.config.signal" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Condição</label>
+                                        <select v-model="filter.config.condition" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="cross_up">Cruza Sinal P/ Cima</option>
+                                            <option value="cross_down">Cruza Sinal P/ Baixo</option>
+                                            <option value="above_signal">Acima do Sinal</option>
+                                            <option value="below_signal">Abaixo do Sinal</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Stochastic -->
+                                <div v-if="filter.id === 'stochastic'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">%K</label>
+                                        <input type="number" v-model.number="filter.config.k" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">%D</label>
+                                        <input type="number" v-model.number="filter.config.d" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Condição</label>
+                                        <select v-model="filter.config.condition" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="oversold">Sobrevenda (&lt; Nível)</option>
+                                            <option value="overbought">Sobrecompra (&gt; Nível)</option>
+                                            <option value="cross_up">K cruza D P/ Cima</option>
+                                            <option value="cross_down">K cruza D P/ Baixo</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Nível</label>
+                                        <input type="number" v-model.number="filter.config.level" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                </div>
+
+                                <!-- Bollinger Bands -->
+                                <div v-if="filter.id === 'bollinger_bands'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Período</label>
+                                        <input type="number" v-model.number="filter.config.period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Desvios</label>
+                                        <input type="number" v-model.number="filter.config.stdDev" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Condição</label>
+                                        <select v-model="filter.config.condition" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="cross_lower">Cruza Banda Inferior (Baixo P/ Cima)</option>
+                                            <option value="cross_upper">Cruza Banda Superior (Cima P/ Baixo)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- BB Width -->
+                                <div v-if="filter.id === 'bb_width'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                     <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Período</label>
+                                        <input type="number" v-model.number="filter.config.period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Lookback</label>
+                                        <input type="number" v-model.number="filter.config.lookback" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Direção da Volatilidade</label>
+                                        <select v-model="filter.config.direction" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="increasing">Aumentando (Expandindo)</option>
+                                            <option value="decreasing">Diminuindo (Contraindo)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Price Action -->
+                                <div v-if="filter.id === 'price_action'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                     <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tamanho da Sequência</label>
+                                        <input type="number" v-model.number="filter.config.length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Direção</label>
+                                        <select v-model="filter.config.direction" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                            <option value="rise">Alta (Sobe)</option>
+                                            <option value="fall">Baixa (Desce)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Spike Detect -->
+                                <div v-if="filter.id === 'spike_detect'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                     <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Janela Média</label>
+                                        <input type="number" v-model.number="filter.config.window" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Multiplicador</label>
+                                        <input type="number" v-model.number="filter.config.multiplier" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                </div>
+
+                                <!-- Step Pattern -->
+                                <div v-if="filter.id === 'step_pattern'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                     <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Ticks Lateralização</label>
+                                        <input type="number" v-model.number="filter.config.rangeTicks" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Salto Mínimo</label>
+                                        <input type="number" v-model.number="filter.config.jumpThreshold" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                    </div>
+                                </div>
+
                             </div>
 
                             <button @click="saveFilters" class="w-full bg-zenix-green hover:bg-green-600 shadow-xl shadow-green-500/5 text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2 mt-8 transition-all">
@@ -1213,6 +1442,121 @@ export default {
                     type: 'price',
                     desc: 'Verifica níveis de sobrecompra ou sobrevenda.',
                     config: { period: 14, level: 30, condition: '<' }
+                },
+                // Phase 3 Filters - Digits
+                {
+                    id: 'digit_equal_sequence',
+                    name: 'Sequência Dígitos Iguais',
+                    active: false,
+                    type: 'digit',
+                    desc: 'Verifica se últimos X ticks terminaram com dígito Y.',
+                    config: { length: 3, digit: 0 }
+                },
+                {
+                    id: 'digit_diff_sequence',
+                    name: 'Sequência Dígitos Diferentes',
+                    active: false,
+                    type: 'digit',
+                    desc: 'Verifica se últimos X ticks são todos diferentes.',
+                    config: { length: 3 }
+                },
+                {
+                    id: 'parity_alternation',
+                    name: 'Alternância de Paridade',
+                    active: false,
+                    type: 'digit',
+                    desc: 'Verifica padrão alternado (Par, Ímpar...).',
+                    config: { length: 4 }
+                },
+                 {
+                    id: 'digit_frequency',
+                    name: 'Frequência de Dígito',
+                    active: false,
+                    type: 'digit',
+                    desc: 'Contagem de dígito Y em X ticks satisfaz condição.',
+                    config: { digit: 0, period: 20, op: '>=', count: 3 }
+                },
+                {
+                    id: 'digit_average',
+                    name: 'Média dos Últimos Dígitos',
+                    active: false,
+                    type: 'digit',
+                    desc: 'Média dos últimos X dígitos é Op L.',
+                    config: { period: 10, op: '>', threshold: 4.5 }
+                },
+                {
+                    id: 'digit_position_return',
+                    name: 'Dígito Retorna',
+                    active: false,
+                    type: 'digit',
+                    desc: 'Último dígito igual ao de X ticks atrás.',
+                    config: { period: 5 }
+                },
+                // Phase 3 Filters - Indicators
+                {
+                    id: 'ma_slope',
+                    name: 'Inclinação da Média Móvel',
+                    active: false,
+                    type: 'price',
+                    desc: 'Verifica se a MM está subindo ou descendo.',
+                    config: { period: 14, lookback: 2, direction: 'up' }
+                },
+                {
+                    id: 'macd',
+                    name: 'MACD',
+                    active: false,
+                    type: 'price',
+                    desc: 'Condições do MACD (Linha vs Sinal).',
+                    config: { fast: 12, slow: 26, signal: 9, condition: 'cross_up' }
+                },
+                {
+                    id: 'stochastic',
+                    name: 'Estocástico',
+                    active: false,
+                    type: 'price',
+                    desc: 'Condições do Estocástico.',
+                    config: { k: 14, d: 3, smooth: 3, condition: 'oversold', level: 20 }
+                },
+                {
+                    id: 'bollinger_bands',
+                    name: 'Bandas de Bollinger',
+                    active: false,
+                    type: 'price',
+                    desc: 'Preço em relação às bandas.',
+                    config: { period: 20, stdDev: 2, condition: 'cross_lower' }
+                },
+                {
+                    id: 'bb_width',
+                    name: 'Largura BB (Volatilidade)',
+                    active: false,
+                    type: 'price',
+                    desc: 'Largura aumentando ou diminuindo.',
+                    config: { period: 20, stdDev: 2, lookback: 5, direction: 'increasing' }
+                },
+                {
+                    id: 'price_action',
+                    name: 'Sequência de Ticks (PA)',
+                    active: false,
+                    type: 'price',
+                    desc: 'Sequência de ticks de alta ou baixa.',
+                    config: { length: 3, direction: 'rise' }
+                },
+                // Phase 3 Filters - Specific
+                {
+                    id: 'spike_detect',
+                    name: 'Detecção de Spike',
+                    active: false,
+                    type: 'price',
+                    desc: 'Detecta movimento brusco (Crash/Boom).',
+                    config: { multiplier: 5, window: 10 }
+                },
+                {
+                    id: 'step_pattern',
+                    name: 'Padrão Step Index',
+                    active: false,
+                    type: 'price',
+                    desc: 'Lateralização seguida de salto.',
+                    config: { rangeTicks: 10, jumpThreshold: 50 }
                 }
             ],
             // Hardcoded Category Data (Expanded for Specific Contracts)

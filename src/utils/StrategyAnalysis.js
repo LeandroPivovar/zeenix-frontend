@@ -39,6 +39,34 @@ export const StrategyAnalysis = {
                 return this.maCrossover(config, tickHistory);
             case 'rsi':
                 return this.rsi(config, tickHistory);
+            case 'digit_equal_sequence':
+                return this.digitEqualSequence(config, digitHistory);
+            case 'digit_diff_sequence':
+                return this.digitDiffSequence(config, digitHistory);
+            case 'parity_alternation':
+                return this.parityAlternation(config, digitHistory);
+            case 'digit_frequency':
+                return this.digitFrequency(config, digitHistory);
+            case 'digit_average':
+                return this.digitAverage(config, digitHistory);
+            case 'digit_position_return':
+                return this.digitPositionReturn(config, digitHistory);
+            case 'ma_slope':
+                return this.maSlope(config, tickHistory);
+            case 'macd':
+                return this.macd(config, tickHistory);
+            case 'stochastic':
+                return this.stochastic(config, tickHistory);
+            case 'bollinger_bands':
+                return this.bollingerBands(config, tickHistory);
+            case 'bb_width':
+                return this.bbWidth(config, tickHistory);
+            case 'price_action':
+                return this.priceAction(config, tickHistory);
+            case 'spike_detect':
+                return this.spikeDetect(config, tickHistory);
+            case 'step_pattern':
+                return this.stepPattern(config, tickHistory);
             default:
                 return { pass: false, reason: 'Filtro desconhecido' };
         }
@@ -334,5 +362,296 @@ export const StrategyAnalysis = {
 
         const rs = avgGain / avgLoss;
         return 100 - (100 / (1 + rs));
+    },
+
+    // --- NEW PHASE 3 FILTERS (DIGITS) ---
+
+    digitEqualSequence(config, digitHistory) {
+        const { length, digit } = config;
+        const subHistory = digitHistory.slice(0, length);
+        if (subHistory.length < length) return { pass: false, reason: `Aguardando dados` };
+
+        const allMatch = subHistory.every(d => d === digit);
+        return { pass: allMatch, reason: allMatch ? `Sequência de ${length} dígitos ${digit} OK` : `Falha Sequência Igual` };
+    },
+
+    digitDiffSequence(config, digitHistory) {
+        const { length } = config;
+        const subHistory = digitHistory.slice(0, length);
+        if (subHistory.length < length) return { pass: false, reason: `Aguardando dados` };
+
+        const unique = new Set(subHistory);
+        const pass = unique.size === length;
+        return { pass, reason: pass ? `Todos os ${length} dígitos diferentes` : `Dígitos repetidos encontrados` };
+    },
+
+    parityAlternation(config, digitHistory) {
+        const { length } = config;
+        const subHistory = digitHistory.slice(0, length);
+        if (subHistory.length < length) return { pass: false, reason: `Aguardando dados` };
+
+        let pass = true;
+        for (let i = 0; i < length - 1; i++) {
+            const curr = subHistory[i] % 2;
+            const next = subHistory[i + 1] % 2;
+            if (curr === next) {
+                pass = false;
+                break;
+            }
+        }
+        return { pass, reason: pass ? `Alternância de Paridade OK` : `Falha na Alternância` };
+    },
+
+    digitFrequency(config, digitHistory) {
+        const { digit, period, op, count } = config;
+        const subHistory = digitHistory.slice(0, period);
+        if (subHistory.length < period) return { pass: false, reason: `Aguardando dados` };
+
+        const found = subHistory.filter(d => d === digit).length;
+        let pass = false;
+        if (op === '>=' && found >= count) pass = true;
+        else if (op === '<=' && found <= count) pass = true;
+        else if (op === '==' && found === count) pass = true;
+
+        return { pass, reason: pass ? `Freq. Dígito ${digit}: ${found} ${op} ${count}` : `Freq. Falhou: ${found}` };
+    },
+
+    digitAverage(config, digitHistory) {
+        const { period, op, threshold } = config;
+        const subHistory = digitHistory.slice(0, period);
+        if (subHistory.length < period) return { pass: false, reason: `Aguardando dados` };
+
+        const avg = subHistory.reduce((a, b) => a + b, 0) / period;
+        let pass = false;
+        if (op === '>' && avg > threshold) pass = true;
+        else if (op === '<' && avg < threshold) pass = true;
+
+        return { pass, reason: pass ? `Média Dígitos ${avg.toFixed(1)} ${op} ${threshold}` : `Média Falhou (${avg.toFixed(1)})` };
+    },
+
+    digitPositionReturn(config, digitHistory) {
+        const { period } = config;
+        if (digitHistory.length <= period) return { pass: false, reason: `Aguardando dados` };
+
+        const current = digitHistory[0];
+        const past = digitHistory[period];
+        const pass = current === past;
+
+        return { pass, reason: pass ? `Dígito retornou: ${current} == ${past}` : `Dígito não retornou` };
+    },
+
+    // --- NEW PHASE 3 FILTERS (INDICATORS) ---
+
+    maSlope(config, tickHistory) {
+        const { period, lookback, direction } = config;
+        // Need history for at least period + lookback
+        if (tickHistory.length < period + lookback) return { pass: false, reason: `Aguardando dados Slope` };
+
+        // We use SMA for slope check by default
+        const smaCurrent = this.calculateSMA(tickHistory, period);
+        const smaPast = this.calculateSMA(tickHistory.slice(lookback), period);
+
+        let pass = false;
+        if (direction === 'up' && smaCurrent > smaPast) pass = true;
+        else if (direction === 'down' && smaCurrent < smaPast) pass = true;
+
+        return { pass, reason: pass ? `Inclinação MA ${direction} detectada` : `Inclinação Falhou` };
+    },
+
+    macd(config, tickHistory) {
+        const { fast, slow, signal, condition } = config;
+        if (tickHistory.length < slow + signal + 1) return { pass: false, reason: `Aguardando dados MACD` };
+
+        const res = this.calculateMACD(tickHistory, fast, slow, signal);
+        const { macdLine, signalLine, macdPrev, signalPrev } = res;
+
+        let pass = false;
+        switch (condition) {
+            case 'cross_up': pass = macdPrev <= signalPrev && macdLine > signalLine; break;
+            case 'cross_down': pass = macdPrev >= signalPrev && macdLine < signalLine; break;
+            case 'above_signal': pass = macdLine > signalLine; break;
+            case 'below_signal': pass = macdLine < signalLine; break;
+        }
+        return { pass, reason: pass ? `MACD ${condition} OK` : `MACD Condition Fail` };
+    },
+
+    stochastic(config, tickHistory) {
+        const { k, d, smooth, condition, level } = config;
+        // Simplification: Standard Stoch calc needs high/low over period.
+        if (tickHistory.length < k + d + smooth) return { pass: false, reason: `Aguardando dados Stoch` };
+
+        const res = this.calculateStochastic(tickHistory, k, d, smooth);
+        const { kLine, dLine, kPrev, dPrev } = res;
+
+        let pass = false;
+        switch (condition) {
+            case 'oversold': pass = kLine < level; break;
+            case 'overbought': pass = kLine > level; break;
+            case 'cross_up': pass = kPrev <= dPrev && kLine > dLine; break;
+            case 'cross_down': pass = kPrev >= dPrev && kLine < dLine; break;
+        }
+        return { pass, reason: pass ? `Stoch ${condition} (${kLine.toFixed(1)})` : `Stoch Fail (${kLine.toFixed(1)})` };
+    },
+
+    bollingerBands(config, tickHistory) {
+        const { period, stdDev, condition } = config;
+        if (tickHistory.length < period + 1) return { pass: false, reason: `Aguardando dados BB` };
+
+        const current = tickHistory[0];
+        const prev = tickHistory[1];
+        const bb = this.calculateBB(tickHistory, period, stdDev);
+
+        let pass = false;
+        // Logic for cross. Note: BB array calculated on current tick history.
+        // To strictly check cross, we need BB for previous tick too. 
+        // Approximate: assume BB levels don't change drastically in 1 tick relative to price jump.
+        // Or calculate previous BB.
+        const bbPrev = this.calculateBB(tickHistory.slice(1), period, stdDev);
+
+        if (condition === 'cross_lower') {
+            // Crosses lower band from above
+            pass = prev >= bbPrev.lower && current <= bb.lower;
+        }
+        else if (condition === 'cross_upper') {
+            // Crosses upper band from below
+            pass = prev <= bbPrev.upper && current >= bb.upper;
+        }
+
+        return { pass, reason: pass ? `BB ${condition} OK` : `BB Fail` };
+    },
+
+    bbWidth(config, tickHistory) {
+        const { period, stdDev, lookback, direction } = config;
+        if (tickHistory.length < period + lookback) return { pass: false, reason: `Aguardando dados BB Width` };
+
+        const bbCurr = this.calculateBB(tickHistory, period, stdDev);
+        const bbPast = this.calculateBB(tickHistory.slice(lookback), period, stdDev);
+
+        const widthCurr = bbCurr.upper - bbCurr.lower;
+        const widthPast = bbPast.upper - bbPast.lower;
+
+        let pass = false;
+        if (direction === 'increasing' && widthCurr > widthPast) pass = true;
+        else if (direction === 'decreasing' && widthCurr < widthPast) pass = true;
+
+        return { pass, reason: pass ? `BB Width ${direction} OK` : `BB Width Fail` };
+    },
+
+    priceAction(config, tickHistory) {
+        const { length, direction } = config;
+        const subHistory = tickHistory.slice(0, length + 1);
+        if (subHistory.length < length + 1) return { pass: false, reason: `Aguardando dados PA` };
+
+        let pass = true;
+        // Check moves between i and i+1. (i is newer)
+        for (let i = 0; i < length; i++) {
+            const newer = subHistory[i];
+            const older = subHistory[i + 1];
+            if (direction === 'rise') {
+                if (newer <= older) pass = false;
+            } else {
+                if (newer >= older) pass = false;
+            }
+        }
+        return { pass, reason: pass ? `PA Sequence ${direction} OK` : `PA Sequence Fail` };
+    },
+
+    // --- NEW PHASE 3 FILTERS (SPECIFIC) ---
+
+    spikeDetect(config, tickHistory) {
+        const { multiplier, window } = config;
+        // Check if last tick is X times larger than average volatility
+        if (tickHistory.length < window + 1) return { pass: false, reason: `Wait Data` };
+
+        const currentDelta = Math.abs(tickHistory[0] - tickHistory[1]);
+
+        // Calc average delta of previous window
+        let sumDelta = 0;
+        for (let i = 1; i <= window; i++) {
+            sumDelta += Math.abs(tickHistory[i] - tickHistory[i + 1]);
+        }
+        const avgDelta = sumDelta / window;
+
+        const pass = currentDelta > (avgDelta * multiplier);
+        return { pass, reason: pass ? `Spike Detected (${currentDelta.toFixed(3)} > ${multiplier}x avg)` : `No Spike` };
+    },
+
+    stepPattern(config, tickHistory) {
+        const { rangeTicks, jumpThreshold } = config;
+        // Detect flatness for rangeTicks, then large move
+        if (tickHistory.length < rangeTicks + 2) return { pass: false, reason: `Wait Data` };
+
+        const currentJump = Math.abs(tickHistory[0] - tickHistory[1]);
+        if (currentJump < jumpThreshold) return { pass: false, reason: `No Jump` };
+
+        // Check flatness in previous N ticks
+        const rangeSlice = tickHistory.slice(1, rangeTicks + 1);
+        const max = Math.max(...rangeSlice);
+        const min = Math.min(...rangeSlice);
+        const range = max - min;
+
+        // Let's enforce range < jumpThreshold / 2
+        const isFlat = range < (jumpThreshold * 0.5);
+
+        return { pass: isFlat, reason: isFlat ? `Step Pattern OK` : `Range not flat enough` };
+    },
+
+    // --- NEW INDICATOR HELPERS ---
+
+    calculateMACD(data, fast, slow, signal) {
+        // Need history of MACD line to calc Signal Line (EMA of MACD)
+        const macdHistory = [];
+        for (let i = 0; i < signal + 1; i++) {
+            const subData = data.slice(i);
+            const f = this.calculateEMA(subData, fast);
+            const s = this.calculateEMA(subData, slow);
+            macdHistory.push(f - s);
+        }
+
+        const signalLine = macdHistory.slice(0, signal).reduce((a, b) => a + b, 0) / signal; // using SMA as proxy for Signal EMA
+        const macdPrev = macdHistory[1];
+        const signalPrev = signalLine;
+
+        return { macdLine: macdHistory[0], signalLine, macdPrev, signalPrev };
+    },
+
+    calculateStochastic(data, k, d) {
+        // Fast Stochastic %K = (Current Close - Lowest Low)/(Highest High - Lowest Low) * 100
+        const getK = (offset) => {
+            const slice = data.slice(offset, offset + k);
+            const high = Math.max(...slice);
+            const low = Math.min(...slice);
+            const close = slice[0];
+            if (high === low) return 50;
+            return ((close - low) / (high - low)) * 100;
+        };
+
+        const currentK = getK(0);
+        const prevK = getK(1);
+
+        // %D is SMA of %K over d periods.
+        let sumK = 0;
+        for (let i = 0; i < d; i++) sumK += getK(i);
+        const dLine = sumK / d;
+
+        // Prev D
+        let sumKPrev = 0;
+        for (let i = 1; i <= d; i++) sumKPrev += getK(i);
+        const dPrev = sumKPrev / d;
+
+        return { kLine: currentK, dLine, kPrev: prevK, dPrev };
+    },
+
+    calculateBB(data, period, stdDev) {
+        const sma = this.calculateSMA(data, period);
+        const slice = data.slice(0, period);
+        const variance = slice.reduce((a, b) => a + Math.pow(b - sma, 2), 0) / period;
+        const sd = Math.sqrt(variance);
+
+        return {
+            middle: sma,
+            upper: sma + (sd * stdDev),
+            lower: sma - (sd * stdDev)
+        };
     }
 };
