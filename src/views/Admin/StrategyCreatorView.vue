@@ -2388,6 +2388,7 @@ export default {
                 }
             };
 
+            console.log('[StrategyCreator] Exporting strategy to JSON:', strategyData);
             const json = JSON.stringify(strategyData, null, 4);
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);

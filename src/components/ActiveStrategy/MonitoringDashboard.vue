@@ -410,6 +410,7 @@ export default {
                 const currentProp = JSON.stringify(this.validator);
                 const local = JSON.stringify(newVal);
                 if (currentProp !== local) {
+                    console.log('[MonitoringDashboard] Emitting validator update:', local);
                     this.$emit('update:validator', JSON.parse(local));
                 }
             },
