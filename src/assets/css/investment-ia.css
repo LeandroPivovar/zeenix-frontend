@@ -2608,6 +2608,17 @@ svg:not(:root).svg-inline--fa {
         align-items: center;
     }
 
+    /* Ultra-specific override for FontAwesome SVGs in status cards */
+    #ai-vision-panel .status-card-mobile .flex.items-center svg.svg-inline--fa,
+    #ai-vision-panel .status-card-mobile .flex.items-center i.fas,
+    svg.svg-inline--fa[data-icon="brain"],
+    svg.svg-inline--fa[data-icon="chart-line"],
+    svg.svg-inline--fa[data-icon="sliders-h"],
+    svg.svg-inline--fa[data-icon="shield-alt"] {
+        color: #22C55E !important;
+        fill: #22C55E !important;
+    }
+
     #ai-vision-panel .status-card-mobile .flex.items-center i,
     #ai-vision-panel .status-card-mobile .flex.items-center svg {
         color: #22C55E !important;
