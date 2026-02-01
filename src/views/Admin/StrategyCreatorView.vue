@@ -1395,32 +1395,7 @@ export default {
             },
 
             // Strategy Execution State
-            sessionState: {
-                analysisType: 'PRINCIPAL', // 'PRINCIPAL' | 'RECUPERACAO'
-                isRecoveryMode: false, // Legacy support, synced with analysisType
-                consecutiveLosses: 0,
-                consecutiveWins: 0,
-                totalLossAccumulated: 0,
-                recoveredAmount: 0,
-                lastPayoutPrincipal: 0.95,
-                lastPayoutRecovery: 0.95,
-                lastProfit: 0,
-                lastStake: 0,
-                lastProfitPrincipal: 0,
-                lastStakePrincipal: 0,
-                lastProfitRecovery: 0,
-                lastStakeRecovery: 0,
-                lastResultWin: false,
-                lastContractType: '',
-                negotiationMode: 'VELOZ', // 'VELOZ' | 'NORMAL' | 'PRECISO'
-                activeStrategy: 'PRINCIPAL', // 'PRINCIPAL' | 'RECUPERACAO' (Filters/Contracts)
-                skipSorosNext: false,
-                lossStreakRecovery: 0,
-                peakProfit: 0,
-                stopBlindadoActive: false,
-                stopBlindadoFloor: 0,
-                isStopped: false
-            },
+            sessionState: RiskManager.initSession('VELOZ'), // Will be re-initialized on strategy start with user's selected mode
             
             // Internal State
             isNegotiating: false,
@@ -2846,7 +2821,7 @@ export default {
             };
 
             const results = activeFilters.map(filter => {
-                return StrategyAnalysis.evaluate(filter, data);
+                return StrategyAnalysis.evaluate(filter, data, this.sessionState.negotiationMode);
             });
 
             const allPassed = results.every(r => r.pass);
