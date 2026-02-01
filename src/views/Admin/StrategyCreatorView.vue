@@ -91,6 +91,7 @@
                     :recovery-config="recoveryConfig"
                     @stop="stopMonitoring"
                     @clear-logs="monitoringLogs = []"
+                    @update:validator="validator = $event"
                 />
 
                 <!-- CONFIGURATION FORM -->

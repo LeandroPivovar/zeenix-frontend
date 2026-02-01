@@ -191,7 +191,6 @@
                                 Nenhum log registrado na sessão.
                             </div>
                         </div>
-                        </div>
                     </div>
 
                     <!-- Validator View -->
@@ -200,7 +199,7 @@
                             <!-- Static Item 1 -->
                             <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
                                 <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.aiStarted" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <input type="checkbox" v-model="localValidator.aiStarted" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
                                     <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
                                         <i class="fa-solid fa-check text-xs"></i>
                                     </div>
@@ -211,7 +210,7 @@
                             <!-- Attack Filter -->
                             <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
                                 <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.attackFilterCorrect" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <input type="checkbox" v-model="localValidator.attackFilterCorrect" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
                                     <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
                                         <i class="fa-solid fa-check text-xs"></i>
                                     </div>
@@ -226,7 +225,7 @@
                             <!-- Base Stake -->
                             <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
                                 <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.baseStakeCorrect" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <input type="checkbox" v-model="localValidator.baseStakeCorrect" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
                                     <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
                                         <i class="fa-solid fa-check text-xs"></i>
                                     </div>
@@ -237,7 +236,7 @@
                             <!-- Soros Applied -->
                             <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
                                 <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.sorosApplied" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <input type="checkbox" v-model="localValidator.sorosApplied" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
                                     <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
                                         <i class="fa-solid fa-check text-xs"></i>
                                     </div>
@@ -248,7 +247,7 @@
                             <!-- Soros Reset -->
                             <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
                                 <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.sorosReset" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <input type="checkbox" v-model="localValidator.sorosReset" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
                                     <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
                                         <i class="fa-solid fa-check text-xs"></i>
                                     </div>
@@ -259,7 +258,7 @@
                             <!-- Recovery Mode Entered -->
                             <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
                                 <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.recoveryModeEntered" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <input type="checkbox" v-model="localValidator.recoveryModeEntered" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
                                     <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
                                         <i class="fa-solid fa-check text-xs"></i>
                                     </div>
@@ -270,7 +269,7 @@
                             <!-- Recovery Contract Switched -->
                             <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
                                 <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.recoveryContractSwitched" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <input type="checkbox" v-model="localValidator.recoveryContractSwitched" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
                                     <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
                                         <i class="fa-solid fa-check text-xs"></i>
                                     </div>
@@ -282,7 +281,7 @@
                             <div v-if="recoveryConfig.attackFilters && recoveryConfig.attackFilters.length > 0">
                                 <label v-for="filter in recoveryConfig.attackFilters" :key="filter.id" class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors mb-4">
                                     <div class="relative flex items-center">
-                                        <input type="checkbox" v-model="validator.recoveryFilters[filter.id]" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                        <input type="checkbox" v-model="localValidator.recoveryFilters[filter.id]" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
                                         <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
                                             <i class="fa-solid fa-check text-xs"></i>
                                         </div>
@@ -303,7 +302,7 @@
                              <!-- Martingale 100% -->
                              <label class="flex items-center gap-3 p-4 bg-[#1E1E1E] rounded-lg border border-[#333] cursor-pointer hover:border-zenix-green transition-colors">
                                 <div class="relative flex items-center">
-                                    <input type="checkbox" v-model="validator.martingale100" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
+                                    <input type="checkbox" v-model="localValidator.martingale100" class="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-500 transition-all checked:border-zenix-green checked:bg-zenix-green" />
                                     <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 transition-opacity peer-checked:opacity-100">
                                         <i class="fa-solid fa-check text-xs"></i>
                                     </div>
@@ -432,11 +431,26 @@ export default {
             default: () => ({})
         }
     },
-    emits: ['stop', 'clear-logs'],
+    emits: ['stop', 'clear-logs', 'update:validator'],
     data() {
         return {
             activeTab: 'history',
-            isMobile: false
+            isMobile: false,
+            localValidator: { ...this.validator }
+        }
+    },
+    watch: {
+        validator: {
+            handler(newVal) {
+                this.localValidator = { ...newVal };
+            },
+            deep: true
+        },
+        localValidator: {
+            handler(newVal) {
+                this.$emit('update:validator', newVal);
+            },
+            deep: true
         }
     },
     mounted() {
