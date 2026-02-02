@@ -2801,183 +2801,184 @@ svg:not(:root).svg-inline--fa {
     flex-direction: column;
 }
 
-#ai-vision-panel .ai-vision-header-mobile p {
-    font-size: 0.875rem;
-    color: #A1A1A1;
-}
+@media (max-width: 768px) {
+    #ai-vision-panel .ai-vision-header-mobile p {
+        font-size: 0.875rem;
+        color: #A1A1A1;
+    }
 
-#ai-vision-panel .ai-chip-icon-mobile {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(34, 197, 94, 0.15);
-    padding: 15px;
-    border-radius: 50%;
-    width: auto;
-    height: auto;
-}
+    #ai-vision-panel .ai-chip-icon-mobile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(34, 197, 94, 0.15);
+        padding: 15px;
+        border-radius: 50%;
+        width: auto;
+        height: auto;
+    }
 
-/* Esconde a área de visualização AI completa no mobile */
-#ai-vision-panel .ai-visualization-area {
-    display: none !important;
-}
+    /* Esconde a área de visualização AI completa no mobile */
+    #ai-vision-panel .ai-visualization-area {
+        display: none !important;
+    }
 
-/* Ajusta o grid para ocupar toda a largura no mobile */
-#ai-vision-panel .grid {
-    grid-template-columns: 1fr !important;
-}
+    /* Ajusta o grid para ocupar toda a largura no mobile */
+    #ai-vision-panel .grid {
+        grid-template-columns: 1fr !important;
+    }
 
-#ai-vision-panel .col-span-7 {
-    grid-column: span 1 !important;
-}
+    #ai-vision-panel .col-span-7 {
+        grid-column: span 1 !important;
+    }
 
-/* Modifica os cards de status para mobile */
-#ai-vision-panel .status-cards-container {
-    display: none !important;
-}
+    /* Modifica os cards de status para mobile */
+    #ai-vision-panel .status-cards-container {
+        display: none !important;
+    }
 
-#ai-vision-panel .status-card-mobile {
-    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
-    background-color: transparent !important;
-    border: 1px solid rgba(28, 28, 28, 0.8) !important;
-    border-radius: 0.75rem;
-    padding: 1rem;
-    text-align: left !important;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}
+    #ai-vision-panel .status-card-mobile {
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
+        border: 1px solid rgba(28, 28, 28, 0.8) !important;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: left !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
 
-/* Remove textos descritivos (status-description) no mobile */
-#ai-vision-panel .status-description {
-    display: none !important;
-}
+    /* Remove textos descritivos (status-description) no mobile */
+    #ai-vision-panel .status-description {
+        display: none !important;
+    }
 
-/* Alinha labels e valores à esquerda */
-#ai-vision-panel .status-label {
-    text-align: left !important;
-    margin: 0 !important;
-    color: #22C55E !important;
-    font-size: 0.625rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
+    /* Alinha labels e valores à esquerda */
+    #ai-vision-panel .status-label {
+        text-align: left !important;
+        margin: 0 !important;
+        color: #22C55E !important;
+        font-size: 0.625rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
-#ai-vision-panel .status-value {
-    text-align: left !important;
-    color: #FFFFFF !important;
-    font-weight: 700;
-    font-size: 1rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0;
-}
+    #ai-vision-panel .status-value {
+        text-align: left !important;
+        color: #FFFFFF !important;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+    }
 
-/* Ajusta os ícones nos cards */
-#ai-vision-panel .status-card-mobile .flex.items-center {
-    justify-content: flex-start !important;
-    margin-bottom: 0.5rem;
-    align-items: center;
-}
+    /* Ajusta os ícones nos cards */
+    #ai-vision-panel .status-card-mobile .flex.items-center {
+        justify-content: flex-start !important;
+        margin-bottom: 0.5rem;
+        align-items: center;
+    }
 
-/* Ultra-specific override for FontAwesome SVGs in status cards */
-#ai-vision-panel .status-card-mobile .flex.items-center svg.svg-inline--fa,
-#ai-vision-panel .status-card-mobile .flex.items-center i.fas,
-svg.svg-inline--fa[data-icon="brain"],
-svg.svg-inline--fa[data-icon="chart-line"],
-svg.svg-inline--fa[data-icon="sliders-h"],
-svg.svg-inline--fa[data-icon="shield-alt"] {
-    color: #22C55E !important;
-    fill: #22C55E !important;
-}
+    /* Ultra-specific override for FontAwesome SVGs in status cards */
+    #ai-vision-panel .status-card-mobile .flex.items-center svg.svg-inline--fa,
+    #ai-vision-panel .status-card-mobile .flex.items-center i.fas,
+    svg.svg-inline--fa[data-icon="brain"],
+    svg.svg-inline--fa[data-icon="chart-line"],
+    svg.svg-inline--fa[data-icon="sliders-h"],
+    svg.svg-inline--fa[data-icon="shield-alt"] {
+        color: #22C55E !important;
+        fill: #22C55E !important;
+    }
 
-#ai-vision-panel .status-card-mobile .flex.items-center i,
-#ai-vision-panel .status-card-mobile .flex.items-center svg {
-    color: #22C55E !important;
-    fill: #22C55E !important;
-    font-size: 1.125rem;
-}
+    #ai-vision-panel .status-card-mobile .flex.items-center i,
+    #ai-vision-panel .status-card-mobile .flex.items-center svg {
+        color: #22C55E !important;
+        fill: #22C55E !important;
+        font-size: 1.125rem;
+    }
 
-#ai-vision-panel .status-card-mobile .asset-icon {
-    opacity: 1 !important;
-    width: 18px !important;
-    height: 18px !important;
-    filter: brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(96%) contrast(88%);
-}
+    #ai-vision-panel .status-card-mobile .asset-icon {
+        opacity: 1 !important;
+        width: 18px !important;
+        height: 18px !important;
+        filter: brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(96%) contrast(88%);
+    }
 
-/* Esconde o Central AI Core no mobile */
-#ai-vision-panel .ai-core-mobile {
-    display: none !important;
-}
+    /* Esconde o Central AI Core no mobile */
+    #ai-vision-panel .ai-core-mobile {
+        display: none !important;
+    }
 
-/* Remove gap do grid no mobile */
-#ai-vision-panel .grid.gap-5 {
-    gap: 0 !important;
-}
+    /* Remove gap do grid no mobile */
+    #ai-vision-panel .grid.gap-5 {
+        gap: 0 !important;
+    }
 
-/* Remove h3 (card-title) no mobile */
-.config-card .card-title,
-.config-card h3 {
-    display: none !important;
-}
+    /* Remove h3 (card-title) no mobile */
+    .config-card .card-title,
+    .config-card h3 {
+        display: none !important;
+    }
 
-/* Remove ai-status-title no mobile */
-.ai-status-title {
-    display: none !important;
-}
+    /* Remove ai-status-title no mobile */
+    .ai-status-title {
+        display: none !important;
+    }
 
-/* 1. Gerenciamento de Risco: 3 colunas */
-.risk-buttons {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 0.5rem !important;
-    width: 100% !important;
-}
+    /* 1. Gerenciamento de Risco: 3 colunas */
+    .risk-buttons {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+    }
 
-/* 2. Stop Loss e Blindado: Lado a lado com mesma altura */
-.loss-stoploss-row {
-    flex-direction: row !important;
-    gap: 12px !important;
-    align-items: stretch !important;
-}
+    /* 2. Stop Loss e Blindado: Lado a lado com mesma altura */
+    .loss-stoploss-row {
+        flex-direction: row !important;
+        gap: 12px !important;
+        align-items: stretch !important;
+    }
 
-.loss-stoploss-row .flex-1 {
-    width: 50% !important;
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
+    .loss-stoploss-row .flex-1 {
+        width: 50% !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
 
-.loss-stoploss-row .form-input {
-    height: 100% !important;
-    min-height: 48px !important;
-}
+    .loss-stoploss-row .form-input {
+        height: 100% !important;
+        min-height: 48px !important;
+    }
 
-/* Label styling: 0.725rem, uppercase, #C5C5C5 */
-.form-label {
-    font-size: 0.725rem !important;
-    font-weight: 80 !important;
-    text-transform: uppercase !important;
-    color: #C5C5C5 !important;
-}
+    /* Label styling: 0.725rem, uppercase, #C5C5C5 */
+    .form-label {
+        font-size: 0.725rem !important;
+        font-weight: 80 !important;
+        text-transform: uppercase !important;
+        color: #C5C5C5 !important;
+    }
 
-.stoploss-blindado-wrapper {
-    background-color: #000000 !important;
-    padding: 0rem 0.5rem !important;
-    height: auto !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    min-height: 48px !important;
-}
+    .stoploss-blindado-wrapper {
+        background-color: #000000 !important;
+        padding: 0rem 0.5rem !important;
+        height: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: 48px !important;
+    }
 
-.ai-status-info label {
-    margin: 0 !important;
-    font-size: 0.9rem !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    color: #C5C5C5 !important;
-}
+    .ai-status-info label {
+        margin: 0 !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        color: #C5C5C5 !important;
+    }
 }
 
 /* FIX: Enforce equal height for config cards */
