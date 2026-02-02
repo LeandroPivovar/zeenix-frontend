@@ -53,7 +53,7 @@ export const RiskManager = {
 
     calculateNextStake(state, config, explicitPayout = null) {
         const baseStake = config.initialStake || 0.35;
-        const riskProfile = config.riskProfile || 'moderado';
+        const riskProfile = (config.riskProfile || 'moderado').toLowerCase();
         // Normalize contract type to avoid mismatches
         const tradeType = (config.tradeType || 'CALL').toUpperCase();
 
@@ -187,6 +187,7 @@ export const RiskManager = {
                 });
 
                 state.analysisType = 'PRINCIPAL';
+                state.activeStrategy = 'PRINCIPAL';
                 state.negotiationMode = state.initialNegotiationMode || 'VELOZ';
                 state.consecutiveLosses = 0;
                 state.totalLossAccumulated = 0;
