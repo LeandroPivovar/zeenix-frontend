@@ -11,7 +11,7 @@
       @toggle-collapse="toggleSidebarCollapse" 
     />
     
-    <div class="dashboard-content-wrapper full-immersion-layout" :class="{ 'sidebar-collapsed': localSidebarCollapsed }" style="padding-left: 0 !important; width: 100% !important; overflow-x: hidden !important;">
+    <div class="dashboard-content-wrapper full-immersion-layout" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
       <!-- Top Navbar -->
       <TopNavbar 
         v-if="!isMobile"

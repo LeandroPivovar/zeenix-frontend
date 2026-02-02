@@ -197,7 +197,9 @@ body,
   .content-wrapper,
   .main-content-wrapper,
   .operation-main,
-  .box-content {
+  .box-content,
+  .sbt-sidebar-wrapper~.dashboard-content-wrapper,
+  .sbt-sidebar-wrapper~.content-wrapper {
     padding-left: var(--sidebar-width);
     width: 100%;
     transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -211,6 +213,10 @@ body,
     transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  .sbt-sidebar-wrapper~.dashboard-content-wrapper #top-navbar {
+    padding-left: var(--sidebar-width) !important;
+  }
+
   /* Quando estiver colapsado (usando a classe explicitamente) */
   .sidebar-collapsed.dashboard-content-wrapper,
   .sidebar-collapsed .dashboard-content-wrapper,
@@ -222,7 +228,18 @@ body,
   .sidebar-collapsed .operation-main,
   .sidebar-collapsed.box-content,
   .sidebar-collapsed .box-content,
-  .sidebar-collapsed #top-navbar {
+  .sidebar-collapsed #top-navbar,
+  .sbt-collapsed.dashboard-content-wrapper,
+  .sbt-collapsed .dashboard-content-wrapper,
+  .sbt-collapsed.content-wrapper,
+  .sbt-collapsed .content-wrapper,
+  .sbt-collapsed.main-content-wrapper,
+  .sbt-collapsed .main-content-wrapper,
+  .sbt-collapsed.operation-main,
+  .sbt-collapsed .operation-main,
+  .sbt-collapsed.box-content,
+  .sbt-collapsed .box-content,
+  .sbt-collapsed #top-navbar {
     --sidebar-width: 80px;
     padding-left: var(--sidebar-width) !important;
     width: 100% !important;
@@ -239,7 +256,10 @@ body,
   .sidebar-wrapper:hover~.content-wrapper #top-navbar,
   .sidebar-wrapper:hover~.main-content-wrapper #top-navbar,
   .sidebar-wrapper:hover~.operation-main #top-navbar,
-  .sidebar-wrapper:hover~.box-content #top-navbar {
+  .sidebar-wrapper:hover~.box-content #top-navbar,
+  .sbt-sidebar-wrapper:hover~.dashboard-content-wrapper,
+  .sbt-sidebar-wrapper:hover~.content-wrapper,
+  .sbt-sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
     --sidebar-width: 280px !important;
     padding-left: var(--sidebar-width) !important;
     width: 100% !important;
