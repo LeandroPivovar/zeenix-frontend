@@ -2805,3 +2805,9 @@ svg:not(:root).svg-inline--fa {
 .config-card .card-content>*:last-child {
     margin-bottom: 0;
 }
+ @ m e d i a   ( m a x - w i d t h :   7 6 8 p x )   { 
+         . z e n i x - l a y o u t   >   *   { 
+                 p o s i t i o n :   r e l a t i v e   ! i m p o r t a n t ; 
+         } 
+ }  
+ 

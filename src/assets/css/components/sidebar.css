@@ -788,19 +788,7 @@ aside.sidebar,
 		display: none !important;
 	}
 
-	/* FORCED Z-INDEX for Mobile via Attribute Selector */
-	/* This ensures that if JS detects mobile, CSS enforces the high z-index regardless of media query */
-	.sidebar-wrapper[is-mobile="true"] .sidebar.is-open,
-	.sidebar-wrapper[is-mobile="true"] #app-sidebar-main.is-open {
-		z-index: 2147483647 !important;
-		position: fixed !important;
-		left: 0 !important;
-		background: #0b0b0b !important;
-	}
-
-	.sidebar-wrapper[is-mobile="true"] .sidebar-overlay {
-		z-index: 2140000000 !important;
-	}
+	/* FORCED Z-INDEX removed as per user request */
 
 	.brand-mobile {
 		display: flex !important;
