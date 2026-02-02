@@ -3,14 +3,14 @@ export const RiskManager = {
      * Default payouts per contract type for safe estimation
      */
     payoutDefaults: {
-        'CALL': 0.95,
-        'PUT': 0.95,
-        'DIGITOVER': 0.19,  // Standard for Over 8 or similar
-        'DIGITUNDER': 0.19, // Standard for Under 8 or similar
-        'DIGITMATCH': 8.00,
-        'DIGITDIFF': 0.09,
-        'DIGITEVEN': 0.95,
-        'DIGITODD': 0.95
+        'CALL': 1.95,
+        'PUT': 1.95,
+        'DIGITOVER': 1.19,  // Standard for Over 8 or similar
+        'DIGITUNDER': 1.19, // Standard for Under 8 or similar
+        'DIGITMATCH': 9.00,
+        'DIGITDIFF': 1.09,
+        'DIGITEVEN': 1.95,
+        'DIGITODD': 1.95
     },
 
     /**
@@ -81,18 +81,13 @@ export const RiskManager = {
 
         const historyKey = modePrefix + tradeType + barrierSuffix;
 
-        // 1. User-Configured Expected Payout (Highest Priority)
-        // 2. Explicit Override (Real-time from Proposal)
-        // 3. Check history for this specific mode+contract
-        // 4. Fallback to generic contract history
-        // 5. System Defaults
         const configPayout = config.expectedPayout || null;
-        let estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
+        let estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 1.95;
 
-        // Treat any provided value (from config or history) as the DIRECT PROFIT RATE 
-        // Example: 0.95 = 95% profit, 1.26 = 126% profit.
-
-        let profitRate = estimatedPayout;
+        // ✅ NORMALIZAÇÃO CRÍTICA: Deriv provê multiplicadores totais (ex: 2.26). 
+        // A fórmula de Martingale exige a Taxa de Lucro Líquido (ex: 1.26).
+        // Se o valor for > 1.0, assumimos que é um multiplicador total e subtraímos o stake (1.0).
+        const profitRate = (estimatedPayout > 1.0) ? (estimatedPayout - 1.0) : estimatedPayout;
 
 
         // 1. RECOVERY MODE
@@ -170,7 +165,8 @@ export const RiskManager = {
         state.lastResultWin = win;
 
         if (win) {
-            const currentPayout = profit / stakeUsed;
+            // ✅ Constante Consistency: Use total return multiplier (e.g. 1.95)
+            const currentPayout = (profit + stakeUsed) / stakeUsed;
 
             // Track stats specifically by trade mode to avoid pollution
             if (tradeMode === 'RECUPERACAO') {
@@ -245,7 +241,8 @@ export const RiskManager = {
                 state.analysisType = 'RECUPERACAO';
 
                 // CRITICAL: Sync payout estimate for the first Martingale calculation
-                if (state.lastPayoutRecovery === 0.95 && state.lastPayoutPrincipal !== 0.95) {
+                // Use multipliers like 1.95 instead of 0.95
+                if (state.lastPayoutRecovery <= 1.0 && state.lastPayoutPrincipal > 1.0) {
                     state.lastPayoutRecovery = state.lastPayoutPrincipal;
                 }
 
@@ -303,7 +300,7 @@ export const RiskManager = {
 
         // 2. Update payout rate with official data
         if (win) {
-            const currentPayout = realProfit / stakeUsed;
+            const currentPayout = (realProfit + stakeUsed) / stakeUsed;
             // Save to generic trackers
             if (tradeMode === 'RECUPERACAO') {
                 state.lastPayoutRecovery = currentPayout;
@@ -404,3 +401,5 @@ export const RiskManager = {
         return parseFloat(adjustedStake.toFixed(2));
     }
 };
+
+export default RiskManager;

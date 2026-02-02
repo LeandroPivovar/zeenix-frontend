@@ -2550,13 +2550,12 @@ export default {
                             
                             // 1. Update sessionState with the real PROFIT RATE for accuracy in next calculations
                             // Deriv Payout = Stake + Profit. 
-                            // We need Profit Rate = (Payout - Stake) / Stake.
-                            const realProfitRate = (payout - stakeValue) / stakeValue;
+                            const realPayoutRate = payout / stakeValue;
                             
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
-                                this.sessionState.lastPayoutRecovery = realProfitRate;
+                                this.sessionState.lastPayoutRecovery = realPayoutRate;
                             } else {
-                                this.sessionState.lastPayoutPrincipal = realProfitRate;
+                                this.sessionState.lastPayoutPrincipal = realPayoutRate;
                             }
                             
                             // Normalize Key to match RiskManager
@@ -2575,7 +2574,7 @@ export default {
                                     barrierSuffix = '_' + msg.echo_req.barrier;
                                 }
                                 
-                                RiskManager.updatePayoutHistory(prefix + cType + barrierSuffix, realProfitRate);
+                                RiskManager.updatePayoutHistory(prefix + cType + barrierSuffix, realPayoutRate);
                             }
 
                             // 2. CHECK IF STAKE ADJUSTMENT IS NEEDED
@@ -2588,11 +2587,11 @@ export default {
 
                                 // We manually temporarily inject the just-learned payout history into the calculation
                                 // BETTER: We now pass it explicitly to ensure precision regardless of history state
-                                const exactStake = RiskManager.calculateNextStake(this.sessionState, config, realProfitRate);
+                                const exactStake = RiskManager.calculateNextStake(this.sessionState, config, realPayoutRate);
                                 
                                 // Tolerance check
                                 if (Math.abs(exactStake - stakeValue) > 0.02) {
-                                    this.addLog(`⚠️ Calibrando Martingale: Payout ${realProfitRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
+                                    this.addLog(`⚠️ Calibrando Martingale: Payout ${realPayoutRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
                                     
                                     // RE-REQUEST PROPOSAL with corrected stake
                                     // Track retries using a request ID based mechanism or simple session state flag (less robust but works for single thread)

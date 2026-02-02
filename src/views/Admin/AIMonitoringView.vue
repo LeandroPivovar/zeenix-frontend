@@ -1112,8 +1112,9 @@ export default {
                     `• GATILHO: Filtros de Ataque Atendidos<br><br>` +
                     `📝 DETALHES:<br>`;
 
-                results.forEach(res => {
-                    analysisLog += `• ${res.name}: ${res.details}<br>`;
+                results.forEach((res, index) => {
+                    const filterName = activeFilters[index]?.name || 'Filtro';
+                    analysisLog += `• ${filterName}: ${res.reason}<br>`;
                 });
 
                 this.addLog('Sinal de Entrada Corretora', analysisLog, 'success');
