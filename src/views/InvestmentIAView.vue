@@ -1279,6 +1279,10 @@ export default {
             } catch (error) {
                 console.error('Erro ao salvar token no backend:', error);
             }
+
+            // Restore AI Activation
+            console.log('[InvestmentIAView] Account sync complete, activating AI...');
+            await this.activateIA();
         },
 
 
