@@ -923,6 +923,20 @@ export default {
                                 this.isAuthorized = true;
                                 this.monitoringStats.balance = msg.authorize.balance;
                                 this.accountType = msg.authorize.is_virtual ? 'demo' : 'real';
+                                
+                                // ✅ VERIFY ACCOUNT MATCH
+                                try {
+                                    const conn = JSON.parse(localStorage.getItem('deriv_connection') || '{}');
+                                    if (conn.loginid && conn.loginid !== msg.authorize.loginid) {
+                                         console.warn('[AIMonitoringView] ⚠️ Account Mismatch! Expected:', conn.loginid, 'Got:', msg.authorize.loginid);
+                                         this.addLog('⚠️ Alerta de Conta', [
+                                             `Esperado: ${conn.loginid}`,
+                                             `Conectado: ${msg.authorize.loginid}`,
+                                             `Ação: Verifique configuração`
+                                         ], 'warning');
+                                    }
+                                } catch (e) { console.error('Error verifying account match:', e); }
+
                                 this.addLog('Execução Confirmada', [
                                     `Status: Autorizado`,
                                     `Saldo: ${this.currencySymbol}${this.monitoringStats.balance.toFixed(2)}`,

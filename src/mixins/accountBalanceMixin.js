@@ -98,7 +98,7 @@ export default {
         return '$';
       }
       if (this.tradeCurrency === 'DEMO') {
-        return 'D';
+        return 'Đ';
       }
       return this.getCurrencyPrefix?.(this.info?.currency || 'USD') || '$';
     },
