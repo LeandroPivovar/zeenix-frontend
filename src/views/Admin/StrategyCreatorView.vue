@@ -2012,13 +2012,13 @@ export default {
         toggleFilter(filter) {
             console.log(`[toggleFilter] Clicked: ${filter.name} (${filter.id}) | Current Active: ${filter.active}`);
             
-            // Fix: Use the filter reference directly to avoid ID collision or lookup issues
-            // Fix 2: Use this.$set to ensure Vue 2 reactivity triggers
+            // Fix: Reverting to direct assignment as $set is not available (Vue 3)
+            // Keeping $forceUpdate to ensure UI refresh if reactivity is lost
             
             if (filter.active) {
                 console.log('[toggleFilter] Deactivating filter...');
-                this.$set(filter, 'active', false);
-                this.$forceUpdate(); // Force UI refresh
+                filter.active = false;
+                this.$forceUpdate(); 
                 return;
             }
 
@@ -2034,8 +2034,8 @@ export default {
             }
 
             console.log('[toggleFilter] Activating filter...');
-            this.$set(filter, 'active', true);
-            this.$forceUpdate(); // Force UI refresh
+            filter.active = true;
+            this.$forceUpdate(); 
         },
         nextFilterStep() {
             const sourceArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
