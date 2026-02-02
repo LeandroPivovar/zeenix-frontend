@@ -74,7 +74,7 @@
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium">Entrada Inicial</span>
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">
-						{{ hideValues ? '••••' : '$' + formatPrice(initialCapital) }}
+						{{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(initialCapital) }}
 					</div>
 				</div>
 
@@ -89,7 +89,7 @@
 					<div class="text-2xl font-bold mb-1 tabular-nums text-left"
 						:class="finalCapital >= initialCapital ? 'text-green-500' : 'text-red-500'"
 					>
-						{{ hideValues ? '••••' : (finalCapital >= 0 ? '$' : '-$') + formatPrice(Math.abs(finalCapital)) }}
+						{{ hideValues ? '••••' : (finalCapital >= 0 ? preferredCurrencyPrefix : '-' + preferredCurrencyPrefix) + formatPrice(Math.abs(finalCapital)) }}
 					</div>
 				</div>
 
@@ -113,7 +113,7 @@
 						class="text-2xl font-bold mb-1 tabular-nums relative z-10 text-left"
 						:class="periodProfit >= 0 ? 'text-green-500' : 'text-red-500'"
 					>
-						{{ hideValues ? '••••' : (periodProfit >= 0 ? '+' : '') + '$' + periodProfit.toFixed(2) }}
+						{{ hideValues ? '••••' : (periodProfit >= 0 ? '+' : '') + preferredCurrencyPrefix + periodProfit.toFixed(2) }}
 					</div>
 					<!-- ✅ Formatação Dual: Mostrar Percentual -->
 					<div class="text-xs font-medium tabular-nums relative z-10 text-left opacity-80"
@@ -280,7 +280,7 @@
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Resultado do dia</div>
 						<div class="text-sm font-medium tabular-nums text-left" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'">
-							{{ hideValues ? '••••' : ((sessionStats?.netProfit || 0) >= 0 ? '+' : '') + '$' + (sessionStats?.netProfit || 0).toFixed(2) }}
+							{{ hideValues ? '••••' : ((sessionStats?.netProfit || 0) >= 0 ? '+' : '') + preferredCurrencyPrefix + (sessionStats?.netProfit || 0).toFixed(2) }}
 						</div>
 					</div>
 				</div>
@@ -342,14 +342,14 @@
 					<div class="inline-flex items-center rounded-full border border-green-500/30 bg-green-500/10 text-green-500 font-semibold text-[10px] px-2.5 py-0.5">
 						Melhor dia
 					</div>
-					<span class="text-xs text-[#FAFAFA] tabular-nums" v-if="!hideValues">+${{ bestDay?.value?.toFixed(2) || '0.00' }} ({{ bestDay?.date || '--' }})</span>
+					<span class="text-xs text-[#FAFAFA] tabular-nums" v-if="!hideValues">+{{ preferredCurrencyPrefix }}{{ bestDay?.value?.toFixed(2) || '0.00' }} ({{ bestDay?.date || '--' }})</span>
 					<span class="text-xs text-[#FAFAFA] tabular-nums" v-else>•••• ({{ bestDay?.date || '--' }})</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<div class="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 text-red-500 font-semibold text-[10px] px-2.5 py-0.5">
 						Pior dia
 					</div>
-					<span class="text-xs text-[#FAFAFA] tabular-nums" v-if="!hideValues">-${{ worstDay?.value?.toFixed(2) || '0.00' }} ({{ worstDay?.date || '--' }})</span>
+					<span class="text-xs text-[#FAFAFA] tabular-nums" v-if="!hideValues">-{{ preferredCurrencyPrefix }}{{ worstDay?.value?.toFixed(2) || '0.00' }} ({{ worstDay?.date || '--' }})</span>
 					<span class="text-xs text-[#FAFAFA] tabular-nums" v-else>•••• ({{ worstDay?.date || '--' }})</span>
 				</div>
 			</div>
@@ -413,9 +413,9 @@
 									</div>
 								</td>
 								<td class="text-right py-2.5 px-1 tabular-nums font-medium" :class="week.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-									{{ week.profit >= 0 ? '+' : '' }}${{ week.profit.toFixed(2) }}
+									{{ week.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ week.profit.toFixed(2) }}
 								</td>
-								<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">${{ formatPrice(week.finalCapital) }}</td>
+								<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">{{ preferredCurrencyPrefix }}{{ formatPrice(week.finalCapital) }}</td>
 								<td class="text-right py-2.5 px-1 tabular-nums" :class="week.percent >= 0 ? 'text-green-500' : 'text-red-500'">
 									{{ week.percent >= 0 ? '+' : '' }}{{ week.percent.toFixed(2) }}%
 								</td>
@@ -465,9 +465,9 @@
 										</div>
 									</td>
 									<td class="text-right py-3 px-1 tabular-nums font-semibold" :class="day.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-										{{ day.profit >= 0 ? '+' : '' }}${{ day.profit.toFixed(2) }}
+										{{ day.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ day.profit.toFixed(2) }}
 									</td>
-									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">${{ formatPrice(day.capital) }}</td>
+									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">{{ preferredCurrencyPrefix }}{{ formatPrice(day.capital) }}</td>
 									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">{{ day.ops }}</td>
 									<td class="text-right py-3 px-1 tabular-nums font-medium">
 										<span 
@@ -547,7 +547,7 @@
 					<div class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-semibold mr-8 sm:mr-10"
 						:class="activeDayDetails.profit >= 0 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'"
 					>
-						{{ activeDayDetails.profit >= 0 ? '+' : '' }}${{ activeDayDetails.profit.toFixed(2) }}
+						{{ activeDayDetails.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ activeDayDetails.profit.toFixed(2) }}
 					</div>
 				</h2>
 			</div>
@@ -558,7 +558,7 @@
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3">
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Lucro do Dia</div>
 					<div class="text-base sm:text-xl font-bold tabular-nums text-left" :class="activeDayDetails.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ activeDayDetails.profit >= 0 ? '+' : '' }}${{ activeDayDetails.profit.toFixed(2) }}
+						{{ activeDayDetails.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ activeDayDetails.profit.toFixed(2) }}
 					</div>
 				</div>
 
@@ -567,7 +567,7 @@
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Capital</div>
 					<!-- Estimating start capital for display logic -->
 					<div class="text-[10px] sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
-						${{ (activeDayDetails.capital - activeDayDetails.profit).toFixed(2) }} → ${{ activeDayDetails.capital.toFixed(2) }}
+						{{ preferredCurrencyPrefix }}{{ (activeDayDetails.capital - activeDayDetails.profit).toFixed(2) }} → {{ preferredCurrencyPrefix }}{{ activeDayDetails.capital.toFixed(2) }}
 					</div>
 				</div>
 
@@ -575,7 +575,7 @@
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3 flex flex-col items-start">
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Meta Diária</div>
 					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors text-[10px] sm:text-xs text-left bg-green-500/10 text-green-500 border-green-500/20">
-						${{ agenteData.goalValue ? agenteData.goalValue.toFixed(2) : '50.00' }}
+						{{ preferredCurrencyPrefix }}{{ agenteData.goalValue ? agenteData.goalValue.toFixed(2) : '50.00' }}
 					</div>
 					<div class="text-[#A1A1AA] text-[9px] sm:text-xs mt-0.5 sm:mt-1 text-left" v-if="activeDayDetails.activationTime">
 						Ativação: {{ activeDayDetails.activationTime }}
@@ -587,7 +587,7 @@
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Stop Loss</div>
 					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors text-[10px] sm:text-xs text-left"
 						:class="(agenteData.stopValue || 0) < 0 ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'">
-						{{ (agenteData.stopValue || 0) < 0 ? '' : '' }}${{ (agenteData.stopValue || 25).toFixed(2) }}
+						{{ (agenteData.stopValue || 0) < 0 ? '' : '' }}{{ preferredCurrencyPrefix }}{{ (agenteData.stopValue || 25).toFixed(2) }}
 					</div>
 				</div>
 			</div>
@@ -613,7 +613,7 @@
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
 					<div class="text-base sm:text-lg font-bold tabular-nums" :class="activeDayDetails.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ activeDayDetails.profit >= 0 ? '+' : '' }}${{ (activeDayDetails.profit / (activeDayDetails.ops || 1)).toFixed(2) }}
+						{{ activeDayDetails.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ (activeDayDetails.profit / (activeDayDetails.ops || 1)).toFixed(2) }}
 					</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
 				</div>
@@ -658,11 +658,11 @@
                                             {{ item.data.contract }}
                                         </span>
                                     </td>
-                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">${{item.data.entry}}</td>
-                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">${{item.data.exit}}</td>
-                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">${{parseFloat(item.data.stake).toFixed(2)}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ preferredCurrencyPrefix }}{{item.data.entry}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ preferredCurrencyPrefix }}{{item.data.exit}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ preferredCurrencyPrefix }}{{parseFloat(item.data.stake).toFixed(2)}}</td>
                                     <td class="py-2 px-1 text-right tabular-nums font-semibold" :class="parseFloat(item.data.profit) >= 0 ? 'text-green-500' : 'text-red-500'">
-                                        {{ parseFloat(item.data.profit) >= 0 ? '+' : '' }}${{parseFloat(item.data.profit).toFixed(2)}}
+                                        {{ parseFloat(item.data.profit) >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{parseFloat(item.data.profit).toFixed(2)}}
                                     </td>
                                 </tr>
 
@@ -672,7 +672,7 @@
                                         <div class="flex items-center justify-between">
                                             <span>FIM DA SESSÃO - {{ item.endTime }}</span>
                                             <span :class="item.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'">
-                                                RESULTADO: {{ item.totalProfit >= 0 ? '+' : '' }}${{ item.totalProfit.toFixed(2) }}
+                                                RESULTADO: {{ item.totalProfit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ item.totalProfit.toFixed(2) }}
                                             </span>
                                         </div>
                                     </td>
@@ -724,7 +724,7 @@
 						<span class="text-xs text-[#A1A1AA]">{{ currentDate }}</span>
 					</div>
 					<div class="text-2xl font-bold tabular-nums" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
+						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ (sessionStats?.netProfit || 0).toFixed(2) }}
 					</div>
 				</div>
 

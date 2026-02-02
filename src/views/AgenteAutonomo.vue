@@ -11,11 +11,11 @@
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
           <TopNavbar
             :is-sidebar-collapsed="isSidebarCollapsed"
-            :balance="accountBalance"
-            :account-type="isDemo ? 'demo' : 'real'"
-            :currency="accountCurrency"
-            :balances-by-currency-real="balancesByCurrencyReal"
-            :balances-by-currency-demo="balancesByCurrencyDemo"
+            :balance="accountBalanceProp"
+            :account-type="accountType"
+            :currency="accountCurrencyProp"
+            :balances-by-currency-real="balancesByCurrencyRealProp"
+            :balances-by-currency-demo="balancesByCurrencyDemoProp"
             @account-type-changed="handleAccountTypeChange"
             @toggle-sidebar="toggleMobileSidebar"
             @toggle-sidebar-collapse="toggleSidebarCollapse"
@@ -24,10 +24,10 @@
 
           <SettingsSidebar
             :is-open="isSettingsOpen"
-            :balance="accountBalance"
-            :account-type="isDemo ? 'demo' : 'real'"
-            :balances-by-currency-real="balancesByCurrencyReal"
-            :balances-by-currency-demo="balancesByCurrencyDemo"
+            :balance="accountBalanceProp"
+            :account-type="accountType"
+            :balances-by-currency-real="balancesByCurrencyRealProp"
+            :balances-by-currency-demo="balancesByCurrencyDemoProp"
             :active-service="'agent'"
             @close="isSettingsOpen = false"
             @account-type-changed="handleAccountTypeChange"
@@ -140,15 +140,7 @@
         profitInterval: null,
         timeAndMetricsInterval: null,
   
-        // Dados de Header/Saldo
-        accountBalance: 0, // Inicializar como 0 em vez de null para evitar problemas de reatividade
-        accountCurrency: "USD",
-        accountLoginid: null,
-        isDemo: false,
-        balanceUpdateInterval: null,
-        preferredCurrency: "USD",
-        balancesByCurrencyReal: {},
-        balancesByCurrencyDemo: {},
+        // Dados de Header/Saldo - REMOVE: handled by accountBalanceMixin
         isSettingsOpen: false,
         availableAccounts: [],
         loadingAccounts: false,
@@ -223,37 +215,19 @@
         
         // Garantir que accountBalance seja sempre um número válido
         let accountBalanceValue = 0;
-        if (this.accountBalance !== null && this.accountBalance !== undefined) {
-          if (typeof this.accountBalance === 'number') {
-            accountBalanceValue = this.accountBalance;
-          } else if (typeof this.accountBalance === 'object') {
-            // Se for um objeto (retornado pelo balanceLoader), extrair o valor numérico
-            const balanceObj = this.accountBalance;
-            if (balanceObj.balance !== undefined && balanceObj.balance !== null) {
-              accountBalanceValue = typeof balanceObj.balance === 'number' 
-                ? balanceObj.balance 
-                : parseFloat(String(balanceObj.balance)) || 0;
-            } else if (balanceObj.value !== undefined && balanceObj.value !== null) {
-              accountBalanceValue = typeof balanceObj.value === 'number' 
-                ? balanceObj.value 
-                : parseFloat(String(balanceObj.value)) || 0;
-            } else {
-              // Tentar converter o objeto inteiro para número (improvável, mas tenta)
-              const parsed = parseFloat(String(this.accountBalance));
-              accountBalanceValue = isNaN(parsed) ? 0 : parsed;
-            }
+        if (this.accountBalanceProp !== null && this.accountBalanceProp !== undefined) {
+          if (typeof this.accountBalanceProp === 'number') {
+            accountBalanceValue = this.accountBalanceProp;
           } else {
-            // String ou outro tipo
-            const parsed = parseFloat(String(this.accountBalance));
+            const parsed = parseFloat(String(this.accountBalanceProp));
             accountBalanceValue = isNaN(parsed) ? 0 : parsed;
           }
         }
         
         // Log detalhado para debug (sempre logar quando houver valores ou quando sessionStats existir)
-        if (this.sessionStats && (accountBalanceValue > 0 || this.accountBalance !== null)) {
+        if (this.sessionStats && (accountBalanceValue > 0 || this.accountBalanceProp !== null)) {
           console.log('[AgenteAutonomo] 💰 agenteData computed - accountBalance:', {
-            accountBalance: this.accountBalance,
-            accountBalanceType: typeof this.accountBalance,
+            accountBalance: this.accountBalanceProp,
             accountBalanceValue: accountBalanceValue,
             sessionStatsNetProfit: this.sessionStats?.netProfit,
             operacoesHoje: operacoesHoje,
@@ -290,23 +264,9 @@
       },
       
       tradeHistoryData() {
-        // Retornar histórico completo da API
         return this.apiTradeHistory || [];
       },
-  
-      formattedBalance() {
-        if (this.accountBalance === null || this.accountBalance === undefined)
-          return "---";
-        const prefix = this.getCurrencyPrefix(this.preferredCurrency);
-        return `${prefix}${this.accountBalance.toLocaleString("pt-BR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}`;
-      },
-  
-      currencyPrefix() {
-        return this.getCurrencyPrefix(this.preferredCurrency);
-      },
+      
       currentUserId() {
           return this.getUserId();
       },
@@ -317,8 +277,12 @@
           "[AgenteAutonomo] Tipo de conta alterado via componente filho para:",
           newAccountType
         );
-        this.isDemo = newAccountType === "demo";
-        // NÃO chamar switchAccount() pois o componente filho (Sidebar/Navbar) já faz o reload.
+        // O mixin já deve observar mudanças no localStorage ou ser notificado.
+        // Se o mixin expõe uma forma de mudar o estado reativo global, usamos ela.
+        // Mas geralmente o handleAccountTypeChange recarrega a página ou chama métodos do mixin.
+        if (typeof this.handleAccountTypeChangeMixin === 'function') {
+            this.handleAccountTypeChangeMixin(newAccountType);
+        }
       },
 
       async loadAvailableAccounts() {
@@ -403,19 +367,11 @@
       },
       handleLiveBalanceUpdate(newBalance) {
         if (newBalance !== undefined && newBalance !== null) {
-          // Mantendo compatibilidade com o mixin e TopNavbar
           console.log('[AgenteAutonomoView] 💰 Recebida atualização de saldo live:', newBalance);
-          this.accountBalance = newBalance;
-          
-          if (this.info) {
-              this.info.balance = newBalance;
-              // Sincronizar também no balancesByCurrency do info se for USD
-              const currency = this.accountCurrency || 'USD';
-              if (this.info.balancesByCurrencyReal && !this.isDemo) {
-                  this.info.balancesByCurrencyReal[currency] = newBalance;
-              } else if (this.info.balancesByCurrencyDemo && this.isDemo) {
-                  this.info.balancesByCurrencyDemo[currency] = newBalance;
-              }
+          // O mixin deve atualizar accountBalanceProp. 
+          // Se o mixin permitir escrita direta ou se observamos o mesmo barramento.
+          if (this.updateBalance) {
+              this.updateBalance(newBalance);
           }
         }
       },
@@ -508,9 +464,9 @@
           const symbol = marketToSymbol[market] || 'R_100';
           
           // Usar saldo atual da conta como initialBalance (valor total da conta configurada)
-          // Se accountBalance não estiver disponível, usar 0 (o backend tentará buscar o saldo)
-          const initialBalance = this.accountBalance && typeof this.accountBalance === 'number' 
-            ? this.accountBalance 
+          // Se accountBalanceProp não estiver disponível, usar 0 (o backend tentará buscar o saldo)
+          const initialBalance = this.accountBalanceProp && typeof this.accountBalanceProp === 'number' 
+            ? this.accountBalanceProp 
             : 0;
 
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";

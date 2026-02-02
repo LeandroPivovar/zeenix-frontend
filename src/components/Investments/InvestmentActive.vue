@@ -388,7 +388,7 @@
                     <div class="mobile-config-grid">
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Entrada</p>
-                            <p class="mobile-config-param-value" v-if="!isLoadingConfig">{{ entryValue ? '$' + Number(entryValue).toFixed(2) : '$0.35' }}</p>
+                            <p class="mobile-config-param-value" v-if="!isLoadingConfig">{{ entryValue ? preferredCurrencyPrefix + Number(entryValue).toFixed(2) : preferredCurrencyPrefix + '0.35' }}</p>
                             <p class="mobile-config-param-value" v-else>Carregando...</p>
                         </div>
                         <div class="mobile-config-param">
@@ -397,12 +397,12 @@
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Alvo de Lucro</p>
-                            <p class="mobile-config-param-value mobile-config-profit" v-if="!isLoadingConfig">{{ profitTarget ? '$' + Number(profitTarget).toFixed(2) : '$100.00' }}</p>
+                            <p class="mobile-config-param-value mobile-config-profit" v-if="!isLoadingConfig">{{ profitTarget ? preferredCurrencyPrefix + Number(profitTarget).toFixed(2) : preferredCurrencyPrefix + '100.00' }}</p>
                             <p class="mobile-config-param-value mobile-config-profit" v-else>Carregando...</p>
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Limite de Perda</p>
-                            <p class="mobile-config-param-value mobile-config-loss" v-if="!isLoadingConfig">{{ lossLimit ? '$' + Number(lossLimit).toFixed(2) : '$25.00' }}</p>
+                            <p class="mobile-config-param-value mobile-config-loss" v-if="!isLoadingConfig">{{ lossLimit ? preferredCurrencyPrefix + Number(lossLimit).toFixed(2) : preferredCurrencyPrefix + '25.00' }}</p>
                             <p class="mobile-config-param-value mobile-config-loss" v-else>Carregando...</p>
                         </div>
                         <div class="mobile-config-param">
@@ -612,7 +612,7 @@
                                         <div class="mobile-log-footer">
                                             <span class="mobile-log-invested">Investido: {{ op.investment }}</span>
                                             <span :class="['mobile-log-result', op.pnl && op.pnl.startsWith('+') ? 'mobile-log-result-positive' : 'mobile-log-result-negative']">
-                                                Resultado: <span :class="[op.pnl && op.pnl.startsWith('+') ? 'mobile-log-result-value-positive' : 'mobile-log-result-value-negative']">{{ op.pnl ? (op.pnl.includes('$-') ? op.pnl.replace('$-', '-$') : op.pnl) : '$0.00' }}</span>
+                                            Resultado: <span :class="[op.pnl && op.pnl.startsWith('+') ? 'mobile-log-result-value-positive' : 'mobile-log-result-value-negative']">{{ op.pnl ? (op.pnl.includes(preferredCurrencyPrefix + '-') ? op.pnl.replace(preferredCurrencyPrefix + '-', '-' + preferredCurrencyPrefix) : op.pnl) : preferredCurrencyPrefix + '0.00' }}</span>
                                             </span>
                                         </div>
                                     </div>
@@ -781,17 +781,17 @@
                             <div class="grid grid-cols-3 gap-0 text-center relative">
                                 <div class="flex flex-col items-center">
                                     <span class="text-[10px] text-[#666] mb-1">Entrada</span>
-                                    <span class="text-[12px] font-bold text-white tracking-tight" v-if="!isLoadingConfig">${{ sessionConfig.entryValue ? Number(sessionConfig.entryValue).toFixed(2) : '1.00' }}</span>
+                                    <span class="text-[12px] font-bold text-white tracking-tight" v-if="!isLoadingConfig">{{ preferredCurrencyPrefix }}{{ sessionConfig.entryValue ? Number(sessionConfig.entryValue).toFixed(2) : '1.00' }}</span>
                                     <span v-else class="text-sm text-gray-500">...</span>
                                 </div>
                                 <div class="flex flex-col items-center relative border-x border-[#333]">
                                     <span class="text-[10px] text-[#666] mb-1">Alvo</span>
-                                    <span class="text-[12px] font-bold text-zenix-green tracking-tight" v-if="!isLoadingConfig">+${{ profitTarget ? Number(profitTarget).toFixed(2) : '100' }}</span>
+                                    <span class="text-[12px] font-bold text-zenix-green tracking-tight" v-if="!isLoadingConfig">+{{ preferredCurrencyPrefix }}{{ profitTarget ? Number(profitTarget).toFixed(2) : '100' }}</span>
                                     <span v-else class="text-sm text-gray-500">...</span>
                                 </div>
                                 <div class="flex flex-col items-center">
                                     <span class="text-[10px] text-[#666] mb-1">Limite</span>
-                                    <span class="text-[12px] font-bold text-zenix-red tracking-tight" v-if="!isLoadingConfig">-${{ lossLimit ? Number(lossLimit).toFixed(2) : '100' }}</span>
+                                    <span class="text-[12px] font-bold text-zenix-red tracking-tight" v-if="!isLoadingConfig">-{{ preferredCurrencyPrefix }}{{ lossLimit ? Number(lossLimit).toFixed(2) : '100' }}</span>
                                     <span v-else class="text-sm text-gray-500">...</span>
                                 </div>
                         </div> 
@@ -894,6 +894,7 @@ import StopLossModal from '../StopLossModal.vue';
 import TargetProfitModal from '../TargetProfitModal.vue';
 import StopBlindadoModal from '../StopBlindadoModal.vue';
 import InsufficientBalanceModal from '../InsufficientBalanceModal.vue';
+import accountBalanceMixin from '../../mixins/accountBalanceMixin';
 
 // TradingView Charting Library - verifique se está disponível globalmente
 const TradingView = window.TradingView || null;
@@ -901,6 +902,7 @@ const Datafeeds = window.Datafeeds || null;
 
 export default {
     name: 'ZenixTradingDashboard',
+    mixins: [accountBalanceMixin],
     components: {
         StopLossModal,
         TargetProfitModal,
@@ -1337,7 +1339,7 @@ export default {
         formattedProfitLoss() {
             const value = this.dailyStats.profitLoss || 0;
             const sign = value >= 0 ? '+' : '-';
-            return `${sign}$${Math.abs(value).toFixed(2)}`;
+            return `${sign}${this.preferredCurrencyPrefix}${Math.abs(value).toFixed(2)}`;
         },
         profitLossPercentage() {
             // Calcular percentual baseado no volume total
@@ -1367,17 +1369,17 @@ export default {
             return 'Regular';
         },
         formattedVolume() {
-            return `$${this.dailyStats.totalVolume.toFixed(2)}`;
+            return `${this.preferredCurrencyPrefix}${this.dailyStats.totalVolume.toFixed(2)}`;
         },
         formattedSessionProfitLoss() {
             const value = this.dailyStats.sessionProfitLoss || 0;
             const sign = value >= 0 ? '+' : '-';
-            return `${sign}$${Math.abs(value).toFixed(2)}`;
+            return `${sign}${this.preferredCurrencyPrefix}${Math.abs(value).toFixed(2)}`;
         },
         formattedSessionBalance() {
             const value = this.dailyStats.sessionBalance || 0;
             const sign = value >= 0 ? '+' : '-';
-            return `${sign}$${Math.abs(value).toFixed(2)}`;
+            return `${sign}${this.preferredCurrencyPrefix}${Math.abs(value).toFixed(2)}`;
         },
         profitLossClass() {
             return this.dailyStats.profitLoss >= 0 ? 'text-zenix-green' : 'text-zenix-red';
@@ -1411,7 +1413,7 @@ export default {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             });
-            return this.balanceVisible ? `$${formatter.format(this.balance)}` : '••••••';
+            return this.balanceVisible ? `${this.preferredCurrencyPrefix}${formatter.format(this.balance)}` : '••••••';
         },
         
         riskLabel() {
@@ -1467,7 +1469,7 @@ export default {
             if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null) {
                 const result = this.activeTrade.status === 'WON' ? 'Ganhou' : 'Perdeu';
                 const profit = this.activeTrade.profitLoss || 0;
-                return `${result} ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}`;
+                return `${result} ${profit >= 0 ? '+' : ''}${this.preferredCurrencyPrefix}${profit.toFixed(2)}`;
             }
             // Status 1: Analisando mercado
             return 'Buscando oportunidades';
@@ -1482,7 +1484,7 @@ export default {
                               (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
                 // If fictitious balance is active, always show $ even for demo
                 const shouldMaskAsReal = this.isFictitiousBalanceActive && isDemo;
-                return shouldMaskAsReal ? '$0,00' : (isDemo ? 'Đ0,00' : '$0,00');
+                return shouldMaskAsReal ? `${this.preferredCurrencyPrefix}0,00` : (isDemo ? 'Đ0,00' : `${this.preferredCurrencyPrefix}0,00`);
             }
             const formatter = new Intl.NumberFormat('pt-BR', {
                 minimumFractionDigits: 2,
@@ -1493,16 +1495,16 @@ export default {
                           this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
                           (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
             
-            // If fictitious balance is active and this is a demo account, mask it as real ($)
+            // If fictitious balance is active and this is a demo account, mask it as real
             if (this.isFictitiousBalanceActive && isDemo) {
-                return `$${formatter.format(currentBalance)}`;
+                return `${this.preferredCurrencyPrefix}${formatter.format(currentBalance)}`;
             }
             
             if (isDemo) {
                 return `Đ${formatter.format(currentBalance)}`;
             }
-            // Se for real, usar apenas $
-            return `$${formatter.format(currentBalance)}`;
+            // Se for real, usar prefixo preferido
+            return `${this.preferredCurrencyPrefix}${formatter.format(currentBalance)}`;
         },
 
         // Profit percentage
@@ -1594,7 +1596,7 @@ export default {
                     closedAt: trade.closedAt,
                     // ✅ FORMATTED PNL (Color Coding Support)
                     pnl: profitLoss != null 
-                        ? (profitLoss >= 0 ? `+$${Math.abs(profitLoss).toFixed(2)}` : `-$${Math.abs(profitLoss).toFixed(2)}`)
+                        ? (profitLoss >= 0 ? `+${this.preferredCurrencyPrefix}${Math.abs(profitLoss).toFixed(2)}` : `-${this.preferredCurrencyPrefix}${Math.abs(profitLoss).toFixed(2)}`)
                         : null
                 };
             });
@@ -1692,20 +1694,21 @@ export default {
         
         // Formatar valor PnL para colocar sinal negativo antes do $
         formatPnlValue(pnl) {
-            if (!pnl) return '$0.00';
+            if (!pnl) return `${this.preferredCurrencyPrefix}0.00`;
             // Se já começa com +, retornar como está
             if (pnl.startsWith('+')) return pnl;
-            // Se tem $ seguido de -, formatar para -$valor
-            if (pnl.includes('$-')) {
-                return pnl.replace('$-', '-$');
+            // Se tem sinal seguido de -, formatar para -sinal valor
+            const prefix = this.preferredCurrencyPrefix;
+            if (pnl.includes(`${prefix}-`)) {
+                return pnl.replace(`${prefix}-`, `-${prefix}`);
             }
-            // Se começa com -$, já está correto
-            if (pnl.startsWith('-$')) return pnl;
-            // Se começa com $ mas não tem sinal, verificar se é negativo
-            if (pnl.startsWith('$')) {
-                const value = parseFloat(pnl.replace('$', '').replace('+', ''));
+            // Se começa com -sinal, já está correto
+            if (pnl.startsWith(`-${prefix}`)) return pnl;
+            // Se começa com sinal mas não tem sinal, verificar se é negativo
+            if (pnl.startsWith(prefix)) {
+                const value = parseFloat(pnl.replace(prefix, '').replace('+', ''));
                 if (value < 0) {
-                    return '-$' + Math.abs(value).toFixed(2);
+                    return `-${prefix}` + Math.abs(value).toFixed(2);
                 }
             }
             return pnl;
@@ -2044,8 +2047,8 @@ export default {
             // Log 1: Configurações Iniciais
             const mode = this.sessionConfig.mode ? this.sessionConfig.mode.toUpperCase() : 'VELOZ';
             const risk = this.sessionConfig.modoMartingale ? this.sessionConfig.modoMartingale.toUpperCase() : 'MODERADO';
-            const profitTarget = this.sessionConfig.profitTarget ? `$${this.sessionConfig.profitTarget.toFixed(2)}` : '$50.00';
-            const lossLimit = this.sessionConfig.lossLimit ? `$${this.sessionConfig.lossLimit.toFixed(2)}` : '$50.00';
+            const profitTarget = this.sessionConfig.profitTarget ? `${this.preferredCurrencyPrefix}${this.sessionConfig.profitTarget.toFixed(2)}` : `${this.preferredCurrencyPrefix}50.00`;
+            const lossLimit = this.sessionConfig.lossLimit ? `${this.preferredCurrencyPrefix}${this.sessionConfig.lossLimit.toFixed(2)}` : `${this.preferredCurrencyPrefix}50.00`;
             
             this.addLog('info', '⚙️ CONFIGURAÇÕES INICIAIS');
             this.addLog('info', `• Estratégia: ORION`);
@@ -2082,8 +2085,8 @@ export default {
 
         logSoros(nivel, lucroAnterior, novaStake) {
             this.addLog('info', `🚀 APLICANDO SOROS NÍVEL ${nivel}`);
-            this.addLog('info', `• Lucro Anterior: $${lucroAnterior.toFixed(2)}`);
-            this.addLog('info', `• Nova Stake (Base + Lucro): $${novaStake.toFixed(2)}`);
+            this.addLog('info', `• Lucro Anterior: ${this.preferredCurrencyPrefix}${lucroAnterior.toFixed(2)}`);
+            this.addLog('info', `• Nova Stake (Base + Lucro): ${this.preferredCurrencyPrefix}${novaStake.toFixed(2)}`);
         },
 
         logDefesa(motivo, acao) {
@@ -2095,32 +2098,32 @@ export default {
         logResetMartingale() {
             this.addLog('info', '♻️ LIMITE DE RECUPERAÇÃO ATINGIDO (CONSERVADOR)');
             this.addLog('info', '• Ação: Aceitando perda e resetando stake.');
-            this.addLog('info', `• Próxima Entrada: Valor Inicial ($${(this.sessionConfig.entryValue || 1).toFixed(2)})`);
+            this.addLog('info', `• Próxima Entrada: Valor Inicial (${this.preferredCurrencyPrefix}${(this.sessionConfig.entryValue || 1).toFixed(2)})`);
         },
 
         logAjusteStake(tipo, calculada, restante, acao) {
             this.addLog('alerta', `⚠️ AJUSTE DE RISCO (${tipo.toUpperCase()})`);
-            this.addLog('alerta', `• Stake Calculada: $${calculada.toFixed(2)}`);
-            this.addLog('alerta', `• ${tipo === 'STOP BLINDADO' ? 'Lucro Protegido Restante' : 'Saldo Restante até Stop'}: $${restante.toFixed(2)}`);
-            this.addLog('alerta', `• Ação: Stake reduzida para $${restante.toFixed(2)} para ${acao}`);
+            this.addLog('alerta', `• Stake Calculada: ${this.preferredCurrencyPrefix}${calculada.toFixed(2)}`);
+            this.addLog('alerta', `• ${tipo === 'STOP BLINDADO' ? 'Lucro Protegido Restante' : 'Saldo Restante até Stop'}: ${this.preferredCurrencyPrefix}${restante.toFixed(2)}`);
+            this.addLog('alerta', `• Ação: Stake reduzida para ${this.preferredCurrencyPrefix}${restante.toFixed(2)} para ${acao}`);
         },
         
         logStatusStopBlindado(lucroAtual, faltaParaAtivar) {
             this.addLog('info', '🔒 STATUS STOP BLINDADO');
-            this.addLog('info', `• Lucro Atual: $${lucroAtual.toFixed(2)}`);
-            this.addLog('info', `• Falta para Ativar: $${faltaParaAtivar.toFixed(2)}`);
+            this.addLog('info', `• Lucro Atual: ${this.preferredCurrencyPrefix}${lucroAtual.toFixed(2)}`);
+            this.addLog('info', `• Falta para Ativar: ${this.preferredCurrencyPrefix}${faltaParaAtivar.toFixed(2)}`);
         },
 
         logStopBlindadoAtivado(lucroAtingido, protecao) {
              this.addLog('alerta', '🛡️ STOP BLINDADO ATIVADO!');
-             this.addLog('alerta', `• Lucro Atingido: $${lucroAtingido.toFixed(2)} (40% da Meta)`);
-             this.addLog('alerta', `• Proteção Iniciada: Garantindo $${protecao.toFixed(2)} (50% do Pico)`);
+             this.addLog('alerta', `• Lucro Atingido: ${this.preferredCurrencyPrefix}${lucroAtingido.toFixed(2)} (40% da Meta)`);
+             this.addLog('alerta', `• Proteção Iniciada: Garantindo ${this.preferredCurrencyPrefix}${protecao.toFixed(2)} (50% do Pico)`);
         },
         
         logStopBlindadoAtingido(lucroGarantido) {
             this.addLog('erro', '🛑 STOP BLINDADO ATINGIDO');
             this.addLog('erro', '• Motivo: Lucro retornou ao piso de proteção.');
-            this.addLog('erro', `• Ação: Encerrando operações com LUCRO GARANTIDO de $${lucroGarantido.toFixed(2)}.`);
+            this.addLog('erro', `• Ação: Encerrando operações com LUCRO GARANTIDO de ${this.preferredCurrencyPrefix}${lucroGarantido.toFixed(2)}.`);
         },
 
         logStopLossNormalAtingido() {
@@ -2131,7 +2134,7 @@ export default {
 
         logMetaLucroAtingida(lucroTotal) {
             this.addLog('resultado', '🏆 META DE LUCRO ATINGIDA!');
-            this.addLog('resultado', `• Lucro Total: $${lucroTotal.toFixed(2)}`);
+            this.addLog('resultado', `• Lucro Total: ${this.preferredCurrencyPrefix}${lucroTotal.toFixed(2)}`);
             this.addLog('resultado', '• Ação: Parabéns! Encerrando operações por hoje.');
         },
         

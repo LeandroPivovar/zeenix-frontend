@@ -239,7 +239,7 @@
 									</div>
 								</label>
 								<div class="input-wrapper">
-									<span class="input-prefix-premium">$</span>
+									<span class="input-prefix-premium">{{ preferredCurrencyPrefix }}</span>
 									<input 
 										type="number" 
 										class="form-input" 
@@ -264,7 +264,7 @@
 									</div>
 								</label>
 								<div class="input-wrapper">
-									<span class="input-prefix-premium">$</span>
+									<span class="input-prefix-premium">{{ preferredCurrencyPrefix }}</span>
 									<input 
 										type="number" 
 										class="form-input" 
@@ -291,7 +291,7 @@
 									</div>
 								</label>
 								<div class="input-wrapper">
-									<span class="input-prefix-premium">$</span>
+									<span class="input-prefix-premium">{{ preferredCurrencyPrefix }}</span>
 									<input 
 										type="number" 
 										class="form-input" 
@@ -448,10 +448,12 @@
 
 <script>
 import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
+	import accountBalanceMixin from '@/mixins/accountBalanceMixin';
 
-export default {
-	// *** MODIFICAÇÃO 2: Nome do componente corrigido ***
-	name: 'AgenteAutonomoInactive',
+	export default {
+		// *** MODIFICAÇÃO 2: Nome do componente corrigido ***
+		name: 'AgenteAutonomoInactive',
+		mixins: [accountBalanceMixin],
 	components: {
 		InvalidParamsModal
 	},
@@ -532,7 +534,7 @@ export default {
 					assertiveness: '91% a 95%',
 					return: '91% / 95%',
 					benefits: [
-						'Ideal para banca acima de $500',
+						'Ideal para banca acima de {{ preferredCurrencyPrefix }}500',
 						'Proteção de capital',
 						'Foco em consistência diária',
 						'Menor exposição ao risco'
@@ -758,21 +760,21 @@ export default {
 			return map[id] || id;
 		},
 		updateValorOperacao(event) {
-			const value = event.target.value.replace('$', '').replace(',', '');
+			const value = event.target.value.replace(this.preferredCurrencyPrefix, '').replace(',', '');
 			const numValue = parseFloat(value);
 			if (!isNaN(numValue)) {
 				this.valorOperacao = numValue;
 			}
 		},
 		updateMetaLucro(event) {
-			const value = event.target.value.replace('$', '').replace(',', '');
+			const value = event.target.value.replace(this.preferredCurrencyPrefix, '').replace(',', '');
 			const numValue = parseFloat(value);
 			if (!isNaN(numValue)) {
 				this.metaLucro = numValue;
 			}
 		},
 		updateLimitePerda(event) {
-			const value = event.target.value.replace('$', '').replace(',', '');
+			const value = event.target.value.replace(this.preferredCurrencyPrefix, '').replace(',', '');
 			const numValue = parseFloat(value);
 			if (!isNaN(numValue)) {
 				this.limitePerda = numValue;
