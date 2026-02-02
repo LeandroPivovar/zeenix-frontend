@@ -2010,23 +2010,30 @@ export default {
             this.showFilterModal = true;
         },
         toggleFilter(filter) {
-            const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
-            const targetFilter = targetArray.find(f => f.id === filter.id);
+            console.log(`[toggleFilter] Clicked: ${filter.name} (${filter.id}) | Current Active: ${filter.active}`);
             
-            if (!targetFilter) return;
-
-            if (targetFilter.active) {
-                targetFilter.active = false;
+            // Fix: Reverting to direct assignment as $set is not available (Vue 3)
+            // Removed $forceUpdate as it was causing internal Vue errors ("Symbol(_vei)")
+            
+            if (filter.active) {
+                console.log('[toggleFilter] Deactivating filter...');
+                filter.active = false;
                 return;
             }
 
+            // Count validation
+            const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
             const activeCount = targetArray.filter(f => f.active).length;
+            console.log(`[toggleFilter] Current Active Count: ${activeCount}`);
+            
             if (activeCount >= 2) {
+                console.warn('[toggleFilter] Limit reached (2). Blocked.');
                 this.$root.$toast.warning('Selecione no máximo 2 filtros.');
                 return;
             }
 
-            targetFilter.active = true;
+            console.log('[toggleFilter] Activating filter...');
+            filter.active = true;
         },
         nextFilterStep() {
             const sourceArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
