@@ -89,6 +89,8 @@ export const RiskManager = {
         // Se o valor for > 1.0, assumimos que é um multiplicador total e subtraímos o stake (1.0).
         const profitRate = (estimatedPayout > 1.0) ? (estimatedPayout - 1.0) : estimatedPayout;
 
+        console.log(`[RiskManager] Calc Stake Debug: ConfigPayout=${configPayout}, Explicit=${explicitPayout}, History=${this.payoutHistory[historyKey]}, Default=${this.payoutDefaults[tradeType]}, ESTIMATED=${estimatedPayout}, PROFIT_RATE=${profitRate}`);
+
 
         // 1. RECOVERY MODE
         if (state.analysisType === 'RECUPERACAO') {

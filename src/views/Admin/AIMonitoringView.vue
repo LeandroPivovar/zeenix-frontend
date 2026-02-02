@@ -1128,6 +1128,8 @@ export default {
             
             console.log('[AIMonitoring] calculateNextStake:', {
                 isRecovery,
+                configPayout: config.expectedPayout,
+                configRisk: config.riskProfile,
                 consecutiveWins: this.sessionState.consecutiveWins,
                 lastResultWin: this.sessionState.lastResultWin,
                 skipSorosNext: this.sessionState.skipSorosNext,
