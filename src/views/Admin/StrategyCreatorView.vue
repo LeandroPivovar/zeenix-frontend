@@ -2675,8 +2675,8 @@ export default {
                             if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
                                 this.pendingFastResult.contractId = msg.buy.contract_id;
                                 this.pendingFastResult.payout = payout; // Store real payout
-                                this.pendingFastResult.active = true;
-                                console.log('[FastResult] Monitoramento rápido ativado para o próximo tick.');
+                                // this.pendingFastResult.active = true; // ✅ DESATIVADO: Aguardar resultado oficial
+                                console.log('[FastResult] Monitoramento rápido desativado para o próximo tick.');
                             }
 
                             // CRITICAL: isNegotiating is NOT reset here. 
@@ -3174,7 +3174,7 @@ export default {
                 // For a loss, we don't know the real payout unless we saved it from proposal. 
                 // But for a WIN, we know exactly.
                 if (trade.result === 'WON') {
-                     const payoutRate = trade.pnl / trade.stake;
+                     const payoutRate = (trade.pnl + trade.stake) / trade.stake;
                      
                      // Determine prefix (use stored analysisType from trade if available, or current? Trade has it)
                      const prefix = (trade.analysisType === 'RECUPERACAO') ? 'RECUPERACAO_' : 'PRINCIPAL_';

@@ -937,8 +937,8 @@ export default {
                                 if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
                                     this.pendingFastResult.contractId = msg.buy.contract_id;
                                     this.pendingFastResult.payout = payout; // Store real payout
-                                    this.pendingFastResult.active = true;
-                                    console.log('[FastResult] Monitoramento rápido ativado no AIMonitoring.');
+                                    // this.pendingFastResult.active = true; // ✅ DESATIVADO: Aguardar resultado oficial
+                                    console.log('[FastResult] Monitoramento rápido desativado por solicitação.');
                                 }
 
                                 this.subscribeToContract(msg.buy.contract_id);
@@ -1275,8 +1275,9 @@ export default {
                     if (trade.result === 'WON') this.monitoringStats.wins++;
                     else this.monitoringStats.losses++;
                     
-                    // Store old analysis type for logging
+                    // Store old states for logging
                     const oldAnalysis = this.sessionState.analysisType;
+                    const oldMode = this.sessionState.negotiationMode;
                     
                     RiskManager.processTradeResult(
                         this.sessionState, 
@@ -1288,6 +1289,11 @@ export default {
                     );
 
                     this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
+
+                    // Mode Switching Logs
+                    if (this.sessionState.negotiationMode !== oldMode) {
+                        this.addLog('Alteração de Sensibilidade', [`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`], 'warning');
+                    }
 
                     // Recovery Logs
                     if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
