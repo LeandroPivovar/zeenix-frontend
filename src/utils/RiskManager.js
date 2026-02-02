@@ -84,20 +84,10 @@ export const RiskManager = {
         const configPayout = config.expectedPayout || null;
         let estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
 
-        // CRITICAL: Normalize Payout to represent the Multiplier (e.g. 1.26 for +26% OR 2.26 for +126%)
-        // If the number is small (e.g. 0.95), it's likely just the profit rate.
-        // If it's 1.26 and we ARE in a high-payout contract (like Under 4), we need to be careful.
-        // Strategy: We want the "Profit Rate" = (Payout - Stake) / Stake.
-        // If the input is 0.19, Profit Rate = 0.19. Multiplier = 1.19.
-        // If the input is 1.26, Profit Rate = 1.26. Multiplier = 2.26.
-        // Rule: If payout < 1, it's a rate. If payout >= 1, it's likely already the rate for high-payouts OR a multiplier for low-payouts.
-        // To be safe, we assume anything provided is the PROFIT RATE (e.g. 0.95 or 1.26).
-        // Then Multiplier = 1 + Rate.
+        // Treat any provided value (from config or history) as the DIRECT PROFIT RATE 
+        // Example: 0.95 = 95% profit, 1.26 = 126% profit.
 
         let profitRate = estimatedPayout;
-        if (estimatedPayout > 1.0) {
-            profitRate = estimatedPayout - 1;
-        }
 
 
         // 1. RECOVERY MODE
