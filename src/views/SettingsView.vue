@@ -49,7 +49,7 @@
         {{ saveButtonText }}
       </button>
 
-      <main class="flex-1 p-4 lg:p-8 pt-8">
+      <main class="flex-1 p-4 lg:p-8 pt-[80px] lg:pt-[100px]">
         <div v-if="loading" class="flex items-center justify-center h-64">
           <div class="text-zenix-secondary">Carregando configurações...</div>
         </div>
@@ -1140,8 +1140,8 @@ main {
   .mobile-settings-container {
     background: #0b0b0b !important;
     position: relative;
-    padding: 0rem 1rem 6rem;
-    min-height: calc(100vh - 80px);
+    padding: 1.5rem 1rem 12rem;
+    min-height: calc(100vh - 60px);
   }
 
   .mobile-settings-container::before {
