@@ -1074,26 +1074,50 @@ export default {
             }
         },
         runAIAnalysis() {
-            // ✅ Sincronização: Aguardar resultado do contrato antes de nova análise
-            if (this.activeContracts.size > 0) return;
+            // ✅ Sincronização: Aguardar resultado do contrato ou resultado rápido
+            if (this.activeContracts.size > 0 || this.isNegotiating) return;
+            if (this.pendingFastResult && this.pendingFastResult.active) return;
 
-            const strategyKey = this.currentConfig.strategy.toLowerCase();
-            const strategyConfig = strategyConfigs[strategyKey];
-            if (!strategyConfig || !strategyConfig.config) return;
-            const attackFilters = strategyConfig.config.form.attackFilters || [];
-            if (attackFilters.length === 0) return;
-            const data = { tickHistory: this.tickHistory, digitHistory: this.digitHistory };
-            const results = attackFilters.map(filter => StrategyAnalysis.evaluate(filter, data));
+            // Determinar quais filtros usar (Ataque ou Recuperação Estratégica)
+            const activeFilters = this.sessionState.activeStrategy === 'RECUPERACAO' 
+                ? (this.recoveryConfig.attackFilters || []) 
+                : (this.currentConfig.attackFilters || []);
+                
+            if (activeFilters.length === 0) return;
+
+            const data = { 
+                tickHistory: this.tickHistory, 
+                digitHistory: this.digitHistory 
+            };
+
+            // ✅ CRITICAL: Pass negotiationMode to evaluate
+            const results = activeFilters.map(filter => 
+                StrategyAnalysis.evaluate(filter, data, this.sessionState.negotiationMode)
+            );
+
             const allPassed = results.every(r => r.pass);
-            results.forEach(res => { if (!res.pass) this.addLog(`🔍 ${res.reason}`, 'info'); });
+
+            // Log analysis failures (Density, Momentum, etc.)
+            results.forEach(res => { 
+                if (!res.pass) this.addLog(`🔍 ${res.reason}`, 'info'); 
+            });
+
             if (allPassed) {
-                this.addLog('Sinal de Entrada', [
-                    `Análise: PRINCIPAL`,
-                    `Direção: CONFIRMADA`,
-                    `Contrato: EVALUATING`,
-                    `Ação: Executar ordem`
-                ], 'success');
-                this.executeAITrade(strategyConfig);
+                const mode = this.sessionState.negotiationMode;
+                const isRec = this.sessionState.activeStrategy === 'RECUPERACAO';
+                
+                let analysisLog = `🧠 ANÁLISE DO MERCADO<br>` +
+                    `• MODO: ${mode} ${isRec ? '(RECUPERAÇÃO)' : ''}<br>` +
+                    `• STATUS: Confirmado<br>` +
+                    `• GATILHO: Filtros de Ataque Atendidos<br><br>` +
+                    `📝 DETALHES:<br>`;
+
+                results.forEach(res => {
+                    analysisLog += `• ${res.name}: ${res.details}<br>`;
+                });
+
+                this.addLog('Sinal de Entrada Corretora', analysisLog, 'success');
+                this.executeAITrade();
             }
         },
         calculateNextStake() {
