@@ -798,7 +798,7 @@ export default {
                         `Stop Loss: ${this.currencySymbol}${(this.currentConfig.lossLimit || 100).toFixed(2)}`,
                         `Estratégia: ${this.currentConfig.strategy.toUpperCase()}`,
                         `Payout Mínimo: ${this.currentConfig.expectedPayout}x`,
-                        `Payout Recuperação: ${this.recoveryConfig.expectedPayout}x`
+                        `Payout Recuperação: ${this.recoveryConfig?.expectedPayout || this.recoveryConfig?.minPayout || 1.26}x`
                     ], 'info');
 
                     this.addLog('Configuração Inicial', [
