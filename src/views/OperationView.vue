@@ -44,7 +44,7 @@
         <div class="view-toggle-bar-wrapper">
           <div class="view-toggle-bar">
             <button
-              class="px-6 py-3 bg-zenix-card text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300 desktop-only"
+              class="px-6 py-3 bg-zenix-card text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
               :class="{ 'border-b-2 border-zenix-green text-zenix-text font-semibold shadow-[0_0_8px_rgba(0,0,0,0.25)]': currentView === 'OperationChart' && activeSubTab === 'chart', 'border-b-2 border-transparent text-[#7A7A7A]': currentView !== 'OperationChart' || activeSubTab !== 'chart' }"
               @click="changeView('OperationChart')"
             >
