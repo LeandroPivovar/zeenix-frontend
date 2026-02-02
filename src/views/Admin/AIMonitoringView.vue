@@ -632,6 +632,17 @@ export default {
             profitHistory: [0], // Start with 0 profit
             activeContracts: new Map(),
             
+            // Fast Result Support
+            pendingFastResult: {
+                active: false,
+                contractId: null,
+                barrier: null,
+                contractType: null,
+                stake: 0,
+                payout: 0,
+                analysisType: 'PRINCIPAL'
+            },
+
             // Chart Controls
             activeChartMode: 'profit', // 'profit' or 'tick'
             chart: null,
@@ -921,8 +932,19 @@ export default {
                                     `Payout Potencial: ${this.currencySymbol}${payout}`,
                                     `Status: aguardar execução`
                                 ], 'success');
+
+                                // Activate fast result calculation if it's 1-tick
+                                if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
+                                    this.pendingFastResult.contractId = msg.buy.contract_id;
+                                    this.pendingFastResult.payout = payout; // Store real payout
+                                    this.pendingFastResult.active = true;
+                                    console.log('[FastResult] Monitoramento rápido ativado no AIMonitoring.');
+                                }
+
                                 this.subscribeToContract(msg.buy.contract_id);
-                                this.isNegotiating = false;
+                                
+                                // CRITICAL: isNegotiating is NOT reset here. 
+                                // It will be reset in handleContractUpdate or handleTickMessage (Fast Result)
                             }
                         }
 
@@ -1003,6 +1025,47 @@ export default {
                 if (this.series) {
                     this.series.update(tickObj);
                 }
+
+                // --- Fast Result Calculation ---
+                if (this.pendingFastResult && this.pendingFastResult.active) {
+                    const lastDigit = parseInt(price.toString().slice(-1));
+                    const { contractId, barrier, contractType, stake } = this.pendingFastResult;
+                    
+                    let win = false;
+                    if (contractType === 'DIGITUNDER') win = lastDigit < barrier;
+                    else if (contractType === 'DIGITOVER') win = lastDigit > barrier;
+                    else if (contractType === 'DIGITMATCH') win = lastDigit === barrier;
+                    else if (contractType === 'DIGITDIFF') win = lastDigit !== barrier;
+                    else if (contractType === 'DIGITEVEN') win = lastDigit % 2 === 0;
+                    else if (contractType === 'DIGITODD') win = lastDigit % 2 !== 0;
+
+                    this.addLog('Resultado Rápido (1-Tick)', [
+                        `Status: ${win ? 'GANHOU' : 'PERDEU'}`,
+                        `Dígito: ${lastDigit}`,
+                        `Ação: Liberando trava para próxima análise`
+                    ], win ? 'success' : 'error');
+                    
+                    // Pre-update trade in activeContracts if present
+                    const trade = this.activeContracts.get(contractId);
+                    if (trade) {
+                        trade.result = win ? 'WON' : 'LOST';
+                        trade.fastResultApplied = true;
+                    }
+
+                    // Update stats immediately
+                    const realPayout = this.pendingFastResult.payout || (stake * (this.sessionState.analysisType === 'RECUPERACAO' ? this.sessionState.lastPayoutRecovery : this.sessionState.lastPayoutPrincipal) + stake);
+                    const estimatedProfit = win ? (realPayout - stake) : -stake;
+
+                    if (win) this.monitoringStats.wins++;
+                    else this.monitoringStats.losses++;
+
+                    RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake, this.pendingFastResult.analysisType, this.recoveryConfig.lossesToActivate);
+                    
+                    // Release locks
+                    this.pendingFastResult.active = false;
+                    this.isNegotiating = false; 
+                    this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
+                }
                 
                 const lastDigit = parseInt(price.toString().slice(-1));
                 this.digitHistory.unshift(lastDigit);
@@ -1076,8 +1139,18 @@ export default {
             // ✅ Calculate stake dynamically
             const stake = this.calculateNextStake();
             
-            // Update Contract Type state for logging
+            // Update Contract Type state for logging and Fast Result
             this.sessionState.lastContractType = config.tradeType;
+            this.pendingFastResult = {
+                active: false,
+                contractId: null,
+                barrier: config.prediction,
+                contractType: config.tradeType,
+                stake: stake,
+                duration: config.duration || 1,
+                durationUnit: config.durationUnit || 't',
+                analysisType: this.sessionState.analysisType
+            };
             
             const proposalParams = {
                 proposal: 1,
@@ -1135,6 +1208,9 @@ export default {
                 };
                 this.monitoringOperations.unshift(trade);
                 this.activeContracts.set(id, trade);
+                
+                // Release lock if not handled by Fast Result
+                this.isNegotiating = false;
             } else {
                 trade.pnl = contract.profit || 0;
                 if (contract.entry_tick_display_value) trade.entryPrice = contract.entry_tick_display_value;
