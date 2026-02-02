@@ -566,7 +566,7 @@ export default {
                 message,
                 type
             });
-            if (this.monitoringLogs.length > 100) this.monitoringLogs = this.monitoringLogs.slice(0, 100);
+            if (this.monitoringLogs.length > 5000) this.monitoringLogs = this.monitoringLogs.slice(0, 5000);
         }
     }
 }

@@ -3218,7 +3218,7 @@ export default {
                 message,
                 type
             });
-            if (this.monitoringLogs.length > 100) this.monitoringLogs.pop();
+            if (this.monitoringLogs.length > 5000) this.monitoringLogs.pop();
         }
     }
 }

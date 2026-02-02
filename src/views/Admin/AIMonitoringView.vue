@@ -1279,7 +1279,7 @@ export default {
         addLog(title, messages, type = 'info') {
             const time = new Date().toLocaleTimeString();
             this.monitoringLogs.unshift({ title, details: Array.isArray(messages) ? messages : [messages], type, time });
-            if (this.monitoringLogs.length > 100) this.monitoringLogs = this.monitoringLogs.slice(0, 100);
+            if (this.monitoringLogs.length > 5000) this.monitoringLogs = this.monitoringLogs.slice(0, 5000);
         },
         getContractDisplayName(type) {
             if (!type) return 'Operação';
