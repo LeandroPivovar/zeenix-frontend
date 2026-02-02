@@ -235,34 +235,46 @@
                                 </h3>
                                 
                                 <div class="space-y-4 relative z-10">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                        <div 
-                                            v-for="filter in filters" 
-                                            :key="filter.id"
-                                            class="bg-[#1E1E1E] border rounded-lg p-3 flex flex-col gap-3 transition-all relative overflow-hidden group"
-                                            :class="filter.active ? 'border-zenix-green bg-zenix-green/5' : 'border-[#333] hover:border-[#555]'"
+                                    <div v-if="activeAttackFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
+                                        <p class="text-gray-400 text-sm mb-3">Nenhum filtro de ataque configurado. O robô entrará em cada sinal disponível.</p>
+                                        <button 
+                                            type="button" 
+                                            @click="openFilterModal('main')"
+                                            class="bg-zenix-green/10 text-zenix-green border border-zenix-green/30 px-6 py-2 rounded-lg hover:bg-zenix-green/20 transition-all font-bold text-sm"
                                         >
-                                            <div class="flex justify-between items-start">
-                                                <div class="flex items-center gap-2">
-                                                     <div @click.stop="toggleFilter(filter, 'main')" class="cursor-pointer">
-                                                        <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
-                                                             :class="filter.active ? 'bg-zenix-green border-zenix-green' : 'border-[#444] group-hover:border-[#666]'">
-                                                            <i v-if="filter.active" class="fa-solid fa-check text-black text-[10px]"></i>
-                                                        </div>
-                                                     </div>
-                                                     <span class="text-sm font-bold text-white selection-none cursor-pointer" @click.stop="toggleFilter(filter, 'main')">{{ filter.name }}</span>
-                                                </div>
-                                                
-                                                <button 
-                                                    v-if="filter.active"
-                                                    @click.stop="openFilterConfig('main')"
-                                                    class="text-xs bg-[#111] border border-[#333] hover:border-zenix-green text-gray-300 hover:text-white px-2 py-1 rounded transition-colors"
-                                                >
-                                                    <i class="fa-solid fa-sliders"></i>
+                                            Adicionar Filtros
+                                        </button>
+                                    </div>
+                                    
+                                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div v-for="filter in activeAttackFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
+                                            <div class="flex items-center gap-3">
+                                                 <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+                                                    <i class="fa-solid fa-filter"></i>
+                                                 </div>
+                                                 <div>
+                                                    <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
+                                                    <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
+                                                 </div>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <button type="button" @click="openFilterConfigDirect(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
+                                                    <i class="fa-solid fa-gear text-xs"></i>
+                                                </button>
+                                                <button type="button" @click="removeFilter(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
+                                                    <i class="fa-solid fa-times text-xs"></i>
                                                 </button>
                                             </div>
-                                            <p class="text-[10px] text-gray-500 leading-tight">{{ filter.desc }}</p>
                                         </div>
+                                        <button 
+                                            v-if="activeAttackFilters.length < 2"
+                                            type="button" 
+                                            @click="openFilterModal('main')"
+                                            class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
+                                        >
+                                            <i class="fa-solid fa-plus text-xs"></i>
+                                            <span class="text-sm">Adicionar Filtro</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -368,33 +380,47 @@
                                         <div class="flex items-end gap-2">
                                         <div class="col-span-full">
                                              <label class="block text-white font-bold mb-2 text-sm">Filtros de Recuperação</label>
-                                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3" style="max-height: 200px; overflow-y: auto;">
-                                                 <div 
-                                                    v-for="filter in recoveryFilters" 
-                                                    :key="filter.id"
-                                                    class="bg-[#1E1E1E] border rounded-lg p-3 flex flex-col gap-3 transition-all relative overflow-hidden group"
-                                                    :class="filter.active ? 'border-zenix-green bg-zenix-green/5' : 'border-[#333] hover:border-[#555]'"
-                                                >
-                                                    <div class="flex justify-between items-start">
-                                                        <div class="flex items-center gap-2">
-                                                             <div @click.stop="toggleFilter(filter, 'recovery')" class="cursor-pointer">
-                                                                <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
-                                                                     :class="filter.active ? 'bg-zenix-green border-zenix-green' : 'border-[#444] group-hover:border-[#666]'">
-                                                                    <i v-if="filter.active" class="fa-solid fa-check text-black text-[10px]"></i>
-                                                                </div>
-                                                             </div>
-                                                             <span class="text-sm font-bold text-white selection-none cursor-pointer" @click.stop="toggleFilter(filter, 'recovery')">{{ filter.name }}</span>
-                                                        </div>
-                                                        
-                                                        <button 
-                                                            v-if="filter.active"
-                                                            @click.stop="openFilterConfig('recovery')"
-                                                            class="text-xs bg-[#111] border border-[#333] hover:border-zenix-green text-gray-300 hover:text-white px-2 py-1 rounded transition-colors"
-                                                        >
-                                                            <i class="fa-solid fa-sliders"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
+                                             
+                                             <div v-if="activeRecoveryFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
+                                                 <p class="text-gray-400 text-sm mb-3">Nenhum filtro de recuperação configurado.</p>
+                                                 <button 
+                                                     type="button" 
+                                                     @click="openFilterModal('recovery')"
+                                                     class="bg-zenix-green/10 text-zenix-green border border-zenix-green/30 px-6 py-2 rounded-lg hover:bg-zenix-green/20 transition-all font-bold text-sm"
+                                                 >
+                                                     Adicionar Filtros
+                                                 </button>
+                                             </div>
+
+                                             <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                 <div v-for="filter in activeRecoveryFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
+                                                     <div class="flex items-center gap-3">
+                                                          <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+                                                             <i class="fa-solid fa-filter"></i>
+                                                          </div>
+                                                          <div>
+                                                             <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
+                                                             <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
+                                                          </div>
+                                                     </div>
+                                                     <div class="flex items-center gap-2">
+                                                         <button type="button" @click="openFilterConfigDirect(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
+                                                             <i class="fa-solid fa-gear text-xs"></i>
+                                                         </button>
+                                                         <button type="button" @click="removeFilter(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
+                                                             <i class="fa-solid fa-times text-xs"></i>
+                                                         </button>
+                                                     </div>
+                                                 </div>
+                                                 <button 
+                                                     v-if="activeRecoveryFilters.length < 2"
+                                                     type="button" 
+                                                     @click="openFilterModal('recovery')"
+                                                     class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
+                                                 >
+                                                     <i class="fa-solid fa-plus text-xs"></i>
+                                                     <span class="text-sm">Adicionar Filtro</span>
+                                                 </button>
                                              </div>
                                         </div>
                                              <button 
@@ -730,8 +756,10 @@
                 <div class="modal-content categorized-modal" style="max-width: 600px">
                     <div class="modal-header">
                         <div class="flex items-center gap-3">
-                            <!-- Removed Back Button since Step 1 is inline now -->
-                            <h3 class="modal-title font-bold text-white">Configurar Filtros</h3>
+                            <button v-if="filterStep === 2" @click="prevFilterStep" class="text-gray-400 hover:text-white transition-colors">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <h3 class="modal-title font-bold text-white">{{ filterStep === 1 ? (modalContext === 'main' ? 'Selecionar Filtros de Ataque' : 'Selecionar Filtros de Recuperação') : 'Configurar Filtros' }}</h3>
                         </div>
                         <button @click="showFilterModal = false" class="modal-close-btn">
                             <i class="fa-solid fa-times"></i>
@@ -1787,6 +1815,12 @@ export default {
 
             return sortedGrouped;
         },
+        activeAttackFilters() {
+            return this.filters.filter(f => f.active);
+        },
+        activeRecoveryFilters() {
+            return this.recoveryFilters.filter(f => f.active);
+        },
         selectedMarketLabel() {
             const market = this.markets.find(m => m.symbol === this.form.market); // Using 'symbol' property usually used in StrategyCreator
             if (market) return market.displayName || market.label;
@@ -2026,11 +2060,13 @@ export default {
         // Filter Management Methods
         openFilterModal(context = 'main') {
             this.modalContext = context;
-            this.filterStep = 1;
+            this.filterStep = 1; // Always start at selection list
             this.showFilterModal = true;
         },
-        toggleFilter(filter, context = 'main') {
-            const targetArray = context === 'main' ? this.filters : this.recoveryFilters;
+        toggleFilter(filter) {
+            console.log(`[toggleFilter] Clicked: ${filter.name} (${filter.id}) | Current Active: ${filter.active}`);
+            
+            const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
             const index = targetArray.findIndex(f => f.id === filter.id);
 
             if (index === -1) return;
@@ -2052,15 +2088,27 @@ export default {
             const newFilter = { ...filter, active: newState };
             targetArray.splice(index, 1, newFilter);
             
-            // Auto-open config if activated
+            // Auto move to config if activated
             if (newState) {
-                this.openFilterConfig(context);
+                this.nextFilterStep();
             }
         },
         
-        openFilterConfig(context) {
+        removeFilter(filter, context) {
+             const targetArray = context === 'main' ? this.filters : this.recoveryFilters;
+             const index = targetArray.findIndex(f => f.id === filter.id);
+             
+             if (index !== -1) {
+                 // Deactivate filter
+                 const newFilter = { ...filter, active: false };
+                 targetArray.splice(index, 1, newFilter);
+                 this.$root.$toast.info(`Filtro ${filter.name} removido.`);
+             }
+        },
+
+        openFilterConfigDirect(filter, context) {
             this.modalContext = context;
-            this.filterStep = 2; // Jump directly to config
+            this.filterStep = 2;
             this.showFilterModal = true;
         },
 
@@ -2363,17 +2411,21 @@ export default {
             }
 
             // Restore filters active state for main
-            this.filters.forEach(f => {
+            this.filters.forEach((f, index) => {
                 const active = this.form.attackFilters.find(af => af.id === f.id);
-                f.active = !!active;
-                if (active) f.config = { ...active.config };
+                // Force reactivity using splice
+                const newFilter = { ...f, active: !!active };
+                if (active) newFilter.config = { ...active.config };
+                this.filters.splice(index, 1, newFilter);
             });
 
             // Restore filters active state for recovery
-            this.recoveryFilters.forEach(f => {
+            this.recoveryFilters.forEach((f, index) => {
                 const active = this.recoveryConfig.attackFilters.find(af => af.id === f.id);
-                f.active = !!active;
-                if (active) f.config = { ...active.config };
+                // Force reactivity using splice
+                const newFilter = { ...f, active: !!active };
+                if (active) newFilter.config = { ...active.config };
+                this.recoveryFilters.splice(index, 1, newFilter);
             });
 
             this.addLog(`📂 Estratégia carregada: ${strategy.name}`, 'info');
