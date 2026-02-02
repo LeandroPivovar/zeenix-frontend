@@ -1195,9 +1195,6 @@ export default {
                 }, 50);
             };
 
-            // Adicionado: Carregar mercados do backend
-            this.fetchMarkets();
-
             this.ws.onmessage = (event) => {
                 try {
                     const msg = JSON.parse(event.data);
