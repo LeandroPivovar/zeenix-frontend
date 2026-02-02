@@ -833,7 +833,10 @@ export default {
                     const connection = JSON.parse(connectionStr);
                     // ✅ PRIORITIZE token directly from connection object (saved by selectAccount)
                     if (connection.token) {
-                        console.log('[AIMonitoringView] Using token directly from deriv_connection');
+                        console.log('[AIMonitoringView] Using token directly from deriv_connection. LoginID:', connection.loginid);
+                        if (connection.loginid && connection.loginid.startsWith('M')) { // Valid account check
+                             // Just logging.
+                        }
                         return connection.token.trim();
                     }
 
