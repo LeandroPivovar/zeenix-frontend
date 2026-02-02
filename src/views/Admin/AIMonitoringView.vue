@@ -924,18 +924,35 @@ export default {
                                 this.monitoringStats.balance = msg.authorize.balance;
                                 this.accountType = msg.authorize.is_virtual ? 'demo' : 'real';
                                 
-                                // ✅ VERIFY ACCOUNT MATCH
+                                // ✅ AUTO-CORRECTION FOR ACCOUNT MISMATCH
                                 try {
                                     const conn = JSON.parse(localStorage.getItem('deriv_connection') || '{}');
                                     if (conn.loginid && conn.loginid !== msg.authorize.loginid) {
                                          console.warn('[AIMonitoringView] ⚠️ Account Mismatch! Expected:', conn.loginid, 'Got:', msg.authorize.loginid);
-                                         this.addLog('⚠️ Alerta de Conta', [
-                                             `Esperado: ${conn.loginid}`,
-                                             `Conectado: ${msg.authorize.loginid}`,
-                                             `Ação: Verifique configuração`
-                                         ], 'warning');
+                                         
+                                         // Attempt to find the correct token
+                                         const allTokens = JSON.parse(localStorage.getItem('deriv_tokens_by_loginid') || '{}');
+                                         const correctToken = allTokens[conn.loginid];
+
+                                         if (correctToken) {
+                                             this.addLog('🔄 Correção Automática', [
+                                                 `Conta incorreta detectada (${msg.authorize.loginid})`,
+                                                 `Alternando para: ${conn.loginid}`,
+                                                 `Ação: Reautorizando...`
+                                             ], 'warning');
+                                             
+                                             // Re-authorize immediately
+                                             this.ws.send(JSON.stringify({ authorize: correctToken }));
+                                             return; // ⛔ STOP processing this wrong authorization
+                                         } else {
+                                             this.addLog('⚠️ Erro Fatal de Conta', [
+                                                 `Esperado: ${conn.loginid}`,
+                                                 `Conectado: ${msg.authorize.loginid}`,
+                                                 `Falha: Token correto não encontrado`
+                                             ], 'error');
+                                         }
                                     }
-                                } catch (e) { console.error('Error verifying account match:', e); }
+                                } catch (e) { console.error('Error in account auto-correction:', e); }
 
                                 this.addLog('Execução Confirmada', [
                                     `Status: Autorizado`,
