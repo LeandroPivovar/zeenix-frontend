@@ -2013,12 +2013,11 @@ export default {
             console.log(`[toggleFilter] Clicked: ${filter.name} (${filter.id}) | Current Active: ${filter.active}`);
             
             // Fix: Reverting to direct assignment as $set is not available (Vue 3)
-            // Keeping $forceUpdate to ensure UI refresh if reactivity is lost
+            // Removed $forceUpdate as it was causing internal Vue errors ("Symbol(_vei)")
             
             if (filter.active) {
                 console.log('[toggleFilter] Deactivating filter...');
                 filter.active = false;
-                this.$forceUpdate(); 
                 return;
             }
 
@@ -2035,7 +2034,6 @@ export default {
 
             console.log('[toggleFilter] Activating filter...');
             filter.active = true;
-            this.$forceUpdate(); 
         },
         nextFilterStep() {
             const sourceArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
