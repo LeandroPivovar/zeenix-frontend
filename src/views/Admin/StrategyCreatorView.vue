@@ -2656,34 +2656,23 @@ export default {
                             console.log(`[WS] Sucesso! ID: ${msg.buy.contract_id}, Entrada: $${stake}, Payout: $${payout} (${profitPercent}%)`);
                             
                             const profitExpected = (payout - stake).toFixed(2);
-                            let contractType = this.sessionState.lastContractType || 'Desconhecido';
                             
-                            // Append Barrier if available (Critical for user to see contract switch)
-                            const config = (this.sessionState.analysisType === 'RECUPERACAO') ? this.recoveryConfig : this.form;
-                            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(contractType)) {
-                                 contractType += ` (${config.prediction})`;
+                            // Get real barrier from proposal config stored in pendingFastResult
+                            let barrierInfo = '';
+                            if (this.pendingFastResult && this.pendingFastResult.barrier !== undefined) {
+                                barrierInfo = ` (${this.pendingFastResult.barrier})`;
                             }
 
                             const purchaseLog = `🚀 COMPRA REALIZADA!<br>` +
-                                `• Contrato: ${contractType}<br>` +
+                                `• Contrato: ${this.sessionState.lastContractType || 'Desconhecido'}${barrierInfo}<br>` +
                                 `• Investimento: $${stake.toFixed(2)}<br>` +
                                 `• Payout Esperado: $${payout.toFixed(2)} (${profitPercent}%)<br>` +
                                 `• Lucro Esperado: $${profitExpected}`;
                                 
                             this.addLog(purchaseLog, 'success');
                             
-                            // Activate fast result calculation if it's 1-tick
-                            /* 
-                                DISABLED FAST RESULT: User requested to rely on official broker response only.
-                            if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
-                                this.pendingFastResult.contractId = msg.buy.contract_id;
-                                this.pendingFastResult.payout = payout; // Store real payout for fast result estimation
-                                this.pendingFastResult.active = true;
-                                console.log('[FastResult] Monitoramento rápido ativado para o próximo tick.');
-                            }
-                            */
-                            
-                            this.isNegotiating = false; // Reset lock on success
+                            // CRITICAL: isNegotiating is NOT reset here. 
+                            // It will be reset in handleContractUpdate when the contract is officially tracked.
                             this.subscribeToContract(msg.buy.contract_id);
                         }
                     }
@@ -3112,6 +3101,11 @@ export default {
                 };
                 this.monitoringOperations.unshift(trade);
                 this.activeContracts.set(id, trade);
+                
+                // CRITICAL: Release negotiation lock only when contract is officially tracked
+                // This avoids race conditions where a second buy is triggered before the first is registered.
+                this.isNegotiating = false; 
+                console.log(`[StrategyCreator] Contract ${id} tracked. Releasing isNegotiating lock.`);
             } else {
                 trade.pnl = contract.profit || 0;
             }
@@ -3130,6 +3124,9 @@ export default {
                 if (trade.fastResultApplied) {
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
                 } else {
+                    const oldAnalysis = this.sessionState.analysisType;
+                    const oldMode = this.sessionState.negotiationMode;
+
                     // ✅ CORRECTED LOGIC: Process ALL results (WIN and LOSS) if not fast-processed
                     trade.fastResultApplied = true;
                     if (trade.result === 'WON') this.monitoringStats.wins++;
@@ -3144,9 +3141,6 @@ export default {
                         trade.analysisType, 
                         this.recoveryConfig.lossesToActivate
                     );
-
-                    const oldAnalysis = this.sessionState.analysisType;
-                    const oldMode = this.sessionState.negotiationMode;
                     
                     // Sync legacy mode
                     this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
