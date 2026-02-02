@@ -2,10 +2,9 @@
     <div class="zenix-layout">
 
         <AppSidebar 
-            class="app-sidebar"
-            :class="{ 'mobile-open': isMobileMenuOpen }"
             :is-open="isSidebarOpen" 
             :is-collapsed="isSidebarCollapsed" 
+            @close-sidebar="closeSidebar"
             @toggle-collapse="toggleSidebarCollapse" 
         />
 
@@ -19,7 +18,7 @@
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
                 @account-type-changed="handleAccountTypeChange"
-                @toggle-sidebar="toggleMobileMenu"
+                @toggle-sidebar="toggleMobileSidebar"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
                 @open-settings="toggleSettingsModal"
             />
@@ -297,9 +296,6 @@ export default {
         },
         toggleMobileSidebar() {
             this.isSidebarOpen = !this.isSidebarOpen;
-        },
-        toggleMobileMenu() {
-            this.isMobileMenuOpen = !this.isMobileMenuOpen;
         },
         handleAccountTypeChange(newAccountType) {
             this.isDemo = newAccountType === 'demo';
