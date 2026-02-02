@@ -1719,7 +1719,7 @@ export default {
             for (const filter of this.activeFilters) {
                 if (!filter.active) continue;
                 
-                const result = StrategyAnalysis.evaluate(filter, data);
+                const result = StrategyAnalysis.evaluate(filter, data, this.mode || 'VELOZ');
                 if (!result.pass) {
                     allPassed = false;
                     break;
@@ -1857,6 +1857,7 @@ export default {
         this.stopPolling(); // Para os ticks do gráfico
         this.stopStatsUpdates(); // Para as estatísticas diárias
         this.stopBalancePolling(); // Do Mixin
+        this.stopTickConnection(); // ✅ [ZENIX v3.5] IMPORTANTE: Matar conexão WebSocket e análise
     },
 }
 </script>

@@ -169,7 +169,7 @@ export default {
             };
 
             // Initialize Risk Session
-            this.sessionState = RiskManager.initSession(this.form.initialStake);
+            this.sessionState = RiskManager.initSession(this.form.mode || 'VELOZ');
             
             // Populate extra fields for MonitoringDashboard UI
             this.sessionState.strategy = this.form.strategy;
@@ -383,7 +383,9 @@ export default {
             if (!activeFilters || activeFilters.length === 0) return;
 
             const data = { tickHistory: this.tickHistory, digitHistory: this.digitHistory };
-            const results = activeFilters.map(filter => StrategyAnalysis.evaluate(filter, data));
+            const results = activeFilters.map(filter => 
+                StrategyAnalysis.evaluate(filter, data, this.sessionState.negotiationMode)
+            );
             const allPassed = results.every(r => r.pass);
 
             // Detailed logging like Strategy Creator

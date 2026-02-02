@@ -761,7 +761,7 @@ export default {
                     this.currentConfig.initialStake = parseFloat(this.currentConfig.initialStake || this.currentConfig.stake);
                     
                     // Inicializar Risk Session com valores corretos
-                    this.sessionState = RiskManager.initSession(this.currentConfig.initialStake);
+                    this.sessionState = RiskManager.initSession(this.currentConfig.mode || 'VELOZ');
                     this.sessionState.activeStrategy = 'PRINCIPAL';
                     
                     // Initial Logs according to ZENIX protocol
@@ -1132,8 +1132,29 @@ export default {
                 totalLossAccumulated: this.sessionState.totalLossAccumulated
             });
             
-            const stake = RiskManager.calculateNextStake(this.sessionState, config);
+            let stake = RiskManager.calculateNextStake(this.sessionState, config);
             
+            // ✅ SURVIVAL MODE: Proteger limites de Meta e Stop Loss
+            const currentProfit = this.monitoringStats.profit;
+            const estimatedPayout = config.expectedPayout || 1.20;
+            
+            // Preparar estado do Stop Blindado
+            const blindadoState = {
+                active: this.sessionState.stopBlindadoActive,
+                floor: this.sessionState.stopBlindadoFloor
+            };
+
+            const survivalStake = RiskManager.applySurvivalMode(stake, currentProfit, config, estimatedPayout, blindadoState);
+            
+            if (survivalStake < stake) {
+                this.addLog('🛡️ Survival Mode', [
+                    `Stake ajustada para proteger limites`,
+                    `Original: ${this.currencySymbol}${stake.toFixed(2)}`,
+                    `Nova: ${this.currencySymbol}${survivalStake.toFixed(2)}`
+                ], 'warning');
+                stake = survivalStake;
+            }
+
             // Log Soros if active
             if (!isRecovery && this.sessionState.consecutiveWins === 2 && this.sessionState.lastResultWin) {
                 this.addLog('Gestão Soros', [
@@ -1143,7 +1164,7 @@ export default {
                 ], 'info');
             }
             
-            console.log('[AIMonitoring] Calculated stake:', stake);
+            console.log('[AIMonitoring] Calculated stake (after survival):', stake);
             return stake;
         },
         executeAITrade() {
@@ -1328,6 +1349,31 @@ export default {
                 if (this.profitHistory.length > 50) this.profitHistory.shift();
                 
                 this.monitoringStats.balance = parseFloat(this.monitoringStats.balance) + trade.pnl;
+
+                // ✅ UPDATE PEAK PROFIT & STOP BLINDADO
+                if (this.monitoringStats.profit > this.sessionState.peakProfit) {
+                    this.sessionState.peakProfit = this.monitoringStats.profit;
+                }
+
+                // Stop Blindado Trigger (at 50% of target)
+                const target = this.currentConfig.profitTarget || 10;
+                if (!this.sessionState.stopBlindadoActive && target > 0 && this.monitoringStats.profit >= (target * 0.5)) {
+                    this.sessionState.stopBlindadoActive = true;
+                    // Protect 40% of peak profit
+                    this.sessionState.stopBlindadoFloor = this.sessionState.peakProfit * 0.4;
+                    
+                    this.addLog('🛡️ STOP BLINDADO ATIVADO', [
+                        `Meta: ${this.currencySymbol}${target.toFixed(2)}`,
+                        `Gatilho (50%): ${this.currencySymbol}${(target * 0.5).toFixed(2)} atingido`,
+                        `Proteção (40% do topo): ${this.currencySymbol}${this.sessionState.stopBlindadoFloor.toFixed(2)} garantidos`
+                    ], 'success');
+                } else if (this.sessionState.stopBlindadoActive) {
+                    // Update floor if peak profit increases
+                    const newFloor = this.sessionState.peakProfit * 0.4;
+                    if (newFloor > this.sessionState.stopBlindadoFloor) {
+                        this.sessionState.stopBlindadoFloor = newFloor;
+                    }
+                }
                 this.activeContracts.delete(id);
             }
         },

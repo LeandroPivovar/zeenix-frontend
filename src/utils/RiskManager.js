@@ -19,6 +19,11 @@ export const RiskManager = {
     payoutHistory: {},
 
     initSession(initialNegotiationMode = 'VELOZ', strategyName = null) {
+        // ✅ Ensure initialNegotiationMode is always a string (prevents TypeError in evaluate)
+        if (typeof initialNegotiationMode !== 'string') {
+            console.warn('[RiskManager] initialNegotiationMode was not a string, defaulting to VELOZ');
+            initialNegotiationMode = 'VELOZ';
+        }
         return {
             isRecoveryMode: false,
             isStopped: false,

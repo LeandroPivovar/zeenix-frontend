@@ -20,7 +20,12 @@ export const StrategyAnalysis = {
         let activeConfig = config;
 
         // Normalize Mode String
-        const modeKey = (mode || 'VELOZ').toLowerCase(); // veloz, moderado, preciso...
+        let modeKey = 'veloz';
+        if (typeof mode === 'string') {
+            modeKey = mode.toLowerCase();
+        } else if (mode && typeof mode.toString === 'function') {
+            modeKey = mode.toString().toLowerCase();
+        }
 
         // Map 'moderado' to 'normal' key if used in config
         let configKey = modeKey;
