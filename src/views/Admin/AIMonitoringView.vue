@@ -756,6 +756,12 @@ export default {
                         // Se quisermos permitir override via UI no futuro:
                         // ...parsed.recoveryConfig
                     };
+
+                    // ✅ FORCE RECOVERY PAYOUT FIX for Apollo/Nexus
+                    if (this.currentConfig.strategy.toLowerCase() === 'apollo' || this.currentConfig.strategy.toLowerCase() === 'nexus') {
+                        this.recoveryConfig.expectedPayout = 1.26; // User requested explicit 1.26
+                        this.recoveryConfig.expectedPayoutIsRate = true; // Flag for RiskManager
+                    }
                     
                     // Garantir types corretos
                     this.currentConfig.initialStake = parseFloat(this.currentConfig.initialStake || this.currentConfig.stake);
@@ -785,7 +791,17 @@ export default {
                     console.error('Error loading config:', e);
                     this.addLog('Erro Config', `Falha ao carregar configuração: ${e.message}`, 'error');
                 }
+            } else {
+                console.warn('Nenhuma configuração salva encontrada. Usando defaults.');
             }
+
+            // ✅ CLEAN & SAVE: Ensure the sanitized config is what persists for reloads
+            // This fulfills "apague os dados no localstorage e salve novamente" with CORRECT data
+            const cleanConfig = {
+                ...this.currentConfig,
+                recoveryConfig: this.recoveryConfig
+            };
+            localStorage.setItem('ai_active_config', JSON.stringify(cleanConfig));
         },
         getDerivToken() {
             try {

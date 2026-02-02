@@ -1080,6 +1080,7 @@ export default {
                     market: this.selectedMarket
                 };
 
+                localStorage.removeItem('ai_active_config'); // 🗑️ Limpar dados anteriores
                 localStorage.setItem('ai_active_config', JSON.stringify(config));
                 console.log('[InvestmentIAView] ✅ Configuração salva no localStorage:', config);
 

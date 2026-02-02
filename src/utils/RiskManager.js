@@ -87,7 +87,13 @@ export const RiskManager = {
         // ✅ NORMALIZAÇÃO CRÍTICA: Deriv provê multiplicadores totais (ex: 2.26). 
         // A fórmula de Martingale exige a Taxa de Lucro Líquido (ex: 1.26).
         // Se o valor for > 1.0, assumimos que é um multiplicador total e subtraímos o stake (1.0).
-        const profitRate = (estimatedPayout > 1.0) ? (estimatedPayout - 1.0) : estimatedPayout;
+        // EXCEÇÃO: Se config.expectedPayoutIsRate === true, usamos o valor RAW.
+        let profitRate;
+        if (config.expectedPayoutIsRate) {
+            profitRate = estimatedPayout;
+        } else {
+            profitRate = (estimatedPayout > 1.0) ? (estimatedPayout - 1.0) : estimatedPayout;
+        }
 
         console.log(`[RiskManager] Calc Stake Debug: ConfigPayout=${configPayout}, Explicit=${explicitPayout}, History=${this.payoutHistory[historyKey]}, Default=${this.payoutDefaults[tradeType]}, ESTIMATED=${estimatedPayout}, PROFIT_RATE=${profitRate}`);
 
