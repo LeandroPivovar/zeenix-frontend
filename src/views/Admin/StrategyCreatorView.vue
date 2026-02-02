@@ -3015,6 +3015,9 @@ export default {
                 }
 
                 if (this.checkLimits()) return;
+                
+                // CRITICAL: Lock negotiation to avoid multiple simultaneous analysis/purchases from different ticks
+                this.isNegotiating = true;
 
                 // Note: isRecovery for logic is based on activeStrategy (filters/contracts)
                 const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
@@ -3075,6 +3078,7 @@ export default {
                 this.ws.send(JSON.stringify(proposalParams));
 
             } catch (err) {
+                this.isNegotiating = false;
                 console.error('[StrategyCreator] Erro fatal em executeRealTrade:', err);
                 this.addLog(`❌ ERRO NO SISTEMA: ${err.message}`, 'error');
             }
