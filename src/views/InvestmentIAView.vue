@@ -1239,7 +1239,7 @@ export default {
         },
 
         async selectAccount(account) {
-            console.log('[InvestmentIAView] Conta selecionada:', account.loginid);
+            console.log('[InvestmentIAView] Conta selecionada:', account); // Improved log
             this.selectedToken = account.token;
             this.accountType = account.isDemo ? 'demo' : 'real';
             localStorage.setItem('deriv_account_type', this.accountType);
@@ -1255,11 +1255,15 @@ export default {
                  // Optimistic local update
                 localStorage.setItem('trade_currency', tradeCurrency);
                 localStorage.setItem('deriv_token', account.token);
+                
                 // ✅ UPDATE deriv_connection to ensure AIMonitoringView uses the correct token
-                localStorage.setItem('deriv_connection', JSON.stringify({
+                const connectionData = {
                     loginid: account.loginid,
-                    token: account.token
-                }));
+                    token: account.token,
+                    isDemo: account.isDemo
+                };
+                console.log('[InvestmentIAView] Saving deriv_connection:', connectionData);
+                localStorage.setItem('deriv_connection', JSON.stringify(connectionData));
 
                 await fetch(`${apiBase}/settings/deriv-token`, {
                     method: 'POST',
@@ -1268,6 +1272,14 @@ export default {
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
+                        token: account.token,
+                        active_loginid: account.loginid
+                    })
+                });
+            } catch (error) {
+                console.error('Erro ao salvar token no backend:', error);
+            }
+        },
                         token: account.token,
                         tradeCurrency: tradeCurrency
                     })
