@@ -1,5 +1,5 @@
 <template>
-    <div class="sbt-sidebar-wrapper" style="background: transparent !important;">
+    <div class="sbt-sidebar-wrapper" :class="{ 'sbt-collapsed': isCollapsed }" style="background: transparent !important;">
         <div v-if="isOpen && isMobile" class="sbt-sidebar-overlay" @click="$emit('close-sidebar')"></div>
         <aside 
             id="app-sidebar-transparent"

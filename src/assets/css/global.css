@@ -230,17 +230,17 @@ body,
 
 
   /* Hover expansion synchronization */
-  .sbt-sidebar-wrapper:hover~.dashboard-content-wrapper,
-  .sbt-sidebar-wrapper:hover~.content-wrapper,
-  .sbt-sidebar-wrapper:hover~.main-content-wrapper,
-  .sbt-sidebar-wrapper:hover~.operation-main,
-  .sbt-sidebar-wrapper:hover~.box-content,
-  .sbt-sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar,
-  .sbt-sidebar-wrapper:hover~.content-wrapper #top-navbar,
-  .sbt-sidebar-wrapper:hover~.main-content-wrapper #top-navbar,
-  .sbt-sidebar-wrapper:hover~.operation-main #top-navbar,
-  .sbt-sidebar-wrapper:hover~.box-content #top-navbar {
-    --sidebar-width: 280px;
+  .sidebar-wrapper:hover~.dashboard-content-wrapper,
+  .sidebar-wrapper:hover~.content-wrapper,
+  .sidebar-wrapper:hover~.main-content-wrapper,
+  .sidebar-wrapper:hover~.operation-main,
+  .sidebar-wrapper:hover~.box-content,
+  .sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar,
+  .sidebar-wrapper:hover~.content-wrapper #top-navbar,
+  .sidebar-wrapper:hover~.main-content-wrapper #top-navbar,
+  .sidebar-wrapper:hover~.operation-main #top-navbar,
+  .sidebar-wrapper:hover~.box-content #top-navbar {
+    --sidebar-width: 280px !important;
     padding-left: var(--sidebar-width) !important;
     width: 100% !important;
   }
@@ -321,17 +321,15 @@ body,
 
 .sidebar-collapsed.full-immersion-layout,
 .sidebar-collapsed .full-immersion-layout,
-.sbt-collapsed.full-immersion-layout,
-.sbt-collapsed .full-immersion-layout,
-.sbt-sidebar-wrapper.sbt-collapsed:not(:hover)~.full-immersion-layout,
-.sbt-sidebar-wrapper.sbt-collapsed:not(:hover)~.dashboard-content-wrapper.full-immersion-layout {
+.sidebar-wrapper.collapsed:not(:hover)~.full-immersion-layout,
+.sidebar-wrapper.collapsed:not(:hover)~.dashboard-content-wrapper.full-immersion-layout {
   --sidebar-width: 80px;
 }
 
 /* Hover expansion synchronization */
-.sbt-sidebar-wrapper:hover~.full-immersion-layout,
-.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper.full-immersion-layout {
-  --sidebar-width: 280px;
+.sidebar-wrapper:hover~.full-immersion-layout,
+.sidebar-wrapper:hover~.dashboard-content-wrapper.full-immersion-layout {
+  --sidebar-width: 280px !important;
 }
 
 .dashboard-content-wrapper {

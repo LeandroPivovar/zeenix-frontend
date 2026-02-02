@@ -182,13 +182,17 @@
 						</div>
 					</div>
 
-					<!-- Agent Switcher Dropdown (Robust Grid Layout - Final Fix) -->
+					<!-- Agent Switcher Dropdown (Responsive Fix) -->
 					<div 
 						v-if="showAgentSwitcher"
-						class="absolute top-full left-0 mt-4 w-[460px] bg-[#0c0c0c] border border-[#27272a] rounded-lg shadow-2xl z-[60] overflow-hidden animate-fade-in"
+						class="absolute top-full mt-4 bg-[#0c0c0c] border border-[#27272a] rounded-xl shadow-2xl z-[60] overflow-hidden animate-fade-in"
+						:class="isMobile ? 'fixed inset-x-4 top-[20%] bottom-auto h-auto max-h-[70vh] w-auto' : 'left-0 w-[460px]'"
 					>
-						<div class="p-4 border-b border-[#27272a] bg-[#121212]/50">
+						<div class="sticky top-0 p-4 border-b border-[#27272a] bg-[#121212] z-10 flex items-center justify-between">
 							<h4 class="text-[11px] font-bold text-[#A1A1AA] uppercase tracking-wider text-left">SELECIONE O AGENTE</h4>
+							<button v-if="isMobile" @click="showAgentSwitcher = false" class="text-[#A1A1AA] hover:text-white">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+							</button>
 						</div>
 						
 						<div class="max-h-[420px] overflow-y-auto custom-scrollbar p-3">

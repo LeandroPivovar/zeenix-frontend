@@ -67,11 +67,15 @@ aside.sidebar,
 	}
 
 	/* Expansão do conteúdo principal */
-	.sidebar-wrapper~.dashboard-content-wrapper {
-		transition: margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	.sidebar-wrapper~.dashboard-content-wrapper,
+	.sidebar-wrapper~.content-wrapper,
+	.sidebar-wrapper~.main-content-wrapper {
+		transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
-	.sidebar-wrapper:hover~.dashboard-content-wrapper {
+	.sidebar-wrapper:hover~.dashboard-content-wrapper,
+	.sidebar-wrapper:hover~.content-wrapper,
+	.sidebar-wrapper:hover~.main-content-wrapper {
 		padding-left: 280px !important;
 	}
 
@@ -127,12 +131,6 @@ aside.sidebar,
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 		justify-content: flex-start;
 		overflow: hidden;
-	}
-
-	@media (max-width: 1024px) {
-		.brand-logo-container {
-			display: none !important;
-		}
 	}
 
 	.collapse-toggle-btn {
@@ -590,7 +588,7 @@ aside.sidebar,
 	top: 0;
 	left: 0;
 	z-index: 1001;
-	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+	transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
 }
 
 .menu-item {

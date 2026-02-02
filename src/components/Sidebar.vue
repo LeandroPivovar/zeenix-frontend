@@ -1,5 +1,5 @@
 <template>
-    <div class="sidebar-wrapper">
+    <div class="sidebar-wrapper" :class="{ 'collapsed': isCollapsed }">
         <div v-if="isOpen && isMobile" class="sidebar-overlay" @click="$emit('close-sidebar')"></div>
         <aside 
             id="app-sidebar-main"
