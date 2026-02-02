@@ -54,7 +54,7 @@
                                     </span>
                                 </div>
                                 <div class="h-5 overflow-hidden">
-                                    <p class="text-xs lg:text-sm text-foreground/90 font-medium transition-all duration-300 opacity-100 translate-y-0 uppercase tracking-widest">
+                                    <p class="text-[10px] lg:text-xs text-foreground/90 font-medium transition-all duration-300 opacity-100 translate-y-0 uppercase tracking-widest">
                                         {{ iaStatusDisplay }}
                                     </p>
                                 </div>
@@ -156,7 +156,7 @@
                     <!-- Card 3: Parameters -->
                     <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Eventos</span>
+                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Entrada</span>
                             <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ currentConfig.stake.toFixed(2).replace('.', ',') }}</span>
                         </div>
                         <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
@@ -449,7 +449,7 @@
                             <!-- Parameters -->
                             <div class="mt-3 p-4 rounded-xl bg-secondary/60 border border-border/60 space-y-2.5">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-xs text-muted-foreground uppercase tracking-wider">Eventos</span>
+                                    <span class="text-xs text-muted-foreground uppercase tracking-wider">Entrada</span>
                                     <span class="text-sm font-bold text-foreground">{{ currencySymbol }}{{ currentConfig.stake.toFixed(2) }}</span>
                                 </div>
                                 <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
@@ -472,8 +472,8 @@
 
                             <!-- IA EM FUNCIONAMENTO / Footer -->
                             <div class="mt-4 mb-5 relative z-10 px-1">
-                                <h4 class="text-[13px] font-bold text-[#D4D4D4] uppercase mb-1 text-left">IA Em Funcionamento</h4>
-                                <p class="text-[11px] text-[#AAAAAA] leading-snug text-left">
+                                <h4 class="text-[11px] font-bold text-[#D4D4D4] uppercase mb-1 text-left">IA Em Funcionamento</h4>
+                                <p class="text-[9px] text-[#AAAAAA] leading-snug text-left">
                                     Monitorando o mercado e executando apenas quando há vantagem estatística.
                                 </p>
                             </div>

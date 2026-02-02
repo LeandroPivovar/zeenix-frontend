@@ -37,22 +37,17 @@
         @close="closeSettingsModal"
         @account-type-changed="switchAccount"
       />
-      <!-- Header -->
-      <header id="header" class="sticky top-0 z-30 glass-effect border-b border-zenix-border" style="margin-top: 60px;">
-        <div class="px-4 lg:px-8 py-4 flex items-center justify-between">
-          <div class="flex items-center space-x-4 lg:space-x-6">
-          </div>
-          <button 
-            @click="saveAll" 
-            :disabled="saving"
-            class="bg-zenix-green hover:bg-zenix-green-hover text-white px-4 lg:px-6 py-2 lg:py-2.5 rounded-xl transition-all font-semibold text-sm flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span v-if="saving" class="mr-2"><i class="fas fa-spinner fa-spin"></i></span>
-            <i v-else class="fas fa-save mr-2"></i>
-            {{ saveButtonText }}
-          </button>
-        </div>
-      </header>
+      <!-- Fixed Save Button for Desktop -->
+      <button 
+        v-if="!isMobile"
+        @click="saveAll" 
+        :disabled="saving"
+        class="fixed bottom-[30px] right-[30px] z-50 bg-zenix-green hover:bg-zenix-green-hover text-white px-8 py-3 rounded-2xl shadow-lg shadow-zenix-green/20 transition-all font-bold text-sm flex items-center disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+      >
+        <span v-if="saving" class="mr-2"><i class="fas fa-spinner fa-spin"></i></span>
+        <i v-else class="fas fa-save mr-2"></i>
+        {{ saveButtonText }}
+      </button>
 
       <main class="flex-1 p-4 lg:p-8 pt-8">
         <div v-if="loading" class="flex items-center justify-center h-64">
@@ -307,22 +302,53 @@
         <div class="max-w-7xl mx-auto lg:hidden space-y-6 px-4 mobile-settings-container">
           <!-- Profile Section -->
           <div class="bg-zenix-card border border-zenix-border rounded-2xl p-6 premium-card mobile-card-gradient">
-            <div class="text-center mb-6">
+            <h3 class="text-base font-bold text-white mb-5 uppercase tracking-[2px] text-center border-b border-white/5 pb-4">Edição de Perfil</h3>
+            <div class="text-center mb-6 pt-2">
               <div class="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden bg-zenix-card flex items-center justify-center">
                 <img v-if="profilePictureFullUrl" :src="profilePictureFullUrl" alt="Profile" class="w-full h-full rounded-full object-cover">
                 <i v-else class="fas fa-user text-4xl text-zenix-secondary"></i>
               </div>
               <h2 class="text-lg font-bold text-white mb-1 text-center">{{ settings.name || 'Usuário' }}</h2>
-              <p class="text-zenix-secondary text-xs text-center">{{ settings.email }}</p>
-              <p v-if="settings.planExpirationDate" class="text-zenix-secondary text-xs text-center mt-1">
-                Expiração do plano em {{ formatDate(settings.planExpirationDate) }}
-              </p>
+              <p class="text-zenix-secondary text-xs text-center border-b border-zenix-border/10 pb-4 mb-4">{{ settings.email }}</p>
+              
+              <div class="space-y-4 px-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center text-zenix-secondary text-[11px] uppercase font-bold tracking-wider">
+                    <i class="fas fa-envelope mr-2"></i>
+                    <span>E-mail</span>
+                  </div>
+                  <span class="text-zenix-text text-xs">{{ settings.email }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center text-zenix-secondary text-[11px] uppercase font-bold tracking-wider">
+                    <i class="fas fa-phone mr-2"></i>
+                    <span>Telefone</span>
+                  </div>
+                  <span class="text-zenix-text text-xs">{{ settings.phone || 'Não definido' }}</span>
+                </div>
+              </div>
+
+              <div v-if="settings.planExpirationDate" class="mt-4 pt-4 border-t border-zenix-border/10 text-center">
+                <p class="text-zenix-secondary text-[10px] uppercase font-bold tracking-widest">
+                  Expiração: <span class="text-zenix-green">{{ formatDate(settings.planExpirationDate) }}</span>
+                </p>
+              </div>
             </div>
-            <div class="grid grid-cols-2 gap-3">
-              <button @click="openEditNameModal" class="hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-2.5 rounded-xl transition-all text-xs" style="background-color: #1d1c1d;">
+            <div class="flex flex-col gap-3">
+              <button @click="openEditNameModal" class="w-full hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all text-xs font-bold uppercase tracking-wider" style="background-color: #1d1c1d;">
+                <i class="fas fa-edit mr-2"></i>
                 Editar Nome
               </button>
-              <button @click="openChangePhotoModal" class="hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-2.5 rounded-xl transition-all text-xs" style="background-color: #1d1c1d;">
+              <button @click="openEditEmailModal" class="w-full hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all text-xs font-bold uppercase tracking-wider" style="background-color: #1d1c1d;">
+                <i class="fas fa-envelope mr-2"></i>
+                Alterar E-mail
+              </button>
+              <button @click="openEditPhoneModal" class="w-full hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all text-xs font-bold uppercase tracking-wider" style="background-color: #1d1c1d;">
+                <i class="fas fa-phone mr-2"></i>
+                Alterar Telefone
+              </button>
+              <button @click="openChangePhotoModal" class="w-full hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all text-xs font-bold uppercase tracking-wider" style="background-color: #1d1c1d;">
+                <i class="fas fa-image mr-2"></i>
                 Trocar Foto
               </button>
             </div>
@@ -492,6 +518,18 @@
                 Nenhuma alteração registrada ainda.
               </div>
             </div>
+          </div>
+          <!-- Botão Salvar Mobile -->
+          <div class="pt-4 pb-10">
+            <button 
+              @click="saveAll" 
+              :disabled="saving"
+              class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white py-4 rounded-2xl transition-all font-black uppercase tracking-widest text-sm flex items-center justify-center shadow-lg shadow-zenix-green/20 disabled:opacity-50"
+            >
+              <span v-if="saving" class="mr-2"><i class="fas fa-spinner fa-spin"></i></span>
+              <i v-else class="fas fa-save mr-2"></i>
+              {{ saveButtonText }}
+            </button>
           </div>
         </div>
         </template>
@@ -1113,7 +1151,7 @@ main {
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(8, 36, 18, 0.05) 50%, transparent 80%);
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(34, 197, 94, 0.12) 0%, rgba(10, 53, 25, 0.08) 40%, transparent 100%);
     pointer-events: none;
     z-index: 0;
   }
@@ -1124,7 +1162,8 @@ main {
   }
 
   .mobile-card-gradient {
-    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.03) 0%, rgba(13, 20, 13, 0.95) 50%, rgba(0, 0, 0, 0.7) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.03) !important;
     position: relative;
   }
 
