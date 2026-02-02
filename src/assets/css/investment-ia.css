@@ -2109,15 +2109,15 @@ svg:not(:root).svg-inline--fa {
     overflow-y: auto;
 }
 
-/* Mobile: Modal full width and list layout */
+/* Mobile: Standard Modal Layout */
 @media (max-width: 768px) {
     .categorized-modal {
-        max-width: none !important;
+        max-width: 350px !important;
         width: 100%;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
+        background: #0D0D0D !important;
+        border: 1px solid #22C55E33 !important;
         padding: 0 !important;
+        /* Remove modal padding as requested */
     }
 
     .modal-body {
@@ -2125,54 +2125,18 @@ svg:not(:root).svg-inline--fa {
         background: transparent !important;
     }
 
-    .agent-option-premium {
+    .agent-option-footer-stats {
         flex-direction: row !important;
-        align-items: center !important;
-        padding: 1rem !important;
-        gap: 1rem !important;
-        background: #0D0D0D !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    }
-
-    .agent-option-content {
-        flex-direction: row !important;
-        align-items: center !important;
+        /* Force row layout on mobile */
         justify-content: space-between !important;
+        align-items: center !important;
+        padding-top: 0.75rem !important;
         gap: 0.5rem !important;
     }
 
-    .agent-option-footer-stats {
-        flex-direction: column-reverse !important;
-        /* Retorno above Assertividade */
-        align-items: flex-end !important;
-        gap: 0.25rem !important;
-        padding-top: 0 !important;
-        border-top: none !important;
-        min-width: 110px !important;
-        flex: 0 0 auto !important;
-    }
-
     .stat-item {
-        background: none !important;
-        border: none !important;
-        padding: 0 !important;
-        gap: 0.3rem !important;
-        justify-content: flex-end !important;
-    }
-
-    .stat-label {
-        font-size: 0.6rem !important;
-        color: rgba(255, 255, 255, 0.4) !important;
-        font-weight: 600 !important;
-    }
-
-    .stat-value {
-        font-size: 0.7rem !important;
-        color: rgba(255, 255, 255, 0.8) !important;
-    }
-
-    .stat-value.highlight {
-        color: #22C55E !important;
+        flex: 1 !important;
+        justify-content: center !important;
     }
 }
 
