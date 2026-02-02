@@ -84,12 +84,22 @@ export const RiskManager = {
         const configPayout = config.expectedPayout || null;
         let estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 0.95;
 
-        // CRITICAL: Ensure payout is a MULTIPLIER (e.g., 1.26 means $1 → $1.26)
-        // If user configured profit rate (0.26), convert to multiplier
-        if (estimatedPayout < 1 && estimatedPayout > 0) {
-            estimatedPayout = estimatedPayout + 1; // Convert 0.26 → 1.26
-            console.log(`[RiskManager] Converted profit rate ${(estimatedPayout - 1).toFixed(2)} to multiplier ${estimatedPayout.toFixed(2)}x`);
+        // CRITICAL: Normalize Payout to represent the Multiplier (e.g. 1.26 for +26% OR 2.26 for +126%)
+        // If the number is small (e.g. 0.95), it's likely just the profit rate.
+        // If it's 1.26 and we ARE in a high-payout contract (like Under 4), we need to be careful.
+        // Strategy: We want the "Profit Rate" = (Payout - Stake) / Stake.
+        // If the input is 0.19, Profit Rate = 0.19. Multiplier = 1.19.
+        // If the input is 1.26, Profit Rate = 1.26. Multiplier = 2.26.
+        // Rule: If payout < 1, it's a rate. If payout >= 1, it's likely already the rate for high-payouts OR a multiplier for low-payouts.
+        // To be safe, we assume anything provided is the PROFIT RATE (e.g. 0.95 or 1.26).
+        // Then Multiplier = 1 + Rate.
+
+        let profitRate = estimatedPayout;
+        if (profitRate > 5) { // Likely a multiplier for a high-payout like Match (8.00)
+            profitRate = estimatedPayout - 1;
         }
+
+        const multiplier = 1 + profitRate;
 
         // 1. RECOVERY MODE
         if (state.analysisType === 'RECUPERACAO') {
@@ -102,16 +112,17 @@ export const RiskManager = {
             // Calculate Stake to recover ALL losses + profit margin
             const lossToRecover = state.totalLossAccumulated;
 
-            // Formula: Stake * Payout = Target
-            // Target = Loss * (1 + profitMargin)
-            // Stake = Target / Payout
-            // With payout as multiplier (e.g., 1.26):
-            //   Stake = (Loss * (1 + margin)) / 1.26
-            // Example: ($1.00 * 1.15) / 1.26 = $0.91 ✅
+            // CORRECT Formula: Stake * ProfitRate = Target
+            // Target = LossToRecover * (1 + profitFactor)
+            // Stake = Target / ProfitRate
+            // Example: Loss $1.00, Margin 2%, ProfitRate 1.26
+            // Target = $1.02
+            // Stake = $1.02 / 1.26 = $0.81
 
-            const stake = (lossToRecover * (1 + profitFactor)) / estimatedPayout;
+            const target = lossToRecover * (1 + profitFactor);
+            const stake = target / profitRate;
 
-            console.log(`[RiskManager] Recovery Calc: Loss=$${lossToRecover.toFixed(2)}, Payout=${estimatedPayout.toFixed(2)}x, Margin=${(profitFactor * 100).toFixed(0)}%, Stake=$${stake.toFixed(2)}`);
+            console.log(`[RiskManager] Recovery Calc: Loss=$${lossToRecover.toFixed(2)}, Rate=${(profitRate * 100).toFixed(0)}%, Margin=${(profitFactor * 100).toFixed(0)}%, Target=$${target.toFixed(2)}, Stake=$${stake.toFixed(2)}`);
 
             // Safety: Min stake 0.35, Round up to 2 decimals
             return Math.max(0.35, Math.ceil(stake * 100) / 100);
