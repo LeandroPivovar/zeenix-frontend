@@ -2011,17 +2011,14 @@ export default {
         },
         toggleFilter(filter) {
             console.log(`[toggleFilter] Clicked: ${filter.name} (${filter.id}) | Current Active: ${filter.active}`);
-            console.log(`[toggleFilter] Context: ${this.modalContext}`);
             
             // Fix: Use the filter reference directly to avoid ID collision or lookup issues
-            // This ensures we toggle the exact item clicked in the UI
+            // Fix 2: Use this.$set to ensure Vue 2 reactivity triggers
             
-            // Toggle Logic
             if (filter.active) {
                 console.log('[toggleFilter] Deactivating filter...');
-                filter.active = false;
-                // Force Vue 2 reactivity if deep watcher missing (though direct bool flip should work)
-                // this.$forceUpdate(); 
+                this.$set(filter, 'active', false);
+                this.$forceUpdate(); // Force UI refresh
                 return;
             }
 
@@ -2037,7 +2034,8 @@ export default {
             }
 
             console.log('[toggleFilter] Activating filter...');
-            filter.active = true;
+            this.$set(filter, 'active', true);
+            this.$forceUpdate(); // Force UI refresh
         },
         nextFilterStep() {
             const sourceArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
