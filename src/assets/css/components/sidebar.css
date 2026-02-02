@@ -750,7 +750,8 @@ aside.sidebar,
 	}
 
 	/* No mobile, a sidebar deve estar sempre expandida quando aberta. */
-	.sidebar.is-open.collapsed {
+	.sidebar.is-open.collapsed,
+	#app-sidebar-main.is-open.collapsed {
 		width: 280px !important;
 		max-width: 280px !important;
 		min-width: 280px !important;
@@ -758,7 +759,8 @@ aside.sidebar,
 	}
 
 	/* Garantir que a sidebar tenha largura fixa de 280px no mobile */
-	.sidebar.is-open {
+	.sidebar.is-open,
+	#app-sidebar-main.is-open {
 		width: 280px !important;
 		max-width: 280px !important;
 		min-width: 280px !important;

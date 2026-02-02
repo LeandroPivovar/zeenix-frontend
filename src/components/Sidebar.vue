@@ -5,7 +5,6 @@
             id="app-sidebar-main"
             class="sidebar sidebar-glass-effect" 
             :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }"
-            style="background: transparent !important; backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important; border-right: 1px solid rgba(255, 255, 255, 0.05) !important;"
         >
         <div class="sidebar-brand">
             <div class="brand-logo-container">
