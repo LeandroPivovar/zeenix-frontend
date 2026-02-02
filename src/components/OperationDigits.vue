@@ -1731,7 +1731,8 @@ export default {
             try {
                 const authToken = localStorage.getItem('auth_token') || localStorage.getItem('token');
                 if (authToken) {
-                    const response = await fetch(`${process.env.VUE_APP_API_URL || 'http://localhost:3000'}/api/broker/deriv/trading/token`, {
+                    const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                    const response = await fetch(`${apiBaseUrl}/broker/deriv/trading/token`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${authToken}`
