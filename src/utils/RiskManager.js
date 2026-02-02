@@ -95,7 +95,7 @@ export const RiskManager = {
         // Then Multiplier = 1 + Rate.
 
         let profitRate = estimatedPayout;
-        if (profitRate > 5) { // Likely a multiplier for a high-payout like Match (8.00)
+        if (estimatedPayout > 1.0) {
             profitRate = estimatedPayout - 1;
         }
 

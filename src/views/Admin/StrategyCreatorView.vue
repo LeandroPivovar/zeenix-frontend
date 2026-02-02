@@ -2250,6 +2250,7 @@ export default {
                 : 'Custom Strategy';
             this.sessionState.mode = this.sessionState.negotiationMode || 'VELOZ';
             this.sessionState.modoMartingale = this.form.riskProfile || 'Moderado';
+            this.recoveryConfig.riskProfile = this.form.riskProfile || 'moderado';
             this.sessionState.stake = this.form.initialStake;
             this.sessionState.profitTarget = this.form.profitTarget;
             this.sessionState.lossLimit = this.form.stopLoss;
