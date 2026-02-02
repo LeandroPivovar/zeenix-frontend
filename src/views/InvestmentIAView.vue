@@ -488,9 +488,9 @@
                 class="modal-overlay" 
                 @click.self="showAccountModal = false"
             >
-                <div class="modal-content" style="max-width: 500px">
-                    <div class="modal-header">
-                        <h3 class="modal-title font-bold text-white">Selecionar Conta</h3>
+                <div class="categorized-modal" style="max-width: 550px">
+                    <div class="modal-header-premium">
+                        <h3 class="modal-title">Selecionar Conta</h3>
                         <button @click="showAccountModal = false" class="modal-close-btn">
                             <i class="fa-solid fa-times"></i>
                         </button>
@@ -506,30 +506,30 @@
                             <p class="text-gray-400 text-xs mt-2 font-bold uppercase">Certifique-se de que você está conectado à Deriv.</p>
                         </div>
                         <div v-else class="space-y-3">
-                            <p class="text-xs text-gray-500 mb-4 font-bold uppercase tracking-widest">Escolha a conta para iniciar as operações:</p>
+                            <p class="text-xs text-[#7A7A7A] mb-4 font-semibold uppercase tracking-widest">Escolha a conta para iniciar as operações:</p>
                             <div 
                                 v-for="account in availableAccounts" 
                                 :key="account.loginid"
                                 @click="selectAccount(account)"
-                                class="p-4 rounded-xl border border-[#333] bg-[#111] hover:border-zenix-green hover:bg-zenix-green/5 transition-all cursor-pointer group flex items-center justify-between"
+                                class="account-card-premium"
                             >
                                 <div class="flex items-center gap-4">
                                     <div 
-                                        class="w-10 h-10 rounded-full flex items-center justify-center border border-[#333]"
-                                        :class="account.isDemo ? 'bg-orange-500/10 text-orange-500' : 'bg-zenix-green/10 text-zenix-green'"
+                                        class="account-icon-box"
+                                        :class="account.isDemo ? 'account-demo' : 'account-real'"
                                     >
                                         <i class="fa-solid" :class="account.isDemo ? 'fa-vial' : 'fa-dollar-sign'"></i>
                                     </div>
                                     <div>
-                                        <div class="text-white font-bold">{{ account.loginid }}</div>
-                                        <div class="text-[10px] uppercase font-bold" :class="account.isDemo ? 'text-orange-500' : 'text-zenix-green'">
+                                        <div class="text-white font-bold text-sm">{{ account.loginid }}</div>
+                                        <div class="text-[10px] uppercase font-bold tracking-wide" :class="account.isDemo ? 'text-orange-400' : 'text-[#22C55E]'">
                                             {{ account.isDemo ? 'Conta Demo' : 'Conta Real' }}
                                         </div>
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="text-white font-bold tracking-tight">{{ account.currency }} {{ account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
-                                    <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Saldo Disponível</div>
+                                    <div class="text-white font-bold tracking-tight text-base">{{ account.currency }} {{ account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
+                                    <div class="text-[9px] text-[#7A7A7A] font-bold uppercase tracking-widest">Saldo Disponível</div>
                                 </div>
                             </div>
                         </div>
