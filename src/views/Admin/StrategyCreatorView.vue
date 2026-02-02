@@ -2671,8 +2671,17 @@ export default {
                                 
                             this.addLog(purchaseLog, 'success');
                             
+                            // Activate fast result calculation if it's 1-tick
+                            // This allows immediate feedback on the NEXT tick
+                            if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
+                                this.pendingFastResult.contractId = msg.buy.contract_id;
+                                this.pendingFastResult.payout = payout; // Store real payout
+                                this.pendingFastResult.active = true;
+                                console.log('[FastResult] Monitoramento rápido ativado para o próximo tick.');
+                            }
+
                             // CRITICAL: isNegotiating is NOT reset here. 
-                            // It will be reset in handleContractUpdate when the contract is officially tracked.
+                            // It will be reset in handleContractUpdate or handleTickMessage (Fast Result)
                             this.subscribeToContract(msg.buy.contract_id);
                         }
                     }
@@ -2742,8 +2751,7 @@ export default {
                 this.addLog(`📈 Tick recebido: ${price} - Tick #${this.tickCount}`, 'info');
 
                 // --- Fast Result Calculation ---
-                // DISABLED as per user request
-                /*
+                // Process result on the VERY NEXT tick for 1-tick contracts
                 if (this.pendingFastResult && this.pendingFastResult.active) {
                     const lastDigit = parseInt(price.toString().slice(-1));
                     const { contractId, barrier, contractType, stake } = this.pendingFastResult;
@@ -2775,20 +2783,20 @@ export default {
                     else this.monitoringStats.losses++;
 
                     RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake, this.pendingFastResult.analysisType, this.recoveryConfig.lossesToActivate);
-                    this.activeContracts.delete(this.pendingFastResult.contractId);
                     
-                    // Keep isRecoveryMode sync for legacy UI if needed
+                    // CRITICAL: Release locks immediately
+                    this.pendingFastResult.active = false;
+                    this.isNegotiating = false; 
+                    
+                    // Sync legacy mode
                     this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
 
                     if (!win && this.sessionState.analysisType === 'RECUPERACAO' && this.sessionState.lossStreakRecovery === 1) {
                          this.addLog('🔄 MODO RECUPERAÇÃO ATIVADO (RÁPIDO)...', 'warning');
                     }
 
-                    this.pendingFastResult.active = false;
-                    
                     this.checkLimits();
                 }
-                */
                 
                 // --- Real-time Analysis Integration ---
                 // Add to history buffers (limit to 100 for performance)
