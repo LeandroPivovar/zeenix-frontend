@@ -106,7 +106,7 @@
             <!-- Main Content Grid -->
             <div class="main-content-grid">
                 <!-- Premium Header -->
-                <div class="premium-analysis-header mb-6">
+                <div class="premium-analysis-header mb-6 hidden md:block">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="analysis-icon-wrapper">
@@ -910,7 +910,38 @@ export default {
                 return 'Próximo tick: maior probabilidade de BAIXO (UNDER 5)';
             }
         },
-        // Removido DVX Offsets
+        dvxValueComputed() {
+            if (this.digitFrequency.digits.length < 20) {
+                return 0;
+            }
+            const frequencies = this.digitFrequencies;
+            const expected = 10;
+            let variance = 0;
+            frequencies.forEach(f => {
+                variance += Math.pow(f.percentage - expected, 2);
+            });
+            const stdDev = Math.sqrt(variance / 10);
+            const val = Math.min(100, Math.round((stdDev / 25) * 100));
+            return val;
+        },
+        dvxStatusClass() {
+            const val = this.dvxValueComputed;
+            if (val <= 30) return 'dvx-status-green';
+            if (val <= 60) return 'dvx-status-yellow';
+            return 'dvx-status-red';
+        },
+        dvxStatusText() {
+            const val = this.dvxValueComputed;
+            if (val <= 30) return 'Volatilidade Baixa';
+            if (val <= 60) return 'Volatilidade Moderada';
+            return 'Volatilidade Alta';
+        },
+        dvxEnvironmentText() {
+            const val = this.dvxValueComputed;
+            if (val <= 30) return 'estável';
+            if (val <= 60) return 'moderado';
+            return 'arriscado';
+        },
     },
     methods: {
         getStatusColor(statusClass) {
@@ -2345,6 +2376,46 @@ export default {
         font-size: 1rem !important;
         text-align: left !important;
         font-weight: 600 !important;
+    }
+
+    .digit-meta-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        grid-template-rows: repeat(2, auto) !important;
+        gap: 0.5rem !important;
+        padding: 0.5rem !important;
+    }
+
+    .digit-meta-item {
+        padding: 0.5rem !important;
+        min-height: auto !important;
+    }
+
+    .meta-digit-number {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .meta-digit-percentage {
+        font-size: 0.625rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .meta-vertical-meter-container {
+        height: 40px !important;
+        width: 4px !important;
+    }
+
+    .digit-meta-item span:last-child {
+        display: none !important; /* Hide redundant percentage label on mobile */
+    }
+
+    .meta-analysis-card {
+        padding: 1rem !important;
+        min-height: auto !important;
+    }
+
+    .meta-analysis-card .text-6xl {
+        font-size: 3rem !important;
     }
 
     * {

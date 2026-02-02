@@ -129,6 +129,12 @@ aside.sidebar,
 		overflow: hidden;
 	}
 
+	@media (max-width: 1024px) {
+		.brand-logo-container {
+			display: none !important;
+		}
+	}
+
 	.collapse-toggle-btn {
 		background: #0E0E0E;
 		border: 1px solid #1C1C1C;

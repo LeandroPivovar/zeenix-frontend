@@ -79,19 +79,21 @@
         </div>
 
         <div class="operation-content">
-          <component
-            :is="currentView"
-            ref="operationComponent"
-            :account-balance="accountBalanceFormatted"
-            :account-balance-value="accountBalanceValue"
-            :account-currency="accountCurrency"
-            :preferred-currency="preferredCurrency"
-            :account-loginid="accountLoginId"
-            :order-config="orderConfig"
-            :trade-results="lastOrdersFormatted"
-            @trade-result="handleTradeResult"
-            @tab-changed="activeSubTab = $event"
-          ></component>
+          <keep-alive>
+            <component
+              :is="currentView"
+              ref="operationComponent"
+              :account-balance="accountBalanceFormatted"
+              :account-balance-value="accountBalanceValue"
+              :account-currency="accountCurrency"
+              :preferred-currency="preferredCurrency"
+              :account-loginid="accountLoginId"
+              :order-config="orderConfig"
+              :trade-results="lastOrdersFormatted"
+              @trade-result="handleTradeResult"
+              @tab-changed="activeSubTab = $event"
+            ></component>
+          </keep-alive>
         </div>
       </main>
     </div>
@@ -1300,7 +1302,8 @@ export default {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
   box-sizing: border-box;
 }
 
@@ -1362,7 +1365,7 @@ export default {
   }
   
   .main-content {
-    margin-top: 140px;
+    margin-top: 50px;
     width: 100% !important;
     max-width: 100% !important;
     padding: 0 !important;
