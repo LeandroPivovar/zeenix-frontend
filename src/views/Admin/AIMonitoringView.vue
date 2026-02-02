@@ -398,7 +398,7 @@
                                             <ul class="space-y-0.5">
                                                 <li v-for="(line, idx) in log.details.filter(l => l.toLowerCase() !== 'info')" :key="idx" class="flex items-start gap-2">
                                                     <span class="text-muted-foreground/20 text-[8px] mt-0.5">•</span>
-                                                    <span class="text-[10px] font-medium text-[#d1d1d6] leading-relaxed">{{ line }}</span>
+                                                    <span class="text-[10px] font-medium text-[#d1d1d6] leading-relaxed" v-html="line"></span>
                                                 </li>
                                             </ul>
                                         </div>
