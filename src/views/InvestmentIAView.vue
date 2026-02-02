@@ -1245,6 +1245,32 @@ export default {
             localStorage.setItem('deriv_account_type', this.accountType);
             
             this.showAccountModal = false;
+
+            // ✅ Sync with backend to ensure AIMonitoringView picks up the correct account
+            try {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                const token = localStorage.getItem('token');
+                const tradeCurrency = account.isDemo ? 'DEMO' : 'USD';
+
+                 // Optimistic local update
+                localStorage.setItem('trade_currency', tradeCurrency);
+                localStorage.setItem('deriv_token', account.token);
+
+                await fetch(`${apiBase}/settings/deriv-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        token: account.token,
+                        tradeCurrency: tradeCurrency
+                    })
+                });
+                console.log('[InvestmentIAView] Conta sincronizada com o backend.');
+            } catch (e) {
+                console.error('[InvestmentIAView] Erro ao sincronizar conta com backend:', e);
+            }
             
             // Chamar a ativação original
             await this.activateIA();
