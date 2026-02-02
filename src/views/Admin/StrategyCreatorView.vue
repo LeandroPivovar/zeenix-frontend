@@ -2010,24 +2010,33 @@ export default {
             this.showFilterModal = true;
         },
         toggleFilter(filter) {
+            console.log(`[toggleFilter] Clicked: ${filter.name} (${filter.id}) | Current Active: ${filter.active}`);
+            console.log(`[toggleFilter] Context: ${this.modalContext}`);
+            
             // Fix: Use the filter reference directly to avoid ID collision or lookup issues
             // This ensures we toggle the exact item clicked in the UI
             
             // Toggle Logic
             if (filter.active) {
+                console.log('[toggleFilter] Deactivating filter...');
                 filter.active = false;
+                // Force Vue 2 reactivity if deep watcher missing (though direct bool flip should work)
+                // this.$forceUpdate(); 
                 return;
             }
 
             // Count validation
             const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
             const activeCount = targetArray.filter(f => f.active).length;
+            console.log(`[toggleFilter] Current Active Count: ${activeCount}`);
             
             if (activeCount >= 2) {
+                console.warn('[toggleFilter] Limit reached (2). Blocked.');
                 this.$root.$toast.warning('Selecione no máximo 2 filtros.');
                 return;
             }
 
+            console.log('[toggleFilter] Activating filter...');
             filter.active = true;
         },
         nextFilterStep() {
