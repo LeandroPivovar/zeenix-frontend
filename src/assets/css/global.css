@@ -173,16 +173,6 @@ body,
 
 
   /* Impede que o conteúdo seja cortado e permite que fundos passem por trás da sidebar */
-  .full-immersion {
-    width: 100vw !important;
-    max-width: none !important;
-    position: absolute !important;
-    left: calc(-1 * var(--sidebar-width)) !important;
-    top: 0 !important;
-    height: 100% !important;
-    z-index: 0 !important;
-    pointer-events: none !important;
-  }
 }
 
 /* Sidebar Overlay - z-index global */
@@ -316,6 +306,22 @@ body,
   overflow-x: hidden !important;
   width: 100% !important;
   position: relative !important;
+  --sidebar-width: 280px;
+}
+
+.sidebar-collapsed.full-immersion-layout,
+.sidebar-collapsed .full-immersion-layout,
+.sidebar-wrapper.collapsed:not(:hover)~.full-immersion-layout,
+.sidebar-wrapper.collapsed:not(:hover)~.dashboard-content-wrapper.full-immersion-layout {
+  --sidebar-width: 80px;
+  padding-left: 0 !important;
+}
+
+/* Hover expansion synchronization */
+.sidebar-wrapper:hover~.full-immersion-layout,
+.sidebar-wrapper:hover~.dashboard-content-wrapper.full-immersion-layout {
+  --sidebar-width: 280px !important;
+  padding-left: 0 !important;
 }
 
 .immersion-content {
@@ -334,151 +340,6 @@ body,
     width: 100% !important;
   }
 }
-
-/* Sidebar Width Management for Immersion Layout */
-.full-immersion-layout {
-  --sidebar-width: 280px;
-}
-
-.sidebar-collapsed.full-immersion-layout,
-.sidebar-collapsed .full-immersion-layout,
-.sidebar-wrapper.collapsed:not(:hover)~.full-immersion-layout,
-.sidebar-wrapper.collapsed:not(:hover)~.dashboard-content-wrapper.full-immersion-layout {
-  --sidebar-width: 80px;
-}
-
-/* Hover expansion synchronization */
-.sidebar-wrapper:hover~.full-immersion-layout,
-.sidebar-wrapper:hover~.dashboard-content-wrapper.full-immersion-layout {
-  --sidebar-width: 280px !important;
-}
-
-.dashboard-content-wrapper {
-  overflow-x: visible !important;
-}
-
-/* Sidebar Layout Stability & Synchronization */
-@media (min-width: 1025px) {
-
-  /* Alvo de todos os wrappers de conteúdo da plataforma */
-  .dashboard-content-wrapper,
-  .content-wrapper,
-  .main-content-wrapper,
-  .operation-main,
-  .box-content,
-  .sbt-sidebar-wrapper~.dashboard-content-wrapper,
-  .sbt-sidebar-wrapper~.content-wrapper {
-    padding-left: var(--sidebar-width);
-    width: 100%;
-    transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  /* Sincronização do TopNavbar */
-  #top-navbar {
-    left: 0 !important;
-    width: 100% !important;
-    padding-left: var(--sidebar-width);
-    transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .sbt-sidebar-wrapper~.dashboard-content-wrapper #top-navbar {
-    padding-left: var(--sidebar-width) !important;
-  }
-
-  /* Quando estiver colapsado (usando a classe explicitamente) */
-  .sidebar-collapsed.dashboard-content-wrapper,
-  .sidebar-collapsed .dashboard-content-wrapper,
-  .sidebar-collapsed.content-wrapper,
-  .sidebar-collapsed .content-wrapper,
-  .sidebar-collapsed.main-content-wrapper,
-  .sidebar-collapsed .main-content-wrapper,
-  .sidebar-collapsed.operation-main,
-  .sidebar-collapsed .operation-main,
-  .sidebar-collapsed.box-content,
-  .sidebar-collapsed .box-content,
-  .sidebar-collapsed #top-navbar,
-  .sbt-collapsed.dashboard-content-wrapper,
-  .sbt-collapsed .dashboard-content-wrapper,
-  .sbt-collapsed.content-wrapper,
-  .sbt-collapsed .content-wrapper,
-  .sbt-collapsed.main-content-wrapper,
-  .sbt-collapsed .main-content-wrapper,
-  .sbt-collapsed.operation-main,
-  .sbt-collapsed .operation-main,
-  .sbt-collapsed.box-content,
-  .sbt-collapsed .box-content,
-  .sbt-collapsed #top-navbar {
-    --sidebar-width: 80px;
-    padding-left: var(--sidebar-width) !important;
-    width: 100% !important;
-  }
-
-
-  /* Hover expansion synchronization */
-  .sidebar-wrapper:hover~.dashboard-content-wrapper,
-  .sidebar-wrapper:hover~.content-wrapper,
-  .sidebar-wrapper:hover~.main-content-wrapper,
-  .sidebar-wrapper:hover~.operation-main,
-  .sidebar-wrapper:hover~.box-content,
-  .sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar,
-  .sidebar-wrapper:hover~.content-wrapper #top-navbar,
-  .sidebar-wrapper:hover~.main-content-wrapper #top-navbar,
-  .sidebar-wrapper:hover~.operation-main #top-navbar,
-  .sidebar-wrapper:hover~.box-content #top-navbar,
-  .sbt-sidebar-wrapper:hover~.dashboard-content-wrapper,
-  .sbt-sidebar-wrapper:hover~.content-wrapper,
-  .sbt-sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
-    --sidebar-width: 280px !important;
-    padding-left: var(--sidebar-width) !important;
-    width: 100% !important;
-  }
-}
-
-/* Mobile: Remover padding da sidebar */
-@media (max-width: 1024px) {
-
-  .dashboard-content-wrapper,
-  .content-wrapper,
-  .main-content-wrapper,
-  .operation-main,
-  .box-content {
-    padding-left: 0 !important;
-    margin-left: 0 !important;
-  }
-
-  #top-navbar {
-    padding-left: 0 !important;
-  }
-
-  .sidebar-collapsed.dashboard-content-wrapper,
-  .sidebar-collapsed .dashboard-content-wrapper,
-  .sidebar-collapsed.content-wrapper,
-  .sidebar-collapsed .content-wrapper,
-  .sidebar-collapsed.main-content-wrapper,
-  .sidebar-collapsed .main-content-wrapper,
-  .sidebar-collapsed.operation-main,
-  .sidebar-collapsed .operation-main,
-  .sidebar-collapsed.box-content,
-  .sidebar-collapsed .box-content,
-  .sidebar-collapsed #top-navbar {
-    padding-left: 0 !important;
-    margin-left: 0 !important;
-  }
-}
-
-/* Background Immersion (100vw media) */
-.full-immersion {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  max-width: none !important;
-  left: 0 !important;
-  z-index: 0;
-  pointer-events: none !important;
-}
-
-
-
 
 .dashboard-content-wrapper {
   overflow-x: visible !important;
