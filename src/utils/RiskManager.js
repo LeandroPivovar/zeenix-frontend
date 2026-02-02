@@ -99,7 +99,6 @@ export const RiskManager = {
             profitRate = estimatedPayout - 1;
         }
 
-        const multiplier = 1 + profitRate;
 
         // 1. RECOVERY MODE
         if (state.analysisType === 'RECUPERACAO') {
