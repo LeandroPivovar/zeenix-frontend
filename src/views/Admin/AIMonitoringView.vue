@@ -676,6 +676,12 @@ export default {
         }
     },
     watch: {
+        balanceNumeric(newVal) {
+             console.log('[AIMonitoringView] Balance updated from mixin:', newVal);
+             if (newVal !== undefined && newVal !== null) {
+                 this.monitoringStats.balance = newVal;
+             }
+        },
         activeChartMode(val) {
             if (val === 'tick') {
                 this.$nextTick(() => {

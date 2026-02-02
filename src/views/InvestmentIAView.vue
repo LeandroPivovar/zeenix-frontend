@@ -334,7 +334,7 @@
                                     </ZenixTooltip>
                                 </label>
                                 <div class="input-wrapper">
-                                    <span class="input-prefix">{{ preferredCurrencyPrefix }}</span>
+                                    <span class="input-prefix">$</span>
                                     <input 
                                         type="number" 
                                         class="form-input" 
@@ -354,7 +354,7 @@
                                     </ZenixTooltip>
                                 </label>
                                 <div class="input-wrapper">
-                                    <span class="input-prefix">{{ preferredCurrencyPrefix }}</span>
+                                    <span class="input-prefix">$</span>
                                     <input 
                                         type="number" 
                                         class="form-input" 
@@ -375,7 +375,7 @@
                                         </ZenixTooltip>
                                     </label>
                                     <div class="input-wrapper">
-                                        <span class="input-prefix">{{ preferredCurrencyPrefix }}</span>
+                                        <span class="input-prefix">$</span>
                                         <input 
                                             type="number" 
                                             class="form-input" 
@@ -1255,6 +1255,11 @@ export default {
                  // Optimistic local update
                 localStorage.setItem('trade_currency', tradeCurrency);
                 localStorage.setItem('deriv_token', account.token);
+                // ✅ UPDATE deriv_connection to ensure AIMonitoringView uses the correct token
+                localStorage.setItem('deriv_connection', JSON.stringify({
+                    loginid: account.loginid,
+                    token: account.token
+                }));
 
                 await fetch(`${apiBase}/settings/deriv-token`, {
                     method: 'POST',
