@@ -3007,4 +3007,9 @@ svg:not(:root).svg-inline--fa {
     .zenix-layout>* {
         position: relative !important;
     }
+
+    /* FIX: Ensure sidebar wrapper stays on top despite DOM order */
+    .zenix-layout>.sidebar-wrapper {
+        z-index: 9999 !important;
+    }
 }
