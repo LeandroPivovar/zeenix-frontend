@@ -3567,7 +3567,8 @@ export default {
   height: 100%;
   min-height: 600px;
   width: 100%;
-  max-width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
   box-sizing: border-box;
   align-items: stretch;
 }

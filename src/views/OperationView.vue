@@ -2,7 +2,7 @@
   <div class="zenix-layout">
     <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
 
-    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }" style="padding-left: 0 !important;">
+    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="currentBalance?.balance || info?.balance"
@@ -1090,19 +1090,13 @@ export default {
   overflow-x: hidden;
 }
 
-.content-wrapper {
+.dashboard-content-wrapper {
   margin: 0;
-  margin-left: 280px;
   padding: 0;
   min-height: 100vh;
-  transition: margin-left 1s cubic-bezier(0.16, 1, 0.3, 1), width 1s cubic-bezier(0.16, 1, 0.3, 1);
-  width: calc(100% - 280px);
+  width: 100%;
   box-sizing: border-box;
-}
-
-.dashboard-content-wrapper.sidebar-collapsed {
-  margin-left: 80px;
-  width: calc(100% - 80px);
+  transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Top Header */
@@ -1110,7 +1104,7 @@ export default {
   position: fixed;
   top: 0;
   right: 0;
-  left: 28cap;
+  left: 280px;
   z-index: 40;
   background-color: #0E0E0E;
   border-bottom: 1px solid #1C1C1C;
@@ -1352,7 +1346,7 @@ export default {
     text-align: left;
   }
 
-  .content-wrapper {
+  .dashboard-content-wrapper {
     max-width: 100% !important;
   }
 
@@ -1467,6 +1461,27 @@ export default {
 
   .desktop-only {
     display: block !important;
+  }
+
+  .dashboard-content-wrapper {
+    padding-left: 280px !important;
+    transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .dashboard-content-wrapper.sidebar-collapsed {
+    padding-left: 80px !important;
+  }
+
+  /* Sincronização do TopNavbar (que é fixed e precisa de padding próprio) */
+  .dashboard-content-wrapper #top-navbar {
+    padding-left: 280px !important;
+    transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  .dashboard-content-wrapper.sidebar-collapsed #top-navbar {
+    padding-left: 80px !important;
   }
 }
 </style>
