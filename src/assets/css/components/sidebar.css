@@ -266,12 +266,13 @@ aside.sidebar,
 
 	@media (max-width: 1024px) {
 		.sidebar-brand {
-			flex-direction: column;
+			flex-direction: row !important;
 			height: auto !important;
-			padding: 24px 20px 10px 20px !important;
-			align-items: flex-start !important;
+			padding: 20px 20px !important;
+			align-items: center !important;
 			border-bottom: none !important;
-			gap: 8px !important;
+			justify-content: space-between !important;
+			gap: 0 !important;
 		}
 
 		.brand-logo-container {
@@ -770,13 +771,17 @@ aside.sidebar,
 	}
 
 	/* Desativa a lógica de ocultar texto no mobile */
-	.sidebar.is-open.collapsed .brand-text,
+	.sidebar.is-open.collapsed .logo-suffix,
+	.sidebar.is-open.collapsed .logo-text,
 	.sidebar.is-open.collapsed .user-info,
 	.sidebar.is-open.collapsed .footer-row .online-text,
 	.sidebar.is-open.collapsed .version {
-		opacity: 1;
-		width: auto;
+		opacity: 1 !important;
+		width: auto !important;
+		pointer-events: auto !important;
+		display: inline-flex !important;
 	}
+
 
 	/* No mobile, esconde brand-text-desktop e mostra brand-mobile */
 	.brand-text-desktop {

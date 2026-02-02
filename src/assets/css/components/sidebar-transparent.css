@@ -283,12 +283,13 @@ aside.sbt-sidebar,
 
 	@media (max-width: 1024px) {
 		.sbt-sidebar-brand {
-			flex-direction: column;
+			flex-direction: row !important;
 			height: auto !important;
-			padding: 24px 20px 10px 20px !important;
-			align-items: flex-start !important;
+			padding: 20px 20px !important;
+			align-items: center !important;
 			border-bottom: none !important;
-			gap: 8px !important;
+			justify-content: space-between !important;
+			gap: 0 !important;
 		}
 
 		.sbt-brand-logo-container {
@@ -758,12 +759,15 @@ aside.sbt-sidebar,
 	}
 
 	/* Desativa a lógica de ocultar texto no mobile */
-	.sbt-sidebar.sbt-is-open.sbt-collapsed .sbt-brand-text,
+	.sbt-sidebar.sbt-is-open.sbt-collapsed .sbt-logo-suffix,
+	.sbt-sidebar.sbt-is-open.sbt-collapsed .sbt-logo-text,
 	.sbt-sidebar.sbt-is-open.sbt-collapsed .sbt-user-info,
 	.sbt-sidebar.sbt-is-open.sbt-collapsed .sbt-footer-row .sbt-online-text,
 	.sbt-sidebar.sbt-is-open.sbt-collapsed .sbt-version {
-		opacity: 1;
-		width: auto;
+		opacity: 1 !important;
+		width: auto !important;
+		pointer-events: auto !important;
+		display: inline-flex !important;
 	}
 
 	/* No mobile, esconde brand-text-desktop e mostra brand-mobile */
