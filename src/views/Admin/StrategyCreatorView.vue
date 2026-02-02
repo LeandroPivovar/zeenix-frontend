@@ -2010,23 +2010,25 @@ export default {
             this.showFilterModal = true;
         },
         toggleFilter(filter) {
-            const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
-            const targetFilter = targetArray.find(f => f.id === filter.id);
+            // Fix: Use the filter reference directly to avoid ID collision or lookup issues
+            // This ensures we toggle the exact item clicked in the UI
             
-            if (!targetFilter) return;
-
-            if (targetFilter.active) {
-                targetFilter.active = false;
+            // Toggle Logic
+            if (filter.active) {
+                filter.active = false;
                 return;
             }
 
+            // Count validation
+            const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
             const activeCount = targetArray.filter(f => f.active).length;
+            
             if (activeCount >= 2) {
                 this.$root.$toast.warning('Selecione no máximo 2 filtros.');
                 return;
             }
 
-            targetFilter.active = true;
+            filter.active = true;
         },
         nextFilterStep() {
             const sourceArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
