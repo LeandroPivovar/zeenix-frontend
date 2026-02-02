@@ -616,7 +616,7 @@ export default {
                     marketType: 'Digits', 
                     icon: 'fas fa-shield-alt', 
                     icons: [], 
-                    description: 'Híbrida (Fluxo de Dígitos + Price Action → Tendência)',
+                    description: 'Híbrida: Dígitos + Price Action.',
                     assertividade: '92 a 96%',
                     retorno: '95% / 99%'
                 },
@@ -626,7 +626,7 @@ export default {
                     marketType: 'Ups e Downs', 
                     icon: 'fas fa-rocket', 
                     icons: [],
-                    description: 'Price Action Puro (Inércia + Força + Tendência)',
+                    description: 'Price Action Puro e Tendência.',
                     assertividade: '90% a 95%',
                     retorno: '99%'
                 },
@@ -636,7 +636,7 @@ export default {
                     marketType: 'Ups e Downs', 
                     icon: 'fas fa-chart-bar',
                     icons: [],
-                    description: 'Price Action Barreira de Segurança com Troca de Contrato',
+                    description: 'Price Action com Barreira.',
                     assertividade: '91% a 95%',
                     retorno: '91% / 95%'
                 },
@@ -646,7 +646,7 @@ export default {
                     marketType: 'Digits', 
                     icon: 'fas fa-star', 
                     icons: [],
-                    description: 'Estatística de Dígitos + (Over 2) com Price Action na Recuperação',
+                    description: 'Estatística de Dígitos e Recuperação.',
                     assertividade: '94% a 97%',
                     retorno: '95% / 99%'
                 },
@@ -656,7 +656,7 @@ export default {
                     marketType: 'Digits', 
                     icon: 'fas fa-yin-yang', 
                     icons: [],
-                    description: 'Dígitos Par/Ímpar com persistência direcional',
+                    description: 'Dígitos Par/Ímpar Direcional.',
                     assertividade: '90% - 95%',
                     retorno: '95%'
                 }
