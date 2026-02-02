@@ -2114,19 +2114,31 @@ svg:not(:root).svg-inline--fa {
     .categorized-modal {
         max-width: none !important;
         width: 100%;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    .modal-body {
+        padding: 0 !important;
+        background: transparent !important;
     }
 
     .agent-option-premium {
         flex-direction: row !important;
         align-items: center !important;
         padding: 1rem !important;
-        gap: 1.25rem !important;
+        gap: 1rem !important;
+        background: #0D0D0D !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
     }
 
     .agent-option-content {
         flex-direction: row !important;
         align-items: center !important;
         justify-content: space-between !important;
+        gap: 0.5rem !important;
     }
 
     .agent-option-footer-stats {
@@ -2136,18 +2148,31 @@ svg:not(:root).svg-inline--fa {
         gap: 0.25rem !important;
         padding-top: 0 !important;
         border-top: none !important;
-        min-width: 100px !important;
+        min-width: 110px !important;
+        flex: 0 0 auto !important;
     }
 
     .stat-item {
         background: none !important;
         border: none !important;
         padding: 0 !important;
+        gap: 0.3rem !important;
         justify-content: flex-end !important;
     }
 
     .stat-label {
+        font-size: 0.6rem !important;
         color: rgba(255, 255, 255, 0.4) !important;
+        font-weight: 600 !important;
+    }
+
+    .stat-value {
+        font-size: 0.7rem !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    .stat-value.highlight {
+        color: #22C55E !important;
     }
 }
 
@@ -2509,10 +2534,10 @@ svg:not(:root).svg-inline--fa {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(34, 197, 94, 0.08);
-    border: 1px solid rgba(34, 197, 94, 0.15);
-    padding: 0.4rem 0.6rem;
-    border-radius: 0.5rem;
+    background: none;
+    border: none;
+    padding: 0;
+    border-radius: 0;
     flex: 1;
     justify-content: center;
 }
@@ -2520,14 +2545,14 @@ svg:not(:root).svg-inline--fa {
 .stat-label {
     font-size: 0.65rem;
     text-transform: uppercase;
-    color: rgba(34, 197, 94, 0.8);
-    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
     letter-spacing: 0.5px;
 }
 
 .stat-value {
     font-size: 0.75rem;
-    color: #DFDFDF;
+    color: rgba(255, 255, 255, 0.6);
     font-weight: 600;
 }
 
