@@ -70,6 +70,16 @@
     width: calc(100% - 80px) !important;
 }
 
+/* No mobile, remover margin da sidebar */
+@media (max-width: 1024px) {
+
+    .sidebar-collapsed.operation-main,
+    .sidebar-collapsed .operation-main {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
 .header-operation {
     display: flex;
     align-items: center;

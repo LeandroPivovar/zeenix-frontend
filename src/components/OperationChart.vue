@@ -5344,4 +5344,35 @@ export default {
   .volatility-meter-thumb {
     transition: left 1s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  /* Mobile: Cards de dígitos mais compactos */
+  @media (max-width: 768px) {
+    .digit-meta-item {
+      padding: 0.5rem !important;
+    }
+
+    .meta-digit-number {
+      font-size: 1.5rem !important;
+      margin-bottom: 0.25rem !important;
+    }
+
+    .meta-digit-percentage {
+      font-size: 9px !important;
+      margin-bottom: 0.75rem !important;
+    }
+
+    .meta-vertical-meter-container {
+      width: 1rem !important;
+      height: 3rem !important;
+    }
+
+    .frequency-meta-card {
+      padding: 1rem !important;
+    }
+
+    .frequency-meta-card h3 {
+      font-size: 8px !important;
+      margin-bottom: 1rem !important;
+    }
+  }
 </style>
