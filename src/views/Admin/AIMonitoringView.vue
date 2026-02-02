@@ -611,7 +611,7 @@ export default {
                 duration: 1,
                 durationUnit: 't',
                 market: 'R_100',
-                expectedPayout: 1.26,
+                expectedPayout: 2.26, // ✅ CORRECTed: 126% profit rate (Total 2.26)
                 attackFilters: [],
                 pauseFilters: [],
                 lossesToActivate: 1,
@@ -770,7 +770,8 @@ export default {
                         `Meta de Lucro: ${this.currencySymbol}${(this.currentConfig.profitTarget || 100).toFixed(2)}`,
                         `Stop Loss: ${this.currencySymbol}${(this.currentConfig.lossLimit || 100).toFixed(2)}`,
                         `Estratégia: ${this.currentConfig.strategy.toUpperCase()}`,
-                        `Payout Mínimo: ${this.currentConfig.expectedPayout}x`
+                        `Payout Mínimo: ${this.currentConfig.expectedPayout}x`,
+                        `Payout Recuperação: ${this.recoveryConfig.expectedPayout}x`
                     ], 'info');
 
                     this.addLog('Configuração Inicial', [
