@@ -378,51 +378,6 @@
                                             </div>
                                         </div>
                                         <div class="flex items-end gap-2">
-                                        <div class="col-span-full">
-                                             <label class="block text-white font-bold mb-2 text-sm">Filtros de Recuperação</label>
-                                             
-                                             <div v-if="activeRecoveryFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
-                                                 <p class="text-gray-400 text-sm mb-3">Nenhum filtro de recuperação configurado.</p>
-                                                 <button 
-                                                     type="button" 
-                                                     @click="openFilterModal('recovery')"
-                                                     class="bg-zenix-green/10 text-zenix-green border border-zenix-green/30 px-6 py-2 rounded-lg hover:bg-zenix-green/20 transition-all font-bold text-sm"
-                                                 >
-                                                     Adicionar Filtros
-                                                 </button>
-                                             </div>
-
-                                             <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                 <div v-for="filter in activeRecoveryFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
-                                                     <div class="flex items-center gap-3">
-                                                          <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                                             <i class="fa-solid fa-filter"></i>
-                                                          </div>
-                                                          <div>
-                                                             <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
-                                                             <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
-                                                          </div>
-                                                     </div>
-                                                     <div class="flex items-center gap-2">
-                                                         <button type="button" @click="openFilterConfigDirect(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
-                                                             <i class="fa-solid fa-gear text-xs"></i>
-                                                         </button>
-                                                         <button type="button" @click="removeFilter(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
-                                                             <i class="fa-solid fa-times text-xs"></i>
-                                                         </button>
-                                                     </div>
-                                                 </div>
-                                                 <button 
-                                                     v-if="activeRecoveryFilters.length < 2"
-                                                     type="button" 
-                                                     @click="openFilterModal('recovery')"
-                                                     class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
-                                                 >
-                                                     <i class="fa-solid fa-plus text-xs"></i>
-                                                     <span class="text-sm">Adicionar Filtro</span>
-                                                 </button>
-                                             </div>
-                                        </div>
                                              <button 
                                                 type="button" 
                                                 @click="showPauseModal = true"
@@ -431,6 +386,63 @@
                                                 <i class="fa-solid fa-pause"></i> Pausa
                                             </button>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filtros de Recuperação (Standalone Card) -->
+                        <div class="col-span-12">
+                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden" :class="{ 'opacity-50 grayscale pointer-events-none': !recoveryConfig.enabled }">
+                                <div class="absolute top-0 right-0 p-4 opacity-5">
+                                    <i class="fa-solid fa-rotate-left text-6xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
+                                    <i class="fa-solid fa-filter text-zenix-green"></i>
+                                    Filtros de Recuperação
+                                </h3>
+                                
+                                <div class="space-y-4 relative z-10">
+                                    <div v-if="activeRecoveryFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
+                                        <p class="text-gray-400 text-sm mb-3">Nenhum filtro de recuperação configurado.</p>
+                                        <button 
+                                            type="button" 
+                                            @click="openFilterModal('recovery')"
+                                            class="bg-zenix-green/10 text-zenix-green border border-zenix-green/30 px-6 py-2 rounded-lg hover:bg-zenix-green/20 transition-all font-bold text-sm"
+                                        >
+                                            Adicionar Filtros
+                                        </button>
+                                    </div>
+                                    
+                                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div v-for="filter in activeRecoveryFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
+                                            <div class="flex items-center gap-3">
+                                                 <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+                                                    <i class="fa-solid fa-filter"></i>
+                                                 </div>
+                                                 <div>
+                                                    <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
+                                                    <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
+                                                 </div>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <button type="button" @click="openFilterConfigDirect(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
+                                                    <i class="fa-solid fa-gear text-xs"></i>
+                                                </button>
+                                                <button type="button" @click="removeFilter(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
+                                                    <i class="fa-solid fa-times text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            v-if="activeRecoveryFilters.length < 2"
+                                            type="button" 
+                                            @click="openFilterModal('recovery')"
+                                            class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
+                                        >
+                                            <i class="fa-solid fa-plus text-xs"></i>
+                                            <span class="text-sm">Adicionar Filtro</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
