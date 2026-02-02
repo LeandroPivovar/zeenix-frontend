@@ -350,18 +350,7 @@
                                                 min="1"
                                             />
                                         </div>
-                                        <div>
-                                            <label class="block text-white font-bold mb-2 text-sm">Taxa Lucro Rec. (x.x)</label>
-                                            <div class="relative">
-                                                <input 
-                                                    type="number" 
-                                                    v-model.number="recoveryConfig.expectedPayout" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                    step="0.01"
-                                                    placeholder="Ex: 0.95 ou 1.26"
-                                                />
-                                            </div>
-                                        </div>
+
                                         <div class="flex items-end gap-2">
                                              <button 
                                                 type="button" 
