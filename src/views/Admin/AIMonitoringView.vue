@@ -673,6 +673,10 @@ export default {
             if (this.tickHistory.length < 5) return 'Coletando dados';
             
             return 'Analisando o mercado';
+        },
+        // ✅ Fix 'undefined' prefix in logs
+        currencySymbol() {
+            return this.preferredCurrencyPrefix || '$';
         }
     },
     watch: {
@@ -818,6 +822,9 @@ export default {
                 const connectionStr = localStorage.getItem('deriv_connection');
                 if (connectionStr) {
                     const connection = JSON.parse(connectionStr);
+                    // ✅ PRIORITIZE token directly from connection object (saved by selectAccount)
+                    if (connection.token) return connection.token.trim();
+
                     const accountLoginid = connection.loginid;
                     if (accountLoginid) {
                         const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
