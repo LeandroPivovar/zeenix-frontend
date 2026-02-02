@@ -58,7 +58,7 @@
 				<div class="metric-box">
 					<div class="metric-label">Resultado do dia</div>
 					<div class="metric-value positive">
-						+${{ progressoMeta.atual.toFixed(2) }}
+						+{{ preferredCurrencyPrefix }}{{ progressoMeta.atual.toFixed(2) }}
 					</div>
 					<div class="metric-change positive">
 						+2.14%
@@ -70,7 +70,7 @@
 				<div class="metric-box">
 					<div class="metric-label">Resultado da sessão</div>
 					<div class="metric-value positive">
-						+${{ progressoMeta.atual.toFixed(2) }}
+						+{{ preferredCurrencyPrefix }}{{ progressoMeta.atual.toFixed(2) }}
 					</div>
 					<div class="metric-change positive">
 						+2.14%
@@ -85,8 +85,8 @@
 					</div>
 				</div>
 				<div class="progress-label">
-					<span>Meta: ${{ progressoMeta.meta }}</span>
-					<span>Stop: ${{ progressoMeta.stop }}</span>
+					<span>Meta: {{ preferredCurrencyPrefix }}{{ progressoMeta.meta }}</span>
+					<span>Stop: {{ preferredCurrencyPrefix }}{{ progressoMeta.stop }}</span>
 				</div>
 			</div>
 		</div>
@@ -188,8 +188,8 @@
 									<td>{{ op.hora }}</td>
 									<td>{{ op.ativo }}</td>
 									<td>{{ op.tipo }}</td>
-									<td>${{ op.entrada }}</td>
-									<td>${{ op.saida }}</td>
+									<td>{{ preferredCurrencyPrefix }}{{ op.entrada }}</td>
+									<td>{{ preferredCurrencyPrefix }}{{ op.saida }}</td>
 									<td :class="op.resultado.startsWith('+') ? 'result-positive' : 'result-negative'">
 										{{ op.resultado }}
 									</td>
@@ -218,8 +218,11 @@
 </template>
 
 <script>
+	import accountBalanceMixin from '../../mixins/accountBalanceMixin';
+
 	export default {
 		name: 'AgenteAutonomoPanel',
+		mixins: [accountBalanceMixin],
 		emits: ['pausarAgente'],
 		data() {
 			return {
@@ -249,25 +252,25 @@
 				},
 				tiposGrafico: ['Gráfico de Linhas', 'Gráfico de Velas'],
 				acoesAgente: [
-					{ hora: '14:32:15', classe: 'success', titulo: 'Operação finalizada com sucesso', descricao: '14:32:15 - Lucro de $8.50' },
+					{ hora: '14:32:15', classe: 'success', titulo: 'Operação finalizada com sucesso', descricao: '14:32:15 - Lucro de $8.50'.replace('$', this.preferredCurrencyPrefix) },
 					{ hora: '14:32:00', classe: 'success', titulo: 'Entrada executada', descricao: '14:32:00 - CALL em Volatility 75' },
 					{ hora: '14:31:45', classe: 'warning', titulo: 'Volume detectado', descricao: '14:31:45 - Confirmação de padrão' },
 					{ hora: '14:30:00', classe: 'info', titulo: 'Aguardando padrão da estratégia', descricao: '14:30:00 - Análise em andamento' },
 				],
 				historicoOperacoes: [
-					{ data: '2025-11-25', hora: '14:32:16', ativo: 'CALL1', tipo: 'Call', entrada: '83.80', saida: '85.20', resultado: '+$7.50' },
-					{ data: '2025-11-25', hora: '14:18:02', ativo: 'CALL1', tipo: 'Call', entrada: '82.60', saida: '81.30', resultado: '-$3.20' },
-					{ data: '2025-11-25', hora: '14:01:45', ativo: 'Volatility 75', tipo: 'Put', entrada: '156.40', saida: '158.90', resultado: '+$12.30' },
-					{ data: '2025-11-25', hora: '13:45:22', ativo: 'CALL1', tipo: 'Call', entrada: '84.15', saida: '83.50', resultado: '-$2.10' },
-					{ data: '2025-11-25', hora: '13:30:08', ativo: 'Volatility 75', tipo: 'Call', entrada: '155.20', saida: '157.80', resultado: '+$8.90' },
-					{ data: '2025-11-24', hora: '13:15:00', ativo: 'CALL1', tipo: 'Put', entrada: '88.00', saida: '87.00', resultado: '-$1.50' },
-					{ data: '2025-11-24', hora: '13:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '160.00', saida: '162.00', resultado: '+$10.00' },
-					{ data: '2025-11-23', hora: '12:45:00', ativo: 'CALL1', tipo: 'Put', entrada: '81.00', saida: '80.00', resultado: '-$1.00' },
-					{ data: '2025-11-22', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+$9.00' },
-					{ data: '2025-11-21', hora: '12:30:00', ativo: 'CALL1', tipo: 'Put', entrada: '85.00', saida: '84.00', resultado: '-$1.00' },
-					{ data: '2025-11-20', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+$9.00' },
-					{ data: '2025-11-01', hora: '10:00:00', ativo: 'CALL1', tipo: 'Put', entrada: '80.00', saida: '81.00', resultado: '+$2.00' },
-					{ data: '2025-10-31', hora: '11:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '140.00', saida: '141.00', resultado: '+$1.00' },
+					{ data: '2025-11-25', hora: '14:32:16', ativo: 'CALL1', tipo: 'Call', entrada: '83.80', saida: '85.20', resultado: '+'.replace('+', '+'+this.preferredCurrencyPrefix) + '7.50' },
+					{ data: '2025-11-25', hora: '14:18:02', ativo: 'CALL1', tipo: 'Call', entrada: '82.60', saida: '81.30', resultado: '-'.replace('-', '-'+this.preferredCurrencyPrefix) + '3.20' },
+					{ data: '2025-11-25', hora: '14:01:45', ativo: 'Volatility 75', tipo: 'Put', entrada: '156.40', saida: '158.90', resultado: '+'.replace('+', '+'+this.preferredCurrencyPrefix) + '12.30' },
+					{ data: '2025-11-25', hora: '13:45:22', ativo: 'CALL1', tipo: 'Call', entrada: '84.15', saida: '83.50', resultado: '-'.replace('-', '-'+this.preferredCurrencyPrefix) + '2.10' },
+					{ data: '2025-11-25', hora: '13:30:08', ativo: 'Volatility 75', tipo: 'Call', entrada: '155.20', saida: '157.80', resultado: '+'.replace('+', '+'+this.preferredCurrencyPrefix) + '8.90' },
+					{ data: '2025-11-24', hora: '13:15:00', ativo: 'CALL1', tipo: 'Put', entrada: '88.00', saida: '87.00', resultado: '-'.replace('-', '-'+this.preferredCurrencyPrefix) + '1.50' },
+					{ data: '2025-11-24', hora: '13:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '160.00', saida: '162.00', resultado: '+'.replace('+', '+'+this.preferredCurrencyPrefix) + '10.00' },
+					{ data: '2025-11-23', hora: '12:45:00', ativo: 'CALL1', tipo: 'Put', entrada: '81.00', saida: '80.00', resultado: '-'.replace('-', '-'+this.preferredCurrencyPrefix) + '1.00' },
+					{ data: '2025-11-22', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+'.replace('+', '+'+this.preferredCurrencyPrefix) + '9.00' },
+					{ data: '2025-11-21', hora: '12:30:00', ativo: 'CALL1', tipo: 'Put', entrada: '85.00', saida: '84.00', resultado: '-'.replace('-', '-'+this.preferredCurrencyPrefix) + '1.00' },
+					{ data: '2025-11-20', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+'.replace('+', '+'+this.preferredCurrencyPrefix) + '9.00' },
+					{ data: '2025-11-01', hora: '10:00:00', ativo: 'CALL1', tipo: 'Put', entrada: '80.00', saida: '81.00', resultado: '+'.replace('+', '+'+this.preferredCurrencyPrefix) + '2.00' },
+					{ data: '2025-10-31', hora: '11:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '140.00', saida: '141.00', resultado: '+'.replace('+', '+'+this.preferredCurrencyPrefix) + '1.00' },
 				],
 			};
 		},

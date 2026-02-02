@@ -16,6 +16,9 @@
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 :balance="monitoringStats.balance"
                 :account-type="accountType"
+                :balances-by-currency-real="balancesByCurrencyReal"
+                :balances-by-currency-demo="balancesByCurrencyDemo"
+                :currency-prefix="preferredCurrencyPrefix"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
                 @open-settings="showSettingsModal = true"
@@ -61,11 +64,10 @@
                             </div>
                         </div>
 
-                        <!-- Capital -->
                         <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center md:border-l border-border/50 md:pl-4 lg:pl-6">
                             <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Capital</p>
                             <p class="text-xl lg:text-3xl font-bold text-foreground tracking-tight">
-                                {{ currencySymbol }} {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }},{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}
+                                {{ preferredCurrencyPrefix }} {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }},{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}
                             </p>
                         </div>
 
@@ -75,7 +77,7 @@
                             <div class="flex items-baseline justify-center gap-1 lg:gap-3">
                                 <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)]"
                                    :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ profitCurrencySymbol }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
                                 </p>
                                 <span class="text-xs lg:text-lg font-semibold px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
                                       :class="monitoringStats.profit >= 0 ? 'text-success/80 bg-success/10' : 'text-red-500/80 bg-red-500/10'">
@@ -450,15 +452,15 @@
                             <div class="mt-3 p-4 rounded-xl bg-secondary/60 border border-border/60 space-y-2.5">
                                 <div class="flex justify-between items-center">
                                     <span class="text-xs text-muted-foreground uppercase tracking-wider">Entrada</span>
-                                    <span class="text-sm font-bold text-foreground">{{ currencySymbol }}{{ currentConfig.stake.toFixed(2) }}</span>
+                                    <span class="text-sm font-bold text-foreground">{{ preferredCurrencyPrefix }}{{ currentConfig.stake.toFixed(2) }}</span>
                                 </div>
                                 <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
                                     <span class="text-xs text-muted-foreground uppercase tracking-wider">Alvo</span>
-                                    <span class="text-sm font-bold text-success">{{ currencySymbol }}{{ (currentConfig.profitTarget || 0).toFixed(2) }}</span>
+                                    <span class="text-sm font-bold text-success">{{ preferredCurrencyPrefix }}{{ (currentConfig.profitTarget || 0).toFixed(2) }}</span>
                                 </div>
                                 <div class="border-t border-border/40 pt-2.5 flex justify-between items-center">
                                     <span class="text-xs text-muted-foreground uppercase tracking-wider">Limite</span>
-                                    <span class="text-sm font-bold text-foreground">{{ currencySymbol }}{{ (currentConfig.lossLimit || 0).toFixed(2) }}</span>
+                                    <span class="text-sm font-bold text-foreground">{{ preferredCurrencyPrefix }}{{ (currentConfig.lossLimit || 0).toFixed(2) }}</span>
                                 </div>
                                 <div class="pt-2.5 flex justify-between items-center">
                                     <span class="text-xs text-muted-foreground uppercase tracking-wider">Stop Blindado</span>
@@ -496,7 +498,13 @@
 
         <SettingsSidebar 
             :is-open="showSettingsModal" 
-            @close="showSettingsModal = false" 
+            :balance="balanceNumeric"
+            :account-type="accountType"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
+            :currency-prefix="preferredCurrencyPrefix"
+            @close="showSettingsModal = false"
+            @account-type-changed="switchAccount"
         />
 
         <!-- Modals -->
@@ -540,6 +548,7 @@ import nexusStrategy from '../../utils/strategies/nexus.json';
 import orionStrategy from '../../utils/strategies/orion.json';
 import titanStrategy from '../../utils/strategies/titan.json';
 import { createChart, ColorType } from 'lightweight-charts';
+import accountBalanceMixin from '../../mixins/accountBalanceMixin';
 
 const strategyConfigs = {
 	apollo: apolloStrategy,
@@ -551,6 +560,7 @@ const strategyConfigs = {
 
 export default {
     name: 'AIMonitoringView',
+    mixins: [accountBalanceMixin],
     components: {
         AppSidebar,
         TopNavbar,
@@ -569,11 +579,6 @@ export default {
             showSettingsModal: false,
             isStopping: false,
             activeMonitoringTab: 'chart',
-
-            // Master Trader Settings & Account Type
-            isFictitiousBalanceActive: false,
-            showDollarSign: false,
-            accountType: 'real',
 
             // Strategy Config (loaded from local storage)
             currentConfig: {
@@ -651,12 +656,6 @@ export default {
         }
     },
     computed: {
-        currencySymbol() {
-            if (this.isFictitiousBalanceActive || this.showDollarSign) {
-                return '$';
-            }
-            return this.accountType === 'demo' ? 'Đ' : '$';
-        },
         iaStatusDisplay() {
             if (this.activeContracts.size > 0) return 'Contrato aberto';
             
@@ -708,6 +707,12 @@ export default {
 
         this.loadConfiguration();
         this.loadMasterTraderSettings();
+        
+        // Sincronizar saldo inicial com o mixin se disponível
+        if (this.info && this.info.balance !== undefined) {
+            this.monitoringStats.balance = this.info.balance;
+        }
+        
         this.initTickConnection();
     },
     beforeUnmount() {
@@ -1168,8 +1173,8 @@ export default {
             if (survivalStake < stake) {
                 this.addLog('🛡️ Survival Mode', [
                     `Stake ajustada para proteger limites`,
-                    `Original: ${this.currencySymbol}${stake.toFixed(2)}`,
-                    `Nova: ${this.currencySymbol}${survivalStake.toFixed(2)}`
+                    `Original: ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`,
+                    `Nova: ${this.preferredCurrencyPrefix}${survivalStake.toFixed(2)}`
                 ], 'warning');
                 stake = survivalStake;
             }
@@ -1178,7 +1183,7 @@ export default {
             if (!isRecovery && this.sessionState.consecutiveWins === 2 && this.sessionState.lastResultWin) {
                 this.addLog('Gestão Soros', [
                     `🚀 SOROS ATIVADO`,
-                    `Stake: Base + Lucro = ${this.currencySymbol}${stake.toFixed(2)}`,
+                    `Stake: Base + Lucro = ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`,
                     `Sequência: ${this.sessionState.consecutiveWins} vitórias`
                 ], 'info');
             }
@@ -1236,7 +1241,7 @@ export default {
                 `Modo: ${mode}`,
                 `Contrato: ${config.tradeType}`,
                 `Mercado: ${proposalParams.symbol}`,
-                `Stake: ${this.currencySymbol}${stake.toFixed(2)}`
+                `Stake: ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`
             ], 'info');
             
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
@@ -1314,25 +1319,25 @@ export default {
                     }
 
                     // Recovery Logs
-                    if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
-                         const lossSum = this.sessionState.totalLossAccumulated || this.sessionState.lastStakePrincipal;
-                         this.addLog('Ativação de Recuperação', [
-                             `⚠️ Modo MARTINGALE ativado`,
-                             `Perda acumulada: $${lossSum.toFixed(2)}`,
-                             `Próximo stake: Calculado automaticamente`
-                         ], 'warning');
+                     if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
+                          const lossSum = this.sessionState.totalLossAccumulated || this.sessionState.lastStakePrincipal;
+                          this.addLog('Ativação de Recuperação', [
+                              `⚠️ Modo MARTINGALE ativado`,
+                              `Perda acumulada: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
+                              `Próximo stake: Calculado automaticamente`
+                          ], 'warning');
                     } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
                          this.addLog('Recuperação Concluída', [
                              `✅ SUCESSO na recuperação`,
                              `Voltando ao modo PRINCIPAL`,
                              `Stake resetado para base`
                          ], 'success');
-                    } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST') {
-                         this.addLog('Ajuste Martingale', [
-                             `📉 Loss durante recuperação`,
-                             `Ajustando stake automaticamente`,
-                             `Total acumulado: $${this.sessionState.totalLossAccumulated.toFixed(2)}`
-                         ], 'warning');
+                     } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST') {
+                          this.addLog('Ajuste Martingale', [
+                              `📉 Loss durante recuperação`,
+                              `Ajustando stake automaticamente`,
+                              `Total acumulado: ${this.preferredCurrencyPrefix}${this.sessionState.totalLossAccumulated.toFixed(2)}`
+                          ], 'warning');
                     }
                     
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake);
@@ -1354,17 +1359,17 @@ export default {
                     this.addLog('Resultado da Operação', [
                         `Status: WIN`,
                         `Contrato ID: ${id}`,
-                        `Resultado Financeiro: +$${trade.pnl.toFixed(2)}`,
-                        `Stake: $${trade.stake.toFixed(2)}`,
-                        `Saldo Atual: $${(this.monitoringStats.balance + trade.pnl).toFixed(2)}`
+                        `Resultado Financeiro: +${this.preferredCurrencyPrefix}${trade.pnl.toFixed(2)}`,
+                        `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
+                        `Saldo Atual: ${this.preferredCurrencyPrefix}${(this.monitoringStats.balance + trade.pnl).toFixed(2)}`
                     ], 'success');
                 } else {
                     this.addLog('Resultado da Operação', [
                         `Status: LOSS`,
                         `Contrato ID: ${id}`,
-                        `Resultado Financeiro: -$${Math.abs(trade.pnl).toFixed(2)}`,
-                        `Stake: $${trade.stake.toFixed(2)}`,
-                        `Saldo Atual: $${(this.monitoringStats.balance + trade.pnl).toFixed(2)}`
+                        `Resultado Financeiro: -${this.preferredCurrencyPrefix}${Math.abs(trade.pnl).toFixed(2)}`,
+                        `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
+                        `Saldo Atual: ${this.preferredCurrencyPrefix}${(this.monitoringStats.balance + trade.pnl).toFixed(2)}`
                     ], 'error');
                 }
                 
@@ -1388,9 +1393,9 @@ export default {
                     this.sessionState.stopBlindadoFloor = this.sessionState.peakProfit * 0.4;
                     
                     this.addLog('🛡️ STOP BLINDADO ATIVADO', [
-                        `Meta: ${this.currencySymbol}${target.toFixed(2)}`,
-                        `Gatilho (50%): ${this.currencySymbol}${(target * 0.5).toFixed(2)} atingido`,
-                        `Proteção (40% do topo): ${this.currencySymbol}${this.sessionState.stopBlindadoFloor.toFixed(2)} garantidos`
+                        `Meta: ${this.preferredCurrencyPrefix}${target.toFixed(2)}`,
+                        `Gatilho (50%): ${this.preferredCurrencyPrefix}${(target * 0.5).toFixed(2)} atingido`,
+                        `Proteção (40% do topo): ${this.preferredCurrencyPrefix}${this.sessionState.stopBlindadoFloor.toFixed(2)} garantidos`
                     ], 'success');
                 } else if (this.sessionState.stopBlindadoActive) {
                     // Update floor if peak profit increases

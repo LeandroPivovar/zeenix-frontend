@@ -334,7 +334,7 @@
                                     </ZenixTooltip>
                                 </label>
                                 <div class="input-wrapper">
-                                    <span class="input-prefix">$</span>
+                                    <span class="input-prefix">{{ preferredCurrencyPrefix }}</span>
                                     <input 
                                         type="number" 
                                         class="form-input" 
@@ -354,7 +354,7 @@
                                     </ZenixTooltip>
                                 </label>
                                 <div class="input-wrapper">
-                                    <span class="input-prefix">$</span>
+                                    <span class="input-prefix">{{ preferredCurrencyPrefix }}</span>
                                     <input 
                                         type="number" 
                                         class="form-input" 
@@ -375,7 +375,7 @@
                                         </ZenixTooltip>
                                     </label>
                                     <div class="input-wrapper">
-                                        <span class="input-prefix">$</span>
+                                        <span class="input-prefix">{{ preferredCurrencyPrefix }}</span>
                                         <input 
                                             type="number" 
                                             class="form-input" 
@@ -775,9 +775,9 @@ export default {
         formattedDailyProfit() {
             const value = this.dailyStats.profitLoss || 0;
             if (value >= 0) {
-                return `+${this.tradeCurrency} ${value.toFixed(2)}`;
+                return `+${this.preferredCurrencyPrefix} ${value.toFixed(2)}`;
             } else {
-                return `-${this.tradeCurrency} ${Math.abs(value).toFixed(2)}`;
+                return `-${this.preferredCurrencyPrefix} ${Math.abs(value).toFixed(2)}`;
             }
         },
         
