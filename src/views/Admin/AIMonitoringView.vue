@@ -47,8 +47,9 @@
                                 <div class="absolute w-1 h-1 rounded-full bg-success/40 animate-pulse" style="bottom: 4px; left: -2px; animation-delay: 1s;"></div>
                             </div>
                             <div class="flex flex-col min-w-0">
-                                     <span class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_hsl(142,76%,45%,0.6)]"></span>
-                                     <span class="text-lg lg:text-3xl font-black text-success tracking-tighter drop-shadow-[0_0_12px_hsl(142,76%,45%,0.4)] uppercase">
+                                <div class="flex items-center gap-2 lg:gap-2.5 mb-1">
+                                    <span class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_hsl(142,76%,45%,0.6)]"></span>
+                                    <span class="text-lg lg:text-3xl font-black text-success tracking-tighter drop-shadow-[0_0_12px_hsl(142,76%,45%,0.4)] uppercase">
                                         IA {{ currentConfig.strategy }}
                                     </span>
                                 </div>
@@ -57,8 +58,6 @@
                                         {{ iaStatusDisplay }}
                                     </p>
                                 </div>
-
-                                
                             </div>
                         </div>
 
