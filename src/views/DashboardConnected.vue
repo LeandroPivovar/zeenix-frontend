@@ -11,7 +11,7 @@
       @toggle-collapse="toggleSidebarCollapse" 
     />
     
-    <div class="dashboard-content-wrapper full-immersion-layout" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
+    <div :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
       <!-- Top Navbar -->
       <TopNavbar 
         v-if="!isMobile"
@@ -31,7 +31,7 @@
     <main class="main-content bg-transparent noise-bg font-inter overflow-y-auto w-full">
       <!-- Hero Onboarding Section -->
       <section id="hero-section" class="w-full mt-0 py-12 relative group h-[640px] md:h-[750px]" style="overflow: visible;">
-      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent full-immersion">
+      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent">
         <!-- Video Background - Desktop Only (Dual Video for Seamless Loop) -->
         <template v-if="!isMobile">
           <video 
@@ -61,7 +61,7 @@
         <div v-if="!isMobile && !localSidebarCollapsed" class="hidden md:block absolute inset-0 bg-gradient-to-r from-[rgb(20_17_17/0.35)] to-transparent">
         </div>
       </div>
-      <div class="relative z-10 h-full w-full px-6 md:px-10 immersion-content">
+      <div class="relative z-10 h-full w-full px-6 md:px-10">
         <div class="flex justify-between items-center h-full gap-20">
           <div class="flex flex-col justify-center space-y-10 flex-shrink-0">
             <div class="space-y-6 text-left">
@@ -91,8 +91,8 @@
       
       <!-- Ticker Section -->
       <section id="ticker-section" class="py-3 relative border-t border-[#22C55E]/20 bg-[rgba(11,11,11,0.8)] backdrop-blur-sm w-full" style="overflow: visible;">
-        <div class="absolute inset-0 z-0 bg-[rgba(11,11,11,0.8)] full-immersion" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);"></div>
-        <div class="relative z-10 w-full immersion-content">
+        <div class="absolute inset-0 z-0 bg-[rgba(11,11,11,0.8)]" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);"></div>
+        <div class="relative z-10 w-full">
           <div class="relative overflow-hidden w-full">
             <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
             <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
@@ -110,7 +110,7 @@
         </div>
       </section>
       
-      <div class="py-0 w-full immersion-content" style="padding-right: 0;">
+      <div class="py-0 w-full" style="padding-right: 0;">
         <!-- Mobile Account Summary -->
         <section class="mobile-account-summary">
           <div class="mobile-account-user">
