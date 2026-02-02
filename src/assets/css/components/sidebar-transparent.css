@@ -2,7 +2,7 @@
 
 aside.sbt-sidebar,
 .sbt-sidebar,
-#app-sidebar-main.sbt-sidebar-glass-effect {
+#app-sidebar-transparent.sbt-sidebar-glass-effect {
 	/* Estado inicial - expandido no desktop */
 	width: 280px !important;
 	min-width: 280px !important;
@@ -34,7 +34,7 @@ aside.sbt-sidebar,
 
 /* Estado Colapsado */
 .sbt-sidebar.sbt-collapsed,
-#app-sidebar-main.sbt-sidebar-glass-effect.sbt-collapsed {
+#app-sidebar-transparent.sbt-sidebar-glass-effect.sbt-collapsed {
 	width: 80px !important;
 	min-width: 80px !important;
 	max-width: 80px !important;
@@ -43,7 +43,7 @@ aside.sbt-sidebar,
 }
 
 .sbt-sidebar.sbt-collapsed:hover,
-#app-sidebar-main.sbt-sidebar-glass-effect.sbt-collapsed:hover {
+#app-sidebar-transparent.sbt-sidebar-glass-effect.sbt-collapsed:hover {
 	width: 280px !important;
 }
 
@@ -62,7 +62,7 @@ aside.sbt-sidebar,
 
 	/* O wrapper controla o hover para sincronizar com o conteúdo */
 	.sbt-sidebar-wrapper:hover .sbt-sidebar,
-	.sbt-sidebar-wrapper:hover #app-sidebar-main.sbt-sidebar-glass-effect {
+	.sbt-sidebar-wrapper:hover #app-sidebar-transparent.sbt-sidebar-glass-effect {
 		width: 280px !important;
 		min-width: 280px !important;
 		max-width: 280px !important;
@@ -687,7 +687,7 @@ aside.sbt-sidebar,
 @media (max-width: 1024px) {
 
 	.sbt-sidebar,
-	#app-sidebar-main.sbt-sidebar-glass-effect {
+	#app-sidebar-transparent.sbt-sidebar-glass-effect {
 		left: -300px;
 		top: 0 !important;
 		height: 100vh !important;

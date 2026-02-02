@@ -2,7 +2,7 @@
     <div class="sbt-sidebar-wrapper" style="background: transparent !important;">
         <div v-if="isOpen && isMobile" class="sbt-sidebar-overlay" @click="$emit('close-sidebar')"></div>
         <aside 
-            id="app-sidebar-main"
+            id="app-sidebar-transparent"
             class="sbt-sidebar sbt-sidebar-glass-effect" 
             :class="{ 'sbt-is-open': isOpen, 'sbt-collapsed': isCollapsed }"
             style="background: transparent !important; background-color: transparent !important;"
