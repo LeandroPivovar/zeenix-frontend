@@ -306,20 +306,24 @@ body,
   overflow-x: hidden !important;
   width: 100% !important;
   position: relative !important;
-  --sidebar-width: 280px;
+  --sidebar-width: 280px !important;
 }
 
 .sidebar-collapsed.full-immersion-layout,
 .sidebar-collapsed .full-immersion-layout,
 .sidebar-wrapper.collapsed:not(:hover)~.full-immersion-layout,
-.sidebar-wrapper.collapsed:not(:hover)~.dashboard-content-wrapper.full-immersion-layout {
-  --sidebar-width: 80px;
+.sidebar-wrapper.collapsed:not(:hover)~.dashboard-content-wrapper.full-immersion-layout,
+.sbt-sidebar-wrapper.sbt-collapsed:not(:hover)~.full-immersion-layout,
+.sbt-sidebar-wrapper.sbt-collapsed:not(:hover)~.dashboard-content-wrapper.full-immersion-layout {
+  --sidebar-width: 80px !important;
   padding-left: 0 !important;
 }
 
 /* Hover expansion synchronization */
 .sidebar-wrapper:hover~.full-immersion-layout,
-.sidebar-wrapper:hover~.dashboard-content-wrapper.full-immersion-layout {
+.sidebar-wrapper:hover~.dashboard-content-wrapper.full-immersion-layout,
+.sbt-sidebar-wrapper:hover~.full-immersion-layout,
+.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper.full-immersion-layout {
   --sidebar-width: 280px !important;
   padding-left: 0 !important;
 }
