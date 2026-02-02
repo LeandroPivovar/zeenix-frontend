@@ -932,8 +932,17 @@ export default {
                                          // Attempt to find the correct token
                                          const allTokens = JSON.parse(localStorage.getItem('deriv_tokens_by_loginid') || '{}');
                                          const correctToken = allTokens[conn.loginid];
-
-                                         if (correctToken) {
+                                         
+                                         // 🛡️ Loop Protection: Don't retry if it's the same token we just used
+                                         const currentUsedToken = this.getDerivToken();
+                                         if (correctToken && correctToken === currentUsedToken) {
+                                             console.error('[AIMonitoringView] ⛔ Infinite Loop Detected! Token for', conn.loginid, 'is actually for', msg.authorize.loginid);
+                                             // Provide a helpful message to the user
+                                             this.addLog('⚠️ Erro de Token', [
+                                                 `Token corrompido detectado`,
+                                                 `Ação: Faça LOGOUT e Login novamente`
+                                             ], 'error');
+                                         } else if (correctToken) {
                                              console.warn('[AIMonitoringView] 🔄 Silently switching to correct account:', conn.loginid);
                                              this.ws.send(JSON.stringify({ authorize: correctToken }));
                                              return;
