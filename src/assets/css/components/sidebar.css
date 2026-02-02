@@ -75,13 +75,10 @@ aside.sidebar,
 
 	.sidebar-wrapper:hover~.dashboard-content-wrapper,
 	.sidebar-wrapper:hover~.content-wrapper,
-	.sidebar-wrapper:hover~.main-content-wrapper {
-		padding-left: 280px !important;
-	}
+	.sidebar-wrapper:hover~.main-content-wrapper {}
 
 	/* Expansão e deslocamento do TopNavbar */
 	.sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
-		padding-left: 280px !important;
 		width: 100% !important;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
@@ -179,7 +176,7 @@ aside.sidebar,
 		line-height: normal;
 	}
 
-	.logo-z-container {
+	.sidebar.collapsed:not(:hover) .logo-z-container {
 		background: #22C55E;
 		color: #000 !important;
 		width: 24px;
@@ -193,9 +190,28 @@ aside.sidebar,
 		flex-shrink: 0;
 	}
 
-	.logo-z {
+	.logo-z-container {
+		background: transparent;
+		color: #fff !important;
+		width: auto;
+		height: auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 0;
+		margin-right: 0;
+		font-weight: 800;
+		flex-shrink: 0;
+	}
+
+	.sidebar.collapsed:not(:hover) .logo-z {
 		color: #000 !important;
 		font-size: 16px;
+	}
+
+	.logo-z {
+		color: #fff !important;
+		font-size: 20px;
 	}
 
 
