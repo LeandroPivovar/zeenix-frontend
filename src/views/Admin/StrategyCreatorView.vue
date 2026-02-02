@@ -176,6 +176,17 @@
                                     </div>
                                 </div>
                                 <div>
+                                    <label class="block text-white font-bold mb-2">Payout Esperado</label>
+                                    <input 
+                                        type="number" 
+                                        v-model.number="form.expectedPayout" 
+                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                        step="0.01"
+                                        min="1"
+                                        placeholder="Ex: 1.19 ($1 vira $1.19)"
+                                    />
+                                </div>
+                                <div>
                                     <label class="block text-white font-bold mb-2 text-sm">Payout Esperado Rec.</label>
                                     <input 
                                         type="number" 
@@ -208,17 +219,6 @@
                                             <i class="fa-solid fa-chevron-down text-gray-400"></i>
                                         </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <label class="block text-white font-bold mb-2">Payout Esperado</label>
-                                    <input 
-                                        type="number" 
-                                        v-model.number="form.expectedPayout" 
-                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                        step="0.01"
-                                        min="1"
-                                        placeholder="Ex: 1.19 ($1 vira $1.19)"
-                                    />
                                 </div>
                             </div>
                         </div>
@@ -326,22 +326,7 @@
                                         </button>
                                     </div>
                                     <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        <div>
-                                            <label class="block text-white font-bold mb-2 text-sm">Perfil de Risco</label>
-                                            <div class="relative">
-                                                <select 
-                                                    v-model="form.riskProfile" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                >
-                                                    <option value="conservador">Conservador (0%)</option>
-                                                    <option value="moderado">Moderado (15%)</option>
-                                                    <option value="agressivo">Agressivo (30%)</option>
-                                                </select>
-                                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                                    <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                                </div>
-                                            </div>
-                                        </div>
+
                                         <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(recoveryConfig.tradeType)">
                                             <label class="block text-white font-bold mb-2 text-sm">Dígito Alvo Rec.</label>
                                             <div class="relative">
@@ -494,6 +479,22 @@
                                     </div>
                                 </div>
                                 <div>
+                                    <label class="block text-white font-bold mb-2">Perfil de Risco</label>
+                                    <div class="relative">
+                                        <select 
+                                            v-model="form.riskProfile" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                        >
+                                            <option value="conservador">Conservador (0%)</option>
+                                            <option value="moderado">Moderado (15%)</option>
+                                            <option value="agressivo">Agressivo (30%)</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
                                     <div class="flex justify-between items-center mb-2">
                                         <label class="block text-white font-bold">Limite de perda</label>
                                     </div>
@@ -533,19 +534,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block text-white font-bold mb-2">Taxa de Lucro (x.x)</label>
-                                    <div class="relative">
-                                        <input 
-                                            type="number" 
-                                            v-model.number="form.expectedPayout" 
-                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 focus:outline-none focus:border-zenix-green transition-colors"
-                                            step="0.01"
-                                            placeholder="Ex: 0.95 ou 1.26"
-                                        />
-                                    </div>
-                                    <p class="mt-1 text-gray-500 text-xs font-bold">Base para cálculo</p>
-                                </div>
+
                             </div>
                         </div>
 
