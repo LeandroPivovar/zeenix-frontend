@@ -112,18 +112,16 @@
                                     <span class="text-[10px] lg:text-xs text-muted-foreground block">WR</span>
                                 </div>
                             </div>
-                            <!-- Mobile Pause Button -->
-                            <button @click="stopIA" :disabled="isStopping" class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 w-full mt-4 bg-success hover:bg-success/90 text-success-foreground font-bold py-4 text-sm rounded-xl shadow-lg shadow-success/20 lg:hidden">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause w-4 h-4 mr-2"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
-                                {{ isStopping ? 'Parando...' : 'Pausar' }}
-                            </button>
                         </div>
                     </div>
                 </div>
 
+                <!-- Mobile Configuration Cards Stack (Visible only on Mobile) -->
+                <div v-if="isMobile" class="mt-4 flex flex-col gap-3 w-full">
+
                     <!-- Mobile Pause Button -->
                     <button @click="stopIA" :disabled="isStopping" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
-                        {{ isStopping ? 'Parando...' : 'Pausar' }}
+                        {{ isStopping ? 'Parando...' : 'Pausar IA' }}
                     </button>
 
                     <!-- Card 1: AI Identity -->
@@ -481,11 +479,11 @@
                             </div>
 
                             <!-- Desktop Pause Button -->
-                            <div class="mt-auto px-1 pt-6 border-t border-border/40">
+                            <div class="mt-0 px-1 pt-0">
                                 <button @click="stopIA" :disabled="isStopping" class="group flex items-center justify-center w-full h-[52px] bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
                                     <div class="flex items-center gap-3">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
-                                        <span class="mt-0.5">{{ isStopping ? 'Parando...' : 'Pausar' }}</span>
+                                        <span class="mt-0.5">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
                                     </div>
                                 </button>
                             </div>
@@ -1281,7 +1279,7 @@ export default {
         addLog(title, messages, type = 'info') {
             const time = new Date().toLocaleTimeString();
             this.monitoringLogs.unshift({ title, details: Array.isArray(messages) ? messages : [messages], type, time });
-            if (this.monitoringLogs.length > 5000) this.monitoringLogs = this.monitoringLogs.slice(0, 5000);
+            if (this.monitoringLogs.length > 50000) this.monitoringLogs = this.monitoringLogs.slice(0, 50000);
         },
         getContractDisplayName(type) {
             if (!type) return 'Operação';
