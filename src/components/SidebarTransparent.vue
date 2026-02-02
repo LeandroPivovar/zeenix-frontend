@@ -10,7 +10,7 @@
         <div class="sbt-sidebar-brand">
             <div class="sbt-brand-logo-container">
                 <span class="sbt-logo-text font-bold">
-                    <span class="sbt-logo-z sbt-white">Z</span><span class="sbt-logo-suffix"><span class="sbt-white">ZENI</span><span class="sbt-green text-[#22C55E]">X</span></span>
+                    <span class="sbt-logo-z sbt-white">Z</span><span class="sbt-logo-suffix"><span class="sbt-white">ENI</span><span class="sbt-green text-[#22C55E]">X</span></span>
                 </span>
             </div>
 
