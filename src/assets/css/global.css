@@ -246,6 +246,38 @@ body,
   }
 }
 
+/* Mobile: Remover padding da sidebar */
+@media (max-width: 1024px) {
+
+  .dashboard-content-wrapper,
+  .content-wrapper,
+  .main-content-wrapper,
+  .operation-main,
+  .box-content {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  #top-navbar {
+    padding-left: 0 !important;
+  }
+
+  .sidebar-collapsed.dashboard-content-wrapper,
+  .sidebar-collapsed .dashboard-content-wrapper,
+  .sidebar-collapsed.content-wrapper,
+  .sidebar-collapsed .content-wrapper,
+  .sidebar-collapsed.main-content-wrapper,
+  .sidebar-collapsed .main-content-wrapper,
+  .sidebar-collapsed.operation-main,
+  .sidebar-collapsed .operation-main,
+  .sidebar-collapsed.box-content,
+  .sidebar-collapsed .box-content,
+  .sidebar-collapsed #top-navbar {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+}
+
 /* Background Immersion (100vw media) */
 .full-immersion {
   position: absolute !important;
