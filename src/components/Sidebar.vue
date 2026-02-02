@@ -8,8 +8,14 @@
         >
         <div class="sidebar-brand">
             <div class="brand-logo-container">
-                <span class="logo-text font-bold">
-                    <span class="logo-z white">Z</span><span class="logo-suffix"><span class="white">ENI</span><span class="green text-[#22C55E]">X</span></span>
+                <span class="logo-text font-black">
+                    <span class="logo-z-container">
+                        <span class="logo-z">Z</span>
+                    </span>
+                    <span class="logo-suffix">
+                        <span class="white">ENI</span>
+                        <span class="green text-[#22C55E]">X</span>
+                    </span>
                 </span>
             </div>
 

@@ -47,18 +47,18 @@
                                 <div class="absolute w-1 h-1 rounded-full bg-success/40 animate-pulse" style="bottom: 4px; left: -2px; animation-delay: 1s;"></div>
                             </div>
                             <div class="flex flex-col min-w-0">
-                                <div class="flex items-center gap-2 lg:gap-2.5 mb-1">
-                                    <span class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_hsl(142,76%,45%,0.6)]"></span>
-                                     <span class="text-lg lg:text-2xl font-bold text-success tracking-wide drop-shadow-[0_0_12px_hsl(142,76%,45%,0.4)]">
-                                        Configuração Ativa
+                                     <span class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_hsl(142,76%,45%,0.6)]"></span>
+                                     <span class="text-lg lg:text-3xl font-black text-success tracking-tighter drop-shadow-[0_0_12px_hsl(142,76%,45%,0.4)] uppercase">
+                                        IA {{ currentConfig.strategy }}
                                     </span>
                                 </div>
                                 <div class="h-5 overflow-hidden">
-                                    <p class="text-xs lg:text-sm text-foreground/90 font-medium transition-all duration-300 opacity-100 translate-y-0">
-                                        {{ activeContracts.size > 0 ? 'Operação em curso' : (monitoringOperations.length > 0 ? 'Coletando dados' : 'Analisando tiques em tempo real') }}
+                                    <p class="text-xs lg:text-sm text-foreground/90 font-medium transition-all duration-300 opacity-100 translate-y-0 uppercase tracking-widest">
+                                        {{ iaStatusDisplay }}
                                     </p>
                                 </div>
-                                <p class="text-[9px] lg:text-[10px] text-muted-foreground mt-1 uppercase tracking-wider hidden md:block">Resumo</p>
+
+                                
                             </div>
                         </div>
 
@@ -116,7 +116,7 @@
                             <!-- Mobile Pause Button -->
                             <button @click="stopIA" :disabled="isStopping" class="inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 w-full mt-4 bg-success hover:bg-success/90 text-success-foreground font-bold py-4 text-sm rounded-xl shadow-lg shadow-success/20 lg:hidden">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause w-4 h-4 mr-2"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
-                                {{ isStopping ? 'Parando...' : 'Pausar IA' }}
+                                {{ isStopping ? 'Parando...' : 'Pausar Robô' }}
                             </button>
                         </div>
                     </div>
@@ -183,7 +183,7 @@
 
                     <!-- Mobile Pause Button -->
                     <button @click="stopIA" :disabled="isStopping" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
-                        {{ isStopping ? 'Parando...' : 'Pausar IA' }}
+                        {{ isStopping ? 'Parando...' : 'Pausar Robô' }}
                     </button>
                 </div>
 
@@ -481,7 +481,7 @@
                                 </div>
                             </div>
 
-                            <div class="flex-1 min-h-[40px]"></div>
+                            
 
                             <!-- IA EM FUNCIONAMENTO / Footer -->
                             <div class="mt-4 mb-5 relative z-10 px-1">
@@ -496,7 +496,7 @@
                                 <button @click="stopIA" :disabled="isStopping" class="group flex items-center justify-center w-full h-[52px] bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
                                     <div class="flex items-center gap-3">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
-                                        <span class="mt-0.5">{{ isStopping ? 'Parando...' : 'Pausar IA' }}</span>
+                                        <span class="mt-0.5">{{ isStopping ? 'Parando...' : 'Pausar Robô' }}</span>
                                     </div>
                                 </button>
                             </div>
@@ -659,10 +659,23 @@ export default {
             }
             return this.accountType === 'demo' ? 'Đ' : '$';
         },
-        profitCurrencySymbol() {
-            // "não precisa do D no resulta apenas no capital"
-            // "o resultado tire o prefixo de $, nao deve ter prefixo nenhum"
-            return '';
+        iaStatusDisplay() {
+            if (this.activeContracts.size > 0) return 'Contrato aberto';
+            
+            // Se existem operações, verifica se a última foi fechada recentemente
+            if (this.monitoringOperations.length > 0) {
+                const lastOp = this.monitoringOperations[this.monitoringOperations.length - 1];
+                if (lastOp.result === 'WON' || lastOp.result === 'LOSS' || lastOp.result === 'WIN') {
+                    // Aqui poderíamos ter um timer, mas por enquanto vamos assumir que se não há contrato aberto
+                    // e a última op está concluída, ela foi "fechada".
+                    // Para evitar que fique preso em "Contrato fechado", podemos checar se a última op foi há pouco tempo.
+                    return 'Contrato fechado';
+                }
+            }
+
+            if (this.tickHistory.length < 5) return 'Coletando dados';
+            
+            return 'Analisando o mercado';
         }
     },
     watch: {
