@@ -176,6 +176,17 @@
                                     </div>
                                 </div>
                                 <div>
+                                    <label class="block text-white font-bold mb-2">Payout Esperado</label>
+                                    <input 
+                                        type="number" 
+                                        v-model.number="form.expectedPayout" 
+                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                        step="0.01"
+                                        min="1"
+                                        placeholder="Ex: 1.19 ($1 vira $1.19)"
+                                    />
+                                </div>
+                                <div>
                                     <label class="block text-white font-bold mb-2 text-sm">Payout Esperado Rec.</label>
                                     <input 
                                         type="number" 
@@ -209,17 +220,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block text-white font-bold mb-2">Payout Esperado</label>
-                                    <input 
-                                        type="number" 
-                                        v-model.number="form.expectedPayout" 
-                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                        step="0.01"
-                                        min="1"
-                                        placeholder="Ex: 1.19 ($1 vira $1.19)"
-                                    />
-                                </div>
                             </div>
                         </div>
 
@@ -235,35 +235,45 @@
                                 </h3>
                                 
                                 <div class="space-y-4 relative z-10">
-                                    <div v-if="form.attackFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
+                                    <div v-if="activeAttackFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
                                         <p class="text-gray-400 text-sm mb-3">Nenhum filtro de ataque configurado. O robô entrará em cada sinal disponível.</p>
                                         <button 
                                             type="button" 
                                             @click="openFilterModal('main')"
                                             class="bg-zenix-green/10 text-zenix-green border border-zenix-green/30 px-6 py-2 rounded-lg hover:bg-zenix-green/20 transition-all font-bold text-sm"
                                         >
-                                            Configurar Filtros
+                                            Adicionar Filtros
                                         </button>
                                     </div>
                                     
                                     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div v-for="filter in form.attackFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between">
-                                            <div>
-                                                <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
-                                                <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
+                                        <div v-for="filter in activeAttackFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
+                                            <div class="flex items-center gap-3">
+                                                 <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+                                                    <i class="fa-solid fa-filter"></i>
+                                                 </div>
+                                                 <div>
+                                                    <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
+                                                    <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
+                                                 </div>
                                             </div>
-                                            <button type="button" @click="openFilterModal('main')" class="text-gray-500 hover:text-white transition-colors">
-                                                <i class="fa-solid fa-gear"></i>
-                                            </button>
+                                            <div class="flex items-center gap-2">
+                                                <button type="button" @click="openFilterConfigDirect(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
+                                                    <i class="fa-solid fa-gear text-xs"></i>
+                                                </button>
+                                                <button type="button" @click="removeFilter(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
+                                                    <i class="fa-solid fa-times text-xs"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                         <button 
-                                            v-if="form.attackFilters.length < 2"
+                                            v-if="activeAttackFilters.length < 2"
                                             type="button" 
                                             @click="openFilterModal('main')"
                                             class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
                                         >
                                             <i class="fa-solid fa-plus text-xs"></i>
-                                            <span class="text-sm">Adicionar Segundo Filtro</span>
+                                            <span class="text-sm">Adicionar Filtro</span>
                                         </button>
                                     </div>
                                 </div>
@@ -316,22 +326,7 @@
                                         </button>
                                     </div>
                                     <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        <div>
-                                            <label class="block text-white font-bold mb-2 text-sm">Perfil de Risco</label>
-                                            <div class="relative">
-                                                <select 
-                                                    v-model="form.riskProfile" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                >
-                                                    <option value="conservador">Conservador (0%)</option>
-                                                    <option value="moderado">Moderado (15%)</option>
-                                                    <option value="agressivo">Agressivo (30%)</option>
-                                                </select>
-                                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                                    <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                                </div>
-                                            </div>
-                                        </div>
+
                                         <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(recoveryConfig.tradeType)">
                                             <label class="block text-white font-bold mb-2 text-sm">Dígito Alvo Rec.</label>
                                             <div class="relative">
@@ -355,26 +350,8 @@
                                                 min="1"
                                             />
                                         </div>
-                                        <div>
-                                            <label class="block text-white font-bold mb-2 text-sm">Taxa Lucro Rec. (x.x)</label>
-                                            <div class="relative">
-                                                <input 
-                                                    type="number" 
-                                                    v-model.number="recoveryConfig.expectedPayout" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                    step="0.01"
-                                                    placeholder="Ex: 0.95 ou 1.26"
-                                                />
-                                            </div>
-                                        </div>
+
                                         <div class="flex items-end gap-2">
-                                             <button 
-                                                type="button" 
-                                                @click="openFilterModal('recovery')"
-                                                class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white h-[46px] rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2 text-xs"
-                                            >
-                                                <i class="fa-solid fa-filter"></i> Filtros
-                                            </button>
                                              <button 
                                                 type="button" 
                                                 @click="showPauseModal = true"
@@ -383,6 +360,63 @@
                                                 <i class="fa-solid fa-pause"></i> Pausa
                                             </button>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filtros de Recuperação (Standalone Card) -->
+                        <div class="col-span-12">
+                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden" :class="{ 'opacity-50 grayscale pointer-events-none': !recoveryConfig.enabled }">
+                                <div class="absolute top-0 right-0 p-4 opacity-5">
+                                    <i class="fa-solid fa-rotate-left text-6xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
+                                    <i class="fa-solid fa-filter text-zenix-green"></i>
+                                    Filtros de Recuperação
+                                </h3>
+                                
+                                <div class="space-y-4 relative z-10">
+                                    <div v-if="activeRecoveryFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
+                                        <p class="text-gray-400 text-sm mb-3">Nenhum filtro de recuperação configurado.</p>
+                                        <button 
+                                            type="button" 
+                                            @click="openFilterModal('recovery')"
+                                            class="bg-zenix-green/10 text-zenix-green border border-zenix-green/30 px-6 py-2 rounded-lg hover:bg-zenix-green/20 transition-all font-bold text-sm"
+                                        >
+                                            Adicionar Filtros
+                                        </button>
+                                    </div>
+                                    
+                                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div v-for="filter in activeRecoveryFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
+                                            <div class="flex items-center gap-3">
+                                                 <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+                                                    <i class="fa-solid fa-filter"></i>
+                                                 </div>
+                                                 <div>
+                                                    <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
+                                                    <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
+                                                 </div>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <button type="button" @click="openFilterConfigDirect(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
+                                                    <i class="fa-solid fa-gear text-xs"></i>
+                                                </button>
+                                                <button type="button" @click="removeFilter(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
+                                                    <i class="fa-solid fa-times text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            v-if="activeRecoveryFilters.length < 2"
+                                            type="button" 
+                                            @click="openFilterModal('recovery')"
+                                            class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
+                                        >
+                                            <i class="fa-solid fa-plus text-xs"></i>
+                                            <span class="text-sm">Adicionar Filtro</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -434,6 +468,22 @@
                                     </div>
                                 </div>
                                 <div>
+                                    <label class="block text-white font-bold mb-2">Perfil de Risco</label>
+                                    <div class="relative">
+                                        <select 
+                                            v-model="form.riskProfile" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                        >
+                                            <option value="conservador">Conservador (0%)</option>
+                                            <option value="moderado">Moderado (15%)</option>
+                                            <option value="agressivo">Agressivo (30%)</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
                                     <div class="flex justify-between items-center mb-2">
                                         <label class="block text-white font-bold">Limite de perda</label>
                                     </div>
@@ -473,19 +523,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block text-white font-bold mb-2">Taxa de Lucro (x.x)</label>
-                                    <div class="relative">
-                                        <input 
-                                            type="number" 
-                                            v-model.number="form.expectedPayout" 
-                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 focus:outline-none focus:border-zenix-green transition-colors"
-                                            step="0.01"
-                                            placeholder="Ex: 0.95 ou 1.26"
-                                        />
-                                    </div>
-                                    <p class="mt-1 text-gray-500 text-xs font-bold">Base para cálculo</p>
-                                </div>
+
                             </div>
                         </div>
 
@@ -1767,6 +1805,12 @@ export default {
 
             return sortedGrouped;
         },
+        activeAttackFilters() {
+            return this.filters.filter(f => f.active);
+        },
+        activeRecoveryFilters() {
+            return this.recoveryFilters.filter(f => f.active);
+        },
         selectedMarketLabel() {
             const market = this.markets.find(m => m.symbol === this.form.market); // Using 'symbol' property usually used in StrategyCreator
             if (market) return market.displayName || market.label;
@@ -2006,43 +2050,56 @@ export default {
         // Filter Management Methods
         openFilterModal(context = 'main') {
             this.modalContext = context;
-            this.filterStep = 1;
+            this.filterStep = 1; // Always start at selection list
             this.showFilterModal = true;
         },
         toggleFilter(filter) {
             console.log(`[toggleFilter] Clicked: ${filter.name} (${filter.id}) | Current Active: ${filter.active}`);
             
-            // Fix: Reverting to direct assignment as $set is not available (Vue 3)
-            // Removed $forceUpdate as it was causing internal Vue errors ("Symbol(_vei)")
-            
-            if (filter.active) {
-                console.log('[toggleFilter] Deactivating filter...');
-                filter.active = false;
-                return;
-            }
-
-            // Count validation
             const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
-            const activeCount = targetArray.filter(f => f.active).length;
-            console.log(`[toggleFilter] Current Active Count: ${activeCount}`);
-            
-            if (activeCount >= 2) {
-                console.warn('[toggleFilter] Limit reached (2). Blocked.');
-                this.$root.$toast.warning('Selecione no máximo 2 filtros.');
-                return;
+            const index = targetArray.findIndex(f => f.id === filter.id);
+
+            if (index === -1) return;
+
+            // Toggle Logic
+            const newState = !filter.active;
+
+            if (newState) {
+                // Check limit if activating
+                const activeCount = targetArray.filter(f => f.active).length;
+                
+                if (activeCount >= 2) {
+                    this.$root.$toast.warning('Selecione no máximo 2 filtros.');
+                    return;
+                }
             }
 
-            console.log('[toggleFilter] Activating filter...');
-            filter.active = true;
-        },
-        nextFilterStep() {
-            const sourceArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
-            const activeCount = sourceArray.filter(f => f.active).length;
-            if (activeCount === 0) {
-                this.$root.$toast.warning('Selecione pelo menos 1 filtro para configurar.');
-                return;
+            // Force Reactivity: Create new object and splice it in
+            const newFilter = { ...filter, active: newState };
+            targetArray.splice(index, 1, newFilter);
+            
+            // Auto move to config if activated
+            if (newState) {
+                this.nextFilterStep();
             }
+        },
+        
+        removeFilter(filter, context) {
+             const targetArray = context === 'main' ? this.filters : this.recoveryFilters;
+             const index = targetArray.findIndex(f => f.id === filter.id);
+             
+             if (index !== -1) {
+                 // Deactivate filter
+                 const newFilter = { ...filter, active: false };
+                 targetArray.splice(index, 1, newFilter);
+                 this.$root.$toast.info(`Filtro ${filter.name} removido.`);
+             }
+        },
+
+        openFilterConfigDirect(filter, context) {
+            this.modalContext = context;
             this.filterStep = 2;
+            this.showFilterModal = true;
         },
 
         prevFilterStep() {
@@ -2344,17 +2401,21 @@ export default {
             }
 
             // Restore filters active state for main
-            this.filters.forEach(f => {
+            this.filters.forEach((f, index) => {
                 const active = this.form.attackFilters.find(af => af.id === f.id);
-                f.active = !!active;
-                if (active) f.config = { ...active.config };
+                // Force reactivity using splice
+                const newFilter = { ...f, active: !!active };
+                if (active) newFilter.config = { ...active.config };
+                this.filters.splice(index, 1, newFilter);
             });
 
             // Restore filters active state for recovery
-            this.recoveryFilters.forEach(f => {
+            this.recoveryFilters.forEach((f, index) => {
                 const active = this.recoveryConfig.attackFilters.find(af => af.id === f.id);
-                f.active = !!active;
-                if (active) f.config = { ...active.config };
+                // Force reactivity using splice
+                const newFilter = { ...f, active: !!active };
+                if (active) newFilter.config = { ...active.config };
+                this.recoveryFilters.splice(index, 1, newFilter);
             });
 
             this.addLog(`📂 Estratégia carregada: ${strategy.name}`, 'info');
