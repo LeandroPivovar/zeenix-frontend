@@ -360,8 +360,15 @@ export default {
                 text: 'Grupo de Alunos',
                 link: 'https://wa.me/5511999999999',
                 icon: null
-            }
+            },
+            isMobile: false
         }
+    },
+    beforeUnmount() {
+        window.removeEventListener('resize', this.checkMobile);
+    },
+    created() {
+        this.checkMobile();
     },
     computed: {
         isAdminFlow() {
@@ -482,6 +489,8 @@ export default {
         }
     },
     async mounted() {
+        this.checkMobile();
+        window.addEventListener('resize', this.checkMobile);
         // Verificação silenciosa de acesso admin (sem logs excessivos)
         // Os logs de debug foram removidos para reduzir poluição no console
         await this.loadStudentGroupConfig();
@@ -680,6 +689,9 @@ export default {
                 return `${apiBase}${path.startsWith('/') ? '' : '/'}${path}`;
             }
             return path;
+        },
+        checkMobile() {
+            this.isMobile = window.innerWidth <= 1024;
         }
     }
 }
