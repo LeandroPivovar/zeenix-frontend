@@ -760,7 +760,6 @@ export default {
                     // ✅ FORCE RECOVERY PAYOUT FIX for Apollo/Nexus
                     if (this.currentConfig.strategy.toLowerCase() === 'apollo' || this.currentConfig.strategy.toLowerCase() === 'nexus') {
                         this.recoveryConfig.expectedPayout = 1.26; // User requested explicit 1.26
-                        this.recoveryConfig.expectedPayoutIsRate = true; // Flag for RiskManager
                     }
                     
                     // Garantir types corretos

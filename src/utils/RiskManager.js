@@ -84,16 +84,17 @@ export const RiskManager = {
         const configPayout = config.expectedPayout || null;
         let estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 1.95;
 
-        // ✅ NORMALIZAÇÃO CRÍTICA: Deriv provê multiplicadores totais (ex: 2.26). 
-        // A fórmula de Martingale exige a Taxa de Lucro Líquido (ex: 1.26).
-        // Se o valor for > 1.0, assumimos que é um multiplicador total e subtraímos o stake (1.0).
-        // EXCEÇÃO: Se config.expectedPayoutIsRate === true, usamos o valor RAW.
-        let profitRate;
-        if (config.expectedPayoutIsRate) {
-            profitRate = estimatedPayout;
-        } else {
-            profitRate = (estimatedPayout > 1.0) ? (estimatedPayout - 1.0) : estimatedPayout;
-        }
+        // ✅ USER REQUEST: ACEITAR VALOR BRUTO EM 100% DAS VEZES
+        // Se o usuário configurar "1.26", ele quer dizer 126% de lucro.
+        // Se o histórico retornar "2.26" (Multiplicador Total da Deriv), ainda pode haver conflito,
+        // mas a prioridade é respeitar a CONFIGURAÇÃO manual.
+
+        let profitRate = estimatedPayout;
+
+        // SE for detecção automática de histórico (que vem como multiplicador total > 1.0, ex: 1.95), 
+        // e NÃO tiver config manual, talvez devêssemos normalizar?
+        // Mas a ordem do usuário foi explícita: "sem normalizar para 226 ou 2.26".
+        // Vamos manter o RAW value. Se o user mandar 1.26, usa 1.26.
 
         console.log(`[RiskManager] Calc Stake Debug: ConfigPayout=${configPayout}, Explicit=${explicitPayout}, History=${this.payoutHistory[historyKey]}, Default=${this.payoutDefaults[tradeType]}, ESTIMATED=${estimatedPayout}, PROFIT_RATE=${profitRate}`);
 
