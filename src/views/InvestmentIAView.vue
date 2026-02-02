@@ -1280,10 +1280,6 @@ export default {
                 console.error('Erro ao salvar token no backend:', error);
             }
         },
-                        token: account.token,
-                        tradeCurrency: tradeCurrency
-                    })
-                });
                 console.log('[InvestmentIAView] Conta sincronizada com o backend.');
             } catch (e) {
                 console.error('[InvestmentIAView] Erro ao sincronizar conta com backend:', e);
