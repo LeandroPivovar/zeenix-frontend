@@ -2012,28 +2012,33 @@ export default {
         toggleFilter(filter) {
             console.log(`[toggleFilter] Clicked: ${filter.name} (${filter.id}) | Current Active: ${filter.active}`);
             
-            // Fix: Reverting to direct assignment as $set is not available (Vue 3)
-            // Removed $forceUpdate as it was causing internal Vue errors ("Symbol(_vei)")
-            
-            if (filter.active) {
-                console.log('[toggleFilter] Deactivating filter...');
-                filter.active = false;
-                return;
-            }
-
-            // Count validation
             const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
-            const activeCount = targetArray.filter(f => f.active).length;
-            console.log(`[toggleFilter] Current Active Count: ${activeCount}`);
-            
-            if (activeCount >= 2) {
-                console.warn('[toggleFilter] Limit reached (2). Blocked.');
-                this.$root.$toast.warning('Selecione no máximo 2 filtros.');
-                return;
+            const index = targetArray.findIndex(f => f.id === filter.id);
+
+            if (index === -1) return;
+
+            // Toggle Logic
+            const newState = !filter.active;
+
+            if (newState) {
+                // Check limit if activating
+                const activeCount = targetArray.filter(f => f.active).length;
+                console.log(`[toggleFilter] Current Active Count: ${activeCount}`);
+                
+                if (activeCount >= 2) {
+                    console.warn('[toggleFilter] Limit reached (2). Blocked.');
+                    this.$root.$toast.warning('Selecione no máximo 2 filtros.');
+                    return;
+                }
+                console.log('[toggleFilter] Activating filter...');
+            } else {
+                console.log('[toggleFilter] Deactivating filter...');
             }
 
-            console.log('[toggleFilter] Activating filter...');
-            filter.active = true;
+            // Force Reactivity: Create new object and splice it in
+            // This is the "Nuclear Option" for Vue reactivity issues
+            const newFilter = { ...filter, active: newState };
+            targetArray.splice(index, 1, newFilter);
         },
         nextFilterStep() {
             const sourceArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
