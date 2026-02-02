@@ -2116,7 +2116,27 @@ svg:not(:root).svg-inline--fa {
         width: 100%;
         background: #0D0D0D !important;
         border: 1px solid #22C55E33 !important;
-        padding: 1.5rem !important;
+        padding: 0 !important;
+        /* Remove modal padding as requested */
+    }
+
+    .modal-body {
+        padding: 0 !important;
+        background: transparent !important;
+    }
+
+    .agent-option-footer-stats {
+        flex-direction: row !important;
+        /* Force row layout on mobile */
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding-top: 0.75rem !important;
+        gap: 0.5rem !important;
+    }
+
+    .stat-item {
+        flex: 1 !important;
+        justify-content: center !important;
     }
 }
 
