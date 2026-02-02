@@ -261,12 +261,21 @@ export const RiskManager = {
 
                 // 3. NEGOTIATION MODE (VELOZ/NORMAL/PRECISO)
                 // Determines analysis frequency and aggressiveness
+                const initialMode = state.initialNegotiationMode || 'VELOZ';
+
                 if (state.consecutiveLosses >= 4) {
                     state.negotiationMode = 'PRECISO';
                 } else if (state.consecutiveLosses >= 2) {
-                    state.negotiationMode = 'NORMAL';
+                    // Se começou em VELOZ, vai para NORMAL na segunda perda.
+                    // Se começou em NORMAL, continua em NORMAL (até chegar em 4 perdas).
+                    if (initialMode === 'VELOZ') {
+                        state.negotiationMode = 'NORMAL';
+                    } else {
+                        state.negotiationMode = initialMode;
+                    }
                 } else {
-                    state.negotiationMode = 'VELOZ';
+                    // Menos de 2 perdas: Mantém o modo inicial (Se era NORMAL, continua NORMAL)
+                    state.negotiationMode = initialMode;
                 }
 
                 state.lossStreakRecovery = 0;
