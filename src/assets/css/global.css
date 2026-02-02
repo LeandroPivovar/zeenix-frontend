@@ -171,17 +171,6 @@ body,
     text-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
   }
 
-  /* Impede que o conteúdo seja cortado e permite que fundos passem por trás da sidebar */
-  .full-immersion {
-    width: 100vw !important;
-    max-width: none !important;
-    position: absolute !important;
-    left: calc(-1 * var(--sidebar-width)) !important;
-    top: 0 !important;
-    height: 100% !important;
-    z-index: 0 !important;
-    pointer-events: none !important;
-  }
 }
 
 /* Sidebar Overlay - z-index global */
@@ -309,48 +298,8 @@ body,
   pointer-events: none !important;
 }
 
-/* New Layout: Decouples background from sidebar padding */
-.full-immersion-layout {
-  padding-left: 0 !important;
-  overflow-x: hidden !important;
-  width: 100% !important;
-  position: relative !important;
-}
 
-.immersion-content {
-  padding-left: var(--sidebar-width) !important;
-  transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  width: 100%;
-  box-sizing: border-box;
-}
 
-@media (max-width: 1024px) {
-  .immersion-content {
-    padding-left: 0 !important;
-  }
-
-  .full-immersion {
-    width: 100% !important;
-  }
-}
-
-/* Sidebar Width Management for Immersion Layout */
-.full-immersion-layout {
-  --sidebar-width: 280px;
-}
-
-.sidebar-collapsed.full-immersion-layout,
-.sidebar-collapsed .full-immersion-layout,
-.sidebar-wrapper.collapsed:not(:hover)~.full-immersion-layout,
-.sidebar-wrapper.collapsed:not(:hover)~.dashboard-content-wrapper.full-immersion-layout {
-  --sidebar-width: 80px;
-}
-
-/* Hover expansion synchronization */
-.sidebar-wrapper:hover~.full-immersion-layout,
-.sidebar-wrapper:hover~.dashboard-content-wrapper.full-immersion-layout {
-  --sidebar-width: 280px !important;
-}
 
 .dashboard-content-wrapper {
   overflow-x: visible !important;
