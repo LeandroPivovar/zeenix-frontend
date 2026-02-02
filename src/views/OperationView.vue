@@ -1320,6 +1320,12 @@ export default {
     display: none !important;
   }
 
+  .main-content {
+    margin-top: 50px !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+  }
+
   .mobile-header {
     padding: 20px 16px 16px 16px;
     background: #0B0B0B;

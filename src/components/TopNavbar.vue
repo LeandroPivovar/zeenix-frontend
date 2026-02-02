@@ -85,27 +85,6 @@
         <span class="text-[#22C55E] font-bold text-xl">X</span>
       </div>
 
-      <!-- Saldo (Mobile) -->
-      <div class="flex items-center gap-2 bg-[#0E0E0E] px-3 py-1.5 rounded-full border border-[#1C1C1C]">
-        <span id="balanceDisplayMobile" class="text-xs font-semibold text-[#DFDFDF] inline-flex items-center gap-1">
-          <span v-if="isBalanceReady && !balanceHidden" class="inline-flex items-center gap-0.5 animate-fadeIn">
-            <span v-if="uiAccountType !== 'demo' || showDollarSign">
-              {{ isFictitiousBalanceActive ? '$' : currencyPrefix }}
-            </span>
-            <span v-else>Đ</span>
-            {{ formattedBalance }}
-          </span>
-          <span v-else>••••••</span>
-        </span>
-        <button 
-          @click="toggleBalance" 
-          class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
-          type="button"
-        >
-          <i v-if="balanceHidden" class="fas fa-eye-slash text-[10px]"></i>
-          <i v-else class="fas fa-eye text-[10px]"></i>
-        </button>
-      </div>
       
       <div class="flex items-center gap-2">
         <!-- Botão de Notificação (Mobile) -->

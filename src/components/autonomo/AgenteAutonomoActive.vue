@@ -182,11 +182,18 @@
 						</div>
 					</div>
 
+					<!-- Agent Switcher Backdrop (Mobile) -->
+					<div 
+						v-if="showAgentSwitcher && isMobile" 
+						class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] animate-fade-in"
+						@click="showAgentSwitcher = false"
+					></div>
+
 					<!-- Agent Switcher Dropdown (Responsive Fix) -->
 					<div 
 						v-if="showAgentSwitcher"
-						class="absolute top-full mt-4 bg-[#0c0c0c] border border-[#27272a] rounded-xl shadow-2xl z-[60] overflow-hidden animate-fade-in"
-						:class="isMobile ? 'fixed inset-x-4 top-[20%] bottom-auto h-auto max-h-[70vh] w-auto' : 'left-0 w-[460px]'"
+						class="bg-[#0c0c0c] border border-[#27272a] rounded-xl shadow-2xl z-[60] overflow-hidden animate-fade-in"
+						:class="isMobile ? 'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[400px] h-auto max-h-[80vh]' : 'absolute top-full mt-4 left-0 w-[460px]'"
 					>
 						<div class="sticky top-0 p-4 border-b border-[#27272a] bg-[#121212] z-10 flex items-center justify-between">
 							<h4 class="text-[11px] font-bold text-[#A1A1AA] uppercase tracking-wider text-left">SELECIONE O AGENTE</h4>
