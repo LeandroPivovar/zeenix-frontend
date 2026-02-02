@@ -1088,7 +1088,11 @@ export default {
                 
                 // ✅ Redirecionar para página de monitoramento (USER ACTIVE MONITORING)
                 setTimeout(() => {
-                    this.$router.push('/Investments-IA/active');
+                    const conn = JSON.parse(localStorage.getItem('deriv_connection') || '{}');
+                    this.$router.push({ 
+                        path: '/Investments-IA/active', 
+                        query: { loginid: conn.loginid } 
+                    });
                 }, 500);
 
             } catch (error) {

@@ -826,6 +826,16 @@ export default {
         },
         getDerivToken() {
             try {
+                // ✅ 1. Check URL Query Param (Explicit Override)
+                const queryLoginId = this.$route.query.loginid;
+                if (queryLoginId) {
+                     console.log('[AIMonitoringView] 🎯 Using explicit loginid from URL:', queryLoginId);
+                     const tokensByLoginId = JSON.parse(localStorage.getItem('deriv_tokens_by_loginid') || '{}');
+                     if (tokensByLoginId[queryLoginId]) {
+                         return tokensByLoginId[queryLoginId].trim();
+                     }
+                }
+
                 const connectionStr = localStorage.getItem('deriv_connection');
                 console.log('[AIMonitoringView] checking deriv_connection:', connectionStr);
 
