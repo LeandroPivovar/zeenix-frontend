@@ -2109,6 +2109,15 @@ svg:not(:root).svg-inline--fa {
     overflow-y: auto;
 }
 
+/* Mobile: Limitar largura do modal */
+@media (max-width: 768px) {
+    .categorized-modal {
+        max-width: 350px !important;
+        width: 100%;
+    }
+}
+
+
 .modal-header-premium {
     display: flex;
     justify-content: space-between;
