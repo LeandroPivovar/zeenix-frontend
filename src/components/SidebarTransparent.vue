@@ -480,6 +480,9 @@ export default {
                 console.error('[Sidebar] Erro ao verificar se usuário é trader:', error);
                 return false;
             }
+        },
+        isMobile() {
+            return window.innerWidth <= 1024;
         }
     },
     async mounted() {
