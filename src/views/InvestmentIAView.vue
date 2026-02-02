@@ -1280,14 +1280,7 @@ export default {
                 console.error('Erro ao salvar token no backend:', error);
             }
         },
-                console.log('[InvestmentIAView] Conta sincronizada com o backend.');
-            } catch (e) {
-                console.error('[InvestmentIAView] Erro ao sincronizar conta com backend:', e);
-            }
-            
-            // Chamar a ativação original
-            await this.activateIA();
-        },
+
 
         getDerivToken() {
             if (this.selectedToken) {
