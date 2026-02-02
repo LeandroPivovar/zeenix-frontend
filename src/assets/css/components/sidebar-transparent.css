@@ -105,13 +105,22 @@ aside.sbt-sidebar,
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		border-bottom: 1px solid gray !important;
 		background: transparent !important;
 		margin-bottom: 0;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 		padding: 14px 20px;
 		position: relative;
 		gap: 10px;
+	}
+
+	@media (max-width: 1024px) {
+		.sbt-sidebar-brand {
+			padding-top: 30px !important;
+			padding-left: 20px !important;
+			height: auto !important;
+			padding-bottom: 20px !important;
+		}
 	}
 
 	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-sidebar-brand {
