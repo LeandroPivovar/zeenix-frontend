@@ -709,8 +709,9 @@ aside.sbt-sidebar,
 
 
 	/* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
-	.sbt-sidebar.sbt-is-open {
-		left: 0;
+	.sbt-sidebar.sbt-is-open,
+	#app-sidebar-transparent.sbt-is-open {
+		left: 0 !important;
 		z-index: 1000000 !important;
 	}
 
