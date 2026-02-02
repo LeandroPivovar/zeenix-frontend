@@ -2099,7 +2099,6 @@ svg:not(:root).svg-inline--fa {
 
 .categorized-modal {
     width: 100%;
-    max-width: 1000px;
     background: #0D0D0D;
     border: 1px solid #22C55E33;
     padding: 1.5rem;
@@ -2109,10 +2108,10 @@ svg:not(:root).svg-inline--fa {
     overflow-y: auto;
 }
 
-/* Mobile: Limitar largura do modal */
+/* Mobile: Modal full width */
 @media (max-width: 768px) {
     .categorized-modal {
-        max-width: 350px !important;
+        max-width: none !important;
         width: 100%;
     }
 }
@@ -2212,12 +2211,12 @@ svg:not(:root).svg-inline--fa {
 
 .agent-option-premium {
     display: flex;
-    flex-direction: column;
-    padding: 1.5rem;
+    align-items: center;
+    padding: 1rem;
     background: linear-gradient(180deg, rgba(3, 65, 11, 0.12), rgba(0, 0, 0, 0.56));
     border: 1px solid #1C1C1C;
     border-radius: 1rem;
-    gap: 1rem;
+    gap: 1.25rem;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -2242,7 +2241,9 @@ svg:not(:root).svg-inline--fa {
 
 .agent-option-content {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     gap: 0.75rem;
     width: 100%;
 }
@@ -2464,36 +2465,35 @@ svg:not(:root).svg-inline--fa {
 
 .agent-option-footer-stats {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    width: 100%;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    padding-top: 0;
+    border-top: none;
+    min-width: 100px;
 }
 
 .stat-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    background: rgba(34, 197, 94, 0.08);
-    border: 1px solid rgba(34, 197, 94, 0.15);
-    padding: 0.4rem 0.6rem;
-    border-radius: 0.5rem;
-    flex: 1;
-    justify-content: center;
+    gap: 0.4rem;
+    background: none;
+    border: none;
+    padding: 0;
+    border-radius: 0;
+    justify-content: flex-end;
 }
 
 .stat-label {
     font-size: 0.65rem;
     text-transform: uppercase;
-    color: rgba(34, 197, 94, 0.8);
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 500;
+    letter-spacing: 0.3px;
 }
 
 .stat-value {
-    font-size: 0.65rem;
-    /* Reduced from 0.75rem */
+    font-size: 0.75rem;
     color: #DFDFDF;
     font-weight: 600;
 }
