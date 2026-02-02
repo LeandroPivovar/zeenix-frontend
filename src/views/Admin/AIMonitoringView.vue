@@ -943,14 +943,28 @@ export default {
                                          const allTokens = JSON.parse(localStorage.getItem('deriv_tokens_by_loginid') || '{}');
                                          const correctToken = allTokens[conn.loginid];
                                          
-                                         // 🛡️ Loop Protection: Don't retry if it's the same token we just used
+                                         // 🛡️ & 🩹 Brute Force Recovery:
+                                         // If the "correct" token is actually the WRONG one (corrupted mapping), try others!
                                          const currentUsedToken = this.getDerivToken();
+                                         
                                          if (correctToken && correctToken === currentUsedToken) {
-                                             console.error('[AIMonitoringView] ⛔ Infinite Loop Detected! Token for', conn.loginid, 'is actually for', msg.authorize.loginid);
-                                             // Provide a helpful message to the user
+                                             console.error('[AIMonitoringView] ⛔ Token Corruption Detected! Mapped token is wrong.');
+                                             
+                                             // Find ANY other token we haven't tried yet
+                                             const otherTokens = Object.values(allTokens).filter(t => t.trim() !== currentUsedToken);
+                                             
+                                             if (otherTokens.length > 0) {
+                                                  const recoveryToken = otherTokens[0]; // Try the first alternative
+                                                  console.warn('[AIMonitoringView] 🩹 Attempting Self-Healing with alternative token...');
+                                                  
+                                                  this.ws.send(JSON.stringify({ authorize: recoveryToken }));
+                                                  return;
+                                             }
+
+                                             // No other tokens to try...
                                              this.addLog('⚠️ Erro de Token', [
-                                                 `Token corrompido detectado`,
-                                                 `Ação: Faça LOGOUT e Login novamente`
+                                                 `Banco de dados local corrompido.`,
+                                                 `Ação: Faça LOGOUT e Login novamente.`
                                              ], 'error');
                                          } else if (correctToken) {
                                              console.warn('[AIMonitoringView] 🔄 Silently switching to correct account:', conn.loginid);
