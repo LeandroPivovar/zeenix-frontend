@@ -831,23 +831,22 @@ export default {
 
                 if (connectionStr) {
                     const connection = JSON.parse(connectionStr);
-                    // ✅ PRIORITIZE token directly from connection object (saved by selectAccount)
-                    if (connection.token) {
-                        console.log('[AIMonitoringView] Using token directly from deriv_connection. LoginID:', connection.loginid);
-                        if (connection.loginid && connection.loginid.startsWith('M')) { // Valid account check
-                             // Just logging.
-                        }
-                        return connection.token.trim();
-                    }
-
-                    const accountLoginid = connection.loginid;
-                    if (accountLoginid) {
+                    const targetLoginId = connection.loginid;
+                    
+                    // ✅ ROBUST LOOKUP: Use LoginID to find authoritative token
+                    if (targetLoginId) {
                         const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
                         const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-                        if (tokensByLoginId[accountLoginid]) {
-                            console.log('[AIMonitoringView] Found token for loginid:', accountLoginid);
-                            return tokensByLoginId[accountLoginid].trim();
+                        if (tokensByLoginId[targetLoginId]) {
+                            console.log('[AIMonitoringView] ✅ Found authoritative token for:', targetLoginId);
+                            return tokensByLoginId[targetLoginId].trim();
                         }
+                    }
+
+                    // Fallback to the token saved in the connection object
+                    if (connection.token) {
+                         console.log('[AIMonitoringView] Using cached connection token (Fallback).');
+                         return connection.token.trim();
                     }
                 }
                 const defaultToken = localStorage.getItem('deriv_token');
@@ -935,21 +934,11 @@ export default {
                                          const correctToken = allTokens[conn.loginid];
 
                                          if (correctToken) {
-                                             this.addLog('🔄 Correção Automática', [
-                                                 `Conta incorreta detectada (${msg.authorize.loginid})`,
-                                                 `Alternando para: ${conn.loginid}`,
-                                                 `Ação: Reautorizando...`
-                                             ], 'warning');
-                                             
-                                             // Re-authorize immediately
+                                             console.warn('[AIMonitoringView] 🔄 Silently switching to correct account:', conn.loginid);
                                              this.ws.send(JSON.stringify({ authorize: correctToken }));
-                                             return; // ⛔ STOP processing this wrong authorization
+                                             return;
                                          } else {
-                                             this.addLog('⚠️ Erro Fatal de Conta', [
-                                                 `Esperado: ${conn.loginid}`,
-                                                 `Conectado: ${msg.authorize.loginid}`,
-                                                 `Falha: Token correto não encontrado`
-                                             ], 'error');
+                                             console.error('[AIMonitoringView] ❌ Fatal: Correct token not found for:', conn.loginid);
                                          }
                                     }
                                 } catch (e) { console.error('Error in account auto-correction:', e); }
