@@ -79,9 +79,7 @@ aside.sbt-sidebar,
 		padding-left: 80px !important;
 	}
 
-	.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper {
-		padding-left: 280px !important;
-	}
+	.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper {}
 
 	/* Expansão e deslocamento do TopNavbar */
 	.sbt-sidebar-wrapper~.dashboard-content-wrapper #top-navbar {
@@ -91,13 +89,9 @@ aside.sbt-sidebar,
 		left: 0 !important;
 	}
 
-	.sbt-sidebar-wrapper.sbt-collapsed:not(:hover)~.dashboard-content-wrapper #top-navbar {
-		padding-left: 80px !important;
-	}
+	.sbt-sidebar-wrapper.sbt-collapsed:not(:hover)~.dashboard-content-wrapper #top-navbar {}
 
-	.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
-		padding-left: 280px !important;
-	}
+	.sbt-sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {}
 
 	/* --- Brand/Logo Global Styles --- */
 	.sbt-sidebar-brand {
@@ -105,7 +99,7 @@ aside.sbt-sidebar,
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		border-bottom: 1px solid gray !important;
+		border-bottom: none !important;
 		background: transparent !important;
 		margin-bottom: 0;
 		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -192,14 +186,64 @@ aside.sbt-sidebar,
 		line-height: normal;
 	}
 
-	.sbt-logo-z,
-	.sbt-logo-zeni,
-	.sbt-logo-text .sbt-white {
-		color: #fff !important;
-		opacity: 1 !important;
-		visibility: visible !important;
-		display: inline-block !important;
+	.sbt-logo-z-container {
+		background: #22C55E;
+		color: #000 !important;
+		width: 24px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 4px;
+		margin-right: 8px;
+		font-weight: 900;
+		flex-shrink: 0;
 	}
+
+	.sbt-logo-z {
+		color: #000 !important;
+		font-size: 16px;
+	}
+
+
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-logo-z-container {
+		background: #22C55E;
+		color: #000 !important;
+		width: 24px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 4px;
+		margin-right: 8px;
+		font-weight: 900;
+		flex-shrink: 0;
+	}
+
+	.sbt-logo-z-container {
+		background: transparent;
+		color: #fff !important;
+		width: auto;
+		height: auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 0;
+		margin-right: 0;
+		font-weight: 800;
+		flex-shrink: 0;
+	}
+
+	.sbt-sidebar.sbt-collapsed:not(:hover) .sbt-logo-z {
+		color: #000 !important;
+		font-size: 16px;
+	}
+
+	.sbt-logo-z {
+		color: #fff !important;
+		font-size: 20px;
+	}
+
 
 	.sbt-logo-x,
 	.sbt-logo-text .sbt-green {

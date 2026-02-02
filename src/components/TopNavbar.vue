@@ -176,7 +176,7 @@
       class="account-modal-overlay"
       @click.self="closeAccountModal"
     >
-      <div class="account-modal-container">
+      <div class="account-modal-container" style="max-width: 600px; margin: 0 auto;">
         <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between">
           <h2 class="text-xl font-semibold text-[#DFDFDF]">Selecionar Conta</h2>
           <button 
