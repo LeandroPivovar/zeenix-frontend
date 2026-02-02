@@ -81,7 +81,7 @@
                                 </p>
                                 <span class="text-xs lg:text-lg font-semibold px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
                                       :class="monitoringStats.profit >= 0 ? 'text-success/80 bg-success/10' : 'text-red-500/80 bg-red-500/10'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.balance - monitoringStats.profit || 1)) * 100).toFixed(1) }}%
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.initialBalance || 1)) * 100).toFixed(1) }}%
                                 </span>
                             </div>
                             <div class="mt-2 lg:mt-3 h-1 w-[100px] mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
@@ -625,6 +625,7 @@ export default {
 
             monitoringStats: {
                 balance: 0,
+                initialBalance: 0, // ✅ New field for ROI calculation
                 profit: 0,
                 wins: 0,
                 losses: 0,
@@ -684,6 +685,11 @@ export default {
              console.log('[AIMonitoringView] Balance updated from mixin:', newVal);
              if (newVal !== undefined && newVal !== null) {
                  this.monitoringStats.balance = newVal;
+                 // Set initial balance if not set yet (first load)
+                 if (this.monitoringStats.initialBalance === 0 && newVal > 0) {
+                     this.monitoringStats.initialBalance = newVal;
+                     console.log('[AIMonitoringView] Initial Balance Set:', newVal);
+                 }
              }
         },
         activeChartMode(val) {
@@ -721,6 +727,7 @@ export default {
         // Sincronizar saldo inicial com o mixin se disponível
         if (this.info && this.info.balance !== undefined) {
             this.monitoringStats.balance = this.info.balance;
+            if (this.monitoringStats.initialBalance === 0) this.monitoringStats.initialBalance = this.info.balance;
         }
         
         this.initTickConnection();
@@ -820,21 +827,28 @@ export default {
         getDerivToken() {
             try {
                 const connectionStr = localStorage.getItem('deriv_connection');
+                console.log('[AIMonitoringView] checking deriv_connection:', connectionStr);
+
                 if (connectionStr) {
                     const connection = JSON.parse(connectionStr);
                     // ✅ PRIORITIZE token directly from connection object (saved by selectAccount)
-                    if (connection.token) return connection.token.trim();
+                    if (connection.token) {
+                        console.log('[AIMonitoringView] Using token directly from deriv_connection');
+                        return connection.token.trim();
+                    }
 
                     const accountLoginid = connection.loginid;
                     if (accountLoginid) {
                         const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
                         const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
                         if (tokensByLoginId[accountLoginid]) {
+                            console.log('[AIMonitoringView] Found token for loginid:', accountLoginid);
                             return tokensByLoginId[accountLoginid].trim();
                         }
                     }
                 }
                 const defaultToken = localStorage.getItem('deriv_token');
+                console.log('[AIMonitoringView] Fallback to default deriv_token');
                 return defaultToken ? defaultToken.trim() : null;
             } catch (e) {
                 console.error('Error getting token:', e);
