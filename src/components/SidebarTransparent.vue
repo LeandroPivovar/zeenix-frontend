@@ -8,7 +8,7 @@
             style="background: transparent !important; background-color: transparent !important;"
         >
         <div class="sbt-sidebar-brand">
-            <div class="sbt-brand-logo-container">
+            <div v-if="!isMobile()" class="sbt-brand-logo-container">
                 <span class="sbt-logo-text font-black">
                     <span class="sbt-logo-z-container">
                         <span class="sbt-logo-z">Z</span>

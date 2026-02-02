@@ -2112,12 +2112,11 @@ svg:not(:root).svg-inline--fa {
 /* Mobile: Standard Modal Layout */
 @media (max-width: 768px) {
     .categorized-modal {
-        max-width: 350px !important;
-        width: 100%;
-        background: #0D0D0D !important;
-        border: 1px solid #22C55E33 !important;
-        padding: 0 !important;
-        /* Remove modal padding as requested */
+        width: 100% !important;
+        background: #0d0d0d !important;
+        border: 0 !important;
+        padding: 20px !important;
+        max-width: none !important;
     }
 
     .modal-body {
@@ -2126,17 +2125,20 @@ svg:not(:root).svg-inline--fa {
     }
 
     .agent-option-footer-stats {
-        flex-direction: row !important;
-        /* Force row layout on mobile */
-        justify-content: space-between !important;
-        align-items: center !important;
-        padding-top: 0.75rem !important;
-        gap: 0.5rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        gap: 1rem !important;
+        padding-top: 1rem !important;
+        border-top: 1px solid hsla(0, 0%, 100%, .05) !important;
+        width: 100% !important;
     }
 
     .stat-item {
-        flex: 1 !important;
-        justify-content: center !important;
+        flex: none !important;
+        justify-content: flex-start !important;
+        gap: 0.5rem !important;
     }
 }
 

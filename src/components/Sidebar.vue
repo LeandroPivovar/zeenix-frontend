@@ -7,7 +7,7 @@
             :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }"
         >
         <div class="sidebar-brand">
-            <div class="brand-logo-container">
+            <div v-if="!isMobile" class="brand-logo-container">
                 <span class="logo-text font-black">
                     <span class="logo-z-container">
                         <span class="logo-z">Z</span>
