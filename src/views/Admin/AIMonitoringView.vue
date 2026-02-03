@@ -992,15 +992,6 @@ export default {
                         
                         // ✅ PROPOSAL RESPONSE (Validate Payout)
                         if (msg.msg_type === 'proposal') {
-                            if (msg.error) {
-                                this.addLog('Proposta Negada', [
-                                    `Motivo: ${msg.error.message}`,
-                                    `Ação: Entrada cancelada`
-                                ], 'error');
-                                this.isNegotiating = false;
-                                return;
-                            }
-                        if (msg.msg_type === 'proposal') {
                              if (msg.error) {
                                 this.addLog('Erro na Proposta', [`${msg.error.message}`], 'error');
                                 this.isNegotiating = false;
