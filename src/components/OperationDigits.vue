@@ -1830,13 +1830,27 @@ export default {
         simulateInitialData() {
             console.log('[OperationDigits] Simulando histórico inicial para demonstração');
             this.isSimulated = true;
-            const simulatedDigits = [];
-            // Gerar 100 dígitos aleatórios para preencher o gráfico visualmente
+            const simulatedTicks = [];
+            const now = Math.floor(Date.now() / 1000);
+            
+            // Gerar 100 ticks simulados para que calculateDigitFrequency funcione
             for (let i = 0; i < 100; i++) {
-                simulatedDigits.push(Math.floor(Math.random() * 10));
+                const randomDigit = Math.floor(Math.random() * 10);
+                // Criar um valor fake onde o último dígito é o randomDigit (ex: 1234.5)
+                const randomValue = 1000 + (Math.random() * 100); 
+                const valueStr = randomValue.toFixed(2); // ex "1234.56"
+                // Ajustar para terminar com o dígito desejado
+                // Na verdade, mais fácil apenas gerar um valor inteiro terminado no digito
+                const tickValue = 1000 + (i * 10) + randomDigit; 
+
+                simulatedTicks.push({
+                    value: tickValue,
+                    epoch: now - (100 - i)
+                });
             }
-            this.digitFrequency.digits = simulatedDigits;
-            this.calculateDigitFrequency(); // Recalcular estatísticas com dados simulados
+            
+            this.ticks = simulatedTicks;
+            this.calculateDigitFrequency(); 
         },
     },
     mounted() {
