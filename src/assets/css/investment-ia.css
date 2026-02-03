@@ -2144,7 +2144,7 @@ svg:not(:root).svg-inline--fa {
 
 .stat-label {
     font-size: 12px;
-    text-transform: capitalize;
+    text-transform: lowercase;
     color: hsla(0, 0%, 100%, .4);
     font-weight: 600;
     letter-spacing: .3px;
