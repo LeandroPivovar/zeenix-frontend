@@ -248,7 +248,7 @@
                                      <LineChart 
                                         v-if="activeChartMode === 'profit'"
                                         chartId="monitoring-profit-chart" 
-                                        :data="profitHistory" 
+                                        :data="formattedProfitHistory" 
                                         :height="320"
                                         color="#22C55E"
                                         :currency-symbol="profitCurrencySymbol"
@@ -700,6 +700,10 @@ export default {
         // ✅ Fix 'undefined' prefix in logs
         currencySymbol() {
             return this.preferredCurrencyPrefix || '$';
+        },
+        // ✅ REACTIVITY FIX: Return a fresh copy to trigger chart update
+        formattedProfitHistory() {
+            return [...this.profitHistory];
         }
     },
     watch: {

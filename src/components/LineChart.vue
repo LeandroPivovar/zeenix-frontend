@@ -43,13 +43,9 @@ export default {
   watch: {
     data: {
       deep: true,
-      handler(newData, oldData) {
-        // Só atualizar se houver dados E se os dados mudaram
+      handler(newData) {
         if (newData && newData.length > 0) {
-          // Comparar se os dados realmente mudaram para evitar loops infinitos
-          if (!oldData || JSON.stringify(newData) !== JSON.stringify(oldData)) {
             this.updateChart();
-          }
         }
       }
     },
