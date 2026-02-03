@@ -107,11 +107,11 @@
                                     <span class="text-[10px] lg:text-xs text-muted-foreground block">Loss</span>
                                 </div>
                                 <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
-                                <div class="bg-success/10 border border-success/20 rounded-xl px-2.5 py-1.5 flex flex-col items-center">
+                                <div class="bg-white/5 rounded-xl px-2.5 py-1.5 flex flex-col items-center">
                                     <span class="text-lg lg:text-xl font-bold text-success/90 leading-none">
                                         {{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%
                                     </span>
-                                    <span class="text-[8px] lg:text-[10px] text-success/60 font-black uppercase tracking-tighter mt-0.5">WR</span>
+                                    <span class="text-[8px] lg:text-[10px] text-muted-foreground font-black uppercase tracking-tighter mt-0.5">WR</span>
                                 </div>
                             </div>
                         </div>
