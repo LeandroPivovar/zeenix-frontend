@@ -1290,6 +1290,18 @@ export default {
             
             // ✅ Calculate stake dynamically
             const stake = this.calculateNextStake();
+
+            // ✅ SURVIVAL STOP: Se a stake for menor que o mínimo (0.35), força o STOP
+            if (stake < 0.35) {
+                this.addLog('🛑 Stop de Segurança', [
+                    `Stake calculada (${this.preferredCurrencyPrefix}${stake.toFixed(2)}) inferior ao mínimo (0.35).`,
+                    `Motivo: Modo de Sobrevivência impediu entrada para não romper limites.`,
+                    `Ação: Encerrando execução automaticamente.`
+                ], 'error');
+                this.isNegotiating = false;
+                this.stopIA();
+                return;
+            }
             
             // Update Contract Type state for logging and Fast Result
             this.sessionState.lastContractType = config.tradeType;
