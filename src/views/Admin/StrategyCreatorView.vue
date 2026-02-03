@@ -2458,7 +2458,7 @@ export default {
             this.$root.$toast.success(`Estratégia "${strategy.name}" carregada!`);
         },
 
-        updateCurrentStrategy() {
+        async updateCurrentStrategy() {
             if (!this.selectedSavedStrategyId) return;
             const strategy = this.savedStrategies.find(s => s.id === this.selectedSavedStrategyId);
             if (!strategy) return;
@@ -2471,6 +2471,35 @@ export default {
                 recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
                 validator: JSON.parse(JSON.stringify(this.validator))
             };
+
+            // ✅ If updating a default strategy, save to server JSON file
+            const defaultStrategyNames = ['apollo', 'atlas', 'nexus', 'orion', 'titan'];
+            const strategyName = strategy.name.toLowerCase().trim();
+            
+            if (defaultStrategyNames.includes(strategyName)) {
+                try {
+                    const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                    const token = localStorage.getItem('token');
+                    
+                    const response = await fetch(`${apiBase}/strategies/${strategyName}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(strategy)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Falha ao atualizar arquivo da estratégia');
+                    }
+
+                    console.log(`[StrategyCreator] Updated ${strategyName}.json on server`);
+                } catch (error) {
+                    console.error('[StrategyCreator] Error updating strategy file:', error);
+                    this.$root.$toast.error('Erro ao salvar no servidor. Alterações salvas localmente.');
+                }
+            }
 
             localStorage.setItem('zeenix_saved_strategies', JSON.stringify(this.savedStrategies));
             this.$root.$toast.success('IA Atualizada com sucesso!');
