@@ -53,7 +53,7 @@
             </button>
             <button
               class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-              :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationChart' && activeSubTab === 'digits', 'border-b-2 border-transparent': currentView !== 'OperationChart' || activeSubTab !== 'digits' }"
+              :class="{ 'border-b-2 border-zenix-green text-zenix-text': (currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits', 'border-b-2 border-transparent': !((currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits') }"
               @click="changeView('OperationDigits')"
             >
               <span class="desktop-text">Análise de dígitos</span>
@@ -389,18 +389,25 @@ export default {
         return;
       }
 
-      // Se o usuário quer análise de dígitos, garantimos que estamos no OperationChart e mudamos a aba interna
+      // Se o usuário quer análise de dígitos
       if (componentName === 'OperationDigits') {
         this.activeSubTab = 'digits';
-        if (this.currentView !== 'OperationChart') {
-          this.currentView = 'OperationChart';
-          this.$nextTick(() => {
-            if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
+        
+        if (this.isMobile) {
+            // Mobile: Usar aba interna do OperationChart
+            if (this.currentView !== 'OperationChart') {
+              this.currentView = 'OperationChart';
+              this.$nextTick(() => {
+                if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
+                  this.$refs.operationComponent.setTab('digits');
+                }
+              });
+            } else if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
               this.$refs.operationComponent.setTab('digits');
             }
-          });
-        } else if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
-          this.$refs.operationComponent.setTab('digits');
+        } else {
+            // Desktop: Usar componente dedicado OperationDigits
+            this.currentView = 'OperationDigits';
         }
         return;
       }
