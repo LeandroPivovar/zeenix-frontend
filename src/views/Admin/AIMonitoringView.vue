@@ -777,7 +777,8 @@ export default {
                     this.recoveryConfig = {
                         ...baseConfig.recoveryConfig,
                         ...(parsed.recoveryConfig || {}), // ✅ Merge user overrides (RiskProfile, etc.)
-                        riskProfile: parsed.riskProfile || (parsed.recoveryConfig && parsed.recoveryConfig.riskProfile) || baseConfig.recoveryConfig.riskProfile || 'moderado'
+                        // ✅ FIX: Map 'modoMartingale' (from InvestmentView) to 'riskProfile'
+                        riskProfile: parsed.modoMartingale || parsed.riskProfile || (parsed.recoveryConfig && parsed.recoveryConfig.riskProfile) || baseConfig.recoveryConfig.riskProfile || 'moderado'
                     };
 
                     // ✅ FORCE RECOVERY PAYOUT FIX for Apollo/Nexus
