@@ -171,12 +171,12 @@
                         <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Histórico Recente</h3>
                         <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
                             <i class="far fa-clock text-[10px] text-white/40"></i>
-                            <span class="text-[10px] font-bold text-white/60">Últimos 15</span>
+                            <span class="text-[10px] font-bold text-white/60">Últimos 14</span>
                         </div>
 
                     </div>
                     
-                    <div class="grid grid-cols-5 md:flex md:flex-nowrap gap-2 justify-start">
+                    <div class="grid grid-cols-7 md:flex md:flex-nowrap gap-2 justify-start">
                         <div 
                             v-for="(digit, index) in recentDigits" 
                             :key="'recent-'+index"
@@ -982,7 +982,7 @@ export default {
         // Histórico Recente de Dígitos
         recentDigits() {
             if (!this.digitFrequency || !this.digitFrequency.digits) return [];
-            return this.digitFrequency.digits.slice(-15);
+            return this.digitFrequency.digits.slice(-14);
         },
 
         // Estatísticas de dígitos com Z-score
