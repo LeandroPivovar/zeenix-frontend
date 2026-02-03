@@ -596,6 +596,7 @@ export default {
 
             digitHistory: [],
             isNegotiating: false,
+            retryingProposal: false, // Flag for calibration loop
 
            // ✅ RiskManager State (initialized with RiskManager.initSession)
             sessionState: RiskManager.initSession('VELOZ'),
@@ -999,10 +1000,68 @@ export default {
                                 this.isNegotiating = false;
                                 return;
                             }
+                        if (msg.msg_type === 'proposal') {
+                             if (msg.error) {
+                                this.addLog('Erro na Proposta', [`${msg.error.message}`], 'error');
+                                this.isNegotiating = false;
+                                return;
+                            }
                             
                             const proposalId = msg.proposal.id;
                             const payout = msg.proposal.payout;
                             const stakeValue = msg.proposal.ask_price;
+
+                            // 1. Update sessionState with the real PROFIT RATE for accuracy
+                            const realPayoutRate = payout / stakeValue;
+                            
+                            if (this.sessionState.analysisType === 'RECUPERACAO') {
+                                this.sessionState.lastPayoutRecovery = realPayoutRate;
+                            } else {
+                                this.sessionState.lastPayoutPrincipal = realPayoutRate;
+                            }
+                            
+                            // Normalize Key to match RiskManager
+                            const cType = (msg.proposal.contract_type || '').toUpperCase();
+                            if (cType) {
+                                const prefix = this.sessionState.analysisType === 'RECUPERACAO' ? 'RECUPERACAO_' : 'PRINCIPAL_';
+                                let barrierSuffix = '';
+                                if (msg.echo_req.barrier !== undefined) {
+                                    barrierSuffix = '_' + msg.echo_req.barrier;
+                                }
+                                RiskManager.updatePayoutHistory(prefix + cType + barrierSuffix, realPayoutRate);
+                            }
+                            
+                            // DYNAMIC CALIBRATION: Check if adjusted stake is needed based on REAL payout
+                            if (this.sessionState.analysisType === 'RECUPERACAO') {
+                                // Map generic config to structure expected by RiskManager if needed
+                                // In AIMonitoring, this.recoveryConfig IS the config
+                                const config = this.recoveryConfig;
+                                
+                                // Re-calculate using the REAL rate we just got
+                                const exactStake = RiskManager.calculateNextStake(this.sessionState, config, realPayoutRate);
+                                
+                                // Tolerance check (if diff > 0.02 cents)
+                                if (Math.abs(exactStake - stakeValue) > 0.02) {
+                                    this.addLog(`⚠️ Calibrando Martingale: Payout ${realPayoutRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
+                                    
+                                    if (!this.retryingProposal) {
+                                        this.retryingProposal = true; // Set flag
+                                        
+                                        // Retry with corrected stake
+                                        const newParams = { ...msg.echo_req, amount: exactStake };
+                                        delete newParams.req_id; 
+                                        delete newParams.passthrough; // cleanup
+                                        
+                                        this.ws.send(JSON.stringify(newParams));
+                                        return; // ABORT BUY to wait for new proposal
+                                    } else {
+                                        this.retryingProposal = false; // Reset flag
+                                        this.addLog(`⚠️ Stake ajustado novamente. Aceitando $${stakeValue} para evitar loop infinito.`, 'warning');
+                                    }
+                                }
+                            }
+
+                            this.retryingProposal = false; // Success, reset flag
                             
                             // Debug Info
                             this.addLog('Proposta Recebida', [
