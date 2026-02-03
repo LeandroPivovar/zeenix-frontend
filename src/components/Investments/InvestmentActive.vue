@@ -739,7 +739,7 @@
             </div>
 
                 <!-- Right Column - Config (Redesigned) -->
-                <div class="col-span-3 flex">
+                <div class="col-span-3 hidden md:flex">
                     <div id="i0k3nl" class="bg-[#111] border border-[#2A2A2A] rounded-2xl p-5 shadow-2xl h-full flex flex-col w-full relative overflow-hidden">
                         <!-- Background Texture -->
                          <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none"></div>
