@@ -776,8 +776,7 @@ export default {
                     // Prioridade: Base do Arquivo (para garantir estrutura) > Ajustes se necessário
                     this.recoveryConfig = {
                         ...baseConfig.recoveryConfig,
-                        // Se quisermos permitir override via UI no futuro:
-                        // ...parsed.recoveryConfig
+                        ...(parsed.recoveryConfig || {}) // ✅ Merge user overrides (RiskProfile, etc.)
                     };
 
                     // ✅ FORCE RECOVERY PAYOUT FIX for Apollo/Nexus
@@ -791,6 +790,9 @@ export default {
                     // Inicializar Risk Session com valores corretos
                     this.sessionState = RiskManager.initSession(this.currentConfig.mode || 'VELOZ');
                     this.sessionState.activeStrategy = 'PRINCIPAL';
+
+                    // Verify Risk Profile
+                    console.log(`[AIMonitoring] Loaded Risk Profile: ${this.recoveryConfig.riskProfile || 'DEFAULT (Moderado)'}`);
                     
                     // Initial Logs according to ZENIX protocol
                     this.addLog('Início de Sessão', [
