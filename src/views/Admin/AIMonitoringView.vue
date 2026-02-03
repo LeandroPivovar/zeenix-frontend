@@ -510,7 +510,7 @@
         <!-- Modals -->
         <Teleport to="body">
             <StopLossModal
-                v-if="showStopModal && stopResult.type === 'info'"
+                v-if="showStopModal && stopResult.type === 'error'"
                 :visible="showStopModal"
                 :result="stopResult.profit"
                 @confirm="showStopModal = false"
@@ -1562,6 +1562,9 @@ export default {
                         this.sessionState.stopBlindadoFloor = newFloor;
                     }
                 }
+                
+                // ✅ Check Strategy Limits (Stop Win/Loss/Blindado)
+                this.checkStrategyLimits();
                 this.activeContracts.delete(id);
             }
         },
@@ -1646,6 +1649,52 @@ export default {
                 'bull': 'RDBULL'
             };
             return mapping[symbol] || symbol;
+        },
+        checkStrategyLimits() {
+            const profit = parseFloat(this.monitoringStats.profit.toFixed(2));
+            const target = this.currentConfig.profitTarget || 10;
+            const stopLoss = this.currentConfig.lossLimit || 50;
+
+            // 1. Meta Batida
+            if (profit >= target) {
+                 this.stopResult = {
+                    title: 'Meta Batida! 🚀',
+                    message: 'Parabéns! Você atingiu sua meta de lucro.',
+                    profit: profit,
+                    type: 'success'
+                };
+                this.showStopModal = true;
+                this.stopIA();
+                return true;
+            }
+
+            // 2. Stop Loss
+            if (profit <= -stopLoss) {
+                this.stopResult = {
+                    title: 'Stop Loss Atingido 🛑',
+                    message: 'Limite de perda atingido. Gerenciamento ativado.',
+                    profit: profit,
+                    type: 'error'
+                };
+                this.showStopModal = true;
+                this.stopIA();
+                return true;
+            }
+
+            // 3. Stop Blindado (Active Protection)
+            if (this.sessionState.stopBlindadoActive && profit <= this.sessionState.stopBlindadoFloor) {
+                 this.stopResult = {
+                    title: 'Stop Blindado 🛡️',
+                    message: 'Lucro protegido pelo Stop Blindado.',
+                    profit: profit,
+                    type: 'warning'
+                };
+                this.showStopModal = true;
+                this.stopIA();
+                return true;
+            }
+            
+            return false;
         },
         initLightweightChart() {
             if (this.chart) return;
