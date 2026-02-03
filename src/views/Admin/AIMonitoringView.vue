@@ -115,15 +115,18 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Mobile Pause Button (Inside Card) -->
+                        <div v-if="isMobile" class="col-span-2 mt-4">
+                            <button @click="stopIA" :disabled="isStopping" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
+                                {{ isStopping ? 'Parando...' : 'Pausar IA' }}
+                            </button>
+                        </div>
+
                     </div>
                 </div>
 
-                <!-- Mobile Pause Button (Below Header) -->
-                <div v-if="isMobile" class="mt-4 px-1">
-                    <button @click="stopIA" :disabled="isStopping" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
-                        {{ isStopping ? 'Parando...' : 'Pausar IA' }}
-                    </button>
-                </div>
+
 
 
                 <!-- Mobile Configuration Cards Stack (Visible only on Mobile) -->
