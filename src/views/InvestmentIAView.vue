@@ -235,12 +235,12 @@
                                                 </div>
                                                 <div class="agent-option-footer-stats">
                                                     <div class="stat-item">
-                                                        <span class="stat-label">Assertividade:</span>
+                                                        <span class="stat-label">precisão:</span>
                                                         <span class="stat-value stat-fluctuate-opacity">{{ strategy.assertividade }}</span>
                                                     </div>
                                                     <div class="stat-divider"></div>
                                                     <div class="stat-item">
-                                                        <span class="stat-label">Retorno:</span>
+                                                        <span class="stat-label">retorno:</span>
                                                         <span class="stat-value highlight stat-fluctuate-glow">{{ strategy.retorno }}</span>
                                                     </div>
                                                 </div>

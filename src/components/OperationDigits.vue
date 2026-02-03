@@ -563,6 +563,7 @@ export default {
             analysisTimer: null,
             signalCountdown: null,
             signalCountdownInterval: null,
+            isSimulated: false,
         }
     },
     computed: {
@@ -1406,6 +1407,14 @@ export default {
             
             const prices = history.prices.map(price => Number(price));
             const times = history.times?.map(time => Number(time)) || [];
+            
+            // Se estiver usando dados simulados, limpar antes de adicionar dados reais
+            if (this.isSimulated) {
+                this.digits = []; // Limpar array local se estiver usando
+                this.digitFrequency.digits = []; // Limpar array de frequência
+                this.isSimulated = false;
+            }
+
             this.ticks = prices.map((value, index) => ({ value, epoch: times[index] || index }));
             
             if (msg.subscription?.id) {
@@ -1428,6 +1437,13 @@ export default {
             const value = Number(tick.quote);
             if (isNaN(value)) {
                 return;
+            }
+            
+            // Se ainda estiver com dados simulados e receber um tick, limpar tudo primeiro
+            if (this.isSimulated) {
+                this.ticks = [];
+                this.digitFrequency.digits = [];
+                this.isSimulated = false;
             }
             
             this.latestTick = { value, epoch: tick.epoch };
@@ -1813,11 +1829,14 @@ export default {
         },
         simulateInitialData() {
             console.log('[OperationDigits] Simulando histórico inicial para demonstração');
+            this.isSimulated = true;
             const simulatedDigits = [];
+            // Gerar 100 dígitos aleatórios para preencher o gráfico visualmente
             for (let i = 0; i < 100; i++) {
                 simulatedDigits.push(Math.floor(Math.random() * 10));
             }
             this.digitFrequency.digits = simulatedDigits;
+            this.calculateDigitFrequency(); // Recalcular estatísticas com dados simulados
         },
     },
     mounted() {
@@ -1825,6 +1844,10 @@ export default {
         if (this.orderConfig && this.orderConfig.value !== undefined) {
             this.orderValue = Number(this.orderConfig.value);
         }
+        
+        // Iniciar com dados simulados para evitar gráfico vazio (0%)
+        this.simulateInitialData();
+        
         // Inicialização da conexão Deriv
         this.initConnection();
     },

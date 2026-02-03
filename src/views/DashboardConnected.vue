@@ -16,6 +16,7 @@
       <TopNavbar 
         v-if="!isMobile"
         :is-sidebar-collapsed="localSidebarCollapsed"
+        :is-dashboard="true"
         :balance="info?.balance"
         :account-type="accountType"
         @open-settings="toggleSettingsModal"
@@ -633,7 +634,7 @@ export default {
           title: 'IA de Investimento',
           description: 'Algoritmos inteligentes para maximizar seus lucros',
           buttonText: 'Acessar',
-          route: '/InvestmentIA',
+          route: '/Investments-IA',
           image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/3597e3389b-f497a4d7c72b20551d57.png',
           alt: 'abstract futuristic AI neural network glowing green circuits holographic technology dark background'
         },
@@ -1231,16 +1232,16 @@ export default {
       // Se tiver um ID de estratégia, passar como query param
       if (strategyId) {
         this.$router.push({
-          path: '/InvestmentIA',
+          path: '/Investments-IA',
           query: { strategy: strategyId }
         });
       } else {
         // Navega para a página de IAs (padrão)
-        this.$router.push('/InvestmentIA');
+        this.$router.push('/Investments-IA');
       }
     },
     navigateToIAs() {
-      this.$router.push('/StatsIAs');
+      this.$router.push('/adminStatsIAs');
     },
     openIAsModal() {
       this.showIAsModal = true;
@@ -1808,7 +1809,7 @@ export default {
     },
     handlePerformanceAction(perf) {
       if (perf.title.includes('IA') || perf.title.includes('Investimento')) {
-        this.$router.push('/StatsIAs');
+        this.$router.push('/adminStatsIAs');
       } else if (perf.title.includes('Copy')) {
         this.$router.push('/copy-trading');
       } else if (perf.title.includes('Agente')) {
