@@ -1419,6 +1419,11 @@ export default {
     }
   },
   methods: {
+    setTab(tabName) {
+      if (tabName === 'chart' || tabName === 'digits') {
+        this.activeTab = tabName;
+      }
+    },
     getStatusColor(statusClass) {
       const colors = {
         'status-overheated': '#FFFFFF', 
