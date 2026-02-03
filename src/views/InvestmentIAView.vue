@@ -1066,8 +1066,16 @@ export default {
                 }
 
                 // Carregar Configuração da Estratégia do Preset
-                const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
+                // ✅ Handle both "apollo" and "default_apollo" formats
+                const strategyPreset = strategiesPresets.find(s => {
+                    const strategyId = s.id.replace('default_', ''); // Remove 'default_' prefix if exists
+                    const selectedId = this.selectedStrategy.replace('default_', '');
+                    return strategyId === selectedId;
+                });
+                
                 if (!strategyPreset) {
+                    console.error('[InvestmentIAView] ❌ Estratégia não encontrada:', this.selectedStrategy);
+                    console.error('[InvestmentIAView] Estratégias disponíveis:', strategiesPresets.map(s => s.id));
                     this.$root.$toast.error('Configuração da estratégia não encontrada!');
                     this.isActivating = false;
                     return;
