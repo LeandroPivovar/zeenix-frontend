@@ -12,18 +12,28 @@
             "duration": 1,
             "durationUnit": "t",
             "market": "R_100",
-            "tradeType": "DIGITOVER",
+            "tradeType": "DIGITUNDER",
             "prediction": 3,
             "sorosLevel": 1,
             "expectedPayout": 0.825,
             "attackFilters": [
                 {
                     "id": "digit_sequence",
-                    "name": "Sequência de Dígitos < 4 (Orion)",
+                    "name": "Sequência Baixa (Orion)",
                     "active": true,
                     "config": {
-                        "length": 3,
-                        "target": "under_4"
+                        "veloz": {
+                            "length": 2,
+                            "target": "under_4"
+                        },
+                        "normal": {
+                            "length": 3,
+                            "target": "under_4"
+                        },
+                        "preciso": {
+                            "length": 4,
+                            "target": "under_4"
+                        }
                     }
                 }
             ],
@@ -35,7 +45,7 @@
             "selectedTradeTypeGroup": "",
             "tradeType": "CALL",
             "prediction": null,
-            "lossesToActivate": 2,
+            "lossesToActivate": 1,
             "contractSwitch": true,
             "switchToNormal": false,
             "switchToPrecise": true,
@@ -52,12 +62,24 @@
             "attackFilters": [
                 {
                     "id": "price_momentum",
-                    "name": "Recuperação Orion (Tendência)",
+                    "name": "Momentum (Orion)",
                     "active": true,
                     "config": {
-                        "window": 3,
-                        "ticksToConfirm": 2,
-                        "minDelta": 0.5
+                        "veloz": {
+                            "window": 5,
+                            "ticksToConfirm": 1,
+                            "minDelta": 0.05
+                        },
+                        "normal": {
+                            "window": 10,
+                            "ticksToConfirm": 1,
+                            "minDelta": 0.1
+                        },
+                        "preciso": {
+                            "window": 15,
+                            "ticksToConfirm": 2,
+                            "minDelta": 0.15
+                        }
                     }
                 }
             ]
@@ -74,7 +96,7 @@
             "martingale100": false
         },
         "metadata": {
-            "assertividade": 70,
+            "assertividade": 80,
             "retorno": 82.5
         }
     }

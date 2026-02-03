@@ -22,10 +22,24 @@
                     "name": "Maioria Par (Titan)",
                     "active": true,
                     "config": {
-                        "window": 24,
-                        "percentage": 60,
-                        "momentumThreshold": 3,
-                        "maxNoise": 8
+                        "veloz": {
+                            "window": 14,
+                            "percentage": 55,
+                            "momentumThreshold": 2,
+                            "maxNoise": 4
+                        },
+                        "normal": {
+                            "window": 24,
+                            "percentage": 60,
+                            "momentumThreshold": 3,
+                            "maxNoise": 8
+                        },
+                        "preciso": {
+                            "window": 28,
+                            "percentage": 60,
+                            "momentumThreshold": 4,
+                            "maxNoise": 10
+                        }
                     }
                 }
             ],
@@ -57,10 +71,24 @@
                     "name": "Persistência Par (Titan)",
                     "active": true,
                     "config": {
-                        "window": 10,
-                        "percentage": 70,
-                        "momentumThreshold": 2,
-                        "maxNoise": 2
+                        "veloz": {
+                            "window": 8,
+                            "percentage": 65,
+                            "momentumThreshold": 1,
+                            "maxNoise": 1
+                        },
+                        "normal": {
+                            "window": 10,
+                            "percentage": 70,
+                            "momentumThreshold": 2,
+                            "maxNoise": 2
+                        },
+                        "preciso": {
+                            "window": 12,
+                            "percentage": 75,
+                            "momentumThreshold": 3,
+                            "maxNoise": 3
+                        }
                     }
                 }
             ]

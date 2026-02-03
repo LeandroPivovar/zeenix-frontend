@@ -19,13 +19,27 @@
             "attackFilters": [
                 {
                     "id": "digit_density",
-                    "name": "Densidade de Dígitos 8, 9 (Apollo)",
+                    "name": "Densidade de Dígitos (Apollo)",
                     "active": true,
                     "config": {
-                        "window": 20,
-                        "digits": "8, 9",
-                        "operator": "<",
-                        "threshold": 5
+                        "veloz": {
+                            "window": 15,
+                            "digits": "8, 9",
+                            "operator": "<",
+                            "threshold": 4
+                        },
+                        "normal": {
+                            "window": 20,
+                            "digits": "8, 9",
+                            "operator": "<",
+                            "threshold": 5
+                        },
+                        "preciso": {
+                            "window": 25,
+                            "digits": "8, 9",
+                            "operator": "<",
+                            "threshold": 6
+                        }
                     }
                 }
             ],
@@ -54,17 +68,27 @@
             "attackFilters": [
                 {
                     "id": "digit_density",
-                    "name": "Densidade de Dígitos 0-3 (Apollo Recuperação)",
+                    "name": "Densidade Inversa (Apollo)",
                     "active": true,
                     "config": {
-                        "window": 30,
-                        "windowLong": 200,
-                        "digits": "0, 1, 2, 3",
-                        "operator": ">",
-                        "threshold": 4,
-                        "minPShort": 0.25,
-                        "minDeltaP": 0.01,
-                        "maxCount89": 16
+                        "veloz": {
+                            "window": 20,
+                            "digits": "0, 1, 2, 3",
+                            "operator": ">=",
+                            "threshold": 5
+                        },
+                        "normal": {
+                            "window": 30,
+                            "digits": "0, 1, 2, 3",
+                            "operator": ">=",
+                            "threshold": 8
+                        },
+                        "preciso": {
+                            "window": 40,
+                            "digits": "0, 1, 2, 3",
+                            "operator": ">=",
+                            "threshold": 12
+                        }
                     }
                 }
             ]
@@ -81,8 +105,8 @@
             "martingale100": false
         },
         "metadata": {
-            "assertividade": 77,
-            "retorno": 54
+            "assertividade": 65,
+            "retorno": 19
         }
     }
 }
