@@ -3037,7 +3037,14 @@ export default {
                  this.addLog(`🛡️ VALIDAÇÃO DE ENTRADA: Protegendo $${blindadoState.floor.toFixed(2)} do lucro acumulado.`, 'info');
             }
 
-            stake = RiskManager.applySurvivalMode(stake, currentProfit, globalConfig, payoutRate, blindadoState);
+            const survivalResult = RiskManager.applySurvivalMode(stake, currentProfit, globalConfig, payoutRate, blindadoState);
+            const survivalStake = survivalResult.stake;
+            const survivalReason = survivalResult.reason;
+
+            if (survivalStake < stake) {
+                 this.addLog(`🛡️ Survival Mode: Stake ajustada para proteger limites. Motivo: ${survivalReason || 'Ajuste de Risco'} (${stake.toFixed(2)} -> ${survivalStake.toFixed(2)})`, 'warning');
+                 stake = survivalStake;
+            }
             
             // CRITICAL: Stop if stake is too low (Survival Mode Triggered Hard)
             if (stake < 0.35) {
