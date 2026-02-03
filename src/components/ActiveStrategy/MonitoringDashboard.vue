@@ -116,37 +116,38 @@
                         <div class="rounded-xl border border-[rgba(255,255,255,0.05)] overflow-hidden bg-[#0B0B0B]/50">
                             <div class="overflow-x-auto overflow-y-auto max-h-[500px] custom-scrollbar">
                                 <table class="w-full text-sm border-collapse">
-                                    <thead class="bg-[#161616]/80 text-[10px] text-gray-500 uppercase font-black tracking-[0.15em] border-b border-[rgba(255,255,255,0.05)]">
+                                    <thead class="sticky top-0 bg-[#161616] z-10 text-xs text-muted-foreground uppercase font-semibold tracking-wider border-b border-border/30">
                                         <tr>
-                                            <th class="px-6 py-4 text-left">Hora</th>
-                                            <th class="px-6 py-4 text-left">Mercado</th>
-                                            <th class="px-6 py-4 text-left">Contrato</th>
-                                            <th class="px-6 py-4 text-left">Investido</th>
-                                            <th class="px-6 py-4 text-left">Status</th>
-                                            <th class="px-6 py-4 text-right">Resultado</th>
+                                            <th class="px-4 py-4 text-left font-semibold">HORARIO</th>
+                                            <th class="px-4 py-4 text-left font-semibold">MERCADO</th>
+                                            <th class="px-4 py-4 text-left font-semibold">ORDEM</th>
+                                            <th class="px-4 py-4 text-left font-semibold">PREÇO DE ENTRADA</th>
+                                            <th class="px-4 py-4 text-left font-semibold">PREÇO DE SAIDA</th>
+                                            <th class="px-4 py-4 text-left font-semibold">INVESTIMENTO</th>
+                                            <th class="px-4 py-4 text-right font-semibold">RESULTADO</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr v-for="(op, idx) in operations" :key="idx" class="border-b border-[rgba(255,255,255,0.02)] transition-colors hover:bg-white/[0.02]">
-                                            <td class="px-6 py-4 text-gray-400 font-mono text-xs">{{ op.time }}</td>
-                                            <td class="px-6 py-4 text-white font-bold">{{ op.market }}</td>
-                                            <td class="px-6 py-4 text-gray-500 text-xs">{{ op.contract }}</td>
-                                            <td class="px-6 py-4 text-white">$ {{ op.stake.toFixed(2) }}</td>
-                                            <td class="px-6 py-4 text-white">
-                                                <span v-if="op.result === 'OPEN' || op.result === 'PENDING' || !op.result" class="text-yellow-500 font-bold uppercase tracking-tight text-xs">PENDENTE</span>
-                                                <span v-else :class="op.result.toUpperCase() === 'WIN' || op.result.toUpperCase() === 'WON' ? 'text-[#22C55E]' : 'text-[#EF4444]'" class="font-bold text-xs uppercase">
-                                                    {{ op.result.toUpperCase() === 'WON' ? 'WIN' : op.result.toUpperCase() }}
-                                                </span>
+                                    <tbody class="text-[13px]">
+                                        <tr v-for="(op, index) in operations" :key="index" 
+                                            class="border-b border-border/20 transition-colors hover:bg-secondary/30"
+                                            :class="index % 2 === 0 ? 'bg-transparent' : 'bg-secondary/10'">
+                                            <td class="px-4 py-4 font-mono font-medium text-foreground">{{ op.time }}</td>
+                                            <td class="px-4 py-4 text-muted-foreground font-mono">{{ op.market }}</td>
+                                            <td class="px-4 py-4">
+                                                <span class="text-foreground font-bold">{{ op.contract }}</span>
                                             </td>
-                                            <td class="px-6 py-4 text-right">
-                                                <span v-if="op.result === 'OPEN' || op.result === 'PENDING' || !op.result" class="text-gray-500 font-bold">-</span>
-                                                <span v-else :class="op.result.toUpperCase() === 'WIN' || op.result.toUpperCase() === 'WON' ? 'text-[#22C55E]' : 'text-[#EF4444]'" class="font-black text-sm">
-                                                    {{ op.result.toUpperCase() === 'WIN' || op.result.toUpperCase() === 'WON' ? '+' : '' }}{{ typeof op.pnl === 'number' ? op.pnl.toFixed(2) : op.pnl }}
+                                            <td class="px-4 py-4 text-foreground font-medium">{{ op.entryPrice || '-' }}</td>
+                                            <td class="px-4 py-4 text-foreground font-medium">{{ op.exitPrice || '-' }}</td>
+                                            <td class="px-4 py-4 text-foreground font-medium">$ {{ op.stake.toFixed(2) }}</td>
+                                            <td class="px-4 py-4 text-right">
+                                                <span v-if="op.result === 'OPEN' || op.result === 'PENDING'" class="text-yellow-500 font-bold uppercase tracking-tight">PENDENTE</span>
+                                                <span v-else class="font-bold whitespace-nowrap" :class="op.result === 'WON' || op.result === 'WIN' ? 'text-success' : 'text-red-500'">
+                                                    {{ op.result === 'WON' || op.result === 'WIN' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
                                                 </span>
                                             </td>
                                         </tr>
                                         <tr v-if="operations.length === 0">
-                                            <td colspan="5" class="py-20 text-center text-gray-600 uppercase text-[10px] font-black tracking-widest">
+                                            <td colspan="7" class="text-center py-20 text-muted-foreground/30 uppercase text-[10px] font-black tracking-[0.2em] w-full">
                                                 Aguardando primeira operação...
                                             </td>
                                         </tr>
