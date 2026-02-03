@@ -376,57 +376,63 @@
 								:class="{ 'active': selectedAgent === agent.id }"
 								@click="selectAgent(agent.id)"
 							>
-								<!-- Left Section: Avatar (Tall & Rounded) -->
-								<div class="agent-card-left-tall">
-									<video 
-										v-if="agent.video" 
-										:src="agent.video" 
-										class="agent-video-tall" 
-										autoplay 
-										loop 
-										muted 
-										playsinline
-									></video>
-									<div v-else class="agent-avatar-fallback-tall">
-										<i class="fas fa-robot"></i>
-									</div>
-								</div>
+								<!-- Top Row: Avatar, Header, Action -->
+                                <div class="agent-selection-card-top-row" style="display: flex; width: 100%; align-items: center;">
+                                    <!-- Left Section: Avatar -->
+                                    <div class="agent-card-left-tall">
+                                        <video 
+                                            v-if="agent.video" 
+                                            :src="agent.video" 
+                                            class="agent-video-tall" 
+                                            autoplay 
+                                            loop 
+                                            muted 
+                                            playsinline
+                                        ></video>
+                                        <div v-else class="agent-avatar-fallback-tall">
+                                            <i class="fas fa-robot"></i>
+                                        </div>
+                                    </div>
 
-								<!-- Middle Section: Info & Stats -->
-								<div class="agent-card-content">
-									<div class="agent-header-row">
-										<div class="agent-title-col">
-											<h4 class="agent-name-premium">{{ agent.title.replace('Agente ', '') }}</h4>
-											<p class="agent-description-premium">{{ agent.subtitle }}</p>
-										</div>
-										<span class="agent-profile-badge" :class="agent.profileBadge.toLowerCase()">
-											{{ agent.profileBadge }}
-										</span>
-									</div>
-									
-									<div class="agent-benefits-list">
-										<div class="benefit-item-premium">
-											<i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
-											<strong style="color: #DFDFDF;">Análise:</strong> <span>{{ agent.analysis }}</span>
-										</div>
-										<div class="benefit-item-premium">
-											<i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
-											<strong style="color: #DFDFDF;">Assertividade:</strong> <span>{{ agent.assertiveness }}</span>
-										</div>
-										<div class="benefit-item-premium">
-											<i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
-											<strong style="color: #DFDFDF;">Retorno:</strong> <span>{{ agent.return }}</span>
-										</div>
-									</div>
-								</div>
+                                    <!-- Middle Section: Header Only -->
+                                    <div class="agent-card-content header-only" style="padding-bottom: 0px; min-height: auto; flex: 1; padding: 1rem; display: flex; flex-direction: column; justify-content: center;">
+                                        <div class="agent-header-row">
+                                            <div class="agent-title-col">
+                                                <h4 class="agent-name-premium">{{ agent.title.replace('Agente ', '') }}</h4>
+                                                <p class="agent-description-premium">{{ agent.subtitle }}</p>
+                                            </div>
+                                            <span class="agent-profile-badge" :class="agent.profileBadge.toLowerCase()">
+                                                {{ agent.profileBadge }}
+                                            </span>
+                                        </div>
+                                    </div>
 
-								<!-- Right Section: Select Button -->
-								<div class="agent-card-action">
-									<div class="agent-performance-badget">
-										<span class="perf-val">{{ agent.percentage }}</span>
-										<span class="perf-lbl">{{ agent.percentageLabel ? 'Retorno' : 'Performance' }}</span>
-									</div>
-								</div>
+                                    <!-- Right Section: Action -->
+                                    <div class="agent-card-action">
+                                        <div class="agent-performance-badget">
+                                            <span class="perf-val">{{ agent.percentage }}</span>
+                                            <span class="perf-lbl">{{ agent.percentageLabel ? 'Retorno' : 'Performance' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bottom Row: Benefits List -->
+                                <div class="agent-benefits-list-row" style="width: 100%; padding: 0 1rem 1rem 1rem;">
+                                    <div class="agent-benefits-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                        <div class="benefit-item-premium" style="display: flex; align-items: center;">
+                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
+                                            <strong style="color: #DFDFDF; margin-right: 4px;">Análise:</strong> <span>{{ agent.analysis }}</span>
+                                        </div>
+                                        <div class="benefit-item-premium" style="display: flex; align-items: center;">
+                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
+                                            <strong style="color: #DFDFDF; margin-right: 4px;">Assertividade:</strong> <span>{{ agent.assertiveness }}</span>
+                                        </div>
+                                        <div class="benefit-item-premium" style="display: flex; align-items: center;">
+                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
+                                            <strong style="color: #DFDFDF; margin-right: 4px;">Retorno:</strong> <span>{{ agent.return }}</span>
+                                        </div>
+                                    </div>
+                                </div>
 								
 								<!-- Glow Effect -->
 								<div class="selection-glow"></div>
@@ -2269,6 +2275,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 
 .agent-selection-card {
     display: flex;
+    flex-direction: column; /* Changed to column */
     background: linear-gradient(190deg, #1c1b1b00, #0d390d2e, #25e34200);
     border: 1px solid #1C1C1C;
     border-radius: 12px;
@@ -2276,7 +2283,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
-    height: 250px; /* Request: 250px height */
+    height: auto; /* Changed to auto */
     box-sizing: border-box;
     align-items: stretch;
 }
