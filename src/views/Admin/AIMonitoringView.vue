@@ -927,8 +927,15 @@ export default {
                             if (msg.error) {
                                 this.addLog('Erro de Sessão', [
                                     `Tipo: Erro de autorização`,
-                                    `Mensagem: ${msg.error.message}`
+                                    `Mensagem: ${msg.error.message}`,
+                                    `Ação: Tentando reconectar (Retry)...`
                                 ], 'error');
+                                
+                                // ✅ AUTO-RETRY ON AUTHORIZATION ERROR
+                                setTimeout(() => {
+                                    console.log('[AIMonitoringView] 🔄 Auto-retry authorization...');
+                                    this.initTickConnection();
+                                }, 3000); // 3 seconds delay for retry
                             } else {
                                 this.isAuthorized = true;
                                 this.monitoringStats.balance = msg.authorize.balance;
