@@ -119,7 +119,7 @@ export default {
               borderColor: this.color,
               backgroundColor: this.createGradient(ctx, this.color),
               borderWidth: 3,
-              fill: true,
+              fill: 'start',
               tension: 0.4,
               pointRadius: 4,
               pointHoverRadius: 6,
@@ -146,7 +146,18 @@ export default {
                 displayColors: false,
                 callbacks: {
                     label: function(context) {
-                        return self.currencySymbol + ' ' + context.parsed.y.toFixed(2);
+                        const index = context.dataIndex;
+                        const dataset = context.dataset.data;
+                        const value = context.parsed.y;
+                        
+                        // Calcular delta (diferença do ponto anterior)
+                        let delta = value;
+                        if (index > 0) {
+                            delta = value - dataset[index - 1];
+                        }
+                        
+                        const sign = delta >= 0 ? '+' : '';
+                        return sign + self.currencySymbol + delta.toFixed(2).replace('.', ',');
                     }
                 }
               }
