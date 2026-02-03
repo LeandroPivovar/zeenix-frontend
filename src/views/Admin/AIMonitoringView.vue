@@ -259,8 +259,9 @@
                                         class="w-full h-[320px] rounded-lg overflow-hidden relative"
                                     ></div>
                                 </div>        
-                                        <div v-if="(activeChartMode === 'profit' && profitHistory.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500">
-                                            <div class="text-center">
+                                        <div v-if="(activeChartMode === 'profit' && profitHistory.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" 
+                                             class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500 pointer-events-none">
+                                            <div class="text-center pointer-events-auto">
                                                <i class="fas fa-chart-line text-5xl text-muted-foreground/20 mb-4 block animate-bounce"></i>
                                                <p class="text-muted-foreground text-sm font-medium">Aguardando dados...</p>
                                            </div>

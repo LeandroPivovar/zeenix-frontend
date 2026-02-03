@@ -20,21 +20,33 @@ export default {
   data() {
     return {
       chart: null,
-      isRendering: false // Flag para evitar múltiplas renderizações simultâneas
+      isRendering: false,
+      resizeObserver: null
     }
   },
   mounted() {
     this.$nextTick(() => {
-      // Delay para garantir que o canvas esteja totalmente renderizado e visível
-      // Especialmente importante quando há animações CSS que começam com opacity: 0
       setTimeout(() => {
         if (this.data && this.data.length > 0) {
           this.renderChart();
         }
       }, 300);
+
+      // Setup ResizeObserver to handle v-show toggles and container changes
+      this.resizeObserver = new ResizeObserver(() => {
+        if (this.chart) {
+          this.chart.resize();
+        }
+      });
+      if (this.$el) {
+        this.resizeObserver.observe(this.$el);
+      }
     });
   },
   beforeUnmount() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
     if (this.chart) {
       this.chart.destroy();
       this.chart = null; 
@@ -50,17 +62,12 @@ export default {
       }
     },
     currencySymbol() {
-      // Se o símbolo mudar, recriar o gráfico para aplicar as novas labels
       this.renderChart();
     }
   },
   methods: {
     renderChart() {
-      // Verificar se já está renderizando para evitar múltiplas chamadas simultâneas
-      if (this.isRendering) {
-        return;
-      }
-      
+      if (this.isRendering) return;
       this.isRendering = true;
       
       const ctx = document.getElementById(this.chartId);
@@ -69,7 +76,6 @@ export default {
         return;
       }
       
-      // Destruir gráfico anterior se existir
       if (this.chart) {
         try {
           this.chart.destroy();
@@ -79,7 +85,6 @@ export default {
         this.chart = null;
       }
       
-      // Validar dados antes de criar o gráfico
       if (!this.data || this.data.length === 0) {
         this.isRendering = false;
         return;
@@ -108,6 +113,7 @@ export default {
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
             animation: {
                 duration: 800,
                 easing: 'easeOutQuart'
@@ -122,6 +128,8 @@ export default {
                 padding: 12,
                 displayColors: false,
                 cornerRadius: 8,
+                intersect: false,
+                mode: 'index',
                 callbacks: {
                     title: function(context) {
                         return `Operação #${context[0].dataIndex}`;
@@ -131,7 +139,6 @@ export default {
                         const dataset = context.dataset.data;
                         const totalValue = context.parsed.y;
                         
-                        // Calcular valor da operação (delta)
                         let opValue = totalValue;
                         if (index > 0) {
                             opValue = totalValue - dataset[index - 1];
@@ -157,9 +164,7 @@ export default {
                     color: 'rgba(255, 255, 255, 0.05)',
                     drawBorder: false
                 },
-                ticks: {
-                    display: false 
-                }
+                ticks: { display: false }
               },
               y: { 
                 display: true,
@@ -177,7 +182,11 @@ export default {
                 }
               }
             },
-            interaction: { intersect: false, mode: 'index' }
+            interaction: {
+                intersect: false,
+                mode: 'index',
+                axis: 'x'
+            }
           }
         });
         
@@ -195,7 +204,7 @@ export default {
       if (!context2d) return 'rgba(0,0,0,0)'; 
 
       try {
-        const gradient = context2d.createLinearGradient(0, 0, 0, 320); // Height fixed to 320 as in parent
+        const gradient = context2d.createLinearGradient(0, 0, 0, 320);
         gradient.addColorStop(0, color + '50'); 
         gradient.addColorStop(1, color + '00'); 
         return gradient;
@@ -216,12 +225,9 @@ export default {
         const newData = [...this.data];
         const currentData = this.chart.data.datasets[0].data;
         
-        // Only update if data changed
         if (JSON.stringify(currentData) !== JSON.stringify(newData)) {
           this.chart.data.labels = newData.map((_, i) => i);
           this.chart.data.datasets[0].data = newData;
-          
-          // Update gradient if needed (optional, typically colors don't change often)
           this.chart.update('none'); 
         }
       } catch (error) {
