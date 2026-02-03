@@ -3042,3 +3042,42 @@ svg:not(:root).svg-inline--fa {
         z-index: 9999 !important;
     }
 }
+
+/* ===== STRATEGY STATS FLUCTUATION ANIMATIONS ===== */
+
+/* Opacity fluctuation for Assertiveness */
+@keyframes fluctuateOpacity {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.stat-fluctuate-opacity {
+    animation: fluctuateOpacity 2.5s ease-in-out infinite;
+}
+
+/* Glow and scale fluctuation for Return */
+@keyframes fluctuateGlow {
+
+    0%,
+    100% {
+        transform: scale(1);
+        text-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+    }
+
+    50% {
+        transform: scale(1.05);
+        text-shadow: 0 0 16px rgba(34, 197, 94, 0.8), 0 0 24px rgba(34, 197, 94, 0.4);
+    }
+}
+
+.stat-fluctuate-glow {
+    animation: fluctuateGlow 3s ease-in-out infinite;
+    display: inline-block;
+}

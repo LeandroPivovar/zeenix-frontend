@@ -205,7 +205,12 @@
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <div class="agents-modal-list">
+                                    <!-- Loading State -->
+                                    <div v-if="isLoadingStrategies" class="flex flex-col items-center justify-center py-10 gap-4">
+                                        <div class="w-10 h-10 border-4 border-zenix-green/30 border-t-zenix-green rounded-full animate-spin"></div>
+                                        <p class="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Carregando estratégias...</p>
+                                    </div>
+                                    <div v-else class="agents-modal-list">
                                         <div 
                                             v-for="strategy in availableStrategies" 
                                             :key="strategy.id"
@@ -231,12 +236,12 @@
                                                 <div class="agent-option-footer-stats">
                                                     <div class="stat-item">
                                                         <span class="stat-label">Assertividade:</span>
-                                                        <span class="stat-value">{{ strategy.assertividade }}</span>
+                                                        <span class="stat-value stat-fluctuate-opacity">{{ strategy.assertividade }}</span>
                                                     </div>
                                                     <div class="stat-divider"></div>
                                                     <div class="stat-item">
                                                         <span class="stat-label">Retorno:</span>
-                                                        <span class="stat-value highlight">{{ strategy.retorno }}</span>
+                                                        <span class="stat-value highlight stat-fluctuate-glow">{{ strategy.retorno }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -593,6 +598,8 @@ export default {
 
             showStrategyRequiredModal: false,
             showAccountModal: false,
+            showStrategyModal: false,
+            isLoadingStrategies: false,
             isLoadingAccounts: false,
             availableAccounts: [],
             selectedToken: null,
@@ -1869,6 +1876,105 @@ export default {
                 vol10_1s: '1HZ10V', vol25_1s: '1HZ25V', vol50_1s: '1HZ50V', vol75_1s: '1HZ75V', vol100_1s: '1HZ100V'
             };
             return map[market] || 'R_100';
+        },
+
+        // --- STRATEGY MODAL METHODS ---
+        async openStrategyModal() {
+            this.showStrategyModal = true;
+            await this.loadStrategiesFromAPI();
+        },
+
+        closeStrategyModal() {
+            this.showStrategyModal = false;
+        },
+
+        selectStrategy(strategyId) {
+            this.selectedStrategy = strategyId;
+            this.closeStrategyModal();
+        },
+
+        async loadStrategiesFromAPI() {
+            this.isLoadingStrategies = true;
+            try {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const token = localStorage.getItem('token');
+                const strategyNames = ['apollo', 'atlas', 'nexus', 'orion', 'titan'];
+
+                console.log('[InvestmentIAView] 📡 Carregando estratégias da API...');
+
+                for (const strategyName of strategyNames) {
+                    try {
+                        const response = await fetch(`${apiBase}/strategies/${strategyName}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+
+                        if (response.ok) {
+                            const { data } = await response.json();
+                            
+                            // Find the strategy in allStrategies
+                            const strategyIndex = this.allStrategies.findIndex(s => s.id === strategyName);
+                            
+                            if (strategyIndex !== -1) {
+                                // ✅ FALLBACK: Only update if metadata exists and has valid values
+                                // Otherwise, keep the hardcoded values from allStrategies
+                                if (data && data.metadata) {
+                                    const currentStrategy = this.allStrategies[strategyIndex];
+                                    
+                                    // Update assertividade only if it exists in metadata
+                                    if (data.metadata.assertividade) {
+                                        this.allStrategies[strategyIndex].assertividade = data.metadata.assertividade;
+                                    }
+                                    
+                                    // Update retorno only if it exists in metadata
+                                    if (data.metadata.retorno) {
+                                        this.allStrategies[strategyIndex].retorno = data.metadata.retorno;
+                                    }
+                                    
+                                    console.log(`[InvestmentIAView] ✅ ${strategyName} atualizado:`, {
+                                        assertividade: this.allStrategies[strategyIndex].assertividade,
+                                        retorno: this.allStrategies[strategyIndex].retorno
+                                    });
+                                } else {
+                                    console.log(`[InvestmentIAView] ⚠️ ${strategyName} sem metadata, usando valores padrão`);
+                                }
+                            }
+                        } else {
+                            console.warn(`[InvestmentIAView] ⚠️ API retornou status ${response.status} para ${strategyName}`);
+                        }
+                    } catch (error) {
+                        console.error(`[InvestmentIAView] ❌ Erro ao carregar ${strategyName}:`, error);
+                        // Continue with next strategy - keep hardcoded values for this one
+                    }
+                }
+
+                // Save to localStorage only if we have valid data
+                if (this.allStrategies && this.allStrategies.length > 0) {
+                    localStorage.setItem('zeenix_strategies_cache', JSON.stringify(this.allStrategies));
+                    console.log('[InvestmentIAView] ✅ Estratégias salvas no localStorage');
+                }
+
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro geral ao carregar estratégias:', error);
+                
+                // Try to load from localStorage cache
+                try {
+                    const cached = localStorage.getItem('zeenix_strategies_cache');
+                    if (cached) {
+                        const parsedCache = JSON.parse(cached);
+                        if (parsedCache && parsedCache.length > 0) {
+                            this.allStrategies = parsedCache;
+                            console.log('[InvestmentIAView] ✅ Estratégias carregadas do cache');
+                        }
+                    } else {
+                        console.log('[InvestmentIAView] ℹ️ Nenhum cache encontrado, usando valores hardcoded');
+                    }
+                } catch (cacheError) {
+                    console.error('[InvestmentIAView] ❌ Erro ao carregar cache:', cacheError);
+                    console.log('[InvestmentIAView] ℹ️ Usando valores hardcoded do allStrategies');
+                }
+            } finally {
+                this.isLoadingStrategies = false;
+            }
         },
     },
     created() {
