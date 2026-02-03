@@ -65,25 +65,7 @@ export default {
       
       const ctx = document.getElementById(this.chartId);
       if (!ctx) {
-        console.warn(`[LineChart] Canvas element for chart ${this.chartId} not found.`);
         this.isRendering = false;
-        return;
-      }
-      
-      const context2d = ctx.getContext('2d');
-      if (!context2d) {
-        console.warn(`[LineChart] Canvas 2D context for chart ${this.chartId} not available.`);
-        this.isRendering = false;
-        return;
-      }
-      
-      // Verificar se o canvas tem dimensões válidas
-      if (ctx.offsetWidth === 0 || ctx.offsetHeight === 0) {
-        console.warn(`[LineChart] Canvas ${this.chartId} has zero dimensions. Retrying...`);
-        this.isRendering = false;
-        setTimeout(() => {
-          this.renderChart();
-        }, 200);
         return;
       }
       
@@ -99,7 +81,6 @@ export default {
       
       // Validar dados antes de criar o gráfico
       if (!this.data || this.data.length === 0) {
-        console.warn(`[LineChart] No data to render for chart ${this.chartId}`);
         this.isRendering = false;
         return;
       }
@@ -128,32 +109,42 @@ export default {
             responsive: true,
             maintainAspectRatio: false,
             animation: {
-                duration: 1000,
+                duration: 800,
                 easing: 'easeOutQuart'
             },
             plugins: {
               legend: { display: false },
               tooltip: {
                 enabled: true,
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                titleFont: { size: 10 },
-                bodyFont: { size: 12, weight: 'bold' },
-                padding: 10,
+                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                titleFont: { size: 12, weight: 'bold' },
+                bodyFont: { size: 13 },
+                padding: 12,
                 displayColors: false,
+                cornerRadius: 8,
                 callbacks: {
+                    title: function(context) {
+                        return `Operação #${context[0].dataIndex}`;
+                    },
                     label: function(context) {
                         const index = context.dataIndex;
                         const dataset = context.dataset.data;
-                        const value = context.parsed.y;
+                        const totalValue = context.parsed.y;
                         
-                        // Calcular delta (diferença do ponto anterior)
-                        let delta = value;
+                        // Calcular valor da operação (delta)
+                        let opValue = totalValue;
                         if (index > 0) {
-                            delta = value - dataset[index - 1];
+                            opValue = totalValue - dataset[index - 1];
                         }
                         
-                        const sign = delta >= 0 ? '+' : '';
-                        return sign + self.currencySymbol + delta.toFixed(2).replace('.', ',');
+                        const sign = opValue >= 0 ? '+' : '';
+                        const formattedOp = sign + self.currencySymbol + opValue.toFixed(2).replace('.', ',');
+                        const formattedTotal = self.currencySymbol + totalValue.toFixed(2).replace('.', ',');
+                        
+                        return [
+                          `Resultado: ${formattedOp}`,
+                          `Acumulado: ${formattedTotal}`
+                        ];
                     }
                 }
               }
@@ -167,7 +158,7 @@ export default {
                     drawBorder: false
                 },
                 ticks: {
-                    display: false // Hide X ticks for cleaner look as in image
+                    display: false 
                 }
               },
               y: { 
@@ -181,7 +172,7 @@ export default {
                     color: 'rgba(255, 255, 255, 0.4)',
                     font: { size: 10 },
                     callback: function(value) {
-                        return self.currencySymbol + value;
+                        return self.currencySymbol + value.toFixed(2);
                     }
                 }
               }
@@ -200,83 +191,41 @@ export default {
     
     createGradient(ctx, color) {
       if (!ctx) return 'rgba(0,0,0,0)';
-      
       const context2d = ctx.getContext('2d');
       if (!context2d) return 'rgba(0,0,0,0)'; 
 
       try {
-        const gradient = context2d.createLinearGradient(0, 0, 0, this.height);
-        gradient.addColorStop(0, color + '60'); 
+        const gradient = context2d.createLinearGradient(0, 0, 0, 320); // Height fixed to 320 as in parent
+        gradient.addColorStop(0, color + '50'); 
         gradient.addColorStop(1, color + '00'); 
         return gradient;
       } catch (error) {
-        console.warn('Error creating gradient:', error);
         return 'rgba(0,0,0,0)';
       }
     },
     
     updateChart() {
-      if (!this.data || this.data.length === 0) {
-        return;
-      }
+      if (!this.data || this.data.length === 0) return;
       
       if (!this.chart) {
-        // Se não há gráfico, renderizar pela primeira vez
-        this.$nextTick(() => {
-          setTimeout(() => {
-            this.renderChart();
-          }, 100);
-        });
+        this.renderChart();
         return;
       }
       
       try {
-        const ctx = document.getElementById(this.chartId);
-        if (!ctx) {
-          // Canvas ainda não está no DOM, não tentar atualizar
-          console.warn(`[LineChart] Canvas ${this.chartId} não encontrado para atualização`);
-          return;
-        }
-        
-        // Verificar se o gráfico ainda existe e está válido
-        if (!this.chart.data || !this.chart.data.datasets || !this.chart.data.datasets[0]) {
-          // Recriar o gráfico se estiver inválido
-          this.$nextTick(() => {
-            setTimeout(() => {
-              this.renderChart();
-            }, 100);
-          });
-          return;
-        }
-        
-        // Atualizar apenas os dados, sem recalcular tudo
-        const newLabels = this.data.map((_, i) => i);
         const newData = [...this.data];
-        
-        // Só atualizar se os dados realmente mudaram
         const currentData = this.chart.data.datasets[0].data;
+        
+        // Only update if data changed
         if (JSON.stringify(currentData) !== JSON.stringify(newData)) {
-          this.chart.data.labels = newLabels;
+          this.chart.data.labels = newData.map((_, i) => i);
           this.chart.data.datasets[0].data = newData;
-          this.chart.update('none'); // 'none' evita animações e recálculos desnecessários
+          
+          // Update gradient if needed (optional, typically colors don't change often)
+          this.chart.update('none'); 
         }
       } catch (error) {
-        console.warn('[LineChart] Error updating chart:', error);
-        // Se houver erro, destruir e recriar
-        if (this.chart) {
-          try {
-            this.chart.destroy();
-          } catch (e) {
-            // Ignorar erros ao destruir
-          }
-          this.chart = null;
-        }
-        // Tentar recriar o gráfico após um delay
-        this.$nextTick(() => {
-          setTimeout(() => {
-            this.renderChart();
-          }, 200);
-        });
+        this.renderChart();
       }
     }
   }

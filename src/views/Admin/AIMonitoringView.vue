@@ -246,15 +246,15 @@
                                     <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
                                         <div class="relative w-full h-[320px]">
                                      <LineChart 
-                                        v-if="activeChartMode === 'profit'"
+                                        v-show="activeChartMode === 'profit'"
                                         chartId="monitoring-profit-chart" 
                                         :data="formattedProfitHistory" 
                                         :height="320"
                                         color="#22C55E"
-                                        :currency-symbol="profitCurrencySymbol"
+                                        :currency-symbol="currencySymbol"
                                     />
                                     <div 
-                                        v-else
+                                        v-show="activeChartMode === 'tick'"
                                         ref="chartContainer"
                                         class="w-full h-[320px] rounded-lg overflow-hidden relative"
                                     ></div>
@@ -698,13 +698,17 @@ export default {
             return 'Analisando o mercado';
         },
         // ✅ Fix 'undefined' prefix in logs
-        currencySymbol() {
-            return this.preferredCurrencyPrefix || '$';
-        },
-        // ✅ REACTIVITY FIX: Return a fresh copy to trigger chart update
-        formattedProfitHistory() {
-            return [...this.profitHistory];
-        }
+                                        currencySymbol() {
+                                            return this.preferredCurrencyPrefix || '$';
+                                        },
+                                        // ✅ Alias for tooltip compatibility
+                                        profitCurrencySymbol() {
+                                            return this.currencySymbol;
+                                        },
+                                        // ✅ REACTIVITY FIX: Return a fresh copy to trigger chart update
+                                        formattedProfitHistory() {
+                                            return [...this.profitHistory];
+                                        }
     },
     watch: {
         balanceNumeric(newVal) {
@@ -1745,22 +1749,22 @@ export default {
             // Match styles from InvestmentActive.vue
             this.chart = createChart(container, {
                 width: container.clientWidth,
-                height: 320, // Match height prop passed to LineChart
+                height: 320, 
                 layout: {
-                    background: { type: ColorType.Solid, color: '#0B0B0B' }, // Match bg
+                    background: { type: ColorType.Solid, color: 'transparent' }, 
                     textColor: '#D9D9D9',
                 },
                 grid: {
-                    vertLines: { color: '#2A2A2A' },
-                    horzLines: { color: '#2A2A2A' },
+                    vertLines: { color: 'rgba(42, 42, 42, 0.5)' },
+                    horzLines: { color: 'rgba(42, 42, 42, 0.5)' },
                 },
                 timeScale: {
                     timeVisible: true,
                     secondsVisible: true,
-                    borderColor: '#2A2A2A',
+                    borderColor: 'rgba(42, 42, 42, 0.5)',
                 },
                 rightPriceScale: {
-                    borderColor: '#2A2A2A',
+                    borderColor: 'rgba(42, 42, 42, 0.5)',
                 },
             });
             
