@@ -12,20 +12,34 @@
             "duration": 1,
             "durationUnit": "t",
             "market": "R_50",
-            "tradeType": "DIGITOVER",
+            "tradeType": "DIGITUNDER",
             "prediction": 2,
             "sorosLevel": 1,
             "expectedPayout": 0.35,
             "attackFilters": [
                 {
                     "id": "digit_density",
-                    "name": "Densidade Baixa de Dígitos 0, 1, 2 (Atlas)",
+                    "name": "Densidade Baixa (Atlas)",
                     "active": true,
                     "config": {
-                        "window": 10,
-                        "digits": "0, 1, 2",
-                        "operator": "<",
-                        "threshold": 2
+                        "veloz": {
+                            "window": 8,
+                            "digits": "0, 1, 2",
+                            "operator": "<=",
+                            "threshold": 1
+                        },
+                        "normal": {
+                            "window": 10,
+                            "digits": "0, 1, 2",
+                            "operator": "<=",
+                            "threshold": 1
+                        },
+                        "preciso": {
+                            "window": 12,
+                            "digits": "0, 1, 2",
+                            "operator": "<=",
+                            "threshold": 0
+                        }
                     }
                 }
             ],
@@ -54,12 +68,24 @@
             "attackFilters": [
                 {
                     "id": "price_momentum",
-                    "name": "Tendência de Preço (Alta) - Atlas",
+                    "name": "Momentum (Atlas)",
                     "active": true,
                     "config": {
-                        "window": 5,
-                        "ticksToConfirm": 3,
-                        "minDelta": 0.021
+                        "veloz": {
+                            "window": 3,
+                            "ticksToConfirm": 1,
+                            "minDelta": 0.015
+                        },
+                        "normal": {
+                            "window": 5,
+                            "ticksToConfirm": 1,
+                            "minDelta": 0.021
+                        },
+                        "preciso": {
+                            "window": 7,
+                            "ticksToConfirm": 2,
+                            "minDelta": 0.025
+                        }
                     }
                 }
             ]
@@ -76,8 +102,8 @@
             "martingale100": false
         },
         "metadata": {
-            "assertividade": 80,
-            "retorno": 60
+            "assertividade": 70,
+            "retorno": 35
         }
     }
 }

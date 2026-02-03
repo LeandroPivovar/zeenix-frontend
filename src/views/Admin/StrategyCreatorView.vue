@@ -858,11 +858,11 @@
                                 <div v-if="filter.id === 'digit_sequence'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tamanho da Sequência</label>
-                                        <input type="number" v-model.number="filter.config.length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Grupo Alvo</label>
-                                        <select v-model="filter.config.target" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                        <select v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].target" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
                                             <option value="under_4">Abaixo de 4 (0,1,2,3)</option>
                                             <option value="over_5">Acima de 5 (6,7,8,9)</option>
                                             <option value="even">Pares</option>
@@ -875,15 +875,15 @@
                                 <div v-if="filter.id === 'parity_majority'" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Janela</label>
-                                        <input type="number" v-model.number="filter.config.window" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].window" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">% Mínima</label>
-                                        <input type="number" v-model.number="filter.config.percentage" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].percentage" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Máx. Ruído</label>
-                                        <input type="number" v-model.number="filter.config.maxNoise" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].maxNoise" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                 </div>
 
@@ -891,15 +891,15 @@
                                 <div v-if="filter.id === 'price_momentum'" class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Janela</label>
-                                        <input type="number" v-model.number="filter.config.window" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].window" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tiques Conf.</label>
-                                        <input type="number" v-model.number="filter.config.ticksToConfirm" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].ticksToConfirm" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Delta Mín.</label>
-                                        <input type="number" v-model.number="filter.config.minDelta" step="0.01" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].minDelta" step="0.01" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                 </div>
 
@@ -907,11 +907,11 @@
                                 <div v-if="filter.id === 'parity_sequence'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tamanho da Sequência</label>
-                                        <input type="number" v-model.number="filter.config.length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Paridade</label>
-                                        <select v-model="filter.config.parity" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                        <select v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].parity" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
                                             <option value="even">Par</option>
                                             <option value="odd">Ímpar</option>
                                         </select>
@@ -922,18 +922,18 @@
                                 <div v-if="filter.id === 'over_under_sequence'" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tamanho</label>
-                                        <input type="number" v-model.number="filter.config.length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].length" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tipo</label>
-                                        <select v-model="filter.config.type" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                        <select v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].type" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
                                             <option value="over">Acima (Over)</option>
                                             <option value="under">Abaixo (Under)</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Valor Limite</label>
-                                        <select v-model.number="filter.config.threshold" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                        <select v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].threshold" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
                                             <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
                                         </select>
                                     </div>
@@ -943,18 +943,18 @@
                                 <div v-if="filter.id === 'price_ma'" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Período</label>
-                                        <input type="number" v-model.number="filter.config.period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tipo</label>
-                                        <select v-model="filter.config.type" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                        <select v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].type" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
                                             <option value="SMA">SMA (Simples)</option>
                                             <option value="EMA">EMA (Exponencial)</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Condição (Preço)</label>
-                                        <select v-model="filter.config.op" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                        <select v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].op" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
                                             <option value=">">Acima da Média</option>
                                             <option value="<">Abaixo da Média</option>
                                         </select>
@@ -965,11 +965,11 @@
                                 <div v-if="filter.id === 'digit_absence'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Período (Ticks)</label>
-                                        <input type="number" v-model.number="filter.config.period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].period" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Dígito Ausente</label>
-                                        <select v-model.number="filter.config.digit" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                        <select v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].digit" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
                                             <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
                                         </select>
                                     </div>
@@ -979,22 +979,22 @@
                                 <div v-if="filter.id === 'ma_crossover'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Média Curta</label>
-                                        <input type="number" v-model.number="filter.config.periodShort" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].periodShort" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Média Longa</label>
-                                        <input type="number" v-model.number="filter.config.periodLong" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
+                                        <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].periodLong" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Tipo</label>
-                                        <select v-model="filter.config.type" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                        <select v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].type" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
                                             <option value="SMA">SMA</option>
                                             <option value="EMA">EMA</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Cruzamento</label>
-                                        <select v-model="filter.config.direction" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
+                                        <select v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].direction" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none">
                                             <option value="up">Para Cima (Alta)</option>
                                             <option value="down">Para Baixo (Baixa)</option>
                                         </select>
