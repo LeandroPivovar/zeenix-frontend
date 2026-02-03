@@ -198,7 +198,7 @@
                                 <div class="modal-header-premium">
                                     <div class="modal-header-info">
                                         <h3 class="modal-title" style="font-size: 1.6rem;">Selecionar Estratégia</h3>
-                                        <p class="modal-subtitle text-xs text-zenix-secondary mt-1 lg:hidden">Escolha a melhor estratégia para sua operação</p>
+                                        <p class="modal-subtitle text-xs text-zenix-secondary mt-1">Escolha a melhor estratégia para sua operação.</p>
                                     </div>
                                     <button @click="closeStrategyModal" class="modal-close-btn">
                                         <i class="fas fa-times"></i>
