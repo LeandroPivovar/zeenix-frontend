@@ -134,15 +134,11 @@
 									<div class="selector-left">
                                             <div class="strategy-icons-inline" v-if="selectedAgent">
                                                 <div class="agent-avatar-mask-small">
-                                                    <video 
-                                                        v-if="availableAgents.find(a => a.id === selectedAgent)?.video" 
-                                                        :src="availableAgents.find(a => a.id === selectedAgent)?.video" 
+                                                    <img 
+                                                        v-if="availableAgents.find(a => a.id === selectedAgent)?.image" 
+                                                        :src="availableAgents.find(a => a.id === selectedAgent)?.image" 
                                                         class="agent-video-avatar" 
-                                                        autoplay 
-                                                        loop 
-                                                        muted 
-                                                        playsinline
-                                                    ></video>
+                                                    />
                                                     <img 
                                                         v-else
                                                         :src="availableAgents.find(a => a.id === selectedAgent)?.icons[0]" 
@@ -378,17 +374,13 @@
 							>
 								<!-- Top Row: Avatar, Header, Action -->
                                 <div class="agent-selection-card-top-row" style="display: flex; width: 100%; align-items: center;">
-                                    <!-- Left Section: Avatar -->
+                                    <!-- Left Section: Avatar (Updated to Image) -->
                                     <div class="agent-card-left-tall">
-                                        <video 
-                                            v-if="agent.video" 
-                                            :src="agent.video" 
+                                        <img 
+                                            v-if="agent.image" 
+                                            :src="agent.image" 
                                             class="agent-video-tall" 
-                                            autoplay 
-                                            loop 
-                                            muted 
-                                            playsinline
-                                        ></video>
+                                        />
                                         <div v-else class="agent-avatar-fallback-tall">
                                             <i class="fas fa-robot"></i>
                                         </div>
@@ -510,7 +502,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 					percentage: '+3.15%',
 					percentageLabel: 'Performance recente',
 					graphColor: '#22c55e',
-					video: '/Zeus_Lança_Raio_em_Vídeo.mp4',
+					image: '/img/agents/zeus.png', // Updated to image
 					marketType: 'Digits',
 					icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg'],
 					description: 'Análise de Fluxo',
@@ -532,7 +524,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 					percentage: '+2.89%',
 					percentageLabel: 'Performance recente',
 					graphColor: '#22c55e',
-					video: '/Animação_de_Voo_Gerada.mp4',
+					image: '/img/agents/falcon.png', // Updated to image
 					marketType: 'Digits',
 					icons: ['/deriv_icons/TradeTypesHighsAndLowsHighIcon.svg'],
 					description: 'Barreira de Segurança',
