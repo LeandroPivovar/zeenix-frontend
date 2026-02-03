@@ -1,17 +1,25 @@
 {
-    "id": "apollo",
+    "id": "default_apollo",
     "name": "Apollo",
     "config": {
         "form": {
-            "market": "R_100",
-            "tradeType": "DIGITUNDER",
+            "initialStake": 1,
+            "profitTarget": 100,
+            "stopLoss": 100,
+            "riskProfile": "moderado",
+            "useBlindado": false,
+            "stopBlindadoPercent": 50,
             "duration": 1,
             "durationUnit": "t",
+            "market": "R_10",
+            "tradeType": "DIGITUNDER",
             "prediction": 8,
+            "sorosLevel": 1,
+            "expectedPayout": 0.19,
             "attackFilters": [
                 {
                     "id": "digit_density",
-                    "name": "Densidade de Dígitos 8 e 9",
+                    "name": "Densidade de Dígitos 8, 9 (Apollo)",
                     "active": true,
                     "config": {
                         "window": 20,
@@ -21,32 +29,60 @@
                     }
                 }
             ],
-            "initialStake": 1,
-            "expectedPayout": 1.20,
-            "profitTarget": 100,
-            "stopLoss": 100,
-            "useBlindado": false
+            "selectedTradeTypeGroup": ""
         },
         "recoveryConfig": {
             "enabled": true,
-            "market": "R_100",
+            "market": "R_10",
+            "selectedTradeTypeGroup": "",
             "tradeType": "DIGITUNDER",
             "prediction": 4,
-            "expectedPayout": 2.26,
             "lossesToActivate": 1,
+            "contractSwitch": true,
+            "switchToNormal": false,
+            "switchToPrecise": true,
+            "maxPreciseLosses": 3,
+            "pauseLosses": 6,
+            "pauseVolatility": 50,
+            "pauseTime": 5,
+            "expectedPayout": 1.26,
+            "initialStake": 1,
+            "profitTarget": 10,
+            "stopLoss": 50,
+            "active": false,
+            "riskProfile": "moderado",
             "attackFilters": [
                 {
                     "id": "digit_density",
-                    "name": "Densidade de Dígitos < 4",
+                    "name": "Densidade de Dígitos 0-3 (Apollo Recuperação)",
                     "active": true,
                     "config": {
-                        "window": 20,
+                        "window": 30,
+                        "windowLong": 200,
                         "digits": "0, 1, 2, 3",
                         "operator": ">",
-                        "threshold": 4
+                        "threshold": 4,
+                        "minPShort": 0.25,
+                        "minDeltaP": 0.01,
+                        "maxCount89": 16
                     }
                 }
             ]
+        },
+        "validator": {
+            "aiStarted": false,
+            "attackFilterCorrect": false,
+            "baseStakeCorrect": false,
+            "sorosApplied": false,
+            "sorosReset": false,
+            "recoveryModeEntered": false,
+            "recoveryContractSwitched": false,
+            "recoveryFilters": {},
+            "martingale100": false
+        },
+        "metadata": {
+            "assertividade": 77,
+            "retorno": 54
         }
     }
 }

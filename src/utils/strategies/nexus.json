@@ -1,38 +1,61 @@
 {
-    "id": "nexus",
+    "id": "default_nexus",
     "name": "Nexus",
     "config": {
         "form": {
-            "market": "R_100",
-            "tradeType": "CALL",
-            "duration": 5,
+            "initialStake": 1,
+            "profitTarget": 100,
+            "stopLoss": 100,
+            "riskProfile": "moderado",
+            "useBlindado": true,
+            "stopBlindadoPercent": 50,
+            "duration": 1,
             "durationUnit": "t",
+            "market": "R_25",
+            "tradeType": "CALL",
+            "prediction": null,
+            "sorosLevel": 1,
+            "expectedPayout": 0.56,
             "attackFilters": [
                 {
                     "id": "price_momentum",
-                    "name": "Momentum de Preço",
+                    "name": "Momentum de Preço (Nexus)",
                     "active": true,
                     "config": {
                         "window": 20,
                         "ticksToConfirm": 1,
-                        "minDelta": 0.05
+                        "minDelta": 0.05,
+                        "kMove": 2.2,
+                        "kBarrier": 1.1
                     }
                 }
             ],
-            "initialStake": 1,
-            "profitTarget": 100,
-            "stopLoss": 100,
-            "useBlindado": true
+            "selectedTradeTypeGroup": ""
         },
         "recoveryConfig": {
             "enabled": true,
-            "market": "R_100",
+            "market": "R_25",
+            "selectedTradeTypeGroup": "",
             "tradeType": "CALL",
+            "prediction": null,
             "lossesToActivate": 2,
+            "contractSwitch": true,
+            "switchToNormal": false,
+            "switchToPrecise": true,
+            "maxPreciseLosses": 3,
+            "pauseLosses": 6,
+            "pauseVolatility": 50,
+            "pauseTime": 5,
+            "expectedPayout": 0.85,
+            "initialStake": 1,
+            "profitTarget": 10,
+            "stopLoss": 50,
+            "active": false,
+            "riskProfile": "moderado",
             "attackFilters": [
                 {
                     "id": "price_momentum",
-                    "name": "Recuperação Momentum",
+                    "name": "Recuperação Momentum (Nexus)",
                     "active": true,
                     "config": {
                         "window": 5,
@@ -41,6 +64,21 @@
                     }
                 }
             ]
+        },
+        "validator": {
+            "aiStarted": false,
+            "attackFilterCorrect": false,
+            "baseStakeCorrect": false,
+            "sorosApplied": false,
+            "sorosReset": false,
+            "recoveryModeEntered": false,
+            "recoveryContractSwitched": false,
+            "recoveryFilters": {},
+            "martingale100": false
+        },
+        "metadata": {
+            "assertividade": 65,
+            "retorno": 70
         }
     }
 }

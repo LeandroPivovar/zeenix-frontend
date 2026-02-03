@@ -1,17 +1,25 @@
 {
-    "id": "orion",
+    "id": "default_orion",
     "name": "Orion",
     "config": {
         "form": {
-            "market": "R_100",
-            "tradeType": "DIGITOVER",
+            "initialStake": 1,
+            "profitTarget": 100,
+            "stopLoss": 100,
+            "riskProfile": "moderado",
+            "useBlindado": false,
+            "stopBlindadoPercent": 50,
             "duration": 1,
             "durationUnit": "t",
+            "market": "R_100",
+            "tradeType": "DIGITOVER",
             "prediction": 3,
+            "sorosLevel": 1,
+            "expectedPayout": 0.825,
             "attackFilters": [
                 {
                     "id": "digit_sequence",
-                    "name": "Sequência de Dígitos < 4",
+                    "name": "Sequência de Dígitos < 4 (Orion)",
                     "active": true,
                     "config": {
                         "length": 3,
@@ -19,16 +27,28 @@
                     }
                 }
             ],
-            "initialStake": 1,
-            "profitTarget": 100,
-            "stopLoss": 100,
-            "useBlindado": false
+            "selectedTradeTypeGroup": ""
         },
         "recoveryConfig": {
             "enabled": true,
             "market": "R_100",
+            "selectedTradeTypeGroup": "",
             "tradeType": "CALL",
+            "prediction": null,
             "lossesToActivate": 2,
+            "contractSwitch": true,
+            "switchToNormal": false,
+            "switchToPrecise": true,
+            "maxPreciseLosses": 3,
+            "pauseLosses": 6,
+            "pauseVolatility": 50,
+            "pauseTime": 5,
+            "expectedPayout": 0.825,
+            "initialStake": 1,
+            "profitTarget": 10,
+            "stopLoss": 50,
+            "active": false,
+            "riskProfile": "moderado",
             "attackFilters": [
                 {
                     "id": "price_momentum",
@@ -41,6 +61,21 @@
                     }
                 }
             ]
+        },
+        "validator": {
+            "aiStarted": false,
+            "attackFilterCorrect": false,
+            "baseStakeCorrect": false,
+            "sorosApplied": false,
+            "sorosReset": false,
+            "recoveryModeEntered": false,
+            "recoveryContractSwitched": false,
+            "recoveryFilters": {},
+            "martingale100": false
+        },
+        "metadata": {
+            "assertividade": 70,
+            "retorno": 82.5
         }
     }
 }
