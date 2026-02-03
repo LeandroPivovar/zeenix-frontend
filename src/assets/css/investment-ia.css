@@ -2126,7 +2126,7 @@ svg:not(:root).svg-inline--fa {
 
     .agent-option-footer-stats {
         display: flex !important;
-        flex-direction: column !important;
+        flex-direction: row !important;
         align-items: flex-start !important;
         text-align: left !important;
         gap: 1rem !important;
@@ -2135,13 +2135,20 @@ svg:not(:root).svg-inline--fa {
         width: 100% !important;
     }
 
+    .stat-label {
+        font-size: .75rem;
+        text-transform: lowercase;
+        color: hsla(0, 0%, 100%, .4);
+        font-weight: 600;
+        letter-spacing: .3px;
+    }
+
     .stat-item {
         flex: none !important;
         justify-content: flex-start !important;
         gap: 0.5rem !important;
     }
 }
-
 
 .modal-header-premium {
     display: flex;
