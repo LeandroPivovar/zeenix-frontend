@@ -1251,11 +1251,12 @@ export default {
                 floor: this.sessionState.stopBlindadoFloor
             };
 
-            const survivalStake = RiskManager.applySurvivalMode(stake, currentProfit, config, estimatedPayout, blindadoState);
+            const { stake: survivalStake, reason: survivalReason } = RiskManager.applySurvivalMode(stake, currentProfit, config, estimatedPayout, blindadoState);
             
             if (survivalStake < stake) {
                 this.addLog('🛡️ Survival Mode', [
                     `Stake ajustada para proteger limites`,
+                    `Motivo: ${survivalReason || 'Ajuste de Risco'}`,
                     `Original: ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`,
                     `Nova: ${this.preferredCurrencyPrefix}${survivalStake.toFixed(2)}`
                 ], 'warning');

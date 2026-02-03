@@ -359,6 +359,8 @@ export const RiskManager = {
         // Let's standardize: if > 1, subtract 1.
         const payoutRate = estimatedPayout > 1 ? estimatedPayout - 1 : estimatedPayout;
 
+        let reason = null;
+
         // 1. Check Stop Blindado (High Priority Protection)
         if (blindadoState && blindadoState.active) {
             const floor = blindadoState.floor;
@@ -369,6 +371,7 @@ export const RiskManager = {
             if (adjustedStake > maxStakeBlindado) {
                 console.log(`[Survival] 🛡️ Clamping Stake for Stop Blindado: ${adjustedStake} -> ${maxStakeBlindado.toFixed(2)} (Floor: ${floor})`);
                 adjustedStake = maxStakeBlindado;
+                reason = `Stop Blindado (Piso: ${floor.toFixed(2)})`;
             }
         }
 
@@ -388,6 +391,7 @@ export const RiskManager = {
                 if (maxStake < adjustedStake) {
                     console.log(`[Survival] Clamping Stake for Stop Loss: ${adjustedStake} -> ${maxStake.toFixed(2)}`);
                     adjustedStake = maxStake;
+                    if (!reason) reason = `Stop Loss (Limite: ${limit.toFixed(2)})`;
                 }
             }
         }
@@ -408,6 +412,7 @@ export const RiskManager = {
                 if (maxStake < adjustedStake) {
                     console.log(`[Survival] Clamping Stake for Target: ${adjustedStake} -> ${maxStake.toFixed(2)}`);
                     adjustedStake = maxStake;
+                    if (!reason) reason = `Meta de Lucro (Alvo: ${limit.toFixed(2)})`;
                 }
             }
         }
@@ -416,7 +421,11 @@ export const RiskManager = {
         // We DO NOT round up to 0.35 here if the survival math requires less.
         // We return the raw LOW value so the caller knows it's too risky.
         // Actually, let's return 2 decimal precision.
-        return parseFloat(adjustedStake.toFixed(2));
+        return {
+            stake: parseFloat(adjustedStake.toFixed(2)),
+            originalStake: stake,
+            reason: reason
+        };
     }
 };
 
