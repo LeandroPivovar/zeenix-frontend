@@ -1253,7 +1253,7 @@ export default {
                     }
 
                     // Update stats immediately
-                    const realPayout = this.pendingFastResult.payout || (stake * (this.sessionState.analysisType === 'RECUPERACAO' ? this.sessionState.lastPayoutRecovery : this.sessionState.lastPayoutPrincipal) + stake);
+                    const realPayout = this.pendingFastResult.payout || (stake * (this.sessionState.analysisType === 'RECUPERACAO' ? this.sessionState.lastPayoutRecovery : this.sessionState.lastPayoutPrincipal));
                     const estimatedProfit = win ? (realPayout - stake) : -stake;
 
                     if (win) this.monitoringStats.wins++;
@@ -1458,8 +1458,8 @@ export default {
                     market: contract.display_name,
                     contract: contract.contract_type,
                     type: contract.contract_type.includes('CALL') ? 'CALL' : (contract.contract_type.includes('PUT') ? 'PUT' : 'CALL'),
-                    stake: contract.buy_price,
-                    pnl: contract.profit || 0,
+                    stake: parseFloat(contract.buy_price),
+                    pnl: 0,
                     analysisType: this.sessionState.analysisType, // ✅ CRITICAL
                     result: 'OPEN',
                     barrier: contract.barrier,
@@ -1473,7 +1473,8 @@ export default {
                 // Release lock if not handled by Fast Result
                 this.isNegotiating = false;
             } else {
-                trade.pnl = contract.profit || 0;
+                // Durante a operação em aberto, contract.profit costuma ser o profit líquido na Deriv
+                trade.pnl = parseFloat(contract.profit || 0);
                 if (contract.entry_tick_display_value) trade.entryPrice = contract.entry_tick_display_value;
                 if (contract.exit_tick_display_value) trade.exitPrice = contract.exit_tick_display_value;
             }
@@ -1553,7 +1554,8 @@ export default {
                         `Contrato ID: ${id}`,
                         `Resultado Financeiro: +${this.preferredCurrencyPrefix}${trade.pnl.toFixed(2)}`,
                         `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
-                        `Saldo Atual: ${this.preferredCurrencyPrefix}${(this.monitoringStats.balance + trade.pnl).toFixed(2)}`
+                        `Extrato: +${this.preferredCurrencyPrefix}${trade.pnl.toFixed(2)} (Líquido)`,
+                        `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
                     ], 'success');
                 } else {
                     this.addLog('Resultado da Operação', [
@@ -1561,7 +1563,7 @@ export default {
                         `Contrato ID: ${id}`,
                         `Resultado Financeiro: -${this.preferredCurrencyPrefix}${Math.abs(trade.pnl).toFixed(2)}`,
                         `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
-                        `Saldo Atual: ${this.preferredCurrencyPrefix}${(this.monitoringStats.balance + trade.pnl).toFixed(2)}`
+                        `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
                     ], 'error');
                 }
                 
