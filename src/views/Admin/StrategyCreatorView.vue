@@ -2396,7 +2396,7 @@ export default {
             }
         },
 
-        saveCurrentStrategy() {
+        async saveCurrentStrategy() {
             const name = prompt('Nome da estratégia:', `Minha Estratégia ${new Date().toLocaleDateString()}`);
             if (!name) return;
 
@@ -2412,6 +2412,26 @@ export default {
                     validator: JSON.parse(JSON.stringify(this.validator))
                 }
             };
+
+            // ✅ Save to server as JSON file
+            try {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const token = localStorage.getItem('token');
+                const strategyFileName = name.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '_');
+
+                await fetch(`${apiBase}/strategies/${strategyFileName}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newStrategy)
+                });
+
+                console.log(`[StrategyCreator] Saved ${strategyFileName}.json to server`);
+            } catch (error) {
+                console.error('[StrategyCreator] Error saving strategy to server:', error);
+            }
 
             this.savedStrategies.push(newStrategy);
             localStorage.setItem('zeenix_saved_strategies', JSON.stringify(this.savedStrategies));
