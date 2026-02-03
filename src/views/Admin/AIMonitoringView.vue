@@ -776,7 +776,8 @@ export default {
                     // Prioridade: Base do Arquivo (para garantir estrutura) > Ajustes se necessário
                     this.recoveryConfig = {
                         ...baseConfig.recoveryConfig,
-                        ...(parsed.recoveryConfig || {}) // ✅ Merge user overrides (RiskProfile, etc.)
+                        ...(parsed.recoveryConfig || {}), // ✅ Merge user overrides (RiskProfile, etc.)
+                        riskProfile: parsed.riskProfile || (parsed.recoveryConfig && parsed.recoveryConfig.riskProfile) || baseConfig.recoveryConfig.riskProfile || 'moderado'
                     };
 
                     // ✅ FORCE RECOVERY PAYOUT FIX for Apollo/Nexus
