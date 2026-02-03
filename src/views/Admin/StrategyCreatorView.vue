@@ -1352,18 +1352,11 @@ import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
-import apolloConfig from '@/utils/strategies/apollo.json';
-import atlasConfig from '@/utils/strategies/atlas.json';
-import nexusConfig from '@/utils/strategies/nexus.json';
-import orionConfig from '@/utils/strategies/orion.json';
-import titanConfig from '@/utils/strategies/titan.json';
 import { RiskManager } from '../../utils/RiskManager';
 import MonitoringDashboard from '../../components/ActiveStrategy/MonitoringDashboard.vue';
 import StopLossModal from '../../components/StopLossModal.vue';
 import TargetProfitModal from '../../components/TargetProfitModal.vue';
 import StopBlindadoAjusteModal from '../../components/StopBlindadoAjusteModal.vue';
-
-const defaultStrategies = [apolloConfig, atlasConfig, nexusConfig, orionConfig, titanConfig];
 
 export default {
     name: 'StrategyCreatorView',
@@ -2358,31 +2351,48 @@ export default {
         },
 
         // --- Local Strategy Library Methods ---
-        loadStrategiesFromStorage() {
+        async loadStrategiesFromStorage() {
             try {
                 const stored = localStorage.getItem('zeenix_saved_strategies');
                 let userStrategies = stored ? JSON.parse(stored) : [];
 
-                // Merge default strategies
-                defaultStrategies.forEach(def => {
-                    const index = userStrategies.findIndex(s => s.id === def.id);
-                    if (index !== -1) {
-                        // Strategy exists in user storage.
-                        // We preserve the USER's version, but we might want to ensure new fields are present (?)
-                        // For now, "Update IA" means the user wants THEIR version to be the source of truth.
-                        // So we DO NOT overwrite it with 'def'.
-                        // We only overwrite if we really wanted to force an update (versioning logic maybe?), but simple is better.
-                        console.log(`[StrategyCreator] Loaded user version of strategy: ${def.name}`);
-                    } else {
-                        // Add new default strategy that doesn't exist yet in user storage
-                        userStrategies.push(def);
+                // ✅ Load default strategies from API (always fresh)
+                const defaultStrategyNames = ['apollo', 'atlas', 'nexus', 'orion', 'titan'];
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const token = localStorage.getItem('token');
+
+                for (const strategyName of defaultStrategyNames) {
+                    try {
+                        const response = await fetch(`${apiBase}/strategies/${strategyName}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+
+                        if (response.ok) {
+                            const { data } = await response.json();
+                            const strategyConfig = {
+                                id: `default_${strategyName}`,
+                                name: strategyName.charAt(0).toUpperCase() + strategyName.slice(1),
+                                config: data.config
+                            };
+
+                            const index = userStrategies.findIndex(s => s.id === strategyConfig.id);
+                            if (index !== -1) {
+                                // Update existing default strategy with fresh data
+                                userStrategies[index] = strategyConfig;
+                            } else {
+                                // Add new default strategy
+                                userStrategies.push(strategyConfig);
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`[StrategyCreator] Failed to load ${strategyName} from API:`, error);
                     }
-                });
+                }
 
                 this.savedStrategies = userStrategies;
             } catch (e) {
                 console.error('Erro ao carregar estratégias:', e);
-                this.savedStrategies = [...defaultStrategies];
+                this.savedStrategies = [];
             }
         },
 
@@ -2476,7 +2486,7 @@ export default {
             const defaultStrategyNames = ['apollo', 'atlas', 'nexus', 'orion', 'titan'];
             const strategyName = strategy.name.toLowerCase().trim();
             
-            if (defaultStrategyNames.includes(strategyName)) {
+            if (defaultStrategyNames.includes(strategyName) || strategy.id.startsWith('default_')) {
                 try {
                     const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                     const token = localStorage.getItem('token');
@@ -2495,6 +2505,9 @@ export default {
                     }
 
                     console.log(`[StrategyCreator] Updated ${strategyName}.json on server`);
+                    
+                    // ✅ Reload strategies to get fresh data
+                    await this.loadStrategiesFromStorage();
                 } catch (error) {
                     console.error('[StrategyCreator] Error updating strategy file:', error);
                     this.$root.$toast.error('Erro ao salvar no servidor. Alterações salvas localmente.');
