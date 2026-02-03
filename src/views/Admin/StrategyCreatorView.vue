@@ -2142,6 +2142,26 @@ export default {
             this.showFilterModal = false;
             this.$root.$toast.success('Filtros configurados com sucesso!');
         },
+        // ✅ Helper to sync filter edits to form/recoveryConfig before saving
+        syncFiltersToConfig() {
+            // Sync main filters
+            this.form.attackFilters = this.filters
+                .filter(f => f.active)
+                .map(f => ({
+                    id: f.id,
+                    name: f.name,
+                    config: JSON.parse(JSON.stringify(f.config))
+                }));
+            
+            // Sync recovery filters
+            this.recoveryConfig.attackFilters = this.recoveryFilters
+                .filter(f => f.active)
+                .map(f => ({
+                    id: f.id,
+                    name: f.name,
+                    config: JSON.parse(JSON.stringify(f.config))
+                }));
+        },
         // Modal Handlers
         openMarketModal(context = 'main') {
             this.modalContext = context;
@@ -2370,6 +2390,9 @@ export default {
             const name = prompt('Nome da estratégia:', `Minha Estratégia ${new Date().toLocaleDateString()}`);
             if (!name) return;
 
+            // ✅ Sync filter edits before saving
+            this.syncFiltersToConfig();
+
             const newStrategy = {
                 id: Date.now().toString(),
                 name: name,
@@ -2440,6 +2463,9 @@ export default {
             const strategy = this.savedStrategies.find(s => s.id === this.selectedSavedStrategyId);
             if (!strategy) return;
 
+            // ✅ Sync filter edits before updating
+            this.syncFiltersToConfig();
+
             strategy.config = {
                 form: JSON.parse(JSON.stringify(this.form)),
                 recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
@@ -2460,6 +2486,9 @@ export default {
         },
 
         exportToJSON() {
+            // ✅ Sync filter edits before exporting
+            this.syncFiltersToConfig();
+
             const strategyData = {
                 version: '1.0',
                 timestamp: new Date().toISOString(),
