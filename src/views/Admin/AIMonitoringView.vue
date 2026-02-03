@@ -204,6 +204,14 @@
                                         <span class="text-xs font-black uppercase tracking-widest" :class="currentConfig.stoplossBlindado ? 'text-success' : 'text-muted-foreground'">{{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}</span>
                                     </div>
                                 </div>
+
+                                <!-- IA EM FUNCIONAMENTO / Footer (Mobile) -->
+                                <div class="mt-2 mb-4 px-1">
+                                    <h4 class="text-[14px] font-bold text-[#D4D4D4] uppercase mb-1 text-left">IA Em Funcionamento</h4>
+                                    <p class="text-[12px] text-[#AAAAAA] leading-snug text-left">
+                                        Monitorando o mercado e executando apenas quando há vantagem estatística.
+                                    </p>
+                                </div>
                             </div>
 
                             <!-- Chart Tab -->
@@ -487,8 +495,8 @@
 
                             <!-- IA EM FUNCIONAMENTO / Footer -->
                             <div class="mt-4 mb-5 relative z-10 px-1">
-                                <h4 class="text-[11px] font-bold text-[#D4D4D4] uppercase mb-1 text-left">IA Em Funcionamento</h4>
-                                <p class="text-[9px] text-[#AAAAAA] leading-snug text-left">
+                                <h4 class="text-[14px] font-bold text-[#D4D4D4] uppercase mb-1 text-left">IA Em Funcionamento</h4>
+                                <p class="text-[12px] text-[#AAAAAA] leading-snug text-left">
                                     Monitorando o mercado e executando apenas quando há vantagem estatística.
                                 </p>
                             </div>
