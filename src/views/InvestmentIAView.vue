@@ -227,21 +227,27 @@
                                                     </div>
                                                     <div class="agent-option-main-info">
                                                         <h4 class="agent-option-title">{{ strategy.title }}</h4>
-                                                        <p class="agent-option-desc">{{ strategy.description }}</p>
+                                                        <p class="agent-option-subtitle text-xs text-zenix-secondary mt-0.5">{{ strategy.marketType }}</p>
                                                     </div>
                                                     <div v-if="selectedStrategy === strategy.id" class="absolute top-3 right-3 px-2 py-0.5 rounded-md bg-[#1b3324] border border-[#22c55e]/40 shadow-sm z-30 flex items-center justify-center min-w-[50px]">
                                                         <span class="text-[10px] font-bold text-[#22c55e] uppercase tracking-wider text-center w-full">Ativo</span>
                                                     </div>
                                                 </div>
-                                                <div class="agent-option-footer-stats">
-                                                    <div class="stat-item">
-                                                        <span class="stat-label">precisão:</span>
-                                                        <span class="stat-value stat-fluctuate-opacity">{{ strategy.assertividade }}</span>
+                                                <div class="agent-option-footer-stats vertical-list">
+                                                    <div class="stat-item flex items-center gap-2 mb-1">
+                                                        <i class="fas fa-check-circle text-zenix-green text-[10px]"></i>
+                                                        <span class="stat-label text-zenix-secondary text-[10px] font-bold">Análise:</span>
+                                                        <span class="stat-value text-white text-[10px] font-bold">{{ strategy.description }}</span>
                                                     </div>
-                                                    <div class="stat-divider"></div>
-                                                    <div class="stat-item">
-                                                        <span class="stat-label">retorno:</span>
-                                                        <span class="stat-value highlight stat-fluctuate-glow">{{ strategy.retorno }}</span>
+                                                    <div class="stat-item flex items-center gap-2 mb-1">
+                                                        <i class="fas fa-check-circle text-zenix-green text-[10px]"></i>
+                                                        <span class="stat-label text-zenix-secondary text-[10px] font-bold">Assertividade:</span>
+                                                        <span class="stat-value text-white text-[10px] font-bold">{{ strategy.assertividade }}</span>
+                                                    </div>
+                                                    <div class="stat-item flex items-center gap-2">
+                                                        <i class="fas fa-check-circle text-zenix-green text-[10px]"></i>
+                                                        <span class="stat-label text-zenix-secondary text-[10px] font-bold">Retorno:</span>
+                                                        <span class="stat-value text-white text-[10px] font-bold highlight">{{ strategy.retorno }}</span>
                                                     </div>
                                                 </div>
                                             </div>
