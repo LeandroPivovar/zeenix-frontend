@@ -2143,8 +2143,8 @@ svg:not(:root).svg-inline--fa {
 }
 
 .stat-label {
-    font-size: 12px;
-    text-transform: lowercase;
+    font-size: 12px !important;
+    text-transform: capitalize !important;
     color: hsla(0, 0%, 100%, .4);
     font-weight: 600;
     letter-spacing: .3px;
@@ -2515,13 +2515,7 @@ svg:not(:root).svg-inline--fa {
     justify-content: center;
 }
 
-.stat-label {
-    font-size: 0.55rem;
-    text-transform: lowercase;
-    color: rgba(255, 255, 255, 0.4);
-    font-weight: 600;
-    letter-spacing: 0.3px;
-}
+
 
 .stat-value {
     font-size: 0.75rem;
