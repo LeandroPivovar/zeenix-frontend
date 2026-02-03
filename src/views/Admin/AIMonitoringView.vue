@@ -119,62 +119,7 @@
                 </div>
 
                 <!-- Mobile Configuration Cards Stack (Visible only on Mobile) -->
-                <div v-if="isMobile" class="mt-4 flex flex-col gap-3 w-full">
 
-                    <!-- Mobile Pause Button -->
-                    <button @click="stopIA" :disabled="isStopping" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
-                        {{ isStopping ? 'Parando...' : 'Pausar IA' }}
-                    </button>
-
-                    <!-- Card 1: AI Identity -->
-                    <div class="p-4 bg-secondary/40 rounded-2xl border border-border/40 flex items-center gap-4 w-full">
-                        <div class="w-14 h-14 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path></svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-black text-foreground tracking-wide uppercase">Configuração Ativa</h3>
-                            <p class="text-xs text-muted-foreground">Resumo</p>
-                        </div>
-                    </div>
-
-                    <!-- Card 2: Strategy Mode -->
-                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
-                                <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Modo</span>
-                            </div>
-                            <span class="text-sm font-black text-foreground uppercase tracking-wider">{{ currentConfig.mode }}</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-                                <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Gestão</span>
-                            </div>
-                            <span class="text-sm font-black text-foreground uppercase tracking-wider">{{ currentConfig.modoMartingale || 'Moderado' }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Card 3: Parameters -->
-                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Entrada</span>
-                            <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ currentConfig.stake.toFixed(2).replace('.', ',') }}</span>
-                        </div>
-                        <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
-                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Alvo</span>
-                            <span class="text-sm font-black text-success tracking-wider">{{ currencySymbol }}{{ (currentConfig.profitTarget || 0).toFixed(2).replace('.', ',') }}</span>
-                        </div>
-                        <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
-                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Limite</span>
-                            <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ (currentConfig.lossLimit || 0).toFixed(2).replace('.', ',') }}</span>
-                        </div>
-                        <div class="flex items-center justify-between pt-1 mt-1">
-                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Stop Blindado</span>
-                            <span class="text-xs font-black uppercase tracking-widest" :class="currentConfig.stoplossBlindado ? 'text-success' : 'text-muted-foreground'">{{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}</span>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Main Content Layout (70/30 Split on Desktop, stack on Mobile) -->
                 <div class="mt-4 md:mt-6 lg:mt-8 flex flex-col lg:flex-row gap-4 lg:gap-6 w-full flex-1">
@@ -183,6 +128,9 @@
                         <div class="w-full flex-1 flex flex-col">
                             <!-- Custom Tabs -->
                             <div class="flex items-center justify-start text-muted-foreground border-b border-border mb-6 gap-6 h-auto p-0">
+                                <button v-if="isMobile" @click="activeMonitoringTab = 'config'" :class="{ 'border-success text-success': activeMonitoringTab === 'config' }" class="inline-flex items-center justify-center py-1.5 text-sm font-medium border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-foreground">
+                                    Config
+                                </button>
                                 <button @click="activeMonitoringTab = 'chart'" :class="{ 'border-success text-success': activeMonitoringTab === 'chart' }" class="inline-flex items-center justify-center py-1.5 text-sm font-medium border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-foreground">
                                     Gráfico
                                 </button>
@@ -194,7 +142,65 @@
                                 </button>
                             </div>
 
+                            <!-- Config Tab (Mobile Only) -->
+                            <div v-show="activeMonitoringTab === 'config' && isMobile" class="animate-fadeIn flex-1 flex flex-col space-y-4">
+                                <!-- Mobile Pause Button -->
+                                <button @click="stopIA" :disabled="isStopping" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
+                                    {{ isStopping ? 'Parando...' : 'Pausar IA' }}
+                                </button>
+
+                                <!-- Card 1: AI Identity -->
+                                <div class="p-4 bg-secondary/40 rounded-2xl border border-border/40 flex items-center gap-4 w-full">
+                                    <div class="w-14 h-14 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path></svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-black text-foreground tracking-wide uppercase">Configuração Ativa</h3>
+                                        <p class="text-xs text-muted-foreground">Resumo</p>
+                                    </div>
+                                </div>
+
+                                <!-- Card 2: Strategy Mode -->
+                                <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
+                                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Modo</span>
+                                        </div>
+                                        <span class="text-sm font-black text-foreground uppercase tracking-wider">{{ currentConfig.mode }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Gestão</span>
+                                        </div>
+                                        <span class="text-sm font-black text-foreground uppercase tracking-wider">{{ currentConfig.modoMartingale || 'Moderado' }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Card 3: Parameters -->
+                                <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Entrada</span>
+                                        <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ currentConfig.stake.toFixed(2).replace('.', ',') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
+                                        <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Alvo</span>
+                                        <span class="text-sm font-black text-success tracking-wider">{{ currencySymbol }}{{ (currentConfig.profitTarget || 0).toFixed(2).replace('.', ',') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
+                                        <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Limite</span>
+                                        <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ (currentConfig.lossLimit || 0).toFixed(2).replace('.', ',') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-1 mt-1">
+                                        <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Stop Blindado</span>
+                                        <span class="text-xs font-black uppercase tracking-widest" :class="currentConfig.stoplossBlindado ? 'text-success' : 'text-muted-foreground'">{{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Chart Tab -->
+
                             <div v-show="activeMonitoringTab === 'chart'" class="space-y-6 animate-fadeIn flex-1 flex flex-col">
                                     <div class="flex items-center justify-between">
                                         <div>
@@ -740,8 +746,16 @@ export default {
     methods: {
         checkMobile() {
             this.isMobile = window.innerWidth < 768;
-            if (!this.isMobile) this.isSidebarOpen = false;
+            if (!this.isMobile) {
+                this.isSidebarOpen = false;
+            } else {
+                // Se for mobile, definir Config como aba ativa por padrão (se não estiver definida ou se for carregamento inicial)
+                if (this.activeMonitoringTab === 'chart') { 
+                    this.activeMonitoringTab = 'config';
+                }
+            }
         },
+
         closeSidebar() {
             this.isSidebarOpen = false;
         },

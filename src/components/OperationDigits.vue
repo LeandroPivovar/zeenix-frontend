@@ -263,21 +263,23 @@
                         <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Histórico Recente</h3>
                         <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
                             <i class="far fa-clock text-[10px] text-white/40"></i>
-                            <span class="text-[10px] font-bold text-white/60">Últimos 15</span>
+                            <span class="text-[10px] font-bold text-white/60">Últimos 14</span>
                         </div>
+
                     </div>
                     
                     <div class="flex flex-wrap md:flex-nowrap gap-2 justify-start">
                         <div 
-                            v-for="(digit, index) in recentDigits.slice(0, 15)" 
+                            v-for="(digit, index) in recentDigits.slice(0, 14)" 
                             :key="'recent-'+index"
                             class="h-10 w-10 md:h-12 md:w-12 bg-[#080808] border border-white/5 rounded-xl flex items-center justify-center font-black text-lg transition-all duration-300 flex-shrink-0"
                             :class="[
-                                index === 0 ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/50 shadow-[0_0_15px_#22C55E33]' : 'text-white/40'
+                                index === (recentDigits.slice(0, 14).length - 1) ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/50 shadow-[0_0_15px_#22C55E33]' : 'text-white/40'
                             ]"
                         >
                             {{ digit }}
                         </div>
+
                         <div v-if="recentDigits.length === 0" class="text-white/20 text-xs italic tracking-widest py-2 w-full text-left ml-2">Sincronizando dados...</div>
                     </div>
                 </div>
@@ -794,8 +796,9 @@ export default {
         // Histórico Recente de Dígitos
         recentDigits() {
             if (!this.digitFrequency || !this.digitFrequency.digits) return [];
-            return this.digitFrequency.digits.slice(-15).reverse();
+            return this.digitFrequency.digits.slice(-14);
         },
+
         // Estatísticas de dígitos com Z-score
         digitFrequenciesWithStats() {
             const totalDigits = this.digitFrequency.digits.length;
