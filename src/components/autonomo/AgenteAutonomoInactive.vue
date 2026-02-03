@@ -2302,11 +2302,12 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 }
 
 /* Section Left: Tall Image with Radius */
+/* Section Left: Icon with Radius */
 .agent-card-left-tall {
-    width: 150px;
+    width: auto; /* Allow sizing by content */
     flex-shrink: 0;
     position: relative;
-    padding: 10px; /* Slight padding so radius is visible */
+    padding: 0 0 0 16px; /* Padding left */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2314,23 +2315,26 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 }
 
 .agent-video-tall {
-    width: 100%;
-    height: 100%;
+    width: 55px;
+    height: 55px;
     object-fit: cover;
-    border-radius: 16px; /* Request: 16px radius */
+    border-radius: 50%; /* 50% radius */
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    border: 1px solid #333; /* Adding border to match style */
+    background: #000;
 }
 
 .agent-avatar-fallback-tall {
-    width: 100%;
-    height: 100%;
+    width: 55px;
+    height: 55px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #111;
     color: #333;
-    font-size: 2rem;
-    border-radius: 16px;
+    font-size: 1.5rem;
+    border-radius: 50%; /* 50% radius */
+    border: 1px solid #333;
 }
 
 /* Section Middle: Content */
