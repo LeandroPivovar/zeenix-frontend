@@ -10,39 +10,64 @@
             <!-- Seção: Porcentagem de frequência de dígitos -->
             <!-- Seções de Análise unificadas foram movidas para main-content-grid -->
 
-            <!-- Sidebar Panel (Trading) -->
-            <div class="max-w-[400px] w-[400px] flex-shrink-0 bg-[#0D0D0D] border border-white/5 p-8 overflow-y-auto sidebar-panel rounded-xl trading-panel">
-
+            <!-- Sidebar Panel -->
+            <div class="sidebar-panel w-[400px] flex-shrink-0 bg-[#0D0D0D] border border-white/5 p-8 overflow-y-auto rounded-xl">
+                <div class="pb-6 mb-6 border-b border-white/5">
+                    <div class="flex flex-col gap-4">
+                        <h2 class="text-xl font-black text-white text-left leading-tight tracking-wide">
+                            Painel de Negociação
+                        </h2>
+                        
+                        <!-- Mode Switcher -->
+                        <div class="flex items-center p-1 bg-[#080808] border border-white/5 rounded-xl">
+                            <button 
+                                @click="tradingMode = 'manual'"
+                                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
+                                :class="tradingMode === 'manual' ? 'bg-zenix-green text-black' : 'text-white/40 hover:text-white'"
+                            >
+                                MANUAL
+                            </button>
+                            <button 
+                                @click="tradingMode = 'ai'"
+                                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
+                                :class="tradingMode === 'ai' ? 'bg-zenix-green text-black' : 'text-white/40 hover:text-white'"
+                            >
+                                SINAIS DE IA
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 
-                <div class="trading-panel-content space-y-3 px-1">
+                <div class="space-y-6 px-1">
                     <!-- Mercado -->
-                    <div class="space-y-2">
+                    <div>
                         <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Mercado</label>
-                        <button 
+                        <button
                             @click="openMarketModal"
-
-                            class="w-full bg-[#080808] border border-white/10 hover:border-zenix-green/50 rounded-xl px-5 py-4 text-sm text-white flex items-center justify-between transition-all font-medium group"
+                            class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
                         >
-                            <span class="truncate">{{ selectedMarketLabel }}</span>
-                            <i class="fas fa-chevron-right text-[10px] text-white/20 group-hover:text-zenix-green transition-colors"></i>
+                            <span class="font-medium">{{ selectedMarketLabel }}</span>
+                            <i class="fas fa-chevron-down text-xs opacity-40"></i>
                         </button>
                     </div>
                     
                     <!-- Tipo de Negociação -->
-                    <div class="space-y-2">
+                    <div>
                         <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Tipo de Negociação</label>
-                        <button 
+                        <button
                             @click="openTradeTypeModal"
-                            class="w-full bg-[#080808] border border-white/10 hover:border-zenix-green/50 rounded-xl px-5 py-4 text-sm text-white flex items-center justify-between transition-all font-medium group"
+                            class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
                         >
-                            <span class="truncate">{{ selectedTradeTypeLabel }}</span>
-                            <i class="fas fa-chevron-right text-[10px] text-white/20 group-hover:text-zenix-green transition-colors"></i>
+                            <div class="flex items-center gap-3">
+                                <span class="font-medium">{{ selectedTradeTypeGroupLabel }}</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs opacity-40"></i>
                         </button>
                     </div>
 
                     <!-- Previsão (Dígito) -->
-                    <div v-if="needsDigitBarrier">
-                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Previsão (Dígito)</label>
+                    <div v-if="['digits_match_diff', 'digits_over_under'].includes(selectedTradeTypeGroup)">
+                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Barreira (Dígito)</label>
                         <select v-model="digitBarrier" @change="subscribeToProposal" class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-medium appearance-none cursor-pointer">
                             <option v-for="d in 10" :key="d-1" :value="(d-1).toString()">{{ d-1 }}</option>
                         </select>
@@ -51,54 +76,143 @@
                     <!-- Duração -->
                     <div>
                         <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Duração (Ticks)</label>
+                        <div class="flex gap-4">
+                            <input 
+                                type="number" 
+                                v-model.number="duration"
+                                min="1"
+                                max="10"
+                                class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Valor de Entrada -->
+                    <div>
+                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Valor de Entrada</label>
                         <input 
                             type="number" 
-                            v-model.number="duration"
-                            min="1"
-                            max="10"
+                            step="0.01"
+                            v-model.number="orderValue"
                             class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
+                            @input="subscribeToProposal"
                         />
                     </div>
 
-                    
-                    <!-- Seção de Entrada e Ação -->
-                    <div class="space-y-8">
-                        <!-- Valor de Entrada -->
-                        <div>
-                            <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Valor de Entrada</label>
-                            <input 
-                                type="number" 
-                                step="0.01"
-                                v-model.number="orderValue"
-                                class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
-                                @input="subscribeToProposal"
-                            />
+                    <!-- Card de Dígitos de Previsão -->
+                    <div v-if="showDigitsPredictionCard" class="bg-zenix-bg border border-zenix-border rounded-lg p-4">
+                        <div class="text-xs font-medium text-zenix-secondary mb-3">
+                            <i class="fas fa-calculator text-zenix-green mr-2"></i>Status do Último Dígito
                         </div>
-
-                        <!-- Botões de Ação Dinâmicos -->
-                        <div class="grid grid-cols-1 gap-2">
-                            <button 
-                                v-for="dir in availableDirections"
-                                :key="dir.value"
-                                @click="setDirectionAndBuy(dir.value)" 
-                                :disabled="isTrading || activeContract || (digitType === dir.value && !currentProposalId) || (digitType !== dir.value && isLoadingProposal)"
-                                :class="[
-                                    dir.value.includes('DIFF') || dir.value.includes('PUT') || dir.value.includes('ODD') || dir.value.includes('UNDER') || dir.value.includes('FALL')
-                                        ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20 text-white' 
-                                        : 'bg-zenix-green hover:bg-zenix-green/90 shadow-zenix-green/20 text-black',
-                                    { 'opacity-30 cursor-not-allowed': isTrading || activeContract || (digitType !== dir.value && isLoadingProposal) }
-                                ]"
-                                class="flex-1 font-black py-4 rounded-xl transition-all duration-300 shadow-lg uppercase tracking-widest text-sm"
-                            >
-                                {{ dir.label }}
-                            </button>
-
+                        <div class="text-xs text-zenix-secondary mb-2">Último dígito: <span class="text-zenix-green font-bold">{{ lastDigit }}</span> ({{ lastDigitParity }})</div>
+                    </div>
+                    
+                    <!-- Real-time P&L -->
+                    <div v-if="realTimeProfit !== null && activeContract" class="w-full bg-zenix-bg border rounded-lg p-3 shadow-lg transition-all duration-300 transform hover:scale-[1.02]" :class="realTimeProfitClass">
+                        <div class="text-[10px] uppercase font-bold text-zenix-secondary mb-1 tracking-wider">Lucro Atual (Estimado):</div>
+                        <div class="text-lg font-black flex items-center gap-2" :class="realTimeProfitTextClass">
+                            <i :class="realTimeProfit >= 0 ? 'fas fa-trending-up' : 'fas fa-trending-down'"></i>
+                            $ {{ realTimeProfit >= 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}
                         </div>
                     </div>
+                    
+                    <!-- Ticks Restantes -->
+                    <div v-if="activeContract && contractTicksRemaining !== null" class="w-full bg-zenix-bg border border-zenix-border rounded-lg p-3 relative overflow-hidden group">
+                        <div class="absolute top-0 left-0 h-1 bg-zenix-green/30 transition-all duration-1000" :style="{ width: (100 - (contractTicksRemaining / (activeContract.duration || duration) * 100)) + '%' }"></div>
+                        
+                        <div class="text-[10px] uppercase font-bold text-zenix-secondary mb-1 tracking-wider flex items-center justify-between">
+                            <span>Ticks Restantes:</span>
+                            <i class="fas fa-history text-xs"></i>
+                        </div>
+                        <div class="text-xl font-black text-zenix-text flex items-baseline gap-1" :class="getCountdownClass">
+                            <span>{{ contractTicksRemaining }}</span>
+                            <span class="text-[10px] text-zenix-secondary font-medium ml-1">RESTANTES</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="pt-3">
+                        <template v-if="!activeContract">
+                            <!-- Manual Mode Buttons -->
+                            <div v-if="tradingMode === 'manual'" class="grid grid-cols-1 gap-3">
+                                <button 
+                                    v-for="dir in availableDirections"
+                                    :key="dir.value"
+                                    @click="executeTradeWithDirection(dir.value)"
+                                    :disabled="!canExecuteOrder"
+                                    :class="[
+                                        getDirectionButtonClass(dir.value),
+                                        'font-bold py-4 rounded-xl transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
+                                    ]"
+                                >
+                                    <i :class="getDirectionIcon(dir.value)"></i>
+                                    {{ dir.label }}
+                                </button>
+                            </div>
+                            
+                            <!-- AI Mode Display & Button -->
+                            <div v-else class="space-y-4">
+                                <!-- AI Signal Info -->
+                                <div class="w-full bg-zenix-green/5 border border-zenix-green/20 rounded-xl p-5 text-center transition-all duration-300 relative overflow-hidden group flex flex-col items-center justify-center">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div class="flex flex-col items-center gap-2 relative z-10 w-full">
+                                        <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Sinal da IA</span>
+                                        <div v-if="aiRecommendation" class="flex flex-col items-center gap-1">
+                                            <div class="flex items-center gap-3">
+                                                <i :class="getButtonIcon(aiRecommendation.action) + ' ' + getButtonColor(aiRecommendation.action) + ' text-2xl'"></i>
+                                                <span :class="getButtonColor(aiRecommendation.action)" class="text-xl font-black">
+                                                    {{ getButtonLabel(aiRecommendation.action) }}
+                                                </span>
+                                            </div>
+                                            <span class="text-[10px] text-white/60 font-bold tracking-wider">{{ aiRecommendation.confidence }}% CONFIABILIDADE</span>
+                                        </div>
+                                        <div v-else class="flex flex-col items-center gap-2 py-2">
+                                            <button 
+                                                @click="toggleAnalysis"
+                                                :disabled="isAnalyzing"
+                                                class="flex flex-col items-center gap-2 group hover:scale-105 transition-transform"
+                                            >
+                                                <div class="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center bg-white/5 group-hover:bg-zenix-green/10 group-hover:border-zenix-green/30 transition-all relative" :class="{ 'animate-pulse': isAnalyzing }">
+                                                    <i class="fas fa-robot text-xl" :class="isAnalyzing ? 'text-zenix-green' : 'text-white/20'"></i>
+                                                    <div v-if="isAnalyzing" class="absolute inset-0 rounded-full border border-zenix-green/50 animate-ping"></div>
+                                                </div>
+                                                <div class="flex flex-col items-center">
+                                                    <span class="text-xs font-bold transition-colors" :class="isAnalyzing ? 'text-zenix-green' : 'text-white/40 group-hover:text-white/60 uppercase tracking-tighter'">
+                                                        {{ isAnalyzing ? 'Analisando...' : 'Gerar Sinal de IA' }}
+                                                    </span>
+                                                    <span v-if="!isAnalyzing" class="text-[9px] text-white/20 uppercase tracking-widest font-medium">Toque para iniciar</span>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
 
-                    <div v-if="tradeMessage || tradeError" class="mt-2">
-                        <p v-if="tradeMessage" class="text-xs font-bold text-zenix-green text-center uppercase tracking-wider">{{ tradeMessage }}</p>
-                        <p v-if="tradeError" class="text-xs font-bold text-red-500 text-center uppercase tracking-wider">{{ tradeError }}</p>
+                                <!-- Timer Section -->
+                                <div v-if="signalCountdown !== null" class="flex flex-col items-center justify-center p-4 bg-[#080808] border border-white/5 rounded-xl relative overflow-hidden">
+                                    <div class="absolute bottom-0 left-0 h-0.5 bg-zenix-green transition-all duration-1000" :style="{ width: (signalCountdown / (aiRecommendation?.entry_time || 1) * 100) + '%' }"></div>
+                                    <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Janela de Entrada</span>
+                                    <span class="text-3xl font-black text-zenix-green tabular-nums leading-none">{{ signalCountdown }}s</span>
+                                </div>
+
+                                <!-- AI Execute Button -->
+                                <button 
+                                    @click="executeAIOrder"
+                                    :disabled="!canExecuteAIOrder"
+                                    class="w-full bg-zenix-green hover:bg-zenix-green-hover text-black font-bold py-5 rounded-xl transition-all text-base flex flex-col items-center justify-center gap-1 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed shadow-[0_0_20px_rgba(34,197,94,0.2)] active:scale-95"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-bolt"></i>
+                                        <span class="tracking-tighter">EXECUTAR OPERAÇÃO</span>
+                                    </div>
+                                    <span v-if="aiRecommendation" class="text-[10px] opacity-70 font-bold uppercase tracking-widest">Seguir inteligência artificial</span>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                    
+                    <!-- Error/Success Messages -->
+                    <div v-if="tradeError" class="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
+                        {{ tradeError }}
                     </div>
                 </div>
             </div>
@@ -533,6 +647,7 @@ export default {
             duration: 5,
             orderValue: 10,
             isTrading: false,
+            tradingMode: 'manual', // 'manual' ou 'ai'
             currentProposal: null,
             proposalSubscriptionId: null,
             contractSubscriptionId: null,
@@ -559,6 +674,10 @@ export default {
             finalEntrySpot: null,
             finalExitSpot: null,
 
+            // Configuração de Ordem
+            amount: 10,
+            multiplier: 100,
+            durationUnit: 't',
             
             isAnalyzing: false,
             aiRecommendation: null,
@@ -566,6 +685,7 @@ export default {
             signalCountdown: null,
             signalCountdownInterval: null,
             isSimulated: false,
+            collectedTicks: [],
         }
     },
     computed: {
@@ -598,6 +718,71 @@ export default {
                 if (item) return item.directions;
             }
             return [];
+        },
+        selectedTradeTypeGroupLabel() {
+          for (const cat of this.digitTradeTypeCategories) {
+            const item = cat.items.find(i => i.value === this.selectedTradeTypeGroup);
+            if (item) return item.label;
+          }
+          return 'Selecionar Tipo';
+        },
+        showDigitsPredictionCard() {
+          const excludedTypes = ['DIGITEVEN', 'DIGITODD'];
+          return ['DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(this.digitType) && !excludedTypes.includes(this.digitType) && this.latestTick && this.tradingMode !== 'ai';
+        },
+        canExecuteOrder() {
+          return this.symbol && this.duration && this.orderValue && !this.isTrading && !this.activeContract;
+        },
+        isTickBasedContract() {
+          return this.activeContract && (this.activeContract.duration_unit === 't' || this.durationUnit === 't');
+        },
+        confidenceClass() {
+          if (!this.aiRecommendation || this.aiRecommendation.confidence === null || this.aiRecommendation.confidence === undefined) {
+            return 'confidence-low';
+          }
+          const confidence = Number(this.aiRecommendation.confidence);
+          if (isNaN(confidence)) return 'confidence-low';
+          if (confidence >= 70) return 'confidence-high';
+          if (confidence >= 50) return 'confidence-medium';
+          return 'confidence-low';
+        },
+        confidenceValue() {
+          if (!this.aiRecommendation || this.aiRecommendation.confidence === null || this.aiRecommendation.confidence === undefined) {
+            return 0;
+          }
+          return Number(this.aiRecommendation.confidence) || 0;
+        },
+        canExecuteAIOrder() {
+          return this.aiRecommendation && this.canExecuteOrder;
+        },
+        realTimeProfitClass() {
+          if (this.realTimeProfit === null) return '';
+          return this.realTimeProfit >= 0 ? 'border-zenix-green/30 bg-zenix-green/5' : 'border-red-500/30 bg-red-500/5';
+        },
+        realTimeProfitTextClass() {
+          if (this.realTimeProfit === null) return '';
+          return this.realTimeProfit >= 0 ? 'text-zenix-green' : 'text-red-500';
+        },
+        getCountdownClass() {
+          if (this.isTickBasedContract) {
+            if (this.contractTicksRemaining === null) return '';
+            if (this.contractTicksRemaining <= 2) return 'text-red-500 scale-110';
+            return 'text-white';
+          } else {
+            if (this.contractTimeRemaining === null) return '';
+            if (this.contractTimeRemaining <= 10) return 'text-red-500 scale-110';
+            return 'text-white';
+          }
+        },
+        lastDigit() {
+          if (!this.latestTick) return '-';
+          const val = Number(this.latestTick.value);
+          const valStr = val.toFixed(this.pricePrecision || 2);
+          return valStr.charAt(valStr.length - 1);
+        },
+        lastDigitParity() {
+          if (this.lastDigit === '-') return '-';
+          return parseInt(this.lastDigit) % 2 === 0 ? 'PAR' : 'ÍMPAR';
         },
         marketsByCategory() {
             const grouped = {};
@@ -983,173 +1168,7 @@ export default {
                 percentage: total > 0 ? (c / total) * 100 : 0
             }));
         },
-        toggleAnalysis() {
-            if (this.isAnalyzing) {
-                this.stopAnalysis();
-            } else {
-                this.startAnalysis();
-            }
-        },
-        async startAnalysis() {
-            if (!this.symbol) return;
-            
-            this.isAnalyzing = true;
-            this.aiRecommendation = null;
-            this.signalCountdown = null;
-            
-            // Gerar apenas um sinal manual por clique (Sincronizado com Gráfico)
-            await this.generateSignal();
-            
-            // Feedback visual: mantém "analisando" por 1s se for muito rápido
-            setTimeout(() => {
-                this.isAnalyzing = false;
-            }, 1000);
-        },
-        executeAIOrder() {
-            if (!this.aiRecommendation) return;
-            
-            // Se a recomendação incluir uma barreira (ex: para Match/Diff/Over/Under), usar ela
-            if (this.aiRecommendation.barrier !== undefined && this.aiRecommendation.barrier !== null) {
-                this.digitBarrier = String(this.aiRecommendation.barrier);
-            }
-            
-            console.log('[OperationDigits] Executar AI Order:', this.aiRecommendation.action, 'Barrier:', this.digitBarrier);
-            this.setDirectionAndBuy(this.aiRecommendation.action);
-        },
-        getButtonLabel(type) {
-            const labels = {
-                'CALL': 'CALL', 'PUT': 'PUT',
-                'CALLE': 'CALL (Equal)', 'PUTE': 'PUT (Equal)',
-                'DIGITMATCH': 'IGUAL', 'DIGITDIFF': 'DIFERENTE',
-                'DIGITEVEN': 'PAR', 'DIGITODD': 'ÍMPAR',
-                'DIGITOVER': 'SUPERIOR', 'DIGITUNDER': 'INFERIOR',
-                'ONETOUCH': 'TOCA', 'NOTOUCH': 'NÃO TOCA',
-                'MULTUP': 'ALTA', 'MULTDOWN': 'BAIXA'
-            };
-            return labels[type] || type;
-        },
-        getButtonIcon(type) {
-            const icons = {
-                'CALL': 'fas fa-arrow-up', 'PUT': 'fas fa-arrow-down',
-                'CALLE': 'fas fa-arrow-up-right-dots', 'PUTE': 'fas fa-arrow-down-right-dots',
-                'DIGITMATCH': 'fas fa-equals', 'DIGITDIFF': 'fas fa-not-equal',
-                'DIGITEVEN': 'fas fa-divide', 'DIGITODD': 'fas fa-percent',
-                'DIGITOVER': 'fas fa-greater-than', 'DIGITUNDER': 'fas fa-less-than',
-                'MULTUP': 'fas fa-chart-line', 'MULTDOWN': 'fas fa-chart-line'
-            };
-            return icons[type] || 'fas fa-bolt';
-        },
-        getButtonColor(type) {
-            const greens = ['CALL', 'CALLE', 'DIGITMATCH', 'DIGITEVEN', 'DIGITOVER', 'ONETOUCH', 'MULTUP', 'RISE'];
-            return greens.includes(type) ? 'text-zenix-green' : 'text-red-500';
-        },    
-        stopAnalysis() {
-            this.isAnalyzing = false;
-            if (this.analysisTimer) {
-                clearInterval(this.analysisTimer);
-                this.analysisTimer = null;
-            }
-            this.stopSignalCountdown();
-            this.aiRecommendation = null;
-        },
-        startSignalCountdown(seconds) {
-            if (this.signalCountdownInterval) {
-                clearInterval(this.signalCountdownInterval);
-            }
-            
-            this.signalCountdown = seconds;
-            
-            this.signalCountdownInterval = setInterval(() => {
-                if (this.signalCountdown > 0) {
-                    this.signalCountdown--;
-                } else {
-                    this.stopSignalCountdown();
-                }
-            }, 1000);
-        },
-        stopSignalCountdown() {
-            if (this.signalCountdownInterval) {
-                clearInterval(this.signalCountdownInterval);
-                this.signalCountdownInterval = null;
-            }
-            this.signalCountdown = null;
-        },
-        async generateSignal() {
-            if (!this.symbol) return;
 
-            try {
-                // Sincronizar formato de ticks com OperationChart (últimos 50 ticks)
-                const last50Ticks = this.ticks.slice(-50).map(tick => ({
-                    value: Number(tick.value),
-                    epoch: Number(tick.epoch)
-                }));
-
-                if (last50Ticks.length === 0) {
-                    console.warn('[OperationDigits] Nenhum tick disponível para análise do Gemini');
-                    return;
-                }
-
-                const authToken = localStorage.getItem('token');
-                if (!authToken) {
-                    throw new Error('Token de autenticação não encontrado');
-                }
-
-                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-                
-                console.log('[OperationDigits] Solicitando recomendação Gemini para', this.symbol);
-                
-                const response = await fetch(`${apiBaseUrl}/gemini/recommendation`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        ticks: last50Ticks,
-                        symbol: this.symbol,
-                        tradeType: this.digitType,
-                        duration: Number(this.duration),
-                        durationUnit: 't',
-                        amount: Number(this.orderValue),
-                    }),
-                });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || 'Erro ao obter recomendação Gemini');
-                }
-
-                const recommendation = await response.json();
-                console.log('[OperationDigits] Recomendação Gemini recebida:', recommendation);
-
-                // Garantir que a estrutura de retorno seja compatível com o template
-                let confidenceValue = 50;
-                if (recommendation.confidence !== undefined) {
-                    confidenceValue = Number(recommendation.confidence);
-                }
-
-                this.aiRecommendation = {
-                    action: recommendation.action || 'AGUARDAR',
-                    confidence: confidenceValue,
-                    reason: recommendation.reasoning || recommendation.reason || '',
-                    entry_time: recommendation.entry_time || 0,
-                    barrier: recommendation.barrier
-                };
-
-                // Iniciar contagem regressiva se o Gemini sugerir um tempo de entrada
-                if (this.aiRecommendation.entry_time > 0) {
-                    this.startSignalCountdown(this.aiRecommendation.entry_time);
-                }
-
-            } catch (error) {
-                console.error('[OperationDigits] Erro na análise Gemini:', error);
-                this.aiRecommendation = {
-                    action: 'ERRO',
-                    reason: 'Falha na conexão com a IA',
-                    confidence: 0
-                };
-            }
-        },
         getHistogramBarClass(digit, percentage, frequencies) {
             if (!frequencies || frequencies.length === 0) return '';
             
@@ -1775,6 +1794,166 @@ export default {
             setTimeout(() => {
                 this.subscribeToProposal();
             }, 500);
+        },
+        toggleAnalysis() {
+            if (this.isAnalyzing) {
+                this.stopAnalysis();
+            } else {
+                this.startAnalysis();
+            }
+        },
+        async startAnalysis() {
+            if (!this.symbol) return;
+            
+            this.isAnalyzing = true;
+            this.aiRecommendation = null;
+            this.signalCountdown = null;
+            
+            await this.analyzeChart();
+            
+            setTimeout(() => {
+                this.isAnalyzing = false;
+            }, 1000);
+        },
+        stopAnalysis() {
+            this.isAnalyzing = false;
+            this.stopSignalCountdown();
+            this.collectedTicks = [];
+            this.aiRecommendation = null;
+        },
+        async analyzeChart() {
+            if (!this.isAnalyzing || !this.symbol) return;
+            
+            try {
+                let ticksToAnalyze = [];
+                if (this.ticks && this.ticks.length > 0) {
+                    ticksToAnalyze = this.ticks.slice(-50).map(t => ({
+                        value: Number(t.value),
+                        epoch: Number(t.epoch)
+                    }));
+                }
+
+                if (ticksToAnalyze.length < 50) {
+                    try {
+                        const response = await derivTradingService.getTicks(this.symbol);
+                        if (response && response.ticks) {
+                            ticksToAnalyze = response.ticks.slice(-50).map(t => ({
+                                value: Number(t.value),
+                                epoch: Number(t.epoch)
+                            }));
+                        }
+                    } catch (e) { console.error(e); }
+                }
+
+                if (ticksToAnalyze.length === 0) return;
+
+                const authToken = localStorage.getItem('token');
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                
+                const response = await fetch(`${apiBaseUrl}/gemini/recommendation`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ticks: ticksToAnalyze,
+                        symbol: this.symbol,
+                        tradeType: this.digitType,
+                        duration: this.duration,
+                        durationUnit: 't',
+                        amount: this.orderValue,
+                        multiplier: this.multiplier || 100
+                    }),
+                });
+
+                if (!response.ok) throw new Error('Erro na recomendação');
+                
+                const data = await response.json();
+                this.aiRecommendation = {
+                    action: data.action || 'CALL',
+                    confidence: data.confidence || 50,
+                    reasoning: data.reasoning || '',
+                    entry_time: data.entry_time || 0,
+                    barrier: data.barrier
+                };
+
+                if (this.aiRecommendation.entry_time > 0) {
+                    this.startSignalCountdown(this.aiRecommendation.entry_time);
+                }
+            } catch (error) {
+                console.error('[OperationDigits] Erro na análise:', error);
+                this.aiRecommendation = null;
+            }
+        },
+        startSignalCountdown(seconds) {
+            this.stopSignalCountdown();
+            this.signalCountdown = seconds;
+            this.signalCountdownInterval = setInterval(() => {
+                if (this.signalCountdown > 0) {
+                    this.signalCountdown--;
+                } else {
+                    this.stopSignalCountdown();
+                }
+            }, 1000);
+        },
+        stopSignalCountdown() {
+            if (this.signalCountdownInterval) {
+                clearInterval(this.signalCountdownInterval);
+                this.signalCountdownInterval = null;
+            }
+            this.signalCountdown = null;
+        },
+        executeAIOrder() {
+            if (!this.aiRecommendation) return;
+            if (this.aiRecommendation.barrier !== undefined && this.aiRecommendation.barrier !== null) {
+                this.digitBarrier = String(this.aiRecommendation.barrier);
+            }
+            this.executeTradeWithDirection(this.aiRecommendation.action);
+        },
+        executeTradeWithDirection(direction) {
+            this.setDirectionAndBuy(direction);
+        },
+        getDirectionButtonClass(direction) {
+            const isRed = direction.includes('DIFF') || direction.includes('PUT') || direction.includes('ODD') || direction.includes('UNDER') || direction.includes('FALL');
+            if (isRed) return 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/20';
+            return 'bg-zenix-green hover:bg-zenix-green-hover text-black shadow-zenix-green/30';
+        },
+        getDirectionIcon(direction) {
+            if (direction.includes('CALL') || direction.includes('RISE') || direction.includes('OVER')) return 'fas fa-arrow-up';
+            if (direction.includes('PUT') || direction.includes('FALL') || direction.includes('UNDER')) return 'fas fa-arrow-down';
+            if (direction.includes('MATCH')) return 'fas fa-equals';
+            if (direction.includes('DIFF')) return 'fas fa-not-equal';
+            if (direction.includes('EVEN')) return 'fas fa-divide';
+            if (direction.includes('ODD')) return 'fas fa-percent';
+            return 'fas fa-play';
+        },
+        getButtonIcon(type) {
+            const icons = {
+                'DIGITMATCH': 'fas fa-equals', 'DIGITDIFF': 'fas fa-not-equal',
+                'DIGITEVEN': 'fas fa-divide', 'DIGITODD': 'fas fa-percent',
+                'DIGITOVER': 'fas fa-greater-than', 'DIGITUNDER': 'fas fa-less-than',
+                'CALL': 'fas fa-arrow-up', 'PUT': 'fas fa-arrow-down'
+            };
+            return icons[type] || 'fas fa-bolt';
+        },
+        getButtonColor(type) {
+            const greens = ['CALL', 'DIGITMATCH', 'DIGITEVEN', 'DIGITOVER', 'RISE'];
+            return greens.includes(type) ? 'text-zenix-green' : 'text-red-500';
+        },
+        getButtonLabel(type) {
+            const labels = {
+                'DIGITMATCH': 'Combina', 'DIGITDIFF': 'Difere',
+                'DIGITEVEN': 'Par', 'DIGITODD': 'Ímpar',
+                'DIGITOVER': 'Superior', 'DIGITUNDER': 'Inferior',
+                'CALL': 'Sobe', 'PUT': 'Desce'
+            };
+            return labels[type] || type;
+        },
+        formatTimeRemaining(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
         },
         async getTokenForAccount() {
             // Tentar obter do backend a fonte da verdade (baseado em user_settings.trade_currency)
