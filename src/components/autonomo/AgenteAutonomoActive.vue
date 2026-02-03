@@ -1918,7 +1918,7 @@
 			},
 			goToConfiguration() {
 				// Navigate to configuration page
-				this.$router.push('/autonomous-agent/config');
+				this.$router.push('/agente-autonomo');
 				this.showAgentSwitcher = false;
 			},
             

@@ -263,21 +263,23 @@
                         <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Histórico Recente</h3>
                         <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
                             <i class="far fa-clock text-[10px] text-white/40"></i>
-                            <span class="text-[10px] font-bold text-white/60">Últimos 15</span>
+                            <span class="text-[10px] font-bold text-white/60">Últimos 14</span>
                         </div>
+
                     </div>
                     
                     <div class="flex flex-wrap md:flex-nowrap gap-2 justify-start">
                         <div 
-                            v-for="(digit, index) in recentDigits.slice(0, 15)" 
+                            v-for="(digit, index) in recentDigits.slice(0, 14)" 
                             :key="'recent-'+index"
                             class="h-10 w-10 md:h-12 md:w-12 bg-[#080808] border border-white/5 rounded-xl flex items-center justify-center font-black text-lg transition-all duration-300 flex-shrink-0"
                             :class="[
-                                index === 0 ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/50 shadow-[0_0_15px_#22C55E33]' : 'text-white/40'
+                                index === (recentDigits.slice(0, 14).length - 1) ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/50 shadow-[0_0_15px_#22C55E33]' : 'text-white/40'
                             ]"
                         >
                             {{ digit }}
                         </div>
+
                         <div v-if="recentDigits.length === 0" class="text-white/20 text-xs italic tracking-widest py-2 w-full text-left ml-2">Sincronizando dados...</div>
                     </div>
                 </div>
@@ -563,6 +565,7 @@ export default {
             analysisTimer: null,
             signalCountdown: null,
             signalCountdownInterval: null,
+            isSimulated: false,
         }
     },
     computed: {
@@ -793,8 +796,9 @@ export default {
         // Histórico Recente de Dígitos
         recentDigits() {
             if (!this.digitFrequency || !this.digitFrequency.digits) return [];
-            return this.digitFrequency.digits.slice(-15).reverse();
+            return this.digitFrequency.digits.slice(-14);
         },
+
         // Estatísticas de dígitos com Z-score
         digitFrequenciesWithStats() {
             const totalDigits = this.digitFrequency.digits.length;
@@ -1406,6 +1410,14 @@ export default {
             
             const prices = history.prices.map(price => Number(price));
             const times = history.times?.map(time => Number(time)) || [];
+            
+            // Se estiver usando dados simulados, limpar antes de adicionar dados reais
+            if (this.isSimulated) {
+                this.digits = []; // Limpar array local se estiver usando
+                this.digitFrequency.digits = []; // Limpar array de frequência
+                this.isSimulated = false;
+            }
+
             this.ticks = prices.map((value, index) => ({ value, epoch: times[index] || index }));
             
             if (msg.subscription?.id) {
@@ -1428,6 +1440,13 @@ export default {
             const value = Number(tick.quote);
             if (isNaN(value)) {
                 return;
+            }
+            
+            // Se ainda estiver com dados simulados e receber um tick, limpar tudo primeiro
+            if (this.isSimulated) {
+                this.ticks = [];
+                this.digitFrequency.digits = [];
+                this.isSimulated = false;
             }
             
             this.latestTick = { value, epoch: tick.epoch };
@@ -1813,11 +1832,28 @@ export default {
         },
         simulateInitialData() {
             console.log('[OperationDigits] Simulando histórico inicial para demonstração');
-            const simulatedDigits = [];
+            this.isSimulated = true;
+            const simulatedTicks = [];
+            const now = Math.floor(Date.now() / 1000);
+            
+            // Gerar 100 ticks simulados para que calculateDigitFrequency funcione
             for (let i = 0; i < 100; i++) {
-                simulatedDigits.push(Math.floor(Math.random() * 10));
+                const randomDigit = Math.floor(Math.random() * 10);
+                // Criar um valor fake onde o último dígito é o randomDigit (ex: 1234.5)
+
+
+                // Ajustar para terminar com o dígito desejado
+                // Na verdade, mais fácil apenas gerar um valor inteiro terminado no digito
+                const tickValue = 1000 + (i * 10) + randomDigit; 
+
+                simulatedTicks.push({
+                    value: tickValue,
+                    epoch: now - (100 - i)
+                });
             }
-            this.digitFrequency.digits = simulatedDigits;
+            
+            this.ticks = simulatedTicks;
+            this.calculateDigitFrequency(); 
         },
     },
     mounted() {
@@ -1825,6 +1861,10 @@ export default {
         if (this.orderConfig && this.orderConfig.value !== undefined) {
             this.orderValue = Number(this.orderConfig.value);
         }
+        
+        // Iniciar com dados simulados para evitar gráfico vazio (0%)
+        this.simulateInitialData();
+        
         // Inicialização da conexão Deriv
         this.initConnection();
     },

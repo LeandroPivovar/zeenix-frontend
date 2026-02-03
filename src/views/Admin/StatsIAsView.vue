@@ -1397,7 +1397,7 @@ export default {
 			mode: this.tradingConfig.mode
 		};
 		localStorage.setItem('ai_active_config', JSON.stringify(config));
-		this.$router.push('/StatsIAs/monitoring');
+		this.$router.push('/adminStatsIAs/monitoring');
 	},
 
 	async stopAutomatedTrading() {

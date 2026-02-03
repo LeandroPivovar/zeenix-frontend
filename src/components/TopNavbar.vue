@@ -1,9 +1,9 @@
 <template>
   <nav 
     id="top-navbar" 
-    class="fixed top-0 left-0 w-full h-[60px] z-[1000] mobile-header" 
+    class="fixed top-0 left-0 w-full h-[60px] z-[1000]" 
     :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
-    style="background: transparent !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border-bottom: none;"
+    :style="navStyle"
   >
     <!-- Desktop Layout -->
     <div v-if="!isMobile" class="h-full flex items-center justify-end desktop-nav">
@@ -257,6 +257,10 @@ export default {
       type: Boolean,
       default: false
     },
+    isDashboard: {
+      type: Boolean,
+      default: false
+    },
     balance: {
       type: [Number, String, Object],
       default: 0
@@ -437,6 +441,16 @@ export default {
       const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
       const baseUrl = apiBaseUrl.replace(/\/api$/, '');
       return `${baseUrl}${this.userProfilePictureUrl}`;
+    },
+    navStyle() {
+      return {
+        background: this.isDashboard ? '#000000 !important' : 'rgba(11, 11, 11, 0.8) !important',
+        backdropFilter: 'blur(20px)',
+        webkitBackdropFilter: 'blur(20px)',
+        padding: '0',
+        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+        borderBottom: 'none'
+      }
     }
   },
   watch: {
@@ -1157,25 +1171,9 @@ export default {
 <style scoped>
 /* Top Navbar Styles */
 #top-navbar {
-  background: #0B0B0B !important;
-  box-shadow: none;
-  backdrop-filter: blur(12px);
+  /* The base styles are now handled by navStyle computed property */
   animation: fadeInSlide 0.35s ease-out;
   transition: left 0.3s ease, width 0.3s ease;
-  border-bottom: none;
-  padding: 0 !important;
-}
-
-/* Mobile Header - Borda roxa no topo */
-.mobile-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: #9333EA;
-  z-index: 1;
 }
 
 /* Desktop e Mobile Layouts */

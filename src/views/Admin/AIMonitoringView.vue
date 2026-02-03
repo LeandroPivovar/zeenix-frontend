@@ -79,9 +79,9 @@
                                    :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
                                     {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
                                 </p>
-                                <span class="text-xs lg:text-lg font-semibold px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
-                                      :class="monitoringStats.profit >= 0 ? 'text-success/80 bg-success/10' : 'text-red-500/80 bg-red-500/10'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.initialBalance || 1)) * 100).toFixed(1) }}%
+                                <span class="text-xs lg:text-lg font-semibold px-2 py-0.5 rounded-lg border hidden md:inline"
+                                      :class="monitoringStats.profit >= 0 ? 'text-success/90 bg-success/10 border-success/20' : 'text-red-500/90 bg-red-500/10 border-red-500/20'">
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.initialBalance || 1)) * 100).toFixed(3) }}%
                                 </span>
                             </div>
                             <div class="mt-2 lg:mt-3 h-1 w-[100px] mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
@@ -107,74 +107,30 @@
                                     <span class="text-[10px] lg:text-xs text-muted-foreground block">Loss</span>
                                 </div>
                                 <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
-                                <div class="text-center">
-                                    <span class="font-semibold text-success/90" style="font-size: 1.25rem; line-height: 1.75rem; background: #8080800f; padding: 0.2rem 0.3rem; border-radius: 8px;">
+                                <div class="bg-white/5 rounded-xl px-2.5 py-1.5 flex flex-col items-center">
+                                    <span class="text-lg lg:text-xl font-bold text-success/90 leading-none">
                                         {{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%
                                     </span>
-                                    <span class="text-[10px] lg:text-xs text-muted-foreground block">WR</span>
+                                    <span class="text-[8px] lg:text-[10px] text-muted-foreground font-black uppercase tracking-tighter mt-0.5">WR</span>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Mobile Pause Button (Inside Card) -->
+                        <div v-if="isMobile" class="col-span-2 mt-4">
+                            <button @click="stopIA" :disabled="isStopping" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
+                                {{ isStopping ? 'Parando...' : 'Pausar IA' }}
+                            </button>
+                        </div>
+
                     </div>
                 </div>
+
+
+
 
                 <!-- Mobile Configuration Cards Stack (Visible only on Mobile) -->
-                <div v-if="isMobile" class="mt-4 flex flex-col gap-3 w-full">
 
-                    <!-- Mobile Pause Button -->
-                    <button @click="stopIA" :disabled="isStopping" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
-                        {{ isStopping ? 'Parando...' : 'Pausar IA' }}
-                    </button>
-
-                    <!-- Card 1: AI Identity -->
-                    <div class="p-4 bg-secondary/40 rounded-2xl border border-border/40 flex items-center gap-4 w-full">
-                        <div class="w-14 h-14 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path></svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-black text-foreground tracking-wide uppercase">Configuração Ativa</h3>
-                            <p class="text-xs text-muted-foreground">Resumo</p>
-                        </div>
-                    </div>
-
-                    <!-- Card 2: Strategy Mode -->
-                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
-                                <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Modo</span>
-                            </div>
-                            <span class="text-sm font-black text-foreground uppercase tracking-wider">{{ currentConfig.mode }}</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-                                <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Gestão</span>
-                            </div>
-                            <span class="text-sm font-black text-foreground uppercase tracking-wider">{{ currentConfig.modoMartingale || 'Moderado' }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Card 3: Parameters -->
-                    <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Entrada</span>
-                            <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ currentConfig.stake.toFixed(2).replace('.', ',') }}</span>
-                        </div>
-                        <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
-                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Alvo</span>
-                            <span class="text-sm font-black text-success tracking-wider">{{ currencySymbol }}{{ (currentConfig.profitTarget || 0).toFixed(2).replace('.', ',') }}</span>
-                        </div>
-                        <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
-                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Limite</span>
-                            <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ (currentConfig.lossLimit || 0).toFixed(2).replace('.', ',') }}</span>
-                        </div>
-                        <div class="flex items-center justify-between pt-1 mt-1">
-                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Stop Blindado</span>
-                            <span class="text-xs font-black uppercase tracking-widest" :class="currentConfig.stoplossBlindado ? 'text-success' : 'text-muted-foreground'">{{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}</span>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Main Content Layout (70/30 Split on Desktop, stack on Mobile) -->
                 <div class="mt-4 md:mt-6 lg:mt-8 flex flex-col lg:flex-row gap-4 lg:gap-6 w-full flex-1">
@@ -183,6 +139,9 @@
                         <div class="w-full flex-1 flex flex-col">
                             <!-- Custom Tabs -->
                             <div class="flex items-center justify-start text-muted-foreground border-b border-border mb-6 gap-6 h-auto p-0">
+                                <button v-if="isMobile" @click="activeMonitoringTab = 'config'" :class="{ 'border-success text-success': activeMonitoringTab === 'config' }" class="inline-flex items-center justify-center py-1.5 text-sm font-medium border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-foreground">
+                                    Config
+                                </button>
                                 <button @click="activeMonitoringTab = 'chart'" :class="{ 'border-success text-success': activeMonitoringTab === 'chart' }" class="inline-flex items-center justify-center py-1.5 text-sm font-medium border-b-2 border-transparent px-0 pb-3 transition-colors hover:text-foreground">
                                     Gráfico
                                 </button>
@@ -194,7 +153,69 @@
                                 </button>
                             </div>
 
+                            <!-- Config Tab (Mobile Only) -->
+                            <div v-show="activeMonitoringTab === 'config' && isMobile" class="animate-fadeIn flex-1 flex flex-col space-y-4">
+                                <!-- Card 1: AI Identity -->
+
+                                <div class="p-4 bg-secondary/40 rounded-2xl border border-border/40 flex items-center gap-4 w-full">
+                                    <div class="w-14 h-14 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path></svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-black text-foreground tracking-wide uppercase">Configuração Ativa</h3>
+                                        <p class="text-xs text-muted-foreground">Resumo</p>
+                                    </div>
+                                </div>
+
+                                <!-- Card 2: Strategy Mode -->
+                                <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path></svg>
+                                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Modo</span>
+                                        </div>
+                                        <span class="text-sm font-black text-foreground uppercase tracking-wider">{{ currentConfig.mode }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                                            <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Gestão</span>
+                                        </div>
+                                        <span class="text-sm font-black text-foreground uppercase tracking-wider">{{ currentConfig.modoMartingale || 'Moderado' }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Card 3: Parameters -->
+                                <div class="p-5 bg-secondary/40 rounded-2xl border border-border/40 space-y-4 w-full">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Entrada</span>
+                                        <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ currentConfig.stake.toFixed(2).replace('.', ',') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
+                                        <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Alvo</span>
+                                        <span class="text-sm font-black text-success tracking-wider">{{ currencySymbol }}{{ (currentConfig.profitTarget || 0).toFixed(2).replace('.', ',') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-1 border-t border-border/10 mt-1">
+                                        <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Limite</span>
+                                        <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ (currentConfig.lossLimit || 0).toFixed(2).replace('.', ',') }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-1 mt-1">
+                                        <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Stop Blindado</span>
+                                        <span class="text-xs font-black uppercase tracking-widest" :class="currentConfig.stoplossBlindado ? 'text-success' : 'text-muted-foreground'">{{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- IA EM FUNCIONAMENTO / Footer (Mobile) -->
+                                <div class="mt-2 mb-4 px-1">
+                                    <h4 class="text-[14px] font-bold text-[#D4D4D4] uppercase mb-1 text-left">IA Em Funcionamento</h4>
+                                    <p class="text-[12px] text-[#AAAAAA] leading-snug text-left">
+                                        Monitorando o mercado e executando apenas quando há vantagem estatística.
+                                    </p>
+                                </div>
+                            </div>
+
                             <!-- Chart Tab -->
+
                             <div v-show="activeMonitoringTab === 'chart'" class="space-y-6 animate-fadeIn flex-1 flex flex-col">
                                     <div class="flex items-center justify-between">
                                         <div>
@@ -225,21 +246,22 @@
                                     <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
                                         <div class="relative w-full h-[320px]">
                                      <LineChart 
-                                        v-if="activeChartMode === 'profit'"
+                                        v-show="activeChartMode === 'profit'"
                                         chartId="monitoring-profit-chart" 
-                                        :data="profitHistory" 
+                                        :data="formattedProfitHistory" 
                                         :height="320"
                                         color="#22C55E"
-                                        :currency-symbol="profitCurrencySymbol"
+                                        :currency-symbol="currencySymbol"
                                     />
                                     <div 
-                                        v-else
+                                        v-show="activeChartMode === 'tick'"
                                         ref="chartContainer"
                                         class="w-full h-[320px] rounded-lg overflow-hidden relative"
                                     ></div>
                                 </div>        
-                                        <div v-if="(activeChartMode === 'profit' && profitHistory.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500">
-                                            <div class="text-center">
+                                        <div v-if="(activeChartMode === 'profit' && profitHistory.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" 
+                                             class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500 pointer-events-none">
+                                            <div class="text-center pointer-events-auto">
                                                <i class="fas fa-chart-line text-5xl text-muted-foreground/20 mb-4 block animate-bounce"></i>
                                                <p class="text-muted-foreground text-sm font-medium">Aguardando dados...</p>
                                            </div>
@@ -474,8 +496,8 @@
 
                             <!-- IA EM FUNCIONAMENTO / Footer -->
                             <div class="mt-4 mb-5 relative z-10 px-1">
-                                <h4 class="text-[11px] font-bold text-[#D4D4D4] uppercase mb-1 text-left">IA Em Funcionamento</h4>
-                                <p class="text-[9px] text-[#AAAAAA] leading-snug text-left">
+                                <h4 class="text-[14px] font-bold text-[#D4D4D4] uppercase mb-1 text-left">IA Em Funcionamento</h4>
+                                <p class="text-[12px] text-[#AAAAAA] leading-snug text-left">
                                     Monitorando o mercado e executando apenas quando há vantagem estatística.
                                 </p>
                             </div>
@@ -677,9 +699,17 @@ export default {
             return 'Analisando o mercado';
         },
         // ✅ Fix 'undefined' prefix in logs
-        currencySymbol() {
-            return this.preferredCurrencyPrefix || '$';
-        }
+                                        currencySymbol() {
+                                            return this.preferredCurrencyPrefix || '$';
+                                        },
+                                        // ✅ Alias for tooltip compatibility
+                                        profitCurrencySymbol() {
+                                            return this.currencySymbol;
+                                        },
+                                        // ✅ REACTIVITY FIX: Return a fresh copy to trigger chart update
+                                        formattedProfitHistory() {
+                                            return [...this.profitHistory];
+                                        }
     },
     watch: {
         balanceNumeric(newVal) {
@@ -740,8 +770,16 @@ export default {
     methods: {
         checkMobile() {
             this.isMobile = window.innerWidth < 768;
-            if (!this.isMobile) this.isSidebarOpen = false;
+            if (!this.isMobile) {
+                this.isSidebarOpen = false;
+            } else {
+                // Se for mobile, definir Config como aba ativa por padrão (se não estiver definida ou se for carregamento inicial)
+                if (this.activeMonitoringTab === 'chart') { 
+                    this.activeMonitoringTab = 'config';
+                }
+            }
         },
+
         closeSidebar() {
             this.isSidebarOpen = false;
         },
@@ -1224,7 +1262,7 @@ export default {
                     }
 
                     // Update stats immediately
-                    const realPayout = this.pendingFastResult.payout || (stake * (this.sessionState.analysisType === 'RECUPERACAO' ? this.sessionState.lastPayoutRecovery : this.sessionState.lastPayoutPrincipal) + stake);
+                    const realPayout = this.pendingFastResult.payout || (stake * (this.sessionState.analysisType === 'RECUPERACAO' ? this.sessionState.lastPayoutRecovery : this.sessionState.lastPayoutPrincipal));
                     const estimatedProfit = win ? (realPayout - stake) : -stake;
 
                     if (win) this.monitoringStats.wins++;
@@ -1429,8 +1467,8 @@ export default {
                     market: contract.display_name,
                     contract: contract.contract_type,
                     type: contract.contract_type.includes('CALL') ? 'CALL' : (contract.contract_type.includes('PUT') ? 'PUT' : 'CALL'),
-                    stake: contract.buy_price,
-                    pnl: contract.profit || 0,
+                    stake: parseFloat(contract.buy_price),
+                    pnl: 0,
                     analysisType: this.sessionState.analysisType, // ✅ CRITICAL
                     result: 'OPEN',
                     barrier: contract.barrier,
@@ -1444,7 +1482,8 @@ export default {
                 // Release lock if not handled by Fast Result
                 this.isNegotiating = false;
             } else {
-                trade.pnl = contract.profit || 0;
+                // Durante a operação em aberto, contract.profit costuma ser o profit líquido na Deriv
+                trade.pnl = parseFloat(contract.profit || 0);
                 if (contract.entry_tick_display_value) trade.entryPrice = contract.entry_tick_display_value;
                 if (contract.exit_tick_display_value) trade.exitPrice = contract.exit_tick_display_value;
             }
@@ -1524,7 +1563,8 @@ export default {
                         `Contrato ID: ${id}`,
                         `Resultado Financeiro: +${this.preferredCurrencyPrefix}${trade.pnl.toFixed(2)}`,
                         `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
-                        `Saldo Atual: ${this.preferredCurrencyPrefix}${(this.monitoringStats.balance + trade.pnl).toFixed(2)}`
+                        `Extrato: +${this.preferredCurrencyPrefix}${trade.pnl.toFixed(2)} (Líquido)`,
+                        `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
                     ], 'success');
                 } else {
                     this.addLog('Resultado da Operação', [
@@ -1532,7 +1572,7 @@ export default {
                         `Contrato ID: ${id}`,
                         `Resultado Financeiro: -${this.preferredCurrencyPrefix}${Math.abs(trade.pnl).toFixed(2)}`,
                         `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
-                        `Saldo Atual: ${this.preferredCurrencyPrefix}${(this.monitoringStats.balance + trade.pnl).toFixed(2)}`
+                        `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
                     ], 'error');
                 }
                 
@@ -1710,22 +1750,22 @@ export default {
             // Match styles from InvestmentActive.vue
             this.chart = createChart(container, {
                 width: container.clientWidth,
-                height: 320, // Match height prop passed to LineChart
+                height: 320, 
                 layout: {
-                    background: { type: ColorType.Solid, color: '#0B0B0B' }, // Match bg
+                    background: { type: ColorType.Solid, color: 'transparent' }, 
                     textColor: '#D9D9D9',
                 },
                 grid: {
-                    vertLines: { color: '#2A2A2A' },
-                    horzLines: { color: '#2A2A2A' },
+                    vertLines: { color: 'rgba(42, 42, 42, 0.5)' },
+                    horzLines: { color: 'rgba(42, 42, 42, 0.5)' },
                 },
                 timeScale: {
                     timeVisible: true,
                     secondsVisible: true,
-                    borderColor: '#2A2A2A',
+                    borderColor: 'rgba(42, 42, 42, 0.5)',
                 },
                 rightPriceScale: {
-                    borderColor: '#2A2A2A',
+                    borderColor: 'rgba(42, 42, 42, 0.5)',
                 },
             });
             
