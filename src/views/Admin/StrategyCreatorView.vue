@@ -2490,16 +2490,25 @@ export default {
 
         async updateCurrentStrategy() {
             if (!this.selectedSavedStrategyId) return;
-            const strategy = this.savedStrategies.find(s => s.id === this.selectedSavedStrategyId);
-            if (!strategy) return;
+            
+            // Find the index of the strategy to update
+            const strategyIndex = this.savedStrategies.findIndex(s => s.id === this.selectedSavedStrategyId);
+            if (strategyIndex === -1) return;
+            
+            const strategy = this.savedStrategies[strategyIndex];
 
             // ✅ Sync filter edits before updating
             this.syncFiltersToConfig();
 
-            strategy.config = {
-                form: JSON.parse(JSON.stringify(this.form)),
-                recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
-                validator: JSON.parse(JSON.stringify(this.validator))
+            // Create a completely new strategy object to avoid reference issues
+            const updatedStrategy = {
+                id: strategy.id,
+                name: strategy.name,
+                config: {
+                    form: JSON.parse(JSON.stringify(this.form)),
+                    recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
+                    validator: JSON.parse(JSON.stringify(this.validator))
+                }
             };
 
             // ✅ If updating a default strategy, save to server JSON file
@@ -2517,7 +2526,7 @@ export default {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify(strategy)
+                        body: JSON.stringify(updatedStrategy)
                     });
 
                     if (!response.ok) {
@@ -2525,15 +2534,16 @@ export default {
                     }
 
                     console.log(`[StrategyCreator] Updated ${strategyName}.json on server`);
-                    
-                    // ✅ Reload strategies to get fresh data
-                    await this.loadStrategiesFromStorage();
                 } catch (error) {
                     console.error('[StrategyCreator] Error updating strategy file:', error);
                     this.$root.$toast.error('Erro ao salvar no servidor. Alterações salvas localmente.');
                 }
             }
 
+            // Replace the strategy at the specific index
+            this.savedStrategies.splice(strategyIndex, 1, updatedStrategy);
+            
+            // Save to localStorage
             localStorage.setItem('zeenix_saved_strategies', JSON.stringify(this.savedStrategies));
             this.$root.$toast.success('IA Atualizada com sucesso!');
         },
