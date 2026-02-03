@@ -1837,8 +1837,7 @@ export default {
             for (let i = 0; i < 100; i++) {
                 const randomDigit = Math.floor(Math.random() * 10);
                 // Criar um valor fake onde o último dígito é o randomDigit (ex: 1234.5)
-                const randomValue = 1000 + (Math.random() * 100); 
-                const randomValue = 1000 + (Math.random() * 100); 
+
 
                 // Ajustar para terminar com o dígito desejado
                 // Na verdade, mais fácil apenas gerar um valor inteiro terminado no digito
