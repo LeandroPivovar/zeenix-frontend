@@ -32,7 +32,7 @@
 }
 
 .view-button.active-view {
-    background: #22C55E;
+    background: #6366F1;
 }
 
 .layout {
@@ -156,9 +156,9 @@
 }
 
 .toggle-button.active {
-    background: linear-gradient(135deg, #22C55E, #16A34A);
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
     border-color: transparent;
-    box-shadow: 0 10px 25px rgba(34, 197, 94, 0.28);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.28);
 }
 
 .connection-indicator {
