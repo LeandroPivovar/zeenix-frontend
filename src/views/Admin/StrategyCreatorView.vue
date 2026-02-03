@@ -2298,6 +2298,19 @@ export default {
             const balanceValue = Number(account.balance);
             this.balance = balanceValue;
             this.monitoringStats.balance = balanceValue;
+
+            // ✅ Sync with Global State for TopNavbar and Mixin
+            const connection = {
+                token: account.token,
+                loginid: account.loginid,
+                isDemo: account.isDemo
+            };
+            localStorage.setItem('deriv_connection', JSON.stringify(connection));
+            localStorage.setItem('deriv_account_type', account.isDemo ? 'demo' : 'real');
+            
+            // Update local state to force UI refresh
+            this.accountType = account.isDemo ? 'demo' : 'real';
+
             this.showAccountModal = false;
             this.submitForm();
         },
