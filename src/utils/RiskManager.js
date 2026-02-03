@@ -234,7 +234,15 @@ export const RiskManager = {
 
                 // Mode Switching during Recovery
                 // Total Losses = 1 (Principal) + lossStreakRecovery
-                const totalEstimatedLosses = 1 + state.lossStreakRecovery;
+                // Note: consecutiveLosses might track the losses *before* recovery entry.
+                const totalLosses = state.consecutiveLosses + state.lossStreakRecovery;
+                const totalEstimatedLosses = 1 + state.lossStreakRecovery; // Existing logic assumed 1, we should be consistent or use state.consecutiveLosses
+
+                // ✅ UPDATE ACTIVE STRATEGY (Fix)
+                // Ensures we switch to 'RECUPERACAO' filters if we cross the threshold
+                if (totalLosses >= recoveryThreshold) {
+                    state.activeStrategy = 'RECUPERACAO';
+                }
 
                 if (totalEstimatedLosses >= 4) { // 4th loss
                     state.negotiationMode = 'PRECISO';

@@ -769,16 +769,21 @@ export default {
                         market: this.resolveMarketSymbol(parsed.market || baseConfig.form.market || 'R_100'),
                         expectedPayout: parsed.expectedPayout || baseConfig.form.expectedPayout || 1.20,
                         sorosLevel: parsed.sorosLevel !== undefined ? parsed.sorosLevel : (baseConfig.form.sorosLevel || 1),
-                        attackFilters: baseConfig.form.attackFilters // Sempre usar filtros do arquivo base para integridade
+                        attackFilters: (parsed.attackFilters && parsed.attackFilters.length > 0) ? parsed.attackFilters : baseConfig.form.attackFilters // ✅ Fix: Respect saved filters
                     };
 
                     // 3. Merge Configuração de Recuperação
                     // Prioridade: Base do Arquivo (para garantir estrutura) > Ajustes se necessário
+                    const savedRecovery = parsed.recoveryConfig || {};
                     this.recoveryConfig = {
                         ...baseConfig.recoveryConfig,
-                        ...(parsed.recoveryConfig || {}), // ✅ Merge user overrides (RiskProfile, etc.)
+                        ...savedRecovery, // ✅ Merge user overrides (RiskProfile, etc.)
                         // ✅ FIX: Map 'modoMartingale' (from InvestmentView) to 'riskProfile'
-                        riskProfile: parsed.modoMartingale || parsed.riskProfile || (parsed.recoveryConfig && parsed.recoveryConfig.riskProfile) || baseConfig.recoveryConfig.riskProfile || 'moderado'
+                        riskProfile: parsed.modoMartingale || parsed.riskProfile || savedRecovery.riskProfile || baseConfig.recoveryConfig.riskProfile || 'moderado',
+                        // ✅ FIX: Load recovery filters correctly
+                        attackFilters: (savedRecovery.attackFilters && savedRecovery.attackFilters.length > 0) 
+                            ? savedRecovery.attackFilters 
+                            : (baseConfig.recoveryConfig ? baseConfig.recoveryConfig.attackFilters : [])
                     };
 
                     // ✅ FORCE RECOVERY PAYOUT FIX for Apollo/Nexus
