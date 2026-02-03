@@ -807,6 +807,7 @@ export default {
                     this.addLog('Configuração Inicial', [
                         `Agente: ${this.currentConfig.strategy.toUpperCase()}`,
                         `Modo: ${this.currentConfig.mode.toUpperCase()}`,
+                        `Perfil: ${(this.recoveryConfig.riskProfile || 'MODERADO').toUpperCase()}`,
                         `Stake: ${this.currencySymbol}${this.currentConfig.initialStake.toFixed(2)}`,
                         `Soros Level: ${this.currentConfig.sorosLevel}`
                     ], 'info');
