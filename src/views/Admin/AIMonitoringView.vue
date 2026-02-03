@@ -79,9 +79,9 @@
                                    :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
                                     {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
                                 </p>
-                                <span class="text-xs lg:text-lg font-semibold px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
-                                      :class="monitoringStats.profit >= 0 ? 'text-success/80 bg-success/10' : 'text-red-500/80 bg-red-500/10'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.initialBalance || 1)) * 100).toFixed(1) }}%
+                                <span class="text-xs lg:text-lg font-semibold px-2 py-0.5 rounded-lg border hidden md:inline"
+                                      :class="monitoringStats.profit >= 0 ? 'text-success/90 bg-success/10 border-success/20' : 'text-red-500/90 bg-red-500/10 border-red-500/20'">
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.initialBalance || 1)) * 100).toFixed(3) }}%
                                 </span>
                             </div>
                             <div class="mt-2 lg:mt-3 h-1 w-[100px] mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
@@ -107,11 +107,11 @@
                                     <span class="text-[10px] lg:text-xs text-muted-foreground block">Loss</span>
                                 </div>
                                 <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
-                                <div class="text-center">
-                                    <span class="font-semibold text-success/90" style="font-size: 1.25rem; line-height: 1.75rem; background: #8080800f; padding: 0.2rem 0.3rem; border-radius: 8px;">
+                                <div class="bg-success/10 border border-success/20 rounded-xl px-2.5 py-1.5 flex flex-col items-center">
+                                    <span class="text-lg lg:text-xl font-bold text-success/90 leading-none">
                                         {{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%
                                     </span>
-                                    <span class="text-[10px] lg:text-xs text-muted-foreground block">WR</span>
+                                    <span class="text-[8px] lg:text-[10px] text-success/60 font-black uppercase tracking-tighter mt-0.5">WR</span>
                                 </div>
                             </div>
                         </div>

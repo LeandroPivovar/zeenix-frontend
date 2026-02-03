@@ -121,11 +121,11 @@ export default {
               borderWidth: 3,
               fill: true,
               tension: 0.4,
-              pointRadius: 0,
-              pointHoverRadius: 4,
+              pointRadius: 4,
+              pointHoverRadius: 6,
               pointBackgroundColor: this.color,
               pointBorderColor: '#fff',
-              pointBorderWidth: 2
+              pointBorderWidth: 1.5
             }]
           },
           options: {
@@ -199,7 +199,7 @@ export default {
 
       try {
         const gradient = context2d.createLinearGradient(0, 0, 0, this.height);
-        gradient.addColorStop(0, color + '40'); 
+        gradient.addColorStop(0, color + '60'); 
         gradient.addColorStop(1, color + '00'); 
         return gradient;
       } catch (error) {
