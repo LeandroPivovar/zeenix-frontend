@@ -3,7 +3,7 @@
     id="top-navbar" 
     class="fixed top-0 left-0 w-full h-[60px] z-[1000]" 
     :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
-    :style="navStyle"
+    style="background: rgba(11, 11, 11, 0.8) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border-bottom: 1px solid rgba(255, 255, 255, 0.05);"
   >
     <!-- Desktop Layout -->
     <div v-if="!isMobile" class="h-full flex items-center justify-end desktop-nav">
@@ -280,10 +280,6 @@ export default {
     currency: {
       type: String,
       default: 'USD'
-    },
-    isDashboard: {
-      type: Boolean,
-      default: false
     }
   },
   data() {
@@ -441,16 +437,6 @@ export default {
       const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
       const baseUrl = apiBaseUrl.replace(/\/api$/, '');
       return `${baseUrl}${this.userProfilePictureUrl}`;
-    },
-    navStyle() {
-      return {
-        background: this.isDashboard ? '#030303 !important' : 'rgba(11, 11, 11, 0.8) !important',
-        backdropFilter: 'blur(20px)',
-        webkitBackdropFilter: 'blur(20px)',
-        padding: '0',
-        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-        borderBottom: 'none'
-      };
     }
   },
   watch: {

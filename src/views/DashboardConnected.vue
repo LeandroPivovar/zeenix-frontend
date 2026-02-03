@@ -25,7 +25,6 @@
         :currency-prefix="preferredCurrencyPrefix"
         @toggle-sidebar="toggleMobileSidebar"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
-        :is-dashboard="true"
       />
     
     <!-- Main Content -->
