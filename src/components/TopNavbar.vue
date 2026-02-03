@@ -1,7 +1,7 @@
 <template>
   <nav 
     id="top-navbar" 
-    class="fixed top-0 left-0 w-full h-[60px] z-[9997] mobile-header" 
+    class="fixed top-0 left-0 w-full h-[60px] z-[1000]" 
     :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
     style="background: rgba(11, 11, 11, 0.8) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); border-bottom: 1px solid rgba(255, 255, 255, 0.05);"
   >
@@ -1166,17 +1166,6 @@ export default {
   padding: 0 !important;
 }
 
-/* Mobile Header - Borda roxa no topo */
-.mobile-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: #9333EA;
-  z-index: 1;
-}
 
 /* Desktop e Mobile Layouts */
 .desktop-nav {
@@ -1470,7 +1459,7 @@ export default {
     left: 0 !important;
     width: 100% !important;
     background: #0B0B0B !important;
-    z-index: 9997 !important;
+    z-index: 1000 !important;
   }
 
   .desktop-nav {
