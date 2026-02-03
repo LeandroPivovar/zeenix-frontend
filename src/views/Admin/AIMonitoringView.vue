@@ -118,6 +118,14 @@
                     </div>
                 </div>
 
+                <!-- Mobile Pause Button (Below Header) -->
+                <div v-if="isMobile" class="mt-4 px-1">
+                    <button @click="stopIA" :disabled="isStopping" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
+                        {{ isStopping ? 'Parando...' : 'Pausar IA' }}
+                    </button>
+                </div>
+
+
                 <!-- Mobile Configuration Cards Stack (Visible only on Mobile) -->
 
 
@@ -144,12 +152,8 @@
 
                             <!-- Config Tab (Mobile Only) -->
                             <div v-show="activeMonitoringTab === 'config' && isMobile" class="animate-fadeIn flex-1 flex flex-col space-y-4">
-                                <!-- Mobile Pause Button -->
-                                <button @click="stopIA" :disabled="isStopping" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
-                                    {{ isStopping ? 'Parando...' : 'Pausar IA' }}
-                                </button>
-
                                 <!-- Card 1: AI Identity -->
+
                                 <div class="p-4 bg-secondary/40 rounded-2xl border border-border/40 flex items-center gap-4 w-full">
                                     <div class="w-14 h-14 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path></svg>
