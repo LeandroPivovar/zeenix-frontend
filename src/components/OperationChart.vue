@@ -735,7 +735,7 @@ export default {
       showChartPlaceholder: false,
       tradingMode: 'manual', // 'manual' ou 'ai'
       activeTab: 'chart', // 'chart' ou 'digits'
-      digitFrequency: { digits: [], parity: { even: 0, odd: 0 } },
+      digitFrequency: { digits: [], frequency: {}, parity: { even: 0, odd: 0 } },
       frequencies25: [],
       frequencies50: [],
       frequencies100: [],
@@ -1419,6 +1419,7 @@ export default {
     }
   },
   methods: {
+
     setTab(tabName) {
       if (tabName === 'chart' || tabName === 'digits') {
         this.activeTab = tabName;
@@ -1714,6 +1715,7 @@ export default {
             }
             
             this.isGlobalLoading = false;
+            this.calculateDigitFrequency();
     },
 
     // Refatoração: Lógica comum de processamento de novo tick
@@ -1760,6 +1762,7 @@ export default {
               }
             }
             
+            this.calculateDigitFrequency();
             if (this.isGlobalLoading) this.isGlobalLoading = false;
     },
 
