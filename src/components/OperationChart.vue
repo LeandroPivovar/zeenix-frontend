@@ -1422,6 +1422,32 @@ export default {
     setTab(tabName) {
       if (tabName === 'chart' || tabName === 'digits') {
         this.activeTab = tabName;
+        this.$emit('tab-changed', tabName);
+        
+        if (tabName === 'chart') {
+            // Re-inicializar gráfico pois o container foi removido do DOM (v-if)
+            this.$nextTick(() => {
+                if (!this.chart) {
+                    this.initChart();
+                    // Pequeno delay para garantir renderização correta
+                    setTimeout(() => {
+                         this.updateChartData(); 
+                    }, 50);
+                } else {
+                    const container = this.$refs.chartContainer;
+                    if (container) {
+                        this.chart.resize(container.clientWidth, container.clientHeight);
+                    }
+                }
+            });
+        } else {
+            // Limpar referência do gráfico ao sair da aba
+            if (this.chart) {
+                this.chart.remove();
+                this.chart = null;
+                this.chartSeries = null;
+            }
+        }
       }
     },
     getStatusColor(statusClass) {
@@ -2348,32 +2374,7 @@ export default {
         },
       };
     },
-    setTab(tab) {
-        this.activeTab = tab;
-        this.$emit('tab-changed', tab);
-        
-        if (tab === 'chart') {
-            // Re-inicializar gráfico pois o container foi removido do DOM (v-if)
-            this.$nextTick(() => {
-                if (!this.chart) {
-                    this.initChart();
-                    // Pequeno delay para garantir renderização correta
-                    setTimeout(() => {
-                         this.updateChartData(); 
-                    }, 50);
-                } else {
-                    this.chart.resize(this.$refs.chartContainer.clientWidth, this.$refs.chartContainer.clientHeight);
-                }
-            });
-        } else {
-            // Limpar referência do gráfico ao sair da aba
-            if (this.chart) {
-                this.chart.remove();
-                this.chart = null;
-                this.chartSeries = null;
-            }
-        }
-    },
+
     openMarketModal() {
       this.showMarketModal = true;
     },
