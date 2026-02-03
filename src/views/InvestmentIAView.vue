@@ -618,7 +618,6 @@ export default {
 
             selectedMarket: 'vol10',
             selectedStrategy: null,
-            showStrategyModal: false,
             allStrategies: [
                 { 
                     id: 'atlas', 
@@ -1132,35 +1131,6 @@ export default {
         handleStrategyRequiredConfirm() {
             this.showStrategyRequiredModal = false;
             this.openStrategyModal();
-        },
-
-        openStrategyModal() {
-            this.showStrategyModal = true;
-        },
-
-        closeStrategyModal() {
-            this.showStrategyModal = false;
-        },
-        
-        selectStrategy(id) {
-            this.selectedStrategy = id;
-            
-            // ✅ Sincronização de Mercado Automática (ZENIX v2.0)
-            const strategyLower = id.toLowerCase();
-            if (strategyLower === 'atlas') {
-                this.selectedMarket = 'vol100';
-                console.log('[InvestmentIAView] 🎯 Atlas selecionado: Alternando mercado para Volatility 100 Index');
-            } else if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
-                this.selectedMarket = 'vol100';
-                console.log(`[InvestmentIAView] 🎯 ${id.toUpperCase()} selecionado: Alternando mercado para Volatility 100 Index`);
-            } else {
-                this.selectedMarket = 'vol10';
-            }
-
-            // Delay closing to show visual feedback (check icon)
-            setTimeout(() => {
-                this.closeStrategyModal();
-            }, 300);
         },
 
         getUserId() {
@@ -1890,7 +1860,23 @@ export default {
 
         selectStrategy(strategyId) {
             this.selectedStrategy = strategyId;
-            this.closeStrategyModal();
+            
+            // ✅ Sincronização de Mercado Automática (ZENIX v2.0)
+            const strategyLower = strategyId.toLowerCase();
+            if (strategyLower === 'atlas') {
+                this.selectedMarket = 'vol100';
+                console.log('[InvestmentIAView] 🎯 Atlas selecionado: Alternando mercado para Volatility 100 Index');
+            } else if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
+                this.selectedMarket = 'vol100';
+                console.log(`[InvestmentIAView] 🎯 ${strategyId.toUpperCase()} selecionado: Alternando mercado para Volatility 100 Index`);
+            } else {
+                this.selectedMarket = 'vol10';
+            }
+
+            // Delay closing to show visual feedback (check icon)
+            setTimeout(() => {
+                this.closeStrategyModal();
+            }, 300);
         },
 
         async loadStrategiesFromAPI() {
@@ -1918,7 +1904,6 @@ export default {
                                 // ✅ FALLBACK: Only update if metadata exists and has valid values
                                 // Otherwise, keep the hardcoded values from allStrategies
                                 if (data && data.metadata) {
-                                    const currentStrategy = this.allStrategies[strategyIndex];
                                     
                                     // Update assertividade only if it exists in metadata
                                     if (data.metadata.assertividade) {
