@@ -1802,7 +1802,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 /* Modal Premium Styles */
 .categorized-modal {
 	width: 100%;
-	max-width: 800px;
+	max-width: 700px;
 	background: #0D0D0D;
 	border: 1px solid #22C55E33;
 	padding: 20px;
@@ -2271,6 +2271,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     box-sizing: border-box;
     align-items: stretch;
     margin-bottom: 0.75rem;
+    padding: 1rem;
 }
 
 .agent-selection-card:hover {
@@ -2289,7 +2290,8 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     display: flex;
     width: 100%;
     align-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0;
+    margin-bottom: 0.5rem;
 }
 
 .agent-card-left-tall {
@@ -2299,8 +2301,8 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 
 .agent-video-tall,
 .agent-avatar-fallback-tall {
-    width: 64px;
-    height: 44px;
+    width: 50px;
+    height: 50px;
     object-fit: cover;
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -2393,11 +2395,12 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     height: 1px;
     background: rgba(255, 255, 255, 0.05);
     margin: 0.125rem 0 0.5rem 0;
+	display: none; /* Hide divider in favor of unified padding */
 }
 
 .agent-benefits-list-row {
     width: 100%;
-    padding: 0 1rem 0.5rem 1rem;
+    padding: 0;
 }
 
 .agent-benefits-list {
@@ -2416,7 +2419,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 
 .benefit-item-premium i {
     color: #22C55E;
-    font-size: 10px;
+    font-size: 12px;
 }
 
 .benefit-item-premium strong {
@@ -2453,19 +2456,20 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 
     /* Agent Card Layout */
     .agent-selection-card {
-        padding: 0 !important;
-        margin-bottom: 0.5rem !important;
+        padding: 1rem !important;
+        margin-bottom: 0.75rem !important;
     }
 
     .agent-selection-card-top-row {
-        padding: 0.5rem 0.75rem !important;
+        padding: 0 !important;
         gap: 0.75rem !important;
+        margin-bottom: 0.5rem;
     }
 
     .agent-video-tall,
     .agent-avatar-fallback-tall {
-        width: 48px !important;
-        height: 34px !important;
+        width: 50px !important;
+        height: 50px !important;
     }
 
     .agent-name-premium {
