@@ -782,15 +782,7 @@
                                     <p class="text-xs text-gray-500 pl-8 leading-relaxed">{{ filter.desc }}</p>
                                 </div>
                             </div>
-                            <div class="mt-8">
-                                <button 
-                                    @click="nextFilterStep" 
-                                    class="w-full bg-zenix-green hover:bg-green-600 shadow-lg shadow-green-500/10 text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2 transition-all"
-                                >
-                                    <span>Continuar para Configuração</span>
-                                    <i class="fa-solid fa-arrow-right"></i>
-                                </button>
-                            </div>
+                            <!-- Button Removed -->
                         </div>
 
                         <div v-else-if="filterStep === 2">
@@ -2054,27 +2046,26 @@ export default {
 
             if (index === -1) return;
 
-            // Toggle Logic
-            const newState = !filter.active;
+            // If already active, just close (or maybe user clicked by mistake)
+            if (filter.active) {
+                this.showFilterModal = false;
+                return;
+            }
 
-            if (newState) {
-                // Check limit if activating
-                const activeCount = targetArray.filter(f => f.active).length;
-                
-                if (activeCount >= 2) {
-                    this.$root.$toast.warning('Selecione no máximo 2 filtros.');
-                    return;
-                }
+            // Check limit if activating
+            const activeCount = targetArray.filter(f => f.active).length;
+            
+            if (activeCount >= 2) {
+                this.$root.$toast.warning('Selecione no máximo 2 filtros.');
+                return;
             }
 
             // Force Reactivity: Create new object and splice it in
-            const newFilter = { ...filter, active: newState };
+            const newFilter = { ...filter, active: true };
             targetArray.splice(index, 1, newFilter);
             
-            // Auto move to config if activated
-            if (newState) {
-                this.nextFilterStep();
-            }
+            // Close Modal Immediately
+            this.showFilterModal = false;
         },
         
         removeFilter(filter, context) {
