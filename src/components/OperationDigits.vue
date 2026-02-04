@@ -599,6 +599,9 @@ import derivTradingService from '../services/deriv-trading.service.js';
 import TradeResultModal from './TradeResultModal.vue';
 
 export default {
+  mounted() {
+    this.loadMarkets();
+  },
     name: 'OperationDigits',
     components: {
         TradeResultModal
@@ -806,7 +809,32 @@ export default {
           return parseInt(this.lastDigit) % 2 === 0 ? 'PAR' : 'ÍMPAR';
         },
         marketsByCategory() {
-            const grouped = {};
+        const grouped = {};
+        this.markets.forEach(market => {
+          const category = market.category || 'Outros';
+          if (!grouped[category]) {
+            grouped[category] = [];
+          }
+          grouped[category].push(market);
+        });
+        return grouped;
+      },
+        // unchanged
+      },
+      async loadMarkets() {
+        this.isLoadingMarkets = true;
+        try {
+          const response = await derivTradingService.getActiveSymbols();
+          // Expected format: { symbols: [...] } or array directly
+          this.markets = response?.symbols || response || [];
+        } catch (e) {
+          console.error('[OperationDigits] loadMarkets error:', e);
+          this.markets = [];
+        } finally {
+          this.isLoadingMarkets = false;
+        }
+      },
+
             this.markets.forEach(market => {
                 const category = market.category || 'Outros';
                 if (!grouped[category]) {
