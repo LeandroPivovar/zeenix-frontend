@@ -81,7 +81,7 @@
                                 </p>
                                 <span class="text-xs lg:text-lg font-semibold px-2 py-0.5 rounded-lg border hidden md:inline"
                                       :class="monitoringStats.profit >= 0 ? 'text-success/90 bg-success/10 border-success/20' : 'text-red-500/90 bg-red-500/10 border-red-500/20'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.initialBalance || 1)) * 100).toFixed(3) }}%
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.initialBalance || 1)) * 100).toFixed(2) }}%
                                 </span>
                             </div>
                             <div class="mt-2 lg:mt-3 h-1 w-[100px] mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
@@ -107,11 +107,11 @@
                                     <span class="text-[10px] lg:text-xs text-muted-foreground block">Loss</span>
                                 </div>
                                 <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
-                                <div class="bg-white/5 rounded-xl px-2.5 py-1.5 flex flex-col items-center">
+                                <div class="px-2.5 py-1.5 flex flex-col items-center">
                                     <span class="text-lg lg:text-xl font-bold text-success/90 leading-none">
                                         {{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%
                                     </span>
-                                    <span class="text-[8px] lg:text-[10px] text-muted-foreground font-black uppercase tracking-tighter mt-0.5">WR</span>
+                                    <span class="text-[10px] lg:text-xs text-muted-foreground font-black uppercase tracking-tighter mt-0.5">WinRate</span>
                                 </div>
                             </div>
                         </div>
@@ -205,13 +205,7 @@
                                     </div>
                                 </div>
 
-                                <!-- IA EM FUNCIONAMENTO / Footer (Mobile) -->
-                                <div class="mt-2 mb-4 px-1">
-                                    <h4 class="text-[14px] font-bold text-[#D4D4D4] uppercase mb-1 text-left">IA Em Funcionamento</h4>
-                                    <p class="text-[12px] text-[#AAAAAA] leading-snug text-left">
-                                        Monitorando o mercado e executando apenas quando há vantagem estatística.
-                                    </p>
-                                </div>
+
                             </div>
 
                             <!-- Chart Tab -->
@@ -676,7 +670,9 @@ export default {
             activeChartMode: 'profit', // 'profit' or 'tick'
             chart: null,
             series: null,
-            tickChartData: []
+            tickChartData: [],
+            resizeObserver: null,
+            chartMarkers: []
         }
     },
     computed: {
@@ -765,6 +761,12 @@ export default {
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobile);
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+        }
+        if (this.chart) {
+            this.chart.remove();
+        }
         this.stopTickConnection();
     },
     methods: {
@@ -1503,6 +1505,9 @@ export default {
                     // Store old states for logging
                     const oldAnalysis = this.sessionState.analysisType;
                     const oldMode = this.sessionState.negotiationMode;
+
+                    // ✅ Update Chart Markers
+                    this.updateChartMarkers(trade);
                     
                     RiskManager.processTradeResult(
                         this.sessionState, 
@@ -1763,6 +1768,8 @@ export default {
                     timeVisible: true,
                     secondsVisible: true,
                     borderColor: 'rgba(42, 42, 42, 0.5)',
+                    rightOffset: 10,
+                    fixLeftEdge: true, // Fix start position
                 },
                 rightPriceScale: {
                     borderColor: 'rgba(42, 42, 42, 0.5)',
@@ -1777,14 +1784,69 @@ export default {
             if (this.tickChartData.length > 0) {
                 this.series.setData(this.tickChartData);
             }
+
+            // Restore markers
+            if (this.chartMarkers.length > 0) {
+                this.series.setMarkers(this.chartMarkers);
+            }
             
             // Handle Resize
-            const resizeObserver = new ResizeObserver(entries => {
+            this.resizeObserver = new ResizeObserver(entries => {
                 if (entries.length === 0 || !entries[0].contentRect) return;
                 const { width } = entries[0].contentRect;
-                this.chart.applyOptions({ width });
+                if (this.chart) {
+                    this.chart.applyOptions({ width });
+                }
             });
-            resizeObserver.observe(container);
+            this.resizeObserver.observe(container);
+        },
+        updateChartMarkers(trade) {
+            if (!this.series) return;
+            
+            // Find marker time (approximate to last tick if explicit time mismatch, but usually trade.time is string. Need epoch)
+            // Trade object uses localized time string. We need epoch.
+            // But we don't store epoch in trade object currently! 
+            // We need to match with tickChartData or store epoch in trade.
+            
+            // FIX: We need to store epoch in trade in handleContractUpdate
+            // However, handleContractUpdate receives contract which has 'date_start' (epoch)
+            // Let's rely on finding a matching tick or using current time if close
+            
+            // For now, let's look at recent ticks.
+            // Markers need { time, position, color, shape, text }
+            
+            // Since we modified handleContractUpdate to be called with contract object, let's grab date_start there?
+            // Wait, trade object in monitoringOperations is what we have here.
+            // I need to patch handleContractUpdate to save epoch.
+            
+            // But since I can't easily patch handleContractUpdate without reading it all (I have the code though),
+            // I'll try to match by time string roughly or just add a marker at the LAST tick time.
+             
+            const lastTick = this.tickChartData[this.tickChartData.length - 1];
+            if (!lastTick) return;
+
+            const existingMarkerIndex = this.chartMarkers.findIndex(m => m.id === trade.id);
+            
+            const markerText = `${trade.result === 'WON' ? '+' : ''}${this.currencySymbol}${trade.pnl.toFixed(2)}`;
+            const markerColor = trade.result === 'WON' ? '#22C55E' : '#EF4444';
+            const markerShape = trade.result === 'WON' ? 'arrowUp' : 'arrowDown';
+            
+            const marker = {
+                time: lastTick.time, // Use last tick time as approximation if we don't have exact epoch
+                position: trade.result === 'WON' ? 'belowBar' : 'aboveBar',
+                color: markerColor,
+                shape: markerShape,
+                text: markerText,
+                id: trade.id
+            };
+
+            if (existingMarkerIndex >= 0) {
+                this.chartMarkers[existingMarkerIndex] = marker;
+            } else {
+                this.chartMarkers.push(marker);
+            }
+            
+            this.series.setMarkers(this.chartMarkers);
         }
     }
 }

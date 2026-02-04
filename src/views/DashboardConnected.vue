@@ -1241,7 +1241,7 @@ export default {
       }
     },
     navigateToIAs() {
-      this.$router.push('/adminStatsIAs');
+      this.$router.push('/Investments-IA');
     },
     openIAsModal() {
       this.showIAsModal = true;
@@ -1809,7 +1809,7 @@ export default {
     },
     handlePerformanceAction(perf) {
       if (perf.title.includes('IA') || perf.title.includes('Investimento')) {
-        this.$router.push('/adminStatsIAs');
+        this.$router.push('/Investments-IA');
       } else if (perf.title.includes('Copy')) {
         this.$router.push('/copy-trading');
       } else if (perf.title.includes('Agente')) {
