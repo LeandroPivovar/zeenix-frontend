@@ -637,6 +637,7 @@ export default {
             showSettingsModal: false,
             isStopping: false,
             activeMonitoringTab: 'chart',
+            initialTabSet: false,
 
             // Strategy Config (loaded from local storage)
             currentConfig: {
@@ -816,9 +817,10 @@ export default {
             if (!this.isMobile) {
                 this.isSidebarOpen = false;
             } else {
-                // Se for mobile, definir Config como aba ativa por padrão (se não estiver definida ou se for carregamento inicial)
-                if (this.activeMonitoringTab === 'chart') { 
+                // Se for mobile, definir Config como aba ativa por padrão apenas no primeiro carregamento
+                if (!this.initialTabSet) {
                     this.activeMonitoringTab = 'config';
+                    this.initialTabSet = true;
                 }
             }
         },
