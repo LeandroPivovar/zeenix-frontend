@@ -2839,6 +2839,17 @@ export default {
                                     ], 'warning');
                                     exactStake = survivalStake;
                                 }
+
+                                // ✅ CRITICAL: Check Minimum Stake During Calibration
+                                if (exactStake < 0.35) {
+                                  this.addLog('🛑 STOP PROTEÇÃO (Calibração)', [
+                                      `Margem insuficiente após calibração`,
+                                      `Stake: $${exactStake.toFixed(2)}`,
+                                      `Mínimo: $0.35`
+                                  ], 'error');
+                                  this.stopMonitoring('Stop de Segurança (Stake < 0.35)');
+                                  return; // Abort
+                                }
                                 
                                 // Tolerance check
                                 if (Math.abs(exactStake - stakeValue) > 0.02) {

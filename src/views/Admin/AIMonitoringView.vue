@@ -1447,7 +1447,6 @@ export default {
 
             const { stake: survivalStake, reason: survivalReason } = RiskManager.applySurvivalMode(stake, currentProfit, config, estimatedPayout, blindadoState);
             
-            if (survivalStake < stake) {
                 this.addLog('🛡️ Survival Mode', [
                     `Stake ajustada para proteger limites`,
                     `Motivo: ${survivalReason || 'Ajuste de Risco'}`,
@@ -1455,6 +1454,17 @@ export default {
                     `Nova: ${this.preferredCurrencyPrefix}${survivalStake.toFixed(2)}`
                 ], 'warning');
                 stake = survivalStake;
+            }
+
+            // ✅ CRITICAL SAFETY: Validate Minimum Stake
+            if (stake < 0.35) {
+                this.addLog('🛑 STOP PROTEÇÃO', [
+                    `Margem insuficiente para operar`,
+                    `Stake Calculado: $${stake.toFixed(2)}`,
+                    `Mínimo Permitido: $0.35`
+                ], 'error');
+                this.stopIA();
+                return 0;
             }
 
             // Log Soros if active
