@@ -1243,12 +1243,12 @@ export default {
                 
                 // 1. Maintain Logic Compatibility
                 this.tickHistory.unshift(price);
-                if (this.tickHistory.length > 100) this.tickHistory.pop();
+                if (this.tickHistory.length > 1000) this.tickHistory.pop();
                 
                 // 2. Update Chart Data
                 const tickObj = { time: time, value: price };
                 this.tickChartData.push(tickObj);
-                if (this.tickChartData.length > 1000) this.tickChartData.shift(); // Keep more history for chart
+                if (this.tickChartData.length > 5000) this.tickChartData.shift(); // Keep more history for chart
                 
                 // 3. Update Chart Series Realtime
                 if (this.series) {
