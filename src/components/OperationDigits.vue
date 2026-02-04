@@ -1281,7 +1281,7 @@ export default {
         this.isLoadingMarkets = true;
         // console.log('[OperationDigits] Loading markets...');
         try {
-          const response = await derivTradingService.getActiveSymbols();
+          const response = await derivTradingService.requestActiveSymbols();
           // Expected format: { symbols: [...] } or array directly
           this.markets = response?.symbols || response || [];
          // console.log('[OperationDigits] Markets loaded:', this.markets.length);
@@ -1545,14 +1545,28 @@ export default {
         },
         handleDerivError(error) {
             const message = error?.message || 'Erro desconhecido na Deriv';
+            const code = error?.code || '';
+
+            // Connection/Auth critical errors that require reconnection
+            const criticalErrors = ['AuthorizationRequired', 'InvalidToken', 'TokenExpired', 'OutputSizeLimitExceeded', 'RateLimit'];
+            
             if (this.isTrading) {
-                this.tradeError = message;
+                this.tradeError = `${code ? code + ': ' : ''}${message}`;
                 this.tradeMessage = '';
                 this.isTrading = false;
+                this.isLoadingProposal = false; // Ensure loading state is cleared
             } else {
-                this.connectionError = `${message}. Reconectando automaticamente...`;
-                this.isAuthorized = false;
-                this.scheduleRetry();
+                // Only reconnect for critical errors, otherwise just show error
+                if (criticalErrors.includes(code) || message.toLowerCase().includes('connection') || message.toLowerCase().includes('network')) {
+                    this.connectionError = `${message}. Reconectando automaticamente...`;
+                    this.isAuthorized = false;
+                    this.scheduleRetry();
+                } else {
+                    console.error('[OperationDigits] Non-critical Deriv error:', error);
+                    // For non-critical errors (like Invalid proposal params), don't disconnect, just show error if relevant
+                    // You might want to set a UI error state here specific to the operation
+                    this.tradeError = message; 
+                }
             }
         },
         subscribeToSymbol() {
