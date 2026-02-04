@@ -243,6 +243,7 @@
                             class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
                         >
                             <div class="flex items-center gap-3">
+                                <img v-if="selectedTradeTypeGroupIcon" :src="require(`@/assets/icons/${selectedTradeTypeGroupIcon}`)" class="w-6 h-6 contrast-[1.5] brightness-[1.5]" alt="" />
                                 <span class="font-medium">{{ selectedTradeTypeGroupLabel }}</span>
                             </div>
                             <i class="fas fa-chevron-down text-xs opacity-40"></i>
@@ -259,14 +260,22 @@
                     
                     <!-- Duração -->
                     <div>
-                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Duração (Ticks)</label>
+                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Duração</label>
                         <div class="flex gap-4">
+                            <div class="relative flex-1">
+                                <select 
+                                    v-model="durationUnit"
+                                    class="w-full appearance-none bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all cursor-pointer font-medium"
+                                >
+                                    <option value="m">Minutos</option>
+                                    <option value="t">Ticks</option>
+                                </select>
+                                <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-xs opacity-40 pointer-events-none"></i>
+                            </div>
                             <input 
                                 type="number" 
                                 v-model.number="duration"
-                                min="1"
-                                max="10"
-                                class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
+                                class="w-24 bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white text-center focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
                             />
                         </div>
                     </div>
@@ -562,15 +571,10 @@
                     </div>
                     <div class="modal-body">
                         <div class="categories-grid">
-                            <div v-for="category in digitTradeTypeCategories" :key="category.id" class="category-card">
+                            <div v-for="category in tradeTypeCategories" :key="category.id" class="category-card">
                                 <div class="category-card-header">
                                     <div class="category-icon-wrapper">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M4 9H20" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M4 15H20" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M10 3L8 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M16 3L14 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
+                                        <i :class="category.icon + ' text-[#22C55E] text-xl'"></i>
                                     </div>
                                     <h4 class="category-card-title">{{ category.label }}</h4>
                                 </div>
@@ -622,30 +626,141 @@ export default {
             showTradeTypeModal: false,
             isMobile: false,
             selectedTradeTypeGroup: 'digits_match_diff',
-            digitTradeTypeCategories: [
-                {
-                    id: 'digits',
-                    label: 'Dígitos',
-                    icon: 'fas fa-hashtag',
-                    items: [
-                        { value: 'digits_match_diff', label: 'Combina / Difere', directions: [
-                                { value: 'DIGITMATCH', label: 'Combina' },
-                                { value: 'DIGITDIFF', label: 'Difere' }
-                            ]
-                        },
-                        { value: 'digits_even_odd', label: 'Par / Ímpar', directions: [
-                                { value: 'DIGITEVEN', label: 'Par' },
-                                { value: 'DIGITODD', label: 'Ímpar' }
-                            ]
-                        },
-                        { value: 'digits_over_under', label: 'Superior / Inferior', directions: [
-                                { value: 'DIGITOVER', label: 'Superior' },
-                                { value: 'DIGITUNDER', label: 'Inferior' }
-                            ]
-                        }
-                    ]
-                }
-            ],
+            tradeTypeCategories: [
+        {
+          id: 'digits',
+          label: 'Dígitos',
+          icon: 'fas fa-hashtag',
+          items: [
+            { value: 'digits_over_under', label: 'Superior / Inferior', icon: 'TradeTypesDigitsOverIcon.svg', directions: [
+                { value: 'DIGITOVER', label: 'Superior' },
+                { value: 'DIGITUNDER', label: 'Inferior' }
+              ]
+            },
+            { value: 'digits_match_diff', label: 'Combina / Difere', icon: 'TradeTypesDigitsMatchesIcon.svg', directions: [
+                { value: 'DIGITMATCH', label: 'Combina' },
+                { value: 'DIGITDIFF', label: 'Difere' }
+              ]
+            },
+            { value: 'digits_even_odd', label: 'Par / Ímpar', icon: 'TradeTypesDigitsEvenIcon.svg', directions: [
+                { value: 'DIGITEVEN', label: 'Par' },
+                { value: 'DIGITODD', label: 'Ímpar' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'rising_falling',
+          label: 'Subindo ou Descendo',
+          icon: 'fas fa-chart-line',
+          items: [
+            { value: 'rising_falling_rise_fall_equal', label: 'Subida/Queda Igual', icon: 'TradeTypesUpsAndDownsRiseIcon.svg', directions: [
+                { value: 'CALLE', label: 'Subida Igual' },
+                { value: 'PUTE', label: 'Queda Igual' }
+              ]
+            },
+            { value: 'rising_falling_rise_fall', label: 'Subida/Queda', icon: 'TradeTypesUpsAndDownsRiseIcon.svg', directions: [
+                { value: 'CALL', label: 'Subida' },
+                { value: 'PUT', label: 'Queda' }
+              ] 
+            },
+            { value: 'reset_high_low', label: 'Reset Alta/Baixa', icon: 'TradeTypesUpsAndDownsResetUpIcon.svg', directions: [
+                { value: 'RESETCALL', label: 'Reset Alta' },
+                { value: 'RESETPUT', label: 'Reset Baixa' }
+              ]
+            },
+            { value: 'runs_high_low', label: 'Somente Altas / Somente Quedas', icon: 'TradeTypesUpsAndDownsOnlyUpsIcon.svg', directions: [
+                { value: 'RUNHIGH', label: 'Somente Altas' },
+                { value: 'RUNLOW', label: 'Somente Quedas' }
+              ]
+            },
+            { value: 'tick_high_low', label: 'Máxima/Mínima por Ticks', icon: 'TradeTypesHighsAndLowsHighIcon.svg', directions: [
+                { value: 'TICKHIGH', label: 'Máxima' },
+                { value: 'TICKLOW', label: 'Mínima' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'one_barrier',
+          label: 'Uma Barreira',
+          icon: 'fas fa-bullseye',
+          items: [
+            { value: 'touch_no_touch', label: 'Toca / Não Toca', icon: 'TradeTypesHighsAndLowsTouchIcon.svg', directions: [
+                { value: 'ONETOUCH', label: 'Toca' },
+                { value: 'NOTOUCH', label: 'Não Toca' }
+              ]
+            },
+            { value: 'higher_lower', label: 'Maior / Menor', icon: 'TradeTypesHighsAndLowsHigherIcon.svg', directions: [
+                { value: 'HIGHER', label: 'Maior' },
+                { value: 'LOWER', label: 'Menor' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'two_barriers',
+          label: 'Duas Barreiras',
+          icon: 'fas fa-shield-alt',
+          items: [
+            { value: 'in_out', label: 'Permanece Dentro / Sai Fora', icon: 'TradeTypesInsAndOutsStaysInIcon.svg', directions: [
+                { value: 'RANGE', label: 'Permanece Dentro' },
+                { value: 'UPORDOWN', label: 'Sai Fora' }
+              ]
+            },
+            { value: 'ends_in_out', label: 'Termina Dentro / Termina Fora', icon: 'TradeTypesInsAndOutsEndsInIcon.svg', directions: [
+                { value: 'EXPIRYRANGE', label: 'Termina Dentro' },
+                { value: 'EXPIRYMISS', label: 'Termina Fora' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'no_expiry',
+          label: 'Sem Vencimento',
+          icon: 'fas fa-bolt',
+          items: [
+            { value: 'multipliers_mult', label: 'Multiplicadores', icon: 'TradeTypesMultipliersUpIcon.svg', directions: [
+                { value: 'MULTUP', label: 'Alta' },
+                { value: 'MULTDOWN', label: 'Baixa' }
+              ]
+            },
+            { value: 'accumulators_accu', label: 'Acumuladores', icon: 'TradeTypesAccumulatorStayInIcon.svg', directions: [
+                { value: 'ACCU', label: 'Acumuladores' }
+              ]
+            }
+          ]
+        }
+      ],
+      allTradeTypes: [
+        { value: 'CALL', label: 'Subida', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
+        { value: 'PUT', label: 'Queda', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
+        { value: 'DIGITMATCH', label: 'Combina', description: 'O último dígito será igual', icon: 'fas fa-equals' },
+        { value: 'DIGITDIFF', label: 'Difere', description: 'O último dígito será diferente', icon: 'fas fa-not-equal' },
+        { value: 'DIGITEVEN', label: 'Par', description: 'O último dígito será par', icon: 'fas fa-divide' },
+        { value: 'DIGITODD', label: 'Ímpar', description: 'O último dígito será ímpar', icon: 'fas fa-percent' },
+        { value: 'DIGITOVER', label: 'Superior', description: 'O último dígito será maior', icon: 'fas fa-greater-than' },
+        { value: 'DIGITUNDER', label: 'Inferior', description: 'O último dígito será menor', icon: 'fas fa-less-than' },
+        { value: 'CALLE', label: 'Subida Igual', description: 'Subida com barreira igual', icon: 'fas fa-arrow-up-right-dots' },
+        { value: 'PUTE', label: 'Queda Igual', description: 'Queda com barreira igual', icon: 'fas fa-arrow-down-right-dots' },
+        { value: 'ACCU', label: 'Acumuladores', description: 'Contrato de acumuladores', icon: 'fas fa-layer-group' },
+        { value: 'MULTUP', label: 'Alta', description: 'Multiplicador de alta', icon: 'fas fa-chart-line' },
+        { value: 'MULTDOWN', label: 'Baixa', description: 'Multiplicador de baixa', icon: 'fas fa-chart-line' },
+        { value: 'RESETCALL', label: 'Reset Alta', description: 'Reset de alta', icon: 'fas fa-redo' },
+        { value: 'RESETPUT', label: 'Reset Baixa', description: 'Reset de baixa', icon: 'fas fa-redo' },
+        { value: 'RUNHIGH', label: 'Somente Altas', description: 'Somente altas', icon: 'fas fa-arrow-trend-up' },
+        { value: 'RUNLOW', label: 'Somente Quedas', description: 'Somente quedas', icon: 'fas fa-arrow-trend-down' },
+        { value: 'TICKHIGH', label: 'Máxima', description: 'Máxima do intervalo', icon: 'fas fa-arrows-up-to-line' },
+        { value: 'TICKLOW', label: 'Mínima', description: 'Mínima do intervalo', icon: 'fas fa-arrows-down-to-line' },
+        { value: 'ONETOUCH', label: 'Toca', description: 'O preço toca a barreira', icon: 'fas fa-bullseye' },
+        { value: 'NOTOUCH', label: 'Não Toca', description: 'O preço não toca a barreira', icon: 'fas fa-circle-xmark' },
+        { value: 'HIGHER', label: 'Maior', description: 'Termina acima da barreira', icon: 'fas fa-chevron-up' },
+        { value: 'LOWER', label: 'Menor', description: 'Termina abaixo da barreira', icon: 'fas fa-chevron-down' },
+        { value: 'RANGE', label: 'Permanece Dentro', description: 'Fica entre as barreiras', icon: 'fas fa-arrows-left-right-to-line' },
+        { value: 'UPORDOWN', label: 'Sai Fora', description: 'Sai do intervalo', icon: 'fas fa-arrows-left-right' },
+        { value: 'EXPIRYRANGE', label: 'Termina Dentro', description: 'Termina no intervalo', icon: 'fas fa-square-full' },
+        { value: 'EXPIRYMISS', label: 'Termina Fora', description: 'Termina fora do intervalo', icon: 'fas fa-expand' },
+      ],
             ws: null,
             tickSubscriptionId: null,
             token: null,
@@ -725,7 +840,7 @@ export default {
             return market ? market.label : 'Volatility 100 Index';
         },
         selectedTradeTypeLabel() {
-            for (const cat of this.digitTradeTypeCategories) {
+            for (const cat of this.tradeTypeCategories) {
                 const item = cat.items.find(i => i.directions.some(d => d.value === this.digitType));
                 if (item) {
                     const dir = item.directions.find(d => d.value === this.digitType);
@@ -735,18 +850,25 @@ export default {
             return 'Dígitos: Combina';
         },
         availableDirections() {
-            for (const cat of this.digitTradeTypeCategories) {
+            for (const cat of this.tradeTypeCategories) {
                 const item = cat.items.find(i => i.value === this.selectedTradeTypeGroup);
                 if (item) return item.directions;
             }
             return [];
         },
         selectedTradeTypeGroupLabel() {
-          for (const cat of this.digitTradeTypeCategories) {
+          for (const cat of this.tradeTypeCategories) {
             const item = cat.items.find(i => i.value === this.selectedTradeTypeGroup);
             if (item) return item.label;
           }
           return 'Selecionar Tipo';
+        },
+        selectedTradeTypeGroupIcon() {
+            for (const cat of this.tradeTypeCategories) {
+                const item = cat.items.find(i => i.value === this.selectedTradeTypeGroup);
+                if (item) return item.icon;
+            }
+            return null;
         },
         showDigitsPredictionCard() {
           const excludedTypes = ['DIGITEVEN', 'DIGITODD'];
