@@ -254,25 +254,6 @@
                                          class="w-full h-[320px] rounded-lg overflow-hidden relative"
                                     ></div>
                                     
-                                    <!-- Advanced Tooltip (Teleported to body to avoid overflow:hidden) -->
-                                    <Teleport to="body">
-                                        <div v-if="chartTooltip.visible" 
-                                             class="!fixed !z-[99999] bg-[#1a1a1a] border border-white/10 px-3 py-2 rounded-xl text-white pointer-events-none whitespace-nowrap shadow-[0_20px_60px_rgba(0,0,0,0.9)]"
-                                             :style="{ 
-                                                 top: chartTooltip.y + 'px', 
-                                                 left: chartTooltip.x + 'px', 
-                                                 transform: 'translate(-50%, -100%) translateY(-20px)' 
-                                             }">
-                                             <div class="flex items-center gap-2">
-                                                 <div :class="['w-2 h-2 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]', chartTooltip.isPositive ? 'bg-green-500 box-shadow-green' : 'bg-red-500 box-shadow-red']"></div>
-                                                 <span :class="['font-black text-lg tracking-tighter', chartTooltip.isPositive ? 'text-green-500' : 'text-red-500']">
-                                                     {{ chartTooltip.text }}
-                                                 </span>
-                                             </div>
-                                             <!-- Arrow -->
-                                             <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45"></div>
-                                        </div>
-                                    </Teleport>
                                 </div>        
                                 
                                 <div v-if="(activeChartMode === 'profit' && profitChartData.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" 
@@ -620,7 +601,6 @@ export default {
             series: null,
             tickChartData: [],
             profitChartData: [{ time: Math.floor(Date.now() / 1000), value: 0 }],
-            chartTooltip: { visible: false, x: 0, y: 0, text: '', title: '', isPositive: true },
             profitChartSubscribed: false,
             chartMarkers: [],
             profitChartMarkers: [],
@@ -1928,29 +1908,7 @@ export default {
             this.resizeObserver.observe(container);
             
             // ✅ Tooltip Interaction (Tick Chart)
-            this.chart.subscribeCrosshairMove(param => {
-                const container = this.$refs.chartContainer;
-                if (!param.point || !param.time || !this.series || !container) {
-                    this.chartTooltip.visible = false;
-                    return;
-                }
-
-                const time = param.time;
-                // Find potential trade at this time
-                let trade = this.chartMarkers.find(m => Math.abs(m.time - time) < 2); // Small threshold for ticks
-                
-                if (trade) {
-                    const rect = container.getBoundingClientRect();
-                    this.chartTooltip.x = rect.left + param.point.x;
-                    this.chartTooltip.y = rect.top + param.point.y;
-                    this.chartTooltip.title = `Operação ${trade.count}`;
-                    this.chartTooltip.text = `${trade.pnl >= 0 ? '+' : ''}${this.currencySymbol}${Math.abs(trade.pnl).toFixed(2)}`;
-                    this.chartTooltip.isPositive = trade.pnl >= 0;
-                    this.chartTooltip.visible = true;
-                } else {
-                    this.chartTooltip.visible = false;
-                }
-            });
+            this.resizeObserver.observe(container);
         },
         updateChartMarkers(trade, type = 'tick') {
             const markersArray = type === 'tick' ? this.chartMarkers : this.profitChartMarkers;
@@ -1968,11 +1926,11 @@ export default {
                 id: trade.id,
                 count: markersArray.length + (existingMarkerIndex >= 0 ? 0 : 1),
                 // Visual marker properties
-                position: 'inBar', // Na linha do gráfico
+                position: (trade.pnl || 0) >= 0 ? 'aboveBar' : 'belowBar',
                 color: (trade.pnl || 0) >= 0 ? '#22C55E' : '#EF4444',
-                shape: 'circle',
-                size: 0.5, // USER REQUEST: Deixar apenas a menorzinha
-                text: '' // Não mostrar texto fixo, apenas a bolinha
+                shape: 'arrowUp',
+                size: 1, 
+                text: `${(trade.pnl || 0) >= 0 ? '+' : ''}${this.currencySymbol}${(trade.pnl || 0).toFixed(2)}`
             };
 
             if (existingMarkerIndex >= 0) {
@@ -1996,29 +1954,9 @@ export default {
                 
                 if (chart && series && container) {
                     chart.subscribeCrosshairMove(param => {
-                        if (!param.point || !param.time || this.activeChartMode !== 'profit') {
-                            this.chartTooltip.visible = false;
-                            return;
-                        }
-                        
-                        const time = param.time;
-                        // Find trade near this point
-                        let trade = this.profitChartMarkers.find(m => Math.abs(m.time - time) < 5); // Larger threshold for profit area chart
-                        
-                        if (trade) {
-                            const rect = container.getBoundingClientRect();
-                            this.chartTooltip.x = rect.left + param.point.x;
-                            this.chartTooltip.y = rect.top + param.point.y;
-                            this.chartTooltip.title = `Operação ${trade.count}`;
-                            this.chartTooltip.text = `${trade.pnl >= 0 ? '+' : ''}${this.currencySymbol}${Math.abs(trade.pnl).toFixed(2)}`;
-                            this.chartTooltip.isPositive = trade.pnl >= 0;
-                            this.chartTooltip.visible = true;
-                        } else {
-                            this.chartTooltip.visible = false;
-                        }
-                    });
+                if (chart && series && container) {
                     this.profitChartSubscribed = true;
-                    console.log('[AIMonitoringView] Profit Chart Hover Interaction Set');
+                    console.log('[AIMonitoringView] Profit Chart Hover Interaction Removed');
                 }
             });
         }
