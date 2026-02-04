@@ -413,19 +413,20 @@
 
                                 <!-- Bottom Row: Benefits List -->
                                 <div class="agent-benefits-list-row">
-                                    <div class="agent-benefits-list">
-                                        <div class="benefit-item-premium">
-                                            <i class="fas fa-check-circle"></i>
+                                    <div class="agent-benefits-list-premium">
+                                        <div class="benefit-item-premium full-width">
+											<i class="fas fa-check-circle"></i>
                                             <strong>Análise:</strong> <span>{{ agent.analysis }}</span>
                                         </div>
-                                        <div class="benefit-item-premium">
-                                            <i class="fas fa-check-circle"></i>
-                                            <strong>Assertividade:</strong> <span>{{ agent.assertiveness }}</span>
-                                        </div>
-                                        <div class="benefit-item-premium">
-                                            <i class="fas fa-check-circle"></i>
-                                            <strong>Retorno:</strong> <span>{{ agent.return }}</span>
-                                        </div>
+										<div class="benefit-row-inline">
+											<div class="benefit-item-premium">
+												<i class="fas fa-check-circle"></i>
+												<strong>Assertividade:</strong> <span>{{ agent.assertiveness }}</span>
+											</div>
+											<div class="benefit-item-premium">
+												<strong>Retorno:</strong> <span>{{ agent.return }}</span>
+											</div>
+										</div>
                                     </div>
                                 </div>
 								
@@ -1622,9 +1623,29 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
     color: #A1A1A1;
 }
 
+.benefit-item-premium.full-width {
+	width: 100%;
+}
+
+.benefit-row-inline {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+	width: 100%;
+}
+
 .check-icon {
     font-size: 0.8rem;
     color: #22C55E;
+}
+
+.agent-benefits-list-premium {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 15px 12px;
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 0 0 12px 12px;
 }
 
 .agent-card-right {
@@ -1813,7 +1834,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 }
 
 .modal-body {
-    padding: 10px;
+    padding: 15px 10px 20px;
     max-height: 75vh;
     overflow-y: auto;
 }
