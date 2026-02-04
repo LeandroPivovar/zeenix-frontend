@@ -145,13 +145,14 @@
             <div 
               v-for="notification in notifications" 
               :key="notification.id"
-              class="notification-item"
+              class="notification-item cursor-pointer hover:bg-white/5 active:scale-[0.98] transition-all"
+              @click="handleNotificationClick(notification)"
             >
               <div class="notification-icon">
                 <i :class="notification.icon || 'fa-solid fa-info-circle'"></i>
               </div>
               <div class="notification-content">
-                <h3 class="notification-title">{{ notification.title }}</h3>
+                <h3 class="notification-title">{{ removeEmojis(notification.title) }}</h3>
                 <p class="notification-message">{{ notification.message }}</p>
                 <span class="notification-time">{{ formatNotificationDate(notification.date) }}</span>
               </div>
@@ -640,6 +641,35 @@ export default {
       this.$router.push('/dashboard');
       window.location.reload();
     },
+
+    handleNotificationClick(notification) {
+      this.closeNotificationsModal();
+      
+      const title = (notification.title || '').toLowerCase();
+      const message = (notification.message || '').toLowerCase();
+      const text = `${title} ${message}`;
+
+      // Redirecionamento baseado em palavras-chave
+      if (text.includes('ia') || text.includes('estratégia') || text.includes('investimento')) {
+        this.$router.push('/Investments-IA');
+      } else if (text.includes('agente') || text.includes('autônomo')) {
+        this.$router.push('/agente-autonomo');
+      } else if (text.includes('copy') || text.includes('master') || text.includes('trader')) {
+        this.$router.push('/copy-trading');
+      } else if (text.includes('operação') || text.includes('manual') || text.includes('sinais')) {
+        this.$router.push('/operation');
+      } else if (text.includes('perfil') || text.includes('conta')) {
+        this.$router.push('/profile');
+      } else if (text.includes('suporte') || text.includes('ajuda')) {
+        this.$router.push('/support');
+      }
+    },
+
+    removeEmojis(text) {
+      if (!text) return '';
+      // Remove emojis usando regex
+      return text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+    },
     async switchAccount() {
       // Fecha o dropdown
       this.showProfileDropdown = false;
@@ -1062,26 +1092,30 @@ export default {
           if (data.notifications && data.notifications.length > 0) {
             // Pegar timestamp da última limpeza
             const clearedAt = parseInt(localStorage.getItem('zenix_notifications_cleared_at') || '0');
+            const now = Date.now();
+            const twentyMinutes = 20 * 60 * 1000;
             
-            // Filtrar apenas notificações mais recentes que a limpeza
+            // Se passaram mais de 20 minutos, ignorar a limpeza anterior (voltar a mostrar tudo)
+            const isTimerActive = (now - clearedAt) < twentyMinutes;
+            
+            // Filtrar apenas se o timer de "esconder" estiver ativo
             const filtered = data.notifications.filter(notif => {
+              if (!isTimerActive) return true; // Timer expirou, mostra todas
+              
               const notifDate = new Date(notif.timestamp).getTime();
-              return notifDate > clearedAt;
+              return notifDate > clearedAt; // Timer ativo, mostra apenas novas
             });
 
             // Converter as notificações do backend para o formato esperado pelo frontend
             const formattedNotifications = filtered.map((notif, index) => {
-              // Limpar emojis/ícones do início do título
-              const cleanTitle = notif.title.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]\s*/u, '')
-                                          .replace(/^[^a-zA-Z0-9À-ÿ\s]+\s*/, '');
-              
               return {
                 id: `login-notif-${index}`,
-                title: cleanTitle,
+                title: notif.title,
                 message: notif.message,
                 icon: this.getNotificationIcon(notif.type),
                 date: notif.timestamp,
-                type: notif.type
+                type: notif.type,
+                original: notif
               };
             });
 
