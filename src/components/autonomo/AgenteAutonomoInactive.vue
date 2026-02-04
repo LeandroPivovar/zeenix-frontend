@@ -373,34 +373,35 @@
 								@click="selectAgent(agent.id)"
 							>
 								<!-- Top Row: Avatar, Header, Action -->
-                                <div class="agent-selection-card-top-row" style="display: flex; width: 100%; align-items: center;">
+                                <div class="agent-selection-card-top-row" style="display: flex; width: 100%; align-items: center; padding: 0.75rem 1rem 0.5rem 1rem;">
                                     <!-- Left Section: Avatar (Updated to Image) -->
-                                    <div class="agent-card-left-tall">
+                                    <div class="agent-card-left-tall" style="flex-shrink: 0; margin-right: 0.75rem;">
                                         <img 
                                             v-if="agent.image" 
                                             :src="agent.image" 
-                                            class="agent-video-tall" 
+                                            class="agent-video-tall"
+                                            style="width: 55px; height: 55px; border-radius: 6px; object-fit: cover;"
                                         />
-                                        <div v-else class="agent-avatar-fallback-tall">
+                                        <div v-else class="agent-avatar-fallback-tall" style="width: 55px; height: 55px; border-radius: 6px;">
                                             <i class="fas fa-robot"></i>
                                         </div>
                                     </div>
 
                                     <!-- Middle Section: Header Only -->
-                                    <div class="agent-card-content header-only" style="padding-bottom: 0px; min-height: auto; flex: 1; padding: 1rem; display: flex; flex-direction: column; justify-content: center;">
+                                    <div class="agent-card-content header-only" style="padding: 0; min-height: auto; flex: 1; display: flex; flex-direction: column; justify-content: center;">
                                         <div class="agent-header-row">
                                             <div class="agent-title-col">
-                                                <h4 class="agent-name-premium">{{ agent.title.replace('Agente ', '') }}</h4>
-                                                <p class="agent-description-premium">{{ agent.subtitle }}</p>
+                                                <h4 class="agent-name-premium" style="margin-bottom: 2px;">{{ agent.title.replace('Agente ', '') }}</h4>
+                                                <p class="agent-description-premium" style="margin-bottom: 0;">{{ agent.subtitle }}</p>
                                             </div>
-                                            <span class="agent-profile-badge" :class="agent.profileBadge.toLowerCase()">
+                                            <span class="agent-profile-badge" :class="agent.profileBadge.toLowerCase()" style="margin-left: auto;">
                                                 {{ agent.profileBadge }}
                                             </span>
                                         </div>
                                     </div>
 
                                     <!-- Right Section: Action -->
-                                    <div class="agent-card-action">
+                                    <div class="agent-card-action" style="margin-left: 1rem;">
                                         <div class="agent-performance-badget">
                                             <span class="perf-val">{{ agent.percentage }}</span>
                                             <span class="perf-lbl">{{ agent.percentageLabel ? 'Retorno' : 'Performance' }}</span>
@@ -408,20 +409,23 @@
                                     </div>
                                 </div>
 
+                                <!-- Divider -->
+                                <div style="width: 100%; height: 1px; background-color: #27272a; margin: 0.25rem 0 0.75rem 0;"></div>
+
                                 <!-- Bottom Row: Benefits List -->
-                                <div class="agent-benefits-list-row" style="width: 100%; padding: 0 1rem 1rem 1rem;">
-                                    <div class="agent-benefits-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <div class="agent-benefits-list-row" style="width: 100%; padding: 0 1rem 0.75rem 1rem;">
+                                    <div class="agent-benefits-list" style="display: flex; flex-direction: column; gap: 0.25rem;">
                                         <div class="benefit-item-premium" style="display: flex; align-items: center;">
-                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
-                                            <strong style="color: #DFDFDF; margin-right: 4px;">Análise:</strong> <span>{{ agent.analysis }}</span>
+                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px; font-size: 12px;"></i>
+                                            <strong style="color: #DFDFDF; margin-right: 4px; font-size: 11px;">Análise:</strong> <span style="font-size: 11px;">{{ agent.analysis }}</span>
                                         </div>
                                         <div class="benefit-item-premium" style="display: flex; align-items: center;">
-                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
-                                            <strong style="color: #DFDFDF; margin-right: 4px;">Assertividade:</strong> <span>{{ agent.assertiveness }}</span>
+                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px; font-size: 12px;"></i>
+                                            <strong style="color: #DFDFDF; margin-right: 4px; font-size: 11px;">Assertividade:</strong> <span style="font-size: 11px;">{{ agent.assertiveness }}</span>
                                         </div>
                                         <div class="benefit-item-premium" style="display: flex; align-items: center;">
-                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
-                                            <strong style="color: #DFDFDF; margin-right: 4px;">Retorno:</strong> <span>{{ agent.return }}</span>
+                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px; font-size: 12px;"></i>
+                                            <strong style="color: #DFDFDF; margin-right: 4px; font-size: 11px;">Retorno:</strong> <span style="font-size: 11px;">{{ agent.return }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2499,35 +2503,118 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 }
 
 @media (max-width: 768px) {
+    /* Modal Layout */
+    .categorized-modal {
+        padding: 1rem !important;
+        max-width: 95% !important;
+        max-height: 85vh !important;
+        width: 95% !important;
+    }
+
+    .modal-header-premium {
+        padding: 0 0 1rem !important;
+        margin-bottom: 0 !important;
+    }
+
+    .modal-body {
+        padding: 0 !important;
+        max-height: calc(85vh - 70px) !important;
+    }
+
+    /* Agent Card Layout */
     .agent-selection-card {
-        flex-direction: column;
-        height: auto;
+        padding: 1rem !important;
+        gap: 0.5rem !important;
+        min-height: auto !important;
+    }
+
+    .agent-selection-card-top-row {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 1rem !important;
+        width: 100% !important;
     }
 
     .agent-card-left-tall {
-        width: 100%;
-        height: 200px;
-        border-right: none;
-        border-bottom: 1px solid #1C1C1C;
-        padding: 15px;
-    }
-    
-    .agent-video-tall {
-        border-radius: 12px;
+        width: auto !important;
+        height: auto !important;
+        padding: 0 !important;
+        border: none !important;
     }
 
-    .agent-card-action {
-        width: 100%;
-        border-left: none;
-        border-top: 1px solid #1C1C1C;
-        flex-direction: row;
-        justify-content: space-between;
-        padding: 1rem;
+    .agent-video-tall,
+    .agent-avatar-fallback-tall {
+        width: 48px !important;
+        height: 48px !important;
+    }
+
+    .agent-card-content {
+        padding: 0 !important;
+        width: auto !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 0 !important;
+    }
+
+    .agent-header-row {
+        margin-bottom: 0 !important;
+    }
+
+    .agent-name-premium {
+        font-size: 1rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .agent-profile-badge {
+        font-size: 10px !important;
+        padding: 2px 8px !important;
+        margin-left: 0.5rem !important;
+        display: inline-block !important;
     }
     
+    .agent-description-premium {
+        font-size: 0.8rem !important;
+        display: none !important; /* Hide description on mobile to match compact look if needed, or keep it */
+    }
+
+    /* Bottom Row: Stats and Button */
+    .agent-card-action {
+        width: 100% !important;
+        padding: 0.75rem 0 0 !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-top: 0.5rem !important;
+    }
+
+    .agent-performance-badget {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+    }
+
+    .perf-val {
+        font-size: 1.25rem !important;
+        line-height: 1 !important;
+    }
+    
+    .perf-lbl {
+        font-size: 9px !important;
+    }
+
     .agent-select-btn-premium {
-        width: auto;
-        padding: 0.6rem 2rem;
+        width: auto !important;
+        padding: 0.5rem 1.5rem !important;
+        font-size: 0.75rem !important;
+        height: 36px !important;
+    }
+    
+    /* Benefits list hidden on mobile for compactness */
+    .agent-benefits-list-row {
+        display: none !important;
     }
 }
 
@@ -2535,5 +2622,77 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     height: 100% !important;
     display: flex !important;
     flex-direction: column !important;
+}
+
+@media (max-width: 768px) {
+    /* Modal Adjustments */
+    .categorized-modal {
+        padding: 1rem !important;
+        max-width: 95% !important;
+        max-height: 85vh !important;
+        width: 95% !important;
+    }
+
+    .modal-header-premium {
+        padding: 1rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .modal-title {
+        font-size: 1.25rem !important;
+    }
+
+    .modal-body {
+        padding: 0 1rem 1.5rem !important;
+    }
+
+    /* Card Top Row - Override inline flex */
+    .agent-selection-card-top-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 1rem !important;
+    }
+
+    .agent-card-left-tall {
+        width: 100% !important;
+        height: auto !important;
+        padding: 0 !important;
+        border: none !important;
+        justify-content: flex-start !important;
+    }
+
+    .agent-card-content {
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    .agent-name-premium {
+        font-size: 1.25rem !important;
+    }
+
+    .agent-card-action {
+        width: 100% !important;
+        padding: 0.5rem 0 0 !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 1rem !important;
+    }
+
+    .agent-performance-badget {
+        flex-direction: row !important;
+        gap: 0.5rem !important;
+        align-items: baseline !important;
+    }
+
+    .perf-val {
+        font-size: 1rem !important;
+    }
+
+    .agent-benefits-list-row {
+        padding: 0 !important;
+        margin-top: 0.5rem !important;
+    }
 }
 </style>

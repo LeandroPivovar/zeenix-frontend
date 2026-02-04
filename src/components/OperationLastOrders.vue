@@ -28,7 +28,7 @@
             <div class="mobile-history-details">
               <div class="mobile-history-detail-column">
                 <span class="detail-label">Entrada</span>
-                <span class="detail-value">${{ order.entryPrice ? formatPrice(order.entryPrice) : '-' }}</span>
+                <span class="detail-value">${{ formatPrice(order.entryPrice || order.buyPrice || order.price) }}</span>
               </div>
               <div class="mobile-history-detail-column">
                 <span class="detail-label">Saída</span>

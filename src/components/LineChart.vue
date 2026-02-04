@@ -20,8 +20,7 @@ export default {
   data() {
     return {
       chart: null,
-      isRendering: false,
-      resizeObserver: null
+      isRendering: false
     }
   },
   mounted() {
@@ -31,22 +30,9 @@ export default {
           this.renderChart();
         }
       }, 300);
-
-      // Setup ResizeObserver to handle v-show toggles and container changes
-      this.resizeObserver = new ResizeObserver(() => {
-        if (this.chart) {
-          this.chart.resize();
-        }
-      });
-      if (this.$el) {
-        this.resizeObserver.observe(this.$el);
-      }
     });
   },
   beforeUnmount() {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
     if (this.chart) {
       this.chart.destroy();
       this.chart = null; 
@@ -233,6 +219,14 @@ export default {
       } catch (error) {
         this.renderChart();
       }
+    },
+    forceUpdate() {
+        if (this.chart) {
+            // Just resize, don't force infinite updates
+            this.chart.resize();
+        } else {
+            this.renderChart();
+        }
     }
   }
 }

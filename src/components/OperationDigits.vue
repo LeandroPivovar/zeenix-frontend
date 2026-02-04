@@ -395,6 +395,9 @@
                     </div>
                     
                     <!-- Error/Success Messages -->
+                    <div v-if="tradeMessage" class="mt-3 p-3 bg-zenix-green/10 border border-zenix-green/30 rounded text-zenix-green text-xs">
+                        {{ tradeMessage }}
+                    </div>
                     <div v-if="tradeError" class="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
                         {{ tradeError }}
                     </div>
@@ -687,6 +690,7 @@ export default {
             signalCountdownInterval: null,
             isSimulated: false,
             collectedTicks: [],
+            contractTicksRemaining: null,
         }
     },
     computed: {
@@ -1617,6 +1621,8 @@ export default {
             }
 
             console.log('[OperationDigits] ✓ Compra executada com sucesso!');
+            this.tradeMessage = 'Compra executada com sucesso!';
+            this.tradeError = '';
             
             this.unsubscribeFromProposal();
             
@@ -1703,6 +1709,25 @@ export default {
                 profit: contract.profit,
                 status: contract.status
             });
+            
+            // Atualizar Ticks Restantes
+            if (contract.tick_count && contract.tick_stream) {
+                 this.contractTicksRemaining = contract.tick_count - contract.tick_stream.length;
+            } else if (contract.tick_count && contract.current_spot) {
+                 // Fallback simples se tick_stream não vier completo (embora usually vem)
+                 // A Deriv manda current_spot a cada tick.
+                 // Mas tick_stream é o array de ticks passados.
+                 // Se não tiver tick_stream, podemos tentar inferir ou usar tick_passed se existir (alguns contratos tem)
+                 if (contract.tick_passed !== undefined) {
+                     this.contractTicksRemaining = contract.tick_count - contract.tick_passed;
+                 } else {
+                     // Tentativa de estimativa ou manter null se não tiver certeza
+                 }
+            }
+            // Se tick_stream existir, é o mais confiável
+            if (contract.tick_stream) {
+                this.contractTicksRemaining = Math.max(0, contract.tick_count - contract.tick_stream.length);
+            }
             
             if (msg.subscription?.id) {
                 this.contractSubscriptionId = msg.subscription.id;

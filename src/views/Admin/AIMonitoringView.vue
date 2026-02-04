@@ -81,7 +81,7 @@
                                 </p>
                                 <span class="text-xs lg:text-lg font-semibold px-2 py-0.5 rounded-lg border hidden md:inline"
                                       :class="monitoringStats.profit >= 0 ? 'text-success/90 bg-success/10 border-success/20' : 'text-red-500/90 bg-red-500/10 border-red-500/20'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.initialBalance || 1)) * 100).toFixed(3) }}%
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.initialBalance || 1)) * 100).toFixed(2) }}%
                                 </span>
                             </div>
                             <div class="mt-2 lg:mt-3 h-1 w-[100px] mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
@@ -107,11 +107,11 @@
                                     <span class="text-[10px] lg:text-xs text-muted-foreground block">Loss</span>
                                 </div>
                                 <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
-                                <div class="bg-white/5 rounded-xl px-2.5 py-1.5 flex flex-col items-center">
+                                <div class="px-2.5 py-1.5 flex flex-col items-center">
                                     <span class="text-lg lg:text-xl font-bold text-success/90 leading-none">
                                         {{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%
                                     </span>
-                                    <span class="text-[8px] lg:text-[10px] text-muted-foreground font-black uppercase tracking-tighter mt-0.5">WR</span>
+                                    <span class="text-[10px] lg:text-xs text-muted-foreground font-black uppercase tracking-tighter mt-0.5">WinRate</span>
                                 </div>
                             </div>
                         </div>
@@ -205,13 +205,7 @@
                                     </div>
                                 </div>
 
-                                <!-- IA EM FUNCIONAMENTO / Footer (Mobile) -->
-                                <div class="mt-2 mb-4 px-1">
-                                    <h4 class="text-[14px] font-bold text-[#D4D4D4] uppercase mb-1 text-left">IA Em Funcionamento</h4>
-                                    <p class="text-[12px] text-[#AAAAAA] leading-snug text-left">
-                                        Monitorando o mercado e executando apenas quando há vantagem estatística.
-                                    </p>
-                                </div>
+
                             </div>
 
                             <!-- Chart Tab -->
@@ -245,7 +239,8 @@
                                     </div>
                                     <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
                                         <div class="relative w-full h-[320px]">
-                                     <LineChart 
+                                    <LineChart 
+                                        ref="profitChart"
                                         v-show="activeChartMode === 'profit'"
                                         chartId="monitoring-profit-chart" 
                                         :data="formattedProfitHistory" 
@@ -258,6 +253,13 @@
                                         ref="chartContainer"
                                         class="w-full h-[320px] rounded-lg overflow-hidden relative"
                                     ></div>
+                                    <!-- Tooltip -->
+                                    <div v-show="chartTooltip.visible" 
+                                         class="absolute z-50 bg-[rgba(0,0,0,0.9)] border border-white/10 p-3 rounded-lg text-sm text-white pointer-events-none whitespace-nowrap shadow-xl"
+                                         :style="{ top: chartTooltip.y + 'px', left: chartTooltip.x + 'px', transform: 'translate(-50%, -100%) translateY(-10px)' }">
+                                         <span class="font-bold block mb-1">Operação</span>
+                                         {{ chartTooltip.text }}
+                                    </div>
                                 </div>        
                                         <div v-if="(activeChartMode === 'profit' && profitHistory.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" 
                                              class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500 pointer-events-none">
@@ -595,6 +597,7 @@ export default {
     },
     data() {
         return {
+            chartTooltip: { visible: false, x: 0, y: 0, text: '' },
             isSidebarOpen: false,
             isSidebarCollapsed: true,
             isMobile: false,
@@ -677,7 +680,9 @@ export default {
             activeChartMode: 'profit', // 'profit' or 'tick'
             chart: null,
             series: null,
-            tickChartData: []
+            tickChartData: [],
+            resizeObserver: null,
+            chartMarkers: []
         }
     },
     computed: {
@@ -725,11 +730,19 @@ export default {
              }
         },
         activeChartMode(val) {
-            if (val === 'tick') {
-                this.$nextTick(() => {
+            this.$nextTick(() => {
+                if (val === 'tick') {
                     this.initLightweightChart();
-                });
-            } else {
+                } else if (val === 'profit') {
+                    // ✅ Restore Profit Chart on switch using lighter forceUpdate
+                    if (this.$refs.profitChart && this.$refs.profitChart.forceUpdate) {
+                        console.log('[AIMonitoringView] Restoring Profit Chart...');
+                        this.$refs.profitChart.forceUpdate(); 
+                    }
+                }
+            });
+
+            if (val !== 'tick') {
                 // Cleanup chart if switching away? Optional, but good practice
                 if (this.chart) {
                      // We keep it in memory or destroy it. 
@@ -766,6 +779,12 @@ export default {
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobile);
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+        }
+        if (this.chart) {
+            this.chart.remove();
+        }
         this.stopTickConnection();
     },
     methods: {
@@ -1224,12 +1243,12 @@ export default {
                 
                 // 1. Maintain Logic Compatibility
                 this.tickHistory.unshift(price);
-                if (this.tickHistory.length > 100) this.tickHistory.pop();
+                if (this.tickHistory.length > 1000) this.tickHistory.pop();
                 
                 // 2. Update Chart Data
                 const tickObj = { time: time, value: price };
                 this.tickChartData.push(tickObj);
-                if (this.tickChartData.length > 1000) this.tickChartData.shift(); // Keep more history for chart
+                if (this.tickChartData.length > 5000) this.tickChartData.shift(); // Keep more history for chart
                 
                 // 3. Update Chart Series Realtime
                 if (this.series) {
@@ -1515,6 +1534,9 @@ export default {
                     // Store old states for logging
                     const oldAnalysis = this.sessionState.analysisType;
                     const oldMode = this.sessionState.negotiationMode;
+
+                    // ✅ Update Chart Markers
+                    this.updateChartMarkers(trade);
                     
                     RiskManager.processTradeResult(
                         this.sessionState, 
@@ -1789,6 +1811,8 @@ export default {
                     timeVisible: true,
                     secondsVisible: true,
                     borderColor: 'rgba(42, 42, 42, 0.5)',
+                    rightOffset: 10,
+                    fixLeftEdge: true, // Fix start position
                 },
                 rightPriceScale: {
                     borderColor: 'rgba(42, 42, 42, 0.5)',
@@ -1803,14 +1827,84 @@ export default {
             if (this.tickChartData.length > 0) {
                 this.series.setData(this.tickChartData);
             }
+
+            // Restore markers
+            if (this.chartMarkers.length > 0) {
+                this.series.setMarkers(this.chartMarkers);
+            }
             
             // Handle Resize
-            const resizeObserver = new ResizeObserver(entries => {
+            this.resizeObserver = new ResizeObserver(entries => {
                 if (entries.length === 0 || !entries[0].contentRect) return;
                 const { width } = entries[0].contentRect;
-                this.chart.applyOptions({ width });
+                if (this.chart) {
+                    this.chart.applyOptions({ width });
+                }
             });
-            resizeObserver.observe(container);
+            this.resizeObserver.observe(container);
+            
+            // ✅ Tooltip Interaction
+            this.chart.subscribeCrosshairMove(param => {
+                if (!param.point || !param.time || !this.series || this.chartMarkers.length === 0) {
+                    this.chartTooltip.visible = false;
+                    return;
+                }
+
+                // Check for marker proximity
+                const time = param.time;
+                // Markers might have slight time diff, checking exact match first
+                let marker = this.chartMarkers.find(m => m.time === time);
+                
+                // If no exact match, try to find one very close? 
+                // Lightweight charts aligns crosshair to bars, so time should match bar time.
+                // Our markers are attached to bar times. So exact match should work.
+                
+                if (marker && marker.originalText) {
+                    // Removed unused 'price'
+                    // Position at cursor (param.point.x, param.point.y)
+                    // Or position at bar top? 
+                    // User requested "passa o mouse encima". 
+                    // Crosshair gives coordinate of mouse relative to chart.
+                    this.chartTooltip.x = param.point.x;
+                    this.chartTooltip.y = param.point.y;
+                    this.chartTooltip.text = marker.originalText;
+                    this.chartTooltip.visible = true;
+                } else {
+                    this.chartTooltip.visible = false;
+                }
+            });
+        },
+        updateChartMarkers(trade) {
+            // FIX: Always update the markers array even if chart is not visible
+             
+            const lastTick = this.tickChartData[this.tickChartData.length - 1];
+            if (!lastTick) return;
+
+            const existingMarkerIndex = this.chartMarkers.findIndex(m => m.id === trade.id);
+            
+            const markerText = `${trade.result === 'WON' ? '+' : ''}${this.currencySymbol}${trade.pnl.toFixed(2)}`;
+            const markerColor = trade.result === 'WON' ? '#22C55E' : '#EF4444';
+            const markerShape = trade.result === 'WON' ? 'arrowUp' : 'arrowDown';
+            
+            const marker = {
+                time: lastTick.time, // Use last tick time as approximation if we don't have exact epoch
+                position: trade.result === 'WON' ? 'belowBar' : 'aboveBar',
+                color: markerColor,
+                shape: markerShape,
+                text: '', // Hidden on chart
+                originalText: markerText, // For tooltip
+                id: trade.id
+            };
+
+            if (existingMarkerIndex >= 0) {
+                this.chartMarkers[existingMarkerIndex] = marker;
+            } else {
+                this.chartMarkers.push(marker);
+            }
+            
+            if (this.series) {
+                this.series.setMarkers(this.chartMarkers);
+            }
         }
     }
 }

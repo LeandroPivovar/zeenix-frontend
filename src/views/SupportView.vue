@@ -10,7 +10,7 @@
     <!-- Sidebar -->
     <AppSidebar 
       :class="{ 'mobile-open': isMobileMenuOpen && isMobile }"
-      :is-open="isSidebarOpen" 
+      :is-open="isMobileMenuOpen" 
       :is-collapsed="isSidebarCollapsed" 
       @toggle-collapse="toggleSidebarCollapse"
       @close-sidebar="closeMobileMenu"
@@ -37,6 +37,7 @@
         :balances-by-currency-demo="balancesByCurrencyDemo"
         @close="isSettingsOpen = false"
         @account-type-changed="handleAccountTypeChange"
+        @open-settings="toggleSettingsModal"
       />
       <main class="main-content" style="margin-top: 60px;">
         <!-- Immediate Support Section -->
@@ -188,6 +189,21 @@
     <DesktopBottomNav />
   </div>
 </template>
+
+<style scoped>
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem 15px 100px !important;
+        margin-top: 60px !important;
+        padding-top: 1rem !important;
+        background: linear-gradient(180deg, #102018 0, #020403 50%, #000100) !important;
+        background-blend-mode: normal;
+        position: relative;
+        min-height: calc(100vh - 60px);
+        padding-bottom: 100px;
+    }
+}
+</style>
 
 <script>
 import AppSidebar from '../components/Sidebar.vue'
