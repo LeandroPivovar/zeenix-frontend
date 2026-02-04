@@ -314,6 +314,7 @@
                                                         <th class="px-4 py-4 text-left font-semibold">ORDEM</th>
                                                         <th class="px-4 py-4 text-left font-semibold">PREÇO DE ENTRADA</th>
                                                         <th class="px-4 py-4 text-left font-semibold">PREÇO DE SAIDA</th>
+                                                        <th class="px-4 py-4 text-left font-semibold">ÚLTIMO DÍGITO</th>
                                                         <th class="px-4 py-4 text-left font-semibold">INVESTIMENTO</th>
                                                         <th class="px-4 py-4 text-right font-semibold">RESULTADO</th>
                                                     </tr>
@@ -329,6 +330,7 @@
                                                         </td>
                                                         <td class="px-4 py-4 text-foreground font-medium">{{ op.entryPrice || '-' }}</td>
                                                         <td class="px-4 py-4 text-foreground font-medium">{{ op.exitPrice || '-' }}</td>
+                                                        <td class="px-4 py-4 text-foreground font-medium font-mono text-center">{{ op.lastDigit || '-' }}</td>
                                                         <td class="px-4 py-4 text-foreground font-medium">{{ currencySymbol }} {{ op.stake.toFixed(2) }}</td>
                                                         <td class="px-4 py-4 text-right">
                                                             <span v-if="op.result === 'OPEN' || op.result === 'PENDING'" class="text-yellow-500 font-bold uppercase tracking-tight">PENDENTE</span>
