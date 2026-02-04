@@ -3377,7 +3377,7 @@ export default {
                 this.isNegotiating = false; 
                 console.log(`[StrategyCreator] Contract ${id} tracked. Releasing isNegotiating lock.`);
             } else {
-            } else {
+
                 trade.pnl = contract.profit || 0;
                 if (contract.entry_tick_display_value) trade.entryPrice = contract.entry_tick_display_value;
                 else if (contract.entry_tick) trade.entryPrice = contract.entry_tick;
