@@ -3366,8 +3366,9 @@ export default {
                     // Save Barrier for history key update later
                     // Save Barrier for history key update later
                     barrier: contract.barrier,
-                    entryPrice: contract.entry_spot,
-                    exitPrice: contract.exit_spot
+                    entryPrice: contract.entry_tick_display_value,
+                    exitPrice: contract.exit_tick_display_value,
+                    lastDigit: contract.exit_tick_display_value ? contract.exit_tick_display_value.slice(-1) : null
                 };
                 this.monitoringOperations.unshift(trade);
                 this.activeContracts.set(id, trade);
@@ -3380,13 +3381,10 @@ export default {
 
                 trade.pnl = contract.profit || 0;
                 if (contract.entry_tick_display_value) trade.entryPrice = contract.entry_tick_display_value;
-                else if (contract.entry_tick) trade.entryPrice = contract.entry_tick;
-                else if (contract.entry_spot) trade.entryPrice = contract.entry_spot;
-                
-                // Enhanced Exit Price capture with strict hierarchy
-                if (contract.exit_tick_display_value) trade.exitPrice = contract.exit_tick_display_value;
-                else if (contract.exit_tick) trade.exitPrice = contract.exit_tick;
-                else if (contract.exit_spot) trade.exitPrice = contract.exit_spot;
+                if (contract.exit_tick_display_value) {
+                    trade.exitPrice = contract.exit_tick_display_value;
+                    trade.lastDigit = contract.exit_tick_display_value.slice(-1);
+                }
             }
 
             if (contract.is_sold) {
@@ -3413,6 +3411,11 @@ export default {
                     console.log('[StrategyCreator] Audit Details:', contract.audit_details);
                 }
                 
+                // Update Last Digit if exit price is set (final check)
+                if (trade.exitPrice) {
+                    trade.lastDigit = trade.exitPrice.toString().slice(-1);
+                }
+
                 trade.result = contract.status.toUpperCase(); // 'WON' or 'LOST'
                 trade.pnl = parseFloat(contract.profit || 0);
 
