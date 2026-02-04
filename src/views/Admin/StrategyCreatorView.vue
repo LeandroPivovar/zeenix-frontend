@@ -3016,12 +3016,12 @@ export default {
                     // --- PAUSE CHECK (Fast Result) ---
                     const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
                     if (!win) {
-                         this.addLog(`🔍 DEBUG PAUSA (Fast): Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=2`, 'warning');
+                         this.addLog(`🔍 DEBUG PAUSA (Fast): Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
                     }
-                    if (!win && totalConsecutiveLosses >= 2) {
+                    if (!win && totalConsecutiveLosses >= 6) {
                         const pauseDuration = 120 * 1000;
                         this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 1 Martingale atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
+                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
                         // No logic to stop ticks, just block next
                     }
 
@@ -3409,17 +3409,17 @@ export default {
                         this.recoveryConfig.lossesToActivate
                     );
 
-                    // --- Forced Pause Logic (1 Base + 1 Martingale = 2 Losses) ---
+                    // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
                     const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
                     
                     if (trade.result !== 'WON') {
-                         this.addLog(`🔍 DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=2`, 'warning');
+                         this.addLog(`🔍 DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
                     }
 
-                    if (trade.result !== 'WON' && totalConsecutiveLosses >= 2) {
+                    if (trade.result !== 'WON' && totalConsecutiveLosses >= 6) {
                         const pauseDuration = 120 * 1000; // 2 minutes
                         this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 1 Martingale atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
+                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
                         // Do not stop ticks here as it might affect tracking
                     }
                     
