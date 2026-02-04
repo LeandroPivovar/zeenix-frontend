@@ -406,6 +406,7 @@
 
             <!-- Trade Result Modal -->
             <TradeResultModal
+                v-if="isMobile"
                 :visible="showTradeResultModal"
                 :profit="finalTradeProfit"
                 :currency="accountCurrency"
@@ -414,6 +415,77 @@
                 :sellPrice="finalExitSpot || 0"
                 @close="closeTradeResultModal"
             />
+
+            <Teleport to="body" v-else>
+                <div 
+                    v-if="showTradeResultModal" 
+                    class="modal-overlay" 
+                    data-modal="trade-result" 
+                    @click.self="closeTradeResultModal"
+                >
+                    <div class="modal-content trade-result-modal">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Resultado da Operação</h3>
+                            <button @click="closeTradeResultModal" class="modal-close-btn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="trade-result-content">
+                                <!-- Ícone e Status -->
+                                <div class="trade-result-icon-wrapper" :class="finalTradeProfit >= 0 ? 'win' : 'loss'">
+                                    <div class="trade-result-icon">
+                                        <i :class="finalTradeProfit >= 0 ? 'fas fa-trophy' : 'fas fa-chart-line rotate-180'"></i>
+                                    </div>
+                                    <div class="trade-result-particles"></div>
+                                </div>
+                                
+                                <!-- Título -->
+                                <h4 class="trade-result-status" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                                    {{ finalTradeProfit >= 0 ? 'VITÓRIA' : 'DERROTA' }}
+                                </h4>
+                                
+                                <!-- Valor -->
+                                <div class="trade-result-main-value" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                                    <span class="currency-symbol">$</span>
+                                    <span class="profit-amount">{{ Math.abs(finalTradeProfit).toFixed(pricePrecision) }}</span>
+                                </div>
+                                
+                                <!-- Detalhes em Grid -->
+                                <div class="trade-result-details-grid">
+                                    <div class="detail-item">
+                                        <span class="detail-label">TIPO</span>
+                                        <span class="detail-value">{{ finalTradeType }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">ENTRADA</span>
+                                        <span class="detail-value">$ {{ finalEntrySpot ? finalEntrySpot.toFixed(pricePrecision) : '---' }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">SAÍDA</span>
+                                        <span class="detail-value">$ {{ finalExitSpot ? finalExitSpot.toFixed(pricePrecision) : '---' }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">STATUS</span>
+                                        <span class="detail-value" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                                            {{ finalTradeProfit >= 0 ? 'Profit' : 'Loss' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Botão Fechar -->
+                                <button 
+                                    @click="closeTradeResultModal"
+                                    class="trade-result-confirm-btn"
+                                    :class="finalTradeProfit >= 0 ? 'bg-zenix-green' : 'bg-red-500'"
+                                >
+                                    ENTENDIDO
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Teleport>
         </div>
 
         <!-- Market Selection Modal -->
@@ -547,6 +619,7 @@ export default {
         return {
             showMarketModal: false,
             showTradeTypeModal: false,
+            isMobile: false,
             selectedTradeTypeGroup: 'digits_match_diff',
             digitTradeTypeCategories: [
                 {
@@ -1746,6 +1819,9 @@ export default {
             this.contractStartTime = null;
             this.contractDuration = null;
         },
+        checkMobile() {
+            this.isMobile = window.innerWidth <= 768;
+        },
         closeTradeResultModal() {
             this.showTradeResultModal = false;
             // Limpar dados do resultado
@@ -2005,6 +2081,8 @@ export default {
         },
     },
     mounted() {
+        this.checkMobile();
+        window.addEventListener('resize', this.checkMobile);
         console.log('[OperationDigits] Componente montado');
         if (this.orderConfig && this.orderConfig.value !== undefined) {
             this.orderValue = Number(this.orderConfig.value);
@@ -2017,6 +2095,7 @@ export default {
         this.initConnection();
     },
     beforeUnmount() {
+        window.removeEventListener('resize', this.checkMobile);
         console.log('[OperationDigits] Componente sendo desmontado');
         this.isDestroying = true;
         
