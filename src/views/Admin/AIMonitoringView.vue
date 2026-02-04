@@ -107,11 +107,11 @@
                                     <span class="text-[10px] lg:text-xs text-muted-foreground block">Loss</span>
                                 </div>
                                 <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
-                                <div class="px-2.5 py-1.5 flex flex-col items-center">
-                                    <span class="text-lg lg:text-xl font-bold text-success/90 leading-none">
+                                <div class="text-center">
+                                    <span class="text-lg lg:text-xl font-semibold text-success/90">
                                         {{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%
                                     </span>
-                                    <span class="text-[10px] lg:text-xs text-muted-foreground font-black uppercase tracking-tighter mt-0.5">WinRate</span>
+                                    <span class="text-[10px] lg:text-xs text-muted-foreground block">Winrate</span>
                                 </div>
                             </div>
                         </div>
