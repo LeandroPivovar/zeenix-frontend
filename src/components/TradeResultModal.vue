@@ -258,7 +258,7 @@ export default {
 }
 
 .mobile-redesign .operation-label {
-  text-align: left;
+  text-align: center;
   font-size: 14px;
   font-weight: 700;
   color: #fff;
@@ -266,6 +266,9 @@ export default {
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mobile-redesign .modal-header {
@@ -341,16 +344,41 @@ export default {
 }
 
 .mobile-redesign .profit-amount { color: #22c55e; }
-.mobile-redesign .loss-amount { color: #f87171; }
+.mobile-redesign .loss-amount { color: #ef4444; }
+
+/* Small mobile optimizations */
+@media (max-width: 380px) {
+  .mobile-redesign .modal-body-container {
+    padding: 24px 16px;
+  }
+  
+  .mobile-redesign .amount-number {
+    font-size: 48px;
+  }
+  
+  .mobile-redesign .amount-prefix {
+    font-size: 20px;
+  }
+  
+  .mobile-redesign .result-icon-outer {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .mobile-redesign .result-icon {
+    font-size: 28px;
+  }
+}
 
 .mobile-redesign .result-details-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
+  margin-bottom: 24px;
 }
 
 .mobile-redesign .detail-box {
@@ -395,7 +423,7 @@ export default {
 }
 
 .mobile-redesign .profit-btn { background: #22c55e; }
-.mobile-redesign .loss-btn { background: #f87171; }
+.mobile-redesign .loss-btn { background: #ef4444; }
 
 /* =========================================
    OLD DESKTOP LAYOUT STYLES
