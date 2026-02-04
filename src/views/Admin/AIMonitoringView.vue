@@ -252,12 +252,20 @@
                                         ref="chartContainer"
                                         class="w-full h-[320px] rounded-lg overflow-hidden relative"
                                     ></div>
-                                    <!-- Tooltip -->
+                                    <!-- Advanced Tooltip -->
                                     <div v-show="chartTooltip.visible" 
-                                         class="absolute z-50 bg-[rgba(0,0,0,0.9)] border border-white/10 p-3 rounded-lg text-sm text-white pointer-events-none whitespace-nowrap shadow-xl"
-                                         :style="{ top: chartTooltip.y + 'px', left: chartTooltip.x + 'px', transform: 'translate(-50%, -100%) translateY(-10px)' }">
-                                         <span class="font-bold block mb-1">Operação</span>
-                                         {{ chartTooltip.text }}
+                                          class="absolute z-[100] bg-[#1a1a1a]/95 backdrop-blur-md border border-white/10 p-3 rounded-lg text-sm text-white pointer-events-none whitespace-nowrap shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-75"
+                                          :style="{ 
+                                              top: chartTooltip.y + 'px', 
+                                              left: chartTooltip.x + 'px', 
+                                              transform: 'translate(-50%, -100%) translateY(-15px)' 
+                                          }">
+                                          <div class="flex flex-col items-center min-w-[100px]">
+                                              <span class="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-1 opacity-60">Status Atual</span>
+                                              <span class="font-bold text-white tracking-tight">{{ chartTooltip.text }}</span>
+                                          </div>
+                                          <!-- Arrow -->
+                                          <div class="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45"></div>
                                     </div>
                                 </div>        
                                         <div v-if="(activeChartMode === 'profit' && profitChartData.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" 
@@ -734,10 +742,34 @@ export default {
                 if (val === 'tick') {
                     this.initLightweightChart();
                 } else if (val === 'profit') {
-                    // ✅ Restore Profit Chart on switch using lighter forceUpdate
                     if (this.$refs.profitChart && this.$refs.profitChart.forceUpdate) {
-                        console.log('[AIMonitoringView] Restoring Profit Chart...');
                         this.$refs.profitChart.forceUpdate(); 
+                        
+                        // ✅ SYNC TOOLTIP LOGIC: Same as tick chart
+                        const chart = this.$refs.profitChart.chart;
+                        const series = this.$refs.profitChart.series;
+                        
+                        if (chart && series) {
+                            chart.subscribeCrosshairMove(param => {
+                                if (!param.point || !param.time || !series) {
+                                    this.chartTooltip.visible = false;
+                                    return;
+                                }
+                                
+                                const data = param.seriesData.get(series);
+                                if (data && (data.value !== undefined || data.close !== undefined)) {
+                                    const value = data.value !== undefined ? data.value : data.close;
+                                    const time = new Date(param.time * 1000).toLocaleTimeString('pt-BR');
+                                    
+                                    this.chartTooltip.x = param.point.x;
+                                    this.chartTooltip.y = param.point.y;
+                                    this.chartTooltip.text = `Lucro: ${this.currencySymbol}${value.toFixed(2)} (${time})`;
+                                    this.chartTooltip.visible = true;
+                                } else {
+                                    this.chartTooltip.visible = false;
+                                }
+                            });
+                        }
                     }
                 }
             });
