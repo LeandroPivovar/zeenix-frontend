@@ -254,14 +254,14 @@
                                     ></div>
                                     <!-- Advanced Tooltip -->
                                     <div v-show="chartTooltip.visible" 
-                                          class="absolute z-[100] bg-[#1a1a1a]/95 backdrop-blur-md border border-white/10 p-3 rounded-lg text-sm text-white pointer-events-none whitespace-nowrap shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-75"
+                                          class="absolute z-[999] bg-[#1a1a1a] border border-white/10 p-3 rounded-lg text-sm text-white pointer-events-none whitespace-nowrap shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
                                           :style="{ 
                                               top: chartTooltip.y + 'px', 
                                               left: chartTooltip.x + 'px', 
                                               transform: 'translate(-50%, -100%) translateY(-15px)' 
                                           }">
                                           <div class="flex flex-col items-center min-w-[100px]">
-                                              <span class="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-1 opacity-60">Status Atual</span>
+                                              <span class="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-1 opacity-60">Performance</span>
                                               <span class="font-bold text-white tracking-tight">{{ chartTooltip.text }}</span>
                                           </div>
                                           <!-- Arrow -->
@@ -742,37 +742,10 @@ export default {
                 if (val === 'tick') {
                     this.initLightweightChart();
                 } else if (val === 'profit') {
-                    if (this.$refs.profitChart && this.$refs.profitChart.forceUpdate) {
-                        this.$refs.profitChart.forceUpdate(); 
-                        
-                        // ✅ SYNC TOOLTIP LOGIC: Same as tick chart
-                        const chart = this.$refs.profitChart.chart;
-                        const series = this.$refs.profitChart.series;
-                        
-                        if (chart && series) {
-                            chart.subscribeCrosshairMove(param => {
-                                if (!param.point || !param.time || !series) {
-                                    this.chartTooltip.visible = false;
-                                    return;
-                                }
-                                
-                                const data = param.seriesData.get(series);
-                                if (data && (data.value !== undefined || data.close !== undefined)) {
-                                    const value = data.value !== undefined ? data.value : data.close;
-                                    const time = new Date(param.time * 1000).toLocaleTimeString('pt-BR');
-                                    
-                                    this.chartTooltip.x = param.point.x;
-                                    this.chartTooltip.y = param.point.y;
-                                    this.chartTooltip.text = `Lucro: ${this.currencySymbol}${value.toFixed(2)} (${time})`;
-                                    this.chartTooltip.visible = true;
-                                } else {
-                                    this.chartTooltip.visible = false;
-                                }
-                            });
-                        }
-                    }
+                    this.setupProfitChartTooltip();
                 }
             });
+        }
 
             if (val !== 'tick') {
                 // Cleanup chart if switching away? Optional, but good practice
@@ -808,6 +781,11 @@ export default {
         }
         
         this.initTickConnection();
+        
+        // Ensure Profit Chart Tooltip is set on initial load
+        if (this.activeChartMode === 'profit') {
+            setTimeout(() => this.setupProfitChartTooltip(), 1000);
+        }
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobile);
@@ -1958,6 +1936,38 @@ export default {
             
             if (this.series) {
                 this.series.setMarkers(this.chartMarkers);
+            }
+        },
+        setupProfitChartTooltip() {
+            if (this.$refs.profitChart && this.$refs.profitChart.forceUpdate) {
+                this.$refs.profitChart.forceUpdate(); 
+                
+                const chart = this.$refs.profitChart.chart;
+                const series = this.$refs.profitChart.series;
+                
+                if (chart && series) {
+                    chart.subscribeCrosshairMove(param => {
+                        // If mouse is away or chart is not visible
+                        if (!param.point || !param.time || this.activeChartMode !== 'profit') {
+                            this.chartTooltip.visible = false;
+                            return;
+                        }
+                        
+                        const data = param.seriesData.get(series);
+                        if (data && (data.value !== undefined || data.close !== undefined)) {
+                            const value = data.value !== undefined ? data.value : data.close;
+                            const time = new Date(param.time * 1000).toLocaleTimeString('pt-BR');
+                            
+                            this.chartTooltip.x = param.point.x;
+                            this.chartTooltip.y = param.point.y;
+                            this.chartTooltip.text = `${this.currencySymbol}${value.toFixed(2)} às ${time}`;
+                            this.chartTooltip.visible = true;
+                        } else {
+                            this.chartTooltip.visible = false;
+                        }
+                    });
+                    console.log('[AIMonitoringView] Profit Chart Tooltip Setup Complete');
+                }
             }
         }
     }
