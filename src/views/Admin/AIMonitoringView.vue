@@ -1875,26 +1875,7 @@ export default {
             });
         },
         updateChartMarkers(trade) {
-            if (!this.series) return;
-            
-            // Find marker time (approximate to last tick if explicit time mismatch, but usually trade.time is string. Need epoch)
-            // Trade object uses localized time string. We need epoch.
-            // But we don't store epoch in trade object currently! 
-            // We need to match with tickChartData or store epoch in trade.
-            
-            // FIX: We need to store epoch in trade in handleContractUpdate
-            // However, handleContractUpdate receives contract which has 'date_start' (epoch)
-            // Let's rely on finding a matching tick or using current time if close
-            
-            // For now, let's look at recent ticks.
-            // Markers need { time, position, color, shape, text }
-            
-            // Since we modified handleContractUpdate to be called with contract object, let's grab date_start there?
-            // Wait, trade object in monitoringOperations is what we have here.
-            // I need to patch handleContractUpdate to save epoch.
-            
-            // But since I can't easily patch handleContractUpdate without reading it all (I have the code though),
-            // I'll try to match by time string roughly or just add a marker at the LAST tick time.
+            // FIX: Always update the markers array even if chart is not visible
              
             const lastTick = this.tickChartData[this.tickChartData.length - 1];
             if (!lastTick) return;
@@ -1921,7 +1902,9 @@ export default {
                 this.chartMarkers.push(marker);
             }
             
-            this.series.setMarkers(this.chartMarkers);
+            if (this.series) {
+                this.series.setMarkers(this.chartMarkers);
+            }
         }
     }
 }
