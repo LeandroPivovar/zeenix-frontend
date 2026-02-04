@@ -243,7 +243,6 @@
                                         <LightweightLineChart
                                             ref="profitChart"
                                             :data="profitChartData"
-                                            :markers="profitChartMarkers"
                                             :color="monitoringStats.profit >= 0 ? '#22C55E' : '#EF4444'"
                                             :height="320" 
                                             :currencySymbol="preferredCurrencyPrefix"
@@ -257,18 +256,25 @@
                                     <!-- Advanced Tooltip (Teleported to body to avoid overflow:hidden) -->
                                     <Teleport to="body">
                                         <div v-if="chartTooltip.visible" 
-                                             class="!fixed !z-[99999] bg-[#1a1a1a] border border-white/10 p-3 rounded-lg text-sm text-white pointer-events-none whitespace-nowrap shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+                                             class="!fixed !z-[99999] bg-[#1a1a1a] border border-white/10 p-4 rounded-xl text-white pointer-events-none whitespace-nowrap shadow-[0_20px_60px_rgba(0,0,0,0.9)] min-w-[140px]"
                                              :style="{ 
                                                  top: chartTooltip.y + 'px', 
                                                  left: chartTooltip.x + 'px', 
-                                                 transform: 'translate(-50%, -100%) translateY(-15px)' 
+                                                 transform: 'translate(-50%, -100%) translateY(-20px)' 
                                              }">
-                                             <div class="flex flex-col items-center min-w-[100px]">
-                                                 <span class="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-1 opacity-60">Status Atual</span>
-                                                 <span class="font-bold text-white tracking-tight">{{ chartTooltip.text }}</span>
+                                             <div class="flex flex-col items-center">
+                                                 <span class="text-[10px] text-muted-foreground uppercase font-black tracking-[0.25em] mb-2 opacity-70">
+                                                     {{ chartTooltip.title }}
+                                                 </span>
+                                                 <div class="flex items-center gap-2">
+                                                     <div :class="['w-2 h-2 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]', chartTooltip.isPositive ? 'bg-green-500 box-shadow-green' : 'bg-red-500 box-shadow-red']"></div>
+                                                     <span :class="['font-black text-xl tracking-tighter', chartTooltip.isPositive ? 'text-green-500' : 'text-red-500']">
+                                                         {{ chartTooltip.text }}
+                                                     </span>
+                                                 </div>
                                              </div>
                                              <!-- Arrow -->
-                                             <div class="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45"></div>
+                                             <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45"></div>
                                         </div>
                                     </Teleport>
                                 </div>        
@@ -570,7 +576,6 @@
 </template>
 
 <script>
-import { toRaw } from 'vue';
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
@@ -616,7 +621,7 @@ export default {
             series: null,
             tickChartData: [],
             profitChartData: [{ time: Math.floor(Date.now() / 1000), value: 0 }],
-            chartTooltip: { visible: false, x: 0, y: 0, text: '' },
+            chartTooltip: { visible: false, x: 0, y: 0, text: '', title: '', isPositive: true },
             profitChartSubscribed: false,
             chartMarkers: [],
             profitChartMarkers: [],
@@ -1867,10 +1872,6 @@ export default {
             if (this.tickChartData.length > 0) {
                 this.series.setData(this.tickChartData);
             }
-
-            if (this.chartMarkers.length > 0) {
-                this.series.setMarkers(this.chartMarkers);
-            }
             
             // Force scroll to latest data
             this.chart.timeScale().scrollToPosition(0, true);
@@ -1888,19 +1889,22 @@ export default {
             // ✅ Tooltip Interaction (Tick Chart)
             this.chart.subscribeCrosshairMove(param => {
                 const container = this.$refs.chartContainer;
-                if (!param.point || !param.time || !this.series || this.chartMarkers.length === 0 || !container) {
+                if (!param.point || !param.time || !this.series || !container) {
                     this.chartTooltip.visible = false;
                     return;
                 }
 
                 const time = param.time;
-                let marker = this.chartMarkers.find(m => m.time === time);
+                // Find potential trade at this time
+                let trade = this.chartMarkers.find(m => Math.abs(m.time - time) < 2); // Small threshold for ticks
                 
-                if (marker && marker.originalText) {
+                if (trade) {
                     const rect = container.getBoundingClientRect();
                     this.chartTooltip.x = rect.left + param.point.x;
                     this.chartTooltip.y = rect.top + param.point.y;
-                    this.chartTooltip.text = marker.originalText;
+                    this.chartTooltip.title = `Operação ${trade.count}`;
+                    this.chartTooltip.text = `${trade.pnl >= 0 ? '+' : ''}${this.currencySymbol}${Math.abs(trade.pnl).toFixed(2)}`;
+                    this.chartTooltip.isPositive = trade.pnl >= 0;
                     this.chartTooltip.visible = true;
                 } else {
                     this.chartTooltip.visible = false;
@@ -1910,36 +1914,27 @@ export default {
         updateChartMarkers(trade, type = 'tick') {
             const markersArray = type === 'tick' ? this.chartMarkers : this.profitChartMarkers;
             const dataArray = type === 'tick' ? this.tickChartData : this.profitChartData;
-            const seriesObj = type === 'tick' ? this.series : (this.$refs.profitChart ? this.$refs.profitChart.series : null);
 
             const lastPoint = dataArray[dataArray.length - 1];
             if (!lastPoint) return;
 
             const existingMarkerIndex = markersArray.findIndex(m => m.id === trade.id);
             
-            const markerText = `${trade.result === 'WON' ? '+' : ''}${this.currencySymbol}${trade.pnl.toFixed(2)}`;
-            const markerColor = trade.result === 'WON' ? '#22C55E' : '#EF4444';
-            
-            const marker = {
+            const markerData = {
                 time: lastPoint.time, 
-                position: 'aboveBar', // Always above the point for clarity
-                color: markerColor,
-                shape: 'circle', // USER REQUEST: Apenas uma bolinha
-                text: markerText, 
-                originalText: markerText, 
-                id: trade.id
+                pnl: trade.pnl || 0,
+                id: trade.id,
+                count: markersArray.length + (existingMarkerIndex >= 0 ? 0 : 1)
             };
 
             if (existingMarkerIndex >= 0) {
-                markersArray[existingMarkerIndex] = marker;
+                markersArray[existingMarkerIndex] = { ...markersArray[existingMarkerIndex], ...markerData };
             } else {
-                markersArray.push(marker);
+                markersArray.push(markerData);
             }
             
-            if (seriesObj) {
-                const rawSeries = toRaw(seriesObj);
-                rawSeries.setMarkers(markersArray);
-            }
+            // NOTE: We NO LONGER call setMarkers on series to keep the chart clean
+            // The data is now only used for the hover interaction
         },
         setupProfitChartTooltip() {
             if (!this.$refs.profitChart || this.profitChartSubscribed) return;
@@ -1950,34 +1945,30 @@ export default {
                 const container = this.$refs.profitChartContainer;
                 
                 if (chart && series && container) {
-                    const rawSeries = toRaw(series);
                     chart.subscribeCrosshairMove(param => {
                         if (!param.point || !param.time || this.activeChartMode !== 'profit') {
                             this.chartTooltip.visible = false;
                             return;
                         }
                         
-                        // Robust Data Extraction
-                        let price = null;
-                        const seriesData = param.seriesData.get(rawSeries);
-                        if (seriesData) {
-                            price = seriesData.value !== undefined ? seriesData.value : seriesData.close;
-                        }
-
-                        if (price !== null) {
+                        const time = param.time;
+                        // Find trade near this point
+                        let trade = this.profitChartMarkers.find(m => Math.abs(m.time - time) < 5); // Larger threshold for profit area chart
+                        
+                        if (trade) {
                             const rect = container.getBoundingClientRect();
-                            const time = new Date(param.time * 1000).toLocaleTimeString('pt-BR');
-                            
                             this.chartTooltip.x = rect.left + param.point.x;
                             this.chartTooltip.y = rect.top + param.point.y;
-                            this.chartTooltip.text = `${this.currencySymbol}${price.toFixed(2)} às ${time}`;
+                            this.chartTooltip.title = `Operação ${trade.count}`;
+                            this.chartTooltip.text = `${trade.pnl >= 0 ? '+' : ''}${this.currencySymbol}${Math.abs(trade.pnl).toFixed(2)}`;
+                            this.chartTooltip.isPositive = trade.pnl >= 0;
                             this.chartTooltip.visible = true;
                         } else {
                             this.chartTooltip.visible = false;
                         }
                     });
                     this.profitChartSubscribed = true;
-                    console.log('[AIMonitoringView] Profit Chart Tooltip Setup Complete (Viewport Mode)');
+                    console.log('[AIMonitoringView] Profit Chart Hover Interaction Set');
                 }
             });
         }
@@ -2107,4 +2098,13 @@ export default {
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 255, 128, 0.2) rgba(0, 255, 128, 0.02);
 }
+
+.box-shadow-green {
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+
+.box-shadow-red {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
 </style>
