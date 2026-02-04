@@ -94,7 +94,7 @@ const routes = [
     path: '/operation',
     name: 'Operation',
     component: OperationView,
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true }
   },
   {
     path: '/copy-trading',
