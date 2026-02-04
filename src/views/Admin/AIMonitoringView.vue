@@ -1526,10 +1526,12 @@ export default {
                     );
 
                     // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
-                    if (trade.result !== 'WON' && this.sessionState.consecutiveLosses >= 6) {
+                    const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
+                    
+                    if (trade.result !== 'WON' && totalConsecutiveLosses >= 6) {
                         const pauseDuration = 120 * 1000; // 2 minutes
                         this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido. Pausando por 2 minutos para esfriar.`, 'warning');
+                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
                         this.stopTickConnection(); // Optional: Stop ticks to save bandwidth/resources, or keep monitoring? (Re-start logic handled in view/lifecycle)
                          // Actually, AIMonitoring relies on ticks for chart. Better NOT stop ticks, just block analysis.
                          // But if user wants to stop, we can. The request didn't specify "stop ticks", just "pause".

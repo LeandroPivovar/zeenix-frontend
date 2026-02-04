@@ -3014,10 +3014,13 @@ export default {
                     RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake, this.pendingFastResult.analysisType, this.recoveryConfig.lossesToActivate);
                     
                     // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
-                    if (!win && this.sessionState.consecutiveLosses >= 6) {
+                    // Fix: consecutiveLosses stops incrementing in Recovery. Must sum both counters.
+                    const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
+                    
+                    if (!win && totalConsecutiveLosses >= 6) {
                         const pauseDuration = 120 * 1000; // 2 minutes
                         this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido. Pausando por 2 minutos para esfriar.`, 'warning');
+                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
                         this.stopTickConnection(); // Optional: Stop ticks to save bandwidth/resources, or keep monitoring?
                         // If we stop ticks, we must restart them later.
                         // Better to keep ticks running to show "Analyzing" but blocking entry.
