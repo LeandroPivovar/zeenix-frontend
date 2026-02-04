@@ -1,25 +1,27 @@
 <template>
   <div class="chart-wrapper">
     <div class="chart-container" ref="chartContainer"></div>
-    <!-- Floating Tooltip -->
-    <div v-if="tooltip.visible" 
-         class="absolute z-[100] bg-[#161616]/95 backdrop-blur-md border border-white/10 p-3 rounded-lg shadow-2xl pointer-events-none transition-opacity duration-150"
-         :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px', transform: 'translate(-50%, -100%) translateY(-15px)' }">
-        <div class="flex flex-col items-center">
-            <div class="text-[10px] text-muted-foreground uppercase font-black tracking-[0.1em] mb-1.5 opacity-60">
-                Performance • {{ tooltip.time }}
+    <!-- Fixed Tooltip (using Teleport to avoid overflow:hidden clipping) -->
+    <Teleport to="body">
+        <div v-show="tooltip.visible" 
+            class="!fixed !z-[99999] bg-[#1a1a1a] border border-white/10 p-3 rounded-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-none transition-opacity duration-150"
+            :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px', transform: 'translate(-50%, -100%) translateY(-15px)' }">
+            <div class="flex flex-col items-center min-w-[120px]">
+                <div class="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-1.5 opacity-60">
+                    Sessão Ativa • {{ tooltip.time }}
+                </div>
+                <div class="text-base font-black tracking-tight flex items-center gap-2" :class="tooltip.value >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]'">
+                    <span class="text-xs opacity-50">{{ currencySymbol }}</span>
+                    <span>{{ Math.abs(tooltip.value).toFixed(2).replace('.', ',') }}</span>
+                    <span v-if="tooltip.value !== 0" class="text-[10px] ml-0.5">
+                        <i :class="tooltip.value > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                    </span>
+                </div>
             </div>
-            <div class="text-base font-black tracking-tight flex items-center gap-2" :class="tooltip.value >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]'">
-                <span class="text-xs opacity-50">{{ currencySymbol }}</span>
-                <span>{{ Math.abs(tooltip.value).toFixed(2).replace('.', ',') }}</span>
-                <span v-if="tooltip.value !== 0" class="text-[10px] ml-1">
-                    <i :class="tooltip.value > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
-                </span>
-            </div>
+            <!-- Tooltip Arrow -->
+            <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45"></div>
         </div>
-        <!-- Tooltip Arrow -->
-        <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#161616] border-r border-b border-white/10 rotate-45"></div>
-    </div>
+    </Teleport>
   </div>
 </template>
 
@@ -182,19 +184,21 @@ export default {
       
       this.chart.timeScale().fitContent();
 
-      // Better Tooltip System
+      // Higher Precision Tooltip System
       this.chart.subscribeCrosshairMove(param => {
-          if (!param.point || !param.time || param.point.x < 0 || param.point.x > this.$refs.chartContainer.clientWidth) {
+          if (!param.point || !param.time || param.point.x < 0 || !this.$refs.chartContainer) {
               this.tooltip.visible = false;
               return;
           }
 
-          const data = param.seriesData.get(this.series);
-          if (data && (data.value !== undefined || data.close !== undefined)) {
+          const containerRect = this.$refs.chartContainer.getBoundingClientRect();
+          const seriesData = param.seriesData.get(this.series);
+          
+          if (seriesData && (seriesData.value !== undefined || seriesData.close !== undefined)) {
               this.tooltip.visible = true;
-              this.tooltip.x = param.point.x;
-              this.tooltip.y = param.point.y;
-              this.tooltip.value = data.value !== undefined ? data.value : data.close;
+              this.tooltip.x = containerRect.left + param.point.x;
+              this.tooltip.y = containerRect.top + param.point.y;
+              this.tooltip.value = seriesData.value !== undefined ? seriesData.value : seriesData.close;
               this.tooltip.time = this.formatTime(param.time);
           } else {
               this.tooltip.visible = false;
