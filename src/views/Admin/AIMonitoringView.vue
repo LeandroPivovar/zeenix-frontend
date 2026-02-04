@@ -612,6 +612,7 @@ export default {
 
             digitHistory: [],
             isNegotiating: false,
+            pauseUntil: 0, // Timeout timestamp
             retryingProposal: false, // Flag for calibration loop
 
            // ✅ RiskManager State (initialized with RiskManager.initSession)
@@ -1289,6 +1290,17 @@ export default {
             if (this.activeContracts.size > 0 || this.isNegotiating) return;
             if (this.pendingFastResult && this.pendingFastResult.active) return;
 
+            // --- PAUSE CHECK ---
+            if (this.pauseUntil) {
+                if (Date.now() < this.pauseUntil) {
+                    return; // Still Paused
+                } else {
+                    // Pause Expired
+                    this.pauseUntil = 0;
+                    this.addLog('▶️ Pausa de resfriamento finalizada. Retomando operações.', 'success');
+                }
+            }
+
             // Determinar quais filtros usar (Ataque ou Recuperação Estratégica)
             const activeFilters = this.sessionState.activeStrategy === 'RECUPERACAO' 
                 ? (this.recoveryConfig.attackFilters || []) 
@@ -1517,6 +1529,20 @@ export default {
                         trade.analysisType, 
                         this.recoveryConfig.lossesToActivate
                     );
+
+                    // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
+                    const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
+                    
+                    if (trade.result !== 'WON') {
+                         this.addLog(`🔍 DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
+                    }
+
+                    if (trade.result !== 'WON' && totalConsecutiveLosses >= 6) {
+                        const pauseDuration = 120 * 1000; // 2 minutes
+                        this.pauseUntil = Date.now() + pauseDuration;
+                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
+                        // No logic to stop ticks for Monitoring to keep chart alive
+                    }
 
                     this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
 

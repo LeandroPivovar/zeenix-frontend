@@ -782,15 +782,7 @@
                                     <p class="text-xs text-gray-500 pl-8 leading-relaxed">{{ filter.desc }}</p>
                                 </div>
                             </div>
-                            <div class="mt-8">
-                                <button 
-                                    @click="nextFilterStep" 
-                                    class="w-full bg-zenix-green hover:bg-green-600 shadow-lg shadow-green-500/10 text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2 transition-all"
-                                >
-                                    <span>Continuar para Configuração</span>
-                                    <i class="fa-solid fa-arrow-right"></i>
-                                </button>
-                            </div>
+                            <!-- Button Removed -->
                         </div>
 
                         <div v-else-if="filterStep === 2">
@@ -821,13 +813,42 @@
                                 </span>
                             </div>
 
-                            <div v-for="filter in activeFiltersForModal.filter(f => f.active)" :key="filter.id" class="mb-6 border-b border-[#222] pb-6 last:border-b-0">
-                                <div class="flex items-center gap-2 mb-4">
-                                    <div class="w-2 h-2 rounded-full bg-zenix-green"></div>
-                                    <h4 class="text-sm font-bold text-white uppercase">{{ filter.name }}</h4>
-                                </div>
-                                
-                                <!-- Dynamic Inputs Binding to Active Tab -->
+                            <div v-for="filter in activeFiltersForModal.filter(f => f.active)" :key="filter.id" class="mb-8 border-b border-[#333] pb-8 last:border-0 last:pb-0">
+                                <template v-if="filter.active">
+                                    <div class="flex items-center gap-3 mb-6">
+                                        <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+                                            <i class="fa-solid fa-filter"></i>
+                                        </div>
+                                        <h4 class="text-white font-bold text-lg">{{ filter.name }}</h4>
+                                    </div>
+
+                                    <!-- Loftop (Explanation) -->
+                                    <div v-if="getFilterDescription(filter)" class="mb-6 p-4 bg-blue-500/5 border border-blue-500/20 rounded-lg">
+                                        <div class="flex items-start gap-3">
+                                            <i class="fas fa-info-circle text-blue-500 mt-1 text-sm"></i>
+                                            <div>
+                                                <h4 class="font-bold text-blue-400 text-sm mb-2">{{ getFilterDescription(filter).title }}</h4>
+                                                <ul class="text-xs text-gray-300 space-y-1.5 list-disc pl-4">
+                                                    <li><strong class="text-gray-400">O que observa:</strong> {{ getFilterDescription(filter).loftop.what }}</li>
+                                                    <li><strong class="text-gray-400">Quando é válido:</strong> {{ getFilterDescription(filter).loftop.when }}</li>
+                                                    <li><strong class="text-gray-400">O que acontece:</strong> {{ getFilterDescription(filter).loftop.result }}</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Dynamic Human Text Preview -->
+                                    <div v-if="getFilterDescription(filter)" class="mb-6 p-4 bg-[#181818] border border-[#333] rounded-lg relative overflow-hidden">
+                                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-zenix-green"></div>
+                                        <h4 class="text-[10px] font-bold text-gray-500 uppercase mb-2 tracking-wider flex items-center gap-2">
+                                            <i class="fa-solid fa-eye text-zenix-green"></i> Resumo da Estratégia
+                                        </h4>
+                                        <p class="text-gray-200 text-sm leading-relaxed italic">
+                                            "{{ getFilterDescription(filter).text }}"
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Dynamic Inputs Binding to Active Tab -->
                                 <!-- Helper Function to get config context: getConfig(filter, activeConfigTab) -->
                                 
                                 <!-- Digit Density -->
@@ -1257,6 +1278,7 @@
                                     </div>
                                 </div>
 
+                                </template>
                             </div>
 
                             <button @click="saveFilters" class="w-full bg-zenix-green hover:bg-green-600 shadow-xl shadow-green-500/5 text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2 mt-8 transition-all">
@@ -1357,6 +1379,8 @@ import MonitoringDashboard from '../../components/ActiveStrategy/MonitoringDashb
 import StopLossModal from '../../components/StopLossModal.vue';
 import TargetProfitModal from '../../components/TargetProfitModal.vue';
 import StopBlindadoAjusteModal from '../../components/StopBlindadoAjusteModal.vue';
+
+import { filterDescriptions, getTranslation } from '@/utils/filterDescriptions';
 
 export default {
     name: 'StrategyCreatorView',
@@ -1474,6 +1498,7 @@ export default {
 
             balance: 5889.28, // Mock implementation or fetch from store
             isMonitoring: false,
+            pauseUntil: 0, // Timeout timestamp for mandatory pause
             activeMonitoringTab: 'logs',
             pendingFastResult: { contractId: null, barrier: null, contractType: null, active: false, stake: 0 },
             monitoringStats: {
@@ -2054,27 +2079,26 @@ export default {
 
             if (index === -1) return;
 
-            // Toggle Logic
-            const newState = !filter.active;
+            // If already active, just close (or maybe user clicked by mistake)
+            if (filter.active) {
+                this.showFilterModal = false;
+                return;
+            }
 
-            if (newState) {
-                // Check limit if activating
-                const activeCount = targetArray.filter(f => f.active).length;
-                
-                if (activeCount >= 2) {
-                    this.$root.$toast.warning('Selecione no máximo 2 filtros.');
-                    return;
-                }
+            // Check limit if activating
+            const activeCount = targetArray.filter(f => f.active).length;
+            
+            if (activeCount >= 2) {
+                this.$root.$toast.warning('Selecione no máximo 2 filtros.');
+                return;
             }
 
             // Force Reactivity: Create new object and splice it in
-            const newFilter = { ...filter, active: newState };
+            const newFilter = { ...filter, active: true };
             targetArray.splice(index, 1, newFilter);
             
-            // Auto move to config if activated
-            if (newState) {
-                this.nextFilterStep();
-            }
+            // Close Modal Immediately
+            this.showFilterModal = false;
         },
         
         removeFilter(filter, context) {
@@ -2114,6 +2138,30 @@ export default {
                 };
             }
             return filter.config;
+        },
+        getFilterDescription(filter) {
+            const descData = filterDescriptions[filter.id];
+            if (!descData) return null;
+
+            const config = this.getFilterConfig(filter)[this.activeConfigTab ? this.activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : this.activeConfigTab.toLowerCase() : 'normal'];
+            let text = descData.template;
+
+            // Replace placeholders with values
+            for (const [key, value] of Object.entries(config)) {
+                const placeholder = `{${key}}`;
+                text = text.replace(new RegExp(placeholder, 'g'), value);
+                
+                // Also try translated values
+                const translated = getTranslation(`${key}_translated`, value);
+                const translatedPlaceholder = `{${key}_translated}`;
+                text = text.replace(new RegExp(translatedPlaceholder, 'g'), translated);
+            }
+            
+            return {
+                title: descData.title,
+                loftop: descData.loftop,
+                text: text
+            };
         },
         // ----------------------------
 
@@ -2965,6 +3013,18 @@ export default {
 
                     RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake, this.pendingFastResult.analysisType, this.recoveryConfig.lossesToActivate);
                     
+                    // --- PAUSE CHECK (Fast Result) ---
+                    const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
+                    if (!win) {
+                         this.addLog(`🔍 DEBUG PAUSA (Fast): Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
+                    }
+                    if (!win && totalConsecutiveLosses >= 6) {
+                        const pauseDuration = 120 * 1000;
+                        this.pauseUntil = Date.now() + pauseDuration;
+                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
+                        // No logic to stop ticks, just block next
+                    }
+
                     // CRITICAL: Release locks immediately
                     this.pendingFastResult.active = false;
                     this.isNegotiating = false; 
@@ -3002,6 +3062,17 @@ export default {
             // Prevent spamming analysis
             if (this.activeContracts.size > 0 || this.isNegotiating) return;
             if (this.pendingFastResult && this.pendingFastResult.active) return;
+
+            // --- PAUSE CHECK ---
+            if (this.pauseUntil) {
+                if (Date.now() < this.pauseUntil) {
+                    return; // Still Paused
+                } else {
+                    // Pause Expired
+                    this.pauseUntil = 0;
+                    this.addLog('▶️ Pausa de resfriamento finalizada. Retomando operações.', 'success');
+                }
+            }
 
             const data = {
                 tickHistory: this.tickHistory,
@@ -3337,6 +3408,20 @@ export default {
                         trade.analysisType, 
                         this.recoveryConfig.lossesToActivate
                     );
+
+                    // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
+                    const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
+                    
+                    if (trade.result !== 'WON') {
+                         this.addLog(`🔍 DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
+                    }
+
+                    if (trade.result !== 'WON' && totalConsecutiveLosses >= 6) {
+                        const pauseDuration = 120 * 1000; // 2 minutes
+                        this.pauseUntil = Date.now() + pauseDuration;
+                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
+                        // Do not stop ticks here as it might affect tracking
+                    }
                     
                     // Sync legacy mode
                     this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
