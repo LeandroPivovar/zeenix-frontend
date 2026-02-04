@@ -1923,10 +1923,10 @@ export default {
                 id: trade.id,
                 count: markersArray.length + (existingMarkerIndex >= 0 ? 0 : 1),
                 // Visual marker properties
-                position: (trade.pnl || 0) >= 0 ? 'aboveBar' : 'belowBar',
+                position: 'inBar',
                 color: (trade.pnl || 0) >= 0 ? '#22C55E' : '#EF4444',
-                shape: 'arrowUp',
-                size: 1, 
+                shape: 'circle',
+                size: 0.5, 
                 text: `${(trade.pnl || 0) >= 0 ? '+' : ''}${this.currencySymbol}${(trade.pnl || 0).toFixed(2)}`
             };
 
