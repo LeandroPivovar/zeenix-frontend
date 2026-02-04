@@ -2889,7 +2889,12 @@ export default {
                             // 🛑 FINAL SAFETY CHECK BEFORE BUY
                             // Re-verify if the stake we are about to pay is safe
                             // Define needed variables locally to avoid reference errors
-                            const localConfig = (this.sessionState.analysisType === 'RECUPERACAO') ? this.recoveryConfig : this.form;
+                            // ✅ FIX: Start with Global Config (this.form) to ensure stopLoss/profitTarget are present
+                            const localConfig = {
+                                ...this.form,
+                                ...(this.sessionState.analysisType === 'RECUPERACAO' ? this.recoveryConfig : {})
+                            };
+                            
                             const localBlindadoState = {
                                 active: this.sessionState.stopBlindadoActive,
                                 floor: this.sessionState.stopBlindadoFloor

@@ -1398,7 +1398,11 @@ export default {
         },
         calculateNextStake() {
             const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
-            const config = isRecovery ? this.recoveryConfig : this.currentConfig;
+            // ✅ FIX: Merge Global Config (this.currentConfig) to ensure stopLoss/profitTarget are present
+            const config = {
+                ...this.currentConfig,
+                ...(isRecovery ? this.recoveryConfig : {})
+            };
             
             console.log('[AIMonitoring] calculateNextStake:', {
                 isRecovery,
