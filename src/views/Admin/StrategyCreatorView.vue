@@ -3377,23 +3377,31 @@ export default {
                 this.isNegotiating = false; 
                 console.log(`[StrategyCreator] Contract ${id} tracked. Releasing isNegotiating lock.`);
             } else {
+            } else {
                 trade.pnl = contract.profit || 0;
-                if (contract.entry_spot) trade.entryPrice = contract.entry_spot;
+                if (contract.entry_tick_display_value) trade.entryPrice = contract.entry_tick_display_value;
+                else if (contract.entry_tick) trade.entryPrice = contract.entry_tick;
+                else if (contract.entry_spot) trade.entryPrice = contract.entry_spot;
                 
-                // Enhanced Exit Price capture
-                const exitPrice = contract.exit_spot || contract.exit_tick;
-                if (exitPrice) trade.exitPrice = exitPrice;
-                else if (contract.is_sold && contract.current_spot) trade.exitPrice = contract.current_spot;
+                // Enhanced Exit Price capture with strict hierarchy
+                if (contract.exit_tick_display_value) trade.exitPrice = contract.exit_tick_display_value;
+                else if (contract.exit_tick) trade.exitPrice = contract.exit_tick;
+                else if (contract.exit_spot) trade.exitPrice = contract.exit_spot;
             }
 
             if (contract.is_sold) {
-                // Determine Entry/Exit if not set
-                if (!trade.entryPrice) trade.entryPrice = contract.entry_spot || contract.entry_tick;
-                if (!trade.exitPrice) trade.exitPrice = contract.exit_spot || contract.exit_tick || contract.current_spot;
+                // Final attempt to capture values if not set
+                if (!trade.entryPrice) trade.entryPrice = contract.entry_tick_display_value || contract.entry_tick || contract.entry_spot;
+                if (!trade.exitPrice) trade.exitPrice = contract.exit_tick_display_value || contract.exit_tick || contract.exit_spot;
                 
                 // Debug missing exit price
                 if (!trade.exitPrice) {
                     console.warn('[StrategyCreator] Exit Price Missing for Sold Contract:', contract);
+                    // Force log available keys
+                    console.log('[StrategyCreator] Keys available:', Object.keys(contract));
+                    console.log('[StrategyCreator] Audit Details:', contract.audit_details);
+                } else {
+                    // console.log(`[StrategyCreator] Exit Price Captured: ${trade.exitPrice} (Entry: ${trade.entryPrice})`);
                 }
                 trade.result = contract.status.toUpperCase(); // 'WON' or 'LOST'
                 trade.pnl = parseFloat(contract.profit || 0);
