@@ -243,6 +243,7 @@
                                         <LightweightLineChart
                                             ref="profitChart"
                                             :data="profitChartData"
+                                            :markers="profitChartMarkers"
                                             :color="monitoringStats.profit >= 0 ? '#22C55E' : '#EF4444'"
                                             :height="320" 
                                             :currencySymbol="preferredCurrencyPrefix"
@@ -576,6 +577,7 @@
 </template>
 
 <script>
+import { toRaw } from 'vue';
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
@@ -1872,6 +1874,10 @@ export default {
             if (this.tickChartData.length > 0) {
                 this.series.setData(this.tickChartData);
             }
+
+            if (this.chartMarkers.length > 0) {
+                this.series.setMarkers(this.chartMarkers);
+            }
             
             // Force scroll to latest data
             this.chart.timeScale().scrollToPosition(0, true);
@@ -1914,6 +1920,7 @@ export default {
         updateChartMarkers(trade, type = 'tick') {
             const markersArray = type === 'tick' ? this.chartMarkers : this.profitChartMarkers;
             const dataArray = type === 'tick' ? this.tickChartData : this.profitChartData;
+            const seriesObj = type === 'tick' ? this.series : (this.$refs.profitChart ? this.$refs.profitChart.series : null);
 
             const lastPoint = dataArray[dataArray.length - 1];
             if (!lastPoint) return;
@@ -1924,7 +1931,12 @@ export default {
                 time: lastPoint.time, 
                 pnl: trade.pnl || 0,
                 id: trade.id,
-                count: markersArray.length + (existingMarkerIndex >= 0 ? 0 : 1)
+                count: markersArray.length + (existingMarkerIndex >= 0 ? 0 : 1),
+                // Visual marker properties
+                position: 'inBar', // Na linha do gráfico
+                color: (trade.pnl || 0) >= 0 ? '#22C55E' : '#EF4444',
+                shape: 'circle',
+                text: '' // Não mostrar texto fixo, apenas a bolinha
             };
 
             if (existingMarkerIndex >= 0) {
@@ -1933,8 +1945,10 @@ export default {
                 markersArray.push(markerData);
             }
             
-            // NOTE: We NO LONGER call setMarkers on series to keep the chart clean
-            // The data is now only used for the hover interaction
+            if (seriesObj) {
+                const rawSeries = toRaw(seriesObj);
+                rawSeries.setMarkers(markersArray);
+            }
         },
         setupProfitChartTooltip() {
             if (!this.$refs.profitChart || this.profitChartSubscribed) return;
