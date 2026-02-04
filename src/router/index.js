@@ -172,19 +172,19 @@ const routes = [
     path: '/iaTeste',
     name: 'iaTeste',
     component: InvestmentActiveStrategyView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/Investments-IA',
     name: 'InvestmentIAView',
     component: InvestmentIAView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/Investments-IA/active',
     name: 'InvestmentMonitoringActive',
     component: () => import('../views/Admin/AIMonitoringView.vue'),
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
     path: '/MasterTrader',
