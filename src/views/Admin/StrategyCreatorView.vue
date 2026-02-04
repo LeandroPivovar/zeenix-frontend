@@ -3021,10 +3021,10 @@ export default {
                          console.log(`[PAUSE DEBUG] Loss detected. Main: ${this.sessionState.consecutiveLosses}, Rec: ${this.sessionState.lossStreakRecovery}, Total: ${totalConsecutiveLosses}`);
                     }
 
-                    if (!win && totalConsecutiveLosses >= 6) {
+                    if (!win && totalConsecutiveLosses >= 2) {
                         const pauseDuration = 120 * 1000; // 2 minutes
                         this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
+                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 1 Martingale atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
                         this.stopTickConnection(); // Optional: Stop ticks to save bandwidth/resources, or keep monitoring?
                         // If we stop ticks, we must restart them later.
                         // Better to keep ticks running to show "Analyzing" but blocking entry.
