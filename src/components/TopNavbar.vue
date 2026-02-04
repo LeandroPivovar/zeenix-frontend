@@ -121,131 +121,135 @@
     </div>
 
     <!-- Modal de Notificações -->
-    <div 
-      v-if="showNotificationsModal" 
-      class="notifications-modal-overlay"
-      @click.self="closeNotificationsModal"
-    >
-      <div class="notifications-modal-content">
-        <div class="notifications-modal-header">
-          <h2 class="notifications-modal-title">Notificações</h2>
-          <button 
-            @click="closeNotificationsModal"
-            class="notifications-modal-close"
-          >
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="notifications-modal-body">
-          <div v-if="notifications.length === 0" class="notifications-empty">
-            <i class="fas fa-bell-slash text-[48px] text-white/20 mb-4"></i>
-            <p class="text-white/40 text-[14px]">Nenhuma notificação</p>
-          </div>
-          <div v-else class="notifications-list">
-            <div 
-              v-for="notification in notifications" 
-              :key="notification.id"
-              class="notification-item cursor-pointer hover:bg-white/5 active:scale-[0.98] transition-all"
-              @click="handleNotificationClick(notification)"
+    <Teleport to="body">
+      <div 
+        v-if="showNotificationsModal" 
+        class="notifications-modal-overlay"
+        @click.self="closeNotificationsModal"
+      >
+        <div class="notifications-modal-content">
+          <div class="notifications-modal-header">
+            <h2 class="notifications-modal-title">Notificações</h2>
+            <button 
+              @click="closeNotificationsModal"
+              class="notifications-modal-close"
             >
-              <div class="notification-icon">
-                <i :class="notification.icon || 'fa-solid fa-info-circle'"></i>
-              </div>
-              <div class="notification-content">
-                <h3 class="notification-title">{{ removeEmojis(notification.title) }}</h3>
-                <p class="notification-message">{{ notification.message }}</p>
-                <span class="notification-time">{{ formatNotificationDate(notification.date) }}</span>
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="notifications-modal-body">
+            <div v-if="notifications.length === 0" class="notifications-empty">
+              <i class="fas fa-bell-slash text-[48px] text-white/20 mb-4"></i>
+              <p class="text-white/40 text-[14px]">Nenhuma notificação</p>
+            </div>
+            <div v-else class="notifications-list">
+              <div 
+                v-for="notification in notifications" 
+                :key="notification.id"
+                class="notification-item cursor-pointer hover:bg-white/5 active:scale-[0.98] transition-all"
+                @click="handleNotificationClick(notification)"
+              >
+                <div class="notification-icon">
+                  <i :class="notification.icon || 'fa-solid fa-info-circle'"></i>
+                </div>
+                <div class="notification-content">
+                  <h3 class="notification-title">{{ removeEmojis(notification.title) }}</h3>
+                  <p class="notification-message">{{ notification.message }}</p>
+                  <span class="notification-time">{{ formatNotificationDate(notification.date) }}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div v-if="notifications.length > 0" class="notifications-modal-footer">
-          <button 
-            @click="clearNotifications" 
-            class="w-full flex items-center justify-center gap-2 py-3 bg-[#EF4444]/10 hover:bg-[#EF4444]/20 text-[#EF4444] rounded-lg text-sm font-medium transition-all duration-200 border border-transparent hover:border-[#EF4444]/20"
-          >
-            <i class="fas fa-trash"></i>
-            <span>Excluir Notificações</span>
-          </button>
+          <div v-if="notifications.length > 0" class="notifications-modal-footer">
+            <button 
+              @click="clearNotifications" 
+              class="w-full flex items-center justify-center gap-2 py-3 bg-[#EF4444]/10 hover:bg-[#EF4444]/20 text-[#EF4444] rounded-lg text-sm font-medium transition-all duration-200 border border-transparent hover:border-[#EF4444]/20"
+            >
+              <i class="fas fa-trash"></i>
+              <span>Excluir Notificações</span>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- Modal de Seleção de Contas -->
-    <div 
-      v-if="showAccountModal" 
-      class="account-modal-overlay"
-      @click.self="closeAccountModal"
-    >
-      <div class="account-modal-container" style="max-width: 600px; margin: 0 auto;">
-        <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-[#DFDFDF]">Selecionar Conta</h2>
-          <button 
-            @click="closeAccountModal"
-            class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
-          >
-            <i class="fas fa-times text-lg"></i>
-          </button>
-        </div>
-        
-        <div class="overflow-y-auto flex-1 p-6">
-          <div v-if="loadingAccounts" class="flex items-center justify-center py-12">
-            <div class="text-center">
-              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#22C55E] mb-4"></div>
-              <p class="text-[#A1A1A1]">Carregando contas...</p>
-            </div>
-          </div>
-          
-          <div v-else-if="availableAccounts.length === 0" class="text-center py-12">
-            <i class="fas fa-exclamation-circle text-[#7A7A7A] text-4xl mb-4"></i>
-            <p class="text-[#A1A1A1]">Nenhuma conta disponível</p>
-          </div>
-          
-          <div v-else class="space-y-3">
-            <div 
-              v-for="account in availableAccounts" 
-              :key="account.loginid"
-              @click="selectAccount(account)"
-              class="p-4 bg-[#0B0B0B] border border-[#1C1C1C] rounded-lg cursor-pointer hover:border-[#22C55E] hover:bg-[#0F0F0F] transition-all duration-200"
-              :class="{ 'border-[#22C55E] bg-[#0F0F0F]': isCurrentAccount(account) }"
+    <Teleport to="body">
+      <div 
+        v-if="showAccountModal" 
+        class="account-modal-overlay"
+        @click.self="closeAccountModal"
+      >
+        <div class="account-modal-container" style="max-width: 600px; margin: 0 auto;">
+          <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-[#DFDFDF]">Selecionar Conta</h2>
+            <button 
+              @click="closeAccountModal"
+              class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
             >
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
-                    <span class="text-sm font-semibold text-[#DFDFDF]">{{ getAccountDisplayName(account) }}</span>
-                    <span 
-                      class="px-2 py-0.5 rounded text-xs font-medium"
-                      :class="(account.isDemo && isFictitiousBalanceActive) ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : (account.isDemo ? 'bg-[#22C55E]/20 text-[#22C55E]' : 'bg-[#F59E0B]/20 text-[#F59E0B]')"
-                    >
-                      {{ (account.isDemo && isFictitiousBalanceActive) ? 'REAL' : (account.isDemo ? 'DEMO' : 'REAL') }}
-                    </span>
-                  </div>
-                  <div class="flex items-center gap-4">
-                    <div>
-                      <p class="text-xs text-[#7A7A7A] mb-1">Saldo</p>
-                      <p class="text-base font-semibold text-[#DFDFDF] inline-flex items-center gap-1.5">
-                        <img 
-                          v-if="!account.isDemo && getCurrencyIcon(account.currency, 'real')" 
-                          :src="getCurrencyIcon(account.currency, 'real')" 
-                          :alt="account.currency"
-                          class="w-5 h-5 rounded-full object-cover"
-                        />
-                        <span v-if="account.isDemo && !isFictitiousBalanceActive">Đ</span>
-                        <span v-else>$</span>
-                        {{ formatBalance(account.balance || 0, account.isDemo) }}
-                      </p>
+              <i class="fas fa-times text-lg"></i>
+            </button>
+          </div>
+          
+          <div class="overflow-y-auto flex-1 p-6">
+            <div v-if="loadingAccounts" class="flex items-center justify-center py-12">
+              <div class="text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#22C55E] mb-4"></div>
+                <p class="text-[#A1A1A1]">Carregando contas...</p>
+              </div>
+            </div>
+            
+            <div v-else-if="availableAccounts.length === 0" class="text-center py-12">
+              <i class="fas fa-exclamation-circle text-[#7A7A7A] text-4xl mb-4"></i>
+              <p class="text-[#A1A1A1]">Nenhuma conta disponível</p>
+            </div>
+            
+            <div v-else class="space-y-3">
+              <div 
+                v-for="account in availableAccounts" 
+                :key="account.loginid"
+                @click="selectAccount(account)"
+                class="p-4 bg-[#0B0B0B] border border-[#1C1C1C] rounded-lg cursor-pointer hover:border-[#22C55E] hover:bg-[#0F0F0F] transition-all duration-200"
+                :class="{ 'border-[#22C55E] bg-[#0F0F0F]': isCurrentAccount(account) }"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                      <span class="text-sm font-semibold text-[#DFDFDF]">{{ getAccountDisplayName(account) }}</span>
+                      <span 
+                        class="px-2 py-0.5 rounded text-xs font-medium"
+                        :class="(account.isDemo && isFictitiousBalanceActive) ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : (account.isDemo ? 'bg-[#22C55E]/20 text-[#22C55E]' : 'bg-[#F59E0B]/20 text-[#F59E0B]')"
+                      >
+                        {{ (account.isDemo && isFictitiousBalanceActive) ? 'REAL' : (account.isDemo ? 'DEMO' : 'REAL') }}
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                      <div>
+                        <p class="text-xs text-[#7A7A7A] mb-1">Saldo</p>
+                        <p class="text-base font-semibold text-[#DFDFDF] inline-flex items-center gap-1.5">
+                          <img 
+                            v-if="!account.isDemo && getCurrencyIcon(account.currency, 'real')" 
+                            :src="getCurrencyIcon(account.currency, 'real')" 
+                            :alt="account.currency"
+                            class="w-5 h-5 rounded-full object-cover"
+                          />
+                          <span v-if="account.isDemo && !isFictitiousBalanceActive">Đ</span>
+                          <span v-else>$</span>
+                          {{ formatBalance(account.balance || 0, account.isDemo) }}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div v-if="isCurrentAccount(account)" class="ml-4">
-                  <i class="fas fa-check-circle text-[#22C55E] text-xl"></i>
+                  <div v-if="isCurrentAccount(account)" class="ml-4">
+                    <i class="fas fa-check-circle text-[#22C55E] text-xl"></i>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </nav>
 </template>
 
