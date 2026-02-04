@@ -2888,7 +2888,14 @@ export default {
                             
                             // 🛑 FINAL SAFETY CHECK BEFORE BUY
                             // Re-verify if the stake we are about to pay is safe
-                            const preBuyLimit = RiskManager.applySurvivalMode(stakeValue, (this.monitoringStats.profit || 0), config, 1.0, blindadoState);
+                            // Define needed variables locally to avoid reference errors
+                            const localConfig = (this.sessionState.analysisType === 'RECUPERACAO') ? this.recoveryConfig : this.form;
+                            const localBlindadoState = {
+                                active: this.sessionState.stopBlindadoActive,
+                                floor: this.sessionState.stopBlindadoFloor
+                            };
+
+                            const preBuyLimit = RiskManager.applySurvivalMode(stakeValue, (this.monitoringStats.profit || 0), localConfig, 1.0, localBlindadoState);
                             
                             // If the stake we are about to pay ($7.53) is significantly higher than the safe limit ($5.46)
                             // Allow small tolerance (e.g. 0.05) for rounding
