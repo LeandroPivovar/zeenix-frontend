@@ -1802,11 +1802,12 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 /* Modal Premium Styles */
 .categorized-modal {
 	width: 100%;
-	max-width: 700px;
-	background: #0D0D0D;
+    min-width: 0;
+	max-width: 700px !important;
+	background: #0b0b0b !important;
 	border: 1px solid #22C55E33;
 	padding: 20px;
-	border-radius: 1rem;
+	border-radius: 12px !important;
 	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     z-index: 10000000;
 }
@@ -2291,7 +2292,9 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     width: 100%;
     align-items: center;
     padding: 0;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #333;
 }
 
 .agent-card-left-tall {
@@ -2463,7 +2466,9 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     .agent-selection-card-top-row {
         padding: 0 !important;
         gap: 0.75rem !important;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem !important;
+        border-bottom: 1px solid #333;
     }
 
     .agent-video-tall,
