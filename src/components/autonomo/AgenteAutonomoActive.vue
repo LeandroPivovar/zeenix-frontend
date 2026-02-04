@@ -261,13 +261,13 @@
 								<!-- Bottom Section: Stats Inline and Centered -->
 								<div class="flex items-center justify-center gap-6">
 									<div class="flex items-center gap-2">
-										<span class="text-[8px] text-[#71717a] font-bold uppercase tracking-tight">ASSERTIVIDADE</span>
+										<span class="text-[8px] text-[#7d807e] font-bold uppercase tracking-tight">ASSERTIVIDADE</span>
 										<span class="text-[12px] font-black text-[#f0f0f0]">
 											{{ agent.description.match(/Assertividade: (.*)%/)?.[1] || (agent.id === 'zeus' ? '90' : '70') }}%
 										</span>
 									</div>
 									<div class="flex items-center gap-2">
-										<span class="text-[8px] text-[#71717a] font-bold uppercase tracking-tight">RETORNO</span>
+										<span class="text-[8px] text-[#7d807e] font-bold uppercase tracking-tight">RETORNO</span>
 										<span class="text-[12px] font-black text-[#22c55e]">
 											{{ agent.description.match(/Retorno: (.*)%/)?.[1] || (agent.id === 'zeus' ? '85' : '63.5') }}%
 										</span>

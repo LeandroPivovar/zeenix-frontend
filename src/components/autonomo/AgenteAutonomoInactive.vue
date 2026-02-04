@@ -416,15 +416,15 @@
                                     <div class="agent-benefits-list-premium">
                                         <div class="benefit-item-premium full-width">
 											<i class="fas fa-check-circle"></i>
-                                            <strong>Análise:</strong> <span>{{ agent.analysis }}</span>
+                                            <span class="benefit-content"><strong>Análise:</strong> {{ agent.analysis }}</span>
                                         </div>
 										<div class="benefit-row-inline">
 											<div class="benefit-item-premium">
 												<i class="fas fa-check-circle"></i>
-												<strong>Assertividade:</strong> <span>{{ agent.assertiveness }}</span>
+												<span class="benefit-content"><strong>Assertividade:</strong> {{ agent.assertiveness }}</span>
 											</div>
 											<div class="benefit-item-premium">
-												<strong>Retorno:</strong> <span>{{ agent.return }}</span>
+												<span class="benefit-content"><strong>Retorno:</strong> {{ agent.return }}</span>
 											</div>
 										</div>
                                     </div>
@@ -1634,6 +1634,16 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 	width: 100%;
 }
 
+.benefit-content {
+	color: #A1A1A1;
+}
+
+.benefit-content strong {
+	color: #DFDFDF;
+	font-weight: 700;
+	margin-right: 4px;
+}
+
 .check-icon {
     font-size: 0.8rem;
     color: #22C55E;
@@ -2363,7 +2373,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 
 .agent-description-premium {
     font-size: 0.75rem;
-    color: #71717a;
+    color: #7d807e;
     margin: 0;
 }
 
@@ -2438,7 +2448,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     align-items: center;
     gap: 6px;
     font-size: 0.65rem;
-    color: #71717a;
+    color: #7d807e;
 }
 
 .benefit-item-premium i {
