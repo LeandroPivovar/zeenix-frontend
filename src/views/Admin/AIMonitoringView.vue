@@ -1540,6 +1540,7 @@ export default {
                     barrier: contract.barrier,
                     entryPrice: contract.entry_tick_display_value,
                     exitPrice: contract.exit_tick_display_value,
+                    lastDigit: contract.exit_tick_display_value ? contract.exit_tick_display_value.slice(-1) : null,
                     fastResultApplied: false
                 };
                 this.monitoringOperations.unshift(trade);
@@ -1551,7 +1552,10 @@ export default {
                 // Durante a operação em aberto, contract.profit costuma ser o profit líquido na Deriv
                 trade.pnl = parseFloat(contract.profit || 0);
                 if (contract.entry_tick_display_value) trade.entryPrice = contract.entry_tick_display_value;
-                if (contract.exit_tick_display_value) trade.exitPrice = contract.exit_tick_display_value;
+                if (contract.exit_tick_display_value) {
+                    trade.exitPrice = contract.exit_tick_display_value;
+                    trade.lastDigit = contract.exit_tick_display_value.slice(-1);
+                }
             }
             
             if (contract.is_sold) {
