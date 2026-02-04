@@ -3379,10 +3379,22 @@ export default {
             } else {
                 trade.pnl = contract.profit || 0;
                 if (contract.entry_spot) trade.entryPrice = contract.entry_spot;
-                if (contract.exit_spot) trade.exitPrice = contract.exit_spot;
+                
+                // Enhanced Exit Price capture
+                const exitPrice = contract.exit_spot || contract.exit_tick;
+                if (exitPrice) trade.exitPrice = exitPrice;
+                else if (contract.is_sold && contract.current_spot) trade.exitPrice = contract.current_spot;
             }
 
             if (contract.is_sold) {
+                // Determine Entry/Exit if not set
+                if (!trade.entryPrice) trade.entryPrice = contract.entry_spot || contract.entry_tick;
+                if (!trade.exitPrice) trade.exitPrice = contract.exit_spot || contract.exit_tick || contract.current_spot;
+                
+                // Debug missing exit price
+                if (!trade.exitPrice) {
+                    console.warn('[StrategyCreator] Exit Price Missing for Sold Contract:', contract);
+                }
                 trade.result = contract.status.toUpperCase(); // 'WON' or 'LOST'
                 trade.pnl = parseFloat(contract.profit || 0);
 
