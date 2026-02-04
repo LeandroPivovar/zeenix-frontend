@@ -1906,9 +1906,6 @@ export default {
                 }
             });
             this.resizeObserver.observe(container);
-            
-            // ✅ Tooltip Interaction (Tick Chart)
-            this.resizeObserver.observe(container);
         },
         updateChartMarkers(trade, type = 'tick') {
             const markersArray = type === 'tick' ? this.chartMarkers : this.profitChartMarkers;
@@ -1952,8 +1949,6 @@ export default {
                 const series = this.$refs.profitChart.series;
                 const container = this.$refs.profitChartContainer;
                 
-                if (chart && series && container) {
-                    chart.subscribeCrosshairMove(param => {
                 if (chart && series && container) {
                     this.profitChartSubscribed = true;
                     console.log('[AIMonitoringView] Profit Chart Hover Interaction Removed');
