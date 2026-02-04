@@ -239,7 +239,8 @@
                                     </div>
                                     <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
                                         <div class="relative w-full h-[320px]">
-                                     <LineChart 
+                                    <LineChart 
+                                        ref="profitChart"
                                         v-show="activeChartMode === 'profit'"
                                         chartId="monitoring-profit-chart" 
                                         :data="formattedProfitHistory" 
@@ -728,11 +729,19 @@ export default {
              }
         },
         activeChartMode(val) {
-            if (val === 'tick') {
-                this.$nextTick(() => {
+            this.$nextTick(() => {
+                if (val === 'tick') {
                     this.initLightweightChart();
-                });
-            } else {
+                } else if (val === 'profit') {
+                    // ✅ Restore Profit Chart on switch
+                    if (this.$refs.profitChart && this.$refs.profitChart.renderChart) {
+                        console.log('[AIMonitoringView] Restoring Profit Chart...');
+                        this.$refs.profitChart.renderChart(); 
+                    }
+                }
+            });
+
+            if (val !== 'tick') {
                 // Cleanup chart if switching away? Optional, but good practice
                 if (this.chart) {
                      // We keep it in memory or destroy it. 
@@ -1850,7 +1859,7 @@ export default {
                 // Our markers are attached to bar times. So exact match should work.
                 
                 if (marker && marker.originalText) {
-                    const price = param.seriesPrices.get(this.series);
+                    // Removed unused 'price'
                     // Position at cursor (param.point.x, param.point.y)
                     // Or position at bar top? 
                     // User requested "passa o mouse encima". 
