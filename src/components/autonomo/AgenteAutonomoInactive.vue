@@ -373,34 +373,35 @@
 								@click="selectAgent(agent.id)"
 							>
 								<!-- Top Row: Avatar, Header, Action -->
-                                <div class="agent-selection-card-top-row" style="display: flex; width: 100%; align-items: center;">
+                                <div class="agent-selection-card-top-row" style="display: flex; width: 100%; align-items: center; padding: 0.75rem 1rem 0.5rem 1rem;">
                                     <!-- Left Section: Avatar (Updated to Image) -->
-                                    <div class="agent-card-left-tall">
+                                    <div class="agent-card-left-tall" style="flex-shrink: 0; margin-right: 0.75rem;">
                                         <img 
                                             v-if="agent.image" 
                                             :src="agent.image" 
-                                            class="agent-video-tall" 
+                                            class="agent-video-tall"
+                                            style="width: 55px; height: 55px; border-radius: 6px; object-fit: cover;"
                                         />
-                                        <div v-else class="agent-avatar-fallback-tall">
+                                        <div v-else class="agent-avatar-fallback-tall" style="width: 55px; height: 55px; border-radius: 6px;">
                                             <i class="fas fa-robot"></i>
                                         </div>
                                     </div>
 
                                     <!-- Middle Section: Header Only -->
-                                    <div class="agent-card-content header-only" style="padding-bottom: 0px; min-height: auto; flex: 1; padding: 1rem; display: flex; flex-direction: column; justify-content: center;">
+                                    <div class="agent-card-content header-only" style="padding: 0; min-height: auto; flex: 1; display: flex; flex-direction: column; justify-content: center;">
                                         <div class="agent-header-row">
                                             <div class="agent-title-col">
-                                                <h4 class="agent-name-premium">{{ agent.title.replace('Agente ', '') }}</h4>
-                                                <p class="agent-description-premium">{{ agent.subtitle }}</p>
+                                                <h4 class="agent-name-premium" style="margin-bottom: 2px;">{{ agent.title.replace('Agente ', '') }}</h4>
+                                                <p class="agent-description-premium" style="margin-bottom: 0;">{{ agent.subtitle }}</p>
                                             </div>
-                                            <span class="agent-profile-badge" :class="agent.profileBadge.toLowerCase()">
+                                            <span class="agent-profile-badge" :class="agent.profileBadge.toLowerCase()" style="margin-left: auto;">
                                                 {{ agent.profileBadge }}
                                             </span>
                                         </div>
                                     </div>
 
                                     <!-- Right Section: Action -->
-                                    <div class="agent-card-action">
+                                    <div class="agent-card-action" style="margin-left: 1rem;">
                                         <div class="agent-performance-badget">
                                             <span class="perf-val">{{ agent.percentage }}</span>
                                             <span class="perf-lbl">{{ agent.percentageLabel ? 'Retorno' : 'Performance' }}</span>
@@ -408,20 +409,23 @@
                                     </div>
                                 </div>
 
+                                <!-- Divider -->
+                                <div style="width: 100%; height: 1px; background-color: #27272a; margin: 0.25rem 0 0.75rem 0;"></div>
+
                                 <!-- Bottom Row: Benefits List -->
-                                <div class="agent-benefits-list-row" style="width: 100%; padding: 0 1rem 1rem 1rem;">
-                                    <div class="agent-benefits-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <div class="agent-benefits-list-row" style="width: 100%; padding: 0 1rem 0.75rem 1rem;">
+                                    <div class="agent-benefits-list" style="display: flex; flex-direction: column; gap: 0.25rem;">
                                         <div class="benefit-item-premium" style="display: flex; align-items: center;">
-                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
-                                            <strong style="color: #DFDFDF; margin-right: 4px;">Análise:</strong> <span>{{ agent.analysis }}</span>
+                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px; font-size: 12px;"></i>
+                                            <strong style="color: #DFDFDF; margin-right: 4px; font-size: 11px;">Análise:</strong> <span style="font-size: 11px;">{{ agent.analysis }}</span>
                                         </div>
                                         <div class="benefit-item-premium" style="display: flex; align-items: center;">
-                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
-                                            <strong style="color: #DFDFDF; margin-right: 4px;">Assertividade:</strong> <span>{{ agent.assertiveness }}</span>
+                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px; font-size: 12px;"></i>
+                                            <strong style="color: #DFDFDF; margin-right: 4px; font-size: 11px;">Assertividade:</strong> <span style="font-size: 11px;">{{ agent.assertiveness }}</span>
                                         </div>
                                         <div class="benefit-item-premium" style="display: flex; align-items: center;">
-                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px;"></i>
-                                            <strong style="color: #DFDFDF; margin-right: 4px;">Retorno:</strong> <span>{{ agent.return }}</span>
+                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px; font-size: 12px;"></i>
+                                            <strong style="color: #DFDFDF; margin-right: 4px; font-size: 11px;">Retorno:</strong> <span style="font-size: 11px;">{{ agent.return }}</span>
                                         </div>
                                     </div>
                                 </div>
