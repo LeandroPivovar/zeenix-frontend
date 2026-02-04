@@ -431,7 +431,7 @@
                                 </div>
 								
 								<!-- Glow Effect -->
-								<div class="selection-glow"></div>
+								<div v-if="selectedAgent === agent.id" class="selection-glow"></div>
 							</div>
 						</div>
 					</div>
@@ -1508,8 +1508,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 
 .agent-selection-card.active {
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(0, 0, 0, 0.4) 100%);
-    border-color: #22C55E;
-    box-shadow: 0 0 30px rgba(34, 197, 94, 0.2), 0 0 10px rgba(34, 197, 94, 0.1);
+    border-color: transparent; /* Selection glow handles the border */
 }
 
 /* Glassmorphism background for active card */
@@ -1715,11 +1714,11 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 .selection-glow {
     position: absolute;
     inset: -1px;
-    border-radius: 1.25rem;
+    border-radius: 12px;
     border: 1px solid #22C55E;
     box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
     pointer-events: none;
-    z-index: 1;
+    z-index: 10;
 }
 
 /* --- FIX: INPUT STYLING (IMAGE 0) --- */
