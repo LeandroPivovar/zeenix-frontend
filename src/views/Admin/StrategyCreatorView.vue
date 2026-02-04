@@ -3364,7 +3364,10 @@ export default {
                     analysisType: this.sessionState.analysisType,
                     result: 'OPEN',
                     // Save Barrier for history key update later
-                    barrier: contract.barrier
+                    // Save Barrier for history key update later
+                    barrier: contract.barrier,
+                    entryPrice: contract.entry_spot,
+                    exitPrice: contract.exit_spot
                 };
                 this.monitoringOperations.unshift(trade);
                 this.activeContracts.set(id, trade);
@@ -3375,6 +3378,8 @@ export default {
                 console.log(`[StrategyCreator] Contract ${id} tracked. Releasing isNegotiating lock.`);
             } else {
                 trade.pnl = contract.profit || 0;
+                if (contract.entry_spot) trade.entryPrice = contract.entry_spot;
+                if (contract.exit_spot) trade.exitPrice = contract.exit_spot;
             }
 
             if (contract.is_sold) {

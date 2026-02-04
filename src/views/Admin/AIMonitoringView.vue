@@ -239,16 +239,15 @@
                                     </div>
                                     <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
                                         <div class="relative w-full h-[320px]">
-                                    <LineChart 
-                                        ref="profitChart"
-                                        v-show="activeChartMode === 'profit'"
-                                        chartId="monitoring-profit-chart" 
-                                        :data="formattedProfitHistory" 
-                                        :height="320"
-                                        color="#22C55E"
-                                        :currency-symbol="currencySymbol"
-                                    />
-                                    <div 
+                                    <div v-show="activeChartMode === 'profit'" class="w-full h-full relative" ref="profitChartContainer">
+                                        <LightweightLineChart
+                                            ref="profitChart"
+                                            :data="profitChartData"
+                                            :color="monitoringStats.profit >= 0 ? '#10B981' : '#EF4444'"
+                                            :height="320" 
+                                            :currencySymbol="preferredCurrencyPrefix"
+                                        />
+                                    </div>        <div 
                                         v-show="activeChartMode === 'tick'"
                                         ref="chartContainer"
                                         class="w-full h-[320px] rounded-lg overflow-hidden relative"
@@ -261,7 +260,7 @@
                                          {{ chartTooltip.text }}
                                     </div>
                                 </div>        
-                                        <div v-if="(activeChartMode === 'profit' && profitHistory.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" 
+                                        <div v-if="(activeChartMode === 'profit' && profitChartData.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" 
                                              class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500 pointer-events-none">
                                             <div class="text-center pointer-events-auto">
                                                <i class="fas fa-chart-line text-5xl text-muted-foreground/20 mb-4 block animate-bounce"></i>
@@ -356,7 +355,7 @@
                                         </div>
 
                                         <tr v-if="monitoringOperations.length === 0">
-                                            <div class="text-center py-20 text-muted-foreground/30 uppercase text-[10px] font-black tracking-[0.2em] w-full">
+                                            <div class="text-center py-20 text-muted-foreground/30 uppercase text-[10px] font-black tracking-[0.2em]">
                                                 Aguardando primeira operação...
                                             </div>
                                         </tr>
@@ -562,7 +561,7 @@ import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
-import LineChart from '../../components/LineChart.vue';
+import LightweightLineChart from '@/components/LightweightLineChart.vue';
 import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
 import { RiskManager } from '../../utils/RiskManager';
 // Import strategy configurations
@@ -590,7 +589,7 @@ export default {
         TopNavbar,
         DesktopBottomNav,
         SettingsSidebar,
-        LineChart,
+        LightweightLineChart,
         StopLossModal: () => import('../../components/StopLossModal.vue'),
         TargetProfitModal: () => import('../../components/TargetProfitModal.vue'),
         StopBlindadoAjusteModal: () => import('../../components/StopBlindadoAjusteModal.vue')
@@ -681,6 +680,7 @@ export default {
             chart: null,
             series: null,
             tickChartData: [],
+            profitChartData: [{ time: Math.floor(Date.now() / 1000), value: 0 }], // Start with 0 point
             resizeObserver: null,
             chartMarkers: []
         }
@@ -1290,6 +1290,15 @@ export default {
 
                     RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake, this.pendingFastResult.analysisType, this.recoveryConfig.lossesToActivate);
                     
+                    // Update Profit Chart for Fast Result
+                    this.monitoringStats.profit += estimatedProfit;
+                    const profitTick = { time: Math.floor(Date.now() / 1000), value: parseFloat(this.monitoringStats.profit.toFixed(2)) };
+                    if (this.profitChartData.length > 0 && profitTick.time <= this.profitChartData[this.profitChartData.length - 1].time) {
+                        profitTick.time = this.profitChartData[this.profitChartData.length - 1].time + 1;
+                    }
+                    this.profitChartData.push(profitTick);
+                    if (this.profitChartData.length > 5000) this.profitChartData.shift();
+
                     // Release locks
                     this.pendingFastResult.active = false;
                     this.isNegotiating = false; 
@@ -1627,7 +1636,18 @@ export default {
                 // Update stats
                 this.monitoringStats.profit += trade.pnl;
                 this.profitHistory.push(parseFloat(this.monitoringStats.profit.toFixed(2)));
+                
+                // Keep history limited (old chart logic - can keep for legacy or remove)
                 if (this.profitHistory.length > 50) this.profitHistory.shift();
+                
+                // Update Lightweight Chart Data
+                const profitTick = { time: Math.floor(Date.now() / 1000), value: parseFloat(this.monitoringStats.profit.toFixed(2)) };
+                // Ensure time uniqueness (in case trades happen too fast)
+                if (this.profitChartData.length > 0 && profitTick.time <= this.profitChartData[this.profitChartData.length - 1].time) {
+                    profitTick.time = this.profitChartData[this.profitChartData.length - 1].time + 1;
+                }
+                this.profitChartData.push(profitTick);
+                if (this.profitChartData.length > 5000) this.profitChartData.shift();
                 
                 this.monitoringStats.balance = parseFloat(this.monitoringStats.balance) + trade.pnl;
 
@@ -1840,10 +1860,6 @@ export default {
                 if (entries.length === 0 || !entries[0].contentRect) return;
                 const { width } = entries[0].contentRect;
                 if (this.chart) {
-                    this.chart.applyOptions({ width });
-                }
-            });
-            this.resizeObserver.observe(container);
                     this.chart.applyOptions({ width });
                 }
             });
