@@ -3390,19 +3390,29 @@ export default {
             }
 
             if (contract.is_sold) {
-                // Final attempt to capture values if not set
+                // Determine Entry/Exit if not set
                 if (!trade.entryPrice) trade.entryPrice = contract.entry_tick_display_value || contract.entry_tick || contract.entry_spot;
+                
+                // Detailed Debug for Exit Price
+                const exitSources = {
+                     display: contract.exit_tick_display_value,
+                     tick: contract.exit_tick,
+                     spot: contract.exit_spot,
+                     current: contract.current_spot
+                };
+                
                 if (!trade.exitPrice) trade.exitPrice = contract.exit_tick_display_value || contract.exit_tick || contract.exit_spot;
                 
-                // Debug missing exit price
+                // Debug missing exit price or discrepancy
+                console.log(`[StrategyCreator] Contract Sold ${id}. Exit Sources:`, exitSources, 'Selected:', trade.exitPrice);
+
                 if (!trade.exitPrice) {
                     console.warn('[StrategyCreator] Exit Price Missing for Sold Contract:', contract);
                     // Force log available keys
                     console.log('[StrategyCreator] Keys available:', Object.keys(contract));
                     console.log('[StrategyCreator] Audit Details:', contract.audit_details);
-                } else {
-                    // console.log(`[StrategyCreator] Exit Price Captured: ${trade.exitPrice} (Entry: ${trade.entryPrice})`);
                 }
+                
                 trade.result = contract.status.toUpperCase(); // 'WON' or 'LOST'
                 trade.pnl = parseFloat(contract.profit || 0);
 
