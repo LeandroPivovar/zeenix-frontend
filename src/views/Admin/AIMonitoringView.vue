@@ -745,20 +745,16 @@ export default {
                     this.setupProfitChartTooltip();
                 }
             });
-        }
 
             if (val !== 'tick') {
                 // Cleanup chart if switching away? Optional, but good practice
                 if (this.chart) {
-                     // We keep it in memory or destroy it. 
-                     // If we destroy, we need to rebuild. 
-                     // Let's keep simpler: just destroy to save resources if hidden
                     this.chart.remove();
                     this.chart = null;
                     this.series = null;
                 }
             }
-        }
+        },
     },
     mounted() {
         this.checkMobile();
