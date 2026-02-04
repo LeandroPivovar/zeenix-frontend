@@ -255,8 +255,9 @@
                                     ></div>
                                     <!-- Tooltip -->
                                     <div v-show="chartTooltip.visible" 
-                                         class="absolute z-50 bg-black/80 border border-white/10 p-2 rounded text-xs text-white pointer-events-none whitespace-nowrap"
+                                         class="absolute z-50 bg-[rgba(0,0,0,0.9)] border border-white/10 p-3 rounded-lg text-sm text-white pointer-events-none whitespace-nowrap shadow-xl"
                                          :style="{ top: chartTooltip.y + 'px', left: chartTooltip.x + 'px', transform: 'translate(-50%, -100%) translateY(-10px)' }">
+                                         <span class="font-bold block mb-1">Operação</span>
                                          {{ chartTooltip.text }}
                                     </div>
                                 </div>        
@@ -733,10 +734,10 @@ export default {
                 if (val === 'tick') {
                     this.initLightweightChart();
                 } else if (val === 'profit') {
-                    // ✅ Restore Profit Chart on switch
-                    if (this.$refs.profitChart && this.$refs.profitChart.renderChart) {
+                    // ✅ Restore Profit Chart on switch using lighter forceUpdate
+                    if (this.$refs.profitChart && this.$refs.profitChart.forceUpdate) {
                         console.log('[AIMonitoringView] Restoring Profit Chart...');
-                        this.$refs.profitChart.renderChart(); 
+                        this.$refs.profitChart.forceUpdate(); 
                     }
                 }
             });

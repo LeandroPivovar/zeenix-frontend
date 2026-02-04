@@ -233,6 +233,14 @@ export default {
       } catch (error) {
         this.renderChart();
       }
+    },
+    forceUpdate() {
+        if (this.chart) {
+            this.chart.resize();
+            this.chart.update('none');
+        } else {
+            this.renderChart();
+        }
     }
   }
 }
