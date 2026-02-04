@@ -1102,8 +1102,16 @@ export default {
             const filtered = data.notifications.filter(notif => {
               if (!isTimerActive) return true; // Timer expirou, mostra todas
               
-              const notifDate = new Date(notif.timestamp).getTime();
-              return notifDate > clearedAt; // Timer ativo, mostra apenas novas
+              // Forçar parse como UTC para evitar problemas de fuso horário
+              let timestamp = notif.timestamp;
+              if (timestamp && typeof timestamp === 'string' && !timestamp.endsWith('Z') && !timestamp.includes('GMT')) {
+                timestamp = timestamp.replace(' ', 'T') + 'Z';
+              }
+              
+              const notifDate = new Date(timestamp).getTime();
+              // Adicionamos 1 minuto de margem (buffer) para compensar desvios de relógio entre cliente e servidor
+              const safeClearedAt = clearedAt + 60000;
+              return notifDate > safeClearedAt;
             });
 
             // Converter as notificações do backend para o formato esperado pelo frontend
