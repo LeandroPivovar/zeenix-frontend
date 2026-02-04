@@ -1828,16 +1828,22 @@ export default {
                 this.series.setData(this.tickChartData);
             }
 
-            // Restore markers
             if (this.chartMarkers.length > 0) {
                 this.series.setMarkers(this.chartMarkers);
             }
+            
+            // Force scroll to latest data
+            this.chart.timeScale().scrollToPosition(0, true);
             
             // Handle Resize
             this.resizeObserver = new ResizeObserver(entries => {
                 if (entries.length === 0 || !entries[0].contentRect) return;
                 const { width } = entries[0].contentRect;
                 if (this.chart) {
+                    this.chart.applyOptions({ width });
+                }
+            });
+            this.resizeObserver.observe(container);
                     this.chart.applyOptions({ width });
                 }
             });
