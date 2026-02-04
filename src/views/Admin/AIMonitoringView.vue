@@ -247,36 +247,40 @@
                                             :height="320" 
                                             :currencySymbol="preferredCurrencyPrefix"
                                         />
-                                    </div>        <div 
-                                        v-show="activeChartMode === 'tick'"
-                                        ref="chartContainer"
-                                        class="w-full h-[320px] rounded-lg overflow-hidden relative"
+                                    </div>
+                                    <div v-show="activeChartMode === 'tick'"
+                                         ref="chartContainer"
+                                         class="w-full h-[320px] rounded-lg overflow-hidden relative"
                                     ></div>
-                                    <!-- Advanced Tooltip -->
-                                    <div v-show="chartTooltip.visible" 
-                                          class="absolute z-[999] bg-[#1a1a1a] border border-white/10 p-3 rounded-lg text-sm text-white pointer-events-none whitespace-nowrap shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
-                                          :style="{ 
-                                              top: chartTooltip.y + 'px', 
-                                              left: chartTooltip.x + 'px', 
-                                              transform: 'translate(-50%, -100%) translateY(-15px)' 
-                                          }">
-                                          <div class="flex flex-col items-center min-w-[100px]">
-                                              <span class="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-1 opacity-60">Performance</span>
-                                              <span class="font-bold text-white tracking-tight">{{ chartTooltip.text }}</span>
-                                          </div>
-                                          <!-- Arrow -->
-                                          <div class="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45"></div>
-                                    </div>
-                                </div>        
-                                        <div v-if="(activeChartMode === 'profit' && profitChartData.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" 
-                                             class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500 pointer-events-none">
-                                            <div class="text-center pointer-events-auto">
-                                               <i class="fas fa-chart-line text-5xl text-muted-foreground/20 mb-4 block animate-bounce"></i>
-                                               <p class="text-muted-foreground text-sm font-medium">Aguardando dados...</p>
-                                           </div>
+                                    
+                                    <!-- Advanced Tooltip (Teleported to body to avoid overflow:hidden) -->
+                                    <Teleport to="body">
+                                        <div v-if="chartTooltip.visible" 
+                                             class="!fixed !z-[99999] bg-[#1a1a1a] border border-white/10 p-3 rounded-lg text-sm text-white pointer-events-none whitespace-nowrap shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+                                             :style="{ 
+                                                 top: chartTooltip.y + 'px', 
+                                                 left: chartTooltip.x + 'px', 
+                                                 transform: 'translate(-50%, -100%) translateY(-15px)' 
+                                             }">
+                                             <div class="flex flex-col items-center min-w-[100px]">
+                                                 <span class="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-1 opacity-60">Status Atual</span>
+                                                 <span class="font-bold text-white tracking-tight">{{ chartTooltip.text }}</span>
+                                             </div>
+                                             <!-- Arrow -->
+                                             <div class="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45"></div>
                                         </div>
-                                    </div>
+                                    </Teleport>
+                                </div>        
+                                
+                                <div v-if="(activeChartMode === 'profit' && profitChartData.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" 
+                                     class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500 pointer-events-none">
+                                    <div class="text-center pointer-events-auto">
+                                       <i class="fas fa-chart-line text-5xl text-muted-foreground/20 mb-4 block animate-bounce"></i>
+                                       <p class="text-muted-foreground text-sm font-medium">Aguardando dados...</p>
+                                   </div>
                                 </div>
+                            </div>
+                        </div>
 
                             <!-- History Tab -->
                             <div v-if="activeMonitoringTab === 'history'" class="animate-fadeIn flex-1 flex flex-col">
@@ -605,6 +609,7 @@ export default {
     data() {
         return {
             chartTooltip: { visible: false, x: 0, y: 0, text: '' },
+            profitChartSubscribed: false,
             isSidebarOpen: false,
             isSidebarCollapsed: true,
             isMobile: false,
@@ -1871,30 +1876,21 @@ export default {
             });
             this.resizeObserver.observe(container);
             
-            // ✅ Tooltip Interaction
+            // ✅ Tooltip Interaction (Tick Chart)
             this.chart.subscribeCrosshairMove(param => {
-                if (!param.point || !param.time || !this.series || this.chartMarkers.length === 0) {
+                const container = this.$refs.chartContainer;
+                if (!param.point || !param.time || !this.series || this.chartMarkers.length === 0 || !container) {
                     this.chartTooltip.visible = false;
                     return;
                 }
 
-                // Check for marker proximity
                 const time = param.time;
-                // Markers might have slight time diff, checking exact match first
                 let marker = this.chartMarkers.find(m => m.time === time);
                 
-                // If no exact match, try to find one very close? 
-                // Lightweight charts aligns crosshair to bars, so time should match bar time.
-                // Our markers are attached to bar times. So exact match should work.
-                
                 if (marker && marker.originalText) {
-                    // Removed unused 'price'
-                    // Position at cursor (param.point.x, param.point.y)
-                    // Or position at bar top? 
-                    // User requested "passa o mouse encima". 
-                    // Crosshair gives coordinate of mouse relative to chart.
-                    this.chartTooltip.x = param.point.x;
-                    this.chartTooltip.y = param.point.y;
+                    const rect = container.getBoundingClientRect();
+                    this.chartTooltip.x = rect.left + param.point.x;
+                    this.chartTooltip.y = rect.top + param.point.y;
                     this.chartTooltip.text = marker.originalText;
                     this.chartTooltip.visible = true;
                 } else {
@@ -1935,36 +1931,43 @@ export default {
             }
         },
         setupProfitChartTooltip() {
-            if (this.$refs.profitChart && this.$refs.profitChart.forceUpdate) {
-                this.$refs.profitChart.forceUpdate(); 
-                
+            if (!this.$refs.profitChart || this.profitChartSubscribed) return;
+            
+            this.$nextTick(() => {
                 const chart = this.$refs.profitChart.chart;
                 const series = this.$refs.profitChart.series;
+                const container = this.$refs.profitChartContainer;
                 
-                if (chart && series) {
+                if (chart && series && container) {
                     chart.subscribeCrosshairMove(param => {
-                        // If mouse is away or chart is not visible
                         if (!param.point || !param.time || this.activeChartMode !== 'profit') {
                             this.chartTooltip.visible = false;
                             return;
                         }
                         
-                        const data = param.seriesData.get(series);
-                        if (data && (data.value !== undefined || data.close !== undefined)) {
-                            const value = data.value !== undefined ? data.value : data.close;
+                        // Robust Data Extraction
+                        let price = null;
+                        const seriesData = param.seriesData.get(series);
+                        if (seriesData) {
+                            price = seriesData.value !== undefined ? seriesData.value : seriesData.close;
+                        }
+
+                        if (price !== null) {
+                            const rect = container.getBoundingClientRect();
                             const time = new Date(param.time * 1000).toLocaleTimeString('pt-BR');
                             
-                            this.chartTooltip.x = param.point.x;
-                            this.chartTooltip.y = param.point.y;
-                            this.chartTooltip.text = `${this.currencySymbol}${value.toFixed(2)} às ${time}`;
+                            this.chartTooltip.x = rect.left + param.point.x;
+                            this.chartTooltip.y = rect.top + param.point.y;
+                            this.chartTooltip.text = `${this.currencySymbol}${price.toFixed(2)} às ${time}`;
                             this.chartTooltip.visible = true;
                         } else {
                             this.chartTooltip.visible = false;
                         }
                     });
-                    console.log('[AIMonitoringView] Profit Chart Tooltip Setup Complete');
+                    this.profitChartSubscribed = true;
+                    console.log('[AIMonitoringView] Profit Chart Tooltip Setup Complete (Viewport Mode)');
                 }
-            }
+            });
         }
     }
 }
