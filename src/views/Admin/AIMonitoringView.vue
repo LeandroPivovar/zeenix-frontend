@@ -1127,8 +1127,29 @@ export default {
                                 const config = this.recoveryConfig;
                                 
                                 // Re-calculate using the REAL rate we just got
-                                const exactStake = RiskManager.calculateNextStake(this.sessionState, config, realPayoutRate);
+                                let exactStake = RiskManager.calculateNextStake(this.sessionState, config, realPayoutRate);
                                 
+                                // ✅ SURVIVAL MODE CHECK (AGAIN)
+                                // Prevent Martingale Calibration from creating an unsafe stake
+                                const currentProfit = this.monitoringStats.profit;
+                                const estimatedPayout = config.expectedPayout || 1.20;
+                                const blindadoState = {
+                                    active: this.sessionState.stopBlindadoActive,
+                                    floor: this.sessionState.stopBlindadoFloor
+                                };
+
+                                const { stake: survivalStake, reason: survivalReason } = RiskManager.applySurvivalMode(exactStake, currentProfit, config, estimatedPayout, blindadoState);
+                                
+                                if (survivalStake < exactStake) {
+                                    this.addLog('🛡️ Survival Mode (Calibração)', [
+                                        `Limitando ajuste de Martingale`,
+                                        `Motivo: ${survivalReason}`,
+                                        `Ideal: $${exactStake.toFixed(2)}`,
+                                        `Limite Seguro: $${survivalStake.toFixed(2)}`
+                                    ], 'warning');
+                                    exactStake = survivalStake;
+                                }
+
                                 // Tolerance check (if diff > 0.02 cents)
                                 if (Math.abs(exactStake - stakeValue) > 0.02) {
                                     this.addLog(`⚠️ Calibrando Martingale: Payout ${realPayoutRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');

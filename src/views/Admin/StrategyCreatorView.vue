@@ -2817,7 +2817,28 @@ export default {
 
                                 // We manually temporarily inject the just-learned payout history into the calculation
                                 // BETTER: We now pass it explicitly to ensure precision regardless of history state
-                                const exactStake = RiskManager.calculateNextStake(this.sessionState, config, realPayoutRate);
+                                let exactStake = RiskManager.calculateNextStake(this.sessionState, config, realPayoutRate);
+                                
+                                // ✅ SURVIVAL MODE CHECK (AGAIN)
+                                // Prevent Martingale Calibration from creating an unsafe stake
+                                const currentProfit = this.monitoringStats.profit || 0; 
+                                const estimatedPayout = config.expectedPayout || 1.20;
+                                const blindadoState = {
+                                    active: this.sessionState.stopBlindadoActive,
+                                    floor: this.sessionState.stopBlindadoFloor
+                                };
+
+                                const { stake: survivalStake, reason: survivalReason } = RiskManager.applySurvivalMode(exactStake, currentProfit, config, estimatedPayout, blindadoState);
+                                
+                                if (survivalStake < exactStake) {
+                                    this.addLog('🛡️ Survival Mode (Calibração)', [
+                                        `Limitando ajuste de Martingale`,
+                                        `Motivo: ${survivalReason}`,
+                                        `Ideal: $${exactStake.toFixed(2)}`,
+                                        `Limite Seguro: $${survivalStake.toFixed(2)}`
+                                    ], 'warning');
+                                    exactStake = survivalStake;
+                                }
                                 
                                 // Tolerance check
                                 if (Math.abs(exactStake - stakeValue) > 0.02) {
