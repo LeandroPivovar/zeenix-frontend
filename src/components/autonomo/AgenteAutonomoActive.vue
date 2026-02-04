@@ -126,9 +126,6 @@
 					</div>
 					<!-- Percentage Badge Removed -->
 				</div>
-
-				</div>
-
 				<!-- Lucro Medio/Dia -->
 				<div 
 					v-if="!isMobile"
