@@ -1653,9 +1653,6 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-	padding: 15px 12px;
-	background: rgba(0, 0, 0, 0.2);
-	border-radius: 0 0 12px 12px;
 }
 
 .agent-card-right {
