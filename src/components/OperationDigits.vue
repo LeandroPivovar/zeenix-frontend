@@ -599,9 +599,7 @@ import derivTradingService from '../services/deriv-trading.service.js';
 import TradeResultModal from './TradeResultModal.vue';
 
 export default {
-  mounted() {
-    this.loadMarkets();
-  },
+
     name: 'OperationDigits',
     components: {
         TradeResultModal
@@ -819,31 +817,6 @@ export default {
         });
         return grouped;
       },
-        // unchanged
-      },
-      async loadMarkets() {
-        this.isLoadingMarkets = true;
-        try {
-          const response = await derivTradingService.getActiveSymbols();
-          // Expected format: { symbols: [...] } or array directly
-          this.markets = response?.symbols || response || [];
-        } catch (e) {
-          console.error('[OperationDigits] loadMarkets error:', e);
-          this.markets = [];
-        } finally {
-          this.isLoadingMarkets = false;
-        }
-      },
-
-            this.markets.forEach(market => {
-                const category = market.category || 'Outros';
-                if (!grouped[category]) {
-                    grouped[category] = [];
-                }
-                grouped[category].push(market);
-            });
-            return grouped;
-        },
         loadingMessage() {
             if (this.connectionError) {
                 return 'Reconectando automaticamente...';
@@ -1182,6 +1155,21 @@ export default {
         },
     },
     methods: {
+      async loadMarkets() {
+        this.isLoadingMarkets = true;
+        // console.log('[OperationDigits] Loading markets...');
+        try {
+          const response = await derivTradingService.getActiveSymbols();
+          // Expected format: { symbols: [...] } or array directly
+          this.markets = response?.symbols || response || [];
+         // console.log('[OperationDigits] Markets loaded:', this.markets.length);
+        } catch (e) {
+          console.error('[OperationDigits] loadMarkets error:', e);
+          this.markets = [];
+        } finally {
+          this.isLoadingMarkets = false;
+        }
+      },
         getStatusColor(statusClass) {
             const colors = {
                 'status-underheated': '#3B82F6', // Blue
@@ -2109,6 +2097,7 @@ export default {
         },
     },
     mounted() {
+        this.loadMarkets();
         this.checkMobile();
         window.addEventListener('resize', this.checkMobile);
         console.log('[OperationDigits] Componente montado');
