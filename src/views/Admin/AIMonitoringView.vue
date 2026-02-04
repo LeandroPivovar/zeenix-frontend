@@ -1936,6 +1936,7 @@ export default {
                 position: 'inBar', // Na linha do gráfico
                 color: (trade.pnl || 0) >= 0 ? '#22C55E' : '#EF4444',
                 shape: 'circle',
+                size: 0.5, // USER REQUEST: Deixar apenas a menorzinha
                 text: '' // Não mostrar texto fixo, apenas a bolinha
             };
 
