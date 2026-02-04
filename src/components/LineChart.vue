@@ -20,7 +20,8 @@ export default {
   data() {
     return {
       chart: null,
-      isRendering: false
+      isRendering: false,
+      resizeObserver: null
     }
   },
   mounted() {
@@ -33,7 +34,11 @@ export default {
     });
   },
   beforeUnmount() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
     if (this.chart) {
+      this.chart.stop(); // Stop animations
       this.chart.destroy();
       this.chart = null; 
     }
@@ -64,6 +69,7 @@ export default {
       
       if (this.chart) {
         try {
+          this.chart.stop();
           this.chart.destroy();
         } catch (error) {
           console.warn('[LineChart] Error destroying previous chart:', error);
@@ -102,7 +108,10 @@ export default {
             events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
             animation: {
                 duration: 800,
-                easing: 'easeOutQuart'
+                easing: 'easeOutQuart',
+                onComplete: function() {
+                  // Optional: Mark as rendered
+                }
             },
             plugins: {
               legend: { display: false },
@@ -222,8 +231,10 @@ export default {
     },
     forceUpdate() {
         if (this.chart) {
-            // Just resize, don't force infinite updates
-            this.chart.resize();
+             const ctx = document.getElementById(this.chartId);
+             if (ctx) {
+                this.chart.resize();
+             }
         } else {
             this.renderChart();
         }
