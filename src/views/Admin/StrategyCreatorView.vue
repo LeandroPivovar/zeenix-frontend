@@ -3017,6 +3017,10 @@ export default {
                     // Fix: consecutiveLosses stops incrementing in Recovery. Must sum both counters.
                     const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
                     
+                    if (!win) {
+                         console.log(`[PAUSE DEBUG] Loss detected. Main: ${this.sessionState.consecutiveLosses}, Rec: ${this.sessionState.lossStreakRecovery}, Total: ${totalConsecutiveLosses}`);
+                    }
+
                     if (!win && totalConsecutiveLosses >= 6) {
                         const pauseDuration = 120 * 1000; // 2 minutes
                         this.pauseUntil = Date.now() + pauseDuration;

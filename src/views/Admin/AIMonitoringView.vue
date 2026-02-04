@@ -1528,6 +1528,10 @@ export default {
                     // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
                     const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
                     
+                    if (trade.result !== 'WON') {
+                         console.log(`[PAUSE DEBUG] Loss detected. Main: ${this.sessionState.consecutiveLosses}, Rec: ${this.sessionState.lossStreakRecovery}, Total: ${totalConsecutiveLosses}`);
+                    }
+
                     if (trade.result !== 'WON' && totalConsecutiveLosses >= 6) {
                         const pauseDuration = 120 * 1000; // 2 minutes
                         this.pauseUntil = Date.now() + pauseDuration;
