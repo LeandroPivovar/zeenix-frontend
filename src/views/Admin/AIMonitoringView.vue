@@ -867,10 +867,10 @@ export default {
                             : (baseConfig.recoveryConfig ? baseConfig.recoveryConfig.attackFilters : [])
                     };
 
-                    // ✅ FORCE RECOVERY PAYOUT FIX for Apollo/Nexus
-                    if (this.currentConfig.strategy.toLowerCase() === 'apollo' || this.currentConfig.strategy.toLowerCase() === 'nexus') {
-                        this.recoveryConfig.expectedPayout = 1.26; // User requested explicit 1.26
-                    }
+                    // ✅ FIX: Allow JSON to define payout. Removed forced 1.26 override.
+                    // if (this.currentConfig.strategy.toLowerCase() === 'apollo' || this.currentConfig.strategy.toLowerCase() === 'nexus') {
+                    //    this.recoveryConfig.expectedPayout = 1.26; 
+                    // }
                     
                     // Garantir types corretos
                     this.currentConfig.initialStake = parseFloat(this.currentConfig.initialStake || this.currentConfig.stake);

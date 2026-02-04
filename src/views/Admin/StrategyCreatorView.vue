@@ -2886,6 +2886,31 @@ export default {
                             // 2. Prepare for fast result calculation with the EXACT payout
                             this.pendingFastResult.payout = payout;
                             
+                            // 🛑 FINAL SAFETY CHECK BEFORE BUY
+                            // Re-verify if the stake we are about to pay is safe
+                            const preBuyLimit = RiskManager.applySurvivalMode(stakeValue, (this.monitoringStats.profit || 0), config, 1.0, blindadoState);
+                            
+                            // If the stake we are about to pay ($7.53) is significantly higher than the safe limit ($5.46)
+                            // Allow small tolerance (e.g. 0.05) for rounding
+                            if (stakeValue > (preBuyLimit.stake + 0.05)) {
+                                this.addLog('🛑 COMPRA BLOQUEADA (Safety Net)', [
+                                    `Tentativa de compra acima do limite seguro`,
+                                    `Stake Tentativa: $${stakeValue.toFixed(2)}`,
+                                    `Limite Seguro: $${preBuyLimit.stake.toFixed(2)}`,
+                                    `Motivo: ${preBuyLimit.reason}`
+                                ], 'error');
+                                
+                                // Retrying with SAFE stake
+                                if (!this.retryingProposal) {
+                                    this.retryingProposal = true;
+                                    const newParams = { ...msg.echo_req, amount: preBuyLimit.stake };
+                                    delete newParams.req_id;
+                                    delete newParams.is_retry;
+                                    this.ws.send(JSON.stringify(newParams));
+                                }
+                                return; // BLOCK BUY
+                            }
+
                             // 3. Execute the Buy
                             this.addLog(`💸 Comprando contrato via ID: ${proposalId}`, 'info');
                             this.ws.send(JSON.stringify({
