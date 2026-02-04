@@ -1919,15 +1919,14 @@ export default {
             
             const markerText = `${trade.result === 'WON' ? '+' : ''}${this.currencySymbol}${trade.pnl.toFixed(2)}`;
             const markerColor = trade.result === 'WON' ? '#22C55E' : '#EF4444';
-            const markerShape = trade.result === 'WON' ? 'arrowUp' : 'arrowDown';
             
             const marker = {
                 time: lastPoint.time, 
-                position: trade.result === 'WON' ? 'belowBar' : 'aboveBar',
+                position: 'aboveBar', // Always above the point for clarity
                 color: markerColor,
-                shape: markerShape,
-                text: markerText, // USER REQUEST: Mostrar encima da bolinha
-                originalText: markerText, // For tooltip
+                shape: 'circle', // USER REQUEST: Apenas uma bolinha
+                text: markerText, 
+                originalText: markerText, 
                 id: trade.id
             };
 
