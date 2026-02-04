@@ -243,7 +243,7 @@
                                         <LightweightLineChart
                                             ref="profitChart"
                                             :data="profitChartData"
-                                            :color="monitoringStats.profit >= 0 ? '#10B981' : '#EF4444'"
+                                            :color="monitoringStats.profit >= 0 ? '#22C55E' : '#EF4444'"
                                             :height="320" 
                                             :currencySymbol="preferredCurrencyPrefix"
                                         />

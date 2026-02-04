@@ -3,12 +3,22 @@
     <div class="chart-container" ref="chartContainer"></div>
     <!-- Floating Tooltip -->
     <div v-if="tooltip.visible" 
-         class="absolute z-10 bg-secondary/90 backdrop-blur-md border border-border/40 p-3 rounded-xl shadow-2xl pointer-events-none transition-opacity duration-200"
-         :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px', transform: 'translate(-50%, -100%) translateY(-12px)' }">
-        <div class="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-1">{{ tooltip.time }}</div>
-        <div class="text-sm font-bold" :class="tooltip.value >= 0 ? 'text-success' : 'text-red-500'">
-            {{ tooltip.value >= 0 ? '+' : '' }}{{ currencySymbol }}{{ Math.abs(tooltip.value).toFixed(2).replace('.', ',') }}
+         class="absolute z-[100] bg-[#161616]/95 backdrop-blur-md border border-white/10 p-3 rounded-lg shadow-2xl pointer-events-none transition-opacity duration-150"
+         :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px', transform: 'translate(-50%, -100%) translateY(-15px)' }">
+        <div class="flex flex-col items-center">
+            <div class="text-[10px] text-muted-foreground uppercase font-black tracking-[0.1em] mb-1.5 opacity-60">
+                Performance • {{ tooltip.time }}
+            </div>
+            <div class="text-base font-black tracking-tight flex items-center gap-2" :class="tooltip.value >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]'">
+                <span class="text-xs opacity-50">{{ currencySymbol }}</span>
+                <span>{{ Math.abs(tooltip.value).toFixed(2).replace('.', ',') }}</span>
+                <span v-if="tooltip.value !== 0" class="text-[10px] ml-1">
+                    <i :class="tooltip.value > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                </span>
+            </div>
         </div>
+        <!-- Tooltip Arrow -->
+        <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#161616] border-r border-b border-white/10 rotate-45"></div>
     </div>
   </div>
 </template>
@@ -67,19 +77,26 @@ export default {
     data: {
       deep: true,
       handler(newData) {
-        if (this.series && newData) {
+        if (this.series && newData && newData.length > 0) {
            this.series.setData(newData);
+           // After data update, maybe fit content if small?
+           if (newData.length < 5) {
+               this.chart.timeScale().fitContent();
+           }
         }
       }
     },
-    color(newColor) {
-      if (this.series) {
-        this.series.applyOptions({ 
-            lineColor: newColor,
-            topColor: newColor + '44', // Lower opacity
-            bottomColor: newColor + '02',
-        });
-      }
+    color: {
+        immediate: true,
+        handler(newColor) {
+            if (this.series) {
+                this.series.applyOptions({ 
+                    lineColor: newColor,
+                    topColor: newColor + '44', // ~26%
+                    bottomColor: newColor + '00', // 0%
+                });
+            }
+        }
     }
   },
   methods: {
@@ -97,8 +114,8 @@ export default {
           fontFamily: 'Inter, system-ui, sans-serif',
         },
         grid: {
-          vertLines: { color: 'rgba(255, 255, 255, 0.03)' },
-          horzLines: { color: 'rgba(255, 255, 255, 0.03)' },
+          vertLines: { color: 'rgba(255, 255, 255, 0.02)' },
+          horzLines: { color: 'rgba(255, 255, 255, 0.02)' },
         },
         width: this.$refs.chartContainer.clientWidth,
         height: this.height,
@@ -106,13 +123,16 @@ export default {
           timeVisible: true,
           secondsVisible: true,
           borderColor: 'rgba(255, 255, 255, 0.05)',
+          fixLeftEdge: true, // User request: Start from left
+          fixRightEdge: false,
         },
         rightPriceScale: {
           borderColor: 'rgba(255, 255, 255, 0.05)',
           scaleMargins: {
-              top: 0.1,
-              bottom: 0.1,
-          }
+              top: 0.2,
+              bottom: 0.2,
+          },
+          autoScale: true,
         },
         handleScroll: {
             mouseWheel: true,
@@ -141,17 +161,19 @@ export default {
 
       this.chart = createChart(this.$refs.chartContainer, chartOptions);
 
-      // Add Area Series for the "Performance" look
+      // Add Area Series with high-quality settings
       this.series = this.chart.addAreaSeries({
         lineColor: this.color,
         topColor: this.color + '44',
-        bottomColor: this.color + '02',
+        bottomColor: this.color + '00',
         lineWidth: 3,
         priceFormat: {
             type: 'price',
             precision: 2,
             minMove: 0.01,
         },
+        lastValueVisible: false,
+        priceLineVisible: false,
       });
 
       if (this.data && this.data.length > 0) {
@@ -160,7 +182,7 @@ export default {
       
       this.chart.timeScale().fitContent();
 
-      // Tooltip Interactivity
+      // Better Tooltip System
       this.chart.subscribeCrosshairMove(param => {
           if (!param.point || !param.time || param.point.x < 0 || param.point.x > this.$refs.chartContainer.clientWidth) {
               this.tooltip.visible = false;
@@ -168,7 +190,7 @@ export default {
           }
 
           const data = param.seriesData.get(this.series);
-          if (data) {
+          if (data && (data.value !== undefined || data.close !== undefined)) {
               this.tooltip.visible = true;
               this.tooltip.x = param.point.x;
               this.tooltip.y = param.point.y;
