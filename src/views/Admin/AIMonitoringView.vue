@@ -1525,24 +1525,18 @@ export default {
                         this.recoveryConfig.lossesToActivate
                     );
 
-                    // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
+                    // --- Forced Pause Logic (1 Base + 1 Martingale = 2 Losses) ---
                     const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
                     
                     if (trade.result !== 'WON') {
-                         console.log(`[PAUSE DEBUG] Loss detected. Main: ${this.sessionState.consecutiveLosses}, Rec: ${this.sessionState.lossStreakRecovery}, Total: ${totalConsecutiveLosses}`);
+                         this.addLog(`🔍 DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=2`, 'warning');
                     }
 
                     if (trade.result !== 'WON' && totalConsecutiveLosses >= 2) {
                         const pauseDuration = 120 * 1000; // 2 minutes
                         this.pauseUntil = Date.now() + pauseDuration;
                         this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 1 Martingale atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
-                        this.stopTickConnection(); // Optional: Stop ticks to save bandwidth/resources, or keep monitoring? (Re-start logic handled in view/lifecycle)
-                         // Actually, AIMonitoring relies on ticks for chart. Better NOT stop ticks, just block analysis.
-                         // But if user wants to stop, we can. The request didn't specify "stop ticks", just "pause".
-                         // In StrategyCreator I added stopTickConnection(). I will match behavior but comment it out if it breaks charts.
-                         // StrategyCreator view re-init ticks? No. Actually stopping ticks there might stop the chart too.
-                         // Let's NOT stop ticks here to keep the chart alive for "Monitoring".
-                         // Only block execution.
+                        // No logic to stop ticks for Monitoring to keep chart alive
                     }
 
                     this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
