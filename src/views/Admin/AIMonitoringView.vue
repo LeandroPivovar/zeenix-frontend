@@ -252,6 +252,12 @@
                                         ref="chartContainer"
                                         class="w-full h-[320px] rounded-lg overflow-hidden relative"
                                     ></div>
+                                    <!-- Tooltip -->
+                                    <div v-show="chartTooltip.visible" 
+                                         class="absolute z-50 bg-black/80 border border-white/10 p-2 rounded text-xs text-white pointer-events-none whitespace-nowrap"
+                                         :style="{ top: chartTooltip.y + 'px', left: chartTooltip.x + 'px', transform: 'translate(-50%, -100%) translateY(-10px)' }">
+                                         {{ chartTooltip.text }}
+                                    </div>
                                 </div>        
                                         <div v-if="(activeChartMode === 'profit' && profitHistory.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" 
                                              class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500 pointer-events-none">
@@ -589,6 +595,7 @@ export default {
     },
     data() {
         return {
+            chartTooltip: { visible: false, x: 0, y: 0, text: '' },
             isSidebarOpen: false,
             isSidebarCollapsed: true,
             isMobile: false,
@@ -1825,6 +1832,37 @@ export default {
                 }
             });
             this.resizeObserver.observe(container);
+            
+            // ✅ Tooltip Interaction
+            this.chart.subscribeCrosshairMove(param => {
+                if (!param.point || !param.time || !this.series || this.chartMarkers.length === 0) {
+                    this.chartTooltip.visible = false;
+                    return;
+                }
+
+                // Check for marker proximity
+                const time = param.time;
+                // Markers might have slight time diff, checking exact match first
+                let marker = this.chartMarkers.find(m => m.time === time);
+                
+                // If no exact match, try to find one very close? 
+                // Lightweight charts aligns crosshair to bars, so time should match bar time.
+                // Our markers are attached to bar times. So exact match should work.
+                
+                if (marker && marker.originalText) {
+                    const price = param.seriesPrices.get(this.series);
+                    // Position at cursor (param.point.x, param.point.y)
+                    // Or position at bar top? 
+                    // User requested "passa o mouse encima". 
+                    // Crosshair gives coordinate of mouse relative to chart.
+                    this.chartTooltip.x = param.point.x;
+                    this.chartTooltip.y = param.point.y;
+                    this.chartTooltip.text = marker.originalText;
+                    this.chartTooltip.visible = true;
+                } else {
+                    this.chartTooltip.visible = false;
+                }
+            });
         },
         updateChartMarkers(trade) {
             if (!this.series) return;
@@ -1862,7 +1900,8 @@ export default {
                 position: trade.result === 'WON' ? 'belowBar' : 'aboveBar',
                 color: markerColor,
                 shape: markerShape,
-                text: markerText,
+                text: '', // Hidden on chart
+                originalText: markerText, // For tooltip
                 id: trade.id
             };
 

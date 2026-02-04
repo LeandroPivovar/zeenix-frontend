@@ -2499,35 +2499,118 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 }
 
 @media (max-width: 768px) {
+    /* Modal Layout */
+    .categorized-modal {
+        padding: 1rem !important;
+        max-width: 95% !important;
+        max-height: 85vh !important;
+        width: 95% !important;
+    }
+
+    .modal-header-premium {
+        padding: 0 0 1rem !important;
+        margin-bottom: 0 !important;
+    }
+
+    .modal-body {
+        padding: 0 !important;
+        max-height: calc(85vh - 70px) !important;
+    }
+
+    /* Agent Card Layout */
     .agent-selection-card {
-        flex-direction: column;
-        height: auto;
+        padding: 1rem !important;
+        gap: 0.5rem !important;
+        min-height: auto !important;
+    }
+
+    .agent-selection-card-top-row {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 1rem !important;
+        width: 100% !important;
     }
 
     .agent-card-left-tall {
-        width: 100%;
-        height: 200px;
-        border-right: none;
-        border-bottom: 1px solid #1C1C1C;
-        padding: 15px;
-    }
-    
-    .agent-video-tall {
-        border-radius: 12px;
+        width: auto !important;
+        height: auto !important;
+        padding: 0 !important;
+        border: none !important;
     }
 
-    .agent-card-action {
-        width: 100%;
-        border-left: none;
-        border-top: 1px solid #1C1C1C;
-        flex-direction: row;
-        justify-content: space-between;
-        padding: 1rem;
+    .agent-video-tall,
+    .agent-avatar-fallback-tall {
+        width: 48px !important;
+        height: 48px !important;
+    }
+
+    .agent-card-content {
+        padding: 0 !important;
+        width: auto !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 0 !important;
+    }
+
+    .agent-header-row {
+        margin-bottom: 0 !important;
+    }
+
+    .agent-name-premium {
+        font-size: 1rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .agent-profile-badge {
+        font-size: 10px !important;
+        padding: 2px 8px !important;
+        margin-left: 0.5rem !important;
+        display: inline-block !important;
     }
     
+    .agent-description-premium {
+        font-size: 0.8rem !important;
+        display: none !important; /* Hide description on mobile to match compact look if needed, or keep it */
+    }
+
+    /* Bottom Row: Stats and Button */
+    .agent-card-action {
+        width: 100% !important;
+        padding: 0.75rem 0 0 !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-top: 0.5rem !important;
+    }
+
+    .agent-performance-badget {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+    }
+
+    .perf-val {
+        font-size: 1.25rem !important;
+        line-height: 1 !important;
+    }
+    
+    .perf-lbl {
+        font-size: 9px !important;
+    }
+
     .agent-select-btn-premium {
-        width: auto;
-        padding: 0.6rem 2rem;
+        width: auto !important;
+        padding: 0.5rem 1.5rem !important;
+        font-size: 0.75rem !important;
+        height: 36px !important;
+    }
+    
+    /* Benefits list hidden on mobile for compactness */
+    .agent-benefits-list-row {
+        display: none !important;
     }
 }
 
