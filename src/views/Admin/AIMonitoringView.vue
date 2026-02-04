@@ -257,22 +257,17 @@
                                     <!-- Advanced Tooltip (Teleported to body to avoid overflow:hidden) -->
                                     <Teleport to="body">
                                         <div v-if="chartTooltip.visible" 
-                                             class="!fixed !z-[99999] bg-[#1a1a1a] border border-white/10 p-4 rounded-xl text-white pointer-events-none whitespace-nowrap shadow-[0_20px_60px_rgba(0,0,0,0.9)] min-w-[140px]"
+                                             class="!fixed !z-[99999] bg-[#1a1a1a] border border-white/10 px-3 py-2 rounded-xl text-white pointer-events-none whitespace-nowrap shadow-[0_20px_60px_rgba(0,0,0,0.9)]"
                                              :style="{ 
                                                  top: chartTooltip.y + 'px', 
                                                  left: chartTooltip.x + 'px', 
                                                  transform: 'translate(-50%, -100%) translateY(-20px)' 
                                              }">
-                                             <div class="flex flex-col items-center">
-                                                 <span class="text-[10px] text-muted-foreground uppercase font-black tracking-[0.25em] mb-2 opacity-70">
-                                                     {{ chartTooltip.title }}
+                                             <div class="flex items-center gap-2">
+                                                 <div :class="['w-2 h-2 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]', chartTooltip.isPositive ? 'bg-green-500 box-shadow-green' : 'bg-red-500 box-shadow-red']"></div>
+                                                 <span :class="['font-black text-lg tracking-tighter', chartTooltip.isPositive ? 'text-green-500' : 'text-red-500']">
+                                                     {{ chartTooltip.text }}
                                                  </span>
-                                                 <div class="flex items-center gap-2">
-                                                     <div :class="['w-2 h-2 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]', chartTooltip.isPositive ? 'bg-green-500 box-shadow-green' : 'bg-red-500 box-shadow-red']"></div>
-                                                     <span :class="['font-black text-xl tracking-tighter', chartTooltip.isPositive ? 'text-green-500' : 'text-red-500']">
-                                                         {{ chartTooltip.text }}
-                                                     </span>
-                                                 </div>
                                              </div>
                                              <!-- Arrow -->
                                              <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1a1a1a] border-r border-b border-white/10 rotate-45"></div>
