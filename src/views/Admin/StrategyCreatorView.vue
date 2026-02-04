@@ -813,13 +813,42 @@
                                 </span>
                             </div>
 
-                            <div v-for="filter in activeFiltersForModal.filter(f => f.active)" :key="filter.id" class="mb-6 border-b border-[#222] pb-6 last:border-b-0">
-                                <div class="flex items-center gap-2 mb-4">
-                                    <div class="w-2 h-2 rounded-full bg-zenix-green"></div>
-                                    <h4 class="text-sm font-bold text-white uppercase">{{ filter.name }}</h4>
-                                </div>
-                                
-                                <!-- Dynamic Inputs Binding to Active Tab -->
+                            <div v-for="filter in activeFiltersForModal.filter(f => f.active)" :key="filter.id" class="mb-8 border-b border-[#333] pb-8 last:border-0 last:pb-0">
+                                <template v-if="filter.active">
+                                    <div class="flex items-center gap-3 mb-6">
+                                        <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+                                            <i class="fa-solid fa-filter"></i>
+                                        </div>
+                                        <h4 class="text-white font-bold text-lg">{{ filter.name }}</h4>
+                                    </div>
+
+                                    <!-- Loftop (Explanation) -->
+                                    <div v-if="getFilterDescription(filter)" class="mb-6 p-4 bg-blue-500/5 border border-blue-500/20 rounded-lg">
+                                        <div class="flex items-start gap-3">
+                                            <i class="fas fa-info-circle text-blue-500 mt-1 text-sm"></i>
+                                            <div>
+                                                <h4 class="font-bold text-blue-400 text-sm mb-2">{{ getFilterDescription(filter).title }}</h4>
+                                                <ul class="text-xs text-gray-300 space-y-1.5 list-disc pl-4">
+                                                    <li><strong class="text-gray-400">O que observa:</strong> {{ getFilterDescription(filter).loftop.what }}</li>
+                                                    <li><strong class="text-gray-400">Quando é válido:</strong> {{ getFilterDescription(filter).loftop.when }}</li>
+                                                    <li><strong class="text-gray-400">O que acontece:</strong> {{ getFilterDescription(filter).loftop.result }}</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Dynamic Human Text Preview -->
+                                    <div v-if="getFilterDescription(filter)" class="mb-6 p-4 bg-[#181818] border border-[#333] rounded-lg relative overflow-hidden">
+                                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-zenix-green"></div>
+                                        <h4 class="text-[10px] font-bold text-gray-500 uppercase mb-2 tracking-wider flex items-center gap-2">
+                                            <i class="fa-solid fa-eye text-zenix-green"></i> Resumo da Estratégia
+                                        </h4>
+                                        <p class="text-gray-200 text-sm leading-relaxed italic">
+                                            "{{ getFilterDescription(filter).text }}"
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Dynamic Inputs Binding to Active Tab -->
                                 <!-- Helper Function to get config context: getConfig(filter, activeConfigTab) -->
                                 
                                 <!-- Digit Density -->
@@ -1249,6 +1278,7 @@
                                     </div>
                                 </div>
 
+                                </template>
                             </div>
 
                             <button @click="saveFilters" class="w-full bg-zenix-green hover:bg-green-600 shadow-xl shadow-green-500/5 text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2 mt-8 transition-all">
@@ -1349,6 +1379,8 @@ import MonitoringDashboard from '../../components/ActiveStrategy/MonitoringDashb
 import StopLossModal from '../../components/StopLossModal.vue';
 import TargetProfitModal from '../../components/TargetProfitModal.vue';
 import StopBlindadoAjusteModal from '../../components/StopBlindadoAjusteModal.vue';
+
+import { filterDescriptions, getTranslation } from '@/utils/filterDescriptions';
 
 export default {
     name: 'StrategyCreatorView',
@@ -2105,6 +2137,30 @@ export default {
                 };
             }
             return filter.config;
+        },
+        getFilterDescription(filter) {
+            const descData = filterDescriptions[filter.id];
+            if (!descData) return null;
+
+            const config = this.getFilterConfig(filter)[this.activeConfigTab ? this.activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : this.activeConfigTab.toLowerCase() : 'normal'];
+            let text = descData.template;
+
+            // Replace placeholders with values
+            for (const [key, value] of Object.entries(config)) {
+                const placeholder = `{${key}}`;
+                text = text.replace(new RegExp(placeholder, 'g'), value);
+                
+                // Also try translated values
+                const translated = getTranslation(`${key}_translated`, value);
+                const translatedPlaceholder = `{${key}_translated}`;
+                text = text.replace(new RegExp(translatedPlaceholder, 'g'), translated);
+            }
+            
+            return {
+                title: descData.title,
+                loftop: descData.loftop,
+                text: text
+            };
         },
         // ----------------------------
 
