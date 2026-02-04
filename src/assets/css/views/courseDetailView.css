@@ -96,10 +96,6 @@
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
     z-index: 1001 !important;
 }
 
@@ -123,13 +119,11 @@
     margin-left: 0 !important;
 }
 
-/* Main Wrapper */
-.main-wrapper {
-    margin-left: 0;
-    padding: 0;
-    width: 100%;
+/* Main Content Wrapper */
+.main-content-wrapper {
     background: #0B0B0B;
     overflow: hidden;
+    min-height: 100vh;
 }
 
 /* Breadcrumb */

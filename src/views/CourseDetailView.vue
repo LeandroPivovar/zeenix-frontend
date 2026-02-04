@@ -1,19 +1,19 @@
 <template>
   <div class="course-layout">
-    <AppSidebar :is-open="sidebarOpen" :is-collapsed="false" />
+    <AppSidebar :is-open="sidebarOpen" :is-collapsed="isSidebarCollapsed" />
     
     <!-- TopNavbar -->
     <TopNavbar
-        :is-sidebar-collapsed="false"
+        :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="0"
         :account-type="'real'"
         :hide-balance="true"
         @toggle-sidebar="toggleSidebar"
-        @toggle-sidebar-collapse="() => {}"
+        @toggle-sidebar-collapse="toggleSidebarCollapse"
     />
 
     <!-- Main Content Wrapper -->
-    <div class="main-wrapper">
+    <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
         <main class="course-main" v-if="!loading && course">
             
             <!-- Center Column - Video & Content -->
@@ -248,7 +248,8 @@ export default {
       userName: 'Usuário',
       lessonMaterials: [],
       materialsLoading: false,
-      sidebarOpen: false
+      sidebarOpen: false,
+      isSidebarCollapsed: true // Começa recolhido no desktop
     }
   },
   computed: {
@@ -272,6 +273,13 @@ export default {
     this.loadFontAwesome();
     this.loadUserName();
     this.fetchCourseDetails();
+
+    // Responsive sidebar logic
+    window.addEventListener('resize', this.handleResize);
+    this.handleResize();
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.handleResize);
   },
   watch: {
     '$route.params.id'() {
@@ -498,6 +506,19 @@ export default {
     toggleSidebar() {
       this.sidebarOpen = !this.sidebarOpen
     },
+    toggleSidebarCollapse() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed
+    },
+    handleResize() {
+      const isMobile = window.innerWidth <= 1024;
+      if (isMobile) {
+        this.isSidebarOpen = false;
+        this.isSidebarCollapsed = false;
+      } else {
+        // Desktop default: collapsed
+        this.isSidebarCollapsed = true;
+      }
+    },
     closeSidebar() {
       this.sidebarOpen = false
     },
@@ -565,7 +586,7 @@ export default {
 <style scoped>
 @import '@/assets/css/animations.css';
 
-.main-wrapper {
+.main-content-wrapper {
     width: 100%!important;
 }
 
@@ -618,7 +639,7 @@ export default {
         display: flex;
     }
 
-    .main-wrapper {
+    .main-content-wrapper {
         margin-left: 0 !important;
         width: 100% !important;
     }
