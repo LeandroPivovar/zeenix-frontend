@@ -243,6 +243,7 @@
                                         <LightweightLineChart
                                             ref="profitChart"
                                             :data="profitChartData"
+                                            :markers="profitChartMarkers"
                                             :color="monitoringStats.profit >= 0 ? '#22C55E' : '#EF4444'"
                                             :height="320" 
                                             :currencySymbol="preferredCurrencyPrefix"
@@ -569,6 +570,7 @@
 </template>
 
 <script>
+import { toRaw } from 'vue';
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
@@ -608,8 +610,18 @@ export default {
     },
     data() {
         return {
+            // Chart State
+            activeChartMode: 'profit', 
+            chart: null,
+            series: null,
+            tickChartData: [],
+            profitChartData: [{ time: Math.floor(Date.now() / 1000), value: 0 }],
             chartTooltip: { visible: false, x: 0, y: 0, text: '' },
             profitChartSubscribed: false,
+            chartMarkers: [],
+            profitChartMarkers: [],
+            resizeObserver: null,
+
             isSidebarOpen: false,
             isSidebarCollapsed: true,
             isMobile: false,
@@ -686,16 +698,7 @@ export default {
                 stake: 0,
                 payout: 0,
                 analysisType: 'PRINCIPAL'
-            },
-
-            // Chart Controls
-            activeChartMode: 'profit', // 'profit' or 'tick'
-            chart: null,
-            series: null,
-            tickChartData: [],
-            profitChartData: [{ time: Math.floor(Date.now() / 1000), value: 0 }], // Start with 0 point
-            resizeObserver: null,
-            chartMarkers: []
+            }
         }
     },
     computed: {
@@ -1309,6 +1312,11 @@ export default {
                     }
                     this.profitChartData.push(profitTick);
                     if (this.profitChartData.length > 5000) this.profitChartData.shift();
+                    
+                    // ✅ Update Markers for Fast Result
+                    const fastTrade = { id: contractId, result: win ? 'WON' : 'LOST', pnl: estimatedProfit };
+                    this.updateChartMarkers(fastTrade, 'tick');
+                    this.updateChartMarkers(fastTrade, 'profit');
 
                     // Release locks
                     this.pendingFastResult.active = false;
@@ -1556,7 +1564,8 @@ export default {
                     const oldMode = this.sessionState.negotiationMode;
 
                     // ✅ Update Chart Markers
-                    this.updateChartMarkers(trade);
+                    this.updateChartMarkers(trade, 'tick');
+                    this.updateChartMarkers(trade, 'profit');
                     
                     RiskManager.processTradeResult(
                         this.sessionState, 
@@ -1898,36 +1907,39 @@ export default {
                 }
             });
         },
-        updateChartMarkers(trade) {
-            // FIX: Always update the markers array even if chart is not visible
-             
-            const lastTick = this.tickChartData[this.tickChartData.length - 1];
-            if (!lastTick) return;
+        updateChartMarkers(trade, type = 'tick') {
+            const markersArray = type === 'tick' ? this.chartMarkers : this.profitChartMarkers;
+            const dataArray = type === 'tick' ? this.tickChartData : this.profitChartData;
+            const seriesObj = type === 'tick' ? this.series : (this.$refs.profitChart ? this.$refs.profitChart.series : null);
 
-            const existingMarkerIndex = this.chartMarkers.findIndex(m => m.id === trade.id);
+            const lastPoint = dataArray[dataArray.length - 1];
+            if (!lastPoint) return;
+
+            const existingMarkerIndex = markersArray.findIndex(m => m.id === trade.id);
             
             const markerText = `${trade.result === 'WON' ? '+' : ''}${this.currencySymbol}${trade.pnl.toFixed(2)}`;
             const markerColor = trade.result === 'WON' ? '#22C55E' : '#EF4444';
             const markerShape = trade.result === 'WON' ? 'arrowUp' : 'arrowDown';
             
             const marker = {
-                time: lastTick.time, // Use last tick time as approximation if we don't have exact epoch
+                time: lastPoint.time, 
                 position: trade.result === 'WON' ? 'belowBar' : 'aboveBar',
                 color: markerColor,
                 shape: markerShape,
-                text: '', // Hidden on chart
+                text: markerText, // USER REQUEST: Mostrar encima da bolinha
                 originalText: markerText, // For tooltip
                 id: trade.id
             };
 
             if (existingMarkerIndex >= 0) {
-                this.chartMarkers[existingMarkerIndex] = marker;
+                markersArray[existingMarkerIndex] = marker;
             } else {
-                this.chartMarkers.push(marker);
+                markersArray.push(marker);
             }
             
-            if (this.series) {
-                this.series.setMarkers(this.chartMarkers);
+            if (seriesObj) {
+                const rawSeries = toRaw(seriesObj);
+                rawSeries.setMarkers(markersArray);
             }
         },
         setupProfitChartTooltip() {
@@ -1939,6 +1951,7 @@ export default {
                 const container = this.$refs.profitChartContainer;
                 
                 if (chart && series && container) {
+                    const rawSeries = toRaw(series);
                     chart.subscribeCrosshairMove(param => {
                         if (!param.point || !param.time || this.activeChartMode !== 'profit') {
                             this.chartTooltip.visible = false;
@@ -1947,7 +1960,7 @@ export default {
                         
                         // Robust Data Extraction
                         let price = null;
-                        const seriesData = param.seriesData.get(series);
+                        const seriesData = param.seriesData.get(rawSeries);
                         if (seriesData) {
                             price = seriesData.value !== undefined ? seriesData.value : seriesData.close;
                         }

@@ -26,6 +26,10 @@ export default {
     currencySymbol: {
         type: String,
         default: '$'
+    },
+    markers: {
+        type: Array,
+        default: () => []
     }
   },
   data() {
@@ -58,6 +62,14 @@ export default {
            }
         }
       }
+    },
+    markers: {
+        deep: true,
+        handler(newMarkers) {
+            if (this.series) {
+                this.series.setMarkers(newMarkers || []);
+            }
+        }
     },
     color: {
         immediate: true,
