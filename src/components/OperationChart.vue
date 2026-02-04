@@ -5408,3 +5408,54 @@ export default {
     }
   }
 </style>
+
+<style src="../assets/css/components/OperationDigits.css"></style>
+<style scoped>
+/* Copied from OperationDigits.vue mobile styles */
+@media (max-width: 768px) {
+    .digit-meta-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        grid-template-rows: repeat(2, auto) !important;
+        gap: 0.5rem !important;
+        padding: 0.5rem !important;
+    }
+
+    .digit-meta-item {
+        padding: 0.5rem !important;
+        min-height: auto !important;
+    }
+
+    .meta-digit-number {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .meta-digit-percentage {
+        font-size: 9px !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    .meta-vertical-meter-container {
+        width: 1rem !important;
+        height: 3rem !important;
+    }
+
+    .frequency-meta-card {
+        padding: 1rem !important;
+    }
+
+    .frequency-meta-card h3 {
+        font-size: 8px !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .meta-analysis-card {
+        padding: 1rem !important;
+        min-height: auto !important;
+    }
+
+    .meta-analysis-card .text-6xl {
+        font-size: 3rem !important;
+    }
+}
+</style>
