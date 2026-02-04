@@ -40,12 +40,7 @@
 
 /* ... (restante do CSS mantido, apenas ajustando box-sizing e flex) ... */
 
-.layout.noise-bg {
-    margin-left: 280px;
-    padding: 0 40px;
-    width: calc(100% - 280px);
-    box-sizing: border-box;
-}
+/* Main Layout */
 
 /* Main Layout */
 .course-main {
@@ -911,21 +906,13 @@ html {
 
 /* Desktop - Manter layout original */
 @media (min-width: 1025px) {
-    .course-layout {
-        margin-left: 280px;
-        width: calc(100% - 280px);
-        box-sizing: border-box;
-    }
 
     .course-layout :deep(#top-navbar) {
-        margin-left: 0 !important;
         width: 100% !important;
         left: 0 !important;
     }
 
     .main-wrapper {
-        margin-left: 0;
-        padding: 0;
         width: 100%;
         margin-top: 60px;
     }

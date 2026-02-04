@@ -588,6 +588,7 @@ export default {
 
 .main-content-wrapper {
     width: 100%!important;
+    margin-left: 0 !important;
 }
 
 .video-container {
@@ -677,10 +678,7 @@ export default {
 /* Estilos não-scoped para sobrescrever .layout no elemento raiz */
 @media (max-width: 1024px) {
     .layout.noise-bg {
-        margin-left: 0 !important;
         width: 100% !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
         box-sizing: border-box !important;
     }
     
