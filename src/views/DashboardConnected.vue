@@ -505,7 +505,8 @@
           <div 
             v-for="notification in notifications" 
             :key="notification.id"
-            class="notification-item"
+            class="notification-item cursor-pointer hover:bg-white/5 active:scale-[0.98] transition-all"
+            @click="handleNotificationClick(notification)"
           >
             <div class="notification-icon">
               <i :class="notification.icon || 'fa-solid fa-info-circle'"></i>
@@ -1317,11 +1318,26 @@ export default {
           if (data.notifications && data.notifications.length > 0) {
             // Pegar timestamp da última limpeza
             const clearedAt = parseInt(localStorage.getItem('zenix_notifications_cleared_at') || '0');
+            const now = Date.now();
+            const twentyMinutes = 20 * 60 * 1000;
             
-            // Filtrar apenas notificações mais recentes que a limpeza
+            // Se passaram mais de 20 minutos, ignorar a limpeza anterior (voltar a mostrar tudo)
+            const isTimerActive = (now - clearedAt) < twentyMinutes;
+            
+            // Filtrar apenas se o timer de "esconder" estiver ativo
             const filtered = data.notifications.filter(notif => {
-              const notifDate = new Date(notif.timestamp).getTime();
-              return notifDate > clearedAt;
+              if (!isTimerActive) return true; // Timer expirou, mostra todas
+              
+              // Forçar parse como UTC para evitar problemas de fuso horário
+              let timestamp = notif.timestamp;
+              if (timestamp && typeof timestamp === 'string' && !timestamp.endsWith('Z') && !timestamp.includes('GMT')) {
+                timestamp = timestamp.replace(' ', 'T') + 'Z';
+              }
+              
+              const notifDate = new Date(timestamp).getTime();
+              // Adicionamos 1 minuto de margem (buffer) para compensar desvios de relógio entre cliente e servidor
+              const safeClearedAt = clearedAt + 60000;
+              return notifDate > safeClearedAt; 
             });
 
             const formattedNotifications = filtered.map((notif, index) => ({
@@ -1330,7 +1346,8 @@ export default {
               message: notif.message,
               icon: this.getNotificationIcon(notif.type),
               date: notif.timestamp,
-              type: notif.type
+              type: notif.type,
+              original: notif // Guardar para referência no click
             }));
 
             this.notifications = [...formattedNotifications];
@@ -1361,6 +1378,29 @@ export default {
       this.showWelcomeVideo = false;
       // Remove the flag so it doesn't show again
       localStorage.removeItem('showDashboardWelcomeVideo');
+    },
+
+    handleNotificationClick(notification) {
+      this.closeNotificationsModal();
+      
+      const title = (notification.title || '').toLowerCase();
+      const message = (notification.message || '').toLowerCase();
+      const text = `${title} ${message}`;
+
+      // Redirecionamento baseado em palavras-chave
+      if (text.includes('ia') || text.includes('estratégia') || text.includes('investimento')) {
+        this.$router.push('/Investments-IA');
+      } else if (text.includes('agente') || text.includes('autônomo')) {
+        this.$router.push('/agente-autonomo');
+      } else if (text.includes('copy') || text.includes('master') || text.includes('trader')) {
+        this.$router.push('/copy-trading');
+      } else if (text.includes('operação') || text.includes('manual') || text.includes('sinais')) {
+        this.$router.push('/operation');
+      } else if (text.includes('perfil') || text.includes('conta')) {
+        this.$router.push('/profile');
+      } else if (text.includes('suporte') || text.includes('ajuda')) {
+        this.$router.push('/support');
+      }
     },
 
     getNotificationIcon(type) {

@@ -405,7 +405,18 @@
             </div>
 
             <!-- Trade Result Modal -->
-            <Teleport to="body">
+            <TradeResultModal
+                v-if="isMobile"
+                :visible="showTradeResultModal"
+                :profit="finalTradeProfit"
+                :currency="accountCurrency"
+                :type="finalTradeType"
+                :buyPrice="finalEntrySpot || 0"
+                :sellPrice="finalExitSpot || 0"
+                @close="closeTradeResultModal"
+            />
+
+            <Teleport to="body" v-else>
                 <div 
                     v-if="showTradeResultModal" 
                     class="modal-overlay" 
@@ -585,9 +596,13 @@
 <script>
 const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
 import derivTradingService from '../services/deriv-trading.service.js';
+import TradeResultModal from './TradeResultModal.vue';
 
 export default {
     name: 'OperationDigits',
+    components: {
+        TradeResultModal
+    },
     props: {
         accountBalance: { type: String, required: true },
         accountCurrency: { type: String, default: 'USD' },
@@ -604,6 +619,7 @@ export default {
         return {
             showMarketModal: false,
             showTradeTypeModal: false,
+            isMobile: false,
             selectedTradeTypeGroup: 'digits_match_diff',
             digitTradeTypeCategories: [
                 {
@@ -1803,6 +1819,9 @@ export default {
             this.contractStartTime = null;
             this.contractDuration = null;
         },
+        checkMobile() {
+            this.isMobile = window.innerWidth <= 768;
+        },
         closeTradeResultModal() {
             this.showTradeResultModal = false;
             // Limpar dados do resultado
@@ -2062,6 +2081,8 @@ export default {
         },
     },
     mounted() {
+        this.checkMobile();
+        window.addEventListener('resize', this.checkMobile);
         console.log('[OperationDigits] Componente montado');
         if (this.orderConfig && this.orderConfig.value !== undefined) {
             this.orderValue = Number(this.orderConfig.value);
@@ -2074,6 +2095,7 @@ export default {
         this.initConnection();
     },
     beforeUnmount() {
+        window.removeEventListener('resize', this.checkMobile);
         console.log('[OperationDigits] Componente sendo desmontado');
         this.isDestroying = true;
         

@@ -648,7 +648,18 @@
     </Teleport>
     
     <!-- Trade Result Modal -->
-    <Teleport to="body">
+    <TradeResultModal
+      v-if="isMobile"
+      :visible="showTradeResultModal"
+      :profit="finalTradeProfit"
+      :currency="currency"
+      :type="finalTradeType"
+      :buyPrice="finalEntrySpot || 0"
+      :sellPrice="finalExitSpot || 0"
+      @close="closeTradeResultModal"
+    />
+
+    <Teleport to="body" v-else>
       <div 
         v-if="showTradeResultModal" 
         class="modal-overlay" 
@@ -724,13 +735,18 @@
 <script lang="js">
 import { createChart, ColorType } from 'lightweight-charts';
 import derivTradingService from '../services/deriv-trading.service.js';
+import TradeResultModal from './TradeResultModal.vue';
 
 const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
 
 export default {
   name: 'OperationChart',
+  components: {
+    TradeResultModal
+  },
   data() {
     return {
+      isMobile: false,
       isGlobalLoading: true, // Iniciar com loader bloqueante
       showChartPlaceholder: false,
       tradingMode: 'manual', // 'manual' ou 'ai'
@@ -1367,6 +1383,8 @@ export default {
     },
   },
   async mounted() {
+    this.checkMobile();
+    window.addEventListener('resize', this.checkMobile);
     // 1. Inicializar WS Direto (Dados de Mercado)
     this.initDirectConnection();
 
@@ -1397,6 +1415,7 @@ export default {
     }, 10000);
   },
   beforeUnmount() {
+    window.removeEventListener('resize', this.checkMobile);
     this.stopDirectConnection();
     
     // Parar análise
@@ -3101,6 +3120,9 @@ export default {
           this.aiRecommendation = null; // Reset signal to allow new generation
         }
       }, 10000);
+    },
+    checkMobile() {
+      this.isMobile = window.innerWidth <= 768;
     },
     closeTradeResultModal() {
       this.showTradeResultModal = false;

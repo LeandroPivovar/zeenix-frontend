@@ -373,59 +373,58 @@
 								@click="selectAgent(agent.id)"
 							>
 								<!-- Top Row: Avatar, Header, Action -->
-                                <div class="agent-selection-card-top-row" style="display: flex; width: 100%; align-items: center; padding: 0.75rem 1rem 0.5rem 1rem;">
-                                    <!-- Left Section: Avatar (Updated to Image) -->
-                                    <div class="agent-card-left-tall" style="flex-shrink: 0; margin-right: 0.75rem;">
+                                <div class="agent-selection-card-top-row">
+                                    <!-- Left Section: Avatar (Rectangular) -->
+                                    <div class="agent-card-left-tall">
                                         <img 
                                             v-if="agent.image" 
                                             :src="agent.image" 
                                             class="agent-video-tall"
-                                            style="width: 55px; height: 55px; border-radius: 6px; object-fit: cover;"
                                         />
-                                        <div v-else class="agent-avatar-fallback-tall" style="width: 55px; height: 55px; border-radius: 6px;">
+                                        <div v-else class="agent-avatar-fallback-tall">
                                             <i class="fas fa-robot"></i>
                                         </div>
                                     </div>
 
                                     <!-- Middle Section: Header Only -->
-                                    <div class="agent-card-content header-only" style="padding: 0; min-height: auto; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                                    <div class="agent-card-content header-only">
                                         <div class="agent-header-row">
                                             <div class="agent-title-col">
-                                                <h4 class="agent-name-premium" style="margin-bottom: 2px;">{{ agent.title.replace('Agente ', '') }}</h4>
-                                                <p class="agent-description-premium" style="margin-bottom: 0;">{{ agent.subtitle }}</p>
+                                                <h4 class="agent-name-premium">{{ agent.title.replace('Agente ', '') }}</h4>
+                                                <p class="agent-description-premium">{{ agent.subtitle }}</p>
                                             </div>
-                                            <span class="agent-profile-badge" :class="agent.profileBadge.toLowerCase()" style="margin-left: auto;">
+                                            <span class="agent-profile-badge" :class="agent.profileBadge.toLowerCase()">
                                                 {{ agent.profileBadge }}
                                             </span>
                                         </div>
                                     </div>
 
                                     <!-- Right Section: Action -->
-                                    <div class="agent-card-action" style="margin-left: 1rem;">
+                                    <div class="agent-card-action">
                                         <div class="agent-performance-badget">
                                             <span class="perf-val">{{ agent.percentage }}</span>
-                                            <span class="perf-lbl">{{ agent.percentageLabel ? 'Retorno' : 'Performance' }}</span>
+                                            <span class="perf-lbl text-muted">RETORNO</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Divider -->
-                                <div style="width: 100%; height: 1px; background-color: #27272a; margin: 0.25rem 0 0.75rem 0;"></div>
+                                <!-- Subtle Divider -->
+                                <div class="agent-card-divider"></div>
 
                                 <!-- Bottom Row: Benefits List -->
-                                <div class="agent-benefits-list-row" style="width: 100%; padding: 0 1rem 0.75rem 1rem;">
-                                    <div class="agent-benefits-list" style="display: flex; flex-direction: column; gap: 0.25rem;">
-                                        <div class="benefit-item-premium" style="display: flex; align-items: center;">
-                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px; font-size: 12px;"></i>
-                                            <strong style="color: #DFDFDF; margin-right: 4px; font-size: 11px;">Análise:</strong> <span style="font-size: 11px;">{{ agent.analysis }}</span>
+                                <div class="agent-benefits-list-row">
+                                    <div class="agent-benefits-list">
+                                        <div class="benefit-item-premium">
+                                            <i class="fas fa-check-circle"></i>
+                                            <strong>Análise:</strong> <span>{{ agent.analysis }}</span>
                                         </div>
-                                        <div class="benefit-item-premium" style="display: flex; align-items: center;">
-                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px; font-size: 12px;"></i>
-                                            <strong style="color: #DFDFDF; margin-right: 4px; font-size: 11px;">Assertividade:</strong> <span style="font-size: 11px;">{{ agent.assertiveness }}</span>
+                                        <div class="benefit-item-premium">
+                                            <i class="fas fa-check-circle"></i>
+                                            <strong>Assertividade:</strong> <span>{{ agent.assertiveness }}</span>
                                         </div>
-                                        <div class="benefit-item-premium" style="display: flex; align-items: center;">
-                                            <i class="fas fa-check-circle" style="color: #22C55E; margin-right: 6px; font-size: 12px;"></i>
-                                            <strong style="color: #DFDFDF; margin-right: 4px; font-size: 11px;">Retorno:</strong> <span style="font-size: 11px;">{{ agent.return }}</span>
+                                        <div class="benefit-item-premium">
+                                            <i class="fas fa-check-circle"></i>
+                                            <strong>Retorno:</strong> <span>{{ agent.return }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1498,19 +1497,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
     gap: 1.5rem;
 }
 
-.agent-selection-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 1.25rem;
-    padding: 1.5rem;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    display: flex;
-    align-items: flex-start; /* Alinhado ao topo */
-    gap: 2rem;
-    overflow: hidden;
-}
+/* Legacy card styles removed to avoid conflicts */
 
 .agent-selection-card:hover {
     background: rgba(255, 255, 255, 0.04);
@@ -1815,11 +1802,12 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 /* Modal Premium Styles */
 .categorized-modal {
 	width: 100%;
-	max-width: 800px;
-	background: #0D0D0D;
+    min-width: 0;
+	max-width: 700px !important;
+	background: #0b0b0b !important;
 	border: 1px solid #22C55E33;
 	padding: 20px;
-	border-radius: 1rem;
+	border-radius: 12px !important;
 	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     z-index: 10000000;
 }
@@ -2269,114 +2257,105 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 
 /* --- NEW AGENT SELECTION MODAL STYLES (REVISED) --- */
 
+/* --- NEW AGENT SELECTION MODAL STYLES (REFINED) --- */
 .agent-selection-card {
     display: flex;
-    flex-direction: column; /* Changed to column */
-    background: linear-gradient(190deg, #1c1b1b00, #0d390d2e, #25e34200);
-    border: 1px solid #1C1C1C;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    height: auto; /* Changed to auto */
+    height: auto;
     box-sizing: border-box;
     align-items: stretch;
+    margin-bottom: 0.75rem;
+    padding: 1rem;
 }
 
 .agent-selection-card:hover {
-    border-color: #22C55E;
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), 0 0 15px rgba(34, 197, 94, 0.15);
-    background: linear-gradient(190deg, #1c1b1b00, #0d390d2e, #25e34200);
+    border-color: rgba(34, 197, 94, 0.5);
+    background: rgba(34, 197, 94, 0.05);
     transform: translateY(-2px);
 }
 
 .agent-selection-card.active {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%);
     border-color: #22C55E;
-    box-shadow: 0 0 0 1px #22C55E, 0 0 20px rgba(34, 197, 94, 0.2);
-    background: linear-gradient(190deg, #1c1b1b00, #0d390d40, #25e3420a);
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.2);
 }
 
-/* Section Left: Tall Image with Radius */
-/* Section Left: Icon with Radius */
-.agent-card-left-tall {
-    width: auto; /* Allow sizing by content */
-    flex-shrink: 0;
-    position: relative;
-    padding: 0 0 0 16px; /* Padding left */
+.agent-selection-card-top-row {
     display: flex;
+    width: 100%;
     align-items: center;
-    justify-content: center;
-    border-right: none;
+    padding: 0;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #333;
 }
 
-.agent-video-tall {
-    width: 55px;
-    height: 55px;
+.agent-card-left-tall {
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.agent-video-tall,
+.agent-avatar-fallback-tall {
+    width: 50px;
+    height: 50px;
     object-fit: cover;
-    border-radius: 50%; /* 50% radius */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    border: 1px solid #333; /* Adding border to match style */
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     background: #000;
 }
 
 .agent-avatar-fallback-tall {
-    width: 55px;
-    height: 55px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #111;
-    color: #333;
-    font-size: 1.5rem;
-    border-radius: 50%; /* 50% radius */
-    border: 1px solid #333;
+    color: #444;
 }
 
-/* Section Middle: Content */
-.agent-card-content {
+.agent-card-content.header-only {
     flex: 1;
-    padding: 1rem;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 0;
 }
 
 .agent-header-row {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-}
-
-.agent-title-col {
-    display: flex;
-    flex-direction: column;
+    align-items: center;
 }
 
 .agent-name-premium {
-    font-size: 1.75rem;
+    font-size: 1.125rem;
     font-weight: 700;
     color: #FFF;
     margin: 0;
 }
 
 .agent-description-premium {
-    font-size: 0.9rem;
-    color: #888;
-    margin: 0.25rem 0 0;
+    font-size: 0.75rem;
+    color: #71717a;
+    margin: 0;
 }
 
 .agent-profile-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 800;
     text-transform: uppercase;
-    background: #1A1A1A;
-    color: #666;
-    border: 1px solid #333;
-    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.05);
+    color: #a1a1aa;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-left: auto;
 }
 
 .agent-profile-badge.ofensivo {
@@ -2391,115 +2370,72 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     border-color: rgba(59, 130, 246, 0.2);
 }
 
-/* Tech Info Grid */
-.agent-tech-details {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid #181818;
-    border-radius: 8px;
-    padding: 1rem;
-}
-
-.tech-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.tech-item.full-width {
-    grid-column: span 2;
-    border-top: 1px solid #181818;
-    padding-top: 0.75rem;
-    margin-top: 0px;
-}
-
-.tech-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    color: #555;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-.tech-value {
-    font-size: 13px;
-    color: #EEE;
-    font-weight: 500;
-}
-
-.tech-value.analysis-text {
-    color: #AAA; 
-}
-
-/* Section Right: Actions */
 .agent-card-action {
-    width: 160px;
+    margin-left: 1rem;
     flex-shrink: 0;
-    padding: 1rem;
-    border-left: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    gap: 0;
-    background: transparent;
 }
 
 .agent-performance-badget {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-end;
 }
 
 .perf-val {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
     color: #22C55E;
 }
 
 .perf-lbl {
-    font-size: 10px;
-    text-transform: uppercase;
-    color: #555;
+    font-size: 8px;
+    font-weight: 600;
+    color: #52525b;
 }
 
-.agent-select-btn-premium {
+.agent-card-divider {
     width: 100%;
-    padding: 0.75rem 0;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    background: #111;
-    border: 1px solid #333;
-    color: #FFF;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    margin: 0.125rem 0 0.5rem 0;
+	display: none; /* Hide divider in favor of unified padding */
 }
 
-.agent-select-btn-premium:hover {
-    background: #222;
-    border-color: #555;
-    transform: translateY(-1px);
+.agent-benefits-list-row {
+    width: 100%;
+    padding: 0;
 }
 
-.agent-select-btn-premium.selected {
-    background: #22C55E;
-    border-color: #22C55E;
-    color: #000;
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+.agent-benefits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.benefit-item-premium {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.65rem;
+    color: #71717a;
+}
+
+.benefit-item-premium i {
+    color: #22C55E;
+    font-size: 12px;
+}
+
+.benefit-item-premium strong {
+    color: #d4d4d8;
+    margin-right: 2px;
 }
 
 .selection-glow {
     position: absolute;
     inset: 0;
     border-radius: 12px;
-    box-shadow: 0 0 30px rgba(34, 197, 94, 0.05);
     pointer-events: none;
-    z-index: 10;
+    z-index: 5;
 }
 
 @media (max-width: 768px) {
@@ -2524,175 +2460,73 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     /* Agent Card Layout */
     .agent-selection-card {
         padding: 1rem !important;
-        gap: 0.5rem !important;
-        min-height: auto !important;
+        margin-bottom: 0.75rem !important;
     }
 
     .agent-selection-card-top-row {
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 1rem !important;
-        width: 100% !important;
-    }
-
-    .agent-card-left-tall {
-        width: auto !important;
-        height: auto !important;
         padding: 0 !important;
-        border: none !important;
+        gap: 0.75rem !important;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem !important;
+        border-bottom: 1px solid #333;
     }
 
     .agent-video-tall,
     .agent-avatar-fallback-tall {
-        width: 48px !important;
-        height: 48px !important;
-    }
-
-    .agent-card-content {
-        padding: 0 !important;
-        width: auto !important;
-        flex: 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        gap: 0 !important;
-    }
-
-    .agent-header-row {
-        margin-bottom: 0 !important;
+        width: 50px !important;
+        height: 50px !important;
     }
 
     .agent-name-premium {
-        font-size: 1rem !important;
-        line-height: 1.2 !important;
+        font-size: 0.9375rem !important;
     }
 
     .agent-profile-badge {
-        font-size: 10px !important;
-        padding: 2px 8px !important;
+        font-size: 8px !important;
+        padding: 2px 6px !important;
+    }
+
+    .perf-val {
+        font-size: 0.875rem !important;
+    }
+
+    .agent-card-action {
         margin-left: 0.5rem !important;
-        display: inline-block !important;
-    }
-    
-    .agent-description-premium {
-        font-size: 0.8rem !important;
-        display: none !important; /* Hide description on mobile to match compact look if needed, or keep it */
     }
 
-    /* Bottom Row: Stats and Button */
-    .agent-card-action {
-        width: 100% !important;
-        padding: 0.75rem 0 0 !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        margin-top: 0.5rem !important;
-    }
-
-    .agent-performance-badget {
-        align-items: flex-start !important;
-        flex-direction: column !important;
-        gap: 0 !important;
-    }
-
-    .perf-val {
-        font-size: 1.25rem !important;
-        line-height: 1 !important;
-    }
-    
-    .perf-lbl {
-        font-size: 9px !important;
-    }
-
-    .agent-select-btn-premium {
-        width: auto !important;
-        padding: 0.5rem 1.5rem !important;
-        font-size: 0.75rem !important;
-        height: 36px !important;
-    }
-    
-    /* Benefits list hidden on mobile for compactness */
-    .agent-benefits-list-row {
-        display: none !important;
-    }
-}
-
-.config-card {
-    height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-@media (max-width: 768px) {
-    /* Modal Adjustments */
-    .categorized-modal {
-        padding: 1rem !important;
-        max-width: 95% !important;
-        max-height: 85vh !important;
-        width: 95% !important;
-    }
-
-    .modal-header-premium {
-        padding: 1rem !important;
-        margin-bottom: 0.5rem !important;
-    }
-
-    .modal-title {
-        font-size: 1.25rem !important;
-    }
-
-    .modal-body {
-        padding: 0 1rem 1.5rem !important;
-    }
-
-    /* Card Top Row - Override inline flex */
-    .agent-selection-card-top-row {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 1rem !important;
-    }
-
-    .agent-card-left-tall {
-        width: 100% !important;
-        height: auto !important;
-        padding: 0 !important;
-        border: none !important;
-        justify-content: flex-start !important;
-    }
-
-    .agent-card-content {
-        padding: 0 !important;
-        width: 100% !important;
-    }
-
-    .agent-name-premium {
-        font-size: 1.25rem !important;
-    }
-
-    .agent-card-action {
-        width: 100% !important;
-        padding: 0.5rem 0 0 !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        gap: 1rem !important;
-    }
-
-    .agent-performance-badget {
-        flex-direction: row !important;
-        gap: 0.5rem !important;
-        align-items: baseline !important;
-    }
-
-    .perf-val {
-        font-size: 1rem !important;
+    .agent-card-divider {
+        margin: 0.125rem 0 0.25rem 0 !important;
     }
 
     .agent-benefits-list-row {
-        padding: 0 !important;
-        margin-top: 0.5rem !important;
+        padding: 0 0.75rem 0.5rem 0.75rem !important;
+    }
+
+    .benefit-item-premium {
+        font-size: 0.6rem !important;
+    }
+
+    /* AI Vision Header Mobile */
+    .ai-vision-header-mobile {
+        display: block !important;
+        margin-bottom: 0;
+        background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, .3) 0, rgba(0, 1, 0, .1) 70%, transparent 100%);
+        border-radius: .75rem;
+        padding: 0;
+    }
+
+    .ai-vision-header-mobile h1 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #dfdfdf;
+        margin-bottom: .25rem;
+    }
+
+    .ai-vision-header-mobile p {
+        font-size: 12px;
+        color: #a1a1a1;
+        line-height: 1.5;
+        text-align: left;
     }
 }
 </style>
