@@ -1447,6 +1447,7 @@ export default {
 
             const { stake: survivalStake, reason: survivalReason } = RiskManager.applySurvivalMode(stake, currentProfit, config, estimatedPayout, blindadoState);
             
+            if (survivalStake < stake) {
                 this.addLog('🛡️ Survival Mode', [
                     `Stake ajustada para proteger limites`,
                     `Motivo: ${survivalReason || 'Ajuste de Risco'}`,
