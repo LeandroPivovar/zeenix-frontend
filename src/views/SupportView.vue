@@ -190,20 +190,7 @@
   </div>
 </template>
 
-<style scoped>
-@media (max-width: 768px) {
-    .main-content {
-        padding: 1rem 15px 100px !important;
-        margin-top: 60px !important;
-        padding-top: 1rem !important;
-        background: linear-gradient(180deg, #102018 0, #020403 50%, #000100) !important;
-        background-blend-mode: normal;
-        position: relative;
-        min-height: calc(100vh - 60px);
-        padding-bottom: 100px;
-    }
-}
-</style>
+
 
 <script>
 import AppSidebar from '../components/Sidebar.vue'
@@ -1008,16 +995,7 @@ export default {
   }
 
   /* Ajustes de padding no mobile - manter mesma posição */
-  .main-content {
-    padding: 1rem 15px !important;
-    margin-top: 60px !important;
-    padding-top: 1rem !important;
-    background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%) !important;
-    background-blend-mode: normal;
-    position: relative;
-    min-height: calc(100vh - 60px);
-    padding-bottom: 100px;
-  }
+
 
   .main-content::before {
     content: '';
@@ -1178,5 +1156,19 @@ export default {
   .mobile-chat-button:hover {
     background-color: #16A34A !important;
   }
+}
+
+/* Footer Mobile Fixes */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem 15px 100px !important;
+        margin-top: 60px !important;
+        padding-top: 1rem !important;
+        background: linear-gradient(180deg, #102018 0, #020403 50%, #000100) !important;
+        background-blend-mode: normal;
+        position: relative;
+        min-height: calc(100vh - 60px);
+        padding-bottom: 100px;
+    }
 }
 </style>
