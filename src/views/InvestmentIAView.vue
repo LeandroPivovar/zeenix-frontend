@@ -42,9 +42,19 @@
                     <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
                         <!-- Header Desktop -->
                         <div v-if="!isMobile" class="mb-6 ai-vision-header-desktop">
-                            <div class="text-left">
-                                <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração da IA</h1>
-                                <p class="text-sm text-zenix-secondary">Escolha um dos Agentes de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
+                            <div class="flex items-center justify-between">
+                                <div class="text-left">
+                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração da IA</h1>
+                                    <p class="text-sm text-zenix-secondary">Escolha um dos Agentes de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
+                                </div>
+                                <button @click="showHistoryModal = true" 
+                                        class="px-6 py-3 rounded-xl bg-success/10 hover:bg-success/20 border border-success/30 hover:border-success/40 transition-all duration-200 flex items-center gap-2 group">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success group-hover:scale-110 transition-transform">
+                                        <path d="M3 3v18h18"/>
+                                        <path d="m19 9-5 5-4-4-3 3"/>
+                                    </svg>
+                                    <span class="text-sm font-bold text-success uppercase tracking-wide">Histórico</span>
+                                </button>
                             </div>
                         </div>
                         <!-- Header Mobile -->
@@ -548,6 +558,13 @@
     </div>
     <DesktopBottomNav />
     
+    <!-- Session History Modal -->
+    <SessionHistoryModal
+        :visible="showHistoryModal"
+        :userId="getUserId()"
+        @close="showHistoryModal = false"
+    />
+    
 </template>
 
 <script>
@@ -568,6 +585,7 @@ import atlasConfig from '@/utils/strategies/atlas.json';
 import nexusConfig from '@/utils/strategies/nexus.json';
 import orionConfig from '@/utils/strategies/orion.json';
 import titanConfig from '@/utils/strategies/titan.json';
+import SessionHistoryModal from '@/components/SessionHistoryModal.vue';
 
 const strategiesPresets = [apolloConfig, atlasConfig, nexusConfig, orionConfig, titanConfig];
 
@@ -583,7 +601,8 @@ export default {
         DesktopBottomNav,
         InsufficientBalanceModal,
         MinimumStakeModal,
-        StrategyRequiredModal
+        StrategyRequiredModal,
+        SessionHistoryModal
     },
     data() {
         return {
@@ -711,7 +730,8 @@ export default {
             isRecoveryActive: false,
             lastAnalysisResult: null,
             isDeactivating: false,
-            tickCounter: 0
+            tickCounter: 0,
+            showHistoryModal: false
         }
     },
     watch: {
