@@ -38,11 +38,11 @@
     }
 
     .trading-panel {
-        width: 100% !important;
+        width: calc(100% - 2rem) !important;
         max-width: 100% !important;
         padding: 1rem !important;
         box-sizing: border-box;
-        margin: 1rem !important;
+        margin: 1rem auto !important;
         /* Spacing from screen edge */
         flex: 1 1 auto !important;
         /* Allow panel to span correctly */
