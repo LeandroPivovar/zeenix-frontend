@@ -62,6 +62,16 @@
 					<span>{{ hideValues ? 'Mostrar valores' : 'Ocultar valores' }}</span>
 				</button>
 			</div>
+
+            <!-- Cycle Completion Modal -->
+            <CycleCompletionModal
+                :visible="showCycleCompletionModal"
+                :cycle-number="currentCycleNumber"
+                :result="currentCycleProfit"
+                :currency-symbol="preferredCurrencyPrefix"
+                @close="showCycleCompletionModal = false"
+                @confirm="handleConfirmCycle"
+            />
 			
 			<!-- Metric Cards -->
 			<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -773,6 +783,7 @@
 		mixins: [accountBalanceMixin],
 		components: {
 			AutonomousAgentLogs,
+            CycleCompletionModal: defineAsyncComponent(() => import('@/components/CycleCompletionModal.vue')),
 			StopLossModal: defineAsyncComponent(() => import('@/components/StopLossModal.vue')),
 			TargetProfitModal: defineAsyncComponent(() => import('@/components/TargetProfitModal.vue')),
 			StopBlindadoModal: defineAsyncComponent(() => import('@/components/StopBlindadoModal.vue')),
@@ -962,7 +973,13 @@
                 // Flags para evitar reabertura de modais já vistos na sessão
                 stopLossAcknowledged: false,
                 targetProfitAcknowledged: false,
-                stopBlindadoAcknowledged: false
+                stopBlindadoAcknowledged: false,
+
+                // Cycle Modal State
+                showCycleCompletionModal: false,
+                currentCycleNumber: 1,
+                currentCycleProfit: 0,
+                lastProcessedCycle: null
 			};
 		},
 		mounted() {
@@ -2006,16 +2023,33 @@
                     )
                 );
 
-                if (hasProfitMessage) {
-                    if (!this.showNewTargetProfitModal && !this.showNewStopLossModal && !this.showNewStopBlindadoModal && !window.zenixStopModalActive && !this.targetProfitAcknowledged) {
-                        window.zenixStopModalActive = true;
-                        console.log('[AgenteAutonomo] 🎯 [Logs] Profit Goal Detected!');
-                        this.showNewTargetProfitModal = true;
-                        // Forçar atualização imediata do saldo
-                        window.dispatchEvent(new CustomEvent('refreshBalance'));
                         return;
                     }
                 }
+
+                // 4. CICLO CONCLUÍDO (Ex: ✅ CICLO 1 CONCLUÍDO! Lucro: $10.00)
+                const cycleLog = recentLogs.find(log => 
+                    log.message && log.message.toUpperCase().includes('CICLO') && log.message.toUpperCase().includes('CONCLUÍDO')
+                );
+
+                if (cycleLog) {
+                    const match = cycleLog.message.match(/CICLO (\d+) CONCLUÍDO/i);
+                    const cycleNum = match ? match[1] : '1';
+                    const profitMatch = cycleLog.message.match(/LUCRO: \$?(\d+(\.\d+)?)/i);
+                    const profit = profitMatch ? parseFloat(profitMatch[1]) : 0;
+
+                    // Evitar abrir para o mesmo ciclo repetidamente
+                    if (this.lastProcessedCycle !== cycleNum) {
+                        console.log(`[AgenteAutonomo] 🔄 [Logs] Cycle ${cycleNum} Completion Detected!`);
+                        this.currentCycleNumber = cycleNum;
+                        this.currentCycleProfit = profit;
+                        this.showCycleCompletionModal = true;
+                        this.lastProcessedCycle = cycleNum;
+                    }
+                }
+            },
+            handleConfirmCycle() {
+                this.showCycleCompletionModal = false;
             },
 			handleConfirmStopAjuste() {
 				this.showStopLossAjusteModal = false;
