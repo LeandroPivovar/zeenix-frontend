@@ -546,9 +546,10 @@
                                             :disabled="!recoveryConfig.martingale"
                                             class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            <option value="conservador">Conservador (0%)</option>
-                                            <option value="moderado">Moderado (15%)</option>
-                                            <option value="agressivo">Agressivo (30%)</option>
+                                            <option value="FIXO">Fixo (Sem Martingale)</option>
+                                            <option value="CONSERVADOR">Conservador (100%)</option>
+                                            <option value="MODERADO">Moderado (115%)</option>
+                                            <option value="AGRESSIVO">Agressivo (130%)</option>
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
                                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
