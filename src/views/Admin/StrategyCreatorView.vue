@@ -3516,17 +3516,17 @@ export default {
                         this.recoveryConfig.lossesToActivate
                     );
 
-                    // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
+                    // --- Forced Pause Logic (1 Base + 1 Martingale = 2 Losses) ---
                     const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
                     
                     if (trade.result !== 'WON') {
-                         this.addLog(`🔍 DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
+                         this.addLog(`🔍 DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=2`, 'warning');
                     }
 
-                    if (trade.result !== 'WON' && totalConsecutiveLosses >= 6) {
+                    if (trade.result !== 'WON' && totalConsecutiveLosses >= 2) {
                         const pauseDuration = 120 * 1000; // 2 minutes
                         this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
+                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 1 Martingale atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
                         // Do not stop ticks here as it might affect tracking
                     }
                     
