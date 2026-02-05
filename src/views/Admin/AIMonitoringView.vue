@@ -1964,7 +1964,6 @@ export default {
         },
         async startSession() {
             try {
-            try {
                 // ✅ Use helper to extract ID from token (more reliable)
                 const userId = this.getUserId() || 'anonymous';
                 const aiName = this.currentConfig.strategy || 'Unknown';
