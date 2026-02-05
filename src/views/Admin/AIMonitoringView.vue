@@ -434,6 +434,16 @@
 
                 <!-- Right Column: Sidebar (Visible only on Desktop) -->
                     <div v-if="!isMobile" class="w-full lg:w-[28%] flex flex-col gap-4 lg:gap-6">
+                        <!-- Histórico Button -->
+                        <button @click="showHistoryModal = true" 
+                                class="w-full py-3 px-4 rounded-xl bg-success/10 hover:bg-success/20 border border-success/30 hover:border-success/40 transition-all duration-200 flex items-center justify-center gap-2 group">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success group-hover:scale-110 transition-transform">
+                                <path d="M3 3v18h18"/>
+                                <path d="m19 9-5 5-4-4-3 3"/>
+                            </svg>
+                            <span class="text-sm font-bold text-success uppercase tracking-wide">Histórico</span>
+                        </button>
+
                         <div class="h-full card-glass rounded-2xl border border-border/50 p-5 flex flex-col gradient-border">
                             <!-- Header Info -->
                             <div class="p-4 rounded-xl bg-secondary/60 border border-border/60">
@@ -550,6 +560,12 @@
                 :result="stopResult.profit"
                 @confirm="showStopModal = false"
             />
+
+            <SessionHistoryModal
+                :visible="showHistoryModal"
+                :userId="getUserId()"
+                @close="showHistoryModal = false"
+            />
         </Teleport>
     </div>
 </template>
@@ -569,6 +585,7 @@ import atlasStrategy from '../../utils/strategies/atlas.json';
 import nexusStrategy from '../../utils/strategies/nexus.json';
 import orionStrategy from '../../utils/strategies/orion.json';
 import titanStrategy from '../../utils/strategies/titan.json';
+import SessionHistoryModal from '@/components/SessionHistoryModal.vue';
 import { createChart, ColorType } from 'lightweight-charts';
 import accountBalanceMixin from '../../mixins/accountBalanceMixin';
 
@@ -589,6 +606,7 @@ export default {
         DesktopBottomNav,
         SettingsSidebar,
         LightweightLineChart,
+        SessionHistoryModal,
         StopLossModal: () => import('../../components/StopLossModal.vue'),
         TargetProfitModal: () => import('../../components/TargetProfitModal.vue'),
         StopBlindadoAjusteModal: () => import('../../components/StopBlindadoAjusteModal.vue')
@@ -646,6 +664,7 @@ export default {
                 profit: 0,
                 type: 'info' // 'info', 'warning', 'success'
             },
+            showHistoryModal: false,
 
             // ✅ Recovery Configuration
             recoveryConfig: {
