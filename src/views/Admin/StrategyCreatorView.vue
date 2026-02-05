@@ -2622,6 +2622,13 @@ export default {
                 this.recoveryFilters.splice(index, 1, newFilter);
             });
 
+            // ✅ ENFORCE: If Martingale is disabled, force Conservador
+            if (this.recoveryConfig.martingale === false) {
+                 this.form.riskProfile = 'conservador';
+                 // Optional: Debug log
+                 console.log('[loadSavedStrategy] Martingale OFF -> Enforcing Risk Profile: Conservador');
+            }
+
             this.addLog(`📂 Estratégia carregada: ${strategy.name}`, 'info');
             this.$root.$toast.success(`Estratégia "${strategy.name}" carregada!`);
         },
