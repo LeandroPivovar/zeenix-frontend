@@ -411,9 +411,8 @@
             </div>
 
             <!-- Trade Result Modal -->
-            <Teleport to="body">
+            <Teleport to="body" v-if="isMobile">
                 <TradeResultModal
-                    v-if="isMobile"
                     :visible="showTradeResultModal"
                     :profit="finalTradeProfit"
                     :currency="accountCurrency"
