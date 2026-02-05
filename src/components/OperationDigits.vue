@@ -1355,11 +1355,28 @@ export default {
     },
     processBuy(buy) {
       this.isTrading = false;
-      this.activeContract = { ...buy, symbol: this.symbol, type: this.tradeType };
+      this.activeContract = { 
+          ...buy, 
+          symbol: this.symbol, 
+          type: this.tradeType,
+          duration: this.duration,
+          duration_unit: this.durationUnit
+      };
+      this.contractTicksRemaining = this.isTickBasedContract ? this.duration : null;
+      this.contractTimeRemaining = !this.isTickBasedContract ? this.duration * 60 : null; // Estimativa inicial
       this.wsSend({ proposal_open_contract: 1, contract_id: buy.contract_id, subscribe: 1 });
     },
     processContract(contract) {
       this.realTimeProfit = contract.profit;
+      
+      // Atualizar contadores
+      if (this.isTickBasedContract && contract.tick_count && contract.tick_stream) {
+          this.contractTicksRemaining = Math.max(0, contract.tick_count - contract.tick_stream.length);
+      } else if (contract.date_expiry) {
+          const now = Math.floor(Date.now() / 1000);
+          this.contractTimeRemaining = Math.max(0, contract.date_expiry - now);
+      }
+
       if (contract.is_sold) {
           this.finalTradeProfit = contract.profit;
           this.finalTradeType = this.tradeType;
@@ -1368,6 +1385,8 @@ export default {
           this.showTradeResultModal = true;
           this.activeContract = null;
           this.realTimeProfit = null;
+          this.contractTicksRemaining = null;
+          this.contractTimeRemaining = null;
       }
     },
     closeTradeResultModal() { this.showTradeResultModal = false; },
