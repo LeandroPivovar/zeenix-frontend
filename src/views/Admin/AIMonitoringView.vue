@@ -631,7 +631,10 @@ export default {
             digitHistory: [],
             isNegotiating: false,
             pauseUntil: 0, // Timeout timestamp
+            isNegotiating: false,
+            pauseUntil: 0, // Timeout timestamp
             retryingProposal: false, // Flag for calibration loop
+            sessionId: null, // Track session ID for backend logging
 
            // ✅ RiskManager State (initialized with RiskManager.initSession)
             sessionState: RiskManager.initSession('VELOZ'),
@@ -870,6 +873,9 @@ export default {
                         `Stake: ${this.currencySymbol}${this.currentConfig.initialStake.toFixed(2)}`,
                         `Soros Level: ${this.currentConfig.sorosLevel}`
                     ], 'info');
+
+                    // ✅ Start Session Tracking
+                    this.startSession();
 
                 } catch (e) {
                     console.error('Error loading config:', e);
@@ -1664,6 +1670,11 @@ export default {
                      RiskManager.updatePayoutHistory(prefix + trade.contract + barrierSuffix, payoutRate);
                 }
 
+                }
+
+                // ✅ Sync Session Stats Asynchronously
+                this.syncSessionStats();
+
                 // Result Logs
                 if (trade.result === 'WON') {
                     this.addLog('Resultado da Operação', [
@@ -1674,10 +1685,11 @@ export default {
                         `Extrato: +${this.preferredCurrencyPrefix}${trade.pnl.toFixed(2)} (Líquido)`,
                         `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
                     ], 'success');
-                } else {
-                    this.addLog('Resultado da Operação', [
-                        `Status: LOSS`,
-                        `Contrato ID: ${id}`,
+                    } else {
+                        const id = msg.buy.contract_id; // FIX: Ensure ID is defined
+                        this.addLog('Resultado da Operação', [
+                            `Status: LOSS`,
+                            `Contrato ID: ${id}`,
                         `Resultado Financeiro: -${this.preferredCurrencyPrefix}${Math.abs(trade.pnl).toFixed(2)}`,
                         `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
                         `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
@@ -1740,6 +1752,7 @@ export default {
                 `Status: Finalizado`
             ], 'info');
             localStorage.removeItem('ai_active_config');
+            if (this.sessionId) await this.syncSessionStats('stopped');
             setTimeout(() => { this.$router.push('/Investments-IA'); }, 1000);
         },
         clearLogs() {
@@ -1949,6 +1962,46 @@ export default {
                 const rawSeries = toRaw(seriesObj);
                 rawSeries.setMarkers(markersArray);
             }
+        },
+            }
+        },
+        async startSession() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const userId = user.id || 'anonymous';
+                const aiName = this.currentConfig.strategy || 'Unknown';
+                
+                // Fire and forget, but get ID
+                fetch('http://localhost:3000/api/ai/sessions/start', {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({ userId, aiName })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.data && data.data.sessionId) {
+                         this.sessionId = data.data.sessionId;
+                         console.log('Session started:', this.sessionId);
+                    }
+                })
+                .catch(e => console.error('Failed to start session:', e));
+            } catch (e) { console.error(e); }
+        },
+        async syncSessionStats(status = 'active') {
+            if (!this.sessionId) return;
+            const stats = {
+                wins: this.monitoringStats.wins,
+                losses: this.monitoringStats.losses,
+                profit: this.monitoringStats.profit,
+                totalTrades: this.monitoringStats.wins + this.monitoringStats.losses,
+                status: status
+            };
+            
+            fetch('http://localhost:3000/api/ai/sessions/update', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ sessionId: this.sessionId, stats })
+            }).catch(() => {});
         },
         setupProfitChartTooltip() {
             if (!this.$refs.profitChart || this.profitChartSubscribed) return;
