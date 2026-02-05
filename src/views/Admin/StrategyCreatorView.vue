@@ -756,7 +756,7 @@
                     <div class="modal-body custom-scrollbar" style="max-height: 70vh; overflow-y: auto;">
                         <!-- Step 1: Selection -->
                          <div v-if="filterStep === 1" class="space-y-4">
-                            <p class="text-sm text-gray-400 mb-4 px-1">Selecione até 2 filtros para as entradas de {{ modalContext === 'main' ? 'ataque' : 'recuperação' }}.</p>
+                            <p class="text-sm text-gray-400 mb-4 px-1">Selecione os filtros desejados para as entradas de {{ modalContext === 'main' ? 'ataque' : 'recuperação' }}. Todos os filtros devem ser atendidos para executar uma operação.</p>
                             <div class="grid grid-cols-1 gap-3">
                                 <div 
                                     v-for="filter in activeFiltersForModal" 
@@ -764,8 +764,7 @@
                                     @click="toggleFilter(filter)"
                                     class="p-4 rounded-xl border transition-all cursor-pointer group"
                                     :class="[
-                                        filter.active ? 'border-zenix-green bg-zenix-green/5' : 'border-[#333] bg-[#111] hover:border-[#444]',
-                                        !filter.active && activeFiltersForModal.filter(f => f.active).length >= 2 ? 'opacity-50 cursor-not-allowed' : ''
+                                        filter.active ? 'border-zenix-green bg-zenix-green/5' : 'border-[#333] bg-[#111] hover:border-[#444]'
                                     ]"
                                 >
                                     <div class="flex items-center gap-3 mb-2">
@@ -2080,14 +2079,6 @@ export default {
             // If already active, just close (or maybe user clicked by mistake)
             if (filter.active) {
                 this.showFilterModal = false;
-                return;
-            }
-
-            // Check limit if activating
-            const activeCount = targetArray.filter(f => f.active).length;
-            
-            if (activeCount >= 2) {
-                this.$root.$toast.warning('Selecione no máximo 2 filtros.');
                 return;
             }
 
