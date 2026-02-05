@@ -157,9 +157,20 @@ export default {
                 const response = await fetch(`${apiBaseUrl}/ai/sessions/history/${this.userId}?limit=20`);
                 const result = await response.json();
                 
+                console.log('[SessionHistory] Resposta completa da API:', result);
+                
                 if (result.success) {
                     this.sessions = result.data.sessions || [];
                     this.summary = result.data.summary || { totalOperations: 0, totalProfit: 0 };
+                    
+                    console.log('[SessionHistory] Sessões carregadas:', this.sessions);
+                    console.log('[SessionHistory] Resumo:', this.summary);
+                    
+                    // Log primeira sessão para debug
+                    if (this.sessions.length > 0) {
+                        console.log('[SessionHistory] Primeira sessão (campos):', Object.keys(this.sessions[0]));
+                        console.log('[SessionHistory] Primeira sessão (dados):', this.sessions[0]);
+                    }
                 }
             } catch (error) {
                 console.error('[SessionHistory] Erro ao carregar histórico:', error);
@@ -168,14 +179,32 @@ export default {
             }
         },
         formatDate(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+            if (!timestamp) {
+                console.warn('[SessionHistory] Timestamp vazio:', timestamp);
+                return 'Data não disponível';
+            }
+            
+            console.log('[SessionHistory] Formatando timestamp:', timestamp, typeof timestamp);
+            
+            try {
+                const date = new Date(timestamp);
+                
+                if (isNaN(date.getTime())) {
+                    console.error('[SessionHistory] Data inválida:', timestamp);
+                    return 'Data inválida';
+                }
+                
+                return date.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                console.error('[SessionHistory] Erro ao formatar data:', error);
+                return 'Erro na data';
+            }
         },
         getStatusClass(status) {
             if (status === 'active') return 'bg-success/10 text-success border border-success/20';
