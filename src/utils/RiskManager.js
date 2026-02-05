@@ -404,26 +404,9 @@ export const RiskManager = {
             }
         }
 
-        // 3. Check Profit Target
-        // Limit: profitTarget
-        // Scenario: Win -> PnL becomes (currentProfit + (stake * payoutRate))
-        // We want (currentProfit + (stake * payoutRate)) <= (profitTarget * 1.01)
-        if (profitTarget > 0) {
-            const limit = profitTarget * 1.01;
-            const projectedWin = currentProfit + (adjustedStake * payoutRate);
-
-            if (projectedWin > limit) {
-                // Determine max stake allowed
-                // currentProfit + (maxStake * payoutRate) = limit
-                // maxStake = (limit - currentProfit) / payoutRate
-                const maxStake = (limit - currentProfit) / payoutRate;
-                if (maxStake < adjustedStake) {
-                    console.log(`[Survival] Clamping Stake for Target: ${adjustedStake} -> ${maxStake.toFixed(2)}`);
-                    adjustedStake = maxStake;
-                    if (!reason) reason = `Meta de Lucro (Alvo: ${limit.toFixed(2)})`;
-                }
-            }
-        }
+        // 3. Check Profit Target - DISABLED by User Request
+        // We allow the bot to overshoot the target without clamping the stake.
+        // if (profitTarget > 0) { ... }
 
         // Ensure we don't return negative stake. 
         // We DO NOT round up to 0.35 here if the survival math requires less.
