@@ -1479,7 +1479,7 @@ export default {
                     `Stake Calculado: $${stake.toFixed(2)}`,
                     `Mínimo Permitido: $0.35`
                 ], 'error');
-                this.stopIA();
+                this.stopIA(false);
                 return 0;
             }
 
@@ -1520,7 +1520,7 @@ export default {
                     `Ação: Encerrando execução automaticamente.`
                 ], 'error');
                 this.isNegotiating = false;
-                this.stopIA();
+                this.stopIA(false);
                 return;
             }
             
@@ -1769,16 +1769,22 @@ export default {
                 this.activeContracts.delete(id);
             }
         },
-        async stopIA() {
+        async stopIA(redirect = true) {
             this.isStopping = true;
             this.stopTickConnection();
             this.addLog('Encerramento de Sessão', [
-                `Motivo: parada pelo usuário`,
+                `Motivo: ${redirect === true || (typeof redirect === 'object' && redirect.isTrusted) ? 'parada pelo usuário' : 'parada automática'}`,
                 `Status: Finalizado`
             ], 'info');
             localStorage.removeItem('ai_active_config');
             if (this.sessionId) await this.syncSessionStats('stopped');
-            setTimeout(() => { this.$router.push('/Investments-IA'); }, 1000);
+            
+            // Only redirect if explicitly requested (default) or if it's a DOM event (click)
+            if (redirect === true || (typeof redirect === 'object' && redirect.isTrusted)) {
+                setTimeout(() => { this.$router.push('/Investments-IA'); }, 1000);
+            } else {
+                this.isStopping = false; // Reset loading state if staying on page
+            }
         },
         clearLogs() {
             this.monitoringLogs = [];
@@ -1866,7 +1872,7 @@ export default {
                     type: 'success'
                 };
                 this.showStopModal = true;
-                this.stopIA();
+                this.stopIA(false);
                 return true;
             }
 
@@ -1879,7 +1885,7 @@ export default {
                     type: 'error'
                 };
                 this.showStopModal = true;
-                this.stopIA();
+                this.stopIA(false);
                 return true;
             }
 
@@ -1892,7 +1898,7 @@ export default {
                     type: 'warning'
                 };
                 this.showStopModal = true;
-                this.stopIA();
+                this.stopIA(false);
                 return true;
             }
             
