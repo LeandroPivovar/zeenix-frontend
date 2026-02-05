@@ -653,8 +653,121 @@ export default {
               ]
             }
           ]
+        },
+        {
+          id: 'rising_falling',
+          label: 'Subindo ou Descendo',
+          icon: 'fas fa-chart-line',
+          items: [
+            { value: 'rising_falling_rise_fall_equal', label: 'Subida/Queda Igual', icon: 'TradeTypesUpsAndDownsRiseIcon.svg', directions: [
+                { value: 'CALLE', label: 'Subida Igual' },
+                { value: 'PUTE', label: 'Queda Igual' }
+              ]
+            },
+            { value: 'rising_falling_rise_fall', label: 'Subida/Queda', icon: 'TradeTypesUpsAndDownsRiseIcon.svg', directions: [
+                { value: 'CALL', label: 'Subida' },
+                { value: 'PUT', label: 'Queda' }
+              ] 
+            },
+            { value: 'reset_high_low', label: 'Reset Alta/Baixa', icon: 'TradeTypesUpsAndDownsResetUpIcon.svg', directions: [
+                { value: 'RESETCALL', label: 'Reset Alta' },
+                { value: 'RESETPUT', label: 'Reset Baixa' }
+              ]
+            },
+            { value: 'runs_high_low', label: 'Somente Altas / Somente Quedas', icon: 'TradeTypesUpsAndDownsOnlyUpsIcon.svg', directions: [
+                { value: 'RUNHIGH', label: 'Somente Altas' },
+                { value: 'RUNLOW', label: 'Somente Quedas' }
+              ]
+            },
+            { value: 'tick_high_low', label: 'Máxima/Mínima por Ticks', icon: 'TradeTypesHighsAndLowsHighIcon.svg', directions: [
+                { value: 'TICKHIGH', label: 'Máxima' },
+                { value: 'TICKLOW', label: 'Mínima' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'one_barrier',
+          label: 'Uma Barreira',
+          icon: 'fas fa-bullseye',
+          items: [
+            { value: 'touch_no_touch', label: 'Toca / Não Toca', icon: 'TradeTypesHighsAndLowsTouchIcon.svg', directions: [
+                { value: 'ONETOUCH', label: 'Toca' },
+                { value: 'NOTOUCH', label: 'Não Toca' }
+              ]
+            },
+            { value: 'higher_lower', label: 'Maior / Menor', icon: 'TradeTypesHighsAndLowsHigherIcon.svg', directions: [
+                { value: 'HIGHER', label: 'Maior' },
+                { value: 'LOWER', label: 'Menor' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'two_barriers',
+          label: 'Duas Barreiras',
+          icon: 'fas fa-shield-alt',
+          items: [
+            { value: 'in_out', label: 'Permanece Dentro / Sai Fora', icon: 'TradeTypesInsAndOutsStaysInIcon.svg', directions: [
+                { value: 'RANGE', label: 'Permanece Dentro' },
+                { value: 'UPORDOWN', label: 'Sai Fora' }
+              ]
+            },
+            { value: 'ends_in_out', label: 'Termina Dentro / Termina Fora', icon: 'TradeTypesInsAndOutsEndsInIcon.svg', directions: [
+                { value: 'EXPIRYRANGE', label: 'Termina Dentro' },
+                { value: 'EXPIRYMISS', label: 'Termina Fora' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'no_expiry',
+          label: 'Sem Vencimento',
+          icon: 'fas fa-bolt',
+          items: [
+            { value: 'multipliers_mult', label: 'Multiplicadores', icon: 'TradeTypesMultipliersUpIcon.svg', directions: [
+                { value: 'MULTUP', label: 'Alta' },
+                { value: 'MULTDOWN', label: 'Baixa' }
+              ]
+            },
+            { value: 'accumulators_accu', label: 'Acumuladores', icon: 'TradeTypesAccumulatorStayInIcon.svg', directions: [
+                { value: 'ACCU', label: 'Acumuladores' }
+              ]
+            }
+          ]
         }
-      ]
+      ],
+      allTradeTypes: [
+        { value: 'CALL', label: 'Subida', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
+        { value: 'PUT', label: 'Queda', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
+        { value: 'DIGITMATCH', label: 'Combina', description: 'O último dígito será igual', icon: 'fas fa-equals' },
+        { value: 'DIGITDIFF', label: 'Difere', description: 'O último dígito será diferente', icon: 'fas fa-not-equal' },
+        { value: 'DIGITEVEN', label: 'Par', description: 'O último dígito será par', icon: 'fas fa-divide' },
+        { value: 'DIGITODD', label: 'Ímpar', description: 'O último dígito será ímpar', icon: 'fas fa-percent' },
+        { value: 'DIGITOVER', label: 'Superior', description: 'O último dígito será maior', icon: 'fas fa-greater-than' },
+        { value: 'DIGITUNDER', label: 'Inferior', description: 'O último dígito será menor', icon: 'fas fa-less-than' },
+        { value: 'CALLE', label: 'Subida Igual', description: 'Subida com barreira igual', icon: 'fas fa-arrow-up-right-dots' },
+        { value: 'PUTE', label: 'Queda Igual', description: 'Queda com barreira igual', icon: 'fas fa-arrow-down-right-dots' },
+        { value: 'ACCU', label: 'Acumuladores', description: 'Contrato de acumuladores', icon: 'fas fa-layer-group' },
+        { value: 'MULTUP', label: 'Alta', description: 'Multiplicador de alta', icon: 'fas fa-chart-line' },
+        { value: 'MULTDOWN', label: 'Baixa', description: 'Multiplicador de baixa', icon: 'fas fa-chart-line' },
+        { value: 'RESETCALL', label: 'Reset Alta', description: 'Reset de alta', icon: 'fas fa-redo' },
+        { value: 'RESETPUT', label: 'Reset Baixa', description: 'Reset de baixa', icon: 'fas fa-redo' },
+        { value: 'RUNHIGH', label: 'Somente Altas', description: 'Somente altas', icon: 'fas fa-arrow-trend-up' },
+        { value: 'RUNLOW', label: 'Somente Quedas', description: 'Somente quedas', icon: 'fas fa-arrow-trend-down' },
+        { value: 'TICKHIGH', label: 'Máxima', description: 'Máxima do intervalo', icon: 'fas fa-arrows-up-to-line' },
+        { value: 'TICKLOW', label: 'Mínima', description: 'Mínima do intervalo', icon: 'fas fa-arrows-down-to-line' },
+        { value: 'ONETOUCH', label: 'Toca', description: 'O preço toca a barreira', icon: 'fas fa-bullseye' },
+        { value: 'NOTOUCH', label: 'Não Toca', description: 'O preço não toca a barreira', icon: 'fas fa-circle-xmark' },
+        { value: 'HIGHER', label: 'Maior', description: 'Termina acima da barreira', icon: 'fas fa-chevron-up' },
+        { value: 'LOWER', label: 'Menor', description: 'Termina abaixo da barreira', icon: 'fas fa-chevron-down' },
+        { value: 'RANGE', label: 'Permanece Dentro', description: 'Fica entre as barreiras', icon: 'fas fa-arrows-left-right-to-line' },
+        { value: 'UPORDOWN', label: 'Sai Fora', description: 'Sai do intervalo', icon: 'fas fa-arrows-left-right' },
+        { value: 'EXPIRYRANGE', label: 'Termina Dentro', description: 'Termina no intervalo', icon: 'fas fa-square-full' },
+        { value: 'EXPIRYMISS', label: 'Termina Fora', description: 'Termina fora do intervalo', icon: 'fas fa-expand' },
+      ],
+      availableContracts: [],
+      isLoadingContracts: false
     };
   },
   computed: {
@@ -752,13 +865,102 @@ export default {
         return this.preferredCurrency || this.accountCurrency || 'USD';
     },
     marketsByCategory() {
-        const grouped = {};
-        this.markets.forEach(market => {
-            const category = market.category || 'Outros';
-            if (!grouped[category]) grouped[category] = [];
-            grouped[category].push(market);
+      const grouped = {};
+      
+      // Categorias na ordem de prioridade desejada
+      const categoryPriority = {
+        'Índices Contínuos': 1,
+        'Daily Reset Indices': 2,
+        'Indices Step': 3,
+        'Jump Indices': 4,
+        'Boom/Crash': 5,
+        'Criptomoedas': 6,
+        'Major Pairs': 7, // Forex Majors
+        'Minor Pairs': 8, // Forex Minors
+        'Outros': 99
+      };
+
+      // Mapeamento de nomes amigáveis baseados na imagem do usuário
+      const nameMap = {
+        'Indices Step': 'Índices Step',
+        'Jump Indices': 'Índices JUMP',
+        'Boom/Crash': 'Índices Crash/Boom',
+        'Daily Reset Indices': 'Índices Daily Reset',
+        'Major Pairs': 'Forex',
+        'Minor Pairs': 'Forex Minors'
+      };
+      
+      this.markets.forEach(market => {
+          let category = market.category || 'Outros';
+          
+          // Aplicar mapeamento de nomes amigáveis
+          if (nameMap[category]) {
+              category = nameMap[category];
+          }
+
+          if (!grouped[category]) {
+            grouped[category] = [];
+          }
+          grouped[category].push(market);
+      });
+
+      // Ordenar as chaves do objeto agrupado com base na prioridade
+      const sortedGrouped = {};
+      const categories = Object.keys(grouped).sort((a, b) => {
+          const pA = categoryPriority[a] || categoryPriority[Object.keys(nameMap).find(k => nameMap[k] === a)] || 99;
+          const pB = categoryPriority[b] || categoryPriority[Object.keys(nameMap).find(k => nameMap[k] === b)] || 99;
+          return pA - pB;
+      });
+
+      categories.forEach(cat => {
+          sortedGrouped[cat] = grouped[cat];
+      });
+
+      return sortedGrouped;
+    },
+    availableTradeTypeGroups() {
+      // Filtrar categorias e itens baseados nos contratos disponíveis reais da Deriv
+      const availableTypes = this.availableTradeTypes.map(t => t.value.toUpperCase());
+      
+      return this.tradeTypeCategories.map(category => {
+        const filteredItems = category.items.filter(item => {
+          // Um item é exibido se pelo menos uma de suas direções estiver disponível
+          return item.directions.some(dir => availableTypes.includes(dir.value.toUpperCase()));
         });
-        return grouped;
+        
+        if (filteredItems.length > 0) {
+          return {
+            ...category,
+            items: filteredItems
+          };
+        }
+        return null;
+      }).filter(Boolean);
+    },
+    availableTradeTypes() {
+      // Se não houver contratos disponíveis, retornar todos os tipos
+      if (!this.availableContracts || this.availableContracts.length === 0) {
+        return this.allTradeTypes;
+      }
+      
+      // Extrair tipos de contrato dos contratos disponíveis
+      const contractTypes = this.availableContracts.map(contract => {
+            if (typeof contract === 'string') {
+              return contract.toUpperCase();
+            }
+            if (contract && typeof contract === 'object') {
+          return (contract.contract_type || contract.type || contract.name || '').toString().toUpperCase();
+            }
+            return null;
+      }).filter(type => type && type.length > 0);
+      
+      // Filtrar tipos de negociação baseado nos contratos disponíveis
+      const filteredTypes = this.allTradeTypes.filter(type => {
+        return contractTypes.some(ct => ct === type.value.toUpperCase());
+      });
+      
+      // Se não encontrou nenhum tipo, retornar todos (fallback)
+      return filteredTypes.length > 0 ? filteredTypes : this.allTradeTypes;
     },
     canExecuteAIOrder() {
         return this.aiRecommendation && this.canExecuteOrder;
@@ -795,7 +997,16 @@ export default {
     this.checkMobile();
     window.addEventListener('resize', this.checkMobile);
     this.initDirectConnection();
-    this.fetchMarkets();
+    // 2. Initial Data Loading (Updated sequence)
+    this.fetchMarkets(); // Load markets from backend with new endpoint
+    
+    if (!this.symbol) {
+        this.symbol = 'R_100'; // Default
+    }
+
+    if (this.symbol) {
+      this.loadAvailableContracts(this.symbol);
+    }
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.checkMobile);
@@ -915,15 +1126,177 @@ export default {
       return localStorage.getItem('deriv_token');
     },
     async fetchMarkets() {
-      this.isLoadingMarkets = true;
       try {
-        const response = await fetch(`${process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api'}/broker/deriv/symbols`);
-        if (response.ok) {
-          const data = await response.json();
-          this.markets = data.symbols || [];
+        const token = localStorage.getItem('token');
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        
+        const res = await fetch(`${apiBaseUrl}/markets`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) throw new Error('Falha ao buscar mercados');
+
+        const backendMarkets = await res.json();
+        
+        // Map backend to component format
+        const categoryMap = {
+            'synthetic_index': 'Índices Sintéticos',
+            'forex': 'Forex',
+            'cryptocurrency': 'Criptomoedas',
+            'indices': 'Índices',
+            'commodities': 'Commodities'
+        };
+
+        const allowedForex = ['frxEURUSD', 'frxUSDJPY', 'frxGBPUSD', 'frxAUDUSD', 'frxUSDCHF', 'frxUSDCAD', 'frxNZDUSD', 'frxEURGBP', 'frxEURJPY', 'frxGBPJPY'];
+        const allowedCrypto = ['cryBTCUSD', 'cryETHUSD', 'cryLTCUSD', 'cryXRPUSD', 'cryBCHUSD'];
+        const allowedSynthetic = ['Continuous Indices', 'Daily Reset Indices', 'Indices Step', 'Jump Indices', 'Boom/Crash'];
+
+        const filteredMarkets = backendMarkets.filter(m => {
+             if (m.symbol.startsWith('frx')) return allowedForex.includes(m.symbol);
+             if (m.symbol.startsWith('cry')) return allowedCrypto.includes(m.symbol);
+             
+             // Check synthetic indices based on submarketDisplayName or common prefixes
+             const submarket = m.submarketDisplayName;
+             if (allowedSynthetic.includes(submarket)) return true;
+             
+             // Fallback for symbols if submarketDisplayName is missing or different
+             if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ') || 
+                 m.symbol.startsWith('JDM') || m.symbol.startsWith('BOOM') || 
+                 m.symbol.startsWith('CRASH') || m.symbol.startsWith('STP') ||
+                 m.symbol.startsWith('RDBEAR') || m.symbol.startsWith('RDBULL')) {
+                 return true;
+             }
+             
+             return false;
+        });
+
+        const mappedMarkets = filteredMarkets.map(m => {
+             let category = m.submarketDisplayName || m.marketDisplayName || categoryMap[m.market] || 'Outros';
+             
+             // Forçar categorias específicas para o mapeamento de prioridade e exibição correta
+             if (m.symbol.startsWith('frx')) {
+                 category = 'Major Pairs';
+             } else if (m.symbol.startsWith('cry')) {
+                 category = 'Criptomoedas';
+             } else if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ')) {
+                 category = 'Índices Contínuos';
+             } else if (m.symbol.startsWith('JDM')) {
+                 category = 'Jump Indices';
+             } else if (m.symbol.startsWith('BOOM') || m.symbol.startsWith('CRASH')) {
+                 category = 'Boom/Crash';
+             } else if (m.symbol.startsWith('STP')) {
+                 category = 'Indices Step';
+             } else if (m.symbol.startsWith('RDBEAR') || m.symbol.startsWith('RDBULL')) {
+                 category = 'Daily Reset Indices';
+             }
+
+             return {
+                 value: m.symbol,
+                 label: m.displayName,
+                 category: category,
+                 operations: m.operations || []
+             };
+        });
+
+         // Sort by category
+        const categoryPriority = {
+            'Índices Contínuos': 1,
+            'Forex': 2,
+            'Criptomoedas': 3,
+            'commodities': 4
+        };
+
+        mappedMarkets.sort((a, b) => {
+             const pA = categoryPriority[a.category] || 99;
+             const pB = categoryPriority[b.category] || 99;
+             if (pA !== pB) return pA - pB;
+             return a.label.localeCompare(b.label);
+        });
+        
+        this.markets = mappedMarkets;
+        console.log('[OperationDigits] Mercados carregados do backend:', this.markets.length);
+
+        if (!this.symbol && this.markets.length > 0) {
+             const defaultM = this.markets.find(m => m.value === 'R_100') || this.markets[0];
+             this.selectMarket(defaultM.value);
+        } else if (this.symbol) {
+            // Validate if current symbol exists in new list
+             const exists = this.markets.find(m => m.value === this.symbol);
+             if (exists) {
+                 this.loadAvailableContracts(this.symbol);
+             }
         }
-      } catch (e) { console.error('[OperationDigits] Token fetch error:', e); }
-      this.isLoadingMarkets = false;
+
+      } catch (error) {
+        console.error('Erro ao buscar mercados do backend:', error);
+      } finally {
+        this.isLoadingMarkets = false;
+      }
+    },
+    async loadAvailableContracts(symbol) {
+      if (!symbol) {
+        this.availableContracts = [];
+        return;
+      }
+      
+      try {
+        this.isLoadingContracts = true;
+        
+        const token = localStorage.getItem('token');
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        
+        const res = await fetch(`${apiBaseUrl}/markets/${symbol}/contracts`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) throw new Error('Falha ao buscar contratos');
+
+        const contracts = await res.json();
+        
+        if (contracts && contracts.length > 0) {
+             this.availableContracts = contracts.map(c => ({
+               ...c.payload, // Spread raw data from Deriv
+               contract_type: c.contractType,
+               contract_category: c.contractCategory,
+               contract_display: c.contractDisplay,
+               min_contract_duration: c.minContractDuration,
+               max_contract_duration: c.maxContractDuration,
+               barriers: c.barriers
+             }));
+             console.log('[OperationDigits] Contratos detalhados carregados do backend:', this.availableContracts.length);
+        } else {
+             console.warn('[OperationDigits] Sem contratos detalhados na tabela market_contracts para:', symbol);
+             this.availableContracts = [];
+        }
+
+        // Validate current trade type
+        if (this.tradeType) {
+             const availableTypes = this.availableContracts.map(c => c.contract_type.toUpperCase());
+             const isAvailable = availableTypes.includes(this.tradeType.toUpperCase());
+             
+             if (!isAvailable) {
+                  // Se o tipo atual não estiver disponível, tenta selecionar o primeiro disponível
+                  // Mas mantenha DIGITMATCH como preferência se disponível
+                  if (availableTypes.includes('DIGITMATCH')) {
+                     this.tradeType = 'DIGITMATCH';
+                     this.selectedTradeTypeGroup = 'digits_match_diff';
+                  } else {
+                     this.tradeType = availableTypes[0] || '';
+                  }
+                  console.log('[OperationDigits] Tipo de negociação reajustado:', this.tradeType);
+             }
+        }
+        
+      } catch (error) {
+        console.error('[OperationDigits] Erro ao carregar contratos:', error);
+        this.availableContracts = [];
+      } finally {
+        this.isLoadingContracts = false;
+      }
     },
     openMarketModal() { this.showMarketModal = true; },
     closeMarketModal() { this.showMarketModal = false; },
