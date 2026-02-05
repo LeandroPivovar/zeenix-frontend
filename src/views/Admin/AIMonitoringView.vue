@@ -72,7 +72,7 @@
                         </div>
 
                         <!-- Resultado -->
-                        <div class="col-span-1 md:col-span-3 lg:col-span-3 text-center border-l border-border/50 pl-3 lg:pl-6 flex flex-col items-center">
+                        <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center border-l border-border/50 pl-3 lg:pl-6 flex flex-col items-center">
                             <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Resultado</p>
                             <div class="flex items-baseline justify-center gap-1 lg:gap-3">
                                 <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)]"
@@ -89,7 +89,7 @@
                         </div>
 
                         <!-- Operations Stats -->
-                        <div class="col-span-2 md:col-span-3 lg:col-span-4 border-t md:border-t-0 md:border-l border-border/50 pt-4 md:pt-0 md:pl-4 lg:pl-6 mt-2 md:mt-0">
+                        <div class="col-span-2 md:col-span-3 lg:col-span-3 border-t md:border-t-0 md:border-l border-border/50 pt-4 md:pt-0 md:pl-4 lg:pl-6 mt-2 md:mt-0">
                             <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-2 lg:mb-3">Operações</p>
                             <div class="flex items-center justify-between md:justify-start gap-3 lg:gap-4 text-sm">
                                 <div class="text-center">
@@ -113,6 +113,17 @@
                                     </span>
                                     <span class="text-[10px] lg:text-xs text-muted-foreground block">Winrate</span>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Execution Time -->
+                        <div class="col-span-2 md:col-span-3 lg:col-span-2 border-t md:border-t-0 md:border-l border-border/50 pt-4 md:pt-0 md:pl-4 lg:pl-6 mt-2 md:mt-0 flex flex-col items-center justify-center">
+                            <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Tempo de Execução</p>
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                <p class="text-xl lg:text-2xl font-bold text-white tracking-tight tabular-nums">
+                                    {{ executionTime }}
+                                </p>
                             </div>
                         </div>
 
@@ -663,12 +674,17 @@ export default {
             // Modal States
             showStopModal: false,
             stopResult: {
-                title: '',
-                message: '',
+                targetProfitInput: '',
+                stopLossInput: '',
                 profit: 0,
                 type: 'info' // 'info', 'warning', 'success'
             },
             showHistoryModal: false,
+
+            // Timer
+            executionTime: '00:00:00',
+            sessionStartTime: null,
+            timerInterval: null,
 
             // ✅ Security Configuration (Loss Virtual)
             securityConfig: {
@@ -819,6 +835,12 @@ export default {
         if (this.chart) {
             this.chart.remove();
         }
+        if (this.ws) {
+            this.ws.close();
+        }
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+        }
         this.stopTickConnection();
     },
     methods: {
@@ -922,6 +944,7 @@ export default {
 
                     // ✅ Start Session Tracking
                     this.startSession();
+                    this.startTimer(); // Start timer when configuration is loaded and session begins
 
                 } catch (e) {
                     console.error('Error loading config:', e);
@@ -1907,6 +1930,33 @@ export default {
             } else {
                 this.isStopping = false; // Reset loading state if staying on page
             }
+            
+            // Stop Timer and Log
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+                this.addLog('⏱️ Tempo Total de Sessão', [`Duração: ${this.executionTime}`], 'info');
+            }
+        },
+        startTimer() {
+            if (this.timerInterval) return;
+            
+            this.sessionStartTime = Date.now();
+            this.timerInterval = setInterval(this.updateTimer, 1000);
+            console.log('[Timer] Started');
+        },
+        updateTimer() {
+            if (!this.sessionStartTime) return;
+            
+            const now = Date.now();
+            const diff = now - this.sessionStartTime;
+            
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            
+            this.executionTime = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         },
         clearLogs() {
             this.monitoringLogs = [];
