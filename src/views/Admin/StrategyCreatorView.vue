@@ -359,6 +359,14 @@
                                                 <i class="fa-solid fa-pause"></i> Pausa
                                             </button>
                                         </div>
+
+                                        <div class="h-[46px] bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between px-3 self-end">
+                                            <span class="text-[10px] font-bold text-gray-400 uppercase">Martingale</span>
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" v-model="recoveryConfig.martingale" class="sr-only peer">
+                                                <div class="w-9 h-5 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zenix-green"></div>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1460,6 +1468,7 @@ export default {
                 tradeType: '',
                 prediction: 0,
                 lossesToActivate: 1, // Default changed to 1 for immediate recovery (User Preference)
+                martingale: true, // New field for Optional Martingale
                 contractSwitch: true,
                 switchToNormal: false,
                 switchToPrecise: true,

@@ -859,7 +859,9 @@ export default {
                             : (baseConfig.recoveryConfig ? baseConfig.recoveryConfig.attackFilters : []),
                         // ✅ Dynamic Pause Configuration with Fallbacks
                         pauseLosses: savedRecovery.pauseLosses || (baseConfig.recoveryConfig ? baseConfig.recoveryConfig.pauseLosses : 6),
-                        pauseTime: savedRecovery.pauseTime || (baseConfig.recoveryConfig ? baseConfig.recoveryConfig.pauseTime : 2)
+                        pauseTime: savedRecovery.pauseTime || (baseConfig.recoveryConfig ? baseConfig.recoveryConfig.pauseTime : 2),
+                        // ✅ Martingale Toggle Loading
+                        martingale: savedRecovery.martingale !== undefined ? savedRecovery.martingale : (baseConfig.recoveryConfig && baseConfig.recoveryConfig.martingale !== undefined ? baseConfig.recoveryConfig.martingale : true)
                     };
 
                     // ✅ FIX: Allow JSON to define payout. Removed forced 1.26 override.

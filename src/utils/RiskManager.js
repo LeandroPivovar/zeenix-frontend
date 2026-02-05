@@ -101,6 +101,13 @@ export const RiskManager = {
 
         // 1. RECOVERY MODE
         if (state.analysisType === 'RECUPERACAO') {
+            // ✅ USER REQUEST: Check if Martingale is enabled
+            // config.martingale defaults to true if undefined
+            if (config.martingale === false) {
+                console.log('[RiskManager] Martingale Disabled -> Using Base Stake');
+                return baseStake;
+            }
+
             // Check Max Levels for Conservador
             const maxLevels = (riskProfile === 'conservador') ? 5 : null;
             if (maxLevels && state.lossStreakRecovery >= maxLevels) {
