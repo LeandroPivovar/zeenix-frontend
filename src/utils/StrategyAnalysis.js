@@ -112,6 +112,8 @@ export const StrategyAnalysis = {
             case '<': pass = count < threshold; break;
             case '>': pass = count > threshold; break;
             case '=': pass = count === threshold; break;
+            case '>=': pass = count >= threshold; break;
+            case '<=': pass = count <= threshold; break;
         }
 
         return {
@@ -274,6 +276,8 @@ export const StrategyAnalysis = {
         let pass = false;
         if (op === '>' && currentPrice > ma) pass = true;
         if (op === '<' && currentPrice < ma) pass = true;
+        if (op === '>=' && currentPrice >= ma) pass = true;
+        if (op === '<=' && currentPrice <= ma) pass = true;
 
         return {
             pass,
@@ -446,6 +450,9 @@ export const StrategyAnalysis = {
         let pass = false;
         if (op === '>' && avg > threshold) pass = true;
         else if (op === '<' && avg < threshold) pass = true;
+        else if (op === '>=' && avg >= threshold) pass = true;
+        else if (op === '<=' && avg <= threshold) pass = true;
+        else if (op === '=' && avg === threshold) pass = true;
 
         return { pass, reason: pass ? `Média Dígitos ${avg.toFixed(1)} ${op} ${threshold}` : `Média Falhou (${avg.toFixed(1)})` };
     },

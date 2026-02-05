@@ -2530,7 +2530,8 @@ export default {
                 config: {
                     form: JSON.parse(JSON.stringify(this.form)),
                     recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
-                    validator: JSON.parse(JSON.stringify(this.validator))
+                    validator: JSON.parse(JSON.stringify(this.validator)),
+                    securityConfig: JSON.parse(JSON.stringify(this.securityConfig))
                 }
             };
 
@@ -2585,6 +2586,17 @@ export default {
                     ...savedValidator,
                     recoveryFilters: { ...(this.validator.recoveryFilters || {}), ...(savedValidator.recoveryFilters || {}) }
                 };
+            }
+
+            if (strategy.config.securityConfig) {
+                const savedSecurity = JSON.parse(JSON.stringify(strategy.config.securityConfig));
+                if (savedSecurity.virtualLoss) {
+                    this.securityConfig.virtualLoss = {
+                        ...this.securityConfig.virtualLoss,
+                        ...savedSecurity.virtualLoss,
+                        current: 0
+                    };
+                }
             }
 
             // Restore filters active state for main
@@ -2689,7 +2701,8 @@ export default {
                 config: {
                     form: this.form,
                     recoveryConfig: this.recoveryConfig,
-                    validator: this.validator
+                    validator: this.validator,
+                    securityConfig: this.securityConfig
                 }
             };
 
