@@ -278,8 +278,17 @@ export default {
       
       // Para Demo
       if (this.accountType === 'demo') {
-        const usdDemo = this.balancesByCurrencyDemo['USD'] || 0;
-        const total = this.isFictitiousBalanceActive ? (Number(usdDemo) + Number(this.fictitiousBalance)) : Number(usdDemo);
+        const demoBalanceUSD = this.balancesByCurrencyDemo['USD'];
+        let baseBalance = 0;
+        
+        if (demoBalanceUSD !== undefined && demoBalanceUSD !== null) {
+            baseBalance = Number(demoBalanceUSD);
+        } else {
+             // Fallback: somar todos os saldos demo
+             baseBalance = Object.values(this.balancesByCurrencyDemo).reduce((acc, val) => acc + (Number(val) || 0), 0);
+        }
+
+        const total = this.isFictitiousBalanceActive ? (baseBalance + Number(this.fictitiousBalance)) : baseBalance;
         return total;
       }
       
