@@ -2771,6 +2771,7 @@ export default {
                         if (msg.error) {
                             this.addLog(`❌ Erro na proposta: ${msg.error.message}`, 'error');
                             this.isNegotiating = false; // Reset lock on error
+                            this.retryingProposal = false; // ✅ Reset deadlocked flag
                         } else {
                             const proposalId = msg.proposal.id;
                             const payout = msg.proposal.payout;
@@ -2919,6 +2920,11 @@ export default {
                                     delete newParams.req_id;
                                     delete newParams.is_retry;
                                     this.ws.send(JSON.stringify(newParams));
+                                } else {
+                                    // Deadlock Fix: If we already retried and it's STILL blocked, abort.
+                                    this.addLog('⚠️ Cancelando negociação: Ajuste de segurança falhou ou limite atingido.', 'warning');
+                                    this.isNegotiating = false; // Release lock
+                                    this.retryingProposal = false;
                                 }
                                 return; // BLOCK BUY
                             }
