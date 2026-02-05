@@ -2811,7 +2811,11 @@ export default {
                             // 2. CHECK IF STAKE ADJUSTMENT IS NEEDED
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
                                 const activeStrategy = this.sessionState.activeStrategy === 'RECUPERACAO' ? 'RECUPERACAO' : 'PRINCIPAL';
-                                const config = activeStrategy === 'RECUPERACAO' ? this.recoveryConfig : this.form;
+                                // ✅ FIX: Merge with this.form to ensure 'stopLoss' and 'profitTarget' are present
+                                const config = {
+                                    ...this.form,
+                                    ...(activeStrategy === 'RECUPERACAO' ? this.recoveryConfig : {})
+                                };
                                 
                                 // Debug: Check if PayoutHistory was updated
                                 // console.log('DEBUG PAYOUT:', cType, RiskManager.payoutHistory[cType]);
