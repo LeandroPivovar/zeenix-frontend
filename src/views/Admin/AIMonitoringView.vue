@@ -631,8 +631,7 @@ export default {
             digitHistory: [],
             isNegotiating: false,
             pauseUntil: 0, // Timeout timestamp
-            isNegotiating: false,
-            pauseUntil: 0, // Timeout timestamp
+
             retryingProposal: false, // Flag for calibration loop
             sessionId: null, // Track session ID for backend logging
 
@@ -1686,7 +1685,7 @@ export default {
                         `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
                     ], 'success');
                     } else {
-                        const id = msg.buy.contract_id; // FIX: Ensure ID is defined
+                        const id = trade.id; 
                         this.addLog('Resultado da Operação', [
                             `Status: LOSS`,
                             `Contrato ID: ${id}`,
