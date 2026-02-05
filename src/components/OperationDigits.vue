@@ -302,17 +302,28 @@
                     </div>
                     
                     <!-- Ticks Restantes -->
-                    <div v-if="activeContract && contractTicksRemaining !== null" class="w-full bg-zenix-bg border border-zenix-border rounded-lg p-3 relative overflow-hidden group">
-                        <div class="absolute top-0 left-0 h-1 bg-zenix-green/30 transition-all duration-1000" :style="{ width: (100 - (contractTicksRemaining / (activeContract.duration || duration) * 100)) + '%' }"></div>
+                    <div v-if="activeContract && (contractTimeRemaining !== null || contractTicksRemaining !== null)" class="w-full bg-zenix-bg border border-zenix-border rounded-lg p-3 relative overflow-hidden group">
+                        <div class="absolute top-0 left-0 h-1 bg-zenix-green/30 transition-all duration-1000" :style="{ width: isTickBasedContract ? (100 - (contractTicksRemaining / (activeContract.duration || duration) * 100)) + '%' : (100 - (contractTimeRemaining / (activeContract.duration || duration) * 100)) + '%' }"></div>
                         
                         <div class="text-[10px] uppercase font-bold text-zenix-secondary mb-1 tracking-wider flex items-center justify-between">
-                            <span>Ticks Restantes:</span>
+                            <span>{{ isTickBasedContract ? 'Ticks Restantes:' : 'Tempo Restante:' }}</span>
                             <i class="fas fa-history text-xs"></i>
                         </div>
                         <div class="text-xl font-black text-zenix-text flex items-baseline gap-1" :class="getCountdownClass">
-                            <span>{{ contractTicksRemaining }}</span>
+                            <span v-if="isTickBasedContract">
+                                {{ contractTicksRemaining }}
+                            </span>
+                             <span v-else>
+                                {{ formatTimeRemaining(contractTimeRemaining) }}
+                            </span>
                             <span class="text-[10px] text-zenix-secondary font-medium ml-1">RESTANTES</span>
                         </div>
+                    </div>
+
+                    <!-- Compra Executada Message -->
+                    <div v-if="isTrading || (activeContract && !showTradeResultModal)" class="mt-3 p-3 bg-zenix-green/10 border border-zenix-green/30 rounded flex items-center justify-center gap-2 animate-pulse">
+                        <i class="fas fa-check-circle text-zenix-green"></i>
+                        <span class="text-zenix-green font-bold text-xs uppercase tracking-wider">Compra Executada!</span>
                     </div>
                     
                     <!-- Action Buttons -->
