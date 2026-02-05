@@ -2023,7 +2023,11 @@
                     )
                 );
 
-                        return;
+                if (hasProfitMessage) {
+                    if (!this.showNewTargetProfitModal && !window.zenixStopModalActive && !this.targetProfitAcknowledged) {
+                        window.zenixStopModalActive = true;
+                        console.log('[AgenteAutonomo] 🎯 [Logs] Target Profit Detected!');
+                        this.showNewTargetProfitModal = true;
                     }
                 }
 
