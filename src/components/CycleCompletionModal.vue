@@ -72,43 +72,42 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: 10000000;
+  padding: 20px;
 }
 
 .cycle-completion-modal {
-  background: #121212;
-  border: 1px solid #22C55E;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  padding: 40px 24px;
-  position: relative;
+  background: #0B0B0B;
+  border-radius: 24px;
+  padding: 40px 32px;
+  max-width: 420px;
+  width: 100%;
   text-align: center;
-  box-shadow: 0 0 30px rgba(34, 197, 94, 0.2);
-  transform: translateY(0);
+  position: relative;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  box-shadow: 0 20px 60px rgba(34, 197, 94, 0.1);
 }
 
 .modal-icon-container {
-  display: flex;
-  justify-content: center;
   margin-bottom: 24px;
 }
 
 .modal-icon {
-  width: 80px;
-  height: 80px;
-  background: rgba(34, 197, 94, 0.1);
-  border-radius: 50%;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #22C55E;
+  background: rgba(34, 197, 94, 0.1);
+  box-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
   animation: pulse-green 2s infinite;
 }
 
@@ -119,63 +118,72 @@ export default {
 }
 
 .modal-title {
-  color: #22C55E;
   font-size: 24px;
-  font-weight: 900;
-  margin-bottom: 12px;
-  letter-spacing: 1px;
+  font-weight: 700;
+  color: #22C55E;
+  margin: 0 0 16px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
 }
 
 .modal-description {
-  color: #A1A1AA;
   font-size: 14px;
-  line-height: 1.6;
-  margin-bottom: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 32px 0;
+  line-height: 1.5;
 }
 
 .result-badge {
-  background: rgba(34, 197, 94, 0.05);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 12px;
+  margin: 24px 0;
   padding: 16px;
-  margin-bottom: 32px;
+  background: rgba(34, 197, 94, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 .result-badge .label {
-  color: #A1A1AA;
   font-size: 11px;
-  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 4px 0;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
 }
 
 .result-badge .value {
   color: #22C55E;
   font-size: 28px;
   font-weight: 800;
+  letter-spacing: 0.5px;
 }
 
 .confirm-button {
   width: 100%;
   background: #22C55E;
-  color: #000;
   border: none;
   border-radius: 12px;
   padding: 16px;
-  font-size: 14px;
-  font-weight: 800;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .confirm-button:hover {
-  background: #1aad4f;
+  background: #16A34A;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.confirm-button:active {
+  transform: scale(0.98);
 }
 
 /* Transitions */
@@ -192,7 +200,19 @@ export default {
 }
 
 @keyframes modal-pop {
-  from { transform: scale(0.8) translateY(20px); }
-  to { transform: scale(1) translateY(0); }
+  from { transform: scale(0.8) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .cycle-completion-modal {
+    padding: 32px 24px;
+    max-width: 100%;
+    margin: 20px;
+  }
+  
+  .modal-title {
+    font-size: 20px;
+  }
 }
 </style>

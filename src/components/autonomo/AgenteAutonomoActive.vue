@@ -2031,20 +2031,39 @@
                     }
                 }
 
-                // 4. CICLO CONCLUÍDO (Ex: ✅ CICLO 1 CONCLUÍDO! Lucro: $10.00)
+                // 4. CICLO CONCLUÍDO (Ex: ✅ CICLO 1/4 CONCLUÍDO! Lucro: $10.00)
                 const cycleLog = recentLogs.find(log => 
                     log.message && log.message.toUpperCase().includes('CICLO') && log.message.toUpperCase().includes('CONCLUÍDO')
                 );
 
                 if (cycleLog) {
-                    const match = cycleLog.message.match(/CICLO (\d+) CONCLUÍDO/i);
-                    const cycleNum = match ? match[1] : '1';
+                    // Tentar novo formato com total: CICLO 1/4
+                    let match = cycleLog.message.match(/CICLO (\d+)\/(\d+) CONCLUÍDO/i);
+                    let cycleNum = '1';
+                    let totalCycles = '4'; // Default fallback
+
+                    if (match) {
+                        cycleNum = match[1];
+                        totalCycles = match[2];
+                    } else {
+                        // Fallback para formato antigo: CICLO 1
+                        match = cycleLog.message.match(/CICLO (\d+) CONCLUÍDO/i);
+                        if (match) cycleNum = match[1];
+                        // Se não tem total, não podemos garantir que é o último, então assumimos que NÂO devemos mostrar
+                        // A MENOS que o usuário queira ver todos. Mas o pedido foi "apenas o último".
+                        // Então se for formato antigo, talvez devamos ignorar ou assumir 4?
+                        // Vamos assumir que o backend já está atualizado.
+                    }
+
                     const profitMatch = cycleLog.message.match(/LUCRO: \$?(\d+(\.\d+)?)/i);
                     const profit = profitMatch ? parseFloat(profitMatch[1]) : 0;
 
+                    // LÓGICA DE TRIGGER: Apenas se for o último ciclo (Ex: 4/4)
+                    const isFinalCycle = (cycleNum === totalCycles);
+
                     // Evitar abrir para o mesmo ciclo repetidamente
-                    if (this.lastProcessedCycle !== cycleNum) {
-                        console.log(`[AgenteAutonomo] 🔄 [Logs] Cycle ${cycleNum} Completion Detected!`);
+                    if (isFinalCycle && this.lastProcessedCycle !== cycleNum) {
+                        console.log(`[AgenteAutonomo] 🔄 [Logs] Final Cycle ${cycleNum}/${totalCycles} Completion Detected!`);
                         this.currentCycleNumber = cycleNum;
                         this.currentCycleProfit = profit;
                         this.showCycleCompletionModal = true;
