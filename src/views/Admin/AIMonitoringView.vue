@@ -1882,6 +1882,27 @@ export default {
                         this.sessionState.stopBlindadoFloor = newFloor;
                     }
                 }
+
+                // ✅ LOG PROGRESSO STOP BLINDADO (User Request)
+                if (target > 0 && this.currentConfig.useBlindado) {
+                    if (!this.sessionState.stopBlindadoActive) {
+                        const gatilho = target * 0.5;
+                        const faltam = gatilho - this.monitoringStats.profit;
+                        if (faltam > 0) {
+                            this.addLog('Monitoramento Blindado', [
+                                `Status: Inativo (Aguardando Gatilho)`,
+                                `Meta Gatilho: ${this.preferredCurrencyPrefix}${gatilho.toFixed(2)} (50% da Meta)`,
+                                `Falta: ${this.preferredCurrencyPrefix}${faltam.toFixed(2)} de lucro`
+                            ], 'info');
+                        }
+                    } else {
+                         this.addLog('Monitoramento Blindado', [
+                            `Status: ATIVO 🛡️`,
+                            `Protegendo: ${this.preferredCurrencyPrefix}${this.sessionState.stopBlindadoFloor.toFixed(2)}`,
+                            `Lucro Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.profit.toFixed(2)}`
+                        ], 'info');
+                    }
+                }
                 
                 // ✅ Check Strategy Limits (Stop Win/Loss/Blindado)
                 this.checkStrategyLimits();
