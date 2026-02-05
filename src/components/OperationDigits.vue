@@ -188,197 +188,148 @@
             </div>
 
             <!-- Sidebar Panel -->
-            <div class="sidebar-panel trading-panel w-full flex-shrink-0 bg-[#0D0D0D] border-l border-white/5 p-6 overflow-y-auto">
-                <div class="mb-6">
-                    <div class="flex flex-col gap-5">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                                <i class="fas fa-sliders-h text-zenix-green text-sm"></i>
-                                Negociação
-                            </h2>
-                        </div>
+            <div class="sidebar-panel trading-panel w-[400px] flex-shrink-0 bg-[#0D0D0D] border border-white/5 p-8 overflow-y-auto rounded-xl">
+                <div class="pb-6 mb-6 border-b border-white/5">
+                    <div class="flex flex-col gap-4">
+                        <h2 class="text-xl font-black text-white text-left leading-tight tracking-wide">
+                            Painel de Negociação
+                        </h2>
                         
-                        <!-- Mode Switcher Premium -->
-                        <div class="flex p-1 bg-[#080808] border border-white/5 rounded-xl relative">
-                            <div class="absolute inset-y-1 transition-all duration-300 ease-out bg-zenix-green/10 border border-zenix-green/20 rounded-lg shadow-[0_0_15px_rgba(34,197,94,0.1)]"
-                                :class="tradingMode === 'manual' ? 'left-1 w-[calc(50%-4px)]' : 'left-[calc(50%+4px)] w-[calc(50%-8px)]'"></div>
-                            
+                        <!-- Mode Switcher -->
+                        <div class="flex items-center p-1 bg-[#080808] border border-white/5 rounded-xl">
                             <button 
                                 @click="tradingMode = 'manual'"
-                                class="flex-1 py-2.5 text-xs font-bold rounded-lg transition-all relative z-10 flex items-center justify-center gap-2"
-                                :class="tradingMode === 'manual' ? 'text-zenix-green' : 'text-white/40 hover:text-white'"
+                                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
+                                :class="tradingMode === 'manual' ? 'bg-zenix-green text-black' : 'text-white/40 hover:text-white'"
                             >
-                                <i class="fas fa-hand-pointer"></i>
                                 MANUAL
                             </button>
                             <button 
                                 @click="tradingMode = 'ai'"
-                                class="flex-1 py-2.5 text-xs font-bold rounded-lg transition-all relative z-10 flex items-center justify-center gap-2"
-                                :class="tradingMode === 'ai' ? 'text-zenix-green' : 'text-white/40 hover:text-white'"
+                                class="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
+                                :class="tradingMode === 'ai' ? 'bg-zenix-green text-black' : 'text-white/40 hover:text-white'"
                             >
-                                <i class="fas fa-robot"></i>
-                                SINAIS IA
+                                SINAIS DE IA
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                <div class="space-y-5">
+                <div class="space-y-6 px-1">
                     <!-- Mercado -->
-                    <div class="form-group">
-                        <label class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block ml-1">Mercado</label>
+                    <div>
+                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Mercado</label>
                         <button
                             @click="openMarketModal"
-                            class="w-full bg-[#0A0A0A] border border-white/5 hover:border-zenix-green/30 active:border-zenix-green/50 transition-all rounded-xl px-4 py-3.5 text-sm text-white flex items-center justify-between group shadow-sm hover:shadow-[0_0_20px_rgba(0,0,0,0.4)]"
+                            class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
                         >
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-zenix-green/10 transition-colors">
-                                    <i class="fas fa-chart-line text-white/60 group-hover:text-zenix-green transition-colors"></i>
-                                </div>
-                                <span class="font-bold tracking-tight text-white/90 group-hover:text-white">{{ selectedMarketLabel }}</span>
-                            </div>
-                            <i class="fas fa-chevron-down text-[10px] text-white/20 group-hover:text-zenix-green transition-colors"></i>
+                            <span class="font-medium">{{ selectedMarketLabel }}</span>
+                            <i class="fas fa-chevron-down text-xs opacity-40"></i>
                         </button>
                     </div>
                     
                     <!-- Tipo de Negociação -->
-                    <div class="form-group">
-                        <label class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block ml-1">Estratégia</label>
+                    <div>
+                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Tipo de Negociação</label>
                         <button
                             @click="openTradeTypeModal"
-                            class="w-full bg-[#0A0A0A] border border-white/5 hover:border-zenix-green/30 active:border-zenix-green/50 transition-all rounded-xl px-4 py-3.5 text-sm text-white flex items-center justify-between group shadow-sm hover:shadow-[0_0_20px_rgba(0,0,0,0.4)]"
+                            class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
                         >
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-zenix-green/10 transition-colors">
-                                    <i :class="selectedTradeTypeIcon + ' text-white/60 group-hover:text-zenix-green transition-colors text-sm'"></i>
-                                </div>
-                                <span class="font-bold tracking-tight text-white/90 group-hover:text-white">{{ selectedTradeTypeGroupLabel }}</span>
+                                <i :class="selectedTradeTypeIcon + ' text-[#22C55E] text-xl'"></i>
+                                <span class="font-medium">{{ selectedTradeTypeGroupLabel }}</span>
                             </div>
-                            <i class="fas fa-chevron-down text-[10px] text-white/20 group-hover:text-zenix-green transition-colors"></i>
+                            <i class="fas fa-chevron-down text-xs opacity-40"></i>
                         </button>
                     </div>
 
-                    <!-- Barreira (Dígito) - Condicional -->
-                    <div v-if="['digits_match_diff', 'digits_over_under'].includes(selectedTradeTypeGroup)" class="form-group animate-slide-down">
-                        <label class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block ml-1">Dígito Alvo</label>
-                        <div class="relative">
-                            <select v-model="digitMatchValue" class="w-full bg-[#0A0A0A] border border-white/5 hover:border-zenix-green/30 focus:border-zenix-green/50 rounded-xl px-4 py-3.5 text-sm text-white font-bold appearance-none cursor-pointer outline-none transition-all pl-12">
-                                <option v-for="d in 10" :key="d-1" :value="d-1">{{ d-1 }}</option>
-                            </select>
-                            <div class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 rounded bg-zenix-green/20 flex items-center justify-center text-zenix-green text-xs font-bold pointer-events-none">
-                                {{ digitMatchValue }}
-                            </div>
-                            <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/20 pointer-events-none"></i>
-                        </div>
+                    <!-- Previsão (Dígito) -->
+                    <div v-if="['digits_match_diff', 'digits_over_under'].includes(selectedTradeTypeGroup)">
+                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Barreira (Dígito)</label>
+                        <select v-model="digitMatchValue" class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-medium appearance-none cursor-pointer">
+                            <option v-for="d in 10" :key="d-1" :value="d-1">{{ d-1 }}</option>
+                        </select>
                     </div>
                     
-                    <!-- Row: Duration & Stake -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <!-- Duração -->
-                        <div class="form-group">
-                            <label class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block ml-1">Duração</label>
-                            <div class="flex bg-[#0A0A0A] border border-white/5 hover:border-zenix-green/30 rounded-xl overflow-hidden transition-all group focus-within:border-zenix-green/50">
-                                <input 
-                                    type="number" 
-                                    v-model.number="duration"
-                                    class="w-full bg-transparent border-none px-4 py-3.5 text-sm text-white font-bold focus:ring-0 outline-none text-center"
-                                />
-                                <div class="border-l border-white/5 relative bg-white/[0.02]">
-                                    <select 
-                                        v-model="durationUnit"
-                                        class="h-full bg-transparent border-none pl-3 pr-7 text-xs font-bold text-white/60 focus:ring-0 outline-none appearance-none cursor-pointer hover:text-white transition-colors"
-                                    >
-                                        <option value="m">Min</option>
-                                        <option value="t">Ticks</option>
-                                    </select>
-                                    <i class="fas fa-chevron-down absolute right-2 top-1/2 -translate-y-1/2 text-[8px] text-white/20 pointer-events-none"></i>
-                                </div>
+                    <!-- Duração -->
+                    <div>
+                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Duração</label>
+                        <div class="flex gap-4">
+                            <div class="relative flex-1">
+                                <select 
+                                    v-model="durationUnit"
+                                    class="w-full appearance-none bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all cursor-pointer font-medium"
+                                >
+                                    <option value="m">Minutos</option>
+                                    <option value="t">Ticks</option>
+                                </select>
+                                <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-xs opacity-40 pointer-events-none"></i>
                             </div>
+                            <input 
+                                type="number" 
+                                v-model.number="duration"
+                                class="w-24 bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white text-center focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
+                            />
                         </div>
+                    </div>
 
-                        <!-- Valor de Entrada -->
-                        <div class="form-group">
-                            <label class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block ml-1">Valor</label>
-                            <div class="relative bg-[#0A0A0A] border border-white/5 hover:border-zenix-green/30 rounded-xl transition-all focus-within:border-zenix-green/50 group">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zenix-green font-bold text-sm">$</span>
-                                <input 
-                                    type="number" 
-                                    step="0.01"
-                                    v-model.number="amount"
-                                    class="w-full bg-transparent border-none pl-8 pr-4 py-3.5 text-sm text-white font-bold focus:ring-0 outline-none"
-                                />
-                            </div>
-                        </div>
+                    <!-- Valor de Entrada -->
+                    <div>
+                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Valor de Entrada</label>
+                        <input 
+                            type="number" 
+                            step="0.01"
+                            v-model.number="amount"
+                            class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
+                        />
                     </div>
 
                     <!-- Card de Dígitos de Previsão -->
-                    <div v-if="showDigitsPredictionCard" class="bg-gradient-to-br from-[#0A0A0A] to-[#050505] border border-white/5 rounded-xl p-4 shadow-lg relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-zenix-green/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div class="relative z-10 flex items-center justify-between">
-                            <div class="flex flex-col gap-1">
-                                <span class="text-[10px] font-bold text-white/40 uppercase tracking-wider">Último Dígito</span>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-2xl font-black text-white tracking-tight">{{ lastDigit }}</span>
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border" :class="lastDigitParity === 'PAR' ? 'bg-zenix-green/10 border-zenix-green/20 text-zenix-green' : 'bg-white/10 border-white/20 text-white/60'">
-                                        {{ lastDigitParity }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 shadow-inner">
-                                <i class="fas fa-history text-white/20"></i>
-                            </div>
+                    <div v-if="showDigitsPredictionCard" class="bg-zenix-bg border border-zenix-border rounded-lg p-4">
+                        <div class="text-xs font-medium text-zenix-secondary mb-3">
+                            <i class="fas fa-calculator text-zenix-green mr-2"></i>Status do Último Dígito
                         </div>
+                        <div class="text-xs text-zenix-secondary mb-2">Último dígito: <span class="text-zenix-green font-bold">{{ lastDigit }}</span> ({{ lastDigitParity }})</div>
                     </div>
                     
                     <!-- Real-time P&L -->
-                    <div v-if="realTimeProfit !== null && activeContract" class="w-full bg-[#0A0A0A] border border-white/10 rounded-xl p-4 shadow-lg transition-all duration-300 relative overflow-hidden" :class="realTimeProfitClass">
-                        <div class="flex items-center justify-between mb-1 relative z-10">
-                            <span class="text-[10px] uppercase font-bold opacity-60 tracking-wider">Resultado Atual</span>
-                            <span class="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-black/20">{{ realTimeProfit >= 0 ? 'Lucro' : 'Perda' }}</span>
-                        </div>
-                        <div class="text-2xl font-black flex items-center gap-2 relative z-10 tracking-tight" :class="realTimeProfitTextClass">
-                            <i :class="realTimeProfit >= 0 ? 'fas fa-arrow-up rotate-45' : 'fas fa-arrow-down rotate-45'"></i>
+                    <div v-if="realTimeProfit !== null && activeContract" class="w-full bg-zenix-bg border rounded-lg p-3 shadow-lg transition-all duration-300 transform hover:scale-[1.02]" :class="realTimeProfitClass">
+                        <div class="text-[10px] uppercase font-bold text-zenix-secondary mb-1 tracking-wider">Lucro Atual (Estimado):</div>
+                        <div class="text-lg font-black flex items-center gap-2" :class="realTimeProfitTextClass">
+                            <i :class="realTimeProfit >= 0 ? 'fas fa-trending-up' : 'fas fa-trending-down'"></i>
                             $ {{ realTimeProfit >= 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}
                         </div>
-                        <!-- Background Glow -->
-                        <div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full blur-2xl opacity-20" :class="realTimeProfit >= 0 ? 'bg-zenix-green' : 'bg-red-500'"></div>
                     </div>
                     
                     <!-- Ticks Restantes -->
-                    <div v-if="activeContract" class="w-full bg-[#0E0F0F] border border-white/10 rounded-xl p-5 relative overflow-hidden group shadow-lg">
-                        <div class="absolute top-0 left-0 h-1 bg-zenix-green shadow-[0_0_15px_#22C55E] transition-all duration-1000" :style="{ width: isTickBasedContract ? (100 - (contractTicksRemaining / (activeContract.duration || duration) * 100)) + '%' : (100 - (contractTimeRemaining / (activeContract.duration || duration) * 100)) + '%' }"></div>
+                    <div v-if="activeContract" class="w-full bg-[#0E0F0F] border border-zenix-border rounded-lg p-4 relative overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                        <div class="absolute top-0 left-0 h-1 bg-zenix-green shadow-[0_0_10px_#22C55E] transition-all duration-1000" :style="{ width: isTickBasedContract ? (100 - (contractTicksRemaining / (activeContract.duration || duration) * 100)) + '%' : (100 - (contractTimeRemaining / (activeContract.duration || duration) * 100)) + '%' }"></div>
                         
-                        <div class="text-[10px] uppercase font-bold text-white/40 mb-3 tracking-wider flex items-center justify-between">
-                            <span>Aguardando Resultado</span>
-                            <div class="flex items-center gap-1.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-zenix-green animate-pulse"></span>
-                                <span class="text-zenix-green">LIVE</span>
-                            </div>
+                        <div class="text-[10px] uppercase font-bold text-white/40 mb-2 tracking-wider flex items-center justify-between">
+                            <span>{{ isTickBasedContract ? 'Ticks Restantes' : 'Tempo Restante' }}</span>
+                            <i class="fas fa-history text-xs text-zenix-green animate-spin-slow"></i>
                         </div>
-                        <div class="flex items-baseline justify-between">
-                            <div class="text-4xl font-black text-white flex items-baseline gap-2 tabular-nums tracking-tighter" :class="getCountdownClass">
-                                <span v-if="isTickBasedContract">
-                                    {{ contractTicksRemaining !== null ? contractTicksRemaining : activeContract.duration }}
-                                </span>
-                                 <span v-else>
-                                    {{ contractTimeRemaining !== null ? formatTimeRemaining(contractTimeRemaining) : '00:00' }}
-                                </span>
-                                <span class="text-sm text-white/20 font-bold tracking-widest">{{ isTickBasedContract ? 'TICKS' : 'MIN' }}</span>
-                            </div>
-                            <i class="fas fa-hourglass-half text-white/10 text-2xl animate-pulse"></i>
+                        <div class="text-3xl font-black text-white flex items-baseline gap-2" :class="getCountdownClass">
+                            <span v-if="isTickBasedContract">
+                                {{ contractTicksRemaining !== null ? contractTicksRemaining : activeContract.duration }}
+                            </span>
+                             <span v-else>
+                                {{ contractTimeRemaining !== null ? formatTimeRemaining(contractTimeRemaining) : '00:00' }}
+                            </span>
+                            <span class="text-[10px] text-zenix-secondary font-bold ml-1 tracking-widest">{{ isTickBasedContract ? 'TICKS' : 'MIN' }}</span>
                         </div>
                     </div>
 
                     <!-- Compra Executada Message -->
-                    <div v-if="isTrading || (activeContract && !showTradeResultModal)" class="mt-4 p-4 bg-zenix-green/10 border border-zenix-green/20 rounded-xl flex items-center justify-center gap-3 animate-pulse shadow-[0_0_20px_rgba(34,197,94,0.1)]">
+                    <div v-if="isTrading || (activeContract && !showTradeResultModal)" class="mt-4 p-4 bg-zenix-green/10 border border-zenix-green/30 rounded-lg flex items-center justify-center gap-3 animate-pulse shadow-[0_0_15px_rgba(34,197,94,0.1)]">
                         <div class="w-6 h-6 rounded-full bg-zenix-green flex items-center justify-center shadow-[0_0_10px_#22C55E]">
-                             <i class="fas fa-check text-black text-[10px] font-bold"></i>
+                             <i class="fas fa-check text-black text-xs font-bold"></i>
                         </div>
-                        <span class="text-zenix-green font-bold text-sm uppercase tracking-wider text-shadow-glow">Ordem Enviada</span>
+                        <span class="text-zenix-green font-black text-sm uppercase tracking-wider text-shadow-glow">COMPRA EXECUTADA!</span>
                     </div>
                     
                     <!-- Action Buttons -->
-                    <div class="pt-2">
+                    <div class="pt-3">
                         <template v-if="!activeContract">
                             <!-- Manual Mode Buttons -->
                             <div v-if="tradingMode === 'manual'" class="grid grid-cols-1 gap-3">
@@ -389,59 +340,45 @@
                                     :disabled="!canExecuteOrder"
                                     :class="[
                                         getDirectionButtonClass(dir.value),
-                                        'font-bold py-4 rounded-xl transition-all text-sm flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-[0_0_30px_rgba(34,197,94,0.3)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-none'
+                                        'font-bold py-4 rounded-xl transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
                                     ]"
                                 >
-                                    <div class="w-6 h-6 rounded-full bg-black/20 flex items-center justify-center">
-                                        <i :class="getDirectionIcon(dir.value) + ' text-sm'"></i>
-                                    </div>
-                                    <span class="tracking-widest uppercase">{{ dir.label }}</span>
+                                    <i :class="getDirectionIcon(dir.value)"></i>
+                                    {{ dir.label }}
                                 </button>
                             </div>
                             
                             <!-- AI Mode Display & Button -->
                             <div v-else class="space-y-4">
                                 <!-- AI Signal Info -->
-                                <div class="w-full bg-[#0A0A0A] border border-white/5 hover:border-zenix-green/20 rounded-xl p-6 text-center transition-all duration-300 relative overflow-hidden group flex flex-col items-center justify-center shadow-lg">
-                                    <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    
-                                    <!-- Signal Content -->
-                                    <div class="relative z-10 w-full">
-                                        <div v-if="aiRecommendation" class="flex flex-col items-center gap-2 animate-fate-in-up">
-                                            <span class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mb-2">Sinal Identificado</span>
-                                            
-                                            <div class="flex items-center gap-4 mb-2">
-                                                <div class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-[#0E0E0E] border border-white/5 relative">
-                                                    <i :class="getButtonIcon(aiRecommendation.action) + ' ' + getButtonColor(aiRecommendation.action) + ' text-3xl drop-shadow-lg'"></i>
-                                                    <div class="absolute inset-0 rounded-2xl opacity-20" :class="getButtonColor(aiRecommendation.action).replace('text-', 'bg-')"></div>
-                                                </div>
-                                                <div class="flex flex-col items-start">
-                                                    <span :class="getButtonColor(aiRecommendation.action)" class="text-2xl font-black uppercase tracking-tight leading-none mb-1">
-                                                        {{ getButtonLabel(aiRecommendation.action) }}
-                                                    </span>
-                                                    <span class="text-[10px] text-white/60 font-bold tracking-wider bg-white/5 px-2 py-0.5 rounded">{{ aiRecommendation.confidence }}% CONFIAVEL</span>
-                                                </div>
+                                <div class="w-full bg-zenix-green/5 border border-zenix-green/20 rounded-xl p-5 text-center transition-all duration-300 relative overflow-hidden group flex flex-col items-center justify-center">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    <div class="flex flex-col items-center gap-2 relative z-10 w-full">
+                                        <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Sinal da IA</span>
+                                        <div v-if="aiRecommendation" class="flex flex-col items-center gap-1">
+                                            <div class="flex items-center gap-3">
+                                                <i :class="getButtonIcon(aiRecommendation.action) + ' ' + getButtonColor(aiRecommendation.action) + ' text-2xl'"></i>
+                                                <span :class="getButtonColor(aiRecommendation.action)" class="text-xl font-black">
+                                                    {{ getButtonLabel(aiRecommendation.action) }}
+                                                </span>
                                             </div>
+                                            <span class="text-[10px] text-white/60 font-bold tracking-wider">{{ aiRecommendation.confidence }}% CONFIABILIDADE</span>
                                         </div>
-                                        
-                                        <div v-else class="flex flex-col items-center gap-4 py-2">
+                                        <div v-else class="flex flex-col items-center gap-2 py-2">
                                             <button 
                                                 @click="toggleAnalysis"
                                                 :disabled="isAnalyzing"
-                                                class="flex flex-col items-center gap-3 group/btn relative"
+                                                class="flex flex-col items-center gap-2 group hover:scale-105 transition-transform"
                                             >
-                                                <div class="w-16 h-16 rounded-2xl border border-white/5 flex items-center justify-center bg-white/5 group-hover/btn:bg-zenix-green/10 group-hover/btn:border-zenix-green/40 transition-all relative overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.3)]" :class="{ 'animate-pulse': isAnalyzing }">
-                                                    <i class="fas fa-fingerprint text-3xl transition-all duration-500" :class="isAnalyzing ? 'text-zenix-green scale-110' : 'text-white/20 group-hover/btn:text-zenix-green group-hover/btn:scale-110'"></i>
-                                                    
-                                                    <!-- Scan Line -->
-                                                    <div v-if="isAnalyzing" class="absolute top-0 left-0 w-full h-[2px] bg-zenix-green shadow-[0_0_10px_#22C55E] animate-scan"></div>
+                                                <div class="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center bg-white/5 group-hover:bg-zenix-green/10 group-hover:border-zenix-green/30 transition-all relative" :class="{ 'animate-pulse': isAnalyzing }">
+                                                    <i class="fas fa-robot text-xl" :class="isAnalyzing ? 'text-zenix-green' : 'text-white/20'"></i>
+                                                    <div v-if="isAnalyzing" class="absolute inset-0 rounded-full border border-zenix-green/50 animate-ping"></div>
                                                 </div>
-                                                
                                                 <div class="flex flex-col items-center">
-                                                    <span class="text-xs font-bold transition-colors mb-1" :class="isAnalyzing ? 'text-zenix-green' : 'text-white/40 group-hover/btn:text-white uppercase tracking-wider'">
-                                                        {{ isAnalyzing ? 'ANALISANDO MERCADO...' : 'ESCANEAR OPORTUNIDADE' }}
+                                                    <span class="text-xs font-bold transition-colors" :class="isAnalyzing ? 'text-zenix-green' : 'text-white/40 group-hover:text-white/60 uppercase tracking-tighter'">
+                                                        {{ isAnalyzing ? 'Analisando...' : 'Gerar Sinal de IA' }}
                                                     </span>
-                                                    <span v-if="!isAnalyzing" class="text-[9px] text-white/20 uppercase tracking-widest font-medium group-hover/btn:text-white/40 transition-colors">Clique para iniciar IA</span>
+                                                    <span v-if="!isAnalyzing" class="text-[9px] text-white/20 uppercase tracking-widest font-medium">Toque para iniciar</span>
                                                 </div>
                                             </button>
                                         </div>
@@ -449,27 +386,23 @@
                                 </div>
 
                                 <!-- Timer Section -->
-                                <div v-if="signalCountdown !== null" class="flex flex-col items-center justify-center p-4 bg-[#0A0A0A] border border-white/5 rounded-xl relative overflow-hidden shadow-inner">
-                                    <div class="absolute bottom-0 left-0 h-0.5 bg-zenix-green transition-all duration-1000 shadow-[0_0_10px_#22C55E]" :style="{ width: (signalCountdown / (aiRecommendation?.entry_time || 1) * 100) + '%' }"></div>
-                                    <div class="flex items-center justify-between w-full mb-1">
-                                        <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest">Janela de Entrada</span>
-                                        <i class="fas fa-stopwatch text-zenix-green text-xs animate-pulse"></i>
-                                    </div>
-                                    <span class="text-4xl font-black text-white tabular-nums leading-none tracking-tighter">{{ signalCountdown }}<span class="text-sm text-white/20 ml-1">s</span></span>
+                                <div v-if="signalCountdown !== null" class="flex flex-col items-center justify-center p-4 bg-[#080808] border border-white/5 rounded-xl relative overflow-hidden">
+                                    <div class="absolute bottom-0 left-0 h-0.5 bg-zenix-green transition-all duration-1000" :style="{ width: (signalCountdown / (aiRecommendation?.entry_time || 1) * 100) + '%' }"></div>
+                                    <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Janela de Entrada</span>
+                                    <span class="text-3xl font-black text-zenix-green tabular-nums leading-none">{{ signalCountdown }}s</span>
                                 </div>
 
                                 <!-- AI Execute Button -->
                                 <button 
                                     @click="executeAIOrder"
                                     :disabled="!canExecuteAIOrder"
-                                    class="w-full bg-zenix-green hover:bg-zenix-green-hover text-black font-black py-5 rounded-xl transition-all text-base flex flex-col items-center justify-center gap-1 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed shadow-[0_0_30px_rgba(34,197,94,0.3)] hover:shadow-[0_0_50px_rgba(34,197,94,0.5)] hover:-translate-y-1 active:translate-y-0 active:shadow-none relative overflow-hidden group"
+                                    class="w-full bg-zenix-green hover:bg-zenix-green-hover text-black font-bold py-5 rounded-xl transition-all text-base flex flex-col items-center justify-center gap-1 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed shadow-[0_0_20px_rgba(34,197,94,0.2)] active:scale-95"
                                 >
-                                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                                    <div class="flex items-center gap-2 relative z-10">
+                                    <div class="flex items-center gap-2">
                                         <i class="fas fa-bolt"></i>
-                                        <span class="tracking-widest">EXECUTAR AGORA</span>
+                                        <span class="tracking-tighter">EXECUTAR OPERAÇÃO</span>
                                     </div>
-                                    <span v-if="aiRecommendation" class="text-[9px] text-black/60 font-bold uppercase tracking-widest relative z-10">Confiança: {{ aiRecommendation.confidence }}%</span>
+                                    <span v-if="aiRecommendation" class="text-[10px] opacity-70 font-bold uppercase tracking-widest">Seguir inteligência artificial</span>
                                 </button>
                             </div>
                         </template>
