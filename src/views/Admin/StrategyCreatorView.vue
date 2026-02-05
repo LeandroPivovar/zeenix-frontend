@@ -2810,11 +2810,12 @@ export default {
 
                             // 2. CHECK IF STAKE ADJUSTMENT IS NEEDED
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
-                                const activeStrategy = this.sessionState.activeStrategy === 'RECUPERACAO' ? 'RECUPERACAO' : 'PRINCIPAL';
-                                // ✅ FIX: Merge with this.form to ensure 'stopLoss' and 'profitTarget' are present
                                 const config = {
                                     ...this.form,
-                                    ...(activeStrategy === 'RECUPERACAO' ? this.recoveryConfig : {})
+                                    ...(activeStrategy === 'RECUPERACAO' ? this.recoveryConfig : {}),
+                                    // FORCE GLOBAL LIMITS (Do not allow recovery default 50/10 to overwrite)
+                                    stopLoss: this.form.stopLoss,
+                                    profitTarget: this.form.profitTarget
                                 };
                                 
                                 // Debug: Check if PayoutHistory was updated
@@ -2897,7 +2898,10 @@ export default {
                             // ✅ FIX: Start with Global Config (this.form) to ensure stopLoss/profitTarget are present
                             const localConfig = {
                                 ...this.form,
-                                ...(this.sessionState.analysisType === 'RECUPERACAO' ? this.recoveryConfig : {})
+                                ...(this.sessionState.analysisType === 'RECUPERACAO' ? this.recoveryConfig : {}),
+                                // FORCE GLOBAL LIMITS
+                                stopLoss: this.form.stopLoss,
+                                profitTarget: this.form.profitTarget
                             };
                             
                             const localBlindadoState = {
