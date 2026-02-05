@@ -543,7 +543,8 @@
                                     <div class="relative">
                                         <select 
                                             v-model="form.riskProfile" 
-                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                            :disabled="!recoveryConfig.martingale"
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             <option value="conservador">Conservador (0%)</option>
                                             <option value="moderado">Moderado (15%)</option>
@@ -553,6 +554,10 @@
                                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
                                         </div>
                                     </div>
+                                    <p v-if="!recoveryConfig.martingale" class="mt-2 text-[10px] text-yellow-500 font-bold leading-tight">
+                                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                                        Esta estratégia tem uma gestão de risco fixa (para a ativação envie o valor de conservador)
+                                    </p>
                                 </div>
                                 <div>
                                     <div class="flex justify-between items-center mb-2">
@@ -3794,6 +3799,16 @@ export default {
                 type
             });
             if (this.monitoringLogs.length > 5000) this.monitoringLogs.pop();
+        }
+    },
+    watch: {
+        'recoveryConfig.martingale': {
+            handler(newVal) {
+                if (!newVal) {
+                    this.form.riskProfile = 'conservador';
+                }
+            },
+            immediate: true
         }
     }
 }
