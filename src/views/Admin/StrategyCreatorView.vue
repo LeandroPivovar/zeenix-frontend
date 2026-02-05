@@ -3091,10 +3091,12 @@ export default {
                     if (!win) {
                          this.addLog(`🔍 DEBUG PAUSA (Fast): Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
                     }
-                    if (!win && totalConsecutiveLosses >= 6) {
-                        const pauseDuration = 120 * 1000;
+                    const limit = this.recoveryConfig.pauseLosses || 6;
+                    if (!win && totalConsecutiveLosses >= limit) {
+                        const pauseTime = this.recoveryConfig.pauseTime || 2;
+                        const pauseDuration = pauseTime * 60 * 1000;
                         this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
+                        this.addLog(`⏸️ PAUSA ESTRATÉGICA: Limite de ${totalConsecutiveLosses} perdas sequenciais atingido. Pausando por ${pauseTime} min.`, 'warning');
                         // No logic to stop ticks, just block next
                     }
 
@@ -3527,10 +3529,12 @@ export default {
                          this.addLog(`🔍 DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
                     }
 
-                    if (trade.result !== 'WON' && totalConsecutiveLosses >= 6) {
-                        const pauseDuration = 120 * 1000; // 2 minutes
+                    const limit = this.recoveryConfig.pauseLosses || 6;
+                    if (trade.result !== 'WON' && totalConsecutiveLosses >= limit) {
+                        const pauseTime = this.recoveryConfig.pauseTime || 2;
+                        const pauseDuration = pauseTime * 60 * 1000;
                         this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
+                        this.addLog(`⏸️ PAUSA ESTRATÉGICA: Limite de ${totalConsecutiveLosses} perdas sequenciais atingido. Pausando por ${pauseTime} min.`, 'warning');
                         // Do not stop ticks here as it might affect tracking
                     }
                     

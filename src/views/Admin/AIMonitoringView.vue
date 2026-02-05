@@ -856,7 +856,10 @@ export default {
                         // ✅ FIX: Load recovery filters correctly
                         attackFilters: (savedRecovery.attackFilters && savedRecovery.attackFilters.length > 0) 
                             ? savedRecovery.attackFilters 
-                            : (baseConfig.recoveryConfig ? baseConfig.recoveryConfig.attackFilters : [])
+                            : (baseConfig.recoveryConfig ? baseConfig.recoveryConfig.attackFilters : []),
+                        // ✅ Dynamic Pause Configuration with Fallbacks
+                        pauseLosses: savedRecovery.pauseLosses || (baseConfig.recoveryConfig ? baseConfig.recoveryConfig.pauseLosses : 6),
+                        pauseTime: savedRecovery.pauseTime || (baseConfig.recoveryConfig ? baseConfig.recoveryConfig.pauseTime : 2)
                     };
 
                     // ✅ FIX: Allow JSON to define payout. Removed forced 1.26 override.
@@ -1638,10 +1641,12 @@ export default {
                          this.addLog(`🔍 DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
                     }
 
-                    if (trade.result !== 'WON' && totalConsecutiveLosses >= 6) {
-                        const pauseDuration = 120 * 1000; // 2 minutes
+                    const limit = this.recoveryConfig.pauseLosses || 6;
+                    if (trade.result !== 'WON' && totalConsecutiveLosses >= limit) {
+                        const pauseTime = this.recoveryConfig.pauseTime || 2;
+                        const pauseDuration = pauseTime * 60 * 1000;
                         this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA FORÇADA: Limite de 1 Base + 5 Martingales atingido (${totalConsecutiveLosses} perdas). Pausando por 2 min.`, 'warning');
+                        this.addLog(`⏸️ PAUSA ESTRATÉGICA: Limite de ${totalConsecutiveLosses} perdas sequenciais atingido. Pausando por ${pauseTime} min.`, 'warning');
                         // No logic to stop ticks for Monitoring to keep chart alive
                     }
 
