@@ -302,28 +302,30 @@
                     </div>
                     
                     <!-- Ticks Restantes -->
-                    <div v-if="activeContract && (contractTimeRemaining !== null || contractTicksRemaining !== null)" class="w-full bg-zenix-bg border border-zenix-border rounded-lg p-3 relative overflow-hidden group">
-                        <div class="absolute top-0 left-0 h-1 bg-zenix-green/30 transition-all duration-1000" :style="{ width: isTickBasedContract ? (100 - (contractTicksRemaining / (activeContract.duration || duration) * 100)) + '%' : (100 - (contractTimeRemaining / (activeContract.duration || duration) * 100)) + '%' }"></div>
+                    <div v-if="activeContract" class="w-full bg-[#0E0F0F] border border-zenix-border rounded-lg p-4 relative overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                        <div class="absolute top-0 left-0 h-1 bg-zenix-green shadow-[0_0_10px_#22C55E] transition-all duration-1000" :style="{ width: isTickBasedContract ? (100 - (contractTicksRemaining / (activeContract.duration || duration) * 100)) + '%' : (100 - (contractTimeRemaining / (activeContract.duration || duration) * 100)) + '%' }"></div>
                         
-                        <div class="text-[10px] uppercase font-bold text-zenix-secondary mb-1 tracking-wider flex items-center justify-between">
-                            <span>{{ isTickBasedContract ? 'Ticks Restantes:' : 'Tempo Restante:' }}</span>
-                            <i class="fas fa-history text-xs"></i>
+                        <div class="text-[10px] uppercase font-bold text-white/40 mb-2 tracking-wider flex items-center justify-between">
+                            <span>{{ isTickBasedContract ? 'Ticks Restantes' : 'Tempo Restante' }}</span>
+                            <i class="fas fa-history text-xs text-zenix-green animate-spin-slow"></i>
                         </div>
-                        <div class="text-xl font-black text-zenix-text flex items-baseline gap-1" :class="getCountdownClass">
+                        <div class="text-3xl font-black text-white flex items-baseline gap-2" :class="getCountdownClass">
                             <span v-if="isTickBasedContract">
-                                {{ contractTicksRemaining }}
+                                {{ contractTicksRemaining !== null ? contractTicksRemaining : activeContract.duration }}
                             </span>
                              <span v-else>
-                                {{ formatTimeRemaining(contractTimeRemaining) }}
+                                {{ contractTimeRemaining !== null ? formatTimeRemaining(contractTimeRemaining) : '00:00' }}
                             </span>
-                            <span class="text-[10px] text-zenix-secondary font-medium ml-1">RESTANTES</span>
+                            <span class="text-[10px] text-zenix-secondary font-bold ml-1 tracking-widest">{{ isTickBasedContract ? 'TICKS' : 'MIN' }}</span>
                         </div>
                     </div>
 
                     <!-- Compra Executada Message -->
-                    <div v-if="isTrading || (activeContract && !showTradeResultModal)" class="mt-3 p-3 bg-zenix-green/10 border border-zenix-green/30 rounded flex items-center justify-center gap-2 animate-pulse">
-                        <i class="fas fa-check-circle text-zenix-green"></i>
-                        <span class="text-zenix-green font-bold text-xs uppercase tracking-wider">Compra Executada!</span>
+                    <div v-if="isTrading || (activeContract && !showTradeResultModal)" class="mt-4 p-4 bg-zenix-green/10 border border-zenix-green/30 rounded-lg flex items-center justify-center gap-3 animate-pulse shadow-[0_0_15px_rgba(34,197,94,0.1)]">
+                        <div class="w-6 h-6 rounded-full bg-zenix-green flex items-center justify-center shadow-[0_0_10px_#22C55E]">
+                             <i class="fas fa-check text-black text-xs font-bold"></i>
+                        </div>
+                        <span class="text-zenix-green font-black text-sm uppercase tracking-wider text-shadow-glow">COMPRA EXECUTADA!</span>
                     </div>
                     
                     <!-- Action Buttons -->
