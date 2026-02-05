@@ -357,7 +357,7 @@ export const RiskManager = {
      * @param {number} estimatedPayout - The estimated payout rate (multiplier, e.g., 1.95).
      * @returns {number} - The adjusted stake.
      */
-    applySurvivalMode(stake, currentProfit, config, estimatedPayout = 0.95, blindadoState = null) {
+    applySurvivalMode(stake, currentProfit, config, _estimatedPayout = 0.95, blindadoState = null) {
         let adjustedStake = stake;
         const { stopLoss } = config;
 
