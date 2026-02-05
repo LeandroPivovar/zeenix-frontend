@@ -2017,7 +2017,6 @@ export default {
                     console.log('[AIMonitoringView] Profit Chart Hover Interaction Removed');
                 }
             });
-        }
         },
         getUserId() {
             try {
