@@ -91,7 +91,6 @@
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
-    z-index: 1001 !important;
 }
 
 .course-layout :deep(#top-navbar .desktop-nav) {
@@ -132,6 +131,15 @@
     gap: 0.5rem;
     font-size: 0.875rem;
     color: #8D8D8D;
+}
+
+.breadcrumb-inner span:not(.breadcrumb-active) {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.breadcrumb-inner span:not(.breadcrumb-active):hover {
+    color: #22C55E;
 }
 
 .breadcrumb-active {

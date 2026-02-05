@@ -22,9 +22,9 @@
                 <!-- Breadcrumb -->
                 <div class="breadcrumb">
                     <div class="breadcrumb-inner">
-                        <span>Zenix Academy</span>
+                        <span @click="$router.push('/academy')">Zenix Academy</span>
                         <i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>
-                        <span>{{ course.title }}</span>
+                        <span @click="resetToFirstLesson">{{ course.title }}</span>
                         <template v-if="selectedLesson">
                             <i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>
                             <span class="breadcrumb-active">{{ selectedLesson.title }}</span>
@@ -385,6 +385,11 @@ export default {
     async selectLesson(lesson) {
       this.selectedLesson = lesson
       await this.loadLessonMaterials(lesson.id)
+    },
+    resetToFirstLesson() {
+        if (this.modules && this.modules.length > 0 && this.modules[0].lessons && this.modules[0].lessons.length > 0) {
+            this.selectLesson(this.modules[0].lessons[0]);
+        }
     },
     getModuleProgress(module) {
         if (!module.lessons || module.lessons.length === 0) return 0;
