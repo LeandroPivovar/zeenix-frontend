@@ -1968,8 +1968,10 @@ export default {
                 const userId = user.id || 'anonymous';
                 const aiName = this.currentConfig.strategy || 'Unknown';
                 
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                
                 // Fire and forget, but get ID
-                fetch('http://localhost:3000/api/ai/sessions/start', {
+                fetch(`${apiBaseUrl}/ai/sessions/start`, {
                      method: 'POST',
                      headers: { 'Content-Type': 'application/json' },
                      body: JSON.stringify({ userId, aiName })
@@ -1994,7 +1996,8 @@ export default {
                 status: status
             };
             
-            fetch('http://localhost:3000/api/ai/sessions/update', {
+            const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+            fetch(`${apiBaseUrl}/ai/sessions/update`, {
                  method: 'POST',
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify({ sessionId: this.sessionId, stats })
