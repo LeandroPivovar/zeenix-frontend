@@ -1,6 +1,6 @@
 <template>
     <Teleport to="body">
-        <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" @click.self="close">
+        <div v-if="visible" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" @click.self="close">
             <div class="w-full max-w-5xl bg-secondary/95 rounded-2xl border border-border/50 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-fadeIn">
                 <!-- Header -->
                 <div class="flex items-center justify-between p-6 border-b border-border/30">
