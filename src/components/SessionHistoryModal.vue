@@ -83,10 +83,10 @@
                                         class="border-b border-border/20 transition-colors hover:bg-secondary/30"
                                         :class="index % 2 === 0 ? 'bg-transparent' : 'bg-secondary/10'">
                                         <td class="px-4 py-4 font-mono text-foreground">
-                                            {{ formatDate(session.createdAt) }}
+                                            {{ formatDate(session.startTime) }}
                                         </td>
                                         <td class="px-4 py-4">
-                                            <span class="font-bold text-foreground uppercase">{{ session.mode || 'N/A' }}</span>
+                                            <span class="font-bold text-foreground uppercase">{{ session.aiName || 'N/A' }}</span>
                                         </td>
                                         <td class="px-4 py-4 text-center font-medium text-foreground">
                                             {{ session.stats?.totalTrades || 0 }}
@@ -104,8 +104,8 @@
                                         </td>
                                         <td class="px-4 py-4 text-center">
                                             <span class="px-2 py-1 rounded-md text-[10px] font-black uppercase" 
-                                                  :class="getStatusClass(session.sessionStatus)">
-                                                {{ session.sessionStatus || 'N/A' }}
+                                                  :class="getStatusClass(session.status)">
+                                                {{ session.status || 'N/A' }}
                                             </span>
                                         </td>
                                     </tr>
