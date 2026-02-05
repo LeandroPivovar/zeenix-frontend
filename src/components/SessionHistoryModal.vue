@@ -79,33 +79,33 @@
                                     </tr>
                                 </thead>
                                 <tbody class="text-[13px]">
-                                    <tr v-for="(session, index) in sessions" :key="session.id" 
+                                    <tr v-for="(session, index) in sessions" :key="session.sessionId" 
                                         class="border-b border-border/20 transition-colors hover:bg-secondary/30"
                                         :class="index % 2 === 0 ? 'bg-transparent' : 'bg-secondary/10'">
                                         <td class="px-4 py-4 font-mono text-foreground">
-                                            {{ formatDate(session.start_time) }}
+                                            {{ formatDate(session.createdAt) }}
                                         </td>
                                         <td class="px-4 py-4">
-                                            <span class="font-bold text-foreground uppercase">{{ session.ai_name }}</span>
+                                            <span class="font-bold text-foreground uppercase">{{ session.mode || 'N/A' }}</span>
                                         </td>
                                         <td class="px-4 py-4 text-center font-medium text-foreground">
-                                            {{ session.total_trades || 0 }}
+                                            {{ session.stats?.totalTrades || 0 }}
                                         </td>
                                         <td class="px-4 py-4 text-center font-medium text-success">
-                                            {{ session.total_wins || 0 }}
+                                            {{ session.stats?.wins || 0 }}
                                         </td>
                                         <td class="px-4 py-4 text-center font-medium text-red-500/60">
-                                            {{ session.total_losses || 0 }}
+                                            {{ session.stats?.losses || 0 }}
                                         </td>
                                         <td class="px-4 py-4 text-right">
-                                            <span class="font-bold" :class="parseFloat(session.total_profit) >= 0 ? 'text-success' : 'text-red-500'">
-                                                {{ parseFloat(session.total_profit) >= 0 ? '+' : '' }}${{ parseFloat(session.total_profit || 0).toFixed(2) }}
+                                            <span class="font-bold" :class="(session.stats?.profitLoss || 0) >= 0 ? 'text-success' : 'text-red-500'">
+                                                {{ (session.stats?.profitLoss || 0) >= 0 ? '+' : '' }}${{ (session.stats?.profitLoss || 0).toFixed(2) }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 text-center">
                                             <span class="px-2 py-1 rounded-md text-[10px] font-black uppercase" 
-                                                  :class="getStatusClass(session.status)">
-                                                {{ session.status }}
+                                                  :class="getStatusClass(session.sessionStatus)">
+                                                {{ session.sessionStatus || 'N/A' }}
                                             </span>
                                         </td>
                                     </tr>
