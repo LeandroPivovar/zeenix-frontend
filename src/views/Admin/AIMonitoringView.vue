@@ -951,7 +951,9 @@ export default {
                     this.addLog('Erro Config', `Falha ao carregar configuração: ${e.message}`, 'error');
                 }
             } else {
-                console.warn('Nenhuma configuração salva encontrada. Usando defaults.');
+                console.warn('Nenhuma configuração salva encontrada. Redirecionando para investimentos.');
+                this.$router.push('/Investments-IA');
+                return;
             }
 
             // ✅ CLEAN & SAVE: Ensure the sanitized config is what persists for reloads
