@@ -1964,8 +1964,9 @@ export default {
         },
         async startSession() {
             try {
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
-                const userId = user.id || 'anonymous';
+            try {
+                // ✅ Use helper to extract ID from token (more reliable)
+                const userId = this.getUserId() || 'anonymous';
                 const aiName = this.currentConfig.strategy || 'Unknown';
                 
                 const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
@@ -2016,6 +2017,18 @@ export default {
                     console.log('[AIMonitoringView] Profit Chart Hover Interaction Removed');
                 }
             });
+        }
+        },
+        getUserId() {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.userId || payload.sub || payload.id;
+                }
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                return user.id;
+            } catch (e) { return null; }
         }
     }
 }
