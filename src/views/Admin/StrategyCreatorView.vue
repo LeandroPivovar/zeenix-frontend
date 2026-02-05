@@ -2810,6 +2810,7 @@ export default {
 
                             // 2. CHECK IF STAKE ADJUSTMENT IS NEEDED
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
+                                const activeStrategy = this.sessionState.activeStrategy === 'RECUPERACAO' ? 'RECUPERACAO' : 'PRINCIPAL';
                                 const config = {
                                     ...this.form,
                                     ...(activeStrategy === 'RECUPERACAO' ? this.recoveryConfig : {}),
