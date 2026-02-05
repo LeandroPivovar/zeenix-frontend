@@ -1670,7 +1670,7 @@ export default {
                      RiskManager.updatePayoutHistory(prefix + trade.contract + barrierSuffix, payoutRate);
                 }
 
-                }
+
 
                 // ✅ Sync Session Stats Asynchronously
                 this.syncSessionStats();
