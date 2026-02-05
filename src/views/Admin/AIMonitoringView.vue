@@ -1263,6 +1263,8 @@ export default {
                 };
 
                 this.ws.onclose = () => {
+                    if (this.isStopping) return; // ✅ Prevent reconnection on explicit stop
+
                     this.addLog('Erro de Conexão', [
                         'Tipo: Conexão encerrada',
                         'Ação: Reconectando automaticamente'
@@ -1279,6 +1281,7 @@ export default {
                 if (this.tickSubscriptionId) {
                     this.ws.send(JSON.stringify({ forget: this.tickSubscriptionId }));
                 }
+                this.ws.onclose = null; // ✅ Remove handler to prevent auto-reconnect
                 this.ws.close();
                 this.ws = null;
             }
