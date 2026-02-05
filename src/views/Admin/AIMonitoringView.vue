@@ -791,12 +791,6 @@ export default {
             this.isMobile = window.innerWidth < 768;
             if (!this.isMobile) {
                 this.isSidebarOpen = false;
-            } else {
-                // Se for mobile, definir Config como aba ativa por padrão apenas no primeiro carregamento
-                if (!this.initialTabSet) {
-                    this.activeMonitoringTab = 'config';
-                    this.initialTabSet = true;
-                }
             }
         },
 

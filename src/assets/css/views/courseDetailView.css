@@ -46,14 +46,11 @@
 .course-main {
     display: flex;
     flex-direction: row;
-    /* Garantir linha */
     align-items: flex-start;
     height: calc(100vh - 60px);
-    /* Adjust for TopNavbar height */
     overflow: hidden;
     width: 100%;
-    /* Garantir largura total do container pai */
-    margin-top: 0;
+    margin-top: 40px;
 }
 
 /* Center Column - Content */
