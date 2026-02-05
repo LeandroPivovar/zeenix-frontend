@@ -554,7 +554,7 @@
                 @confirm="showStopModal = false"
             />
 
-            <StopBlindadoAjusteModal
+            <StopBlindadoModal
                 v-if="showStopModal && stopResult.type === 'warning'"
                 :visible="showStopModal"
                 :result="stopResult.profit"
@@ -586,6 +586,9 @@ import nexusStrategy from '../../utils/strategies/nexus.json';
 import orionStrategy from '../../utils/strategies/orion.json';
 import titanStrategy from '../../utils/strategies/titan.json';
 import SessionHistoryModal from '@/components/SessionHistoryModal.vue';
+import StopLossModal from '../../components/StopLossModal.vue';
+import TargetProfitModal from '../../components/TargetProfitModal.vue';
+import StopBlindadoModal from '../../components/StopBlindadoModal.vue';
 import { createChart, ColorType } from 'lightweight-charts';
 import accountBalanceMixin from '../../mixins/accountBalanceMixin';
 
@@ -607,9 +610,9 @@ export default {
         SettingsSidebar,
         LightweightLineChart,
         SessionHistoryModal,
-        StopLossModal: () => import('../../components/StopLossModal.vue'),
-        TargetProfitModal: () => import('../../components/TargetProfitModal.vue'),
-        StopBlindadoAjusteModal: () => import('../../components/StopBlindadoAjusteModal.vue')
+        StopLossModal,
+        TargetProfitModal,
+        StopBlindadoModal
     },
     data() {
         return {
@@ -1997,12 +2000,14 @@ export default {
 
             // 2. Stop Loss
             if (profit <= -stopLoss) {
+                console.log('[StopLoss] Triggered! Profit:', profit, 'Limit:', -stopLoss);
                 this.stopResult = {
                     title: 'Stop Loss Atingido 🛑',
                     message: 'Limite de perda atingido. Gerenciamento ativado.',
                     profit: profit,
                     type: 'error'
                 };
+                console.log('[StopLoss] Setting showStopModal = true');
                 this.showStopModal = true;
                 this.stopIA(false);
                 return true;
