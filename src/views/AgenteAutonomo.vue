@@ -11,11 +11,11 @@
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
           <TopNavbar
             :is-sidebar-collapsed="isSidebarCollapsed"
-            :balance="accountBalanceProp"
+            :balance="balanceNumeric"
             :account-type="accountType"
-            :currency="accountCurrencyProp"
-            :balances-by-currency-real="balancesByCurrencyRealProp"
-            :balances-by-currency-demo="balancesByCurrencyDemoProp"
+            :currency="tradeCurrency"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
             @account-type-changed="handleAccountTypeChange"
             @toggle-sidebar="toggleMobileSidebar"
             @toggle-sidebar-collapse="toggleSidebarCollapse"
@@ -24,10 +24,10 @@
 
           <SettingsSidebar
             :is-open="isSettingsOpen"
-            :balance="accountBalanceProp"
+            :balance="balanceNumeric"
             :account-type="accountType"
-            :balances-by-currency-real="balancesByCurrencyRealProp"
-            :balances-by-currency-demo="balancesByCurrencyDemoProp"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
             :active-service="'agent'"
             @close="isSettingsOpen = false"
             @account-type-changed="handleAccountTypeChange"
@@ -215,19 +215,15 @@
         
         // Garantir que accountBalance seja sempre um número válido
         let accountBalanceValue = 0;
-        if (this.accountBalanceProp !== null && this.accountBalanceProp !== undefined) {
-          if (typeof this.accountBalanceProp === 'number') {
-            accountBalanceValue = this.accountBalanceProp;
-          } else {
-            const parsed = parseFloat(String(this.accountBalanceProp));
-            accountBalanceValue = isNaN(parsed) ? 0 : parsed;
-          }
+        // Usar balanceNumeric (do mixin) se disponível
+        if (this.balanceNumeric !== null && this.balanceNumeric !== undefined) {
+             accountBalanceValue = Number(this.balanceNumeric);
         }
         
         // Log detalhado para debug (sempre logar quando houver valores ou quando sessionStats existir)
-        if (this.sessionStats && (accountBalanceValue > 0 || this.accountBalanceProp !== null)) {
+        if (this.sessionStats && (accountBalanceValue > 0)) {
           console.log('[AgenteAutonomo] 💰 agenteData computed - accountBalance:', {
-            accountBalance: this.accountBalanceProp,
+            balanceNumeric: this.balanceNumeric,
             accountBalanceValue: accountBalanceValue,
             sessionStatsNetProfit: this.sessionStats?.netProfit,
             operacoesHoje: operacoesHoje,
@@ -464,9 +460,9 @@
           const symbol = marketToSymbol[market] || 'R_100';
           
           // Usar saldo atual da conta como initialBalance (valor total da conta configurada)
-          // Se accountBalanceProp não estiver disponível, usar 0 (o backend tentará buscar o saldo)
-          const initialBalance = this.accountBalanceProp && typeof this.accountBalanceProp === 'number' 
-            ? this.accountBalanceProp 
+          // Se balanceNumeric não estiver disponível, usar 0 (o backend tentará buscar o saldo)
+          const initialBalance = this.balanceNumeric && typeof this.balanceNumeric === 'number' 
+            ? this.balanceNumeric 
             : 0;
 
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";

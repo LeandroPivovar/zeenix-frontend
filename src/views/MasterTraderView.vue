@@ -1145,7 +1145,7 @@ export default {
 }
 
 @media (max-width: 1024px) {
-    .layout-master-trader[data-v-bf6f4fce] {
+    .layout-master-trader {
         background: linear-gradient(180deg, #0f1e14 0, #060706 50%, #050504);
         padding: 80px 20px;
         margin-left: 0;
@@ -1189,7 +1189,8 @@ export default {
 
 @media (max-width: 768px) {
     .layout-master-trader {
-        background: linear-gradient(to bottom, #0f1e14 0%, #060706 50%, #050504 100%);
+        background: linear-gradient(180deg, #0f1e14 0, #060706 50%, #050504);
+        padding: 80px 15px;
     }
 
     .master-trader-main-content {

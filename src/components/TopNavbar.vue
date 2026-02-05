@@ -362,11 +362,20 @@ export default {
 
       // Prioridade 1: Saldo Demo + Fictício se ativo E conta for demo
       if (this.accountType === 'demo') {
-        const demoBalance = this.balancesByCurrencyDemo['USD'] || 0;
-        if (this.isFictitiousBalanceActive) {
-          return Number(demoBalance) + (Number(this.fictitiousBalance) || 0);
+        const demoBalanceUSD = this.balancesByCurrencyDemo['USD'];
+        let baseBalance = 0;
+
+        if (demoBalanceUSD !== undefined && demoBalanceUSD !== null) {
+          baseBalance = Number(demoBalanceUSD);
+        } else {
+             // Fallback: somar todos os saldos demo se 'USD' não existir
+             baseBalance = Object.values(this.balancesByCurrencyDemo).reduce((acc, val) => acc + (Number(val) || 0), 0);
         }
-        return Number(demoBalance);
+
+        if (this.isFictitiousBalanceActive) {
+          return baseBalance + (Number(this.fictitiousBalance) || 0);
+        }
+        return baseBalance;
       }
 
       // Prioridade 2: Saldo Real (USD preferencial)

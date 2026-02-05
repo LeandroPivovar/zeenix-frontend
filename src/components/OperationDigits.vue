@@ -411,16 +411,17 @@
             </div>
 
             <!-- Trade Result Modal -->
-            <TradeResultModal
-                v-if="isMobile"
-                :visible="showTradeResultModal"
-                :profit="finalTradeProfit"
-                :currency="accountCurrency"
-                :type="finalTradeType"
-                :buyPrice="finalEntrySpot || 0"
-                :sellPrice="finalExitSpot || 0"
-                @close="closeTradeResultModal"
-            />
+            <Teleport to="body" v-if="isMobile">
+                <TradeResultModal
+                    :visible="showTradeResultModal"
+                    :profit="finalTradeProfit"
+                    :currency="accountCurrency"
+                    :type="finalTradeType"
+                    :buyPrice="finalEntrySpot || 0"
+                    :sellPrice="finalExitSpot || 0"
+                    @close="closeTradeResultModal"
+                />
+            </Teleport>
 
             <Teleport to="body" v-else>
                 <div 

@@ -5,9 +5,11 @@
     <!-- TopNavbar -->
     <TopNavbar
         :is-sidebar-collapsed="isSidebarCollapsed"
-        :balance="0"
-        :account-type="'real'"
-        :hide-balance="true"
+        :balance="balanceNumeric"
+        :account-type="accountType"
+        :currency="tradeCurrency"
+        :balances-by-currency-real="balancesByCurrencyReal"
+        :balances-by-currency-demo="balancesByCurrencyDemo"
         @toggle-sidebar="toggleSidebar"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
     />
@@ -232,10 +234,12 @@
 import AppSidebar from '../components/Sidebar.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import TopNavbar from '../components/TopNavbar.vue'
+import accountBalanceMixin from '../mixins/accountBalanceMixin';
 
 export default {
   name: 'CourseDetailView',
   components: { AppSidebar, DesktopBottomNav, TopNavbar },
+  mixins: [accountBalanceMixin],
   data() {
     return {
       course: null,
