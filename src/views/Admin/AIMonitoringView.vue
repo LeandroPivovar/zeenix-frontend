@@ -1094,8 +1094,13 @@ export default {
                             // DYNAMIC CALIBRATION: Check if adjusted stake is needed based on REAL payout
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
                                 // Map generic config to structure expected by RiskManager if needed
-                                // In AIMonitoring, this.recoveryConfig IS the config
-                                const config = this.recoveryConfig;
+                                // ✅ FIX: Merge Global Config to ensure stopLoss/profitTarget are present
+                                const config = {
+                                    ...this.currentConfig,
+                                    ...this.recoveryConfig,
+                                    stopLoss: this.currentConfig.lossLimit || 50,
+                                    profitTarget: this.currentConfig.profitTarget || 10
+                                };
                                 
                                 // Re-calculate using the REAL rate we just got
                                 let exactStake = RiskManager.calculateNextStake(this.sessionState, config, realPayoutRate);
@@ -1136,8 +1141,11 @@ export default {
                                         this.ws.send(JSON.stringify(newParams));
                                         return; // ABORT BUY to wait for new proposal
                                     } else {
-                                        this.retryingProposal = false; // Reset flag
-                                        this.addLog(`⚠️ Stake ajustado novamente. Aceitando $${stakeValue} para evitar loop infinito.`, 'warning');
+                                        // ✅ DEADLOCK FIX: If we already retried and it's STILL blocked/unsafe, abort.
+                                        this.addLog('⚠️ Cancelando negociação: Ajuste de segurança falhou ou limite atingido.', 'error');
+                                        this.isNegotiating = false; // Release lock
+                                        this.retryingProposal = false;
+                                        return; // BLOCK BUY
                                     }
                                 }
                             }
@@ -1395,7 +1403,10 @@ export default {
             // ✅ FIX: Merge Global Config (this.currentConfig) to ensure stopLoss/profitTarget are present
             const config = {
                 ...this.currentConfig,
-                ...(isRecovery ? this.recoveryConfig : {})
+                ...(isRecovery ? this.recoveryConfig : {}),
+                // Force mapping of internal lossLimit to RiskManager's expected stopLoss
+                stopLoss: this.currentConfig.lossLimit || 50,
+                profitTarget: this.currentConfig.profitTarget || 10
             };
             
             console.log('[AIMonitoring] calculateNextStake:', {
