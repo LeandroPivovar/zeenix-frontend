@@ -129,7 +129,7 @@
 
                         <!-- Mobile Pause Button (Inside Card) -->
                         <div v-if="isMobile" class="col-span-2 mt-4">
-                            <button @click="stopIA" :disabled="isStopping && !isSessionFinished" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
+                            <button @click="isSessionFinished ? restartIA() : stopIA()" :disabled="isStopping && !isSessionFinished" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
                                 {{ isSessionFinished ? 'Reiniciar IA' : (isStopping ? 'Parando...' : 'Pausar IA') }}
                             </button>
                         </div>
@@ -524,7 +524,7 @@
 
                             <!-- Desktop Pause Button -->
                             <div class="mt-0 px-1 pt-0">
-                                <button @click="stopIA" :disabled="isStopping && !isSessionFinished" class="group flex items-center justify-center w-full h-[52px] bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
+                                <button @click="isSessionFinished ? restartIA() : stopIA()" :disabled="isStopping && !isSessionFinished" class="group flex items-center justify-center w-full h-[52px] bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
                                     <div class="flex items-center gap-3">
                                         <svg v-if="!isSessionFinished" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="w-4 h-4"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg>
                                         <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
@@ -1944,11 +1944,15 @@ export default {
                 this.activeContracts.delete(id);
             }
         },
+        restartIA() {
+             this.$router.push('/Investments-IA');
+        },
         async stopIA(redirect = true) {
-            // ✅ RESTART LOGIC
-            if (this.isSessionFinished) {
-                 this.$router.push('/Investments-IA');
-                 return;
+            // ✅ Fix: Do NOT auto-redirect here. Restart logic is handled by restartIA()
+            // If session is already finished, strictly do nothing or just show modal (handled below)
+            if (this.isSessionFinished && !this.showStopModal) {
+                 // Might be a weird state, but let's ensure restarting is explicit
+                 return; 
             }
 
             this.isStopping = true;
