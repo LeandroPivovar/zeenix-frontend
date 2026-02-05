@@ -359,13 +359,9 @@ export const RiskManager = {
      */
     applySurvivalMode(stake, currentProfit, config, estimatedPayout = 0.95, blindadoState = null) {
         let adjustedStake = stake;
-        const { stopLoss, profitTarget } = config;
+        const { stopLoss } = config;
 
-        // Payout rate (Pure profit part)
-        // If estimatedPayout is multiplier (1.95), rate is 0.95.
-        // If it's already rate, use as is. RiskManager uses multiplier usually.
-        // Let's standardize: if > 1, subtract 1.
-        const payoutRate = estimatedPayout > 1 ? estimatedPayout - 1 : estimatedPayout;
+        // Payout rate calculation removed as it is no longer used for Profit Target check.
 
         let reason = null;
 
