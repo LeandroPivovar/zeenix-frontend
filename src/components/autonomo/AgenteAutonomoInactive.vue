@@ -183,16 +183,16 @@
 							</label>
 							<div class="risk-buttons">
 								<button 
-									:class="['risk-btn', { 'active': selectedRisk === 'conservative' }]"
-									@click="selectRisk('conservative')"
-								>
-									Conservador
-								</button>
-								<button 
 									:class="['risk-btn', { 'active': selectedRisk === 'fixed' }]"
 									@click="selectRisk('fixed')"
 								>
 									Fixo
+								</button>
+								<button 
+									:class="['risk-btn', { 'active': selectedRisk === 'conservative' }]"
+									@click="selectRisk('conservative')"
+								>
+									Conservador
 								</button>
 								<button 
 									:class="['risk-btn', { 'active': selectedRisk === 'balanced' }]"
@@ -1217,7 +1217,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 /* Risk Buttons & Bar (From InvestmentIAView) */
 .risk-buttons {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
     margin-bottom: 1rem;
 }
