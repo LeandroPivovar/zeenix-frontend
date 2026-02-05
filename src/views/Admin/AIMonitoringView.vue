@@ -648,6 +648,7 @@ export default {
 
             digitHistory: [],
             isNegotiating: false,
+            pendingVirtualTrade: null,
             pauseUntil: 0, // Timeout timestamp
 
             retryingProposal: false, // Flag for calibration loop
@@ -665,6 +666,16 @@ export default {
                 type: 'info' // 'info', 'warning', 'success'
             },
             showHistoryModal: false,
+
+            // ✅ Security Configuration (Loss Virtual)
+            securityConfig: {
+                virtualLoss: {
+                    enabled: false,
+                    target: 2,
+                    current: 0,
+                    mode: 'warmup' // 'warmup' | 'cyclic'
+                }
+            },
 
             // ✅ Recovery Configuration
             recoveryConfig: {
@@ -844,6 +855,15 @@ export default {
                         sorosLevel: parsed.sorosLevel !== undefined ? parsed.sorosLevel : (baseConfig.form.sorosLevel || 1),
                         attackFilters: (parsed.attackFilters && parsed.attackFilters.length > 0) ? parsed.attackFilters : baseConfig.form.attackFilters // ✅ Fix: Respect saved filters
                     };
+
+                    // 2.5. Carregar Filtros de Segurança (Loss Virtual)
+                    const savedSecurity = parsed.securityConfig || {};
+                    if (this.securityConfig && this.securityConfig.virtualLoss) {
+                        this.securityConfig.virtualLoss.enabled = savedSecurity.virtualLoss?.enabled || false;
+                        this.securityConfig.virtualLoss.target = savedSecurity.virtualLoss?.target || 2;
+                        this.securityConfig.virtualLoss.mode = savedSecurity.virtualLoss?.mode || 'warmup';
+                        this.securityConfig.virtualLoss.current = 0; // Reset counter
+                    }
 
                     // 3. Merge Configuração de Recuperação
                     // Prioridade: Base do Arquivo (para garantir estrutura) > Ajustes se necessário
@@ -1295,6 +1315,14 @@ export default {
                 
                 // 1. Maintain Logic Compatibility
                 this.tickHistory.unshift(price);
+
+        // --- Virtual Trade Processing ---
+        if (this.pendingVirtualTrade) {
+            this.pendingVirtualTrade.tickCount++;
+            if (this.pendingVirtualTrade.tickCount >= this.pendingVirtualTrade.duration) {
+                this.finishVirtualTrade(price);
+            }
+        }
                 if (this.tickHistory.length > 1000) this.tickHistory.pop();
                 
                 // 2. Update Chart Data
@@ -1372,6 +1400,7 @@ export default {
             // ✅ Sincronização: Aguardar resultado do contrato ou resultado rápido
             if (this.activeContracts.size > 0 || this.isNegotiating) return;
             if (this.pendingFastResult && this.pendingFastResult.active) return;
+            if (this.pendingVirtualTrade) return;
 
             // --- PAUSE CHECK ---
             if (this.pauseUntil) {
@@ -1424,7 +1453,15 @@ export default {
                 });
 
                 this.addLog('Sinal de Entrada Corretora', analysisLog, 'success');
-                this.executeAITrade();
+                
+                const vl = this.securityConfig.virtualLoss;
+                if (vl && vl.enabled && vl.current < vl.target) {
+                    this.executeVirtualTrade();
+                } else {
+                    // MODO DE OPERAÇÃO: Reset se for cíclico
+                    if (vl && vl.enabled && vl.mode === 'cyclic') vl.current = 0;
+                    this.executeAITrade();
+                }
             }
         },
         calculateNextStake() {
@@ -1564,6 +1601,85 @@ export default {
                 this.ws.send(JSON.stringify(proposalParams));
             } else {
                 this.addLog('❌ WebSocket não conectado', 'error');
+            }
+        },
+        executeVirtualTrade() {
+            // Check context
+            const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
+            // ✅ FIX: Correctly merge configs
+            const config = {
+                ...this.currentConfig,
+                ...(isRecoveryStrategy ? this.recoveryConfig : {})
+            };
+
+            const vl = this.securityConfig.virtualLoss;
+            const current = vl.current + 1; // Current attempt
+            const target = vl.target;
+
+            this.addLog('Filtro de Segurança (Loss Virtual)', [
+                `Status: Simulando Operação ${current}/${target}`,
+                `Ação: Entrada simulada (sem valor financeiro)`
+            ], 'info');
+
+            // Set State
+            this.isNegotiating = true;
+            this.pendingVirtualTrade = {
+                startTime: Date.now(),
+                entryPrice: this.tickHistory[0],
+                tradeType: config.tradeType,
+                prediction: config.prediction,
+                duration: config.duration || 1,
+                tickCount: 0
+            };
+        },
+        finishVirtualTrade(exitPrice) {
+            const trade = this.pendingVirtualTrade;
+            if (!trade) return;
+
+            const lastDigit = parseInt(exitPrice.toString().slice(-1));
+            const barrier = trade.prediction;
+            let win = false;
+
+            // Logic duplicate from Fast Result
+            if (trade.tradeType === 'DIGITUNDER') win = lastDigit < barrier;
+            else if (trade.tradeType === 'DIGITOVER') win = lastDigit > barrier;
+            else if (trade.tradeType === 'DIGITMATCH') win = lastDigit === barrier;
+            else if (trade.tradeType === 'DIGITDIFF') win = lastDigit !== barrier;
+            else if (trade.tradeType === 'DIGITEVEN') win = lastDigit % 2 === 0;
+            else if (trade.tradeType === 'DIGITODD') win = lastDigit % 2 !== 0;
+
+            // Clear State
+            this.pendingVirtualTrade = null;
+            this.isNegotiating = false; // Unlock analysis
+
+            const vl = this.securityConfig.virtualLoss;
+            
+            if (win) {
+                // Win Virtual = Reset sequence
+                vl.current = 0;
+                this.addLog('Resultado Loss Virtual', [
+                    `Dígito: ${lastDigit}`,
+                    `Resultado: WIN (Simulado)`,
+                    `Efeito: Sequência quebrada. Contador zerado.`
+                ], 'success');
+            } else {
+                // Loss Virtual = Increment sequence
+                vl.current++;
+                const faltam = vl.target - vl.current;
+                
+                if (faltam > 0) {
+                     this.addLog('Resultado Loss Virtual', [
+                        `Dígito: ${lastDigit}`,
+                        `Resultado: LOSS (Simulado)`,
+                        `Progresso: ${vl.current}/${vl.target} (Faltam ${faltam})`
+                    ], 'warning');
+                } else {
+                     this.addLog('Alvo Loss Virtual Atingido!', [
+                        `Dígito: ${lastDigit}`,
+                        `Resultado: LOSS (Simulado)`,
+                        `Ação: PRÓXIMA ENTRADA SERÁ EXECUÇÃO REAL`
+                    ], 'warning');
+                }
             }
         },
         subscribeToContract(contractId) {
