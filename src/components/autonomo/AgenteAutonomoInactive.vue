@@ -189,6 +189,12 @@
 									Conservador
 								</button>
 								<button 
+									:class="['risk-btn', { 'active': selectedRisk === 'fixed' }]"
+									@click="selectRisk('fixed')"
+								>
+									Fixo
+								</button>
+								<button 
 									:class="['risk-btn', { 'active': selectedRisk === 'balanced' }]"
 									@click="selectRisk('balanced')"
 								>
@@ -798,7 +804,8 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 			const labels = {
 				'conservative': 'Baixo',
 				'balanced': 'Médio',
-				'aggressive': 'Alto'
+				'aggressive': 'Alto',
+				'fixed': 'Fixo'
 			};
 			return labels[this.selectedRisk] || 'Baixo';
 		},
@@ -806,7 +813,8 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 			const widths = {
 				'conservative': '33%',
 				'balanced': '66%',
-				'aggressive': '100%'
+				'aggressive': '100%',
+				'fixed': '10%'
 			};
 			return widths[this.selectedRisk] || '33%';
 		},
@@ -814,7 +822,8 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 			const descriptions = {
 				'conservative': 'Recupera o valor perdido até o M5 (sexta perda). Se não conseguir, assume a perda e reseta para o valor da entrada inicial.',
 				'balanced': 'Recuperação ilimitada com +15% de lucro sobre as perdas totais',
-				'aggressive': 'Recuperação ilimitada com +30% de lucro sobre as perdas totais'
+				'aggressive': 'Recuperação ilimitada com +30% de lucro sobre as perdas totais',
+				'fixed': 'Entradas fixas sem progressão (Sem Martingale). Preservação máxima de capital sem recuperação agressiva.'
 			};
 			return descriptions[this.selectedRisk] || descriptions.conservative;
 		},
