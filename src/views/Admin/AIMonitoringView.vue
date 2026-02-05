@@ -1961,9 +1961,6 @@ export default {
             if (seriesObj) {
                 const rawSeries = toRaw(seriesObj);
                 rawSeries.setMarkers(markersArray);
-            }
-        },
-            }
         },
         async startSession() {
             try {
