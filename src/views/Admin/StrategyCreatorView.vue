@@ -279,6 +279,71 @@
                             </div>
                         </div>
 
+                        <!-- Filtros de Segurança (Loss Virtual) -->
+                        <div class="col-span-12">
+                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
+                                <div class="absolute top-0 right-0 p-4 opacity-5">
+                                    <i class="fa-solid fa-user-secret text-6xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-user-secret text-zenix-green"></i>
+                                        Filtros de Segurança (Loss Virtual)
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer scale-90">
+                                        <input type="checkbox" v-model="securityConfig.virtualLoss.enabled" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zenix-green"></div>
+                                        <span class="ms-3 text-xs font-bold text-gray-400 uppercase tracking-tighter">{{ securityConfig.virtualLoss.enabled ? 'Ativo' : 'Inativo' }}</span>
+                                    </label>
+                                </h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10" :class="{ 'opacity-40 grayscale pointer-events-none': !securityConfig.virtualLoss.enabled }">
+                                    <div>
+                                        <label class="block text-white font-bold mb-2 text-sm">Contagem de Loss Virtual</label>
+                                        <p class="text-xs text-gray-400 mb-2">Quantas simulações perdedoras consecutivas esperar antes da entrada real.</p>
+                                        <div class="relative">
+                                             <input 
+                                                type="number" 
+                                                v-model.number="securityConfig.virtualLoss.target" 
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                min="1"
+                                                placeholder="Ex: 2"
+                                            />
+                                            <div class="absolute inset-y-0 right-0 px-3 flex items-center pointer-events-none">
+                                                <span class="text-gray-500 text-xs font-bold">LOSSES</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    
+                                    <div>
+                                        <label class="block text-white font-bold mb-2 text-sm">Modo de Operação</label>
+                                        <p class="text-xs text-gray-400 mb-2">Quando aplicar o filtro de segurança.</p>
+                                        <div class="relative">
+                                            <select 
+                                                v-model="securityConfig.virtualLoss.mode"
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm appearance-none"
+                                            >
+                                                <option value="warmup">Aquecimento (Apenas no Início)</option>
+                                                <option value="cyclic">Cíclico (Antes de Toda Entrada)</option>
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 px-3 flex items-center pointer-events-none">
+                                                <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-span-1 md:col-span-2 flex items-center justify-center p-4 bg-[#1E1E1E] border border-dashed border-[#333] rounded-lg mt-2">
+                                        <p class="text-xs text-center text-gray-400">
+                                            <i class="fa-solid fa-circle-info mb-1 block text-base text-zenix-green"></i>
+                                            O robô simulará operações silenciosamente. Só enviará a ordem real após <b>{{ securityConfig.virtualLoss.target }}</b> perdas virtuais consecutivas.
+
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Configuração de Recuperação (New Section) -->
                         <div class="col-span-12">
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
@@ -1459,7 +1524,17 @@ export default {
             
             // Internal State
             isNegotiating: false,
+            pendingVirtualTrade: null, // Track active simulation
             retryingProposal: false,
+            
+            securityConfig: {
+                virtualLoss: {
+                    enabled: false,
+                    target: 2,
+                    current: 0,
+                    mode: 'warmup' // 'warmup' | 'cyclic'
+                }
+            },
             
             recoveryConfig: {
                 enabled: true,
@@ -2553,6 +2628,7 @@ export default {
                 config: {
                     form: JSON.parse(JSON.stringify(this.form)),
                     recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
+                    securityConfig: JSON.parse(JSON.stringify(this.securityConfig)),
                     validator: JSON.parse(JSON.stringify(this.validator))
                 }
             };
@@ -3061,6 +3137,14 @@ export default {
 
                 this.addLog(`📈 Tick recebido: ${price} - Tick #${this.tickCount}`, 'info');
 
+                // --- Virtual Trade Processing ---
+                if (this.pendingVirtualTrade) {
+                    this.pendingVirtualTrade.tickCount++;
+                    if (this.pendingVirtualTrade.tickCount >= this.pendingVirtualTrade.duration) {
+                        this.finishVirtualTrade(price);
+                    }
+                }
+
                 // --- Fast Result Calculation ---
                 // Process result on the VERY NEXT tick for 1-tick contracts
                 if (this.pendingFastResult && this.pendingFastResult.active) {
@@ -3146,6 +3230,7 @@ export default {
             // Prevent spamming analysis
             if (this.activeContracts.size > 0 || this.isNegotiating) return;
             if (this.pendingFastResult && this.pendingFastResult.active) return;
+    if (this.pendingVirtualTrade) return;
 
             // --- PAUSE CHECK ---
             if (this.pauseUntil) {
@@ -3197,7 +3282,19 @@ export default {
                 // --------------------------
 
                 this.addLog(analysisLog, 'info');
-                this.executeRealTrade(); 
+
+                // --- Virtual Loss Check ---
+                const vl = this.securityConfig.virtualLoss;
+                if (vl && vl.enabled && vl.current < vl.target) {
+                    this.executeVirtualTrade();
+                } else {
+                    // MODO DE OPERAÇÃO: Check if cyclic reset is needed
+                    if (vl && vl.enabled && vl.mode === 'cyclic') {
+                        vl.current = 0;
+                        this.addLog('🛡️ Segurança: Ciclo Reiniciado (Modo Cíclico).', 'info');
+                    }
+                    this.executeRealTrade();
+                }
             }
         },
         checkLimits() {
@@ -3424,6 +3521,67 @@ export default {
                 this.addLog(`❌ ERRO NO SISTEMA: ${err.message}`, 'error');
             }
         },
+        executeVirtualTrade() {
+            // Check context
+            const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
+            const config = isRecoveryStrategy ? this.recoveryConfig : this.form;
+
+            const vl = this.securityConfig.virtualLoss;
+            const current = vl.current + 1; // Current attempt
+            const target = vl.target;
+
+            this.addLog(`👻 LOSS VIRTUAL: Iniciando simulação (${current}/${target})...`, 'info');
+
+            // Set State
+            this.isNegotiating = true;
+            this.pendingVirtualTrade = {
+                startTime: Date.now(),
+                entryPrice: this.lastTickPrice || (this.tickHistory.length > 0 ? this.tickHistory[0] : 0),
+                tradeType: config.tradeType,
+                prediction: config.prediction,
+                duration: config.duration || 1,
+                tickCount: 0
+            };
+        },
+        finishVirtualTrade(exitPrice) {
+            const trade = this.pendingVirtualTrade;
+            if (!trade) return;
+
+            const lastDigit = parseInt(exitPrice.toString().slice(-1));
+            const barrier = trade.prediction;
+            let win = false;
+
+            // Logic duplicate from Fast Result
+            if (trade.tradeType === 'DIGITUNDER') win = lastDigit < barrier;
+            else if (trade.tradeType === 'DIGITOVER') win = lastDigit > barrier;
+            else if (trade.tradeType === 'DIGITMATCH') win = lastDigit === barrier;
+            else if (trade.tradeType === 'DIGITDIFF') win = lastDigit !== barrier;
+            else if (trade.tradeType === 'DIGITEVEN') win = lastDigit % 2 === 0;
+            else if (trade.tradeType === 'DIGITODD') win = lastDigit % 2 !== 0;
+
+            // Clear State
+            this.pendingVirtualTrade = null;
+            this.isNegotiating = false; // Unlock analysis
+
+            const vl = this.securityConfig.virtualLoss;
+            
+            if (win) {
+                // Win Virtual = Reset sequence
+                vl.current = 0;
+                this.addLog(`👻 SIMULAÇÃO WIN (Dígito ${lastDigit}) ➔ Sequência quebrada. Reiniciando contagem.`, 'success');
+            } else {
+                // Loss Virtual = Increment sequence
+                vl.current++;
+                const faltam = vl.target - vl.current;
+                
+                if (faltam > 0) {
+                    this.addLog(`👻 SIMULAÇÃO LOSS (Dígito ${lastDigit}) ➔ Confirmado Loss Virtual #${vl.current}. Faltam ${faltam}.`, 'warning');
+                } else {
+                    this.addLog(`👻 SIMULAÇÃO LOSS (Dígito ${lastDigit}) ➔ Alvo Atingido (${vl.current}/${vl.target})! PRÓXIMA ENTRADA SERÁ REAL.`, 'warning');
+                }
+            }
+        },
+
         subscribeToContract(contractId) {
             this.ws.send(JSON.stringify({
                 proposal_open_contract: 1,
