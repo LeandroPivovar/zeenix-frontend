@@ -267,7 +267,6 @@
                                             </div>
                                         </div>
                                         <button 
-                                            v-if="activeAttackFilters.length < 2"
                                             type="button" 
                                             @click="openFilterModal('main')"
                                             class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
@@ -409,7 +408,6 @@
                                             </div>
                                         </div>
                                         <button 
-                                            v-if="activeRecoveryFilters.length < 2"
                                             type="button" 
                                             @click="openFilterModal('recovery')"
                                             class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
