@@ -639,6 +639,10 @@
 					</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
 				</div>
+				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
+					<div class="text-base sm:text-lg font-bold tabular-nums text-yellow-500 uppercase">{{ agenteData.risco ? agenteData.risco.split('-')[0].split(' ')[0] : 'Normal' }}</div>
+					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Gestão</div>
+				</div>
 			</div>
 
 			<!-- Intraday Operations Table (Static Mock per snippet requirement) -->
