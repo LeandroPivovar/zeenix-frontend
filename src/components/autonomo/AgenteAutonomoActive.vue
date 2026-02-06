@@ -753,22 +753,14 @@
 	</div>
     </Teleport>
 
-	<!-- Modal de Stop (Novos) -->
-	<!-- Modal de Stop (Novos) -->
-	<StopLossModal v-if="showNewStopLossModal" :visible="true" :result="sessionStats?.netProfit || 0" @confirm="handleCloseNewStopModal('showNewStopLossModal')" @close="handleCloseNewStopModal('showNewStopLossModal')" />
-	<TargetProfitModal v-if="showNewTargetProfitModal" :visible="true" :result="sessionStats?.netProfit || 0" @confirm="handleCloseNewStopModal('showNewTargetProfitModal')" @close="handleCloseNewStopModal('showNewTargetProfitModal')" />
-	<StopBlindadoModal v-if="showNewStopBlindadoModal" :visible="true" :result="sessionStats?.netProfit || 0" @confirm="handleCloseNewStopModal('showNewStopBlindadoModal')" @close="handleCloseNewStopModal('showNewStopBlindadoModal')" />
-	
-	<!-- Novos Modais de Ajuste de Precisão -->
-	<StopLossAjusteModal 
-		:visible="showStopLossAjusteModal" 
-		:result="sessionStats?.netProfit || 0"
-		@confirm="handleConfirmStopAjuste" 
-	/>
-	<StopBlindadoAjusteModal 
-		:visible="showStopBlindadoAjusteModal" 
-		:result="sessionStats?.netProfit || 0"
-		@confirm="handleConfirmStopAjuste" 
+	<!-- Novo Modal Unificado de Resumo da Sessão -->
+	<SessionSummaryModal
+		:visible="showSessionSummaryModal"
+		:total-profit="sessionSummaryData.profit"
+		:cycle="sessionSummaryData.cycle"
+		:reason="sessionSummaryData.reason"
+		:currency-symbol="preferredCurrencyPrefix"
+		@close="handleCloseSessionSummary"
 	/>
 </template>
 
@@ -784,9 +776,8 @@
 		components: {
 			AutonomousAgentLogs,
             CycleCompletionModal: defineAsyncComponent(() => import('@/components/CycleCompletionModal.vue')),
-			StopLossModal: defineAsyncComponent(() => import('@/components/StopLossModal.vue')),
-			TargetProfitModal: defineAsyncComponent(() => import('@/components/TargetProfitModal.vue')),
-			StopBlindadoModal: defineAsyncComponent(() => import('@/components/StopBlindadoModal.vue')),
+			SessionSummaryModal: defineAsyncComponent(() => import('@/components/modals/SessionSummaryModal.vue')),
+			// Modais antigos removidos ou mantidos apenas se necessário (Ajuste de Precisão ainda usados?)
 			StopLossAjusteModal: defineAsyncComponent(() => import('@/components/StopLossAjusteModal.vue')),
 			StopBlindadoAjusteModal: defineAsyncComponent(() => import('@/components/StopBlindadoAjusteModal.vue'))
 		},
@@ -868,6 +859,14 @@
 					description: ''
 				},
 				lastProcessedStatus: null, // Evitar abrir modal repetidamente para o mesmo status
+				showSessionSummaryModal: false,
+				sessionSummaryData: {
+					profit: 0,
+					cycle: 1,
+					reason: 'STOP_LOSS'
+				},
+				// Mantendo controle de modal ativo global para evitar sobreposição
+				// window.zenixStopModalActive -> Usado globalmente via window
 				showNewStopLossModal: false,
 				showNewTargetProfitModal: false,
 				showNewStopBlindadoModal: false,
@@ -1953,121 +1952,137 @@
             checkLogsForStopEvents(logs) {
                 if (!logs || logs.length === 0) return;
                 
-                // Verificar TODOS os logs para garantir que não perdemos o evento
-                const recentLogs = logs;
-                
-                // Log de debug para ver o que está chegando
-                // console.log('[AgenteAutonomo] Checking Logs:', recentLogs.length, 'entries');
+                // Se já estiver mostrando modal ou já tiver reconhecido, ignora
+                if (this.showSessionSummaryModal || window.zenixStopModalActive) return;
 
-                // 1. STOP BLINDADO ATINGIDO
-                const hasBlindadoHit = recentLogs.some(log => 
+                const recentLogs = logs;
+                let stopDetected = false;
+                let stopReason = '';
+                let stopCycle = 1;
+                let stopProfit = this.sessionStats?.netProfit || 0; // Fallback para profit atual
+
+                // Função auxiliar para extrair ciclo do log
+                const extractCycle = (msg) => {
+                    const match = msg.match(/cycle=(\d+)/i);
+                    return match ? parseInt(match[1]) : 1;
+                };
+
+                // 1. STOP BLINDADO
+                const blindadoLog = recentLogs.find(log => 
                     log.message && (
                         log.message.toUpperCase().includes('STOP BLINDADO ATINGIDO') || 
                         log.message.toUpperCase().includes('BLINDADO ATINGIDO')
                     )
                 );
                 
-                if (hasBlindadoHit) {
-                     // Check "zenixStopModalActive" to prevent duplicate opening, but ensure it opens if not yet open
-                    if (!this.showNewStopBlindadoModal && !this.showNewStopLossModal && !this.showStopBlindadoAjusteModal && !window.zenixStopModalActive) {
-                        window.zenixStopModalActive = true;
-                        console.log('[AgenteAutonomo] 🛡️ [Logs] Stop Blindado Detected!');
-                        
-                        // Verificar se é por ajuste de entrada
-                        const isAjuste = recentLogs.some(log => 
-                            log.message && log.message.toUpperCase().includes('STOP BLINDADO ATINGIDO POR AJUSTE DE ENTRADA')
-                        );
-                        
-                        if (isAjuste) {
-                            this.showStopBlindadoAjusteModal = true;
-                        } else {
-                            this.showNewStopBlindadoModal = true;
-                        }
+                if (blindadoLog) {
+                    stopDetected = true;
+                    stopReason = 'BLINDADO';
+                    stopCycle = extractCycle(blindadoLog.message);
+                    
+                    // Se for ajuste, mostrar modal específico de ajuste
+                    if (blindadoLog.message.toUpperCase().includes('AJUSTE DE ENTRADA')) {
+                         this.showStopBlindadoAjusteModal = true;
+                         window.zenixStopModalActive = true;
+                         return;
                     }
                 }
                 
                 // 2. STOP LOSS NORMAL
-                // Pattern from screenshot: "STOP LOSS ATINGIDO! DAILY_LOSS=..."
-                const hasNormalStopLossMessage = recentLogs.some(log => 
-                    log.message && (
-                        log.message.toUpperCase().includes('STOP LOSS ATINGIDO') ||
-                        log.message.toUpperCase().includes('STOP LOSS REACHED') ||
-                        (log.message.toUpperCase().includes('STOP LOSS') && log.message.toUpperCase().includes('ATINGIDO') && !log.message.toUpperCase().includes('BLINDADO'))
-                    )
-                );
-                
-                if (hasNormalStopLossMessage) {
-                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !window.zenixStopModalActive && !this.stopLossAcknowledged) {
-                        window.zenixStopModalActive = true;
-                        console.log('[AgenteAutonomo] 🛑 [Logs] Stop Loss Detected!');
-                        
-                        // Verificar se é por ajuste de entrada
-                        const isAjuste = recentLogs.some(log => 
-                            log.message && log.message.toUpperCase().includes('STOP LOSS ATINGIDO POR AJUSTE DE ENTRADA')
-                        );
-                        
-                        if (isAjuste) {
-                            this.showStopLossAjusteModal = true;
-                        } else {
-                            this.showNewStopLossModal = true;
+                if (!stopDetected) {
+                    const stopLossLog = recentLogs.find(log => 
+                        log.message && (
+                            log.message.toUpperCase().includes('STOP LOSS ATINGIDO') ||
+                            log.message.toUpperCase().includes('STOP LOSS REACHED') ||
+                            (log.message.toUpperCase().includes('STOP LOSS') && log.message.toUpperCase().includes('ATINGIDO') && !log.message.toUpperCase().includes('BLINDADO'))
+                        )
+                    );
+
+                    if (stopLossLog) {
+                        stopDetected = true;
+                        stopReason = 'STOP_LOSS';
+                        stopCycle = extractCycle(stopLossLog.message);
+                         // Se for ajuste, mostrar modal específico de ajuste
+                        if (stopLossLog.message.toUpperCase().includes('AJUSTE DE ENTRADA')) {
+                             this.showStopLossAjusteModal = true;
+                             window.zenixStopModalActive = true;
+                             return;
                         }
                     }
                 }
 
-                // 3. META DE LUCRO ATINGIDA
-                const hasProfitMessage = recentLogs.some(log => 
-                    log.message && (
-                        log.message.toUpperCase().includes('META DE LUCRO ATINGIDA') ||
-                        log.message.toUpperCase().includes('META ATINGIDA') ||
-                        log.message.toUpperCase().includes('LUCRO ATINGIDO')
-                    )
-                );
+                // 3. META DE LUCRO
+                if (!stopDetected) {
+                     const profitLog = recentLogs.find(log => 
+                        log.message && (
+                            log.message.toUpperCase().includes('META DE LUCRO ATINGIDA') ||
+                            log.message.toUpperCase().includes('META ATINGIDA') ||
+                            log.message.toUpperCase().includes('LUCRO ATINGIDO')
+                        )
+                    );
 
-                if (hasProfitMessage) {
-                    if (!this.showNewTargetProfitModal && !window.zenixStopModalActive && !this.targetProfitAcknowledged) {
-                        window.zenixStopModalActive = true;
-                        console.log('[AgenteAutonomo] 🎯 [Logs] Target Profit Detected!');
-                        this.showNewTargetProfitModal = true;
+                    if (profitLog) {
+                        stopDetected = true;
+                        stopReason = 'TARGET';
+                        stopCycle = extractCycle(profitLog.message);
                     }
                 }
 
-                // 4. CICLO CONCLUÍDO (Ex: ✅ CICLO 1/4 CONCLUÍDO! Lucro: $10.00)
-                const cycleLog = recentLogs.find(log => 
-                    log.message && log.message.toUpperCase().includes('CICLO') && log.message.toUpperCase().includes('CONCLUÍDO')
-                );
+                // Disparar Modal Unificado
+                if (stopDetected) {
+                     if (!this.sessionSummaryAcknowledged) {
+                        window.zenixStopModalActive = true;
+                        console.log(`[AgenteAutonomo] 🛑 [Logs] Stop Detected: ${stopReason} | Cycle: ${stopCycle}`);
+                        
+                        this.sessionSummaryData = {
+                            profit: stopProfit,
+                            cycle: stopCycle,
+                            reason: stopReason
+                        };
+                        this.showSessionSummaryModal = true;
+                     }
+                }
 
-                if (cycleLog) {
-                    // Tentar novo formato com total: CICLO 1/4
-                    let match = cycleLog.message.match(/CICLO (\d+)\/(\d+) CONCLUÍDO/i);
-                    let cycleNum = '1';
-                    let totalCycles = '4'; // Default fallback
+                // 4. CICLO CONCLUÍDO (Lógica Existente)
+                // ... (Manter lógica de ciclo se necessário, mas o modal de resumo deve ter prioridade no stop)
+                // Se parou, não mostra modal de ciclo parcial, mostra o resumo final.
+                // Mas se completou um ciclo e CONTINUA (não parou), aí mostra o modal de ciclo.
+                if (!stopDetected) {
+                    const cycleLog = recentLogs.find(log => 
+                        log.message && log.message.toUpperCase().includes('CICLO') && log.message.toUpperCase().includes('CONCLUÍDO')
+                    );
 
-                    if (match) {
-                        cycleNum = match[1];
-                        totalCycles = match[2];
-                    } else {
-                        // Fallback para formato antigo: CICLO 1
-                        match = cycleLog.message.match(/CICLO (\d+) CONCLUÍDO/i);
-                        if (match) cycleNum = match[1];
-                        // Se não tem total, não podemos garantir que é o último, então assumimos que NÂO devemos mostrar
-                        // A MENOS que o usuário queira ver todos. Mas o pedido foi "apenas o último".
-                        // Então se for formato antigo, talvez devamos ignorar ou assumir 4?
-                        // Vamos assumir que o backend já está atualizado.
-                    }
+                    if (cycleLog) {
+                        let match = cycleLog.message.match(/CICLO (\d+)\/(\d+) CONCLUÍDO/i);
+                        let cycleNum = '1';
+                        let totalCycles = '4'; 
 
-                    const profitMatch = cycleLog.message.match(/LUCRO: \$?(\d+(\.\d+)?)/i);
-                    const profit = profitMatch ? parseFloat(profitMatch[1]) : 0;
+                        if (match) {
+                            cycleNum = match[1];
+                            totalCycles = match[2];
+                        } else {
+                            match = cycleLog.message.match(/CICLO (\d+) CONCLUÍDO/i);
+                            if (match) cycleNum = match[1];
+                        }
 
-                    // LÓGICA DE TRIGGER: Apenas se for o último ciclo (Ex: 4/4)
-                    const isFinalCycle = (cycleNum === totalCycles);
+                        const profitMatch = cycleLog.message.match(/LUCRO: \$?(\d+(\.\d+)?)/i);
+                        const profit = profitMatch ? parseFloat(profitMatch[1]) : 0;
 
-                    // Evitar abrir para o mesmo ciclo repetidamente
-                    if (isFinalCycle && this.lastProcessedCycle !== cycleNum) {
-                        console.log(`[AgenteAutonomo] 🔄 [Logs] Final Cycle ${cycleNum}/${totalCycles} Completion Detected!`);
-                        this.currentCycleNumber = cycleNum;
-                        this.currentCycleProfit = profit;
-                        this.showCycleCompletionModal = true;
-                        this.lastProcessedCycle = cycleNum;
+                        // Se NÃO detectou stop, então é apenas uma conclusão de ciclo parcial ou final
+                        // Mas se for final (4/4), geralmente vira stop (META ou BLINDADO se falhar).
+                        // Se atingiu meta 4/4 -> vai gerar log de META DE LUCRO também.
+                        // Então essa lógica aqui é mais para feedback visual durante a operação.
+                        
+                        // LÓGICA DE TRIGGER: Apenas se for o último ciclo (Ex: 4/4) E não tiver stop detectado acima (redundancia)
+                        const isFinalCycle = (cycleNum === totalCycles);
+
+                        if (isFinalCycle && this.lastProcessedCycle !== cycleNum) {
+                            console.log(`[AgenteAutonomo] 🔄 [Logs] Final Cycle ${cycleNum}/${totalCycles} Completion Detected!`);
+                            this.currentCycleNumber = parseInt(cycleNum);
+                            this.currentCycleProfit = profit;
+                            this.showCycleCompletionModal = true;
+                            this.lastProcessedCycle = cycleNum;
+                        }
                     }
                 }
             },
@@ -2080,14 +2095,21 @@
 				window.zenixStopModalActive = false;
 				this.pausarAgenteEIrParaTopo();
 			},
+			handleCloseSessionSummary() {
+				this.showSessionSummaryModal = false;
+				window.zenixStopModalActive = false;
+				this.sessionSummaryAcknowledged = true;
+			},
+			handleConfirmStopAjuste() {
+				this.showStopLossAjusteModal = false;
+				this.showStopBlindadoAjusteModal = false;
+				window.zenixStopModalActive = false;
+				this.pausarAgenteEIrParaTopo();
+			},
 			handleCloseNewStopModal(modalVar) {
+				// Legacy handler - keeping for safety but logic moved to SessionSummary
 				this[modalVar] = false;
 				window.zenixStopModalActive = false;
-                
-                // Marcar como reconhecido para não abrir novamente nesta sessão
-                if (modalVar === 'showNewStopLossModal') this.stopLossAcknowledged = true;
-                if (modalVar === 'showNewTargetProfitModal') this.targetProfitAcknowledged = true;
-                if (modalVar === 'showNewStopBlindadoModal') this.stopBlindadoAcknowledged = true;
 			},
 			fetchAllStats() {
 				this.fetchAgentConfig(); 
