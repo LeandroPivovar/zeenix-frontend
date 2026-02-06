@@ -697,8 +697,11 @@
             // Mapear nível de risco
             const riskMap = {
               'conservative': 'Conservador',
-              'balanced': 'Equilibrado',
+              'conservador': 'Conservador',
+              'balanced': 'Moderado',
+              'moderado': 'Moderado',
               'aggressive': 'Agressivo',
+              'agressivo': 'Agressivo',
               'fixed': 'Fixo',
               'fixo': 'Fixo'
             };
