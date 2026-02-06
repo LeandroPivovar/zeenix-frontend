@@ -1584,8 +1584,6 @@
 					timeScale: {
 						borderColor: 'rgba(197, 203, 206, 0.2)',
 						timeVisible: true,
-                        fixLeftEdge: true,
-                        fixRightEdge: true,
 					},
 				});
 
