@@ -330,7 +330,9 @@
                                                 class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm appearance-none"
                                             >
                                                 <option value="warmup">Aquecimento (Apenas no Início)</option>
-                                                <option value="cyclic">Cíclico (Antes de Toda Entrada)</option>
+                                                <option value="attack">Antes do Ataque (Modo Principal)</option>
+                                                <option value="recovery">Antes da Recuperação (Modo Rec.)</option>
+                                                <option value="cyclic">Cíclico (Sempre - Ataque e Rec.)</option>
                                             </select>
                                             <div class="absolute inset-y-0 right-0 px-3 flex items-center pointer-events-none">
                                                 <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
@@ -3353,13 +3355,35 @@ export default {
 
                 // --- Virtual Loss Check ---
                 const vl = this.securityConfig.virtualLoss;
-                if (vl && vl.enabled && vl.current < vl.target) {
+                const isRecovery = this.sessionState.activeStrategy === 'RECUPERACAO';
+                let shouldApplyVL = false;
+
+                if (vl && vl.enabled) {
+                    if (vl.mode === 'warmup') shouldApplyVL = true;
+                    // Cyclic now means "Always" (Attack AND Recovery) - as per label update
+                    else if (vl.mode === 'cyclic') shouldApplyVL = true; 
+                    else if (vl.mode === 'attack' && !isRecovery) shouldApplyVL = true;
+                    else if (vl.mode === 'recovery' && isRecovery) shouldApplyVL = true;
+                }
+
+                if (shouldApplyVL && vl.current < vl.target) {
                     this.executeVirtualTrade();
                 } else {
                     // MODO DE OPERAÇÃO: Check if cyclic reset is needed
-                    if (vl && vl.enabled && vl.mode === 'cyclic') {
-                        vl.current = 0;
-                        this.addLog('🛡️ Segurança: Ciclo Reiniciado (Modo Cíclico).', 'info');
+                    if (vl && vl.enabled) {
+                        if (vl.mode === 'cyclic') {
+                            vl.current = 0;
+                            this.addLog('🛡️ Segurança: Ciclo Reiniciado (Modo Cíclico).', 'info');
+                        }
+                        else if (vl.mode === 'attack' && !isRecovery) {
+                            vl.current = 0;
+                            // Optionally log reset for clarity on larger sequences? 
+                            // this.addLog('🛡️ Segurança: Ciclo Reiniciado (Modo Ataque).', 'info');
+                        }
+                        else if (vl.mode === 'recovery' && isRecovery) {
+                            vl.current = 0;
+                            // this.addLog('🛡️ Segurança: Ciclo Reiniciado (Modo Recuperação).', 'info');
+                        }
                     }
                     this.executeRealTrade();
                 }

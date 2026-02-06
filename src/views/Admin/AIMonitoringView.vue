@@ -1511,11 +1511,25 @@ export default {
                 this.addLog('Sinal de Entrada Corretora', analysisLog, 'success');
                 
                 const vl = this.securityConfig.virtualLoss;
-                if (vl && vl.enabled && vl.current < vl.target) {
+                const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
+                let shouldApplyVL = false;
+
+                if (vl && vl.enabled) {
+                    if (vl.mode === 'warmup') shouldApplyVL = true;
+                    else if (vl.mode === 'cyclic') shouldApplyVL = true;
+                    else if (vl.mode === 'attack' && !isRecovery) shouldApplyVL = true;
+                    else if (vl.mode === 'recovery' && isRecovery) shouldApplyVL = true;
+                }
+
+                if (shouldApplyVL && vl.current < vl.target) {
                     this.executeVirtualTrade();
                 } else {
-                    // MODO DE OPERAÇÃO: Reset se for cíclico
-                    if (vl && vl.enabled && vl.mode === 'cyclic') vl.current = 0;
+                    // Reset Counter Logic based on Mode (Cyclic behavior for specific phases)
+                    if (vl && vl.enabled) {
+                        if (vl.mode === 'cyclic') vl.current = 0;
+                        else if (vl.mode === 'attack' && !isRecovery) vl.current = 0;
+                        else if (vl.mode === 'recovery' && isRecovery) vl.current = 0;
+                    }
                     this.executeAITrade();
                 }
             }
