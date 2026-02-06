@@ -3,19 +3,19 @@
     <div v-if="visible" class="cycle-completion-modal-overlay" @click.self="handleClose">
       <div class="cycle-completion-modal">
         <div class="modal-icon-container">
-          <div class="modal-icon">
+          <div class="modal-icon" :class="result < 0 ? 'border-red-500 shadow-red' : 'border-green-500 shadow-green'">
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="32" cy="32" r="30" stroke="#22C55E" stroke-width="3"/>
+              <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="3"/>
               <!-- Ícone de Ciclo / Recarrega -->
-              <path d="M32 16V22M32 42V48M48 32H42M22 32H16" stroke="#22C55E" stroke-width="3" stroke-linecap="round"/>
-              <path d="M43.3137 20.6863L39.0711 24.9289M24.9289 39.0711L20.6863 43.3137M43.3137 43.3137L39.0711 39.0711M24.9289 24.9289L20.6863 20.6863" stroke="#22C55E" stroke-width="3" stroke-linecap="round"/>
-              <circle cx="32" cy="32" r="8" fill="#22C55E" fill-opacity="0.2" stroke="#22C55E" stroke-width="2"/>
+              <path d="M32 16V22M32 42V48M48 32H42M22 32H16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <path d="M43.3137 20.6863L39.0711 24.9289M24.9289 39.0711L20.6863 43.3137M43.3137 43.3137L39.0711 39.0711M24.9289 24.9289L20.6863 20.6863" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="32" cy="32" r="8" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="2"/>
             </svg>
           </div>
         </div>
 
         <div class="modal-content">
-          <h2 class="modal-title">{{ isFinalCycle ? 'SESSÃO FINALIZADA' : `CICLO ${cycleNumber} CONCLUÍDO!` }}</h2>
+          <h2 class="modal-title" :class="{ 'text-red-500': isFinalCycle && result < 0 }">{{ isFinalCycle ? 'SESSÃO FINALIZADA' : `CICLO ${cycleNumber} CONCLUÍDO!` }}</h2>
           <p class="modal-description">
             {{ isFinalCycle 
                 ? (result >= 0 
@@ -25,15 +25,15 @@
             }}
           </p>
           
-          <div class="result-badge">
+          <div class="result-badge" :style="{ borderColor: result < 0 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(34, 197, 94, 0.2)' }">
             <span class="label">{{ isFinalCycle ? 'LUCRO TOTAL DA SESSÃO' : 'LUCRO NO CICLO' }}</span>
             <span class="value" :class="result >= 0 ? 'text-green-500' : 'text-red-500'">
-                {{ result >= 0 ? '+' : '' }}{{ currencySymbol }}{{ Math.abs(result).toFixed(2) }}
+                {{ result < 0 ? '-' : (result > 0 ? '+' : '') }}{{ currencySymbol }}{{ Math.abs(result).toFixed(2) }}
             </span>
           </div>
 
-          <button class="confirm-button" @click="handleConfirm">
-            {{ isFinalCycle ? 'ENCERRAR SESSÃO' : 'CONTINUAR OPERAÇÕES' }}
+          <button class="confirm-button" @click="handleConfirm" :class="{ 'btn-loss': isFinalCycle && result < 0 }">
+            {{ isFinalCycle ? 'ENTENDIDO' : 'CONTINUAR OPERAÇÕES' }}
           </button>
         </div>
       </div>
@@ -98,7 +98,7 @@ export default {
   background: #0B0B0B;
   border-radius: 24px;
   padding: 40px 32px;
-  max-width: 420px;
+  max-width: 480px;
   width: 100%;
   text-align: center;
   position: relative;
@@ -117,16 +117,21 @@ export default {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 3px solid #22C55E;
-  background: rgba(34, 197, 94, 0.1);
-  box-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
-  animation: pulse-green 2s infinite;
+  border: 3px solid;
+  background: rgba(var(--icon-color), 0.1);
+  animation: pulse 2s infinite;
 }
 
-@keyframes pulse-green {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-  70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+.border-green-500 { border-color: #22C55E; color: #22C55E; --icon-color: 34, 197, 94; }
+.border-red-500 { border-color: #ef4444; color: #ef4444; --icon-color: 239, 68, 68; }
+
+.shadow-green { box-shadow: 0 0 30px rgba(34, 197, 94, 0.3); }
+.shadow-red { box-shadow: 0 0 30px rgba(239, 68, 68, 0.3); }
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  70% { transform: scale(1.05); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .modal-title {
@@ -137,6 +142,14 @@ export default {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-align: center;
+}
+
+.text-red-500 {
+  color: #ef4444 !important;
+}
+
+.text-green-500 {
+  color: #22C55E !important;
 }
 
 .modal-description {
@@ -192,6 +205,15 @@ export default {
   background: #16A34A;
   box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
   transform: translateY(-2px);
+}
+
+.confirm-button.btn-loss {
+  background: #ef4444;
+}
+
+.confirm-button.btn-loss:hover {
+  background: #dc2626;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
 }
 
 .confirm-button:active {
