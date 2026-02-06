@@ -2043,8 +2043,12 @@
                 stopReason = 'TARGET';
                 // Se for "Sessão Finalizada", provavelmente o motivo real (Stop/Meta) veio logo antes
                 // Verificar se o log "Sessão Finalizada" vem acompanhado de um Drawdown logo antes
-                const isDrawdownBefore = recentLogs.some(l => l.message.includes('DRAWDOWN'));
-                if (isDrawdownBefore) stopReason = 'STOP_LOSS';
+                const isDrawdownBefore = recentLogs.some(l => l.message && l.message.toUpperCase().includes('DRAWDOWN'));
+                if (isDrawdownBefore) {
+                    stopReason = 'CYCLE_STOP';
+                } else if (stopReason === 'TARGET' && recentLogs.some(l => l.message && l.message.toUpperCase().includes('STOP LOSS'))) {
+                    stopReason = 'STOP_LOSS';
+                }
 
                 stopCycle = findRecentCycle(recentLogs);
             }
@@ -2072,13 +2076,12 @@
                 this.showSessionSummaryModal = true;
              }
         }
-                }
 
-                // 4. CICLO CONCLUÍDO (Lógica Existente)
-                // ... (Manter lógica de ciclo se necessário, mas o modal de resumo deve ter prioridade no stop)
-                // Se parou, não mostra modal de ciclo parcial, mostra o resumo final.
-                // Mas se completou um ciclo e CONTINUA (não parou), aí mostra o modal de ciclo.
-                if (!stopDetected) {
+        // 4. CICLO CONCLUÍDO (Lógica Existente)
+        // ... (Manter lógica de ciclo se necessário, mas o modal de resumo deve ter prioridade no stop)
+        // Se parou, não mostra modal de ciclo parcial, mostra o resumo final.
+        // Mas se completou um ciclo e CONTINUA (não parou), aí mostra o modal de ciclo.
+        if (!stopDetected) {
                     const cycleLog = recentLogs.find(log => 
                         log.message && log.message.toUpperCase().includes('CICLO') && log.message.toUpperCase().includes('CONCLUÍDO')
                     );

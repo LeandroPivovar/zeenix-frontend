@@ -101,7 +101,8 @@ export default {
     },
     message() {
         if (this.reason === 'TARGET') return `Os ciclos foram concluídos e você garantiu um total de +${this.currencySymbol}${this.formatPrice(this.totalProfit)}`;
-        if (this.reason === 'BLINDADO') return 'O Stop Blindado foi ativado para proteger seus lucros.';
+        if (this.reason === 'BLINDADO') return 'O Stop Blindado foi ativado para proteger seus lucros neste ciclo.';
+        if (this.reason === 'CYCLE_STOP') return 'O limite de perdas do ciclo (Drawdown) foi atingido. A sessão foi encerrada por segurança.';
         return 'O limite de perdas foi atingido. Volte amanhã para operar com segurança.';
     },
     reasonText() {
