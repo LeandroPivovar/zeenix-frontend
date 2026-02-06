@@ -592,7 +592,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 						this.selectedMarket = symbolToMarket[config.symbol] || 'volatility_100';
 					}
 					if (config.riskLevel) {
-						this.selectedRisk = config.riskLevel;
+						this.selectedRisk = config.riskLevel === 'fixo' ? 'fixed' : config.riskLevel;
 					}
 					if (config.initialStake) {
 						this.valorOperacao = parseFloat(config.initialStake);
@@ -629,10 +629,11 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 			this.isStarting = true;
 
 			// 1. Coleta os dados configurados
+			// 1. Coleta os dados configurados
 			const configData = {
 				agentType: this.selectedAgent,
 				mercado: this.selectedMarket,
-				risco: this.selectedRisk,
+				risco: this.selectedRisk === 'fixed' ? 'fixo' : this.selectedRisk, // ✅ FIX: Send 'fixo' for fixed risk
 				goalValue: this.metaLucroNumero,
 				stopValue: this.limitePerdaNumero,
 				initialStake: this.valorOperacaoNumero,

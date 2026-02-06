@@ -2289,8 +2289,8 @@ export default {
                 this.series.setMarkers(this.chartMarkers);
             }
             
-            // Force scroll to latest data
-            this.chart.timeScale().scrollToPosition(0, true);
+            // Fit content to ensure data starts from left and fills correctly
+            this.chart.timeScale().fitContent();
             
             // Handle Resize
             this.resizeObserver = new ResizeObserver(entries => {
