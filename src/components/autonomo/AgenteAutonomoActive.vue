@@ -898,9 +898,7 @@
 				},
 				// Mantendo controle de modal ativo global para evitar sobreposição
 				// window.zenixStopModalActive -> Usado globalmente via window
-				showNewStopLossModal: false,
-				showNewTargetProfitModal: false,
-				showNewStopBlindadoModal: false,
+
 
 				dataInicio: new Date().toISOString().split('T')[0],
 				dataFim: new Date().toISOString().split('T')[0],
@@ -941,7 +939,7 @@
 					{ hora: '14:31:45', classe: 'warning', titulo: 'Volume detectado', descricao: '14:31:45 - Confirmação de padrão' },
 					{ hora: '14:30:00', classe: 'info', titulo: 'Aguardando padrão da estratégia', descricao: '14:30:00 - Análise em andamento' },
 				],
-				showStopLossModal: false,
+
 				
 				// Novas propriedades para o layout redesenhado
 				showDatePicker: false,
@@ -2140,10 +2138,8 @@
                 };
 
                 // Route to specific modal
-                if (stopReason === 'STOP_LOSS') {
+                if (stopReason === 'STOP_LOSS' || stopReason === 'CYCLE_STOP') {
                      this.showStopLossModal = true;
-                } else if (stopReason === 'CYCLE_STOP') {
-                     this.showSessionSummaryModal = true;
                 } else if (stopReason === 'BLINDADO') {
                      this.showBlindadoModal = true;
                 } else if (stopReason === 'TARGET' || stopReason === 'META') {
