@@ -4,14 +4,19 @@
             <div class="w-full max-w-5xl bg-secondary/95 rounded-2xl border border-border/50 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-fadeIn">
                 <!-- Header -->
                 <div class="flex items-center justify-between p-6 border-b border-border/30">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-success/10 border border-success/30 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success">
                                 <path d="M3 3v18h18"/>
                                 <path d="m19 9-5 5-4-4-3 3"/>
                             </svg>
                         </div>
-                        <h2 class="text-xl font-bold text-foreground">Histórico de Sessões</h2>
+                        <div class="flex flex-col">
+                            <h2 class="text-xl font-bold text-foreground">Histórico de Sessões</h2>
+                            <p class="text-xs text-muted-foreground mt-0.5 opacity-80">
+                                Acompanhe nesta área o resumo oficial de suas últimas execuções e resultados detalhados.
+                            </p>
+                        </div>
                     </div>
                     <button @click="close" class="w-8 h-8 rounded-lg hover:bg-secondary/80 transition-colors flex items-center justify-center text-muted-foreground hover:text-foreground">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
