@@ -62,9 +62,9 @@ export default {
       return Math.abs(this.lossLimit).toFixed(2);
     },
     formattedResult() {
-      if (this.result === null || this.result === undefined) return '$0.00';
+      if (this.result === null || this.result === undefined) return `${this.currency}0.00`;
       const sign = this.result >= 0 ? '+' : '-';
-      return `${sign}$${Math.abs(this.result).toFixed(2)}`;
+      return `${sign}${this.currency}${Math.abs(this.result).toFixed(2)}`;
     }
   },
   methods: {
