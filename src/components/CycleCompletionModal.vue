@@ -160,20 +160,20 @@ export default {
 }
 
 .result-badge {
-  margin: 24px 0;
-  padding: 16px;
+  margin: 16px 0;
+  padding: 12px;
   background: rgba(34, 197, 94, 0.05);
   border-radius: 12px;
   border: 1px solid rgba(34, 197, 94, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .result-badge .label {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.5);
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 700;
@@ -181,7 +181,7 @@ export default {
 
 .result-badge .value {
   color: #22C55E;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: 0.5px;
 }
