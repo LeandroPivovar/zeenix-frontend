@@ -112,6 +112,13 @@ export const RiskManager = {
                 return baseStake;
             }
 
+            // ✅ RISK PROFILE: FIXO (User Request)
+            // Forces Base Stake during recovery (0% increase) regardless of losses
+            if (riskProfile === 'fixo') {
+                console.log('[RiskManager] Risk Profile FIXO -> Using Base Stake');
+                return baseStake;
+            }
+
             // Check Max Levels for Conservador
             const maxLevels = (riskProfile === 'conservador') ? 5 : null;
             if (maxLevels && state.lossStreakRecovery >= maxLevels) {
