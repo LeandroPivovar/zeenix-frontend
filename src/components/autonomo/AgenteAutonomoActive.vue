@@ -1362,29 +1362,9 @@
                     const endTime = this.formatToSPTime(sessionTrades[0].createdAt);
                     const totalProfit = sessionTrades.reduce((acc, t) => acc + t.profit, 0);
                     
-                    // Header: INICIO (Visualmente topo do bloco)
-                    items.push({
-                        type: 'header',
-                        id: `header-${idx}`,
-                        sessionNumber: sessionNum,
-                        startTime: startTime
-                    });
-                    
-                    // Trades (Mantendo DESC: mais recentes primeiro, logo abaixo do header?)
-                    // Se o header diz "Inicio XX", e logo abaixo vem um trade das YY (onde YY > XX), faz sentido.
-                    sessionTrades.forEach(trade => {
-                        items.push({
-                            type: 'trade',
-                            id: trade.id,
-                            data: trade
-                        });
-                    });
-                    
-                    // Footer: FIM (Visualmente base do bloco)
-                    // ✅ FIX: Adicionar motivo do término se for a sessão atual e estiver pausado/stop
+                    // 1. Footer: FIM (Agora no TOPO do bloco porque trades são DESC)
                     let footerText = `FIM DA SESSÃO - ${endTime}`;
                     
-                    // Se for a sessão mais recente (idx=0) e o agente não estiver ativo, mostrar motivo
                     if (idx === 0 && this.agenteData.sessionStatus !== 'active' && this.agenteData.sessionStatus) {
                         const statusMap = {
                             'paused': 'AGENTE PAUSADO',
@@ -1394,7 +1374,6 @@
                             'error': 'ERRO NO SISTEMA',
                             'inactive': 'SESSÃO ENCERRADA'
                         };
-                         // Tenta pegar do status do agente ou do último status processado
                         const reason = statusMap[this.agenteData.sessionStatus] || statusMap[this.lastProcessedStatus] || this.agenteData.sessionStatus.toUpperCase();
                         footerText += ` (${reason})`;
                     }
@@ -1404,6 +1383,23 @@
                         id: `footer-${idx}`,
                         endTime: footerText,
                         totalProfit: totalProfit
+                    });
+
+                    // 2. Trades (Mantendo DESC: mais recentes primeiro)
+                    sessionTrades.forEach(trade => {
+                        items.push({
+                            type: 'trade',
+                            id: trade.id,
+                            data: trade
+                        });
+                    });
+
+                    // 3. Header: INICIO (Agora na BASE do bloco)
+                    items.push({
+                        type: 'header',
+                        id: `header-${idx}`,
+                        sessionNumber: sessionNum,
+                        startTime: startTime
                     });
                 });
                 
