@@ -698,7 +698,9 @@
             const riskMap = {
               'conservative': 'Conservador',
               'balanced': 'Equilibrado',
-              'aggressive': 'Agressivo'
+              'aggressive': 'Agressivo',
+              'fixed': 'Fixo',
+              'fixo': 'Fixo'
             };
             
             // ✅ Atualizar estratégia: usar agentType se disponível, senão usar strategy
@@ -709,8 +711,28 @@
             
             // ✅ Mercado sempre é "Volatility 100 Index" (todos os agentes autônomos usam R_100)
             this.mercado = 'Volatility 100 Index';
-            if (result.data.riskLevel) {
-              this.risco = riskMap[result.data.riskLevel] || 'Equilibrado';
+            
+            // ✅ Verificar múltiplas variações do campo de risco
+            let riskValue = result.data.riskLevel || result.data.riskProfile || result.data.risco;
+            
+            // ✅ Fallback: Tentar recuperar do localStorage se o backend não retornar (Correção Frontend-Only)
+            if (!riskValue) {
+                try {
+                    const savedConfig = localStorage.getItem('ai_active_config');
+                    if (savedConfig) {
+                        const parsed = JSON.parse(savedConfig);
+                        if (parsed.mode) {
+                            console.log('[AgenteAutonomo] ⚠️ Backend sem risco, recuperando do localStorage:', parsed.mode);
+                            riskValue = parsed.mode;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[AgenteAutonomo] Falha ao ler risco do localStorage', e);
+                }
+            }
+
+            if (riskValue) {
+              this.risco = riskMap[riskValue.toLowerCase()] || riskMap[riskValue] || 'Equilibrado';
             }
             if (result.data.dailyLossLimit) {
               this.stopValue = result.data.dailyLossLimit;
