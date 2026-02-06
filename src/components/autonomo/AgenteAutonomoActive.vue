@@ -777,9 +777,7 @@
 			AutonomousAgentLogs,
             CycleCompletionModal: defineAsyncComponent(() => import('@/components/CycleCompletionModal.vue')),
 			SessionSummaryModal: defineAsyncComponent(() => import('@/components/modals/SessionSummaryModal.vue')),
-			// Modais antigos removidos ou mantidos apenas se necessário (Ajuste de Precisão ainda usados?)
-			StopLossAjusteModal: defineAsyncComponent(() => import('@/components/StopLossAjusteModal.vue')),
-			StopBlindadoAjusteModal: defineAsyncComponent(() => import('@/components/StopBlindadoAjusteModal.vue'))
+			// Modais antigos removidos
 		},
 		props: {
 			agenteData: {
@@ -870,8 +868,7 @@
 				showNewStopLossModal: false,
 				showNewTargetProfitModal: false,
 				showNewStopBlindadoModal: false,
-				showStopLossAjusteModal: false,
-				showStopBlindadoAjusteModal: false,
+
 				dataInicio: new Date().toISOString().split('T')[0],
 				dataFim: new Date().toISOString().split('T')[0],
 				periodoMobile: 'hoje',
@@ -1980,12 +1977,7 @@
                     stopReason = 'BLINDADO';
                     stopCycle = extractCycle(blindadoLog.message);
                     
-                    // Se for ajuste, mostrar modal específico de ajuste
-                    if (blindadoLog.message.toUpperCase().includes('AJUSTE DE ENTRADA')) {
-                         this.showStopBlindadoAjusteModal = true;
-                         window.zenixStopModalActive = true;
-                         return;
-                    }
+
                 }
                 
                 // 2. STOP LOSS NORMAL
@@ -2002,12 +1994,7 @@
                         stopDetected = true;
                         stopReason = 'STOP_LOSS';
                         stopCycle = extractCycle(stopLossLog.message);
-                         // Se for ajuste, mostrar modal específico de ajuste
-                        if (stopLossLog.message.toUpperCase().includes('AJUSTE DE ENTRADA')) {
-                             this.showStopLossAjusteModal = true;
-                             window.zenixStopModalActive = true;
-                             return;
-                        }
+
                     }
                 }
 
@@ -2089,23 +2076,13 @@
             handleConfirmCycle() {
                 this.showCycleCompletionModal = false;
             },
-			handleConfirmStopAjuste() {
-				this.showStopLossAjusteModal = false;
-				this.showStopBlindadoAjusteModal = false;
-				window.zenixStopModalActive = false;
-				this.pausarAgenteEIrParaTopo();
-			},
+
 			handleCloseSessionSummary() {
 				this.showSessionSummaryModal = false;
 				window.zenixStopModalActive = false;
 				this.sessionSummaryAcknowledged = true;
 			},
-			handleConfirmStopAjuste() {
-				this.showStopLossAjusteModal = false;
-				this.showStopBlindadoAjusteModal = false;
-				window.zenixStopModalActive = false;
-				this.pausarAgenteEIrParaTopo();
-			},
+
 			handleCloseNewStopModal(modalVar) {
 				// Legacy handler - keeping for safety but logic moved to SessionSummary
 				this[modalVar] = false;
