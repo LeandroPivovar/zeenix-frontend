@@ -2009,13 +2009,14 @@
             stopCycle = findRecentCycle(recentLogs);
         }
         
-        // 2. STOP LOSS NORMAL (Prioridade alta para mensagem explicita de Drawdown de Ciclo)
+        // 2. STOP LOSS NORMAL / DRAWDOWN GLOBAL
+        // Apenas considera stop final se tiver 'Stop Loss Atingido' (global) ou se o Drawdown vier junto com 'Sessão Finalizada'
         if (!stopDetected) {
             const stopLossLog = recentLogs.find(log => 
                 log.message && (
                     log.message.toUpperCase().includes('STOP LOSS ATINGIDO') ||
                     log.message.toUpperCase().includes('STOP LOSS REACHED') ||
-                    log.message.toUpperCase().includes('DRAWDOWN MÁXIMO DO CICLO') ||
+                    // log.message.toUpperCase().includes('DRAWDOWN MÁXIMO DO CICLO') || // REMOVIDO: Drawdown de ciclo não é fim de sessão!
                     (log.message.toUpperCase().includes('STOP LOSS') && log.message.toUpperCase().includes('ATINGIDO') && !log.message.toUpperCase().includes('BLINDADO'))
                 )
             );
@@ -2045,12 +2046,25 @@
                 // Verificar se o log "Sessão Finalizada" vem acompanhado de um Drawdown logo antes
                 const isDrawdownBefore = recentLogs.some(l => l.message && l.message.toUpperCase().includes('DRAWDOWN'));
                 if (isDrawdownBefore) {
-                    stopReason = 'CYCLE_STOP';
+                    stopReason = 'CYCLE_STOP'; // Só vira Stop de Sessão se tiver "Sessão Finalizada" junto
                 } else if (stopReason === 'TARGET' && recentLogs.some(l => l.message && l.message.toUpperCase().includes('STOP LOSS'))) {
                     stopReason = 'STOP_LOSS';
                 }
 
                 stopCycle = findRecentCycle(recentLogs);
+            } else {
+                // FALLBACK V4: Se deu Drawdown Máximo E é o último Ciclo (4), o backend pode mandar só o Drawdown e "Encerrando ciclo"
+                // Mas se não tiver "Sessão Finalizada", o backend tecnicamente pausou.
+                // Mas no Ciclo 4, Drawdown = Fim de Sessão.
+                const drawdownLog = recentLogs.find(l => l.message && l.message.toUpperCase().includes('DRAWDOWN MÁXIMO DO CICLO'));
+                if (drawdownLog) {
+                    const cycleNum = findRecentCycle(recentLogs);
+                    if (cycleNum >= 4) { // Assumindo 4 ciclos max
+                        stopDetected = true;
+                        stopReason = 'CYCLE_STOP'; // Ciclo 4 com Drawdown = Fim
+                        stopCycle = cycleNum;
+                    }
+                }
             }
         }
 
