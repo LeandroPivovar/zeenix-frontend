@@ -1636,7 +1636,8 @@ export default {
                 ...(isRecovery ? this.recoveryConfig : {}),
                 // Force mapping of internal lossLimit to RiskManager's expected stopLoss
                 stopLoss: this.currentConfig.lossLimit || 50,
-                profitTarget: this.currentConfig.profitTarget || 10
+                profitTarget: this.currentConfig.profitTarget || 10,
+                riskProfile: this.currentConfig.riskProfile || this.currentConfig.modoMartingale || 'moderado'
             };
             
             console.log('[AIMonitoring] calculateNextStake:', {
