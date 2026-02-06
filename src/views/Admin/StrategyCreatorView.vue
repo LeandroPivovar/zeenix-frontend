@@ -2565,7 +2565,14 @@ export default {
 
             if (this.modalContext === 'main') {
                 this.form.selectedTradeTypeGroup = item.value; // Store Item Value for UI
-                this.form.tradeType = selectedDirection.value; // Store Actual Contract Type for API
+                
+                // ✅ Respect Direction Mode: If AMBOS is selected, tradeType MUST be empty
+                if (this.form.directionMode === 'both') {
+                    this.form.tradeType = '';
+                    console.log(`[selectTradeType] Modal: AMBOS mode detected, clearing tradeType for dynamic signaling`);
+                } else {
+                    this.form.tradeType = selectedDirection.value; // Store Actual Contract Type for API
+                }
                 
                 // Initialize Direction Payouts
                 this.form.directionPayouts = {};
@@ -2574,7 +2581,14 @@ export default {
                 });
             } else {
                 this.recoveryConfig.selectedTradeTypeGroup = item.value;
-                this.recoveryConfig.tradeType = selectedDirection.value;
+
+                // ✅ Respect Direction Mode (Recovery)
+                if (this.recoveryConfig.directionMode === 'both') {
+                    this.recoveryConfig.tradeType = '';
+                    console.log(`[selectTradeType] Modal (REC): AMBOS mode detected, clearing tradeType`);
+                } else {
+                    this.recoveryConfig.tradeType = selectedDirection.value;
+                }
 
                 // Initialize Direction Payouts
                 this.recoveryConfig.directionPayouts = {};
