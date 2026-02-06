@@ -22,7 +22,12 @@
             <main class="layout-content">
                 <div class="content-header mb-6 flex justify-between items-center px-4 w-full">
                     <div>
-                        <h1 class="text-2xl font-bold text-white">{{ isMonitoring ? 'Acompanhamento de Estratégia [BETA]' : 'Criador de Estratégias [BETA]' }}</h1>
+                        <h1 class="text-2xl font-bold text-white">
+                            {{ isMonitoring ? 'Acompanhamento de Estratégia [BETA]' : 'Criador de Estratégias [BETA]' }}
+                            <span v-if="!isMonitoring && selectedSavedStrategyId && currentVersion" class="text-zenix-green ml-2 text-lg">
+                                - {{ currentStrategyName }} v{{ currentVersion }}
+                            </span>
+                        </h1>
                         <p class="text-sm text-[#7D7D7D]">{{ isMonitoring ? 'Acompanhe a atividade do robô em tempo real.' : 'Configure sua estratégia automatizada para execução no mercado.' }}</p>
                     </div>
 
@@ -1488,6 +1493,8 @@ export default {
             selectedToken: null,
             savedStrategies: [],
             selectedSavedStrategyId: '',
+            currentVersion: '',
+            currentStrategyName: '',
             recoveryFilters: [],
             modalContext: 'main', // 'main' or 'recovery'
             filterStep: 1, // 1: Selection, 2: Configuration
@@ -2524,6 +2531,17 @@ export default {
             }
         },
 
+        incrementVersion(currentVersion) {
+            if (!currentVersion) return '1.0';
+            let [major, minor] = currentVersion.split('.').map(Number);
+            minor++;
+            if (minor > 100) {
+                major++;
+                minor = 0;
+            }
+            return `${major}.${minor}`;
+        },
+
         async saveCurrentStrategy() {
             const name = prompt('Nome da estratégia:', `Minha Estratégia ${new Date().toLocaleDateString()}`);
             if (!name) return;
@@ -2534,6 +2552,7 @@ export default {
             const newStrategy = {
                 id: Date.now().toString(),
                 name: name,
+                version: '1.0', // Start at version 1.0
                 config: {
                     form: JSON.parse(JSON.stringify(this.form)),
                     recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
@@ -2565,6 +2584,8 @@ export default {
             this.savedStrategies.push(newStrategy);
             localStorage.setItem('zeenix_saved_strategies', JSON.stringify(this.savedStrategies));
             this.selectedSavedStrategyId = newStrategy.id;
+            this.currentStrategyName = newStrategy.name;
+            this.currentVersion = newStrategy.version;
             this.$root.$toast.success('Estratégia salva com sucesso!');
         },
 
@@ -2631,7 +2652,11 @@ export default {
                  console.log('[loadSavedStrategy] Martingale OFF -> Enforcing Risk Profile: Conservador');
             }
 
-            this.addLog(`📂 Estratégia carregada: ${strategy.name}`, 'info');
+            // Set current strategy info for display
+            this.currentStrategyName = strategy.name;
+            this.currentVersion = strategy.version || '1.0';
+
+            this.addLog(`📂 Estratégia carregada: ${strategy.name} (v${this.currentVersion})`, 'info');
             this.$root.$toast.success(`Estratégia "${strategy.name}" carregada!`);
         },
 
@@ -2647,10 +2672,14 @@ export default {
             // ✅ Sync filter edits before updating
             this.syncFiltersToConfig();
 
+            // Calculate new version
+            const newVersion = this.incrementVersion(strategy.version || '1.0');
+
             // Create a completely new strategy object to avoid reference issues
             const updatedStrategy = {
                 id: strategy.id,
                 name: strategy.name,
+                version: newVersion, // Increment version
                 config: {
                     form: JSON.parse(JSON.stringify(this.form)),
                     recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
@@ -2691,9 +2720,12 @@ export default {
             // Replace the strategy at the specific index
             this.savedStrategies.splice(strategyIndex, 1, updatedStrategy);
             
+            // Update current display
+            this.currentVersion = newVersion;
+            
             // Save to localStorage
             localStorage.setItem('zeenix_saved_strategies', JSON.stringify(this.savedStrategies));
-            this.$root.$toast.success('IA Atualizada com sucesso!');
+            this.$root.$toast.success(`IA Atualizada com sucesso! (v${newVersion})`);
         },
 
         deleteSavedStrategy() {
