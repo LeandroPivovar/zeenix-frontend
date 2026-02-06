@@ -481,6 +481,20 @@
               riskLevel,
               stopLossType, // ✅ FIX: Pass to backend
             };
+
+          // ✅ Salvar configuração ativa no localStorage para persistência imediata no frontend
+          try {
+            localStorage.setItem('ai_active_config', JSON.stringify({ 
+              mode: riskLevel,
+              strategy: strategy,
+              agentType: configData?.agentType || 'sentinel',
+              timestamp: new Date().getTime()
+            }));
+            console.log('[AgenteAutonomo] Configuração salva no localStorage:', riskLevel);
+          } catch (e) {
+            console.warn('[AgenteAutonomo] Erro ao salvar config no localStorage:', e);
+          }
+
           console.log('[AgenteAutonomo] Sending POST request to:', url);
           console.log('[AgenteAutonomo] Request Body:', body);
 
@@ -1361,14 +1375,20 @@
       },
       
       getRiskTitle(id) {
+        if (!id) return id;
+        const rawId = String(id).toLowerCase();
         const map = {
           'conservative': 'Conservador',
-          'balanced': 'Equilibrado',
+          'conservador': 'Conservador',
+          'balanced': 'Moderado',
+          'moderado': 'Moderado',
+          'equilibrado': 'Moderado',
           'aggressive': 'Agressivo',
+          'agressivo': 'Agressivo',
           'fixed': 'Fixo',
           'fixo': 'Fixo'
         };
-        return map[id] || id;
+        return map[rawId] || id;
       },
       
       getCurrencyPrefix(currency) {

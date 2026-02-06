@@ -1203,12 +1203,13 @@
             formattedRiskProfile() {
                 if (!this.agenteData || !this.agenteData.risco) return 'Normal';
                 
-                const rawRisk = this.agenteData.risco.toLowerCase();
+                const rawRisk = String(this.agenteData.risco).toLowerCase();
                 const riskMap = {
                     'conservative': 'Conservador',
                     'conservador': 'Conservador',
                     'balanced': 'Moderado',
                     'moderado': 'Moderado',
+                    'equilibrado': 'Moderado',
                     'aggressive': 'Agressivo',
                     'agressivo': 'Agressivo',
                     'fixed': 'Fixo',
@@ -1220,11 +1221,12 @@
                 if (riskMap[rawRisk]) return riskMap[rawRisk];
                 
                 // Tentar match da primeira palavra (ex: "Conservador-Adaptativo" -> "conservador")
-                const firstPart = rawRisk.split('-')[0].split(' ')[0];
+                const firstPart = rawRisk.split('-')[0].split(' ')[0].trim();
                 if (riskMap[firstPart]) return riskMap[firstPart];
 
-                // Fallback para exibir formatado se não estiver no mapa
-                return this.agenteData.risco.split('-')[0].split(' ')[0];
+                // Fallback para exibir formatado (primeira letra maiúscula) se não estiver no mapa
+                const fallback = this.agenteData.risco.split('-')[0].split(' ')[0].trim();
+                return fallback.charAt(0).toUpperCase() + fallback.slice(1).toLowerCase();
             },
 
 			historicoOperacoesFiltradas() {
