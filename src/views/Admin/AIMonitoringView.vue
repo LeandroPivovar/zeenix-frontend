@@ -1550,16 +1550,18 @@ export default {
                              // Signal matches configured type, use the configured type
                              dynamicContractType = baseType;
                          } else {
-                             // Dynamic group - map signal to contract type
+                             // Dynamic group or EMPTY tradeType - map signal to contract type
+                             const group = config.selectedTradeTypeGroup || '';
+                             const isDigitGroup = group.includes('digit') || ['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal);
+
                              if (['CALL', 'UP'].includes(signal)) {
-                                 dynamicContractType = baseType.includes('DIGIT') ? 'DIGITOVER' : 'CALL';
+                                 dynamicContractType = isDigitGroup ? 'DIGITOVER' : 'CALL';
                              } else if (['PUT', 'DOWN'].includes(signal)) {
-                                 dynamicContractType = baseType.includes('DIGIT') ? 'DIGITUNDER' : 'PUT';
+                                 dynamicContractType = isDigitGroup ? 'DIGITUNDER' : 'PUT';
                              } else if (['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal)) {
                                  dynamicContractType = signal;
                              } else {
-                                 // Fallback or unknown signal
-                                 dynamicContractType = baseType; 
+                                 dynamicContractType = baseType || signal; // Fallback to signal if baseType is empty
                              }
                          }
 
