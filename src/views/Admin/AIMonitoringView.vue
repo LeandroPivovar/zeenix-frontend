@@ -1524,6 +1524,9 @@ export default {
                          const config = isRec ? this.recoveryConfig : this.currentConfig;
                          const baseType = (config.tradeType || '').toUpperCase();
                          
+                         // 🔍 DEBUG LOG for recovery vs principal config
+                         console.log(`[Direction Check] Mode: ${isRec ? 'RECUPERAÇÃO' : 'PRINCIPAL'}, Signal: ${signal}, Configured Type: ${baseType}`);
+                         
                          // ✅ CRITICAL: Check if user configured a specific contract type (not a group)
                          // If so, only allow dynamic direction if it matches the configured type
                          const isSpecificContract = ['DIGITOVER', 'DIGITUNDER', 'DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'CALL', 'PUT'].includes(baseType);
