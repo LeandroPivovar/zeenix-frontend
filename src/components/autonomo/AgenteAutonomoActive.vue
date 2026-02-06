@@ -1947,90 +1947,131 @@
              * ✅ Verifica os logs recentes para detectar mensagens de stop
              * Garante que o modal seja mostrado mesmo se o sessionStatus do polling demorar
              */
-            checkLogsForStopEvents(logs) {
-                if (!logs || logs.length === 0) return;
+            /**
+     * ✅ Verifica os logs recentes para detectar mensagens de stop
+     * Garante que o modal seja mostrado mesmo se o sessionStatus do polling demorar
+     */
+    checkLogsForStopEvents(logs) {
+        if (!logs || logs.length === 0) return;
+        
+        // Se já estiver mostrando modal ou já tiver reconhecido, ignora
+        if (this.showSessionSummaryModal || window.zenixStopModalActive) return;
+
+        const recentLogs = logs;
+        let stopDetected = false;
+        let stopReason = '';
+        let stopCycle = 1;
+        let stopProfit = this.sessionStats?.netProfit || 0; // Fallback
+
+        // ✅ Helper: Encontrar o ciclo mais recente nos logs (Contexto)
+        const findRecentCycle = (logsList) => {
+            // Procura nos últimos 10 logs por menção de ciclo
+            const cycleLogs = logsList.slice(0, 15); 
+            for (const log of cycleLogs) {
+                const match = log.message && log.message.match(/(?:cycle=|ciclo\s)(\d+)/i);
+                if (match) return parseInt(match[1]);
+            }
+            return 1;
+        };
+
+        // ✅ Helper: Tentar extrair lucro do log de resultado ou stop
+        const findRecentProfit = (logsList) => {
+            const profitLogs = logsList.slice(0, 5);
+            for (const log of profitLogs) {
+                // Tenta achar "Lucro/Prejuízo: $X" ou "Profit: $X" ou "Balance: $X"
+                // Ex: "Lucro/Prejuízo: -$18.26"
+                // Ex: "DRAWDOWN ... ($-18.26)"
+                const text = log.message || '';
                 
-                // Se já estiver mostrando modal ou já tiver reconhecido, ignora
-                if (this.showSessionSummaryModal || window.zenixStopModalActive) return;
+                // Regex para capturar valor monetário (positivo ou negativo)
+                const moneyRegex = /(?:Lucro\/Prejuízo|Profit|Loss|Drawdown|Resultado).*?\$?([+-]?\d+(?:\.\d{2})?)/i;
+                const match = text.match(moneyRegex);
+                if (match) {
+                     // Se achou, verifica se é um número válido
+                     const val = parseFloat(match[1]);
+                     if (!isNaN(val)) return val;
+                }
+            }
+            return null; // Retorna null para usar o fallback do sessionStats
+        };
 
-                const recentLogs = logs;
-                let stopDetected = false;
-                let stopReason = '';
-                let stopCycle = 1;
-                let stopProfit = this.sessionStats?.netProfit || 0; // Fallback para profit atual
+        // 1. STOP BLINDADO
+        const blindadoLog = recentLogs.find(log => 
+            log.message && (
+                log.message.toUpperCase().includes('STOP BLINDADO ATINGIDO') || 
+                log.message.toUpperCase().includes('BLINDADO ATINGIDO')
+            )
+        );
+        
+        if (blindadoLog) {
+            stopDetected = true;
+            stopReason = 'BLINDADO';
+            stopCycle = findRecentCycle(recentLogs);
+        }
+        
+        // 2. STOP LOSS NORMAL (Prioridade alta para mensagem explicita de Drawdown de Ciclo)
+        if (!stopDetected) {
+            const stopLossLog = recentLogs.find(log => 
+                log.message && (
+                    log.message.toUpperCase().includes('STOP LOSS ATINGIDO') ||
+                    log.message.toUpperCase().includes('STOP LOSS REACHED') ||
+                    log.message.toUpperCase().includes('DRAWDOWN MÁXIMO DO CICLO') ||
+                    (log.message.toUpperCase().includes('STOP LOSS') && log.message.toUpperCase().includes('ATINGIDO') && !log.message.toUpperCase().includes('BLINDADO'))
+                )
+            );
 
-                // Função auxiliar para extrair ciclo do log
-                const extractCycle = (msg) => {
-                    const match = msg.match(/cycle=(\d+)/i);
-                    return match ? parseInt(match[1]) : 1;
+            if (stopLossLog) {
+                stopDetected = true;
+                stopReason = 'STOP_LOSS';
+                stopCycle = findRecentCycle(recentLogs);
+            }
+        }
+
+        // 3. META DE LUCRO / SESSÃO FINALIZADA
+        if (!stopDetected) {
+             const profitLog = recentLogs.find(log => 
+                log.message && (
+                    log.message.toUpperCase().includes('META DE LUCRO ATINGIDA') ||
+                    log.message.toUpperCase().includes('META ATINGIDA') ||
+                    log.message.toUpperCase().includes('LUCRO ATINGIDO') ||
+                    log.message.toUpperCase().includes('SESSÃO FINALIZADA')
+                )
+            );
+
+            if (profitLog) {
+                stopDetected = true;
+                stopReason = 'TARGET';
+                // Se for "Sessão Finalizada", provavelmente o motivo real (Stop/Meta) veio logo antes
+                // Verificar se o log "Sessão Finalizada" vem acompanhado de um Drawdown logo antes
+                const isDrawdownBefore = recentLogs.some(l => l.message.includes('DRAWDOWN'));
+                if (isDrawdownBefore) stopReason = 'STOP_LOSS';
+
+                stopCycle = findRecentCycle(recentLogs);
+            }
+        }
+
+        // Tentar refinar o lucro se detectou stop
+        if (stopDetected) {
+            const extractedProfit = findRecentProfit(recentLogs);
+            if (extractedProfit !== null) {
+                stopProfit = extractedProfit;
+            }
+        }
+
+        // Disparar Modal Unificado
+        if (stopDetected) {
+             if (!this.sessionSummaryAcknowledged) {
+                window.zenixStopModalActive = true;
+                console.log(`[AgenteAutonomo] 🛑 [Logs] Stop Detected: ${stopReason} | Cycle: ${stopCycle} | Profit: ${stopProfit}`);
+                
+                this.sessionSummaryData = {
+                    profit: stopProfit,
+                    cycle: stopCycle,
+                    reason: stopReason
                 };
-
-                // 1. STOP BLINDADO
-                const blindadoLog = recentLogs.find(log => 
-                    log.message && (
-                        log.message.toUpperCase().includes('STOP BLINDADO ATINGIDO') || 
-                        log.message.toUpperCase().includes('BLINDADO ATINGIDO')
-                    )
-                );
-                
-                if (blindadoLog) {
-                    stopDetected = true;
-                    stopReason = 'BLINDADO';
-                    stopCycle = extractCycle(blindadoLog.message);
-                    
-
-                }
-                
-                // 2. STOP LOSS NORMAL
-                if (!stopDetected) {
-                    const stopLossLog = recentLogs.find(log => 
-                        log.message && (
-                            log.message.toUpperCase().includes('STOP LOSS ATINGIDO') ||
-                            log.message.toUpperCase().includes('STOP LOSS REACHED') ||
-                            log.message.toUpperCase().includes('DRAWDOWN MÁXIMO DO CICLO 4 ATINGIDO') ||
-                            (log.message.toUpperCase().includes('STOP LOSS') && log.message.toUpperCase().includes('ATINGIDO') && !log.message.toUpperCase().includes('BLINDADO'))
-                        )
-                    );
-
-                    if (stopLossLog) {
-                        stopDetected = true;
-                        stopReason = 'STOP_LOSS';
-                        stopCycle = extractCycle(stopLossLog.message);
-
-                    }
-                }
-
-                // 3. META DE LUCRO / SESSÃO FINALIZADA
-                if (!stopDetected) {
-                     const profitLog = recentLogs.find(log => 
-                        log.message && (
-                            log.message.toUpperCase().includes('META DE LUCRO ATINGIDA') ||
-                            log.message.toUpperCase().includes('META ATINGIDA') ||
-                            log.message.toUpperCase().includes('LUCRO ATINGIDO') ||
-                            log.message.toUpperCase().includes('SESSÃO FINALIZADA')
-                        )
-                    );
-
-                    if (profitLog) {
-                        stopDetected = true;
-                        stopReason = 'TARGET';
-                        stopCycle = extractCycle(profitLog.message);
-                    }
-                }
-
-                // Disparar Modal Unificado
-                if (stopDetected) {
-                     if (!this.sessionSummaryAcknowledged) {
-                        window.zenixStopModalActive = true;
-                        console.log(`[AgenteAutonomo] 🛑 [Logs] Stop Detected: ${stopReason} | Cycle: ${stopCycle}`);
-                        
-                        this.sessionSummaryData = {
-                            profit: stopProfit,
-                            cycle: stopCycle,
-                            reason: stopReason
-                        };
-                        this.showSessionSummaryModal = true;
-                     }
+                this.showSessionSummaryModal = true;
+             }
+        }
                 }
 
                 // 4. CICLO CONCLUÍDO (Lógica Existente)
