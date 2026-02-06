@@ -938,12 +938,11 @@ export default {
                     // Verify Risk Profile
                     console.log(`[AIMonitoring] Loaded Risk Profile: ${this.recoveryConfig.riskProfile || 'DEFAULT (Moderado)'}`);
                     
-                    // Initial Logs according to ZENIX protocol
-                    this.addLog('Início de Sessão', [
-                        `Saldo Inicial: ${this.currencySymbol}${this.monitoringStats.balance.toFixed(2)}`,
-                        `Meta de Lucro: ${this.currencySymbol}${(this.currentConfig.profitTarget || 100).toFixed(2)}`,
-                        `Stop Loss: ${this.currencySymbol}${(this.currentConfig.lossLimit || 100).toFixed(2)}`,
-                        `Estratégia: ${this.currentConfig.strategy.toUpperCase()}`,
+                    this.addLog('INÍCIO DE SESSÃO', [
+                        `Saldo Inicial: ${this.preferredCurrencyPrefix}${this.monitoringStats.initialBalance.toFixed(2)}`,
+                        `Meta de Lucro: ${this.preferredCurrencyPrefix}${this.sessionState.profitTarget.toFixed(2)}`,
+                        `Stop Loss: ${this.preferredCurrencyPrefix}${this.sessionState.lossLimit.toFixed(2)}`,
+                        `Estratégia: ${this.sessionState.strategy.toUpperCase()} v${this.sessionState.version || '1.0'}`,
                         `Payout Mínimo: ${this.currentConfig.expectedPayout}x`,
                         `Payout Recuperação: ${this.recoveryConfig?.expectedPayout || this.recoveryConfig?.minPayout || 1.26}x`
                     ], 'info');
@@ -1060,13 +1059,6 @@ export default {
                         'Servidor: Deriv WebSocket v3'
                     ], 'success');
 
-                    // ✅ Log Strategy Version
-                    if (this.sessionState.version) {
-                         this.addLog('Versão da Estratégia', [
-                            `Versão: v${this.sessionState.version}`,
-                            `Arquivo JSON: carregado`
-                        ], 'info');
-                    }
                     const token = this.getDerivToken();
                     
                     if (token) {
