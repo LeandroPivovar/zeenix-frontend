@@ -72,10 +72,10 @@
                             <!-- Mobile History Button -->
                             <button 
                                 @click="showHistoryModal = true"
-                                class="w-full mt-4 py-3 px-4 rounded-xl bg-[#161616] border border-[#2e2e2e] flex items-center justify-center gap-2 text-white hover:bg-[#2e2e2e] transition-colors shadow-sm"
+                                class="w-full mt-4 py-4 bg-secondary/40 hover:bg-secondary/60 border border-border/40 rounded-2xl flex items-center justify-center gap-2 group transition-all duration-300"
                             >
-                                <i class="fas fa-history text-zenix-green"></i>
-                                <span class="font-bold text-xs tracking-wider uppercase">Histórico de Sessões</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                                <span class="text-xs font-black text-success uppercase tracking-widest">Histórico Completo</span>
                             </button>
                         </div>
                         <div class="grid grid-cols-12 gap-5">
