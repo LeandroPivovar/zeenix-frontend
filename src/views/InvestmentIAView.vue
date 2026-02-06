@@ -314,6 +314,12 @@
                                 </label>
                                 <div class="risk-buttons">
                                     <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'fixo' }]"
+                                        @click="modoMartingale = 'fixo'"
+                                    >
+                                        Fixo
+                                    </button>
+                                    <button 
                                         :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
                                         @click="modoMartingale = 'conservador'"
                                     >
@@ -879,7 +885,8 @@ export default {
             const labels = {
                 'conservador': 'Baixo',
                 'moderado': 'Médio',
-                'agressivo': 'Alto'
+                'agressivo': 'Alto',
+                'fixo': 'Fixo'
             };
             return labels[this.modoMartingale] || 'Baixo';
         },
@@ -888,7 +895,8 @@ export default {
             const widths = {
                 'conservador': '25%',
                 'moderado': '50%',
-                'agressivo': '75%'
+                'agressivo': '75%',
+                'fixo': '15%'
             };
             return widths[this.modoMartingale] || '25%';
         },
@@ -897,7 +905,8 @@ export default {
             const descriptions = {
                 'conservador': 'Recupera o valor perdido até o M5 (sexta perda). Se não conseguir, assume a perda e reseta para o valor da entrada inicial.',
                 'moderado': 'Recuperação ilimitada com +15% de lucro sobre as perdas totais',
-                'agressivo': 'Recuperação ilimitada com +30% de lucro sobre as perdas totais'
+                'agressivo': 'Recuperação ilimitada com +30% de lucro sobre as perdas totais',
+                'fixo': 'Opera com valor fixo sem multiplicar stakes na recuperação.'
             };
             return descriptions[this.modoMartingale] || descriptions.conservador;
         }
