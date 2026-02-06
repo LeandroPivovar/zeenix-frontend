@@ -1,5 +1,10 @@
 ﻿<template>
-	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ paddingTop: isMobile ? '30px' : '2.2rem' }">
+	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ 
+		paddingTop: isMobile ? '30px' : '2.2rem',
+		paddingLeft: isMobile ? '1rem' : '0',
+		paddingRight: isMobile ? '1rem' : '0',
+		paddingBottom: isMobile ? '30px' : '0'
+	}">
 		<!-- Header -->
 		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-2 gap-4 md:mt-2 mt-2 fade-in">
 			<!-- Title Section -->
