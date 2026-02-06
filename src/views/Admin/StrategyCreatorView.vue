@@ -3661,7 +3661,7 @@ export default {
                     return;
                 }
 
-                this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
+                this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${overrideContractType || config.tradeType} $${stake}`, 'info');
                 
                 // Step 1: Request Proposal to get exact payout
                 const proposalParams = {

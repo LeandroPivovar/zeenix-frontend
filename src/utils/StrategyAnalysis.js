@@ -132,7 +132,7 @@ export const StrategyAnalysis = {
             reason: pass
                 ? `Densidade OK: Encontrado ${count} dígitos ${targetDigits.join('/')} ${unique ? '(Únicos)' : ''}`
                 : `Densidade negada: Encontrado ${count} dígitos (Limite ${operator}${threshold})`,
-            direction: pass ? (operator === '>' || operator === '>=' || operator === '=' ? 'DIGITMATCH' : 'DIGITDIFF') : null
+            direction: null // Density doesn't imply a specific contract direction (Call/Put/Over/Under)
         };
     },
 
@@ -649,8 +649,7 @@ export const StrategyAnalysis = {
         return {
             pass,
             reason: pass ? `Spike Detected (${currentDelta.toFixed(3)} > ${multiplier}x avg)` : `No Spike`,
-            direction: pass ? (rawDelta > 0 ? 'PUT' : 'CALL') : null // Spike usually implies Reversal? Or Follow? Let's assume Follow for now, or Reversal? User didn't specify. Standard Mean Reversion says Reversal.
-            // Let's stick to Reversal for Spike
+            direction: pass ? (rawDelta > 0 ? 'PUT' : 'CALL') : null // Standard Mean Reversion
         };
     },
 

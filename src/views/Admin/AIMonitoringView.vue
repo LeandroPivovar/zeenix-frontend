@@ -1668,7 +1668,7 @@ export default {
             }
             
             // Update Contract Type state for logging and Fast Result
-            this.sessionState.lastContractType = config.tradeType;
+            this.sessionState.lastContractType = overrideContractType || config.tradeType;
             this.pendingFastResult = {
                 active: false,
                 contractId: null,
