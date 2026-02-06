@@ -68,6 +68,15 @@
                                     <i class="fas fa-brain text-[#22C55E] text-2xl"></i>
                                 </div>
                             </div>
+                            
+                            <!-- Mobile History Button -->
+                            <button 
+                                @click="showHistoryModal = true"
+                                class="w-full mt-4 py-3 px-4 rounded-xl bg-[#161616] border border-[#2e2e2e] flex items-center justify-center gap-2 text-white hover:bg-[#2e2e2e] transition-colors shadow-sm"
+                            >
+                                <i class="fas fa-history text-zenix-green"></i>
+                                <span class="font-bold text-xs tracking-wider uppercase">Histórico de Sessões</span>
+                            </button>
                         </div>
                         <div class="grid grid-cols-12 gap-5">
                             <!-- AI Visualization Area (Desktop Only) -->
