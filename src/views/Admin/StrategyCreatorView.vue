@@ -1829,7 +1829,113 @@ export default {
                 { value: 'HIGHER', label: 'Maior' }, { value: 'LOWER', label: 'Menor' },
                 { value: 'RANGE', label: 'Permanece Dentro' }, { value: 'UPORDOWN', label: 'Sai Fora' },
                 { value: 'EXPIRYRANGE', label: 'Termina Dentro' }, { value: 'EXPIRYMISS', label: 'Termina Fora' },
-            ]
+            ],
+            tradeTypeCategories: [
+                {
+                  id: 'digits',
+                  label: 'Dígitos',
+                  icon: 'fas fa-hashtag',
+                  items: [
+                    { value: 'digits_over_under', label: 'Superior / Inferior', icon: 'TradeTypesDigitsOverIcon.svg', directions: [
+                        { value: 'DIGITOVER', label: 'Superior' },
+                        { value: 'DIGITUNDER', label: 'Inferior' }
+                      ]
+                    },
+                    { value: 'digits_match_diff', label: 'Combina / Difere', icon: 'TradeTypesDigitsMatchesIcon.svg', directions: [
+                        { value: 'DIGITMATCH', label: 'Combina' },
+                        { value: 'DIGITDIFF', label: 'Difere' }
+                      ]
+                    },
+                    { value: 'digits_even_odd', label: 'Par / Ímpar', icon: 'TradeTypesDigitsEvenIcon.svg', directions: [
+                        { value: 'DIGITEVEN', label: 'Par' },
+                        { value: 'DIGITODD', label: 'Ímpar' }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  id: 'rising_falling',
+                  label: 'Subindo ou Descendo',
+                  icon: 'fas fa-chart-line',
+                  items: [
+                    { value: 'rising_falling_rise_fall_equal', label: 'Subida/Queda Igual', icon: 'TradeTypesUpsAndDownsRiseIcon.svg', directions: [
+                        { value: 'CALLE', label: 'Subida Igual' },
+                        { value: 'PUTE', label: 'Queda Igual' }
+                      ]
+                    },
+                    { value: 'rising_falling_rise_fall', label: 'Subida/Queda', icon: 'TradeTypesUpsAndDownsRiseIcon.svg', directions: [
+                        { value: 'CALL', label: 'Subida' },
+                        { value: 'PUT', label: 'Queda' }
+                      ] 
+                    },
+                    { value: 'reset_high_low', label: 'Reset Alta/Baixa', icon: 'TradeTypesUpsAndDownsResetUpIcon.svg', directions: [
+                        { value: 'RESETCALL', label: 'Reset Alta' },
+                        { value: 'RESETPUT', label: 'Reset Baixa' }
+                      ]
+                    },
+                    { value: 'runs_high_low', label: 'Somente Altas / Somente Quedas', icon: 'TradeTypesUpsAndDownsOnlyUpsIcon.svg', directions: [
+                        { value: 'RUNHIGH', label: 'Somente Altas' },
+                        { value: 'RUNLOW', label: 'Somente Quedas' }
+                      ]
+                    },
+                    { value: 'tick_high_low', label: 'Máxima/Mínima por Ticks', icon: 'TradeTypesHighsAndLowsHighIcon.svg', directions: [
+                        { value: 'TICKHIGH', label: 'Máxima' },
+                        { value: 'TICKLOW', label: 'Mínima' }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  id: 'one_barrier',
+                  label: 'Uma Barreira',
+                  icon: 'fas fa-bullseye',
+                  items: [
+                    { value: 'touch_no_touch', label: 'Toca / Não Toca', icon: 'TradeTypesHighsAndLowsTouchIcon.svg', directions: [
+                        { value: 'ONETOUCH', label: 'Toca' },
+                        { value: 'NOTOUCH', label: 'Não Toca' }
+                      ]
+                    },
+                    { value: 'higher_lower', label: 'Maior / Menor', icon: 'TradeTypesHighsAndLowsHigherIcon.svg', directions: [
+                        { value: 'HIGHER', label: 'Maior' },
+                        { value: 'LOWER', label: 'Menor' }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  id: 'two_barriers',
+                  label: 'Duas Barreiras',
+                  icon: 'fas fa-shield-alt',
+                  items: [
+                    { value: 'in_out', label: 'Permanece Dentro / Sai Fora', icon: 'TradeTypesInsAndOutsStaysInIcon.svg', directions: [
+                        { value: 'RANGE', label: 'Permanece Dentro' },
+                        { value: 'UPORDOWN', label: 'Sai Fora' }
+                      ]
+                    },
+                    { value: 'ends_in_out', label: 'Termina Dentro / Termina Fora', icon: 'TradeTypesInsAndOutsEndsInIcon.svg', directions: [
+                        { value: 'EXPIRYRANGE', label: 'Termina Dentro' },
+                        { value: 'EXPIRYMISS', label: 'Termina Fora' }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  id: 'no_expiry',
+                  label: 'Sem Vencimento',
+                  icon: 'fas fa-bolt',
+                  items: [
+                    { value: 'multipliers_mult', label: 'Multiplicadores', icon: 'TradeTypesMultipliersUpIcon.svg', directions: [
+                        { value: 'MULTUP', label: 'Alta' },
+                        { value: 'MULTDOWN', label: 'Baixa' }
+                      ]
+                    },
+                    { value: 'accumulators_accu', label: 'Acumuladores', icon: 'TradeTypesAccumulatorStayInIcon.svg', directions: [
+                        { value: 'ACCU', label: 'Acumuladores' }
+                      ]
+                    }
+                  ]
+                }
+              ]
         }
     },
     computed: {
@@ -2009,114 +2115,7 @@ export default {
             return this.form.attackFilters.map(f => f.name).join(', ');
         }
     },
-    data() {
-        return {
-           tradeTypeCategories: [
-                {
-                  id: 'digits',
-                  label: 'Dígitos',
-                  icon: 'fas fa-hashtag',
-                  items: [
-                    { value: 'digits_over_under', label: 'Superior / Inferior', icon: 'TradeTypesDigitsOverIcon.svg', directions: [
-                        { value: 'DIGITOVER', label: 'Superior' },
-                        { value: 'DIGITUNDER', label: 'Inferior' }
-                      ]
-                    },
-                    { value: 'digits_match_diff', label: 'Combina / Difere', icon: 'TradeTypesDigitsMatchesIcon.svg', directions: [
-                        { value: 'DIGITMATCH', label: 'Combina' },
-                        { value: 'DIGITDIFF', label: 'Difere' }
-                      ]
-                    },
-                    { value: 'digits_even_odd', label: 'Par / Ímpar', icon: 'TradeTypesDigitsEvenIcon.svg', directions: [
-                        { value: 'DIGITEVEN', label: 'Par' },
-                        { value: 'DIGITODD', label: 'Ímpar' }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  id: 'rising_falling',
-                  label: 'Subindo ou Descendo',
-                  icon: 'fas fa-chart-line',
-                  items: [
-                    { value: 'rising_falling_rise_fall_equal', label: 'Subida/Queda Igual', icon: 'TradeTypesUpsAndDownsRiseIcon.svg', directions: [
-                        { value: 'CALLE', label: 'Subida Igual' },
-                        { value: 'PUTE', label: 'Queda Igual' }
-                      ]
-                    },
-                    { value: 'rising_falling_rise_fall', label: 'Subida/Queda', icon: 'TradeTypesUpsAndDownsRiseIcon.svg', directions: [
-                        { value: 'CALL', label: 'Subida' },
-                        { value: 'PUT', label: 'Queda' }
-                      ] 
-                    },
-                    { value: 'reset_high_low', label: 'Reset Alta/Baixa', icon: 'TradeTypesUpsAndDownsResetUpIcon.svg', directions: [
-                        { value: 'RESETCALL', label: 'Reset Alta' },
-                        { value: 'RESETPUT', label: 'Reset Baixa' }
-                      ]
-                    },
-                    { value: 'runs_high_low', label: 'Somente Altas / Somente Quedas', icon: 'TradeTypesUpsAndDownsOnlyUpsIcon.svg', directions: [
-                        { value: 'RUNHIGH', label: 'Somente Altas' },
-                        { value: 'RUNLOW', label: 'Somente Quedas' }
-                      ]
-                    },
-                    { value: 'tick_high_low', label: 'Máxima/Mínima por Ticks', icon: 'TradeTypesHighsAndLowsHighIcon.svg', directions: [
-                        { value: 'TICKHIGH', label: 'Máxima' },
-                        { value: 'TICKLOW', label: 'Mínima' }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  id: 'one_barrier',
-                  label: 'Uma Barreira',
-                  icon: 'fas fa-bullseye',
-                  items: [
-                    { value: 'touch_no_touch', label: 'Toca / Não Toca', icon: 'TradeTypesHighsAndLowsTouchIcon.svg', directions: [
-                        { value: 'ONETOUCH', label: 'Toca' },
-                        { value: 'NOTOUCH', label: 'Não Toca' }
-                      ]
-                    },
-                    { value: 'higher_lower', label: 'Maior / Menor', icon: 'TradeTypesHighsAndLowsHigherIcon.svg', directions: [
-                        { value: 'HIGHER', label: 'Maior' },
-                        { value: 'LOWER', label: 'Menor' }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  id: 'two_barriers',
-                  label: 'Duas Barreiras',
-                  icon: 'fas fa-shield-alt',
-                  items: [
-                    { value: 'in_out', label: 'Permanece Dentro / Sai Fora', icon: 'TradeTypesInsAndOutsStaysInIcon.svg', directions: [
-                        { value: 'RANGE', label: 'Permanece Dentro' },
-                        { value: 'UPORDOWN', label: 'Sai Fora' }
-                      ]
-                    },
-                    { value: 'ends_in_out', label: 'Termina Dentro / Termina Fora', icon: 'TradeTypesInsAndOutsEndsInIcon.svg', directions: [
-                        { value: 'EXPIRYRANGE', label: 'Termina Dentro' },
-                        { value: 'EXPIRYMISS', label: 'Termina Fora' }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  id: 'no_expiry',
-                  label: 'Sem Vencimento',
-                  icon: 'fas fa-bolt',
-                  items: [
-                    { value: 'multipliers_mult', label: 'Multiplicadores', icon: 'TradeTypesMultipliersUpIcon.svg', directions: [
-                        { value: 'MULTUP', label: 'Alta' },
-                        { value: 'MULTDOWN', label: 'Baixa' }
-                      ]
-                    },
-                    { value: 'accumulators_accu', label: 'Acumuladores', icon: 'TradeTypesAccumulatorStayInIcon.svg', directions: [
-                        { value: 'ACCU', label: 'Acumuladores' }
-                      ]
-                    }
-                  ]
-                }
-              ],
+
     mounted() {
         this.handleResize();
         window.addEventListener('resize', this.handleResize);
