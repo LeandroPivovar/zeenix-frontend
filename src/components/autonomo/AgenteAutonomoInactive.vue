@@ -884,7 +884,6 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 
 .agent-config-container {
     width: 100%;
-    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -1437,7 +1436,6 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 
 .start-action-container {
     width: 100%;
-    max-width: 600px;
     margin: 2rem auto 0;
     display: flex;
     flex-direction: column;
@@ -1449,7 +1447,6 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 
 .start-agent-btn-large {
     width: 100%;
-    max-width: 600px;
     padding: 1.25rem;
     background: #22C55E;
     color: #000;
