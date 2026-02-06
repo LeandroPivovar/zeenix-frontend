@@ -1813,47 +1813,7 @@ export default {
                     config: { rangeTicks: 10, jumpThreshold: 50 }
                 }
             ],
-            // Hardcoded Category Data (Expanded for Specific Contracts)
-            tradeTypeCategories: [
-                {
-                    id: 'rising_falling',
-                    label: 'Sobe / Desce',
-                    icon: 'fas fa-chart-line',
-                    items: [
-                        { value: 'CALL', label: 'Sobe (Call)', icon: 'TradeTypesRiseFallIcon.svg' },
-                        { value: 'PUT', label: 'Desce (Put)', icon: 'TradeTypesRiseFallIcon.svg' },
-                        { value: 'CALLE', label: 'Sobe Igual (CallE)', icon: 'TradeTypesRiseFallEqualIcon.svg' },
-                        { value: 'PUTE', label: 'Desce Igual (PutE)', icon: 'TradeTypesRiseFallEqualIcon.svg' }
-                    ]
-                },
-                {
-                    id: 'even_odd',
-                    label: 'Par / Ímpar',
-                    icon: 'fas fa-sort-numeric-up',
-                    items: [
-                        { value: 'DIGITEVEN', label: 'Par', icon: 'TradeTypesEvenOddIcon.svg' },
-                        { value: 'DIGITODD', label: 'Ímpar', icon: 'TradeTypesEvenOddIcon.svg' }
-                    ]
-                },
-                {
-                    id: 'over_under',
-                    label: 'Acima / Abaixo',
-                    icon: 'fas fa-arrow-up',
-                    items: [
-                        { value: 'DIGITOVER', label: 'Acima (Over)', icon: 'TradeTypesOverUnderIcon.svg' },
-                        { value: 'DIGITUNDER', label: 'Abaixo (Under)', icon: 'TradeTypesOverUnderIcon.svg' }
-                    ]
-                },
-                {
-                    id: 'match_diff',
-                    label: 'Combina / Difere',
-                    icon: 'fas fa-check-double',
-                    items: [
-                        { value: 'DIGITMATCH', label: 'Combina (Match)', icon: 'TradeTypesMatchDiffIcon.svg' },
-                        { value: 'DIGITDIFF', label: 'Difere (Diff)', icon: 'TradeTypesMatchDiffIcon.svg' }
-                    ]
-                }
-            ],
+
             allTradeTypes: [
                 { value: 'CALL', label: 'Subida' }, { value: 'PUT', label: 'Queda' },
                 { value: 'DIGITMATCH', label: 'Combina' }, { value: 'DIGITDIFF', label: 'Difere' },
@@ -2001,41 +1961,168 @@ export default {
             if (!this.recoveryContracts || this.recoveryContracts.length === 0) return [];
             return this.recoveryContracts.map(c => c.contractType.toUpperCase());
         },
-        availableTradeTypeGroups() {
-             const contextContracts = this.modalContext === 'main' ? this.availableContracts : this.availableRecoveryContracts;
-             if (!contextContracts.length) return []; 
-
-             return this.tradeTypeCategories.map(category => {
-                const filteredItems = category.items.filter(item => {
-                    if (contextContracts.includes(item.value.toUpperCase())) return true;
-                    if (item.directions) {
-                         return item.directions.some(dir => contextContracts.includes(dir.value.toUpperCase()));
-                    }
-                    return false;
-                });
-                if (filteredItems.length > 0) return { ...category, items: filteredItems };
-                return null;
-              }).filter(Boolean);
+        // Helpers to get the current list based on context
+        currentContextContracts() {
+            return this.modalContext === 'main' ? this.contracts : this.recoveryContracts;
         },
+        
+        // DYNAMIC GENERATION OF CATEGORIES
+        availableTradeTypeGroups() {
+             const contracts = this.currentContextContracts;
+             if (!contracts || !contracts.length) return [];
+
+             const groups = {};
+             
+             // 1. Group Contracts
+             contracts.forEach(contract => {
+                 const type = contract.contractType;
+                 const category = contract.contractCategory;
+                 const label = contract.contractDisplay || type;
+                 
+                 // Determine UI Group
+                 let groupId = 'other';
+                 let groupLabel = 'Outros';
+                 let groupIcon = 'fas fa-cubes';
+
+                 // Map DB Category to UI Group
+                 if (['callput', 'risefall'].includes(category)) {
+                     groupId = 'rising_falling';
+                     groupLabel = 'Sobe / Desce';
+                     groupIcon = 'fas fa-chart-line';
+                 } else if (['touchnotouch'].includes(category)) {
+                     groupId = 'touch_notouch';
+                     groupLabel = 'Toca / Não Toca';
+                     groupIcon = 'fas fa-fingerprint';
+                 } else if (['asian'].includes(category)) {
+                     groupId = 'asian';
+                     groupLabel = 'Asiáticos';
+                     groupIcon = 'fas fa-globe-asia';
+                 } else if (['multiplier'].includes(category)) {
+                     groupId = 'multiplier';
+                     groupLabel = 'Multiplicadores';
+                     groupIcon = 'fas fa-times';
+                 } else if (['digits'].includes(category)) {
+                     // Digits Sub-grouping
+                     if (type.includes('EVEN') || type.includes('ODD')) {
+                         groupId = 'even_odd';
+                         groupLabel = 'Par / Ímpar';
+                         groupIcon = 'fas fa-sort-numeric-up';
+                     } else if (type.includes('OVER') || type.includes('UNDER')) {
+                         groupId = 'over_under';
+                         groupLabel = 'Acima / Abaixo';
+                         groupIcon = 'fas fa-arrow-up';
+                     } else if (type.includes('MATCH') || type.includes('DIFF')) {
+                         groupId = 'match_diff';
+                         groupLabel = 'Combina / Difere';
+                         groupIcon = 'fas fa-check-double';
+                     } else {
+                         groupId = 'digits_other';
+                         groupLabel = 'Dígitos';
+                         groupIcon = 'fas fa-calculator';
+                     }
+                 }
+
+                 if (!groups[groupId]) {
+                     groups[groupId] = {
+                         id: groupId,
+                         label: groupLabel,
+                         icon: groupIcon,
+                         items: []
+                     };
+                 }
+
+                 // Check for duplicates (some markets might return same contract type multiple times if data is messy, though rare)
+                 if (!groups[groupId].items.find(i => i.value === type)) {
+                     groups[groupId].items.push({
+                         value: type,
+                         label: label,
+                         icon: this.getTradeTypeIconName(type)
+                     });
+                 }
+             });
+
+             // 2. Sort Groups (Optional: Define priority)
+             const groupPriority = ['rising_falling', 'even_odd', 'over_under', 'match_diff', 'touch_notouch', 'asian', 'multiplier'];
+             return Object.values(groups).sort((a, b) => {
+                 const pA = groupPriority.indexOf(a.id);
+                 const pB = groupPriority.indexOf(b.id);
+                 // If both found, sort by priority
+                 if (pA !== -1 && pB !== -1) return pA - pB;
+                 // If valid priority, it comes first
+                 if (pA !== -1) return -1;
+                 if (pB !== -1) return 1;
+                 return a.label.localeCompare(b.label);
+             });
+        },
+        
         activeFiltersForModal() {
             return this.modalContext === 'main' ? this.filters : this.recoveryFilters;
         },
+        
+        // --- Label Helpers using Contracts Data directly ---
+        selectedTradeTypeGroupLabel() {
+            if (!this.form.selectedTradeTypeGroup) return 'Selecionar Tipo';
+            // We can try to guess from the currently selected trade type if we don't store group name persistently
+            // But form.selectedTradeTypeGroup is part of the state. 
+            // We need to find the group label that corresponds to this ID.
+            // Since we don't have the generated groups available easily outside the modal (unless we make it a data prop),
+            // let's do a quick lookup.
+            const map = {
+                'rising_falling': 'Sobe / Desce',
+                'even_odd': 'Par / Ímpar',
+                'over_under': 'Acima / Abaixo',
+                'match_diff': 'Combina / Difere',
+                'touch_notouch': 'Toca / Não Toca',
+                 'asian': 'Asiáticos',
+                 'multiplier': 'Multiplicadores'
+            };
+            return map[this.form.selectedTradeTypeGroup] || this.form.selectedTradeTypeGroup;
+        },
+        selectedTradeTypeLabel() {
+            if (!this.form.tradeType) return 'Selecionar';
+            const c = this.contracts.find(x => x.contractType === this.form.tradeType);
+            return c ? `${c.contractDisplay}` : this.form.tradeType;
+        },
+        selectedTradeTypeIcon() {
+            if (!this.form.tradeType) return null;
+            return `/deriv_icons/${this.getTradeTypeIconName(this.form.tradeType)}`;
+        },
+        
+        // Recovery Labels
+        selectedRecoveryMarketLabel() {
+            const market = this.markets.find(m => m.symbol === this.recoveryConfig.market);
+            if (market) return market.displayName || market.label;
+            
+            const marketByValue = this.markets.find(m => m.value === this.recoveryConfig.market);
+            return marketByValue ? marketByValue.label : 'Mercado de Recuperação';
+        },
+        selectedRecoveryTradeTypeGroupLabel() {
+            if (!this.recoveryConfig.selectedTradeTypeGroup) return 'Selecionar Tipo';
+            const map = {
+                'rising_falling': 'Sobe / Desce',
+                'even_odd': 'Par / Ímpar',
+                'over_under': 'Acima / Abaixo',
+                'match_diff': 'Combina / Difere',
+                'touch_notouch': 'Toca / Não Toca',
+                 'asian': 'Asiáticos',
+                 'multiplier': 'Multiplicadores'
+            };
+            return map[this.recoveryConfig.selectedTradeTypeGroup] || this.recoveryConfig.selectedTradeTypeGroup;
+        },
+        selectedRecoveryTradeTypeGroupIcon() {
+             // Not really used in UI often, but for consistency
+             return null; 
+        },
         selectedRecoveryTradeTypeLabel() {
             if (!this.recoveryConfig.tradeType) return 'Selecionar';
-            for (const cat of this.tradeTypeCategories) {
-                const item = cat.items.find(i => i.value === this.recoveryConfig.tradeType);
-                if (item) return `${cat.label} - ${item.label}`;
-            }
-            return this.recoveryConfig.tradeType;
+            const c = this.recoveryContracts.find(x => x.contractType === this.recoveryConfig.tradeType);
+            return c ? `${c.contractDisplay}` : this.recoveryConfig.tradeType;
         },
         selectedRecoveryTradeTypeIcon() {
             if (!this.recoveryConfig.tradeType) return null;
-            for (const cat of this.tradeTypeCategories) {
-                const item = cat.items.find(i => i.value === this.recoveryConfig.tradeType);
-                if (item && item.icon) return `/deriv_icons/${item.icon}`;
-            }
-            return null;
+            return `/deriv_icons/${this.getTradeTypeIconName(this.recoveryConfig.tradeType)}`;
         },
+        
         activeAttackFilterNames() {
             if (!this.form.attackFilters || !this.form.attackFilters.length) return '';
             return this.form.attackFilters.map(f => f.name).join(', ');
@@ -2199,12 +2286,23 @@ export default {
              const index = targetArray.findIndex(f => f.id === filter.id);
              
              if (index !== -1) {
-                 // Deactivate filter
                  const newFilter = { ...filter, active: false };
                  targetArray.splice(index, 1, newFilter);
                  this.$root.$toast.info(`Filtro ${filter.name} removido.`);
              }
         },
+        
+        getTradeTypeIconName(type) {
+            type = type.toUpperCase();
+            if (['CALL', 'PUT', 'CALLE', 'PUTE', 'RISE', 'FALL', 'EXPIRYRANGE', 'EXPIRYMISS', 'RANGE', 'UPORDOWN'].some(t => type.includes(t))) return 'TradeTypesRiseFallIcon.svg';
+            if (['DIGITEVEN', 'DIGITODD'].some(t => type.includes(t))) return 'TradeTypesEvenOddIcon.svg';
+            if (['DIGITOVER', 'DIGITUNDER'].some(t => type.includes(t))) return 'TradeTypesOverUnderIcon.svg';
+            if (['DIGITMATCH', 'DIGITDIFF'].some(t => type.includes(t))) return 'TradeTypesMatchDiffIcon.svg';
+            if (['ONETOUCH', 'NOTOUCH'].some(t => type.includes(t))) return 'TradeTypesTouchNoTouchIcon.svg'; // Check file name validity? Assuming standard naming convention or using generic
+            // Fallback
+            return 'TradeTypesRiseFallEqualIcon.svg';
+        },
+
 
         openFilterConfigDirect(filter, context) {
             this.modalContext = context;
