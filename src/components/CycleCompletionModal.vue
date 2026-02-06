@@ -14,7 +14,7 @@
           </div>
         </div>
 
-        <div class="modal-content">
+        <div class="cycle-modal-body">
           <h2 class="modal-title" :class="{ 'text-red-500': isFinalCycle && result < 0 }">{{ isFinalCycle ? 'SESSÃO FINALIZADA' : `CICLO ${cycleNumber} CONCLUÍDO!` }}</h2>
           <p class="modal-description">
             {{ isFinalCycle 
@@ -98,8 +98,8 @@ export default {
   background: #0B0B0B;
   border-radius: 24px;
   padding: 40px 32px;
-  max-width: 480px;
-  width: 100%;
+  max-width: 420px;
+  width: 95%;
   text-align: center;
   position: relative;
   border: 1px solid rgba(34, 197, 94, 0.2);
