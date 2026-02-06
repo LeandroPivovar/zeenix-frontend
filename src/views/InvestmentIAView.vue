@@ -314,6 +314,12 @@
                                 </label>
                                 <div class="risk-buttons">
                                     <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'fixo' }]"
+                                        @click="modoMartingale = 'fixo'"
+                                    >
+                                        Fixo
+                                    </button>
+                                    <button 
                                         :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
                                         @click="modoMartingale = 'conservador'"
                                     >
@@ -330,12 +336,6 @@
                                         @click="modoMartingale = 'agressivo'"
                                     >
                                         Agressivo
-                                    </button>
-                                    <button 
-                                        :class="['risk-btn', { 'active': modoMartingale === 'fixo' }]"
-                                        @click="modoMartingale = 'fixo'"
-                                    >
-                                        Fixo
                                     </button>
                                 </div>
                                 
