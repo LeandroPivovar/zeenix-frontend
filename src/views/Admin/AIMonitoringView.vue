@@ -934,15 +934,21 @@ export default {
                     // Inicializar Risk Session com valores corretos
                     this.sessionState = RiskManager.initSession(this.currentConfig.mode || 'VELOZ');
                     this.sessionState.activeStrategy = 'PRINCIPAL';
+                    
+                    // ✅ Popula sessionState com valores carregados para evitar erro no log
+                    this.sessionState.profitTarget = parsed.profitTarget || baseConfig.form.profitTarget || 10;
+                    this.sessionState.lossLimit = parsed.lossLimit || baseConfig.form.stopLoss || 50;
+                    this.sessionState.strategy = this.currentConfig.strategy;
+                    this.sessionState.version = parsed.version || '1.0';
 
                     // Verify Risk Profile
                     console.log(`[AIMonitoring] Loaded Risk Profile: ${this.recoveryConfig.riskProfile || 'DEFAULT (Moderado)'}`);
                     
                     this.addLog('INÍCIO DE SESSÃO', [
-                        `Saldo Inicial: ${this.preferredCurrencyPrefix}${this.monitoringStats.initialBalance.toFixed(2)}`,
-                        `Meta de Lucro: ${this.preferredCurrencyPrefix}${this.sessionState.profitTarget.toFixed(2)}`,
-                        `Stop Loss: ${this.preferredCurrencyPrefix}${this.sessionState.lossLimit.toFixed(2)}`,
-                        `Estratégia: ${this.sessionState.strategy.toUpperCase()} v${this.sessionState.version || '1.0'}`,
+                        `Saldo Inicial: ${this.preferredCurrencyPrefix}${(this.monitoringStats.initialBalance || 0).toFixed(2)}`,
+                        `Meta de Lucro: ${this.preferredCurrencyPrefix}${(this.sessionState.profitTarget || 0).toFixed(2)}`,
+                        `Stop Loss: ${this.preferredCurrencyPrefix}${(this.sessionState.lossLimit || 0).toFixed(2)}`,
+                        `Estratégia: ${(this.sessionState.strategy || 'Unknown').toUpperCase()} v${this.sessionState.version || '1.0'}`,
                         `Payout Mínimo: ${this.currentConfig.expectedPayout}x`,
                         `Payout Recuperação: ${this.recoveryConfig?.expectedPayout || this.recoveryConfig?.minPayout || 1.26}x`
                     ], 'info');
