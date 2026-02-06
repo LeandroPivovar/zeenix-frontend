@@ -2591,26 +2591,26 @@ export default {
         updateRecoveryDirection(mode, specificType = null) {
             this.recoveryConfig.directionMode = mode;
             
-            // Only auto-update tradeType if a specific direction is selected (not 'both')
-            if (mode !== 'both' && specificType) {
+            if (mode === 'both') {
+                this.recoveryConfig.tradeType = ''; // Clear to allow dynamic direction
+                console.log(`[updateRecoveryDirection] Direction: both, TradeType cleared for dynamic signals`);
+            } else if (specificType) {
                 this.recoveryConfig.tradeType = specificType;
                 console.log(`[updateRecoveryDirection] Direction: ${mode}, TradeType updated to: ${specificType}`);
                 this.$root.$toast.success(`Tipo de contrato atualizado para: ${specificType}`);
-            } else {
-                console.log(`[updateRecoveryDirection] Direction: ${mode} (tradeType unchanged)`);
             }
         },
         
         updatePrincipalDirection(mode, specificType = null) {
             this.form.directionMode = mode;
             
-            // Only auto-update tradeType if a specific direction is selected (not 'both')
-            if (mode !== 'both' && specificType) {
+            if (mode === 'both') {
+                this.form.tradeType = ''; // Clear to allow dynamic direction
+                console.log(`[updatePrincipalDirection] Direction: both, TradeType cleared for dynamic signals`);
+            } else if (specificType) {
                 this.form.tradeType = specificType;
                 console.log(`[updatePrincipalDirection] Direction: ${mode}, TradeType updated to: ${specificType}`);
                 this.$root.$toast.success(`Tipo de contrato atualizado para: ${specificType}`);
-            } else {
-                console.log(`[updatePrincipalDirection] Direction: ${mode} (tradeType unchanged)`);
             }
         },
         
@@ -3603,10 +3603,10 @@ export default {
                             console.log(`[Direction Check] Mode: ${isRec ? 'RECUPERAÇÃO' : 'PRINCIPAL'}, Signal: ${signal}, Configured Type: ${baseType}`);
 
                             // ✅ CRITICAL: Check if user configured a specific contract type (not a group)
-                            // If so, only allow dynamic direction if it matches the configured type
-                            const isSpecificContract = ['DIGITOVER', 'DIGITUNDER', 'DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'CALL', 'PUT'].includes(baseType);
-                            
-                            if (isSpecificContract) {
+                         // If so, only allow dynamic direction if it matches the configured type
+                         const isSpecificContract = ['DIGITOVER', 'DIGITUNDER', 'DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'CALL', 'PUT'].includes(baseType);
+                         
+                         if (isSpecificContract) {
                                 // User configured a specific direction - respect it!
                                 // Only process if signal matches the configured type
                                 const configuredIsUp = ['CALL', 'DIGITOVER', 'DIGITEVEN', 'DIGITMATCH'].includes(baseType);
@@ -3625,15 +3625,19 @@ export default {
                                 // Signal matches configured type, use the configured type
                                 dynamicContractType = baseType;
                             } else {
-                                // Dynamic group - map signal to contract type
+                                // Dynamic group or EMPTY tradeType - map signal to contract type
+                                // If baseType is empty, we must infer the contract group from the signal or activeTradeTypeGroup
+                                const group = configModel.selectedTradeTypeGroup || '';
+                                const isDigitGroup = group.includes('digit') || ['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal);
+
                                 if (['CALL', 'UP'].includes(signal)) {
-                                    dynamicContractType = baseType.includes('DIGIT') ? 'DIGITOVER' : 'CALL';
+                                    dynamicContractType = isDigitGroup ? 'DIGITOVER' : 'CALL';
                                 } else if (['PUT', 'DOWN'].includes(signal)) {
-                                    dynamicContractType = baseType.includes('DIGIT') ? 'DIGITUNDER' : 'PUT';
+                                    dynamicContractType = isDigitGroup ? 'DIGITUNDER' : 'PUT';
                                 } else if (['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal)) {
                                     dynamicContractType = signal;
                                 } else {
-                                    dynamicContractType = baseType;
+                                    dynamicContractType = baseType || signal; // Fallback to signal if baseType is empty
                                 }
                             }
 
