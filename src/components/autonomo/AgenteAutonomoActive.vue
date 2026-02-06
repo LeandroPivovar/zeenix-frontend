@@ -134,8 +134,8 @@
 					<div class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium tabular-nums opacity-90 mt-1"
 						:class= "periodProfit >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'"
 					>
-						<span v-if="!hideValues && initialCapital > 0">
-							{{ (periodProfit >= 0 ? '+' : '') + ((periodProfit / initialCapital) * 100).toFixed(2) }}%
+						<span v-if="!hideValues">
+							{{ (periodProfitPercent >= 0 ? '+' : '') + periodProfitPercent.toFixed(2) }}%
 						</span>
 						<span v-else-if="hideValues">••••</span>
 					</div>
@@ -1109,26 +1109,18 @@
                 return this.dailyData.reduce((sum, day) => sum + (day.profit || 0), 0);
             },
 			periodProfitPercent() {
-				// ✅ FIX: Calcular percentual baseado no CAPITAL INICIAL configurado
-				// Isso evita distorções quando o lucro é alto e o capital inicial "estimado" fica flutuando
 				const profit = this.periodProfit;
-                const baseCapital = this.agentConfig?.initialStake || this.agentConfig?.initialBalance || this.initialCapital;
+                const base = this.finalCapital;
                 
-                if (!baseCapital || baseCapital <= 0) return 0;
-                return (profit / baseCapital) * 100;
+                if (!base || base <= 0) return 0;
+                return (profit / base) * 100;
 			},
 			avgDailyProfitPercent() {
-				// Média percentual diária
-				if (this.selectedPeriod === 'session') {
-					if (!this.agentConfig || !this.agentConfig.sessionDate) return this.periodProfitPercent;
-					const sessionStart = new Date(this.agentConfig.sessionDate);
-					const now = new Date();
-					const diffTime = Math.abs(now - sessionStart);
-					const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-					return this.periodProfitPercent / diffDays;
-				}
-				if (!this.dailyData || this.dailyData.length === 0) return 0;
-				return this.periodProfitPercent / this.dailyData.length;
+				const avgProfit = this.avgDailyProfit;
+                const base = this.finalCapital;
+
+                if (!base || base <= 0) return 0;
+                return (avgProfit / base) * 100;
 			},
 			avgDailyProfit() {
 				// Se for sessão, cálculo de média/dia baseado na duração da sessão
