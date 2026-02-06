@@ -162,7 +162,7 @@
                                         <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
                                             <button 
                                                 type="button"
-                                                @click="form.directionMode = 'both'"
+                                                @click="updatePrincipalDirection('both')"
                                                 class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                 :class="form.directionMode === 'both' ? 'bg-zenix-green text-black shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
                                             >
@@ -172,7 +172,7 @@
                                                 v-for="(dir, idx) in selectedDirections" 
                                                 :key="dir.value"
                                                 type="button"
-                                                @click="form.directionMode = idx === 0 ? 'up' : 'down'"
+                                                @click="updatePrincipalDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                 class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                 :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'bg-zenix-green text-black shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
                                             >
@@ -433,7 +433,7 @@
                                                 <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
                                                     <button 
                                                         type="button"
-                                                        @click="recoveryConfig.directionMode = 'both'"
+                                                        @click="updateRecoveryDirection('both')"
                                                         class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                         :class="recoveryConfig.directionMode === 'both' ? 'bg-zenix-green text-black' : 'text-gray-500 hover:text-white'"
                                                     >
@@ -443,7 +443,7 @@
                                                         v-for="(dir, idx) in selectedRecoveryDirections" 
                                                         :key="dir.value"
                                                         type="button"
-                                                        @click="recoveryConfig.directionMode = idx === 0 ? 'up' : 'down'"
+                                                        @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                         class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                         :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'bg-zenix-green text-black' : 'text-gray-500 hover:text-white'"
                                                     >
@@ -2585,6 +2585,33 @@ export default {
             
             this.$root.$toast.success(`Selecionado: ${item.label} (${selectedDirection.label})`);
             this.closeTradeTypeModal();
+        },
+        
+        // ✅ NEW: Auto-update tradeType when direction mode changes
+        updateRecoveryDirection(mode, specificType = null) {
+            this.recoveryConfig.directionMode = mode;
+            
+            // Only auto-update tradeType if a specific direction is selected (not 'both')
+            if (mode !== 'both' && specificType) {
+                this.recoveryConfig.tradeType = specificType;
+                console.log(`[updateRecoveryDirection] Direction: ${mode}, TradeType updated to: ${specificType}`);
+                this.$root.$toast.success(`Tipo de contrato atualizado para: ${specificType}`);
+            } else {
+                console.log(`[updateRecoveryDirection] Direction: ${mode} (tradeType unchanged)`);
+            }
+        },
+        
+        updatePrincipalDirection(mode, specificType = null) {
+            this.form.directionMode = mode;
+            
+            // Only auto-update tradeType if a specific direction is selected (not 'both')
+            if (mode !== 'both' && specificType) {
+                this.form.tradeType = specificType;
+                console.log(`[updatePrincipalDirection] Direction: ${mode}, TradeType updated to: ${specificType}`);
+                this.$root.$toast.success(`Tipo de contrato atualizado para: ${specificType}`);
+            } else {
+                console.log(`[updatePrincipalDirection] Direction: ${mode} (tradeType unchanged)`);
+            }
         },
         
         calculatePercentage(value) {
