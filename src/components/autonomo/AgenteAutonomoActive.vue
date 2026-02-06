@@ -1995,6 +1995,22 @@
             return null; // Retorna null para usar o fallback do sessionStats
         };
 
+        // 0. SAFEGUARD: Ignorar Drawdown de Ciclo se não houver "Sessão Finalizada" (Pausa Técnica)
+        const drawdownLog = recentLogs.find(l => l.message && l.message.toUpperCase().includes('DRAWDOWN MÁXIMO DO CICLO'));
+        const sessionEndLog = recentLogs.find(l => l.message && l.message.toUpperCase().includes('SESSÃO FINALIZADA'));
+        
+        if (drawdownLog && !sessionEndLog) {
+            const currentCycle = findRecentCycle(recentLogs);
+            if (currentCycle < 4) {
+                // É apenas uma pausa de ciclo (1, 2 ou 3). Não mostrar modal de stop.
+                // Resetar qualquer detecção anterior de stop para evitar falso positivo
+                stopDetected = false;
+                // Log para debug
+                // console.log(`[AgenteAutonomo] Drawdown detected in cycle ${currentCycle}. Pausing (No Session Stop).`);
+                return; 
+            }
+        }
+
         // 1. STOP BLINDADO
         const blindadoLog = recentLogs.find(log => 
             log.message && (
