@@ -13,7 +13,7 @@
                         </div>
                         <div class="flex flex-col">
                             <h2 class="text-lg md:text-xl font-black text-white uppercase tracking-tight">Histórico de Sessões</h2>
-                            <p class="text-[10px] md:text-xs text-muted-foreground mt-0.5 opacity-70 leading-relaxed max-w-md">
+                            <p class="text-[12px] text-[#A1A1A1] mt-0.5 leading-relaxed max-w-md">
                                 Acompanhe nesta área o resumo oficial de suas últimas execuções e resultados detalhados.
                             </p>
                         </div>
