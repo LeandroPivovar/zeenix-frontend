@@ -1987,6 +1987,7 @@
                         log.message && (
                             log.message.toUpperCase().includes('STOP LOSS ATINGIDO') ||
                             log.message.toUpperCase().includes('STOP LOSS REACHED') ||
+                            log.message.toUpperCase().includes('DRAWDOWN MÁXIMO DO CICLO 4 ATINGIDO') ||
                             (log.message.toUpperCase().includes('STOP LOSS') && log.message.toUpperCase().includes('ATINGIDO') && !log.message.toUpperCase().includes('BLINDADO'))
                         )
                     );
@@ -1999,13 +2000,14 @@
                     }
                 }
 
-                // 3. META DE LUCRO
+                // 3. META DE LUCRO / SESSÃO FINALIZADA
                 if (!stopDetected) {
                      const profitLog = recentLogs.find(log => 
                         log.message && (
                             log.message.toUpperCase().includes('META DE LUCRO ATINGIDA') ||
                             log.message.toUpperCase().includes('META ATINGIDA') ||
-                            log.message.toUpperCase().includes('LUCRO ATINGIDO')
+                            log.message.toUpperCase().includes('LUCRO ATINGIDO') ||
+                            log.message.toUpperCase().includes('SESSÃO FINALIZADA')
                         )
                     );
 
