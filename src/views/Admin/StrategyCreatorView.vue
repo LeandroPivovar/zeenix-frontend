@@ -3933,7 +3933,7 @@ export default {
                     symbol: config.market || this.form.market
                 };
 
-                if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(config.tradeType)) {
+                if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(proposalParams.contract_type)) {
                     proposalParams.barrier = config.prediction.toString(); 
                 }
 
