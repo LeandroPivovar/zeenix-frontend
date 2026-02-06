@@ -1052,6 +1052,14 @@ export default {
                         'Status: Conectado ao mercado',
                         'Servidor: Deriv WebSocket v3'
                     ], 'success');
+
+                    // ✅ Log Strategy Version
+                    if (this.sessionState.version) {
+                         this.addLog('Versão da Estratégia', [
+                            `Versão: v${this.sessionState.version}`,
+                            `Arquivo JSON: carregado`
+                        ], 'info');
+                    }
                     const token = this.getDerivToken();
                     
                     if (token) {

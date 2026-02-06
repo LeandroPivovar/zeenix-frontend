@@ -2480,6 +2480,8 @@ export default {
             this.sessionState.profitTarget = this.form.profitTarget;
             this.sessionState.lossLimit = this.form.stopLoss;
             this.sessionState.stoplossBlindado = this.form.useBlindado || false;
+            // ✅ Pass Version
+            this.sessionState.version = this.currentVersion || '1.0';
 
             this.startSimulation();
             this.$root.$toast.success('Estratégia iniciada com sucesso!');
