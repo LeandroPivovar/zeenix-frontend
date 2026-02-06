@@ -1040,6 +1040,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    padding-bottom: 5px;
 }
 
 .form-group input {
