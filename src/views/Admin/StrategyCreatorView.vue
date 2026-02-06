@@ -3572,6 +3572,9 @@ export default {
                             const configModel = isRec ? this.recoveryConfig : this.form;
                             const baseType = (configModel.tradeType || '').toUpperCase();
 
+                            // 🔍 DEBUG LOG for recovery vs principal config
+                            console.log(`[Direction Check] Mode: ${isRec ? 'RECUPERAÇÃO' : 'PRINCIPAL'}, Signal: ${signal}, Configured Type: ${baseType}`);
+
                             // ✅ CRITICAL: Check if user configured a specific contract type (not a group)
                             // If so, only allow dynamic direction if it matches the configured type
                             const isSpecificContract = ['DIGITOVER', 'DIGITUNDER', 'DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'CALL', 'PUT'].includes(baseType);
@@ -3835,6 +3838,12 @@ export default {
                 // to ensure the Payout (e.g. 126%) matches the Stake Calculation.
                 // So we override 'config' to recoveryConfig if isFinancialRecovery is true.
                 const config = (isFinancialRecovery || isRecoveryStrategy) ? this.recoveryConfig : this.form;
+                
+                // 🔍 DEBUG: Log which config is being used
+                console.log(`[executeRealTrade] Mode: ${isFinancialRecovery ? 'RECUPERAÇÃO' : 'PRINCIPAL'}, ` +
+                    `Using Config: ${isFinancialRecovery || isRecoveryStrategy ? 'recoveryConfig' : 'form'}, ` +
+                    `TradeType: ${config.tradeType}, ` +
+                    `Override: ${overrideContractType || 'NONE'}`);
                 
                 // Check for Contract Switch
                 if (this.sessionState.lastContractType && this.sessionState.lastContractType !== (overrideContractType || config.tradeType)) {
