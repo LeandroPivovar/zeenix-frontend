@@ -798,7 +798,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 			// return this.allAgents.filter(agent => {
 			// 	return allowedAgents.some(allowedId => allowedId.toLowerCase() === agent.id.toLowerCase());
 			// });
-			return this.allAgents;
+            return this.allAgents;
 		},
 		riskLevelText() {
 			const labels = {
@@ -870,12 +870,31 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 <style scoped>
 .layout-content-agent-autonomo {
     margin: 0;
-    padding: 30px 0px;
+    padding: 30px 15px;
+    box-sizing: border-box;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .layout-content-agent-autonomo {
-        padding: 20px 0px;
+        padding: 20px 0px !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+}
+
+.agent-config-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+    .agent-config-container {
+        padding: 0 10px;
     }
 }
 
@@ -929,6 +948,24 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 .tooltip-container:hover .tooltip-text {
     visibility: visible;
     opacity: 1;
+}
+
+.risk-buttons {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .risk-buttons {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.5rem !important;
+    }
+    
+    .risk-btn {
+        width: 100% !important;
+    }
 }
 
 .config-grid {
@@ -1223,15 +1260,20 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 }
 
 .risk-btn {
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.25rem;
     background-color: #0B0B0B;
     border: 1px solid #1C1C1C;
     border-radius: 0.5rem;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 500;
     color: #A1A1A1;
     cursor: pointer;
     transition: all 0.2s;
+    width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .risk-btn.active {
@@ -1311,14 +1353,18 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 .form-help.positive { color: #22C55E; opacity: 0.9; }
 .form-help.negative { color: #EF4444; opacity: 0.9; }
 
-.loss-stoploss-row {
+.loss-stoploss-row,
+.value-goal-row {
     display: flex;
     gap: 1rem;
 }
 
-.value-goal-row {
-    display: flex;
-    gap: 1rem;
+@media (max-width: 768px) {
+    .loss-stoploss-row,
+    .value-goal-row {
+        flex-direction: column;
+        gap: 0;
+    }
 }
 
 .flex-1 { flex: 1; }
@@ -1389,12 +1435,15 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 
 
 .start-action-container {
-    max-width: 100%;
-    margin-top: 2rem;
+    width: 100%;
+    max-width: 600px;
+    margin: 2rem auto 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.75rem;
+    box-sizing: border-box;
+    padding: 0 10px;
 }
 
 .start-agent-btn-large {
@@ -1416,10 +1465,19 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
     box-shadow: 0 4px 20px rgba(34, 197, 94, 0.2);
 }
 
-.start-agent-btn-large:hover {
-    background: #1eb352;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4);
+@media (max-width: 768px) {
+    .start-agent-btn-large {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+    
+    .config-grid {
+        gap: 1rem;
+    }
+    
+    .config-card {
+        padding: 1rem;
+    }
 }
 
 /* --- NOVO DESIGN: MODAL DE SELEÇÃO DE AGENTE PREMIUM (Horizontal) --- */
@@ -1983,15 +2041,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     }
 }
 
-@media (max-width: 600px) {
-    .loss-stoploss-row {
-        /* Kept horizontal (side-by-side) as requested */
-    }
-    
-    .value-goal-row {
-        flex-direction: column;
-    }
-    
+@media (max-width: 768px) {
     .summary-grid-new {
         grid-template-columns: 1fr;
     }
