@@ -923,6 +923,16 @@ export default {
                         martingale: savedRecovery.martingale !== undefined ? savedRecovery.martingale : (baseConfig.recoveryConfig && baseConfig.recoveryConfig.martingale !== undefined ? baseConfig.recoveryConfig.martingale : true)
                     };
 
+                    // ✅ Load Validation: If directionMode is 'both', tradeType MUST be empty for dynamic signaling
+                    if (this.currentConfig.directionMode === 'both') {
+                        this.currentConfig.tradeType = '';
+                        console.log(`[loadConfiguration] Main: AMBOS detected, clearing tradeType`);
+                    }
+                    if (this.recoveryConfig.directionMode === 'both') {
+                        this.recoveryConfig.tradeType = '';
+                        console.log(`[loadConfiguration] Recovery: AMBOS detected, clearing tradeType`);
+                    }
+
                     // ✅ FIX: Allow JSON to define payout. Removed forced 1.26 override.
                     // if (this.currentConfig.strategy.toLowerCase() === 'apollo' || this.currentConfig.strategy.toLowerCase() === 'nexus') {
                     //    this.recoveryConfig.expectedPayout = 1.26; 
