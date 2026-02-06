@@ -92,6 +92,7 @@ export default {
                 market: 'R_100',
                 strategy: 'Apollo'
             },
+            recoveryConfig: {},
             
             // WebSocket & Market Data
             ws: null,
@@ -399,16 +400,68 @@ export default {
                 const mode = this.sessionState.negotiationMode || 'VELOZ';
                 const isRec = this.sessionState.activeStrategy === 'RECUPERACAO';
                 
+                // Collect signals from all filters that opted to provide a direction
+                const directions = results.map(r => r.direction).filter(d => d);
+                let dynamicContractType = null;
+                
+                if (directions.length > 0) {
+                     // Require Consensus: If multiple filters provide direction, they must match
+                     const uniqueDirections = [...new Set(directions)];
+                     if (uniqueDirections.length === 1) {
+                         const signal = uniqueDirections[0];
+                         const baseType = (this.form.tradeType || '').toUpperCase();
+                         
+                         // Map Signal to Contract Type
+                         if (['CALL', 'UP'].includes(signal)) {
+                             dynamicContractType = baseType.includes('DIGIT') ? 'DIGITOVER' : 'CALL';
+                         } else if (['PUT', 'DOWN'].includes(signal)) {
+                             dynamicContractType = baseType.includes('DIGIT') ? 'DIGITUNDER' : 'PUT';
+                         } else if (['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal)) {
+                             dynamicContractType = signal;
+                         } else {
+                             dynamicContractType = baseType; 
+                         }
+
+                         // ✅ Direction Mode Restriction
+                         const configModel = isRec ? this.recoveryConfig : this.form;
+                         const directionMode = configModel.directionMode || 'both';
+
+                         if (directionMode !== 'both') {
+                             const isUpSignal = ['CALL', 'UP', 'DIGITOVER', 'DIGITEVEN', 'DIGITMATCH'].includes(signal);
+                             const isDownSignal = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
+                             
+                             if ((directionMode === 'up' && !isUpSignal) || (directionMode === 'down' && !isDownSignal)) {
+                                 this.addLog(`🚫 Direção Restrita: Sinal ${signal} ignorado. Modo: ${directionMode}`, 'info');
+                                 return;
+                             }
+                         }
+
+                         // ✅ Resolve Dynamic Payout
+                         const directionPayouts = configModel.directionPayouts || {};
+                         const explicitPayout = directionPayouts[dynamicContractType] || null;
+                         this.sessionState.tempExplicitPayout = explicitPayout;
+                         
+                         this.addLog('🧭 Direção Dinâmica', [
+                            `Sinal: ${signal} → ${dynamicContractType}`,
+                            explicitPayout ? `Payout: ${(explicitPayout * 100).toFixed(0)}%` : 'Payout: Padrão'
+                         ], 'info');
+                     } else {
+                         this.addLog('⚠️ Conflito de Direção', `Filtros divergentes: ${uniqueDirections.join(', ')}`, 'warning');
+                         return; // BLOCK TRADE due to conflict
+                     }
+                }
+
                 this.addLog(`🧠 ANÁLISE: ${mode} ${isRec ? '(RECUPERAÇÃO)' : ''} | Filtros OK`, 'info');
-                this.executeAITrade();
+                this.executeAITrade(dynamicContractType, this.sessionState.tempExplicitPayout);
+                this.sessionState.tempExplicitPayout = null; // Clean up
             }
         },
         
-        calculateNextStake() {
+        calculateNextStake(explicitPayout = null) {
             const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
             const config = isRecovery ? this.recoveryConfig : this.form;
             
-            const stake = RiskManager.calculateNextStake(this.sessionState, config);
+            const stake = RiskManager.calculateNextStake(this.sessionState, config, explicitPayout);
             
             // Log Soros activation (Principal only)
             const sorosLevel = config.sorosLevel || 1;
@@ -424,7 +477,7 @@ export default {
             return stake;
         },
 
-        executeAITrade() {
+        executeAITrade(overrideContractType = null, explicitPayout = null) {
             if (!this.isAuthorized) {
                 this.addLog('⚠️ Entrada negada: Não autorizado', 'warning');
                 return;
@@ -442,7 +495,7 @@ export default {
             // Update Contract Type state
             this.sessionState.lastContractType = config.tradeType;
             
-            const stake = this.calculateNextStake();
+            const stake = this.calculateNextStake(explicitPayout);
 
             this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO' : 'PRINCIPAL'}): ${config.tradeType} $${stake}`, 'info');
 
@@ -451,7 +504,7 @@ export default {
                 proposal: 1,
                 amount: stake,
                 basis: 'stake',
-                contract_type: config.tradeType,
+                contract_type: overrideContractType || config.tradeType,
                 currency: 'USD',
                 duration: config.duration || this.form.duration || 1, // Fallback
                 duration_unit: config.durationUnit || this.form.durationUnit || 't',

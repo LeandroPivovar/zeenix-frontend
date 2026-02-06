@@ -1782,11 +1782,15 @@ export default {
                 digitHistory: this.digitHistory
             };
 
+            const results = [];
             let allPassed = true;
+
             for (const filter of this.activeFilters) {
                 if (!filter.active) continue;
                 
                 const result = StrategyAnalysis.evaluate(filter, data, this.mode || 'VELOZ');
+                results.push(result);
+
                 if (!result.pass) {
                     allPassed = false;
                     break;
@@ -1794,12 +1798,54 @@ export default {
             }
 
             if (allPassed && this.activeFilters.length > 0) {
+                // ✅ DYNAMIC DIRECTION LOGIC
+                const directions = results.map(r => r.direction).filter(d => d);
+                let dynamicContractType = null;
+
+                if (directions.length > 0) {
+                    const uniqueDirections = [...new Set(directions)];
+                    if (uniqueDirections.length === 1) {
+                        const signal = uniqueDirections[0];
+                        const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
+                        const configModel = this.isRecoveryActive ? strategyPreset.config.recoveryConfig : strategyPreset.config.form;
+                        
+                        const baseType = (configModel.tradeType || '').toUpperCase();
+
+                        if (['CALL', 'UP'].includes(signal)) {
+                            dynamicContractType = baseType.includes('DIGIT') ? 'DIGITOVER' : 'CALL';
+                        } else if (['PUT', 'DOWN'].includes(signal)) {
+                            dynamicContractType = baseType.includes('DIGIT') ? 'DIGITUNDER' : 'PUT';
+                        } else if (['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal)) {
+                            dynamicContractType = signal;
+                        } else {
+                            dynamicContractType = baseType;
+                        }
+
+                        // ✅ Direction Mode Restriction
+                        const directionMode = configModel.directionMode || 'both';
+                        if (directionMode !== 'both') {
+                            const isUpSignal = ['CALL', 'UP', 'DIGITOVER', 'DIGITEVEN', 'DIGITMATCH'].includes(signal);
+                            const isDownSignal = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
+                            
+                            if ((directionMode === 'up' && !isUpSignal) || (directionMode === 'down' && !isDownSignal)) {
+                                this.addLog(`🚫 Direção Restrita: Sinal ${signal} ignorado.`, 'warning');
+                                return;
+                            }
+                        }
+
+                        this.addLog(`🧭 Direção Dinâmica: ${signal} → ${dynamicContractType}`, 'info');
+                    } else {
+                        this.addLog('⚠️ Conflito de Direção', 'warning');
+                        return;
+                    }
+                }
+
                 this.addLog(`🎯 Sinal detectado (${strategy})! Executando trade...`, 'success');
-                this.executeRealTrade();
+                this.executeRealTrade(dynamicContractType);
             }
         },
 
-        async executeRealTrade() {
+        async executeRealTrade(overrideContractType = null) {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
             const strategyPreset = strategiesPresets.find(s => s.id === this.selectedStrategy);
@@ -1811,7 +1857,7 @@ export default {
                 parameters: {
                     amount: Number(this.entryValue),
                     basis: 'stake',
-                    contract_type: tradeConfig.tradeType,
+                    contract_type: overrideContractType || tradeConfig.tradeType,
                     currency: 'USD',
                     duration: tradeConfig.duration || 1,
                     duration_unit: tradeConfig.durationUnit || 't',

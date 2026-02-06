@@ -82,7 +82,7 @@ export const RiskManager = {
         const historyKey = modePrefix + tradeType + barrierSuffix;
 
         const configPayout = config.expectedPayout || null;
-        let estimatedPayout = configPayout || explicitPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 1.95;
+        let estimatedPayout = explicitPayout || configPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 1.95;
 
         // ✅ USER REQUEST: ACEITAR VALOR BRUTO EM 100% DAS VEZES
         // Se o usuário configurar "1.26", ele quer dizer 126% de lucro.

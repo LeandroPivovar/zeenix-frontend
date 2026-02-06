@@ -151,6 +151,56 @@
                                 </div>
                             </div>
 
+                            <!-- Direção e Payouts (Attack) -->
+                            <div v-if="form.selectedTradeTypeGroup" class="col-span-12 mt-2">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-[#181818] p-6 rounded-xl border border-[#333] shadow-inner">
+                                    <div class="md:col-span-2">
+                                        <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
+                                            <i class="fa-solid fa-compass text-zenix-green"></i>
+                                            Direção Permitida
+                                        </label>
+                                        <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
+                                            <button 
+                                                type="button"
+                                                @click="form.directionMode = 'both'"
+                                                class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                                :class="form.directionMode === 'both' ? 'bg-zenix-green text-black shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                            >
+                                                Ambos
+                                            </button>
+                                            <button 
+                                                v-for="(dir, idx) in selectedDirections" 
+                                                :key="dir.value"
+                                                type="button"
+                                                @click="form.directionMode = idx === 0 ? 'up' : 'down'"
+                                                class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                                :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'bg-zenix-green text-black shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                            >
+                                                {{ dir.label }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div v-for="dir in selectedDirections" :key="'payout-' + dir.value">
+                                        <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
+                                            <i class="fa-solid fa-hand-holding-dollar text-zenix-green"></i>
+                                            Payout ({{ dir.label }})
+                                        </label>
+                                        <div class="relative group">
+                                            <input 
+                                                type="number" 
+                                                v-model.number="form.directionPayouts[dir.value]" 
+                                                class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
+                                                step="1"
+                                                min="1"
+                                            />
+                                            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                                <span class="text-xs text-gray-500 font-black">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         <!-- Parâmetros de Execução -->
                         <div class="col-span-12">
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -395,6 +445,50 @@
                                             </div>
                                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
                                         </button>
+                                    </div>
+
+                                    <!-- Direção e Payouts (Recovery) -->
+                                    <div v-if="recoveryConfig.selectedTradeTypeGroup" class="md:col-span-2">
+                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[#181818] p-5 rounded-xl border border-[#333] mb-4">
+                                            <div class="md:col-span-2">
+                                                <label class="block text-white font-bold mb-2 text-[10px] uppercase tracking-[0.2em] opacity-70">Direção Permitida (REC)</label>
+                                                <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
+                                                    <button 
+                                                        type="button"
+                                                        @click="recoveryConfig.directionMode = 'both'"
+                                                        class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                                        :class="recoveryConfig.directionMode === 'both' ? 'bg-zenix-green text-black' : 'text-gray-500 hover:text-white'"
+                                                    >
+                                                        Ambos
+                                                    </button>
+                                                    <button 
+                                                        v-for="(dir, idx) in selectedRecoveryDirections" 
+                                                        :key="dir.value"
+                                                        type="button"
+                                                        @click="recoveryConfig.directionMode = idx === 0 ? 'up' : 'down'"
+                                                        class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                                        :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'bg-zenix-green text-black' : 'text-gray-500 hover:text-white'"
+                                                    >
+                                                        {{ dir.label }}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div v-for="dir in selectedRecoveryDirections" :key="'payout-rec-' + dir.value">
+                                                <label class="block text-white font-bold mb-2 text-[10px] uppercase tracking-[0.2em] opacity-70">Payout ({{ dir.label }})</label>
+                                                <div class="relative group">
+                                                    <input 
+                                                        type="number" 
+                                                        v-model.number="recoveryConfig.directionPayouts[dir.value]" 
+                                                        class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-2.5 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
+                                                        step="1"
+                                                        min="1"
+                                                    />
+                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                        <span class="text-[10px] text-gray-500 font-bold">%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
 
@@ -1548,6 +1642,8 @@ export default {
                 prediction: 0, 
                 sorosLevel: 1,
                 expectedPayout: 1.20, // Default for DIGITUNDER 8 (bet $1, get $1.20 total)
+                directionMode: 'both', // 'both', 'up', 'down'
+                directionPayouts: {}, // { [contractType]: payout }
                 attackFilters: []
             },
 
@@ -1584,6 +1680,8 @@ export default {
                 pauseVolatility: 50,
                 pauseTime: 5,
                 expectedPayout: 2.26, // Default for DIGITUNDER 4 (bet $1, get $2.26 total)
+                directionMode: 'both', // 'both', 'up', 'down'
+                directionPayouts: {}, // { [contractType]: payout }
                 initialStake: 1.00,
                 profitTarget: 10,
                 stopLoss: 50,
@@ -2105,6 +2203,15 @@ export default {
             // Fallback to contract type check if needed
             return null;
         },
+
+        selectedDirections() {
+            if (!this.form.selectedTradeTypeGroup) return [];
+            for (const cat of this.tradeTypeCategories) {
+                const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
+                if (item) return item.directions;
+            }
+            return [];
+        },
         
         // Recovery Labels
         selectedRecoveryMarketLabel() {
@@ -2142,6 +2249,15 @@ export default {
                  if (item && item.icon) return `/deriv_icons/${item.icon}`;
              }
             return null;
+        },
+
+        selectedRecoveryDirections() {
+            if (!this.recoveryConfig.selectedTradeTypeGroup) return [];
+            for (const cat of this.tradeTypeCategories) {
+                const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
+                if (item) return item.directions;
+            }
+            return [];
         },
         
         activeAttackFilterNames() {
@@ -2472,9 +2588,21 @@ export default {
             if (this.modalContext === 'main') {
                 this.form.selectedTradeTypeGroup = item.value; // Store Item Value for UI
                 this.form.tradeType = selectedDirection.value; // Store Actual Contract Type for API
+                
+                // Initialize Direction Payouts
+                this.form.directionPayouts = {};
+                item.directions.forEach(d => {
+                    this.form.directionPayouts[d.value] = this.form.expectedPayout || 1.20;
+                });
             } else {
                 this.recoveryConfig.selectedTradeTypeGroup = item.value;
                 this.recoveryConfig.tradeType = selectedDirection.value;
+
+                // Initialize Direction Payouts
+                this.recoveryConfig.directionPayouts = {};
+                item.directions.forEach(d => {
+                    this.recoveryConfig.directionPayouts[d.value] = this.recoveryConfig.expectedPayout || 2.26;
+                });
             }
             
             this.$root.$toast.success(`Selecionado: ${item.label} (${selectedDirection.label})`);
@@ -3473,7 +3601,31 @@ export default {
                             } else {
                                 dynamicContractType = baseType;
                             }
-                            this.addLog('🧭 Direção Dinâmica (Simulação)', `Sinal: ${signal} -> Contrato: ${dynamicContractType}`, 'info');
+
+                            // ✅ Direction Mode Restriction
+                            const isRec = this.sessionState.activeStrategy === 'RECUPERACAO';
+                            const configModel = isRec ? this.recoveryConfig : this.form;
+                            const directionMode = configModel.directionMode || 'both';
+
+                            if (directionMode !== 'both') {
+                                const isUpSignal = ['CALL', 'UP', 'DIGITOVER', 'DIGITEVEN', 'DIGITMATCH'].includes(signal);
+                                const isDownSignal = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
+                                
+                                if ((directionMode === 'up' && !isUpSignal) || (directionMode === 'down' && !isDownSignal)) {
+                                    this.addLog(`🚫 Direção Restrita (Simulação): Sinal ${signal} ignorado.`, 'info');
+                                    return;
+                                }
+                            }
+
+                            // ✅ Resolve Dynamic Payout
+                            const directionPayouts = configModel.directionPayouts || {};
+                            const explicitPayout = directionPayouts[dynamicContractType] || null;
+                            this.sessionState.tempExplicitPayout = explicitPayout;
+
+                            this.addLog('🧭 Direção Dinâmica (Simulação)', [
+                                `Sinal: ${signal} → ${dynamicContractType}`,
+                                explicitPayout ? `Payout: ${(explicitPayout * 100).toFixed(0)}%` : 'Payout: Padrão'
+                            ], 'info');
                         } else {
                             this.addLog('⚠️ Conflito de Direção (Simulação)', `Filtros divergentes: ${uniqueDirections.join(', ')}`, 'warning');
                             return;
@@ -3506,7 +3658,8 @@ export default {
                                 vl.current = 0;
                             }
                         }
-                        this.executeRealTrade(dynamicContractType);
+                        this.executeRealTrade(dynamicContractType, this.sessionState.tempExplicitPayout);
+                        this.sessionState.tempExplicitPayout = null; // Clear
                     }
                 }
         },
@@ -3581,11 +3734,11 @@ export default {
 
             return false;
         },
-        calculateNextStake() {
+        calculateNextStake(explicitPayout = null) {
             const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
             const config = isRecovery ? this.recoveryConfig : this.form;
             
-            let stake = RiskManager.calculateNextStake(this.sessionState, config);
+            let stake = RiskManager.calculateNextStake(this.sessionState, config, explicitPayout);
             
             // --- Survival Mode ---
             const currentProfit = this.monitoringStats.profit;
@@ -3603,7 +3756,7 @@ export default {
                  this.addLog(`🛡️ VALIDAÇÃO DE ENTRADA: Protegendo $${blindadoState.floor.toFixed(2)} do lucro acumulado.`, 'info');
             }
 
-            const survivalResult = RiskManager.applySurvivalMode(stake, currentProfit, globalConfig, payoutRate, blindadoState);
+            const survivalResult = RiskManager.applySurvivalMode(stake, currentProfit, globalConfig, explicitPayout || payoutRate, blindadoState);
             const survivalStake = survivalResult.stake;
             const survivalReason = survivalResult.reason;
 
@@ -3658,7 +3811,7 @@ export default {
             this.stopTickConnection();
             this.addLog(`⏹️ Monitoramento parado: ${stopReason}`, 'info');
         },
-        executeRealTrade(overrideContractType = null) {
+        executeRealTrade(overrideContractType = null, explicitPayout = null) {
             try {
                 if (!this.isAuthorized) {
                     this.addLog('⚠️ Entrada negada: Não autorizado (Token inválido ou ausente).', 'warning');
@@ -3688,7 +3841,7 @@ export default {
                 
                 // Debug Log
                 console.log('[StrategyCreator] Calculando stake...');
-                const stake = this.calculateNextStake();
+                const stake = this.calculateNextStake(explicitPayout);
 
                 if (!stake || stake <= 0) {
                     console.warn('[StrategyCreator] Stake inválido (0 ou Cancelado). Abortando entrada.');

@@ -1510,7 +1510,6 @@ export default {
 
                 this.addLog('Sinal de Entrada Corretora', analysisLog, 'success');
                 
-            if (allPassed) {
                 // ✅ DYNAMIC DIRECTION LOGIC
                 // Collect signals from all filters that opted to provide a direction
                 const directions = results.map(r => r.direction).filter(d => d);
@@ -1534,11 +1533,31 @@ export default {
                              // Fallback or unknown signal
                              dynamicContractType = baseType; 
                          }
+
+                         // ✅ Direction Mode Restriction
+                         const isRec = this.sessionState.activeStrategy === 'RECUPERACAO';
+                         const config = isRec ? this.recoveryConfig : this.currentConfig;
+                         const directionMode = config.directionMode || 'both';
+
+                         if (directionMode !== 'both') {
+                             const isUpSignal = ['CALL', 'UP', 'DIGITOVER', 'DIGITEVEN', 'DIGITMATCH'].includes(signal);
+                             const isDownSignal = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
+                             
+                             if ((directionMode === 'up' && !isUpSignal) || (directionMode === 'down' && !isDownSignal)) {
+                                 this.addLog('🚫 Direção Restrita', `Sinal ${signal} ignorado. Modo: ${directionMode === 'up' ? 'Apenas Subida' : 'Apenas Descida'}`, 'info');
+                                 return;
+                             }
+                         }
+
+                         // ✅ Resolve Dynamic Payout
+                         const directionPayouts = config.directionPayouts || {};
+                         const explicitPayout = directionPayouts[dynamicContractType] || null;
+                         this.sessionState.tempExplicitPayout = explicitPayout;
                          
-                         // If baseType implies a different context (e.g. DIGITMATCH but we got CALL), we assume the signal takes precedence 
-                         // but we map it to the "Standard" equivalent of that signal (e.g. UP -> DIGITOVER) if in digit context.
-                         
-                         this.addLog('🧭 Direção Dinâmica', `Sinal: ${signal} -> Contrato: ${dynamicContractType}`, 'info');
+                         this.addLog('🧭 Direção Dinâmica', [
+                            `Sinal: ${signal} → ${dynamicContractType}`,
+                            explicitPayout ? `Payout: ${(explicitPayout * 100).toFixed(0)}%` : 'Payout: Padrão'
+                         ], 'info');
                      } else {
                          this.addLog('⚠️ Conflito de Direção', `Filtros divergentes: ${uniqueDirections.join(', ')}`, 'warning');
                          return; // BLOCK TRADE due to conflict
@@ -1565,12 +1584,12 @@ export default {
                         else if (vl.mode === 'attack' && !isRecovery) vl.current = 0;
                         else if (vl.mode === 'recovery' && isRecovery) vl.current = 0;
                     }
-                    this.executeAITrade(dynamicContractType);
+                    this.executeAITrade(dynamicContractType, this.sessionState.tempExplicitPayout);
+                    this.sessionState.tempExplicitPayout = null; // Clean up
                 }
             }
-            }
         },
-        calculateNextStake() {
+        calculateNextStake(explicitPayout = null) {
             const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
             // ✅ FIX: Merge Global Config (this.currentConfig) to ensure stopLoss/profitTarget are present
             const config = {
@@ -1591,7 +1610,7 @@ export default {
                 totalLossAccumulated: this.sessionState.totalLossAccumulated
             });
             
-            let stake = RiskManager.calculateNextStake(this.sessionState, config);
+            let stake = RiskManager.calculateNextStake(this.sessionState, config, explicitPayout);
             
             // ✅ SURVIVAL MODE: Proteger limites de Meta e Stop Loss
             const currentProfit = this.monitoringStats.profit;
@@ -1638,7 +1657,7 @@ export default {
             console.log('[AIMonitoring] Calculated stake (after survival):', stake);
             return stake;
         },
-        executeAITrade(overrideContractType = null) {
+        executeAITrade(overrideContractType = null, explicitPayout = null) {
             if (!this.isAuthorized) {
                 this.addLog('⚠️ Entrada negada: Não autorizado', 'warning');
                 return;
@@ -1653,7 +1672,7 @@ export default {
             const config = isFinancialRecovery ? this.recoveryConfig : this.currentConfig;
             
             // ✅ Calculate stake dynamically
-            const stake = this.calculateNextStake();
+            const stake = this.calculateNextStake(explicitPayout);
 
             // ✅ SURVIVAL STOP: Se a stake for menor que o mínimo (0.35), força o STOP
             if (stake < 0.35) {
