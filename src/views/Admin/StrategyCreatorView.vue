@@ -803,14 +803,17 @@
                                         v-for="item in category.items"
                                         :key="item.value"
                                         @click="selectTradeType(item)"
-                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.tradeType : recoveryConfig.tradeType) === item.value }]"
+                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.selectedTradeTypeGroup : recoveryConfig.selectedTradeTypeGroup) === item.value }]"
                                     >
                                         <div class="flex items-center gap-2">
                                             <div class="w-5 h-5 flex items-center justify-center text-zenix-green">
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M22 11L13.5 15.5L8.5 10.5L2 14"/>
-                                                    <path d="M16 11H22V17"/>
-                                                </svg>
+                                                <img 
+                                                    v-if="item.icon && item.icon.endsWith('.svg')" 
+                                                    :src="`/deriv_icons/${item.icon}`" 
+                                                    class="w-full h-full object-contain filter-zenix-green" 
+                                                    :alt="item.label" 
+                                                />
+                                                <i v-else :class="item.icon"></i>
                                             </div>
                                             <span>{{ item.label }}</span>
                                         </div>
@@ -1914,91 +1917,23 @@ export default {
         
         // DYNAMIC GENERATION OF CATEGORIES
         availableTradeTypeGroups() {
-             const contracts = this.currentContextContracts;
-             if (!contracts || !contracts.length) return [];
-
-             const groups = {};
-             
-             // 1. Group Contracts
-             contracts.forEach(contract => {
-                 const type = contract.contractType;
-                 const category = contract.contractCategory;
-                 const label = contract.contractDisplay || type;
-                 
-                 // Determine UI Group
-                 let groupId = 'other';
-                 let groupLabel = 'Outros';
-                 let groupIcon = 'fas fa-cubes';
-
-                 // Map DB Category to UI Group
-                 if (['callput', 'risefall'].includes(category)) {
-                     groupId = 'rising_falling';
-                     groupLabel = 'Sobe / Desce';
-                     groupIcon = 'fas fa-chart-line';
-                 } else if (['touchnotouch'].includes(category)) {
-                     groupId = 'touch_notouch';
-                     groupLabel = 'Toca / Não Toca';
-                     groupIcon = 'fas fa-fingerprint';
-                 } else if (['asian'].includes(category)) {
-                     groupId = 'asian';
-                     groupLabel = 'Asiáticos';
-                     groupIcon = 'fas fa-globe-asia';
-                 } else if (['multiplier'].includes(category)) {
-                     groupId = 'multiplier';
-                     groupLabel = 'Multiplicadores';
-                     groupIcon = 'fas fa-times';
-                 } else if (['digits'].includes(category)) {
-                     // Digits Sub-grouping
-                     if (type.includes('EVEN') || type.includes('ODD')) {
-                         groupId = 'even_odd';
-                         groupLabel = 'Par / Ímpar';
-                         groupIcon = 'fas fa-sort-numeric-up';
-                     } else if (type.includes('OVER') || type.includes('UNDER')) {
-                         groupId = 'over_under';
-                         groupLabel = 'Acima / Abaixo';
-                         groupIcon = 'fas fa-arrow-up';
-                     } else if (type.includes('MATCH') || type.includes('DIFF')) {
-                         groupId = 'match_diff';
-                         groupLabel = 'Combina / Difere';
-                         groupIcon = 'fas fa-check-double';
-                     } else {
-                         groupId = 'digits_other';
-                         groupLabel = 'Dígitos';
-                         groupIcon = 'fas fa-calculator';
-                     }
-                 }
-
-                 if (!groups[groupId]) {
-                     groups[groupId] = {
-                         id: groupId,
-                         label: groupLabel,
-                         icon: groupIcon,
-                         items: []
-                     };
-                 }
-
-                 // Check for duplicates (some markets might return same contract type multiple times if data is messy, though rare)
-                 if (!groups[groupId].items.find(i => i.value === type)) {
-                     groups[groupId].items.push({
-                         value: type,
-                         label: label,
-                         icon: this.getTradeTypeIconName(type)
-                     });
-                 }
-             });
-
-             // 2. Sort Groups (Optional: Define priority)
-             const groupPriority = ['rising_falling', 'even_odd', 'over_under', 'match_diff', 'touch_notouch', 'asian', 'multiplier'];
-             return Object.values(groups).sort((a, b) => {
-                 const pA = groupPriority.indexOf(a.id);
-                 const pB = groupPriority.indexOf(b.id);
-                 // If both found, sort by priority
-                 if (pA !== -1 && pB !== -1) return pA - pB;
-                 // If valid priority, it comes first
-                 if (pA !== -1) return -1;
-                 if (pB !== -1) return 1;
-                 return a.label.localeCompare(b.label);
-             });
+            // Filter categories and items based on available contracts
+            const availableTypes = this.currentContextContracts.map(c => c.contractType.toUpperCase());
+            
+            return this.tradeTypeCategories.map(category => {
+                const filteredItems = category.items.filter(item => {
+                    // Item is shown if ANY of its directions are available
+                    return item.directions.some(dir => availableTypes.includes(dir.value.toUpperCase()));
+                });
+                
+                if (filteredItems.length > 0) {
+                    return {
+                        ...category,
+                        items: filteredItems
+                    };
+                }
+                return null;
+            }).filter(Boolean);
         },
         
         activeFiltersForModal() {
@@ -2007,22 +1942,13 @@ export default {
         
         // --- Label Helpers using Contracts Data directly ---
         selectedTradeTypeGroupLabel() {
-            if (!this.form.selectedTradeTypeGroup) return 'Selecionar Tipo';
-            // We can try to guess from the currently selected trade type if we don't store group name persistently
-            // But form.selectedTradeTypeGroup is part of the state. 
-            // We need to find the group label that corresponds to this ID.
-            // Since we don't have the generated groups available easily outside the modal (unless we make it a data prop),
-            // let's do a quick lookup.
-            const map = {
-                'rising_falling': 'Sobe / Desce',
-                'even_odd': 'Par / Ímpar',
-                'over_under': 'Acima / Abaixo',
-                'match_diff': 'Combina / Difere',
-                'touch_notouch': 'Toca / Não Toca',
-                 'asian': 'Asiáticos',
-                 'multiplier': 'Multiplicadores'
-            };
-            return map[this.form.selectedTradeTypeGroup] || this.form.selectedTradeTypeGroup;
+             if (!this.form.selectedTradeTypeGroup) return 'Selecionar Tipo';
+             // Check in static categories
+             for (const cat of this.tradeTypeCategories) {
+                 const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
+                 if (item) return item.label;
+             }
+             return this.form.selectedTradeTypeGroup;
         },
         selectedTradeTypeLabel() {
             if (!this.form.tradeType) return 'Selecionar';
@@ -2030,8 +1956,14 @@ export default {
             return c ? `${c.contractDisplay}` : this.form.tradeType;
         },
         selectedTradeTypeIcon() {
-            if (!this.form.tradeType) return null;
-            return `/deriv_icons/${this.getTradeTypeIconName(this.form.tradeType)}`;
+            if (!this.form.selectedTradeTypeGroup) return null;
+             for (const cat of this.tradeTypeCategories) {
+                 const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
+                 // Use specific item icon if available, otherwise category icon could be used but item icon is preferred
+                 if (item && item.icon) return `/deriv_icons/${item.icon}`;
+             }
+            // Fallback to contract type check if needed
+            return null;
         },
         
         // Recovery Labels
@@ -2044,20 +1976,19 @@ export default {
         },
         selectedRecoveryTradeTypeGroupLabel() {
             if (!this.recoveryConfig.selectedTradeTypeGroup) return 'Selecionar Tipo';
-            const map = {
-                'rising_falling': 'Sobe / Desce',
-                'even_odd': 'Par / Ímpar',
-                'over_under': 'Acima / Abaixo',
-                'match_diff': 'Combina / Difere',
-                'touch_notouch': 'Toca / Não Toca',
-                 'asian': 'Asiáticos',
-                 'multiplier': 'Multiplicadores'
-            };
-            return map[this.recoveryConfig.selectedTradeTypeGroup] || this.recoveryConfig.selectedTradeTypeGroup;
+            for (const cat of this.tradeTypeCategories) {
+                 const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
+                 if (item) return item.label;
+             }
+             return this.recoveryConfig.selectedTradeTypeGroup;
         },
         selectedRecoveryTradeTypeGroupIcon() {
-             // Not really used in UI often, but for consistency
-             return null; 
+            if (!this.recoveryConfig.selectedTradeTypeGroup) return null;
+            for (const cat of this.tradeTypeCategories) {
+                 const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
+                 if (item && item.icon) return `/deriv_icons/${item.icon}`;
+             }
+            return null;
         },
         selectedRecoveryTradeTypeLabel() {
             if (!this.recoveryConfig.tradeType) return 'Selecionar';
@@ -2065,8 +1996,12 @@ export default {
             return c ? `${c.contractDisplay}` : this.recoveryConfig.tradeType;
         },
         selectedRecoveryTradeTypeIcon() {
-            if (!this.recoveryConfig.tradeType) return null;
-            return `/deriv_icons/${this.getTradeTypeIconName(this.recoveryConfig.tradeType)}`;
+             if (!this.recoveryConfig.selectedTradeTypeGroup) return null;
+            for (const cat of this.tradeTypeCategories) {
+                 const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
+                 if (item && item.icon) return `/deriv_icons/${item.icon}`;
+             }
+            return null;
         },
         
         activeAttackFilterNames() {
@@ -2074,6 +2009,114 @@ export default {
             return this.form.attackFilters.map(f => f.name).join(', ');
         }
     },
+    data() {
+        return {
+           tradeTypeCategories: [
+                {
+                  id: 'digits',
+                  label: 'Dígitos',
+                  icon: 'fas fa-hashtag',
+                  items: [
+                    { value: 'digits_over_under', label: 'Superior / Inferior', icon: 'TradeTypesDigitsOverIcon.svg', directions: [
+                        { value: 'DIGITOVER', label: 'Superior' },
+                        { value: 'DIGITUNDER', label: 'Inferior' }
+                      ]
+                    },
+                    { value: 'digits_match_diff', label: 'Combina / Difere', icon: 'TradeTypesDigitsMatchesIcon.svg', directions: [
+                        { value: 'DIGITMATCH', label: 'Combina' },
+                        { value: 'DIGITDIFF', label: 'Difere' }
+                      ]
+                    },
+                    { value: 'digits_even_odd', label: 'Par / Ímpar', icon: 'TradeTypesDigitsEvenIcon.svg', directions: [
+                        { value: 'DIGITEVEN', label: 'Par' },
+                        { value: 'DIGITODD', label: 'Ímpar' }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  id: 'rising_falling',
+                  label: 'Subindo ou Descendo',
+                  icon: 'fas fa-chart-line',
+                  items: [
+                    { value: 'rising_falling_rise_fall_equal', label: 'Subida/Queda Igual', icon: 'TradeTypesUpsAndDownsRiseIcon.svg', directions: [
+                        { value: 'CALLE', label: 'Subida Igual' },
+                        { value: 'PUTE', label: 'Queda Igual' }
+                      ]
+                    },
+                    { value: 'rising_falling_rise_fall', label: 'Subida/Queda', icon: 'TradeTypesUpsAndDownsRiseIcon.svg', directions: [
+                        { value: 'CALL', label: 'Subida' },
+                        { value: 'PUT', label: 'Queda' }
+                      ] 
+                    },
+                    { value: 'reset_high_low', label: 'Reset Alta/Baixa', icon: 'TradeTypesUpsAndDownsResetUpIcon.svg', directions: [
+                        { value: 'RESETCALL', label: 'Reset Alta' },
+                        { value: 'RESETPUT', label: 'Reset Baixa' }
+                      ]
+                    },
+                    { value: 'runs_high_low', label: 'Somente Altas / Somente Quedas', icon: 'TradeTypesUpsAndDownsOnlyUpsIcon.svg', directions: [
+                        { value: 'RUNHIGH', label: 'Somente Altas' },
+                        { value: 'RUNLOW', label: 'Somente Quedas' }
+                      ]
+                    },
+                    { value: 'tick_high_low', label: 'Máxima/Mínima por Ticks', icon: 'TradeTypesHighsAndLowsHighIcon.svg', directions: [
+                        { value: 'TICKHIGH', label: 'Máxima' },
+                        { value: 'TICKLOW', label: 'Mínima' }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  id: 'one_barrier',
+                  label: 'Uma Barreira',
+                  icon: 'fas fa-bullseye',
+                  items: [
+                    { value: 'touch_no_touch', label: 'Toca / Não Toca', icon: 'TradeTypesHighsAndLowsTouchIcon.svg', directions: [
+                        { value: 'ONETOUCH', label: 'Toca' },
+                        { value: 'NOTOUCH', label: 'Não Toca' }
+                      ]
+                    },
+                    { value: 'higher_lower', label: 'Maior / Menor', icon: 'TradeTypesHighsAndLowsHigherIcon.svg', directions: [
+                        { value: 'HIGHER', label: 'Maior' },
+                        { value: 'LOWER', label: 'Menor' }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  id: 'two_barriers',
+                  label: 'Duas Barreiras',
+                  icon: 'fas fa-shield-alt',
+                  items: [
+                    { value: 'in_out', label: 'Permanece Dentro / Sai Fora', icon: 'TradeTypesInsAndOutsStaysInIcon.svg', directions: [
+                        { value: 'RANGE', label: 'Permanece Dentro' },
+                        { value: 'UPORDOWN', label: 'Sai Fora' }
+                      ]
+                    },
+                    { value: 'ends_in_out', label: 'Termina Dentro / Termina Fora', icon: 'TradeTypesInsAndOutsEndsInIcon.svg', directions: [
+                        { value: 'EXPIRYRANGE', label: 'Termina Dentro' },
+                        { value: 'EXPIRYMISS', label: 'Termina Fora' }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  id: 'no_expiry',
+                  label: 'Sem Vencimento',
+                  icon: 'fas fa-bolt',
+                  items: [
+                    { value: 'multipliers_mult', label: 'Multiplicadores', icon: 'TradeTypesMultipliersUpIcon.svg', directions: [
+                        { value: 'MULTUP', label: 'Alta' },
+                        { value: 'MULTDOWN', label: 'Baixa' }
+                      ]
+                    },
+                    { value: 'accumulators_accu', label: 'Acumuladores', icon: 'TradeTypesAccumulatorStayInIcon.svg', directions: [
+                        { value: 'ACCU', label: 'Acumuladores' }
+                      ]
+                    }
+                  ]
+                }
+              ],
     mounted() {
         this.handleResize();
         window.addEventListener('resize', this.handleResize);
@@ -2381,24 +2424,27 @@ export default {
             this.showTradeTypeModal = false;
         },
         selectTradeType(item) {
-            // Find the category to set the group correctly
-            let categoryId = '';
-            for (const cat of this.tradeTypeCategories) {
-                if (cat.items.find(i => i.value === item.value)) {
-                    categoryId = cat.id;
-                    break;
-                }
+            // Determine the default direction (Contract Type)
+            const contracts = this.modalContext === 'main' ? this.contracts : this.recoveryContracts;
+            const availableTypes = contracts.map(c => c.contractType.toUpperCase());
+            
+            // Find first direction that exists in available contracts
+            let selectedDirection = item.directions.find(d => availableTypes.includes(d.value.toUpperCase()));
+            
+            // Fallback if none found
+            if (!selectedDirection) {
+                selectedDirection = item.directions[0]; 
             }
 
             if (this.modalContext === 'main') {
-                this.form.tradeType = item.value;
-                this.form.selectedTradeTypeGroup = categoryId;
+                this.form.selectedTradeTypeGroup = item.value; // Store Item Value for UI
+                this.form.tradeType = selectedDirection.value; // Store Actual Contract Type for API
             } else {
-                this.recoveryConfig.tradeType = item.value;
-                this.recoveryConfig.selectedTradeTypeGroup = categoryId;
+                this.recoveryConfig.selectedTradeTypeGroup = item.value;
+                this.recoveryConfig.tradeType = selectedDirection.value;
             }
             
-            this.$root.$toast.success(`Tipo de contrato selecionado: ${item.label}`);
+            this.$root.$toast.success(`Selecionado: ${item.label} (${selectedDirection.label})`);
             this.closeTradeTypeModal();
         },
         
