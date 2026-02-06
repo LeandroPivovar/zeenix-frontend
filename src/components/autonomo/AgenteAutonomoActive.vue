@@ -2140,8 +2140,10 @@
                 };
 
                 // Route to specific modal
-                if (stopReason === 'STOP_LOSS' || stopReason === 'CYCLE_STOP') {
+                if (stopReason === 'STOP_LOSS') {
                      this.showStopLossModal = true;
+                } else if (stopReason === 'CYCLE_STOP') {
+                     this.showSessionSummaryModal = true;
                 } else if (stopReason === 'BLINDADO') {
                      this.showBlindadoModal = true;
                 } else if (stopReason === 'TARGET' || stopReason === 'META') {
