@@ -876,9 +876,9 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 
 @media (max-width: 768px) {
     .layout-content-agent-autonomo {
-        padding: 20px 10px;
-        margin: 0;
-        width: 100%;
+        padding: 20px 0px !important;
+        margin: 0 !important;
+        width: 100% !important;
     }
 }
 
@@ -958,9 +958,13 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 
 @media (max-width: 768px) {
     .risk-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.5rem;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.5rem !important;
+    }
+    
+    .risk-btn {
+        width: 100% !important;
     }
 }
 
