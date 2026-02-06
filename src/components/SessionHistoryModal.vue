@@ -3,22 +3,22 @@
         <div v-if="visible" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" @click.self="close">
             <div class="w-full max-w-5xl bg-secondary/95 rounded-2xl border border-border/50 shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-fadeIn">
                 <!-- Header -->
-                <div class="flex items-center justify-between p-6 border-b border-border/30">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-success/10 border border-success/30 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success">
+                <div class="flex items-center justify-between p-4 md:p-6 border-b border-border/30">
+                    <div class="flex items-center gap-3 md:gap-4">
+                        <div class="hidden md:flex w-12 h-12 rounded-xl bg-success flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white">
                                 <path d="M3 3v18h18"/>
                                 <path d="m19 9-5 5-4-4-3 3"/>
                             </svg>
                         </div>
                         <div class="flex flex-col">
-                            <h2 class="text-xl font-bold text-foreground">Histórico de Sessões</h2>
-                            <p class="text-xs text-muted-foreground mt-0.5 opacity-80">
+                            <h2 class="text-lg md:text-xl font-black text-white uppercase tracking-tight">Histórico de Sessões</h2>
+                            <p class="text-[10px] md:text-xs text-muted-foreground mt-0.5 opacity-70 leading-relaxed max-w-md">
                                 Acompanhe nesta área o resumo oficial de suas últimas execuções e resultados detalhados.
                             </p>
                         </div>
                     </div>
-                    <button @click="close" class="w-8 h-8 rounded-lg hover:bg-secondary/80 transition-colors flex items-center justify-center text-muted-foreground hover:text-foreground">
+                    <button @click="close" class="w-8 h-8 rounded-lg hover:bg-secondary/80 transition-colors flex items-center justify-center text-muted-foreground hover:text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -26,7 +26,7 @@
                     </button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto custom-scrollbar-zenix p-6 space-y-6">
+                <div class="flex-1 overflow-y-auto custom-scrollbar-zenix p-4 md:p-6 space-y-4 md:space-y-6">
                     <!-- Summary Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Total Operations Card -->
