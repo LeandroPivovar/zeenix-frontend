@@ -2507,6 +2507,7 @@ export default {
                             const strategyConfig = {
                                 id: `default_${strategyName}`,
                                 name: strategyName.charAt(0).toUpperCase() + strategyName.slice(1),
+                                version: data.version || '1.0',
                                 config: data.config
                             };
 
@@ -2742,7 +2743,7 @@ export default {
             this.syncFiltersToConfig();
 
             const strategyData = {
-                version: '1.0',
+                version: this.currentVersion || '1.0',
                 timestamp: new Date().toISOString(),
                 config: {
                     form: this.form,
