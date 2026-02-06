@@ -2057,7 +2057,7 @@
             const stopLossLog = recentLogs.find(log => 
                 log.message && (
                     (log.message.toUpperCase().includes('STOP LOSS ATINGIDO') || log.message.toUpperCase().includes('STOP LOSS REACHED')) &&
-                    !log.message.toUpperCase().includes('CONFIGURAÇÃO INICIAL') // Garantir que não pegamos o log de config
+                    !log.message.toUpperCase().includes('CONFIGURAÇÃO INICIAL')
                 )
             );
 
@@ -2068,47 +2068,35 @@
             }
         }
 
-        // 3. META DE LUCRO / SESSÃO FINALIZADA
+        // 3. META DE LUCRO / SESSÃO FINALIZADA / CICLOS CONCLUÍDOS
         if (!stopDetected) {
-             const profitLog = recentLogs.find(log => 
+             const sessionEndLog = recentLogs.find(log => 
                 log.message && (
                     log.message.toUpperCase().includes('META DE LUCRO ATINGIDA') ||
                     log.message.toUpperCase().includes('META ATINGIDA') ||
                     log.message.toUpperCase().includes('LUCRO ATINGIDO') ||
                     log.message.toUpperCase().includes('SESSÃO FINALIZADA') ||
-                    log.message.toUpperCase().includes('4 CICLOS COMPLETOS')
+                    log.message.toUpperCase().includes('CICLOS CONCLUIDOS') ||
+                    log.message.toUpperCase().includes('TODOS CICLOS')
                 )
             );
 
-            if (profitLog) {
+            if (sessionEndLog) {
                 stopDetected = true;
-                stopReason = 'TARGET';
-                
-                // ✅ V4 Fix: Evitar flip para STOP_LOSS baseado em logs antigos de configuração
-                // Só marcamos como STOP_LOSS se houver um log RECENTE de atingimento real
-                const realStopLossLog = recentLogs.find(l => 
-                    l.message && 
-                    l.message.toUpperCase().includes('STOP LOSS ATINGIDO') && 
-                    !l.message.toUpperCase().includes('CONFIGURAÇÃO INICIAL')
-                );
-
-                if (realStopLossLog) {
-                    stopReason = 'STOP_LOSS';
-                }
-                
                 stopCycle = findRecentCycle(recentLogs);
-            } else {
-                // FALLBACK V4: Se deu Drawdown Máximo E é o último Ciclo (4), o backend pode mandar só o Drawdown e "Encerrando ciclo"
-                // Mas se não tiver "Sessão Finalizada", o backend tecnicamente pausou.
-                // Mas no Ciclo 4, Drawdown = Fim de Sessão.
-                const drawdownLog = recentLogs.find(l => l.message && l.message.toUpperCase().includes('DRAWDOWN MÁXIMO DO CICLO'));
-                if (drawdownLog) {
-                    const cycleNum = findRecentCycle(recentLogs);
-                    if (cycleNum >= 4) { // Assumindo 4 ciclos max
-                        stopDetected = true;
-                        stopReason = 'CYCLE_STOP'; // Ciclo 4 com Drawdown = Fim
-                        stopCycle = cycleNum;
-                    }
+                
+                // ✅ V4 Fix: Refinar a causa real da finalização
+                const extractedProfit = findRecentProfit(recentLogs);
+                const currentProfit = extractedProfit !== null ? extractedProfit : (this.sessionStats?.netProfit || 0);
+                const isLoss = currentProfit < 0;
+                
+                // Se houver log de drawdown RECENTE ou se o lucro for negativo, a causa foi falha no ciclo
+                const drawdownLogRec = recentLogs.find(l => l.message && l.message.toUpperCase().includes('DRAWDOWN MÁXIMO DO CICLO'));
+                
+                if (isLoss || drawdownLogRec) {
+                    stopReason = 'CYCLE_STOP';
+                } else {
+                    stopReason = 'TARGET';
                 }
             }
         }
