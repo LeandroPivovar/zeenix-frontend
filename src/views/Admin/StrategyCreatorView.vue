@@ -2466,6 +2466,8 @@ export default {
                 : 'Custom Strategy';
             this.sessionState.mode = this.sessionState.negotiationMode || 'VELOZ';
             this.sessionState.modoMartingale = this.form.riskProfile || 'Moderado';
+            // ✅ Explicitly save Martingale Boolean
+            this.sessionState.martingale = this.recoveryConfig.martingale !== false; 
             this.recoveryConfig.riskProfile = this.form.riskProfile || 'moderado';
             this.sessionState.stake = this.form.initialStake;
             this.sessionState.profitTarget = this.form.profitTarget;
@@ -3811,8 +3813,16 @@ export default {
     watch: {
         'recoveryConfig.martingale': {
             handler(newVal) {
-                if (!newVal) {
+                if (newVal === false) {
                     this.form.riskProfile = 'conservador';
+                    console.log('[StrategyCreator] Martingale Disabled -> Enforcing Risk Profile: Conservador');
+                } else {
+                    // ✅ Re-enable logic: If profile was Conservador (likely forced), switch to Moderado or keep current if valid
+                    // We default to 'Moderado' as a safe "Active" state if it was stuck on Conservador
+                    if (this.form.riskProfile === 'conservador') {
+                        this.form.riskProfile = 'moderado';
+                        console.log('[StrategyCreator] Martingale Enabled -> Restoring Risk Profile: Moderado');
+                    }
                 }
             },
             immediate: true
