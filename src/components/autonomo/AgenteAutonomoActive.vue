@@ -2138,7 +2138,17 @@
                 };
 
                 // Route to specific modal
-                if (stopReason === 'STOP_LOSS' || stopReason === 'CYCLE_STOP') {
+                if (stopReason === 'CYCLE_STOP') {
+                     // Caso especial: Drawdown do Ciclo Final -> Modal de Ciclo (Fim de Sessão)
+                     this.currentCycleNumber = stopCycle;
+                     // Mapear profit para o prop 'result' do modal via currentCycleProfit?
+                     // O modal usa :result="currentCycleNumber >= 4 ? (sessionStats?.netProfit || 0) : currentCycleProfit"
+                     // Então precisamos garantir que sessionStats esteja atualizado ou manipular o prop.
+                     // Mas 'result' é local no modal? Não, é prop.
+                     // Vamos setar currentCycleProfit = stopProfit para garantir.
+                     this.currentCycleProfit = stopProfit;
+                     this.showCycleCompletionModal = true;
+                } else if (stopReason === 'STOP_LOSS') {
                      this.showStopLossModal = true;
                 } else if (stopReason === 'BLINDADO') {
                      this.showBlindadoModal = true;

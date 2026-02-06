@@ -18,7 +18,9 @@
           <h2 class="modal-title">{{ isFinalCycle ? 'SESSÃO FINALIZADA' : `CICLO ${cycleNumber} CONCLUÍDO!` }}</h2>
           <p class="modal-description">
             {{ isFinalCycle 
-                ? 'O robô finalizou todos os ciclos com sucesso. Ganhos consolidados.' 
+                ? (result >= 0 
+                    ? 'O robô finalizou todos os ciclos com sucesso. Ganhos consolidados.' 
+                    : 'A sessão foi encerrada no último ciclo devido ao limite de perda do ciclo.')
                 : 'O lucro foi consolidado e o próximo ciclo será iniciado.' 
             }}
           </p>
