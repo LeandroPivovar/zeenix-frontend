@@ -1120,7 +1120,9 @@ export default {
                     mode: this.mode,
                     modoMartingale: this.modoMartingale,
                     stoplossBlindado: this.stoplossBlindado,
-                    market: this.selectedMarket
+                    market: this.selectedMarket,
+                    // ✅ Pass Version
+                    version: this.allStrategies.find(s => s.id === this.selectedStrategy)?.version || '1.0'
                 };
 
                 localStorage.removeItem('ai_active_config'); // 🗑️ Limpar dados anteriores
@@ -1134,7 +1136,14 @@ export default {
                     const conn = JSON.parse(localStorage.getItem('deriv_connection') || '{}');
                     this.$router.push({ 
                         path: '/Investments-IA/active', 
-                        query: { loginid: conn.loginid } 
+                        query: { loginid: conn.loginid },
+                        // ✅ Pass sessionState explicitly for AIMonitoringView priority check
+                        params: { 
+                            sessionState: { 
+                                version: config.version,
+                                strategy: config.strategyName
+                            } 
+                        }
                     });
                 }, 500);
 
@@ -1951,13 +1960,23 @@ export default {
                                     if (data.metadata.retorno) {
                                         this.allStrategies[strategyIndex].retorno = data.metadata.retorno;
                                     }
+
+                                    // ✅ CAPTURE VERSION
+                                    if (data.version) {
+                                        this.allStrategies[strategyIndex].version = data.version;
+                                    }
                                     
                                     console.log(`[InvestmentIAView] ✅ ${strategyName} atualizado:`, {
                                         assertividade: this.allStrategies[strategyIndex].assertividade,
-                                        retorno: this.allStrategies[strategyIndex].retorno
+                                        retorno: this.allStrategies[strategyIndex].retorno,
+                                        version: this.allStrategies[strategyIndex].version
                                     });
+                                } else if (data && data.version) {
+                                     // Case where metadata might be missing but version exists
+                                     this.allStrategies[strategyIndex].version = data.version;
+                                     console.log(`[InvestmentIAView] ✅ ${strategyName} versão atualizada: v${data.version}`);
                                 } else {
-                                    console.log(`[InvestmentIAView] ⚠️ ${strategyName} sem metadata, usando valores padrão`);
+                                    console.log(`[InvestmentIAView] ⚠️ ${strategyName} sem metadata/versão, usando valores padrão`);
                                 }
                             }
                         } else {

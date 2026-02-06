@@ -939,7 +939,12 @@ export default {
                     this.sessionState.profitTarget = parsed.profitTarget || baseConfig.form.profitTarget || 10;
                     this.sessionState.lossLimit = parsed.lossLimit || baseConfig.form.stopLoss || 50;
                     this.sessionState.strategy = this.currentConfig.strategy;
-                    this.sessionState.version = parsed.version || '1.0';
+                    // ✅ FIX: Prioritize version from passed sessionState (if available) over config/default
+                    if (this.$route.params.sessionState && this.$route.params.sessionState.version) {
+                        this.sessionState.version = this.$route.params.sessionState.version;
+                    } else {
+                        this.sessionState.version = parsed.version || '1.0';
+                    }
 
                     // Verify Risk Profile
                     console.log(`[AIMonitoring] Loaded Risk Profile: ${this.recoveryConfig.riskProfile || 'DEFAULT (Moderado)'}`);
