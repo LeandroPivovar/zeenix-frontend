@@ -210,7 +210,6 @@
                                         <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Limite</span>
                                         <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ (currentConfig.lossLimit || 0).toFixed(2).replace('.', ',') }}</span>
                                     </div>
-                                    </div>
                                     <div class="flex items-center justify-between pt-1 mt-1">
                                         <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Stop Blindado</span>
                                         <span class="text-xs font-black uppercase tracking-widest" :class="currentConfig.stoplossBlindado ? 'text-success' : 'text-muted-foreground'">{{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}</span>
