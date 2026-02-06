@@ -640,7 +640,7 @@
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-xs sm:text-sm font-bold tabular-nums text-yellow-500 uppercase">{{ agenteData.risco ? agenteData.risco.split('-')[0].split(' ')[0] : 'Normal' }}</div>
+					<div class="text-xs sm:text-sm font-bold tabular-nums text-yellow-500 uppercase">{{ formattedRiskProfile }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Gestão</div>
 				</div>
 			</div>
@@ -1198,8 +1198,35 @@
 			},
 			timeframeFinal() {
 				const unidadeMap = { 'minutos': 'm', 'horas': 'h', 'Dias': 'D' };
-				return `${this.valorTimeframeSelecionado}${unidadeMap[this.unidadeTimeframeSelecionada] || ''}`;
+				return `${this.valorTimeframeSelecionado}${unidadeMap[this.unidadeTimeframeSelecionada]}`;
 			},
+            formattedRiskProfile() {
+                if (!this.agenteData || !this.agenteData.risco) return 'Normal';
+                
+                const rawRisk = this.agenteData.risco.toLowerCase();
+                const riskMap = {
+                    'conservative': 'Conservador',
+                    'conservador': 'Conservador',
+                    'balanced': 'Moderado',
+                    'moderado': 'Moderado',
+                    'aggressive': 'Agressivo',
+                    'agressivo': 'Agressivo',
+                    'fixed': 'Fixo',
+                    'fixo': 'Fixo',
+                    'normal': 'Normal'
+                };
+
+                // Tentar match direto
+                if (riskMap[rawRisk]) return riskMap[rawRisk];
+                
+                // Tentar match da primeira palavra (ex: "Conservador-Adaptativo" -> "conservador")
+                const firstPart = rawRisk.split('-')[0].split(' ')[0];
+                if (riskMap[firstPart]) return riskMap[firstPart];
+
+                // Fallback para exibir formatado se não estiver no mapa
+                return this.agenteData.risco.split('-')[0].split(' ')[0];
+            },
+
 			historicoOperacoesFiltradas() {
 				// Simplificado para evitar erro, usando dados mock ou tradeHistory
 				return this.tradeHistory || [];
