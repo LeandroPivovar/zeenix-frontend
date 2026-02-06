@@ -763,6 +763,33 @@
 		@close="handleCloseSessionSummary"
 		@view-details="handleViewDetails"
 	/>
+
+    <!-- Stop Loss Modal -->
+    <StopLossModal
+        :visible="showStopLossModal"
+        :result="sessionSummaryData.profit"
+        :loss-limit="agenteData.stopValue"
+        :currency="preferredCurrencyPrefix"
+        @confirm="handleCloseStopLoss"
+    />
+
+    <!-- Stop Blindado Modal -->
+    <StopBlindadoModal
+        :visible="showBlindadoModal"
+        :result="sessionSummaryData.profit"
+        :protected-info="'50%'"
+        :currency="preferredCurrencyPrefix"
+        @confirm="handleCloseBlindado"
+    />
+
+    <!-- Target Profit Modal -->
+    <TargetProfitModal
+        :visible="showTargetProfitModal"
+        :result="sessionSummaryData.profit"
+        :final-profit="agenteData.goalValue"
+        :currency="preferredCurrencyPrefix"
+        @confirm="handleCloseTargetProfit"
+    />
 </template>
 
 <script>
@@ -778,7 +805,9 @@
 			AutonomousAgentLogs,
             CycleCompletionModal: defineAsyncComponent(() => import('@/components/CycleCompletionModal.vue')),
 			SessionSummaryModal: defineAsyncComponent(() => import('@/components/modals/SessionSummaryModal.vue')),
-			// Modais antigos removidos
+            StopLossModal: defineAsyncComponent(() => import('@/components/StopLossModal.vue')),
+            StopBlindadoModal: defineAsyncComponent(() => import('@/components/StopBlindadoModal.vue')),
+            TargetProfitModal: defineAsyncComponent(() => import('@/components/TargetProfitModal.vue')),
 		},
 		props: {
 			agenteData: {
@@ -859,6 +888,9 @@
 				},
 				lastProcessedStatus: null, // Evitar abrir modal repetidamente para o mesmo status
 				showSessionSummaryModal: false,
+                showStopLossModal: false,
+                showBlindadoModal: false,
+                showTargetProfitModal: false,
 				sessionSummaryData: {
 					profit: 0,
 					cycle: 1,
@@ -2106,7 +2138,17 @@
                     cycle: stopCycle,
                     reason: stopReason
                 };
-                this.showSessionSummaryModal = true;
+
+                // Route to specific modal
+                if (stopReason === 'STOP_LOSS' || stopReason === 'CYCLE_STOP') {
+                     this.showStopLossModal = true;
+                } else if (stopReason === 'BLINDADO') {
+                     this.showBlindadoModal = true;
+                } else if (stopReason === 'TARGET' || stopReason === 'META') {
+                     this.showTargetProfitModal = true;
+                } else {
+                     this.showSessionSummaryModal = true; // Fallback
+                }
              }
         }
 
@@ -2162,6 +2204,21 @@
 				window.zenixStopModalActive = false;
 				this.sessionSummaryAcknowledged = true;
 			},
+            handleCloseStopLoss() {
+                this.showStopLossModal = false;
+                window.zenixStopModalActive = false;
+                this.sessionSummaryAcknowledged = true;
+            },
+            handleCloseBlindado() {
+                this.showBlindadoModal = false;
+                window.zenixStopModalActive = false;
+                this.sessionSummaryAcknowledged = true;
+            },
+            handleCloseTargetProfit() {
+                this.showTargetProfitModal = false;
+                window.zenixStopModalActive = false;
+                this.sessionSummaryAcknowledged = true;
+            },
             handleViewDetails() {
                 // Fechar o modal de resumo
                 this.handleCloseSessionSummary();
