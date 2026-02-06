@@ -3839,6 +3839,12 @@ export default {
                 // So we override 'config' to recoveryConfig if isFinancialRecovery is true.
                 const config = (isFinancialRecovery || isRecoveryStrategy) ? this.recoveryConfig : this.form;
                 
+                // 🔍 DEBUG: Log which config is being used
+                console.log(`[executeRealTrade] Mode: ${isFinancialRecovery ? 'RECUPERAÇÃO' : 'PRINCIPAL'}, ` +
+                    `Using Config: ${isFinancialRecovery || isRecoveryStrategy ? 'recoveryConfig' : 'form'}, ` +
+                    `TradeType: ${config.tradeType}, ` +
+                    `Override: ${overrideContractType || 'NONE'}`);
+                
                 // Check for Contract Switch
                 if (this.sessionState.lastContractType && this.sessionState.lastContractType !== (overrideContractType || config.tradeType)) {
                     this.addLog(`📊 CONTRATO ALTERADO: ${this.sessionState.lastContractType} ➔ ${overrideContractType || config.tradeType}`, 'info');
