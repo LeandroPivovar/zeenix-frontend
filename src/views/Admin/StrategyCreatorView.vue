@@ -2878,6 +2878,13 @@ export default {
             // Deep clone and merge to ensure new fields (like expectedPayout) are present
             const savedForm = JSON.parse(JSON.stringify(strategy.config.form));
             this.form = { ...this.form, ...savedForm };
+
+            // ✅ Load Validation: If directionMode is 'both', tradeType MUST be empty for dynamic signaling
+            if (this.form.directionMode === 'both') {
+                this.form.tradeType = '';
+                console.log(`[loadSavedStrategy] Main: AMBOS detected, clearing tradeType`);
+            }
+
             // Ensure expectedPayout and sorosLevel fallback for legacy saves
             if (!this.form.expectedPayout) this.form.expectedPayout = 1.20;
             if (this.form.sorosLevel === undefined) this.form.sorosLevel = 1;
@@ -2886,6 +2893,13 @@ export default {
 
             const savedRecovery = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
             this.recoveryConfig = { ...this.recoveryConfig, ...savedRecovery };
+
+            // ✅ Load Validation (Recovery)
+            if (this.recoveryConfig.directionMode === 'both') {
+                this.recoveryConfig.tradeType = '';
+                console.log(`[loadSavedStrategy] Recovery: AMBOS detected, clearing tradeType`);
+            }
+
             if (!this.recoveryConfig.expectedPayout) this.recoveryConfig.expectedPayout = 2.26;
             
             if (strategy.config.validator) {
