@@ -1984,7 +1984,8 @@
                 const text = log.message || '';
                 
                 // Regex para capturar valor monetário (positivo ou negativo)
-                const moneyRegex = /(?:Lucro\/Prejuízo|Profit|Loss|Drawdown|Resultado).*?\$?([+-]?\d+(?:\.\d{2})?)/i;
+                // Fix: Exige o símbolo $ ou R$ ou sinal explícito, ou formato decimal estrito para evitar pegar número do ciclo (ex: "Ciclo 4")
+                const moneyRegex = /(?:Lucro\/Prejuízo|Profit|Loss|Drawdown|Resultado).*?(?:\$|R\$)\s*([+-]?\d+(?:\.\d{2})?)/i;
                 const match = text.match(moneyRegex);
                 if (match) {
                      // Se achou, verifica se é um número válido
