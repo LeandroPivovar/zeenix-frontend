@@ -255,7 +255,7 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 p-4 relative overflow-hidden">
+                                    <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 px-0 py-4 relative overflow-hidden">
                                         <div class="relative w-full h-[320px]">
                                     <div v-show="activeChartMode === 'profit'" class="w-full h-full relative" ref="profitChartContainer">
                                         <LightweightLineChart
