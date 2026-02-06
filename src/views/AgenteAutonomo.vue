@@ -1339,7 +1339,9 @@
         const map = {
           'conservative': 'Conservador',
           'balanced': 'Equilibrado',
-          'aggressive': 'Agressivo'
+          'aggressive': 'Agressivo',
+          'fixed': 'Fixo',
+          'fixo': 'Fixo'
         };
         return map[id] || id;
       },
