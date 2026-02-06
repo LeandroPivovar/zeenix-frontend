@@ -60,8 +60,8 @@
 
         <!-- Action Button -->
         <button 
-            @click="$emit('close')" 
-            class="w-full h-11 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+            @click="$emit('view-details')" 
+            class="w-full h-11 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
         >
             Visualizar Detalhes
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -100,7 +100,7 @@ export default {
         return this.totalProfit > 0 && this.reason === 'TARGET';
     },
     message() {
-        if (this.reason === 'TARGET') return 'Parabéns! Você atingiu sua meta diária com sucesso.';
+        if (this.reason === 'TARGET') return `Os ciclos foram concluídos e você garantiu um total de +${this.currencySymbol}${this.formatPrice(this.totalProfit)}`;
         if (this.reason === 'BLINDADO') return 'O Stop Blindado foi ativado para proteger seus lucros.';
         return 'O limite de perdas foi atingido. Volte amanhã para operar com segurança.';
     },

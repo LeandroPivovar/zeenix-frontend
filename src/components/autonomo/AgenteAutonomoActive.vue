@@ -761,6 +761,7 @@
 		:reason="sessionSummaryData.reason"
 		:currency-symbol="preferredCurrencyPrefix"
 		@close="handleCloseSessionSummary"
+		@view-details="handleViewDetails"
 	/>
 </template>
 
@@ -2082,6 +2083,20 @@
 				window.zenixStopModalActive = false;
 				this.sessionSummaryAcknowledged = true;
 			},
+            handleViewDetails() {
+                // Fechar o modal de resumo
+                this.handleCloseSessionSummary();
+                
+                // Abrir o modal de detalhes diários
+                // Se selectedDay não estiver setado para hoje, forçar
+                if (!this.selectedDay || this.selectedDay.fullDate !== new Date().toISOString().split('T')[0]) {
+                     // Cria um objeto parcial para hoje, openDayDetails buscará o resto
+                     const todayStr = new Date().toISOString().split('T')[0];
+                     this.openDayDetails({ fullDate: todayStr, date: new Date().toLocaleDateString('pt-BR', {day: '2-digit', month: '2-digit'}) });
+                } else {
+                    this.openDayDetails(this.selectedDay);
+                }
+            },
 
 			handleCloseNewStopModal(modalVar) {
 				// Legacy handler - keeping for safety but logic moved to SessionSummary
