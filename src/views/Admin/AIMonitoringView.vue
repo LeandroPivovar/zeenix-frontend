@@ -210,11 +210,19 @@
                                         <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Limite</span>
                                         <span class="text-sm font-black text-foreground tracking-wider">{{ currencySymbol }}{{ (currentConfig.lossLimit || 0).toFixed(2).replace('.', ',') }}</span>
                                     </div>
+                                    </div>
                                     <div class="flex items-center justify-between pt-1 mt-1">
                                         <span class="text-xs text-muted-foreground font-black uppercase tracking-wider">Stop Blindado</span>
                                         <span class="text-xs font-black uppercase tracking-widest" :class="currentConfig.stoplossBlindado ? 'text-success' : 'text-muted-foreground'">{{ currentConfig.stoplossBlindado ? 'ATIVO' : 'INATIVO' }}</span>
                                     </div>
                                 </div>
+
+                                <!-- Mobile History Button -->
+                                <button @click="showHistoryModal = true" 
+                                        class="w-full py-4 bg-secondary/40 hover:bg-secondary/60 border border-border/40 rounded-2xl flex items-center justify-center gap-2 group transition-all duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                                    <span class="text-xs font-black text-success uppercase tracking-widest">Histórico Completo</span>
+                                </button>
 
 
                             </div>
