@@ -953,6 +953,12 @@
                                         <label class="block text-[10px] text-gray-500 uppercase mb-1 font-bold">Quantidade Limite</label>
                                         <input type="number" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].threshold" class="w-full bg-[#181818] border border-[#333] rounded p-3 text-sm text-white focus:border-zenix-green outline-none" />
                                     </div>
+                                    <div class="md:col-span-2 flex items-center gap-3 bg-[#111] p-3 rounded-lg border border-[#333]">
+                                        <input type="checkbox" :id="'unique_' + filter.id" v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()].unique" class="w-4 h-4 rounded border-gray-600 text-zenix-green focus:ring-zenix-green bg-[#181818]" />
+                                        <label :for="'unique_' + filter.id" class="text-sm text-white cursor-pointer select-none">
+                                            Exigir 100% Únicos (Todos diferentes entre si - ZEUS)
+                                        </label>
+                                    </div>
                                 </div>
 
                                 <!-- Digit Sequence Config -->
@@ -1613,7 +1619,7 @@ export default {
                     active: false, 
                     type: 'digit',
                     desc: 'Analisa a frequência de dígitos específicos numa janela.',
-                    config: { window: 20, digits: '8,9', operator: '<', threshold: 5 }
+                    config: { window: 20, digits: '8,9', operator: '<', threshold: 5, unique: false }
                 },
                 { 
                     id: 'digit_sequence', 

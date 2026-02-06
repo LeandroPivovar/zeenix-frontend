@@ -97,7 +97,7 @@ export const StrategyAnalysis = {
      * Digit Density - Counts frequency of specific digits in a window.
      */
     digitDensity(config, digitHistory) {
-        const { window, digits, operator, threshold } = config;
+        const { window, digits, operator, threshold, unique } = config;
         const subHistory = digitHistory.slice(0, window);
 
         if (subHistory.length < window) {
@@ -105,7 +105,8 @@ export const StrategyAnalysis = {
         }
 
         const targetDigits = digits.split(',').map(d => parseInt(d.trim()));
-        const count = subHistory.filter(d => targetDigits.includes(d)).length;
+        const matchingDigits = subHistory.filter(d => targetDigits.includes(d));
+        const count = matchingDigits.length;
 
         let pass = false;
         switch (operator) {
@@ -116,10 +117,20 @@ export const StrategyAnalysis = {
             case '<=': pass = count <= threshold; break;
         }
 
+        // ZEUS - PRECISE MODE: Check Uniqueness if requested
+        if (pass && unique) {
+            // Check if matching digits are all unique
+            const uniqueSet = new Set(matchingDigits);
+            if (uniqueSet.size !== matchingDigits.length) {
+                pass = false; // Fail because duplicates found among matches
+                return { pass: false, reason: `Densidade negada: Elementos repetidos encontrados (${matchingDigits.join(',')})` };
+            }
+        }
+
         return {
             pass,
             reason: pass
-                ? `Densidade OK: Encontrado ${count} dígitos ${targetDigits.join('/')}`
+                ? `Densidade OK: Encontrado ${count} dígitos ${targetDigits.join('/')} ${unique ? '(Únicos)' : ''}`
                 : `Densidade negada: Encontrado ${count} dígitos (Limite ${operator}${threshold})`
         };
     },
