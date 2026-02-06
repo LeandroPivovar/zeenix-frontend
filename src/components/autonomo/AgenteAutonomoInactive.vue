@@ -874,9 +874,11 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
     box-sizing: border-box;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .layout-content-agent-autonomo {
-        padding: 20px 15px;
+        padding: 20px 10px;
+        margin: 0;
+        width: 100%;
     }
 }
 
@@ -887,6 +889,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 @media (max-width: 768px) {
@@ -955,7 +958,9 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 
 @media (max-width: 768px) {
     .risk-buttons {
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
     }
 }
 
@@ -1251,15 +1256,20 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 }
 
 .risk-btn {
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.25rem;
     background-color: #0B0B0B;
     border: 1px solid #1C1C1C;
     border-radius: 0.5rem;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 500;
     color: #A1A1A1;
     cursor: pointer;
     transition: all 0.2s;
+    width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .risk-btn.active {
@@ -1428,6 +1438,8 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
     flex-direction: column;
     align-items: center;
     gap: 0.75rem;
+    box-sizing: border-box;
+    padding: 0 10px;
 }
 
 .start-agent-btn-large {
