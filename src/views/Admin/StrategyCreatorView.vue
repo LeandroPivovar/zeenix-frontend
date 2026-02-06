@@ -1898,61 +1898,7 @@ export default {
             const marketByValue = this.markets.find(m => m.value === this.form.market);
             return marketByValue ? marketByValue.label : 'Selecione um mercado';
         },
-        selectedTradeTypeGroupLabel() {
-            if (!this.form.selectedTradeTypeGroup) return 'Selecionar Tipo';
-            
-            for (const cat of this.tradeTypeCategories) {
-                const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
-                if (item) return item.label;
-            }
-            return 'Selecionar Tipo';
-        },
-        selectedTradeTypeLabel() {
-            if (!this.form.tradeType) return 'Selecionar';
-            // Search manually since flatMap might not be available or compatible in all envs without polyfill
-            for (const cat of this.tradeTypeCategories) {
-                for (const item of cat.items) {
-                    if (item.value === this.form.tradeType) {
-                        return `${cat.label} - ${item.label}`;
-                    }
-                }
-            }
-            return this.form.tradeType;
-        },
-        selectedTradeTypeIcon() {
-            if (!this.form.tradeType) return null;
-            
-            for (const cat of this.tradeTypeCategories) {
-                const item = cat.items.find(i => i.value === this.form.tradeType);
-                if (item && item.icon) return `/deriv_icons/${item.icon}`;
-            }
-            return null;
-        },
-        selectedRecoveryMarketLabel() {
-            const market = this.markets.find(m => m.symbol === this.recoveryConfig.market);
-            if (market) return market.displayName || market.label;
-            
-            const marketByValue = this.markets.find(m => m.value === this.recoveryConfig.market);
-            return marketByValue ? marketByValue.label : 'Mercado de Recuperação';
-        },
-        selectedRecoveryTradeTypeGroupLabel() {
-            if (!this.recoveryConfig.selectedTradeTypeGroup) return 'Selecionar Tipo';
-            
-            for (const cat of this.tradeTypeCategories) {
-                const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
-                if (item) return item.label;
-            }
-            return 'Selecionar Tipo';
-        },
-        selectedRecoveryTradeTypeGroupIcon() {
-            if (!this.recoveryConfig.selectedTradeTypeGroup) return null;
-            
-            for (const cat of this.tradeTypeCategories) {
-                const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
-                if (item && item.icon) return `/deriv_icons/${item.icon}`;
-            }
-            return null;
-        },
+
         availableContracts() {
             if (!this.contracts || this.contracts.length === 0) return [];
             return this.contracts.map(c => c.contractType.toUpperCase());
