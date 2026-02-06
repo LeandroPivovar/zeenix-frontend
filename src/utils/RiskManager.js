@@ -82,21 +82,25 @@ export const RiskManager = {
         const historyKey = modePrefix + tradeType + barrierSuffix;
 
         const configPayout = config.expectedPayout || null;
-        let estimatedPayout = explicitPayout || configPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 1.95;
 
-        // ✅ USER REQUEST: ACEITAR VALOR BRUTO EM 100% DAS VEZES
-        // Se o usuário configurar "1.26", ele quer dizer 126% de lucro.
-        // Se o histórico retornar "2.26" (Multiplicador Total da Deriv), ainda pode haver conflito,
-        // mas a prioridade é respeitar a CONFIGURAÇÃO manual.
+        // ✅ PRIORITY ORDER: Explicit Payout (from WS) > Config Payout > History > Defaults
+        let estimatedPayout = explicitPayout || configPayout || this.payoutHistory[historyKey] || this.payoutHistory[tradeType] || this.payoutDefaults[tradeType] || 1.95;
 
         let profitRate = estimatedPayout;
 
-        // SE for detecção automática de histórico (que vem como multiplicador total > 1.0, ex: 1.95), 
-        // e NÃO tiver config manual, talvez devêssemos normalizar?
-        // Mas a ordem do usuário foi explícita: "sem normalizar para 226 ou 2.26".
-        // Vamos manter o RAW value. Se o user mandar 1.26, usa 1.26.
+        // ✅ SMART NORMALIZATION
+        // If the value comes from Deriv (explicitPayout) or History, it's a multiplier (e.g., 1.85).
+        // If it's a multiplier (> 1.0), we MUST subtract 1 to get the net profit rate (0.85).
+        // EXCEPT if it was explicitly configured by the user (configPayout), then we respect it as a direct rate.
 
-        console.log(`[RiskManager] Calc Stake Debug: ConfigPayout=${configPayout}, Explicit=${explicitPayout}, History=${this.payoutHistory[historyKey]}, Default=${this.payoutDefaults[tradeType]}, ESTIMATED=${estimatedPayout}, PROFIT_RATE=${profitRate}`);
+        const isFromUserConfig = !explicitPayout && (estimatedPayout === configPayout);
+
+        if (!isFromUserConfig && profitRate > 1.0) {
+            // Normalize multiplier to rate: 1.85 -> 0.85
+            profitRate = profitRate - 1;
+        }
+
+        console.log(`[RiskManager] Calc Stake: ConfigPayout=${configPayout}, Explicit=${explicitPayout}, FinalProfitRate=${profitRate.toFixed(4)} (HistoryKey=${historyKey})`);
 
 
         // 1. RECOVERY MODE
