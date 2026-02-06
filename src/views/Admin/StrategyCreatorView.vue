@@ -845,26 +845,35 @@
                         <!-- Step 1: Selection -->
                          <div v-if="filterStep === 1" class="space-y-4">
                             <p class="text-sm text-gray-400 mb-4 px-1">Selecione os filtros desejados para as entradas de {{ modalContext === 'main' ? 'ataque' : 'recuperação' }}. Todos os filtros devem ser atendidos para executar uma operação.</p>
-                            <div class="grid grid-cols-1 gap-3">
-                                <div 
-                                    v-for="filter in activeFiltersForModal" 
-                                    :key="filter.id" 
-                                    @click="toggleFilter(filter)"
-                                    class="p-4 rounded-xl border transition-all cursor-pointer group"
-                                    :class="[
-                                        filter.active ? 'border-zenix-green bg-zenix-green/5' : 'border-[#333] bg-[#111] hover:border-[#444]'
-                                    ]"
-                                >
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div 
-                                            class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
-                                            :class="filter.active ? 'bg-zenix-green border-zenix-green text-black' : 'border-[#444] group-hover:border-gray-500'"
-                                        >
-                                            <i v-if="filter.active" class="fa-solid fa-check text-[10px]"></i>
-                                        </div>
-                                        <span class="text-white font-bold">{{ filter.name }}</span>
+                            <div class="space-y-8">
+                                <div v-for="group in groupedFiltersForModal" :key="group.id" class="space-y-3">
+                                    <div class="flex items-center gap-2 px-1 mb-4">
+                                        <div class="w-2 h-4 bg-zenix-green rounded-full"></div>
+                                        <i :class="[group.icon, 'text-zenix-green text-xs']"></i>
+                                        <h4 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">{{ group.label }}</h4>
                                     </div>
-                                    <p class="text-xs text-gray-500 pl-8 leading-relaxed">{{ filter.desc }}</p>
+                                    <div class="grid grid-cols-1 gap-3">
+                                        <div 
+                                            v-for="filter in group.filters" 
+                                            :key="filter.id" 
+                                            @click="toggleFilter(filter)"
+                                            class="p-4 rounded-xl border transition-all cursor-pointer group/item"
+                                            :class="[
+                                                filter.active ? 'border-zenix-green bg-zenix-green/5' : 'border-[#333] bg-[#111] hover:border-[#444]'
+                                            ]"
+                                        >
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <div 
+                                                    class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
+                                                    :class="filter.active ? 'bg-zenix-green border-zenix-green text-black' : 'border-[#444] group-hover/item:border-gray-500'"
+                                                >
+                                                    <i v-if="filter.active" class="fa-solid fa-check text-[10px]"></i>
+                                                </div>
+                                                <span class="text-white font-bold">{{ filter.name }}</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 pl-8 leading-relaxed">{{ filter.desc }}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <!-- Button Removed -->
@@ -2044,6 +2053,31 @@ export default {
         
         activeFiltersForModal() {
             return this.modalContext === 'main' ? this.filters : this.recoveryFilters;
+        },
+
+        groupedFiltersForModal() {
+            const filters = this.activeFiltersForModal;
+            const groups = [
+                {
+                    id: 'digits',
+                    label: 'Análise de Dígito',
+                    icon: 'fas fa-hashtag',
+                    filters: filters.filter(f => f.type === 'digit')
+                },
+                {
+                    id: 'indicators',
+                    label: 'Análise de Preço (Indicadores)',
+                    icon: 'fas fa-chart-line',
+                    filters: filters.filter(f => f.type === 'price' && !['spike_detect', 'step_pattern'].includes(f.id))
+                },
+                {
+                    id: 'specific',
+                    label: 'Análise de Mercados Específicos',
+                    icon: 'fas fa-microchip',
+                    filters: filters.filter(f => ['spike_detect', 'step_pattern'].includes(f.id))
+                }
+            ];
+            return groups.filter(g => g.filters.length > 0);
         },
         
         // --- Label Helpers using Contracts Data directly ---
