@@ -1666,7 +1666,7 @@
   /* Responsividade Mobile */
   @media screen and (max-width: 768px) {
     .layout-agente-autnomo {
-      padding-bottom: 100px !important;
+      padding-bottom: 0 !important;
     }
 
     .container-componentes {
