@@ -1749,7 +1749,7 @@ export default {
                 symbol: this.resolveMarketSymbol(config.market || 'R_100')
             };
             
-            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(config.tradeType)) {
+            if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(proposalParams.contract_type)) {
                 proposalParams.barrier = (config.prediction || 8).toString();
             }
             
