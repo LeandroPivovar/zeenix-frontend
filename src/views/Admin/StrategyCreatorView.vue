@@ -231,28 +231,6 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-white font-bold mb-2">Payout Esperado</label>
-                                    <input 
-                                        type="number" 
-                                        v-model.number="form.expectedPayout" 
-                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                        step="0.01"
-                                        min="1"
-                                        placeholder="Ex: 1.19 ($1 vira $1.19)"
-                                    />
-                                </div>
-                                <div>
-                                    <label class="block text-white font-bold mb-2 text-sm">Payout Esperado Rec.</label>
-                                    <input 
-                                        type="number" 
-                                        v-model.number="recoveryConfig.expectedPayout" 
-                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                        step="0.01"
-                                        min="1"
-                                        placeholder="Ex: 2.26 ($1 vira $2.26)"
-                                    />
-                                </div>
-                                <div>
                                     <label class="block text-white font-bold mb-2">Nível de Soros</label>
                                     <input 
                                         type="number" 
@@ -3590,24 +3568,49 @@ export default {
                         const uniqueDirections = [...new Set(directions)];
                         if (uniqueDirections.length === 1) {
                             const signal = uniqueDirections[0];
-                            const baseType = (this.form.tradeType || '').toUpperCase();
-
-                            if (['CALL', 'UP'].includes(signal)) {
-                                dynamicContractType = baseType.includes('DIGIT') ? 'DIGITOVER' : 'CALL';
-                            } else if (['PUT', 'DOWN'].includes(signal)) {
-                                dynamicContractType = baseType.includes('DIGIT') ? 'DIGITUNDER' : 'PUT';
-                            } else if (['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal)) {
-                                dynamicContractType = signal;
-                            } else {
-                                dynamicContractType = baseType;
-                            }
-
-                            // ✅ Direction Mode Restriction
                             const isRec = this.sessionState.activeStrategy === 'RECUPERACAO';
                             const configModel = isRec ? this.recoveryConfig : this.form;
+                            const baseType = (configModel.tradeType || '').toUpperCase();
+
+                            // ✅ CRITICAL: Check if user configured a specific contract type (not a group)
+                            // If so, only allow dynamic direction if it matches the configured type
+                            const isSpecificContract = ['DIGITOVER', 'DIGITUNDER', 'DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'CALL', 'PUT'].includes(baseType);
+                            
+                            if (isSpecificContract) {
+                                // User configured a specific direction - respect it!
+                                // Only process if signal matches the configured type
+                                const configuredIsUp = ['CALL', 'DIGITOVER', 'DIGITEVEN', 'DIGITMATCH'].includes(baseType);
+                                const configuredIsDown = ['PUT', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(baseType);
+                                const signalIsUp = ['CALL', 'UP', 'DIGITOVER', 'DIGITEVEN', 'DIGITMATCH'].includes(signal);
+                                const signalIsDown = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
+                                
+                                if ((configuredIsUp && !signalIsUp) || (configuredIsDown && !signalIsDown)) {
+                                    this.addLog('🚫 Sinal Incompatível', [
+                                        `Sinal ${signal} ignorado`,
+                                        `Tipo configurado: ${baseType}`,
+                                        `Motivo: Direção do sinal não corresponde ao tipo de contrato configurado`
+                                    ], 'info');
+                                    return;
+                                }
+                                // Signal matches configured type, use the configured type
+                                dynamicContractType = baseType;
+                            } else {
+                                // Dynamic group - map signal to contract type
+                                if (['CALL', 'UP'].includes(signal)) {
+                                    dynamicContractType = baseType.includes('DIGIT') ? 'DIGITOVER' : 'CALL';
+                                } else if (['PUT', 'DOWN'].includes(signal)) {
+                                    dynamicContractType = baseType.includes('DIGIT') ? 'DIGITUNDER' : 'PUT';
+                                } else if (['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal)) {
+                                    dynamicContractType = signal;
+                                } else {
+                                    dynamicContractType = baseType;
+                                }
+                            }
+
+                            // ✅ Direction Mode Restriction (applies to dynamic groups)
                             const directionMode = configModel.directionMode || 'both';
 
-                            if (directionMode !== 'both') {
+                            if (directionMode !== 'both' && !isSpecificContract) {
                                 const isUpSignal = ['CALL', 'UP', 'DIGITOVER', 'DIGITEVEN', 'DIGITMATCH'].includes(signal);
                                 const isDownSignal = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
                                 
