@@ -106,6 +106,15 @@
 					</div>
 					<!-- Icon Removed for Left Alignment -->
 				</div>
+                
+                <!-- History Button (Mobile Only) -->
+                <button 
+                    @click="showHistoryModal = true"
+                    class="w-full mt-4 py-3 px-4 rounded-xl bg-[#161616] border border-[#2e2e2e] flex items-center justify-center gap-2 text-white hover:bg-[#2e2e2e] transition-colors shadow-sm"
+                >
+                    <i class="fas fa-history text-zenix-green"></i>
+                    <span class="font-bold text-xs tracking-wider uppercase">Histórico de Sessões</span>
+                </button>
 			</div>
 		</section>
 			<div class="config-grid">
@@ -451,11 +460,19 @@
 			:message="invalidParamsMessage"
 			@confirm="showInvalidParamsModal = false"
 		/>
+
+        <!-- Session History Modal -->
+        <SessionHistoryModal 
+            :visible="showHistoryModal" 
+            :user-id="currentUserId" 
+            @close="showHistoryModal = false" 
+        />
 	</div> <!-- End of layout-content-agent-autonomo -->
 </template>
 
 <script>
 import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
+import SessionHistoryModal from '../SessionHistoryModal.vue';
 	import accountBalanceMixin from '@/mixins/accountBalanceMixin';
 
 	export default {
@@ -463,7 +480,8 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 		name: 'AgenteAutonomoInactive',
 		mixins: [accountBalanceMixin],
 	components: {
-		InvalidParamsModal
+		InvalidParamsModal,
+        SessionHistoryModal
 	},
 	props: {
 		accountBalance: {
@@ -503,6 +521,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 			isStarting: false,
 			showInvalidParamsModal: false,
 			invalidParamsMessage: '',
+            showHistoryModal: false,
 			allAgents: [
 				{
 					id: 'zeus',
@@ -798,8 +817,19 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 			// return this.allAgents.filter(agent => {
 			// 	return allowedAgents.some(allowedId => allowedId.toLowerCase() === agent.id.toLowerCase());
 			// });
-			return this.allAgents;
+            return this.allAgents;
 		},
+        currentUserId() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return '';
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.userId || payload.sub || payload.id || '';
+            } catch (e) {
+                console.error('Error getting user ID:', e);
+                return '';
+            }
+        },
 		riskLevelText() {
 			const labels = {
 				'conservative': 'Baixo',
