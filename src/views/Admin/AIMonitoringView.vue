@@ -2242,6 +2242,7 @@ export default {
                 layout: {
                     background: { type: ColorType.Solid, color: 'transparent' }, 
                     textColor: '#D9D9D9',
+                    padding: { left: 0, right: 0, top: 20, bottom: 0 },
                 },
                 grid: {
                     vertLines: { color: 'rgba(42, 42, 42, 0.5)' },
@@ -2251,8 +2252,9 @@ export default {
                     timeVisible: true,
                     secondsVisible: true,
                     borderColor: 'rgba(42, 42, 42, 0.5)',
-                    rightOffset: 10,
-                    fixLeftEdge: true, // Fix start position
+                    rightOffset: 0,
+                    fixLeftEdge: true, 
+                    shiftVisibleRangeOnNewBar: true,
                 },
                 rightPriceScale: {
                     borderColor: 'rgba(42, 42, 42, 0.5)',

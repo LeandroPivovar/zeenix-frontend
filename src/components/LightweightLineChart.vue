@@ -93,6 +93,7 @@ export default {
           background: { type: ColorType.Solid, color: 'transparent' },
           textColor: '#A1A1AA',
           fontFamily: 'Inter, system-ui, sans-serif',
+          padding: { left: 0, right: 0, top: 20, bottom: 0 },
         },
         grid: {
           vertLines: { color: 'rgba(255, 255, 255, 0.02)' },
@@ -106,6 +107,8 @@ export default {
           borderColor: 'rgba(255, 255, 255, 0.05)',
           fixLeftEdge: true,
           fixRightEdge: false,
+          rightOffset: 0,
+          shiftVisibleRangeOnNewBar: true,
         },
         rightPriceScale: {
           borderColor: 'rgba(255, 255, 255, 0.05)',
