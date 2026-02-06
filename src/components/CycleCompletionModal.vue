@@ -15,19 +15,23 @@
         </div>
 
         <div class="modal-content">
-          <h2 class="modal-title">CICLO {{ cycleNumber }} CONCLUÍDO!</h2>
+          <h2 class="modal-title">{{ isFinalCycle ? 'SESSÃO FINALIZADA' : `CICLO ${cycleNumber} CONCLUÍDO!` }}</h2>
           <p class="modal-description">
-            O robô finalizou com sucesso mais uma etapa da estratégia. 
-            O lucro foi consolidado e o próximo ciclo será iniciado.
+            {{ isFinalCycle 
+                ? 'O robô finalizou todos os ciclos com sucesso. Ganhos consolidados.' 
+                : 'O lucro foi consolidado e o próximo ciclo será iniciado.' 
+            }}
           </p>
           
           <div class="result-badge">
-            <span class="label">LUCRO NO CICLO</span>
-            <span class="value">+{{ currencySymbol }}{{ result.toFixed(2) }}</span>
+            <span class="label">{{ isFinalCycle ? 'LUCRO TOTAL DA SESSÃO' : 'LUCRO NO CICLO' }}</span>
+            <span class="value" :class="result >= 0 ? 'text-green-500' : 'text-red-500'">
+                {{ result >= 0 ? '+' : '' }}{{ currencySymbol }}{{ Math.abs(result).toFixed(2) }}
+            </span>
           </div>
 
           <button class="confirm-button" @click="handleConfirm">
-            CONTINUAR OPERAÇÕES
+            {{ isFinalCycle ? 'ENCERRAR SESSÃO' : 'CONTINUAR OPERAÇÕES' }}
           </button>
         </div>
       </div>
@@ -54,6 +58,12 @@ export default {
     currencySymbol: {
       type: String,
       default: '$'
+    }
+  },
+  computed: {
+    isFinalCycle() {
+      // Check if cycle is 4 (Zeus max) or explicitly marked
+      return this.cycleNumber == 4 || this.cycleNumber === 'Final';
     }
   },
   methods: {

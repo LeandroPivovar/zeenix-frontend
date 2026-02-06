@@ -86,12 +86,13 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.85); /* Mantém fundo escuro, mas permite ver atrás levemente se quiser mudar opacity */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000000;
   padding: 20px;
+  backdrop-filter: blur(4px); /* Efeito moderno */
 }
 
 .target-profit-modal {
@@ -104,6 +105,9 @@ export default {
   position: relative;
   border: 1px solid rgba(34, 197, 94, 0.2);
   box-shadow: 0 20px 60px rgba(34, 197, 94, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centraliza itens */
 }
 
 .modal-icon-container {
@@ -135,12 +139,14 @@ export default {
 .modal-message {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.8);
-  margin: 0 0 32px 0;
+  margin: 0 0 24px 0;
   line-height: 1.5;
+  text-align: center;
 }
 
 .result-section {
-  margin: 24px 0;
+  width: 100%; /* Full width container */
+  margin: 0 0 24px 0;
   padding: 16px;
   background: rgba(34, 197, 94, 0.05);
   border-radius: 12px;
@@ -173,9 +179,15 @@ export default {
 .info-message {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 32px 0;
+  margin: 0 0 24px 0;
   line-height: 1.6;
   font-style: italic;
+  display: none; /* Oculta em mobile se necessário para economizar espaço, ou ajusta */
+}
+
+/* Exibe info message apenas em desktop se quiser, ou ajusta margens */
+@media (min-width: 768px) {
+    .info-message { display: block; }
 }
 
 .confirm-button {
@@ -189,6 +201,8 @@ export default {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  /* Touch target size */
+  min-height: 56px; 
 }
 
 .confirm-button:hover {
@@ -210,16 +224,44 @@ export default {
   opacity: 0;
 }
 
-/* Mobile */
+/* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .target-profit-modal {
-    padding: 32px 24px;
-    max-width: 100%;
-    margin: 20px;
+  .target-profit-modal-overlay {
+    padding: 16px;
+    align-items: flex-end; /* Sheet style on mobile or center? Center is safer for 'popup' */
+    align-items: center;
   }
   
+  .target-profit-modal {
+    padding: 24px 20px;
+    border-radius: 20px;
+    width: 95%; /* Quase full width */
+    max-width: 360px; /* Limite seguro */
+  }
+  
+  .modal-icon {
+    width: 64px;
+    height: 64px;
+    border-width: 2px;
+  }
+
   .modal-title {
     font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  .result-value {
+    font-size: 24px;
+  }
+
+  .modal-message {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .confirm-button {
+    padding: 14px;
+    font-size: 15px;
   }
 }
 </style>

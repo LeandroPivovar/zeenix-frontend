@@ -67,7 +67,7 @@
             <CycleCompletionModal
                 :visible="showCycleCompletionModal"
                 :cycle-number="currentCycleNumber"
-                :result="currentCycleProfit"
+                :result="currentCycleNumber >= 4 ? (sessionStats?.netProfit || 0) : currentCycleProfit"
                 :currency-symbol="preferredCurrencyPrefix"
                 @close="showCycleCompletionModal = false"
                 @confirm="handleConfirmCycle"
