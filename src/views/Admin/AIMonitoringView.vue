@@ -1510,6 +1510,41 @@ export default {
 
                 this.addLog('Sinal de Entrada Corretora', analysisLog, 'success');
                 
+            if (allPassed) {
+                // ✅ DYNAMIC DIRECTION LOGIC
+                // Collect signals from all filters that opted to provide a direction
+                const directions = results.map(r => r.direction).filter(d => d);
+                let dynamicContractType = null;
+                
+                if (directions.length > 0) {
+                     // Require Consensus: If multiple filters provide direction, they must match
+                     const uniqueDirections = [...new Set(directions)];
+                     if (uniqueDirections.length === 1) {
+                         const signal = uniqueDirections[0];
+                         const baseType = (this.currentConfig.tradeType || '').toUpperCase();
+                         
+                         // Map Signal to Contract Type
+                         if (['CALL', 'UP'].includes(signal)) {
+                             dynamicContractType = baseType.includes('DIGIT') ? 'DIGITOVER' : 'CALL';
+                         } else if (['PUT', 'DOWN'].includes(signal)) {
+                             dynamicContractType = baseType.includes('DIGIT') ? 'DIGITUNDER' : 'PUT';
+                         } else if (['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal)) {
+                             dynamicContractType = signal;
+                         } else {
+                             // Fallback or unknown signal
+                             dynamicContractType = baseType; 
+                         }
+                         
+                         // If baseType implies a different context (e.g. DIGITMATCH but we got CALL), we assume the signal takes precedence 
+                         // but we map it to the "Standard" equivalent of that signal (e.g. UP -> DIGITOVER) if in digit context.
+                         
+                         this.addLog('🧭 Direção Dinâmica', `Sinal: ${signal} -> Contrato: ${dynamicContractType}`, 'info');
+                     } else {
+                         this.addLog('⚠️ Conflito de Direção', `Filtros divergentes: ${uniqueDirections.join(', ')}`, 'warning');
+                         return; // BLOCK TRADE due to conflict
+                     }
+                }
+
                 const vl = this.securityConfig.virtualLoss;
                 const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
                 let shouldApplyVL = false;
@@ -1522,7 +1557,7 @@ export default {
                 }
 
                 if (shouldApplyVL && vl.current < vl.target) {
-                    this.executeVirtualTrade();
+                    this.executeVirtualTrade(dynamicContractType);
                 } else {
                     // Reset Counter Logic based on Mode (Cyclic behavior for specific phases)
                     if (vl && vl.enabled) {
@@ -1530,8 +1565,9 @@ export default {
                         else if (vl.mode === 'attack' && !isRecovery) vl.current = 0;
                         else if (vl.mode === 'recovery' && isRecovery) vl.current = 0;
                     }
-                    this.executeAITrade();
+                    this.executeAITrade(dynamicContractType);
                 }
+            }
             }
         },
         calculateNextStake() {
@@ -1602,7 +1638,7 @@ export default {
             console.log('[AIMonitoring] Calculated stake (after survival):', stake);
             return stake;
         },
-        executeAITrade() {
+        executeAITrade(overrideContractType = null) {
             if (!this.isAuthorized) {
                 this.addLog('⚠️ Entrada negada: Não autorizado', 'warning');
                 return;
@@ -1637,7 +1673,7 @@ export default {
                 active: false,
                 contractId: null,
                 barrier: config.prediction,
-                contractType: config.tradeType,
+                contractType: overrideContractType || config.tradeType,
                 stake: stake,
                 duration: config.duration || 1,
                 durationUnit: config.durationUnit || 't',
@@ -1648,7 +1684,7 @@ export default {
                 proposal: 1,
                 amount: stake,
                 basis: 'stake',
-                contract_type: config.tradeType,
+                contract_type: overrideContractType || config.tradeType,
                 currency: 'USD',
                 duration: config.duration || 1,
                 duration_unit: config.durationUnit || 't',
@@ -1662,7 +1698,7 @@ export default {
             const mode = isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL';
             this.addLog('Solicitando Proposta', [
                 `Modo: ${mode}`,
-                `Contrato: ${config.tradeType}`,
+                `Contrato: ${overrideContractType || config.tradeType}`,
                 `Mercado: ${proposalParams.symbol}`,
                 `Stake: ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`
             ], 'info');
@@ -1673,7 +1709,7 @@ export default {
                 this.addLog('❌ WebSocket não conectado', 'error');
             }
         },
-        executeVirtualTrade() {
+        executeVirtualTrade(overrideContractType = null) {
             // Check context
             const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
             // ✅ FIX: Correctly merge configs
@@ -1696,7 +1732,7 @@ export default {
             this.pendingVirtualTrade = {
                 startTime: Date.now(),
                 entryPrice: this.tickHistory[0],
-                tradeType: config.tradeType,
+                tradeType: overrideContractType || config.tradeType,
                 prediction: config.prediction,
                 duration: config.duration || 1,
                 tickCount: 0

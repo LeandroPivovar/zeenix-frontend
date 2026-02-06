@@ -3419,64 +3419,62 @@ export default {
                 }
             });
 
-            if (allPassed) {
-                const mode = this.sessionState.negotiationMode;
-                const isRec = this.sessionState.activeStrategy === 'RECUPERACAO';
-                
-                let analysisLog = `🧠 ANÁLISE DO MERCADO<br>` +
-                    `• MODO: ${mode} ${isRec ? '(RECUPERAÇÃO)' : ''}<br>` +
-                    `• STATUS: Confirmado<br>` +
-                    `• GATILHO: Filtros de Ataque Atendidos<br><br>` +
-                    `📝 DETALHES:<br>`;
+                if (allPassed) {
+                    // ✅ DYNAMIC DIRECTION LOGIC (Simulation)
+                    const directions = results.map(r => r.direction).filter(d => d);
+                    let dynamicContractType = null;
 
-                results.forEach((res, index) => {
-                    const filterName = activeFilters[index].name;
-                    analysisLog += `• ${filterName}: ${res.reason}<br>`;
-                });
-                
-                // --- Stop Blindado Info ---
-                if (this.sessionState.stopBlindadoActive) {
-                    analysisLog += `<br>🛡️ BLINDADO ATIVO: Protegendo $${this.sessionState.stopBlindadoFloor.toFixed(2)}`;
-                }
-                // --------------------------
+                    if (directions.length > 0) {
+                        const uniqueDirections = [...new Set(directions)];
+                        if (uniqueDirections.length === 1) {
+                            const signal = uniqueDirections[0];
+                            const baseType = (this.form.tradeType || '').toUpperCase();
 
-                this.addLog(analysisLog, 'info');
-
-                // --- Virtual Loss Check ---
-                const vl = this.securityConfig.virtualLoss;
-                const isRecovery = this.sessionState.activeStrategy === 'RECUPERACAO';
-                let shouldApplyVL = false;
-
-                if (vl && vl.enabled) {
-                    if (vl.mode === 'warmup') shouldApplyVL = true;
-                    // Cyclic now means "Always" (Attack AND Recovery) - as per label update
-                    else if (vl.mode === 'cyclic') shouldApplyVL = true; 
-                    else if (vl.mode === 'attack' && !isRecovery) shouldApplyVL = true;
-                    else if (vl.mode === 'recovery' && isRecovery) shouldApplyVL = true;
-                }
-
-                if (shouldApplyVL && vl.current < vl.target) {
-                    this.executeVirtualTrade();
-                } else {
-                    // MODO DE OPERAÇÃO: Check if cyclic reset is needed
-                    if (vl && vl.enabled) {
-                        if (vl.mode === 'cyclic') {
-                            vl.current = 0;
-                            this.addLog('🛡️ Segurança: Ciclo Reiniciado (Modo Cíclico).', 'info');
-                        }
-                        else if (vl.mode === 'attack' && !isRecovery) {
-                            vl.current = 0;
-                            // Optionally log reset for clarity on larger sequences? 
-                            // this.addLog('🛡️ Segurança: Ciclo Reiniciado (Modo Ataque).', 'info');
-                        }
-                        else if (vl.mode === 'recovery' && isRecovery) {
-                            vl.current = 0;
-                            // this.addLog('🛡️ Segurança: Ciclo Reiniciado (Modo Recuperação).', 'info');
+                            if (['CALL', 'UP'].includes(signal)) {
+                                dynamicContractType = baseType.includes('DIGIT') ? 'DIGITOVER' : 'CALL';
+                            } else if (['PUT', 'DOWN'].includes(signal)) {
+                                dynamicContractType = baseType.includes('DIGIT') ? 'DIGITUNDER' : 'PUT';
+                            } else if (['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal)) {
+                                dynamicContractType = signal;
+                            } else {
+                                dynamicContractType = baseType;
+                            }
+                            this.addLog('🧭 Direção Dinâmica (Simulação)', `Sinal: ${signal} -> Contrato: ${dynamicContractType}`, 'info');
+                        } else {
+                            this.addLog('⚠️ Conflito de Direção (Simulação)', `Filtros divergentes: ${uniqueDirections.join(', ')}`, 'warning');
+                            return;
                         }
                     }
-                    this.executeRealTrade();
+
+                    // --- Virtual Loss Check ---
+                    const vl = this.securityConfig.virtualLoss;
+                    const isRecovery = this.sessionState.activeStrategy === 'RECUPERACAO';
+                    let shouldApplyVL = false;
+
+                    if (vl && vl.enabled) {
+                        if (vl.mode === 'warmup') shouldApplyVL = true;
+                        else if (vl.mode === 'cyclic') shouldApplyVL = true; 
+                        else if (vl.mode === 'attack' && !isRecovery) shouldApplyVL = true;
+                        else if (vl.mode === 'recovery' && isRecovery) shouldApplyVL = true;
+                    }
+
+                    if (shouldApplyVL && vl.current < vl.target) {
+                        this.executeVirtualTrade(dynamicContractType);
+                    } else {
+                        // Reset Counter Logic based on Mode (Cyclic behavior for specific phases)
+                        if (vl && vl.enabled) {
+                            if (vl.mode === 'cyclic') {
+                                vl.current = 0;
+                                this.addLog('🛡️ Segurança: Ciclo Reiniciado (Modo Cíclico).', 'info');
+                            } else if (vl.mode === 'attack' && !isRecovery) {
+                                vl.current = 0;
+                            } else if (vl.mode === 'recovery' && isRecovery) {
+                                vl.current = 0;
+                            }
+                        }
+                        this.executeRealTrade(dynamicContractType);
+                    }
                 }
-            }
         },
         checkLimits() {
             if (this.sessionState.isStopped) return true;
@@ -3626,7 +3624,7 @@ export default {
             this.stopTickConnection();
             this.addLog(`⏹️ Monitoramento parado: ${stopReason}`, 'info');
         },
-        executeRealTrade() {
+        executeRealTrade(overrideContractType = null) {
             try {
                 if (!this.isAuthorized) {
                     this.addLog('⚠️ Entrada negada: Não autorizado (Token inválido ou ausente).', 'warning');
@@ -3649,10 +3647,10 @@ export default {
                 const config = (isFinancialRecovery || isRecoveryStrategy) ? this.recoveryConfig : this.form;
                 
                 // Check for Contract Switch
-                if (this.sessionState.lastContractType && this.sessionState.lastContractType !== config.tradeType) {
-                    this.addLog(`📊 CONTRATO ALTERADO: ${this.sessionState.lastContractType} ➔ ${config.tradeType}`, 'info');
+                if (this.sessionState.lastContractType && this.sessionState.lastContractType !== (overrideContractType || config.tradeType)) {
+                    this.addLog(`📊 CONTRATO ALTERADO: ${this.sessionState.lastContractType} ➔ ${overrideContractType || config.tradeType}`, 'info');
                 }
-                this.sessionState.lastContractType = config.tradeType;
+                this.sessionState.lastContractType = overrideContractType || config.tradeType;
                 
                 // Debug Log
                 console.log('[StrategyCreator] Calculando stake...');
@@ -3670,7 +3668,7 @@ export default {
                     proposal: 1,
                     amount: stake,
                     basis: 'stake',
-                    contract_type: config.tradeType,
+                    contract_type: overrideContractType || config.tradeType,
                     currency: 'USD',
                     duration: this.form.duration,
                     duration_unit: this.form.durationUnit,
@@ -3685,7 +3683,7 @@ export default {
                 this.pendingFastResult = {
                     contractId: null,
                     barrier: config.prediction,
-                    contractType: config.tradeType,
+                    contractType: overrideContractType || config.tradeType,
                     active: false, // DISABLED FAST RESULT as per user request
                     stake: stake,
                     analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
@@ -3702,25 +3700,32 @@ export default {
                 this.addLog(`❌ ERRO NO SISTEMA: ${err.message}`, 'error');
             }
         },
-        executeVirtualTrade() {
+        executeVirtualTrade(overrideContractType = null) {
             // Check context
             const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
-            const config = isRecoveryStrategy ? this.recoveryConfig : this.form;
+            // ✅ FIX: Correctly merge configs
+            const config = {
+                ...this.form,
+                ...(isRecoveryStrategy ? this.recoveryConfig : {})
+            };
 
             const vl = this.securityConfig.virtualLoss;
             const current = vl.current + 1; // Current attempt
             const target = vl.target;
 
-            this.addLog(`👻 LOSS VIRTUAL: Iniciando simulação (${current}/${target})...`, 'info');
+            this.addLog('Filtro de Segurança (Loss Virtual)', [
+                `Status: Simulando Operação ${current}/${target}`,
+                `Ação: Entrada simulada (sem valor financeiro)`
+            ], 'info');
 
             // Set State
             this.isNegotiating = true;
             this.pendingVirtualTrade = {
                 startTime: Date.now(),
-                entryPrice: this.lastTickPrice || (this.tickHistory.length > 0 ? this.tickHistory[0] : 0),
-                tradeType: config.tradeType,
+                entryPrice: this.lastTickPrice,
+                tradeType: overrideContractType || config.tradeType,
                 prediction: config.prediction,
-                duration: config.duration || 1,
+                duration: this.form.duration,
                 tickCount: 0
             };
         },

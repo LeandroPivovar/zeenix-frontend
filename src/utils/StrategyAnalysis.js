@@ -131,7 +131,8 @@ export const StrategyAnalysis = {
             pass,
             reason: pass
                 ? `Densidade OK: Encontrado ${count} dígitos ${targetDigits.join('/')} ${unique ? '(Únicos)' : ''}`
-                : `Densidade negada: Encontrado ${count} dígitos (Limite ${operator}${threshold})`
+                : `Densidade negada: Encontrado ${count} dígitos (Limite ${operator}${threshold})`,
+            direction: pass ? (operator === '>' || operator === '>=' || operator === '=' ? 'DIGITMATCH' : 'DIGITDIFF') : null
         };
     },
 
@@ -162,7 +163,8 @@ export const StrategyAnalysis = {
             pass: allMatch,
             reason: allMatch
                 ? `Sequência de ${length} dígitos (${target}) detectada`
-                : `Sequência negada: Últimos dígitos não seguem o padrão ${target}`
+                : `Sequência negada: Últimos dígitos não seguem o padrão ${target}`,
+            direction: allMatch ? (target === 'even' ? 'DIGITEVEN' : target === 'odd' ? 'DIGITODD' : target === 'under_4' ? 'DIGITUNDER' : 'DIGITOVER') : null
         };
     },
 
@@ -187,10 +189,10 @@ export const StrategyAnalysis = {
         const noise = Math.min(evens, odds);
 
         if (evenPerc >= percentage && noise <= maxNoise) {
-            return { pass: true, reason: `Maioria Par: ${evenPerc.toFixed(1)}% (Ruído: ${noise})` };
+            return { pass: true, reason: `Maioria Par: ${evenPerc.toFixed(1)}% (Ruído: ${noise})`, direction: 'DIGITEVEN' };
         }
         if (oddPerc >= percentage && noise <= maxNoise) {
-            return { pass: true, reason: `Maioria Ímpar: ${oddPerc.toFixed(1)}% (Ruído: ${noise})` };
+            return { pass: true, reason: `Maioria Ímpar: ${oddPerc.toFixed(1)}% (Ruído: ${noise})`, direction: 'DIGITODD' };
         }
 
         return {
@@ -227,13 +229,15 @@ export const StrategyAnalysis = {
             }
         }
 
+        const rawDelta = current - previous;
         const pass = delta >= minDelta && consistent;
 
         return {
             pass,
             reason: pass
                 ? `Momentum OK: Delta ${delta.toFixed(4)} (Consistência: ${ticksToConfirm} tiques)`
-                : `Momentum negado: Delta ${delta.toFixed(4)} (Min ${minDelta}) ou inconsistente`
+                : `Momentum negado: Delta ${delta.toFixed(4)} (Min ${minDelta}) ou inconsistente`,
+            direction: pass ? (rawDelta > 0 ? 'CALL' : 'PUT') : null
         };
     },
 
@@ -249,7 +253,8 @@ export const StrategyAnalysis = {
 
         return {
             pass: allMatch,
-            reason: allMatch ? `Sequência Paridade (${parity}) OK` : `Sequência Paridade falhou`
+            reason: allMatch ? `Sequência Paridade (${parity}) OK` : `Sequência Paridade falhou`,
+            direction: allMatch ? (parity === 'even' ? 'DIGITEVEN' : 'DIGITODD') : null
         };
     },
 
@@ -261,7 +266,8 @@ export const StrategyAnalysis = {
         const allMatch = subHistory.every(d => type === 'over' ? d > threshold : d < threshold);
         return {
             pass: allMatch,
-            reason: allMatch ? `Sequência ${type}/${threshold} OK` : `Falha no Over/Under`
+            reason: allMatch ? `Sequência ${type}/${threshold} OK` : `Falha no Over/Under`,
+            direction: allMatch ? (type === 'over' ? 'DIGITOVER' : 'DIGITUNDER') : null
         };
     },
 
@@ -292,7 +298,8 @@ export const StrategyAnalysis = {
 
         return {
             pass,
-            reason: pass ? `Preço ${op} MA (${ma.toFixed(4)})` : `Preço não satisfaz MA (${ma.toFixed(4)})`
+            reason: pass ? `Preço ${op} MA (${ma.toFixed(4)})` : `Preço não satisfaz MA (${ma.toFixed(4)})`,
+            direction: pass ? (op === '>' || op === '>=' ? 'CALL' : 'PUT') : null
         };
     },
 
@@ -322,7 +329,8 @@ export const StrategyAnalysis = {
 
         return {
             pass,
-            reason: pass ? `Cruzamento ${direction} detectado` : `Sem cruzamento`
+            reason: pass ? `Cruzamento ${direction} detectado` : `Sem cruzamento`,
+            direction: pass ? (direction === 'up' ? 'CALL' : 'PUT') : null
         };
     },
 
@@ -339,7 +347,8 @@ export const StrategyAnalysis = {
 
         return {
             pass,
-            reason: pass ? `RSI ${val.toFixed(2)} ${condition} ${level}` : `RSI ${val.toFixed(2)} fora da zona`
+            reason: pass ? `RSI ${val.toFixed(2)} ${condition} ${level}` : `RSI ${val.toFixed(2)} fora da zona`,
+            direction: pass ? (condition === '>' ? 'PUT' : 'CALL') : null // Reversal: Overbought -> Put
         };
     },
 
@@ -494,7 +503,11 @@ export const StrategyAnalysis = {
         if (direction === 'up' && smaCurrent > smaPast) pass = true;
         else if (direction === 'down' && smaCurrent < smaPast) pass = true;
 
-        return { pass, reason: pass ? `Inclinação MA ${direction} detectada` : `Inclinação Falhou` };
+        return {
+            pass,
+            reason: pass ? `Inclinação MA ${direction} detectada` : `Inclinação Falhou`,
+            direction: pass ? (direction === 'up' ? 'CALL' : 'PUT') : null
+        };
     },
 
     macd(config, tickHistory) {
@@ -511,7 +524,11 @@ export const StrategyAnalysis = {
             case 'above_signal': pass = macdLine > signalLine; break;
             case 'below_signal': pass = macdLine < signalLine; break;
         }
-        return { pass, reason: pass ? `MACD ${condition} OK` : `MACD Condition Fail` };
+        return {
+            pass,
+            reason: pass ? `MACD ${condition} OK` : `MACD Condition Fail`,
+            direction: pass ? (condition === 'cross_up' || condition === 'above_signal' ? 'CALL' : 'PUT') : null
+        };
     },
 
     stochastic(config, tickHistory) {
@@ -529,7 +546,11 @@ export const StrategyAnalysis = {
             case 'cross_up': pass = kPrev <= dPrev && kLine > dLine; break;
             case 'cross_down': pass = kPrev >= dPrev && kLine < dLine; break;
         }
-        return { pass, reason: pass ? `Stoch ${condition} (${kLine.toFixed(1)})` : `Stoch Fail (${kLine.toFixed(1)})` };
+        return {
+            pass,
+            reason: pass ? `Stoch ${condition} (${kLine.toFixed(1)})` : `Stoch Fail (${kLine.toFixed(1)})`,
+            direction: pass ? (condition === 'oversold' || condition === 'cross_up' ? 'CALL' : 'PUT') : null
+        };
     },
 
     bollingerBands(config, tickHistory) {
@@ -556,7 +577,11 @@ export const StrategyAnalysis = {
             pass = prev <= bbPrev.upper && current >= bb.upper;
         }
 
-        return { pass, reason: pass ? `BB ${condition} OK` : `BB Fail` };
+        return {
+            pass,
+            reason: pass ? `BB ${condition} OK` : `BB Fail`,
+            direction: pass ? (condition === 'cross_lower' ? 'CALL' : 'PUT') : null // Reversal
+        };
     },
 
     bbWidth(config, tickHistory) {
@@ -573,7 +598,11 @@ export const StrategyAnalysis = {
         if (direction === 'increasing' && widthCurr > widthPast) pass = true;
         else if (direction === 'decreasing' && widthCurr < widthPast) pass = true;
 
-        return { pass, reason: pass ? `BB Width ${direction} OK` : `BB Width Fail` };
+        return {
+            pass,
+            reason: pass ? `BB Width ${direction} OK` : `BB Width Fail`,
+            direction: null // Width doesn't imply direction
+        };
     },
 
     priceAction(config, tickHistory) {
@@ -592,7 +621,11 @@ export const StrategyAnalysis = {
                 if (newer >= older) pass = false;
             }
         }
-        return { pass, reason: pass ? `PA Sequence ${direction} OK` : `PA Sequence Fail` };
+        return {
+            pass,
+            reason: pass ? `PA Sequence ${direction} OK` : `PA Sequence Fail`,
+            direction: pass ? (direction === 'rise' ? 'CALL' : 'PUT') : null
+        };
     },
 
     // --- NEW PHASE 3 FILTERS (SPECIFIC) ---
@@ -612,7 +645,13 @@ export const StrategyAnalysis = {
         const avgDelta = sumDelta / window;
 
         const pass = currentDelta > (avgDelta * multiplier);
-        return { pass, reason: pass ? `Spike Detected (${currentDelta.toFixed(3)} > ${multiplier}x avg)` : `No Spike` };
+        const rawDelta = tickHistory[0] - tickHistory[1];
+        return {
+            pass,
+            reason: pass ? `Spike Detected (${currentDelta.toFixed(3)} > ${multiplier}x avg)` : `No Spike`,
+            direction: pass ? (rawDelta > 0 ? 'PUT' : 'CALL') : null // Spike usually implies Reversal? Or Follow? Let's assume Follow for now, or Reversal? User didn't specify. Standard Mean Reversion says Reversal.
+            // Let's stick to Reversal for Spike
+        };
     },
 
     stepPattern(config, tickHistory) {
