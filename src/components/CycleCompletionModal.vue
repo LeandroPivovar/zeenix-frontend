@@ -14,7 +14,7 @@
           </div>
         </div>
 
-        <div class="modal-content">
+        <div class="cycle-modal-body">
           <h2 class="modal-title" :class="{ 'text-red-500': isFinalCycle && result < 0 }">{{ isFinalCycle ? 'SESSÃO FINALIZADA' : `CICLO ${cycleNumber} CONCLUÍDO!` }}</h2>
           <p class="modal-description">
             {{ isFinalCycle 
@@ -98,8 +98,8 @@ export default {
   background: #0B0B0B;
   border-radius: 24px;
   padding: 40px 32px;
-  max-width: 480px;
-  width: 100%;
+  max-width: 420px;
+  width: 95%;
   text-align: center;
   position: relative;
   border: 1px solid rgba(34, 197, 94, 0.2);
@@ -160,20 +160,20 @@ export default {
 }
 
 .result-badge {
-  margin: 24px 0;
-  padding: 16px;
+  margin: 16px 0;
+  padding: 12px;
   background: rgba(34, 197, 94, 0.05);
   border-radius: 12px;
   border: 1px solid rgba(34, 197, 94, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .result-badge .label {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.5);
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 700;
@@ -181,7 +181,7 @@ export default {
 
 .result-badge .value {
   color: #22C55E;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: 0.5px;
 }
