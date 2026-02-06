@@ -2579,6 +2579,10 @@ export default {
                 // Initialize Direction Payouts
                 this.recoveryConfig.directionPayouts = {};
                 item.directions.forEach(d => {
+                    this.recoveryConfig.directionPayouts[d.value] = this.recoveryConfig.expectedPayout || 2.26;
+                });
+            }
+            
             this.$root.$toast.success(`Selecionado: ${item.label} (${selectedDirection.label})`);
             this.closeTradeTypeModal();
         },
