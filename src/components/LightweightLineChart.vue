@@ -57,7 +57,8 @@ export default {
       handler(newData) {
         if (this.series && newData && newData.length > 0) {
            this.series.setData(newData);
-           if (newData.length < 5) {
+           // Manter fixo na esquerda se houver poucos dados
+           if (newData.length < 10) {
                this.chart.timeScale().fitContent();
            }
         }
@@ -108,6 +109,7 @@ export default {
           fixLeftEdge: true,
           fixRightEdge: false,
           rightOffset: 0,
+          barSpacing: 10, // Espaçamento maior para começar visível da esquerda
           shiftVisibleRangeOnNewBar: true,
         },
         rightPriceScale: {
