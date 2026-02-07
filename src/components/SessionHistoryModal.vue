@@ -28,63 +28,63 @@
 
                 <div class="flex-1 overflow-y-auto custom-scrollbar-zenix p-4 md:p-6 space-y-4 md:space-y-6">
                     <!-- Summary Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                         <!-- Total Operations Card -->
-                        <div class="p-5 rounded-xl bg-gradient-to-br from-secondary/60 to-secondary/40 border border-border/40">
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs text-muted-foreground uppercase tracking-wider font-bold">Operações Totais</span>
-                                <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400">
+                        <div class="p-3 md:p-4 rounded-xl bg-gradient-to-br from-secondary/60 to-secondary/40 border border-border/40 hover:border-zenix-green/30 transition-all duration-300 group">
+                            <div class="flex items-center gap-2.5 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-zenix-green/10 border border-zenix-green/30 flex items-center justify-center shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-zenix-green">
                                         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                                     </svg>
                                 </div>
+                                <span class="text-[9px] md:text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Operações Totais</span>
                             </div>
-                            <p class="text-3xl font-bold text-foreground">{{ summary.totalOperations.toLocaleString('pt-BR') }}</p>
+                            <p class="text-xl md:text-2xl font-bold text-foreground">{{ summary.totalOperations.toLocaleString('pt-BR') }}</p>
                         </div>
 
                         <!-- Total Profit Card -->
-                        <div class="p-5 rounded-xl bg-gradient-to-br from-secondary/60 to-secondary/40 border border-border/40">
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs text-muted-foreground uppercase tracking-wider font-bold">Lucro Total</span>
-                                <div class="w-8 h-8 rounded-lg flex items-center justify-center" :class="summary.totalProfit >= 0 ? 'bg-success/10 border border-success/30' : 'bg-red-500/10 border border-red-500/30'">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="summary.totalProfit >= 0 ? 'text-success' : 'text-red-500'">
+                        <div class="p-3 md:p-4 rounded-xl bg-gradient-to-br from-secondary/60 to-secondary/40 border border-border/40 hover:border-zenix-green/30 transition-all duration-300 group">
+                            <div class="flex items-center gap-2.5 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-zenix-green/10 border border-zenix-green/30 flex items-center justify-center shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-zenix-green">
                                         <line x1="12" y1="1" x2="12" y2="23"></line>
                                         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                                     </svg>
                                 </div>
+                                <span class="text-[9px] md:text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Lucro Total</span>
                             </div>
-                            <p class="text-3xl font-bold" :class="summary.totalProfit >= 0 ? 'text-success' : 'text-red-500'">
+                            <p class="text-xl md:text-2xl font-bold" :class="summary.totalProfit >= 0 ? 'text-success' : 'text-red-500'">
                                 {{ summary.totalProfit >= 0 ? '+$' : '-$' }}{{ Math.abs(summary.totalProfit).toFixed(2) }}
                             </p>
                         </div>
 
                         <!-- Best AI Card -->
-                        <div class="p-5 rounded-xl bg-gradient-to-br from-secondary/60 to-secondary/40 border border-border/40">
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs text-muted-foreground uppercase tracking-wider font-bold">Melhor IA</span>
-                                <div class="w-8 h-8 rounded-lg bg-zenix-green/10 border border-zenix-green/30 flex items-center justify-center">
-                                    <i class="fas fa-brain text-zenix-green text-sm"></i>
+                        <div class="p-3 md:p-4 rounded-xl bg-gradient-to-br from-secondary/60 to-secondary/40 border border-border/40 hover:border-zenix-green/30 transition-all duration-300 group">
+                            <div class="flex items-center gap-2.5 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-zenix-green/10 border border-zenix-green/30 flex items-center justify-center shrink-0">
+                                    <i class="fas fa-brain text-zenix-green text-[12px]"></i>
                                 </div>
+                                <span class="text-[9px] md:text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Melhor IA</span>
                             </div>
                             <div class="flex flex-col">
-                                <p class="text-2xl font-bold text-foreground truncate uppercase">{{ summary.bestAI.name || 'N/A' }}</p>
-                                <p class="text-base font-bold text-success mt-1" v-if="summary.bestAI.name">
+                                <p class="text-lg md:text-xl font-bold text-foreground truncate uppercase leading-tight">{{ summary.bestAI.name || 'N/A' }}</p>
+                                <p class="text-[11px] md:text-xs font-bold text-success mt-0.5" v-if="summary.bestAI.name">
                                     {{ summary.bestAI.profit >= 0 ? '+$' : '-$' }}{{ Math.abs(summary.bestAI.profit).toFixed(2) }}
                                 </p>
                             </div>
                         </div>
 
                         <!-- Best Time Card -->
-                        <div class="p-5 rounded-xl bg-gradient-to-br from-secondary/60 to-secondary/40 border border-border/40">
-                            <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs text-muted-foreground uppercase tracking-wider font-bold">Melhor Horário</span>
-                                <div class="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/30 flex items-center justify-center">
-                                    <i class="far fa-clock text-orange-400 text-sm"></i>
+                        <div class="p-3 md:p-4 rounded-xl bg-gradient-to-br from-secondary/60 to-secondary/40 border border-border/40 hover:border-zenix-green/30 transition-all duration-300 group">
+                            <div class="flex items-center gap-2.5 mb-2">
+                                <div class="w-7 h-7 rounded-lg bg-zenix-green/10 border border-zenix-green/30 flex items-center justify-center shrink-0">
+                                    <i class="far fa-clock text-zenix-green text-[12px]"></i>
                                 </div>
+                                <span class="text-[9px] md:text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Melhor Horário</span>
                             </div>
                             <div class="flex flex-col">
-                                <p class="text-2xl font-bold text-white truncate">{{ summary.bestHours.bracket || 'N/A' }}</p>
-                                <p class="text-base font-bold text-success mt-1" v-if="summary.bestHours.bracket">
+                                <p class="text-lg md:text-xl font-bold text-white truncate leading-tight">{{ summary.bestHours.bracket || 'N/A' }}</p>
+                                <p class="text-[11px] md:text-xs font-bold text-success mt-0.5" v-if="summary.bestHours.bracket">
                                     {{ summary.bestHours.winRate.toFixed(1) }}% Winrate
                                 </p>
                             </div>
