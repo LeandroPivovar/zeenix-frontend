@@ -541,8 +541,8 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 					image: '/img/agents/zeus.png', // Updated to image
 					marketType: 'Digits',
 					icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg'],
-					description: 'Análise de Dígitos (Over 5)',
-					analysis: 'Análise de Dígitos (Over 5)',
+					description: 'Estatística de Dígitos (Over 5)',
+					analysis: 'Estatística de Dígitos (Over 5)',
 					assertiveness: '65% a 80%',
 					return: '19% a 126%',
 					benefits: [
