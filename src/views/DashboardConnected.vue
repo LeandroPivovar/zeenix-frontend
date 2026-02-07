@@ -747,12 +747,11 @@ export default {
           icon: 'fas fa-atom',
           title: 'Agente Autônomo',
           usage: 0,
-          buttonText: 'Em breve',
+          buttonText: 'Ativar agora',
           chartPath: 'M0,18 L20,14 L40,16 L60,10 L80,12 L100,6',
           chartPathFull: 'M0,50 L25,48 L50,45 L75,42 L100,38 L125,33 L150,28 L175,22 L200,18',
           chartEndY: 18,
-          disabled: true,
-          tooltip: 'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'
+          disabled: false
         },
         {
           id: 'signals',

@@ -56,9 +56,8 @@
       <i class="fa-solid fa-lock text-[#EF4444] text-[10px] absolute top-1 right-2"></i>
     </div>
 
-    <!-- Agente Autônomo - Bloqueado ou Admin -->
+    <!-- Agente Autônomo -->
     <router-link 
-      v-if="isAdmin"
       to="/agente-autonomo" 
       class="nav-item"
       :class="{ active: isActive('/agente-autonomo') }"
@@ -74,25 +73,6 @@
       </svg>
       <span class="nav-label">Agente</span>
     </router-link>
-
-    <div 
-      v-else
-      class="nav-item disabled"
-      @click="openDevModal"
-      title="Funcionalidade em desenvolvimento"
-    >
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="7" y="13" width="10" height="8" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="10" cy="17" r="1" fill="currentColor"/>
-        <circle cx="14" cy="17" r="1" fill="currentColor"/>
-        <circle cx="12" cy="7" r="2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <line x1="12" y1="4.5" x2="12" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="12" y1="9.5" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="12" cy="4.5" r="0.5" fill="currentColor"/>
-      </svg>
-      <span class="nav-label">Agente</span>
-      <i class="fa-solid fa-lock text-[#EF4444] text-[10px] absolute top-1 right-2"></i>
-    </div>
 
     <!-- Sinais (Operação Manual) - Bloqueado ou Admin -->
     <router-link 
@@ -213,7 +193,6 @@ export default {
   align-items: center;
   gap: 10px;
 }
-
 @media (min-width: 1025px) {
   .desktop-bottom-nav {
     display: none; /* Oculto no desktop */
