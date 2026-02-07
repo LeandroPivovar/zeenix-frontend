@@ -164,7 +164,7 @@
                                                 type="button"
                                                 @click="updatePrincipalDirection('both')"
                                                 class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                :class="form.directionMode === 'both' ? 'bg-[#22C55E] text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                                :class="form.directionMode === 'both' ? '!bg-[#22C55E] text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
                                             >
                                                 Ambos
                                             </button>
@@ -174,7 +174,7 @@
                                                 type="button"
                                                 @click="updatePrincipalDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                 class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'bg-[#22C55E] text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                                :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? '!bg-[#22C55E] text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
                                             >
                                                 {{ dir.label }}
                                             </button>
@@ -435,7 +435,7 @@
                                                         type="button"
                                                         @click="updateRecoveryDirection('both')"
                                                         class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                        :class="recoveryConfig.directionMode === 'both' ? 'bg-[#22C55E] text-white' : 'text-gray-500 hover:text-white'"
+                                                        :class="recoveryConfig.directionMode === 'both' ? '!bg-[#22C55E] text-white' : 'text-gray-500 hover:text-white'"
                                                     >
                                                         Ambos
                                                     </button>
@@ -445,7 +445,7 @@
                                                         type="button"
                                                         @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                         class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                        :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'bg-[#22C55E] text-white' : 'text-gray-500 hover:text-white'"
+                                                        :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? '!bg-[#22C55E] text-white' : 'text-gray-500 hover:text-white'"
                                                     >
                                                         {{ dir.label }}
                                                     </button>
