@@ -118,9 +118,9 @@ export default {
           baseBalance = Object.values(this.balancesByCurrencyDemo).reduce((acc, val) => acc + (Number(val) || 0), 0);
         }
 
-        // Se saldo fictício estiver ativo, somar ao saldo demo
+        // Se saldo fictício estiver ativo, retornar APENAS o saldo fictício (substituição completa)
         if (this.isFictitiousBalanceActive) {
-          return baseBalance + (Number(this.fictitiousBalance) || 0);
+          return Number(this.fictitiousBalance) || 0;
         }
 
         return baseBalance;

@@ -376,7 +376,7 @@ export default {
         }
 
         if (this.isFictitiousBalanceActive) {
-          return baseBalance + (Number(this.fictitiousBalance) || 0);
+          return Number(this.fictitiousBalance) || 0;
         }
         return baseBalance;
       }
