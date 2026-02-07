@@ -1122,11 +1122,10 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 
 /* Disabled Card and Overlay for Falcon */
 .agent-selection-card.disabled-card {
-    cursor: not-allowed;
+    cursor: pointer; /* Change from not-allowed to pointer to show it's clickable */
     filter: grayscale(0.4);
     position: relative;
     border-color: rgba(255, 255, 255, 0.05) !important;
-    pointer-events: none;
 }
 
 .agent-selection-card.disabled-card:hover {
