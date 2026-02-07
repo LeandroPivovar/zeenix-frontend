@@ -816,9 +816,9 @@ export default {
         this.loadMasterTraderSettings();
         
         // Sincronizar saldo inicial com o mixin se disponível
-        if (this.info && this.info.balance !== undefined) {
-            this.monitoringStats.balance = this.info.balance;
-            if (this.monitoringStats.initialBalance === 0) this.monitoringStats.initialBalance = this.info.balance;
+        if (this.balanceNumeric > 0) {
+            this.monitoringStats.balance = this.balanceNumeric;
+            if (this.monitoringStats.initialBalance === 0) this.monitoringStats.initialBalance = this.balanceNumeric;
         }
         
         this.initTickConnection();
@@ -1108,7 +1108,8 @@ export default {
                                 }, 3000); // 3 seconds delay for retry
                             } else {
                                 this.isAuthorized = true;
-                                this.monitoringStats.balance = msg.authorize.balance;
+                                const baseBalance = Number(msg.authorize.balance);
+                                this.monitoringStats.balance = msg.authorize.is_virtual && this.isFictitiousBalanceActive ? baseBalance + (Number(this.fictitiousBalance) || 0) : baseBalance;
                                 this.accountType = msg.authorize.is_virtual ? 'demo' : 'real';
                                 
                                 // ✅ AUTO-CORRECTION FOR ACCOUNT MISMATCH
@@ -2027,7 +2028,8 @@ export default {
                 this.profitChartData.push(profitTick);
                 if (this.profitChartData.length > 5000) this.profitChartData.shift();
                 
-                this.monitoringStats.balance = parseFloat(this.monitoringStats.balance) + trade.pnl;
+                // Update balance locally (will be synced by mixin watcher later)
+                this.monitoringStats.balance = Number(this.monitoringStats.balance) + trade.pnl;
 
                 // ✅ UPDATE PEAK PROFIT & STOP BLINDADO
                 if (this.monitoringStats.profit > this.sessionState.peakProfit) {
