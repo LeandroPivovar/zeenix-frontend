@@ -73,9 +73,6 @@ aside.sidebar,
 		transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	}
 
-	.sidebar-wrapper:hover~.dashboard-content-wrapper,
-	.sidebar-wrapper:hover~.content-wrapper,
-	.sidebar-wrapper:hover~.main-content-wrapper {}
 
 	/* Expansão e deslocamento do TopNavbar */
 	.sidebar-wrapper:hover~.dashboard-content-wrapper #top-navbar {
@@ -403,14 +400,14 @@ aside.sidebar,
 	/* Keep icons aligned */
 	.menu-item {
 		justify-content: flex-start !important;
-		padding: 18px 32px !important;
+		padding: 18px 20px !important;
 		margin-bottom: 2px;
 	}
 
 	.menu-item i,
 	.menu-item svg {
-		margin-right: 15px;
-		/* Increased gap as requested */
+		margin-right: 10px;
+		/* Reduced gap to prevent truncation */
 		font-size: 16px;
 		flex-shrink: 0;
 		width: 20px;
@@ -640,7 +637,7 @@ aside.sidebar,
 
 .menu-item {
 	text-align: left;
-	padding: 18px 32px;
+	padding: 18px 20px;
 	/* 32px roughly centers a 16-20px icon in 80px sidebar (80-16)/2 = 32 */
 	border-radius: 8px;
 	background: transparent;

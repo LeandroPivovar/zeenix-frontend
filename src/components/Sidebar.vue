@@ -271,7 +271,7 @@
                     data-text="Criador de Estratégias"
                 >
                     <i class="fa-solid fa-chess-board w-5 opacity-85"></i>
-                    <span style="font-size: 13px;">Criador de Estratégias</span>
+                    <span style="font-size: 12.5px; letter-spacing: -0.1px;">Criador de Estratégias</span>
                 </a>
 
                 <a
