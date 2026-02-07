@@ -622,7 +622,6 @@ export default {
         InsufficientBalanceModal,
         MinimumStakeModal,
         StrategyRequiredModal,
-        StrategyRequiredModal,
         SessionHistoryModal,
         ImplementationModal
     },
@@ -637,8 +636,6 @@ export default {
             showInsufficientBalanceModal: false,
             showMinimumStakeModal: false,
 
-            showStrategyRequiredModal: false,
-            showAccountModal: false,
             showStrategyRequiredModal: false,
             showAccountModal: false,
             showStrategyModal: false,
