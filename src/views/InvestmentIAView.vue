@@ -272,12 +272,14 @@
                         </div>
                     </Teleport>
 
-                    <ImplementationModal
-                        :visible="showImplementationModal"
-                        entityType="IA"
-                        :message="implementationMessage"
-                        @close="showImplementationModal = false"
-                    />
+                    <Teleport to="body">
+                        <ImplementationModal
+                            :visible="showImplementationModal"
+                            entityType="IA"
+                            :message="implementationMessage"
+                            @close="showImplementationModal = false"
+                        />
+                    </Teleport>
 
                             <div class="form-group">
                                 <label class="form-label">
