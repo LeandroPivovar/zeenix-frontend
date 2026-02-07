@@ -14,7 +14,7 @@
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
-                :balance="monitoringStats.balance"
+                :balance="rawBalance"
                 :account-type="accountType"
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -432,6 +432,7 @@
                                                     'text-blue-400': log.type === 'info', 
                                                     'text-yellow-400': log.type === 'warning' 
                                                 }">
+                                                <i v-if="getLogIcon(log.type)" :class="getLogIcon(log.type)" class="mr-1"></i>
                                                 {{ log.title }}
                                             </h4>
                                             <ul class="space-y-0.5">
@@ -714,6 +715,7 @@ export default {
                 status: 'Conectando...',
                 statusDesc: 'Inicializando WebSocket'
             },
+            rawBalance: 0, // ✅ RAW Balance for TopNavbar (prevents double-fictitious adjustment)
 
             monitoringLogs: [],
             monitoringOperations: [],
@@ -955,7 +957,7 @@ export default {
                     // Verify Risk Profile
                     console.log(`[AIMonitoring] Loaded Risk Profile: ${this.recoveryConfig.riskProfile || 'DEFAULT (Moderado)'}`);
                     
-                    this.addLog('INÍCIO DE SESSÃO', [
+                    this.addLog('📘 Início de Sessão', [
                         `Saldo Inicial: ${this.preferredCurrencyPrefix}${(this.monitoringStats.initialBalance || 0).toFixed(2)}`,
                         `Meta de Lucro: ${this.preferredCurrencyPrefix}${(this.sessionState.profitTarget || 0).toFixed(2)}`,
                         `Stop Loss: ${this.preferredCurrencyPrefix}${(this.sessionState.lossLimit || 0).toFixed(2)}`,
@@ -964,7 +966,7 @@ export default {
                         `Payout Recuperação: ${this.recoveryConfig?.expectedPayout || this.recoveryConfig?.minPayout || 1.26}x`
                     ], 'info');
 
-                    this.addLog('Configuração Inicial', [
+                    this.addLog('⚙️ Configuração Inicial', [
                         `Agente: ${this.currentConfig.strategy.toUpperCase()}`,
                         `Modo: ${this.currentConfig.mode.toUpperCase()}`,
                         `Perfil: ${(this.recoveryConfig.riskProfile || 'MODERADO').toUpperCase()}`,
@@ -1071,10 +1073,10 @@ export default {
                 this.ws = new WebSocket(endpoint);
 
                 this.ws.onopen = () => {
-                    this.addLog('Conexão Estabelecida', [
+                    this.addLog('🌐 Conexão Estabelecida', [
                         'Status: Conectado ao mercado',
                         'Servidor: Deriv WebSocket v3'
-                    ], 'success');
+                    ], 'info');
 
                     const token = this.getDerivToken();
                     
@@ -1107,8 +1109,9 @@ export default {
                                     this.initTickConnection();
                                 }, 3000); // 3 seconds delay for retry
                             } else {
-                                this.isAuthorized = true;
+                                 this.isAuthorized = true;
                                 const baseBalance = Number(msg.authorize.balance);
+                                this.rawBalance = baseBalance; // ✅ Store RAW for TopNavbar
                                 this.monitoringStats.balance = msg.authorize.is_virtual && this.isFictitiousBalanceActive ? baseBalance + (Number(this.fictitiousBalance) || 0) : baseBalance;
                                 this.accountType = msg.authorize.is_virtual ? 'demo' : 'real';
                                 
@@ -1155,11 +1158,10 @@ export default {
                                     }
                                 } catch (e) { console.error('Error in account auto-correction:', e); }
 
-                                this.addLog('Execução Confirmada', [
+                                 this.addLog('✅ Autorizado', [
                                     `Status: Autorizado`,
-                                    `Saldo: ${this.currencySymbol}${this.monitoringStats.balance.toFixed(2)}`,
-                                    `Conta: ${msg.authorize.loginid}`
-                                ], 'success');
+                                    `Saldo: ${this.currencySymbol}${this.monitoringStats.balance.toFixed(2)}`
+                                ], 'info');
                                 this.subscribeTicks();
                             }
                         }
@@ -1269,7 +1271,7 @@ export default {
                             ], 'info');
                             
                             // BUY
-                            this.addLog('Executando Compra', [`Comprando ID: ${proposalId}`], 'info');
+                            this.addLog('Executando Compra', [], 'info');
                             this.ws.send(JSON.stringify({
                                 buy: proposalId,
                                 price: stakeValue
@@ -1287,12 +1289,11 @@ export default {
                                 const payout = msg.buy.payout;
                                 const contractType = this.sessionState.lastContractType || 'Contrato'; // Saved in state
                                 
-                                this.addLog('Contrato Criado', [
-                                    `Contrato ID: ${msg.buy.contract_id}`,
+                                 this.addLog('⏳ Contrato Criado', [
                                     `Tipo: ${contractType}`,
                                     `Payout Potencial: ${this.currencySymbol}${payout}`,
                                     `Status: aguardar execução`
-                                ], 'success');
+                                ], 'warning');
 
                                 // Activate fast result calculation if it's 1-tick
                                 if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
@@ -1472,7 +1473,7 @@ export default {
                 } else {
                     // Pause Expired
                     this.pauseUntil = 0;
-                    this.addLog('▶️ Pausa de resfriamento finalizada. Retomando operações.', 'success');
+                    this.addLog('▶️ Pausa de resfriamento finalizada. Retomando operações.', 'info');
                 }
             }
 
@@ -1515,7 +1516,7 @@ export default {
                     analysisLog += `• ${filterName}: ${res.reason}<br>`;
                 });
 
-                this.addLog('Sinal de Entrada Corretora', analysisLog, 'success');
+                this.addLog('Sinal de Entrada Corretora', analysisLog, 'warning');
                 
                 // ✅ DYNAMIC DIRECTION LOGIC
                 // Collect signals from all filters that opted to provide a direction
@@ -1765,7 +1766,7 @@ export default {
             }
             
             const mode = isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL';
-            this.addLog('Solicitando Proposta', [
+            this.addLog('📡 Solicitando Proposta', [
                 `Modo: ${mode}`,
                 `Contrato: ${overrideContractType || config.tradeType}`,
                 `Mercado: ${proposalParams.symbol}`,
@@ -1995,17 +1996,14 @@ export default {
                 if (trade.result === 'WON') {
                     this.addLog('Resultado da Operação', [
                         `Status: WIN`,
-                        `Contrato ID: ${id}`,
                         `Resultado Financeiro: +${this.preferredCurrencyPrefix}${trade.pnl.toFixed(2)}`,
                         `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
                         `Extrato: +${this.preferredCurrencyPrefix}${trade.pnl.toFixed(2)} (Líquido)`,
                         `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
                     ], 'success');
                     } else {
-                        const id = trade.id; 
                         this.addLog('Resultado da Operação', [
                             `Status: LOSS`,
-                            `Contrato ID: ${id}`,
                         `Resultado Financeiro: -${this.preferredCurrencyPrefix}${Math.abs(trade.pnl).toFixed(2)}`,
                         `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
                         `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
@@ -2095,7 +2093,7 @@ export default {
 
             this.isStopping = true;
             this.stopTickConnection();
-            this.addLog('Encerramento de Sessão', [
+            this.addLog('🏁 Encerramento de Sessão', [
                 `Motivo: ${redirect === true || (typeof redirect === 'object' && redirect.isTrusted) ? 'parada pelo usuário' : 'parada automática'}`,
                 `Status: Finalizado`
             ], 'info');
@@ -2175,6 +2173,15 @@ export default {
             const time = new Date().toLocaleTimeString();
             this.monitoringLogs.unshift({ title, details: Array.isArray(messages) ? messages : [messages], type, time });
             if (this.monitoringLogs.length > 50000) this.monitoringLogs = this.monitoringLogs.slice(0, 50000);
+        },
+        getLogIcon(type) {
+             const icons = {
+                 success: 'fa-solid fa-circle-check',
+                 error: 'fa-solid fa-circle-xmark',
+                 warning: 'fa-solid fa-triangle-exclamation',
+                 info: 'fa-solid fa-circle-info'
+             };
+             return icons[type] || null;
         },
         getContractDisplayName(type) {
             if (!type) return 'Operação';
