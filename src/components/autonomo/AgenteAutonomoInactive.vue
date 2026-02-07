@@ -375,9 +375,13 @@
 								v-for="agent in availableAgents" 
 								:key="agent.id"
 								class="agent-selection-card"
-								:class="{ 'active': selectedAgent === agent.id }"
-								@click="selectAgent(agent.id)"
+								:class="{ 'active': selectedAgent === agent.id, 'locked': agent.id === 'falcon' }"
+								@click="agent.id === 'falcon' ? (showFalconDevModal = true) : selectAgent(agent.id)"
 							>
+								<!-- Lock Overlay for Falcon -->
+								<div v-if="agent.id === 'falcon'" class="lock-overlay">
+									<i class="fas fa-lock text-4xl text-gray-400"></i>
+								</div>
 								<!-- Top Row: Avatar, Header, Action -->
                                 <div class="agent-selection-card-top-row">
                                     <!-- Left Section: Avatar (Rectangular) -->
@@ -451,11 +455,20 @@
 			:message="invalidParamsMessage"
 			@confirm="showInvalidParamsModal = false"
 		/>
+
+		<!-- Implementation Modal for Falcon -->
+		<ImplementationModal
+			:visible="showFalconDevModal"
+			entity-type="Agente"
+			message="Este agente ainda está sendo implementado e ficará disponível dentro de 1 semana."
+			@close="showFalconDevModal = false"
+		/>
 	</div> <!-- End of layout-content-agent-autonomo -->
 </template>
 
 <script>
 import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
+import ImplementationModal from '../modals/ImplementationModal.vue';
 	import accountBalanceMixin from '@/mixins/accountBalanceMixin';
 
 	export default {
@@ -463,7 +476,8 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 		name: 'AgenteAutonomoInactive',
 		mixins: [accountBalanceMixin],
 	components: {
-		InvalidParamsModal
+		InvalidParamsModal,
+		ImplementationModal
 	},
 	props: {
 		accountBalance: {
@@ -503,6 +517,7 @@ import InvalidParamsModal from '../modals/InvalidParamsModal.vue';
 			isStarting: false,
 			showInvalidParamsModal: false,
 			invalidParamsMessage: '',
+			showFalconDevModal: false,
 			allAgents: [
 				{
 					id: 'zeus',
@@ -2613,5 +2628,32 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
         line-height: 1.5;
         text-align: left;
     }
+}
+
+/* Locked Agent Card State */
+.agent-selection-card.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.7);
+}
+
+.agent-selection-card.locked:hover {
+    border-color: #444 !important;
+    box-shadow: none !important;
+}
+
+.lock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    z-index: 10;
+    pointer-events: none;
 }
 </style>
