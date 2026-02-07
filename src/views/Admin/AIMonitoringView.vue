@@ -598,26 +598,13 @@ import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import LightweightLineChart from '@/components/LightweightLineChart.vue';
 import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
 import { RiskManager } from '../../utils/RiskManager';
-// Import strategy configurations
-import apolloStrategy from '../../utils/strategies/apollo.json';
-import atlasStrategy from '../../utils/strategies/atlas.json';
-import nexusStrategy from '../../utils/strategies/nexus.json';
-import orionStrategy from '../../utils/strategies/orion.json';
-import titanStrategy from '../../utils/strategies/titan.json';
+import { StrategiesService } from '@/services/StrategiesService';
 import SessionHistoryModal from '@/components/SessionHistoryModal.vue';
 import StopLossModal from '../../components/StopLossModal.vue';
 import TargetProfitModal from '../../components/TargetProfitModal.vue';
 import StopBlindadoModal from '../../components/StopBlindadoModal.vue';
 import { createChart, ColorType } from 'lightweight-charts';
 import accountBalanceMixin from '../../mixins/accountBalanceMixin';
-
-const strategyConfigs = {
-	apollo: apolloStrategy,
-	atlas: atlasStrategy,
-	nexus: nexusStrategy,
-	orion: orionStrategy,
-	titan: titanStrategy
-};
 
 export default {
     name: 'AIMonitoringView',
@@ -872,7 +859,7 @@ export default {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
             localStorage.setItem('sidebar_collapsed', this.isSidebarCollapsed);
         },
-        loadConfiguration() {
+        async loadConfiguration() {
             const savedConfig = localStorage.getItem('ai_active_config');
             if (savedConfig) {
                 try {
@@ -880,7 +867,16 @@ export default {
                     const strategyKey = (parsed.strategy || 'apollo').toLowerCase();
                     
                     // 1. Carregar Configuração Base do Arquivo (Apollo/Atlas/etc)
-                    const baseStrategy = strategyConfigs[strategyKey] || strategyConfigs['apollo'];
+                    // const baseStrategy = strategyConfigs[strategyKey] || strategyConfigs['apollo'];
+                    let baseStrategy;
+                    try {
+                        baseStrategy = await StrategiesService.getStrategy(strategyKey);
+                    } catch (e) {
+                         console.error(`[AIMonitoring] Failed to fetch strategy ${strategyKey}, falling back to default`);
+                         // Fallback logic if needed, or error out
+                         baseStrategy = await StrategiesService.getStrategy('apollo');
+                    }
+                    
                     const baseConfig = baseStrategy.config; // { form: ..., recoveryConfig: ... }
 
                     // 2. Merge Estratégia Principal

@@ -595,14 +595,10 @@ import InsufficientBalanceModal from '@/components/InsufficientBalanceModal.vue'
 import MinimumStakeModal from '@/components/modals/MinimumStakeModal.vue';
 import StrategyRequiredModal from '@/components/modals/StrategyRequiredModal.vue';
 import { StrategyAnalysis } from '@/utils/StrategyAnalysis';
-import apolloConfig from '@/utils/strategies/apollo.json';
-import atlasConfig from '@/utils/strategies/atlas.json';
-import nexusConfig from '@/utils/strategies/nexus.json';
-import orionConfig from '@/utils/strategies/orion.json';
-import titanConfig from '@/utils/strategies/titan.json';
 import SessionHistoryModal from '@/components/SessionHistoryModal.vue';
+import { StrategiesService } from '@/services/StrategiesService';
 
-const strategiesPresets = [apolloConfig, atlasConfig, nexusConfig, orionConfig, titanConfig];
+let strategiesPresets = [];
 
 export default {
     name: 'InvestmentIAView',
