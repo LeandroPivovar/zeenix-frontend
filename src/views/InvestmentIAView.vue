@@ -665,7 +665,7 @@ export default {
                     marketType: 'Ups e Downs', 
                     icon: 'fas fa-rocket', 
                     icons: [],
-                    description: 'Densidade de Dígitos e Microtendências.',
+                    description: 'Densidade de Dígitos e Microtendências',
                     assertividade: '60% a 70%',
                     retorno: '19% a 126%'
                 },
