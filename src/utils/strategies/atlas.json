@@ -1,58 +1,63 @@
 {
     "id": "default_atlas",
     "name": "Atlas",
+    "version": "1.6",
     "config": {
         "form": {
             "initialStake": 1,
             "profitTarget": 100,
             "stopLoss": 100,
             "riskProfile": "moderado",
-            "useBlindado": false,
+            "useBlindado": true,
             "stopBlindadoPercent": 50,
             "duration": 1,
             "durationUnit": "t",
             "market": "R_50",
-            "directionMode": "both",
-            "tradeType": "",
+            "directionMode": "up",
+            "tradeType": "DIGITOVER",
             "prediction": 2,
             "sorosLevel": 1,
             "expectedPayout": 0.35,
+            "directionPayouts": {
+                "DIGITOVER": 0.35,
+                "DIGITUNDER": 0.35
+            },
             "attackFilters": [
                 {
                     "id": "digit_density",
-                    "name": "Densidade Baixa (Atlas)",
+                    "name": "Densidade de Dígitos (Apollo)",
                     "active": true,
                     "config": {
                         "veloz": {
-                            "window": 8,
-                            "digits": "0, 1, 2",
-                            "operator": "<=",
-                            "threshold": 1
+                            "window": 40,
+                            "digits": "3,4,5,6,7,8,9",
+                            "operator": "=",
+                            "threshold": 12
                         },
                         "normal": {
-                            "window": 10,
-                            "digits": "0, 1, 2",
-                            "operator": "<=",
-                            "threshold": 1
+                            "window": 40,
+                            "digits": "3,4,5,6,7,8,9",
+                            "operator": "=",
+                            "threshold": 15
                         },
                         "preciso": {
-                            "window": 12,
-                            "digits": "0, 1, 2",
-                            "operator": "<=",
-                            "threshold": 0
+                            "window": 40,
+                            "digits": "3,4,5,6,7,8,9",
+                            "operator": "=",
+                            "threshold": 16
                         }
                     }
                 }
             ],
-            "selectedTradeTypeGroup": ""
+            "selectedTradeTypeGroup": "digits_over_under"
         },
         "recoveryConfig": {
             "enabled": true,
             "market": "R_50",
-            "selectedTradeTypeGroup": "",
-            "directionMode": "both",
-            "tradeType": "",
-            "prediction": null,
+            "selectedTradeTypeGroup": "digits_over_under",
+            "directionMode": "up",
+            "tradeType": "DIGITOVER",
+            "prediction": 4,
             "lossesToActivate": 1,
             "contractSwitch": true,
             "switchToNormal": false,

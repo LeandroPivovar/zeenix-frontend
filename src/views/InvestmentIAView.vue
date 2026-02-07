@@ -772,75 +772,7 @@ export default {
             }
         }
     },
-    async mounted() {
-        this.reloadBalance(); 
-        this.startBalancePolling();
 
-        // Load Strategies Dynamically
-        try {
-            this.isLoadingStrategies = true;
-            const strategies = await StrategiesService.getAllStrategies();
-            strategiesPresets = strategies; // Update module-level variable
-            
-            // Update component state
-            this.allStrategies = strategies.map(s => ({
-                id: s.id.replace('default_', ''),
-                title: s.name,
-                marketType: s.config.form.market === 'R_10' ? 'Ups e Downs' : 'Digits',
-                icon: this.getStrategyIcon(s.name),
-                icons: [],
-                description: this.getStrategyDescription(s.name),
-                assertividade: `${s.config.metadata.assertividade}%`,
-                retorno: `${s.config.metadata.retorno}%`
-            }));
-
-            console.log('[InvestmentIAView] Estratégias carregadas:', strategiesPresets.length);
-        } catch (e) {
-            console.error('[InvestmentIAView] Erro ao carregar estratégias:', e);
-            this.$root.$toast.error('Erro ao carregar estratégias de IA');
-        } finally {
-            this.isLoadingStrategies = false;
-        }
-
-        // Check if came from monitoring (to restore state)
-        const activeConfig = localStorage.getItem('ai_active_config');
-        if (activeConfig) {
-            const config = JSON.parse(activeConfig);
-            if (config.isActive) {
-                this.isInvestmentActive = true;
-                this.isMonitoring = true;
-                // Restore key values
-                this.entryValue = config.stake;
-                this.profitTarget = config.profitTarget;
-                this.lossLimit = config.lossLimit;
-                this.selectedStrategy = config.strategy.toLowerCase();
-                // Re-init WebSocket connection
-                 this.activateIA(true); // true = restore mode
-            }
-        }
-    },
-    methods: {
-        getStrategyIcon(name) {
-            const icons = {
-                'Atlas': 'fas fa-shield-alt',
-                'Apollo': 'fas fa-rocket',
-                'Nexus': 'fas fa-chart-bar',
-                'Orion': 'fas fa-star',
-                'Titan': 'fas fa-yin-yang'
-            };
-            return icons[name] || 'fas fa-robot';
-        },
-        getStrategyDescription(name) {
-                const descs = {
-                'Atlas': 'Híbrida: Dígitos + Price Action.',
-                'Apollo': 'Price Action Puro e Tendência.',
-                'Nexus': 'Price Action com Barreira.',
-                'Orion': 'Estatística de Dígitos e Recuperação.',
-                'Titan': 'Dígitos Par/Ímpar Direcional.'
-            };
-            return descs[name] || 'Estratégia de IA avançada.';
-        },
-    },
     computed: {
 
 
@@ -977,6 +909,26 @@ export default {
         }
     },
     methods: {
+        getStrategyIcon(name) {
+            const icons = {
+                'Atlas': 'fas fa-shield-alt',
+                'Apollo': 'fas fa-rocket',
+                'Nexus': 'fas fa-chart-bar',
+                'Orion': 'fas fa-star',
+                'Titan': 'fas fa-yin-yang'
+            };
+            return icons[name] || 'fas fa-robot';
+        },
+        getStrategyDescription(name) {
+                const descs = {
+                'Atlas': 'Híbrida: Dígitos + Price Action.',
+                'Apollo': 'Price Action Puro e Tendência.',
+                'Nexus': 'Price Action com Barreira.',
+                'Orion': 'Estatística de Dígitos e Recuperação.',
+                'Titan': 'Dígitos Par/Ímpar Direcional.'
+            };
+            return descs[name] || 'Estratégia de IA avançada.';
+        },
         /**
          * ✅ ZENIX v3.5: Atualiza o saldo em tempo real vindo da IA (InvestmentActive)
          * Evita chamadas extras à API Deriv usando os dados de lucro já disponíveis
@@ -2158,6 +2110,49 @@ export default {
         
         window.addEventListener('accountChanged', this.handleGlobalAccountChange);
         window.addEventListener('refreshBalance', () => this.reloadBalance());
+
+        // Load Strategies Dynamically
+        try {
+            this.isLoadingStrategies = true;
+            const strategies = await StrategiesService.getAllStrategies();
+            strategiesPresets = strategies; // Update module-level variable
+            
+            // Update component state
+            this.allStrategies = strategies.map(s => ({
+                id: s.id.replace('default_', ''),
+                title: s.name,
+                marketType: s.config.form.market === 'R_10' ? 'Ups e Downs' : 'Digits',
+                icon: this.getStrategyIcon(s.name),
+                icons: [],
+                description: this.getStrategyDescription(s.name),
+                assertividade: `${s.config.metadata.assertividade}%`,
+                retorno: `${s.config.metadata.retorno}%`
+            }));
+
+            console.log('[InvestmentIAView] Estratégias carregadas:', strategiesPresets.length);
+        } catch (e) {
+            console.error('[InvestmentIAView] Erro ao carregar estratégias:', e);
+            this.$root.$toast.error('Erro ao carregar estratégias de IA');
+        } finally {
+            this.isLoadingStrategies = false;
+        }
+
+        // Check if came from monitoring (to restore state)
+        const activeConfig = localStorage.getItem('ai_active_config');
+        if (activeConfig) {
+            const config = JSON.parse(activeConfig);
+            if (config.isActive) {
+                this.isInvestmentActive = true;
+                this.isMonitoring = true;
+                // Restore key values
+                this.entryValue = config.stake;
+                this.profitTarget = config.profitTarget;
+                this.lossLimit = config.lossLimit;
+                this.selectedStrategy = config.strategy.toLowerCase();
+                // Re-init WebSocket connection
+                 this.activateIA(true); // true = restore mode
+            }
+        }
     },
 
     beforeUnmount() {
