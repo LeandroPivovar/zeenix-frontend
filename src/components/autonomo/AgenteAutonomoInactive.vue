@@ -456,7 +456,7 @@
 		<ImplementationModal
 			:visible="showFalconDevModal"
 			entity-type="Agente"
-			message="Este agente ainda está sendo implementado e ficará disponível dentro de 1 semana."
+			message="Este agente ainda está sendo implementado e será liberado entre segunda e sexta da próxima semana."
 			@close="showFalconDevModal = false"
 		/>
 	</div> <!-- End of layout-content-agent-autonomo -->
@@ -711,6 +711,8 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 			// ✅ FIX: Auto-select correct market based on agent requirement
 			if (agentId === 'falcon') {
 				this.selectedMarket = 'volatility_10';
+				this.showFalconDevModal = true;
+                return;
 			} else {
 				this.selectedMarket = 'volatility_100';
 			}

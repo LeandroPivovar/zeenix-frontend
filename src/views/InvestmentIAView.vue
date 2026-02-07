@@ -679,7 +679,7 @@ export default {
                     marketType: 'Ups e Downs', 
                     icon: 'fas fa-rocket', 
                     icons: [],
-                    description: 'Densidade de Dígitos e Microtendências',
+                    description: 'IA APOLLO\nDensidade de Dígitos e Microtendências',
                     assertividade: '60% a 70%',
                     retorno: '19% a 126%'
                 },
@@ -859,7 +859,7 @@ export default {
         strategyDescription() {
             const descriptions = {
                 'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%',
-                'apollo': '<strong>Análise:</strong> Densidade de Dígitos e Microtendências - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 19% a 126%',
+                'apollo': '<strong>Análise:</strong> IA APOLLO<br/>Densidade de Dígitos e Microtendências - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 19% a 126%',
                 'nexus': '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%',
                 'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%',
                 'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%'
@@ -936,7 +936,7 @@ export default {
         getStrategyDescription(name) {
                 const descs = {
                 'Atlas': 'Híbrida: Dígitos + Price Action.',
-                'Apollo': 'Price Action Puro e Tendência.',
+                'Apollo': 'IA APOLLO\nDensidade de Dígitos e Microtendências',
                 'Nexus': 'Price Action com Barreira.',
                 'Orion': 'Estatística de Dígitos e Recuperação.',
                 'Titan': 'Dígitos Par/Ímpar Direcional.'
