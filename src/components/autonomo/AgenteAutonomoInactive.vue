@@ -811,9 +811,9 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 		},
 		startReturnOscillation() {
 			this.returnInterval = setInterval(() => {
-				// Oscilação Zeus: entre 3.80 e 4.10
+				// Oscilação Zeus: entre 3.50 e 4.10
 				const zeusVariation = (Math.random() * 0.08 - 0.04); // +/- 0.04
-				this.zeusReturn = Math.max(3.80, Math.min(4.10, this.zeusReturn + zeusVariation));
+				this.zeusReturn = Math.max(3.50, Math.min(4.10, this.zeusReturn + zeusVariation));
 				
 				// Oscilação Falcon: entre 2.70 e 3.00
 				const falconVariation = (Math.random() * 0.06 - 0.03); // +/- 0.03

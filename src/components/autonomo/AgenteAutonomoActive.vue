@@ -2302,9 +2302,8 @@
 				this.returnInterval = setInterval(() => {
 					// Oscilação sutil: entre 3.80 e 4.10
 					const variation = (Math.random() * 0.06 - 0.03); // +/- 0.03
-					this.zeusReturn = Math.max(3.80, Math.min(4.10, this.zeusReturn + variation));
+					this.zeusReturn = Math.max(3.50, Math.min(4.10, this.zeusReturn + variation));
 				}, 50000); // A cada 50 segundos
-			}
 			}
 		},
 	}
