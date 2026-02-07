@@ -417,13 +417,6 @@
                                 <div class="flex flex-col space-y-2 w-full max-h-[600px] overflow-y-auto custom-scrollbar-zenix pr-2">
                                     <div v-for="log in monitoringLogs" :key="log.id" class="w-full flex items-start gap-3 py-2 border-b border-border/5 hover:bg-secondary/10 transition-colors">
                                         <span class="text-[10px] font-mono text-muted-foreground/40 mt-0.5 min-w-[60px]">[{{ log.time }}]</span>
-                                        <div class="w-1.5 h-1.5 rounded-full mt-1.5" 
-                                             :class="{ 
-                                                'bg-success shadow-[0_0_10px_#22C55E]': log.type === 'success', 
-                                                'bg-red-500 shadow-[0_0_10px_#EF4444]': log.type === 'error', 
-                                                'bg-blue-400 shadow-[0_0_10px_#60A5FA]': log.type === 'info', 
-                                                'bg-yellow-400 shadow-[0_0_10px_#FACC15]': log.type === 'warning' 
-                                             }"></div>
                                         <div class="flex-1">
                                             <h4 class="text-[10px] font-black uppercase tracking-[0.14em] mb-1"
                                                 :class="{ 
@@ -432,9 +425,9 @@
                                                     'text-blue-400': log.type === 'info', 
                                                     'text-yellow-400': log.type === 'warning' 
                                                 }">
-                                                <i v-if="getLogIcon(log.type)" :class="getLogIcon(log.type)" class="mr-1"></i>
                                                 {{ log.title }}
                                             </h4>
+
                                             <ul class="space-y-0.5">
                                                 <li v-for="(line, idx) in log.details.filter(l => l.toLowerCase() !== 'info')" :key="idx" class="flex items-start gap-2">
                                                     <span class="text-muted-foreground/20 text-[8px] mt-0.5">•</span>
@@ -1173,7 +1166,7 @@ export default {
                         // ✅ PROPOSAL RESPONSE (Validate Payout)
                         if (msg.msg_type === 'proposal') {
                              if (msg.error) {
-                                this.addLog('Erro na Proposta', [`${msg.error.message}`], 'error');
+                                this.addLog('❌ Erro na Proposta', [`${msg.error.message}`], 'error');
                                 this.isNegotiating = false;
                                 return;
                             }
@@ -1239,7 +1232,7 @@ export default {
 
                                 // Tolerance check (if diff > 0.02 cents)
                                 if (Math.abs(exactStake - stakeValue) > 0.02) {
-                                    this.addLog(`⚠️ Calibrando Martingale: Payout ${realPayoutRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
+                                    this.addLog(`⚖️ Calibrando Martingale: Payout ${realPayoutRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
                                     
                                     if (!this.retryingProposal) {
                                         this.retryingProposal = true; // Set flag
@@ -1253,7 +1246,7 @@ export default {
                                         return; // ABORT BUY to wait for new proposal
                                     } else {
                                         // ✅ DEADLOCK FIX: If we already retried and it's STILL blocked/unsafe, abort.
-                                        this.addLog('⚠️ Cancelando negociação: Ajuste de segurança falhou ou limite atingido.', 'error');
+                                        this.addLog('❌ Cancelando negociação: Ajuste de segurança falhou ou limite atingido.', 'error');
                                         this.isNegotiating = false; // Release lock
                                         this.retryingProposal = false;
                                         return; // BLOCK BUY
@@ -1264,14 +1257,13 @@ export default {
                             this.retryingProposal = false; // Success, reset flag
                             
                             // Debug Info
-                            this.addLog('Proposta Recebida', [
+                            this.addLog('📜 Proposta Recebida', [
                                 `Payout: ${this.currencySymbol}${payout} (${((payout - stakeValue)/stakeValue*100).toFixed(1)}%)`,
-                                `Stake: ${this.currencySymbol}${stakeValue}`,
-                                `ID: ${proposalId}`
+                                `Stake: ${this.currencySymbol}${stakeValue}`
                             ], 'info');
                             
                             // BUY
-                            this.addLog('Executando Compra', [], 'info');
+                            this.addLog('🎯 Executando Compra', [], 'info');
                             this.ws.send(JSON.stringify({
                                 buy: proposalId,
                                 price: stakeValue
@@ -1320,7 +1312,7 @@ export default {
 
                 this.ws.onerror = (error) => {
                     console.error('WebSocket error:', error);
-                    this.addLog('❌ Erro na conexão WebSocket', 'error');
+                    this.addLog('⚠️ Erro na conexão WebSocket', 'error');
                 };
 
                 this.ws.onclose = () => {
@@ -1352,7 +1344,7 @@ export default {
         subscribeTicks() {
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                 const market = this.resolveMarketSymbol(this.currentConfig.market || 'R_100');
-                this.addLog(`Monitorando Mercado`, [`Símbolo: ${market}`], 'info');
+                this.addLog(`📡 Monitoramento Mercado`, [`Símbolo: ${market}`], 'info');
                 
                 this.ws.send(JSON.stringify({
                     ticks: market,
@@ -1412,7 +1404,7 @@ export default {
                     else if (contractType === 'DIGITEVEN') win = lastDigit % 2 === 0;
                     else if (contractType === 'DIGITODD') win = lastDigit % 2 !== 0;
 
-                    this.addLog('Resultado Rápido (1-Tick)', [
+                    this.addLog('🏁 Resultado Rápido (1-Tick)', [
                         `Status: ${win ? 'GANHOU' : 'PERDEU'}`,
                         `Dígito: ${lastDigit}`,
                         `Ação: Liberando trava para próxima análise`
@@ -1520,7 +1512,7 @@ export default {
                     analysisLog += `• ${filterName}: ${res.reason}<br>`;
                 });
 
-                this.addLog('Sinal de Entrada Corretora', analysisLog, 'warning');
+                this.addLog('📡 Sinal de Entrada Corretora', analysisLog, 'warning');
                 
                 // ✅ DYNAMIC DIRECTION LOGIC
                 // Collect signals from all filters that opted to provide a direction
@@ -1956,7 +1948,7 @@ export default {
 
                     // Mode Switching Logs
                     if (this.sessionState.negotiationMode !== oldMode) {
-                        this.addLog('Alteração de Sensibilidade', [`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`], 'warning');
+                        this.addLog('🧭 Alteração de Sensibilidade', [`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`], 'warning');
                     }
 
                     // Recovery Logs
@@ -2002,7 +1994,7 @@ export default {
 
                 // Result Logs
                 if (trade.result === 'WON') {
-                    this.addLog('Resultado da Operação', [
+                    this.addLog('🏁 Resultado da Operação', [
                         `Status: WIN`,
                         `Resultado Financeiro: +${this.preferredCurrencyPrefix}${trade.pnl.toFixed(2)}`,
                         `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
@@ -2010,7 +2002,7 @@ export default {
                         `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
                     ], 'success');
                     } else {
-                        this.addLog('Resultado da Operação', [
+                        this.addLog('🏁 Resultado da Operação', [
                             `Status: LOSS`,
                         `Resultado Financeiro: -${this.preferredCurrencyPrefix}${Math.abs(trade.pnl).toFixed(2)}`,
                         `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
