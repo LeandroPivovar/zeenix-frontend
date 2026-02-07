@@ -463,12 +463,14 @@
 		/>
 
 		<!-- Implementation Modal for Falcon -->
-		<ImplementationModal
-			:visible="showFalconDevModal"
-			entity-type="Agente"
-			message="Este agente ainda está sendo implementado e será liberado entre segunda e sexta da próxima semana."
-			@close="showFalconDevModal = false"
-		/>
+		<Teleport to="body">
+			<ImplementationModal
+				:visible="showFalconDevModal"
+				entity-type="Agente"
+				message="Este agente ainda está sendo implementado e será liberado entre segunda e sexta da próxima semana."
+				@close="showFalconDevModal = false"
+			/>
+		</Teleport>
 	</div> <!-- End of layout-content-agent-autonomo -->
 </template>
 
@@ -716,17 +718,15 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 		},
 
 		selectAgent(agentId) {
-			this.selectedAgent = agentId;
-			
-			// ✅ FIX: Auto-select correct market based on agent requirement
+			// ✅ FIX: Block Falcon selection and show dev modal
 			if (agentId === 'falcon') {
-				this.selectedMarket = 'volatility_10';
 				this.showFalconDevModal = true;
+				this.closeAgentSelectorModal();
                 return;
-			} else {
-				this.selectedMarket = 'volatility_100';
 			}
 			
+			this.selectedAgent = agentId;
+			this.selectedMarket = 'volatility_100';
 			this.closeAgentSelectorModal();
 		},
 

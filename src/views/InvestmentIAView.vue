@@ -679,7 +679,7 @@ export default {
                     marketType: 'Ups e Downs', 
                     icon: 'fas fa-rocket', 
                     icons: [],
-                    description: 'IA APOLLO\nDensidade de Dígitos e Microtendências',
+                    description: 'Densidade de Dígitos e Microtendências',
                     assertividade: '60% a 70%',
                     retorno: '19% a 126%'
                 },
@@ -859,7 +859,7 @@ export default {
         strategyDescription() {
             const descriptions = {
                 'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%',
-                'apollo': '<strong>Análise:</strong> IA APOLLO<br/>Densidade de Dígitos e Microtendências - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 19% a 126%',
+                'apollo': '<strong>Análise:</strong> Densidade de Dígitos e Microtendências - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 19% a 126%',
                 'nexus': '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%',
                 'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%',
                 'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%'
@@ -936,7 +936,7 @@ export default {
         getStrategyDescription(name) {
                 const descs = {
                 'Atlas': 'Híbrida: Dígitos + Price Action.',
-                'Apollo': 'IA APOLLO\nDensidade de Dígitos e Microtendências',
+                'Apollo': 'Price Action Puro e Tendência.',
                 'Nexus': 'Price Action com Barreira.',
                 'Orion': 'Estatística de Dígitos e Recuperação.',
                 'Titan': 'Dígitos Par/Ímpar Direcional.'
@@ -1994,8 +1994,9 @@ export default {
             // ✅ BLOCKING LOGIC: Only allow 'apollo'
             if (strategyId.toLowerCase() !== 'apollo') {
                 const strategyName = this.allStrategies.find(s => s.id === strategyId)?.title || strategyId;
-                this.implementationMessage = `A estratégia ${strategyName} está passando por atualizações e ficará disponível em breve.`;
+                this.implementationMessage = `A estratégia ${strategyName} está passando por atualizações e será liberada entre segunda e sexta da próxima semana.`;
                 this.showImplementationModal = true;
+                this.showStrategyModal = false; // Fecha o seletor para evitar overlap
                 return;
             }
 
@@ -2140,26 +2141,16 @@ export default {
             strategiesPresets = strategies; // Update module-level variable
             
             // Update component state
-            this.allStrategies = strategies.map(s => {
-                const strategyId = s.id.replace('default_', '');
-                const hardcoded = this.allStrategies.find(h => h.id === strategyId);
-                
-                return {
-                    id: strategyId,
-                    title: s.name,
-                    marketType: s.config?.form?.market === 'R_10' ? 'Ups e Downs' : 'Digits',
-                    icon: this.getStrategyIcon(s.name),
-                    icons: [],
-                    description: this.getStrategyDescription(s.name),
-                    // Se a API retornar N/A, usar o valor fixo (se existir)
-                    assertividade: (s.config?.metadata?.assertividade && s.config.metadata.assertividade !== 'N/A') 
-                        ? `${s.config.metadata.assertividade}%` 
-                        : (hardcoded?.assertividade || 'N/A'),
-                    retorno: (s.config?.metadata?.retorno && s.config.metadata.retorno !== 'N/A') 
-                        ? `${s.config.metadata.retorno}%` 
-                        : (hardcoded?.retorno || 'N/A')
-                };
-            });
+            this.allStrategies = strategies.map(s => ({
+                id: s.id.replace('default_', ''),
+                title: s.name,
+                marketType: s.config?.form?.market === 'R_10' ? 'Ups e Downs' : 'Digits',
+                icon: this.getStrategyIcon(s.name),
+                icons: [],
+                description: this.getStrategyDescription(s.name),
+                assertividade: s.config?.metadata?.assertividade ? `${s.config.metadata.assertividade}%` : 'N/A',
+                retorno: s.config?.metadata?.retorno ? `${s.config.metadata.retorno}%` : 'N/A'
+            }));
 
             console.log('[InvestmentIAView] Estratégias carregadas:', strategiesPresets.length);
         } catch (e) {
