@@ -1727,7 +1727,7 @@ export default {
             this.pendingFastResult = {
                 active: false,
                 contractId: null,
-                barrier: config.prediction,
+                barrier: 8, // Will be updated below
                 contractType: overrideContractType || config.tradeType,
                 stake: stake,
                 duration: config.duration || 1,
@@ -1747,7 +1747,20 @@ export default {
             };
             
             if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(proposalParams.contract_type)) {
-                proposalParams.barrier = (config.prediction || 8).toString();
+                // Determine barrier based on direction
+                let targetBarrier = config.prediction; // fallback
+
+                if (config.targetDigitUp !== undefined && ['DIGITOVER', 'DIGITMATCH'].includes(proposalParams.contract_type)) {
+                    targetBarrier = config.targetDigitUp;
+                } else if (config.targetDigitDown !== undefined && ['DIGITUNDER', 'DIGITDIFF'].includes(proposalParams.contract_type)) {
+                    targetBarrier = config.targetDigitDown;
+                }
+                
+                // Fallback to default if not set
+                if (targetBarrier === undefined) targetBarrier = 8;
+
+                proposalParams.barrier = targetBarrier.toString();
+                this.pendingFastResult.barrier = parseInt(targetBarrier);
             }
             
             const mode = isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL';

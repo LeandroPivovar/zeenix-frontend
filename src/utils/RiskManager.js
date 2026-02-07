@@ -18,6 +18,10 @@ export const RiskManager = {
      */
     payoutHistory: {},
 
+    reset() {
+        this.payoutHistory = {};
+    },
+
     initSession(initialNegotiationMode = 'VELOZ', strategyName = null) {
         // ✅ Ensure initialNegotiationMode is always a string (prevents TypeError in evaluate)
         if (typeof initialNegotiationMode !== 'string') {

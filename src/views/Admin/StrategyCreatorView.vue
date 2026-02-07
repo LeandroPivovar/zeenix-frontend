@@ -164,7 +164,7 @@
                                                 type="button"
                                                 @click="updatePrincipalDirection('both')"
                                                 class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                :class="form.directionMode === 'both' ? 'bg-zenix-green text-black shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                                :class="form.directionMode === 'both' ? 'bg-zenix-green text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
                                             >
                                                 Ambos
                                             </button>
@@ -174,7 +174,7 @@
                                                 type="button"
                                                 @click="updatePrincipalDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                 class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'bg-zenix-green text-black shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                                :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'bg-zenix-green text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
                                             >
                                                 {{ dir.label }}
                                             </button>
@@ -435,7 +435,7 @@
                                                         type="button"
                                                         @click="updateRecoveryDirection('both')"
                                                         class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                        :class="recoveryConfig.directionMode === 'both' ? 'bg-zenix-green text-black' : 'text-gray-500 hover:text-white'"
+                                                        :class="recoveryConfig.directionMode === 'both' ? 'bg-zenix-green text-white' : 'text-gray-500 hover:text-white'"
                                                     >
                                                         Ambos
                                                     </button>
@@ -445,7 +445,7 @@
                                                         type="button"
                                                         @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                         class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                        :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'bg-zenix-green text-black' : 'text-gray-500 hover:text-white'"
+                                                        :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'bg-zenix-green text-white' : 'text-gray-500 hover:text-white'"
                                                     >
                                                         {{ dir.label }}
                                                     </button>
@@ -676,6 +676,32 @@
                                                 <option value="70">70%</option>
                                             </select>
                                             <span class="text-[10px] text-gray-500 uppercase">Piso</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Target Digits (Conditional) -->
+                                <div v-if="['digits_over_under', 'digits_match_diff'].includes(form.selectedTradeTypeGroup)" class="col-span-1 md:col-span-2 grid grid-cols-2 gap-4 bg-[#1E1E1E] border border-[#333] rounded-lg p-3">
+                                    <div>
+                                        <label class="block text-white font-bold mb-1 text-xs">Dígito Alvo (CIMA/OVER)</label>
+                                        <div class="relative">
+                                            <input 
+                                                type="number" 
+                                                v-model.number="form.targetDigitUp" 
+                                                class="w-full bg-[#111] text-white border border-[#333] rounded py-2 px-3 focus:outline-none focus:border-zenix-green text-sm"
+                                                min="0" max="9"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-white font-bold mb-1 text-xs">Dígito Alvo (BAIXO/UNDER)</label>
+                                        <div class="relative">
+                                            <input 
+                                                type="number" 
+                                                v-model.number="form.targetDigitDown" 
+                                                class="w-full bg-[#111] text-white border border-[#333] rounded py-2 px-3 focus:outline-none focus:border-zenix-green text-sm"
+                                                min="0" max="9"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -3875,7 +3901,42 @@ export default {
             this.monitoringStats.status = 'Parado';
             this.monitoringStats.statusDesc = stopReason;
             this.stopTickConnection();
-            this.addLog(`⏹️ Monitoramento parado: ${stopReason}`, 'info');
+            
+            // ✅ FULL SESSION RESET (User Request: "100% from zero")
+            // 1. Reset RiskManager State
+            RiskManager.reset();
+            
+            // 2. Reset Session State
+            this.sessionState = RiskManager.initSession(this.sessionState.initialNegotiationMode || 'VELOZ');
+            
+            // 3. Clear History & Buffers
+            this.tickHistory = [];
+            this.digitHistory = [];
+            this.activeContracts = new Map();
+            this.tickCount = 0;
+            this.lastTickPrice = null;
+            this.isNegotiating = false;
+            this.retryingProposal = false;
+            this.pendingFastResult = { contractId: null, barrier: null, contractType: null, active: false, stake: 0 };
+            this.pendingVirtualTrade = null;
+            this.pauseUntil = 0;
+            
+            // 4. Clear Logs & Operations
+            this.monitoringLogs = [];
+            this.logCounter = 0;
+            this.monitoringOperations = [];
+            
+            // 5. Reset Stats (Keep balance for now as it is real state)
+            this.monitoringStats = {
+                balance: this.monitoringStats.balance, // Preserve Balance
+                profit: 0,
+                wins: 0,
+                losses: 0,
+                status: 'Parado',
+                statusDesc: stopReason
+            };
+
+            this.$root.$toast.info('Sessão finalizada e registros limpos.');
         },
         executeRealTrade(overrideContractType = null, explicitPayout = null) {
             try {
@@ -3935,13 +3996,26 @@ export default {
                 };
 
                 if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(proposalParams.contract_type)) {
-                    proposalParams.barrier = config.prediction.toString(); 
+                    // Determine barrier based on direction
+                    let targetBarrier = config.prediction; // fallback
+
+                    if (config.targetDigitUp !== undefined && ['DIGITOVER', 'DIGITMATCH'].includes(proposalParams.contract_type)) {
+                        targetBarrier = config.targetDigitUp;
+                    } else if (config.targetDigitDown !== undefined && ['DIGITUNDER', 'DIGITDIFF'].includes(proposalParams.contract_type)) {
+                        targetBarrier = config.targetDigitDown;
+                    }
+                    
+                    // Fallback using default prediction or 8 if absolutely nothing set
+                    if (targetBarrier === undefined) targetBarrier = 8;
+                    
+                    proposalParams.barrier = targetBarrier.toString(); 
                 }
 
                 // Store current context for fast result (will be activated on buy response)
                 this.pendingFastResult = {
                     contractId: null,
-                    barrier: config.prediction,
+                    barrier: parseInt(proposalParams.barrier || config.prediction || 8), // Ensure we capture the calculated barrier
+
                     contractType: overrideContractType || config.tradeType,
                     active: false, // DISABLED FAST RESULT as per user request
                     stake: stake,
