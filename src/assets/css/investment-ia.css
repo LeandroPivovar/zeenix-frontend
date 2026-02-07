@@ -2963,7 +2963,7 @@ svg:not(:root).svg-inline--fa {
     /* 1. Gerenciamento de Risco: 3 colunas */
     .risk-buttons {
         display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.5rem !important;
         width: 100% !important;
     }

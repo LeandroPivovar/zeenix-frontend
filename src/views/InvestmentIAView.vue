@@ -1306,11 +1306,32 @@ export default {
         },
 
         async selectAccount(account) {
-            console.log('[InvestmentIAView] Conta selecionada:', account); // Improved log
+            console.log('[InvestmentIAView] Conta selecionada:', account);
             this.selectedToken = account.token;
             this.accountType = account.isDemo ? 'demo' : 'real';
             localStorage.setItem('deriv_account_type', this.accountType);
             
+            // ✅ [FIX BALANÇO] Atualizar o estado local IMEDIATAMENTE para evitar bug de saldo insuficiente
+            // Isso garante que activateIA() já veja o saldo correto da conta selecionada
+            if (this.info) {
+                console.log(`[InvestmentIAView] ⚡ Sincronizando saldo local para validação: ${account.balance}`);
+                this.info.balance = account.balance;
+                this.info.isDemo = account.isDemo;
+                
+                if (account.isDemo) {
+                    this.info.demo_amount = account.balance;
+                    if (!this.info.balancesByCurrencyDemo) this.info.balancesByCurrencyDemo = {};
+                    this.info.balancesByCurrencyDemo['USD'] = account.balance;
+                } else {
+                    this.info.real_amount = account.balance;
+                    if (!this.info.balancesByCurrencyReal) this.info.balancesByCurrencyReal = {};
+                    this.info.balancesByCurrencyReal['USD'] = account.balance;
+                }
+                
+                // Forçar reatividade
+                this.info = { ...this.info };
+            }
+
             this.showAccountModal = false;
 
             // ✅ Sync with backend to ensure AIMonitoringView picks up the correct account
@@ -1319,7 +1340,7 @@ export default {
                 const token = localStorage.getItem('token');
                 const tradeCurrency = account.isDemo ? 'DEMO' : 'USD';
 
-                 // Optimistic local update
+                // Optimistic local update
                 localStorage.setItem('trade_currency', tradeCurrency);
                 localStorage.setItem('deriv_token', account.token);
                 
@@ -1327,7 +1348,10 @@ export default {
                 const connectionData = {
                     loginid: account.loginid,
                     token: account.token,
-                    isDemo: account.isDemo
+                    isDemo: account.isDemo,
+                    balance: account.balance,
+                    currency: account.currency,
+                    timestamp: Date.now()
                 };
                 console.log('[InvestmentIAView] Saving deriv_connection:', connectionData);
                 localStorage.setItem('deriv_connection', JSON.stringify(connectionData));
@@ -2119,6 +2143,17 @@ export default {
     },
     async mounted() {
         console.log('[InvestmentIAView] mounted() - Modo 100% Frontend');
+        
+        // ✅ [VERIFICAÇÃO DE CONEXÃO] Se não estiver conectado ao Deriv, redirecionar para o dashboard
+        const derivToken = localStorage.getItem('deriv_token');
+        const derivConnection = localStorage.getItem('deriv_connection');
+        
+        if (!derivToken || !derivConnection) {
+            console.warn('[InvestmentIAView] ⚠️ Usuário não conectado à Deriv. Redirecionando para Dashboard.');
+            this.$router.push('/dashboard');
+            return;
+        }
+
         await this.loadAvailableAccounts();
         
         if (this.$route.query.strategy) {
