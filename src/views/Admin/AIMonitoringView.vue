@@ -1423,6 +1423,7 @@ export default {
                     if (trade) {
                         trade.result = win ? 'WON' : 'LOST';
                         trade.fastResultApplied = true;
+                        trade.estimatedPnl = estimatedProfit; // ✅ Store for correction later
                     }
 
                     // Update stats immediately
@@ -1434,8 +1435,11 @@ export default {
 
                     RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake, this.pendingFastResult.analysisType, this.recoveryConfig.lossesToActivate);
                     
-                    // Update Profit Chart for Fast Result
+                    // ✅ UPDATE BALANCE & PROFIT (Real-time sync)
                     this.monitoringStats.profit += estimatedProfit;
+                    this.monitoringStats.balance = Number(this.monitoringStats.balance) + estimatedProfit;
+                    this.rawBalance = Number(this.rawBalance) + estimatedProfit;
+                    
                     const profitTick = { time: Math.floor(Date.now() / 1000), value: parseFloat(this.monitoringStats.profit.toFixed(2)) };
                     if (this.profitChartData.length > 0 && profitTick.time <= this.profitChartData[this.profitChartData.length - 1].time) {
                         profitTick.time = this.profitChartData[this.profitChartData.length - 1].time + 1;
@@ -1882,7 +1886,8 @@ export default {
                     entryPrice: contract.entry_tick_display_value,
                     exitPrice: contract.exit_tick_display_value,
                     lastDigit: contract.exit_tick_display_value ? contract.exit_tick_display_value.slice(-1) : null,
-                    fastResultApplied: false
+                    fastResultApplied: false,
+                    estimatedPnl: 0 // ✅ Reset/Initialize
                 };
                 this.monitoringOperations.unshift(trade);
                 this.activeContracts.set(id, trade);
@@ -1910,6 +1915,9 @@ export default {
                     trade.fastResultApplied = true;
                     if (trade.result === 'WON') this.monitoringStats.wins++;
                     else this.monitoringStats.losses++;
+                    
+                    // ✅ NO LONGER NEEDED HERE: Moved to bottom with correction logic
+                    // const previousPnl = trade.fastResultApplied ? trade.pnl : 0;
                     
                     // Store old states for logging
                     const oldAnalysis = this.sessionState.analysisType;
@@ -2011,7 +2019,11 @@ export default {
                 }
                 
                 // Update stats
-                this.monitoringStats.profit += trade.pnl;
+                // ✅ FAST RESULT CORRECTION: If fast result was already applied, only add the difference
+                const pnlCorrection = trade.estimatedPnl || 0;
+                const actualChange = trade.pnl - pnlCorrection;
+                
+                this.monitoringStats.profit += actualChange;
                 this.profitHistory.push(parseFloat(this.monitoringStats.profit.toFixed(2)));
                 
                 // Keep history limited (old chart logic - can keep for legacy or remove)
@@ -2027,7 +2039,8 @@ export default {
                 if (this.profitChartData.length > 5000) this.profitChartData.shift();
                 
                 // Update balance locally (will be synced by mixin watcher later)
-                this.monitoringStats.balance = Number(this.monitoringStats.balance) + trade.pnl;
+                this.monitoringStats.balance = Number(this.monitoringStats.balance) + actualChange;
+                this.rawBalance = Number(this.rawBalance) + actualChange; // ✅ SYNC RAW BALANCE
 
                 // ✅ UPDATE PEAK PROFIT & STOP BLINDADO
                 if (this.monitoringStats.profit > this.sessionState.peakProfit) {

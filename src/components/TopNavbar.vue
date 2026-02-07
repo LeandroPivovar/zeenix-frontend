@@ -358,7 +358,14 @@ export default {
         propValue = isNaN(num) ? 0 : num;
       }
 
-      if (propValue > 0) return propValue;
+      if (propValue > 0) {
+        // ✅ APLICAR OFFSET SE PROP FOI PASSADO (Para sincronia com AI Monitoring)
+        if (this.accountType === 'demo' && this.isFictitiousBalanceActive) {
+          return propValue + (Number(this.fictitiousBalance) || 0);
+        }
+        return propValue;
+      }
+
 
       // Prioridade 1: Saldo Demo + Fictício se ativo E conta for demo
       if (this.accountType === 'demo') {
