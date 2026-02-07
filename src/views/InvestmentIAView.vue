@@ -2121,12 +2121,12 @@ export default {
             this.allStrategies = strategies.map(s => ({
                 id: s.id.replace('default_', ''),
                 title: s.name,
-                marketType: s.config.form.market === 'R_10' ? 'Ups e Downs' : 'Digits',
+                marketType: s.config?.form?.market === 'R_10' ? 'Ups e Downs' : 'Digits',
                 icon: this.getStrategyIcon(s.name),
                 icons: [],
                 description: this.getStrategyDescription(s.name),
-                assertividade: `${s.config.metadata.assertividade}%`,
-                retorno: `${s.config.metadata.retorno}%`
+                assertividade: s.config?.metadata?.assertividade ? `${s.config.metadata.assertividade}%` : 'N/A',
+                retorno: s.config?.metadata?.retorno ? `${s.config.metadata.retorno}%` : 'N/A'
             }));
 
             console.log('[InvestmentIAView] Estratégias carregadas:', strategiesPresets.length);
