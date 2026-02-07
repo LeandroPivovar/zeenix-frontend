@@ -667,7 +667,7 @@ export default {
                     icons: [],
                     description: 'Price Action Puro e Tendência.',
                     assertividade: '90% a 95%',
-                    retorno: '99%'
+                    retorno: 'de 1% a 126%'
                 },
                 { 
                     id: 'nexus', 
