@@ -28,7 +28,7 @@ export default {
         },
         message: {
             type: String,
-            default: 'Esta IA ainda está sendo implementada e ficará disponível dentro de 1 semana.'
+            default: 'Ainda está sendo implementado e será liberado entre segunda e sexta da próxima semana.'
         }
     }
 };
