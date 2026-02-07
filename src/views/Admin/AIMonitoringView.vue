@@ -770,6 +770,11 @@ export default {
              console.log('[AIMonitoringView] Balance updated from mixin:', newVal);
              if (newVal !== undefined && newVal !== null) {
                  this.monitoringStats.balance = newVal;
+
+                 // ✅ SYNC RAW BALANCE (Base balance for TopNavbar)
+                 const offset = (this.accountType === 'demo' && this.isFictitiousBalanceActive) ? (Number(this.fictitiousBalance) || 0) : 0;
+                 this.rawBalance = newVal - offset;
+
                  // Set initial balance if not set yet (first load)
                  if (this.monitoringStats.initialBalance === 0 && newVal > 0) {
                      this.monitoringStats.initialBalance = newVal;
@@ -813,6 +818,11 @@ export default {
         // Sincronizar saldo inicial com o mixin se disponível
         if (this.balanceNumeric > 0) {
             this.monitoringStats.balance = this.balanceNumeric;
+            
+            // ✅ INITIALIZE RAW BALANCE (Base balance for TopNavbar)
+            const offset = (this.accountType === 'demo' && this.isFictitiousBalanceActive) ? (Number(this.fictitiousBalance) || 0) : 0;
+            this.rawBalance = this.balanceNumeric - offset;
+
             if (this.monitoringStats.initialBalance === 0) this.monitoringStats.initialBalance = this.balanceNumeric;
         }
         

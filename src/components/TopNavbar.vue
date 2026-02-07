@@ -306,7 +306,7 @@ export default {
       notifications: [],
       // Master Trader Settings
       isFictitiousBalanceActive: false,
-      fictitiousBalance: 0,
+      fictitiousBalance: 10000,
       showDollarSign: false,
       isBalanceReady: false,
       
