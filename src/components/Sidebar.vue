@@ -45,25 +45,23 @@
                 <a
                     href="#"
                     class="menu-item"
-                    :class="{ active: isInvestmentIAActive, disabled: !isAdmin }"
-                    @click.prevent="isAdmin ? navigateAndClose('/Investments-IA') : openDevModal()"
+                    :class="{ active: isInvestmentIAActive }"
+                    @click.prevent="navigateAndClose('/Investments-IA')"
                     data-text="IAs de Investimento"
                 >
                     <i class="fa-solid fa-brain w-5 opacity-85"></i>
                     <span>IA's de Investimento</span>
-                    <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
                 </a>
 
                 <a
                     href="#"
                     class="menu-item"
-                    :class="{ active: isAutonomousAgentActive, disabled: !isAdmin }"
-                    @click.prevent="isAdmin ? navigateAndClose('/agente-autonomo') : openDevModal()"
+                    :class="{ active: isAutonomousAgentActive }"
+                    @click.prevent="navigateAndClose('/agente-autonomo')"
                     data-text="Agente Autônomo"
                 >
                     <i class="fa-solid fa-microchip w-5 opacity-85"></i>
                     <span>Agente Autônomo</span>
-                    <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
                 </a>
 
                 <a

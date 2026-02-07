@@ -178,7 +178,7 @@ const routes = [
     path: '/Investments-IA',
     name: 'InvestmentIAView',
     component: InvestmentIAView,
-    meta: { requiresAuth: true, requiresRole: ['admin'] }
+    meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
     path: '/Investments-IA/active',
