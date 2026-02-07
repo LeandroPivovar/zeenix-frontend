@@ -992,7 +992,7 @@
 						icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'],
                         video: '/Zeus_Lança_Raio_em_Vídeo.mp4',
 						emoji: '⚡', 
-						description: 'Análise: Fluxo de Mercado (Tick a Tick)\nAssertividade: 65% a 80% Retorno: 19% a 126%',
+						description: 'Análise: Dígitos (Over 5)\nAssertividade: 65% a 80% Retorno: 19% a 126%',
 						winRate: 72,
 						style: 'Agressivo / Híbrido'
 					},
