@@ -15,7 +15,7 @@ export default {
       loadingBalance: false,
       isBalanceReady: false,
       isFictitiousBalanceActive: false,
-      fictitiousBalance: 10000,
+      fictitiousBalance: 0,
       planFeatures: null
     };
   },

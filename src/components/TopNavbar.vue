@@ -306,7 +306,7 @@ export default {
       notifications: [],
       // Master Trader Settings
       isFictitiousBalanceActive: false,
-      fictitiousBalance: 10000,
+      fictitiousBalance: 0,
       showDollarSign: false,
       isBalanceReady: false,
       
@@ -359,10 +359,6 @@ export default {
       }
 
       if (propValue > 0) {
-        // ✅ APLICAR OFFSET SE PROP FOI PASSADO (Para sincronia com AI Monitoring)
-        if (this.accountType === 'demo' && this.isFictitiousBalanceActive) {
-          return propValue + (Number(this.fictitiousBalance) || 0);
-        }
         return propValue;
       }
 
