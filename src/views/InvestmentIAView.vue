@@ -242,7 +242,8 @@
                                                     <div class="strategy-icon-box-large" :class="strategy.id">
                                                         <img v-if="strategy.icons && strategy.icons.length > 0" :src="strategy.icons[0]" class="deriv-svg-icon" alt="strategy icon" />
                                                         <i v-else :class="strategy.icon"></i>
-                                                        <i v-if="strategy.id === 'nexus'" class="fas fa-shield-alt mini-shield"></i>
+                                                        <i v-if="strategy.id !== 'apollo'" class="fas fa-lock mini-shield text-gray-400"></i>
+                                                        <i v-else-if="strategy.id === 'nexus'" class="fas fa-shield-alt mini-shield"></i>
                                                     </div>
                                                     <div class="agent-option-main-info">
                                                         <h4 class="agent-option-title">{{ strategy.title }}</h4>
@@ -270,6 +271,13 @@
                             </div>
                         </div>
                     </Teleport>
+
+                    <ImplementationModal
+                        :visible="showImplementationModal"
+                        entityType="IA"
+                        :message="implementationMessage"
+                        @close="showImplementationModal = false"
+                    />
 
                             <div class="form-group">
                                 <label class="form-label">
@@ -597,6 +605,7 @@ import StrategyRequiredModal from '@/components/modals/StrategyRequiredModal.vue
 import { StrategyAnalysis } from '@/utils/StrategyAnalysis';
 import SessionHistoryModal from '@/components/SessionHistoryModal.vue';
 import { StrategiesService } from '@/services/StrategiesService';
+import ImplementationModal from '@/components/modals/ImplementationModal.vue';
 
 let strategiesPresets = [];
 
@@ -613,7 +622,9 @@ export default {
         InsufficientBalanceModal,
         MinimumStakeModal,
         StrategyRequiredModal,
-        SessionHistoryModal
+        StrategyRequiredModal,
+        SessionHistoryModal,
+        ImplementationModal
     },
     data() {
         return {
@@ -628,7 +639,11 @@ export default {
 
             showStrategyRequiredModal: false,
             showAccountModal: false,
+            showStrategyRequiredModal: false,
+            showAccountModal: false,
             showStrategyModal: false,
+            showImplementationModal: false,
+            implementationMessage: '',
             isLoadingStrategies: false,
             isLoadingAccounts: false,
             availableAccounts: [],
@@ -1977,6 +1992,14 @@ export default {
         },
 
         selectStrategy(strategyId) {
+            // ✅ BLOCKING LOGIC: Only allow 'apollo'
+            if (strategyId.toLowerCase() !== 'apollo') {
+                const strategyName = this.allStrategies.find(s => s.id === strategyId)?.title || strategyId;
+                this.implementationMessage = `A estratégia ${strategyName} está passando por atualizações e ficará disponível em breve.`;
+                this.showImplementationModal = true;
+                return;
+            }
+
             this.selectedStrategy = strategyId;
             
             // ✅ Sincronização de Mercado Automática (ZENIX v2.0)
