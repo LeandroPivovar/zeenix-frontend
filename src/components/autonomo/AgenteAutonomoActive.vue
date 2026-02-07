@@ -284,7 +284,7 @@
 									<div class="flex items-center gap-2">
 										<span class="text-[8px] text-[#7d807e] font-bold uppercase tracking-tight">RETORNO</span>
 										<span class="text-[12px] font-black text-[#22c55e]">
-											{{ agent.id === 'zeus' ? '+' + zeusReturn.toFixed(2) + '%' : agent.id === 'falcon' ? '+2.89%' : 'N/A' }}
+											{{ agent.id === 'zeus' ? '+' + zeusReturn.toFixed(2) + '%' : agent.id === 'falcon' ? '+' + falconReturn.toFixed(2) + '%' : 'N/A' }}
 										</span>
 									</div>
 								</div>
@@ -1003,7 +1003,7 @@
 						icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'],
                         video: '/Animação_de_Voo_Gerada.mp4',
 						emoji: '🦅', 
-						description: 'Análise: Entropia + Força + Assertividade\nAssertividade: 91% a 95%',
+						description: 'Análise: Estatística de Dígitos (Over 2)\nAssertividade: 91% a 95%',
 						winRate: 62,
 						style: 'Estatístico / Preciso'
 					}
@@ -1021,7 +1021,8 @@
                 currentCycleNumber: 1,
                 currentCycleProfit: 0,
                 lastProcessedCycle: null,
-                zeusReturn: 3.93,
+                zeusReturn: 62.5,
+                falconReturn: 75.5,
                 returnInterval: null
 			};
 		},
@@ -2300,9 +2301,13 @@
 			},
 			startReturnOscillation() {
 				this.returnInterval = setInterval(() => {
-					// Oscilação sutil: entre 3.80 e 4.10
-					const variation = (Math.random() * 0.06 - 0.03); // +/- 0.03
-					this.zeusReturn = Math.max(3.50, Math.min(4.10, this.zeusReturn + variation));
+					// Oscilação Zeus: entre 19% e 126%
+					const zeusVar = (Math.random() * 4.0 - 2.0); // +/- 2%
+					this.zeusReturn = Math.max(19.00, Math.min(126.00, this.zeusReturn + zeusVar));
+
+					// Oscilação Falcon: entre 65% e 86%
+					const falconVar = (Math.random() * 2.0 - 1.0); // +/- 1%
+					this.falconReturn = Math.max(65.00, Math.min(86.00, this.falconReturn + falconVar));
 				}, 50000); // A cada 50 segundos
 			}
 		},

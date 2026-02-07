@@ -526,8 +526,8 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 			showInvalidParamsModal: false,
 			invalidParamsMessage: '',
 			showFalconDevModal: false,
-			zeusReturn: 3.97,
-			falconReturn: 2.89,
+			zeusReturn: 62.5,
+			falconReturn: 75.5,
 			returnInterval: null,
 			allAgents: [
 				{
@@ -564,7 +564,7 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 					marketType: 'Digits',
 					icons: ['/deriv_icons/TradeTypesHighsAndLowsHighIcon.svg'],
 					description: 'Barreira de Segurança',
-					analysis: 'Estatística de Dégitos (Over 2) com Price Action na Recuperação',
+					analysis: 'Estatística de Dígitos (Over 2)',
 					assertiveness: '91% a 95%',
 					return: 'dynamic', // Use dynamic placeholder
 					benefits: [
@@ -811,13 +811,13 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 		},
 		startReturnOscillation() {
 			this.returnInterval = setInterval(() => {
-				// Oscilação Zeus: entre 3.50 e 4.10
-				const zeusVariation = (Math.random() * 0.08 - 0.04); // +/- 0.04
-				this.zeusReturn = Math.max(3.50, Math.min(4.10, this.zeusReturn + zeusVariation));
+				// Oscilação Zeus: entre 19 e 126
+				const zeusVariation = (Math.random() * 4.0 - 2.0); // +/- 2%
+				this.zeusReturn = Math.max(19.00, Math.min(126.00, this.zeusReturn + zeusVariation));
 				
-				// Oscilação Falcon: entre 2.70 e 3.00
-				const falconVariation = (Math.random() * 0.06 - 0.03); // +/- 0.03
-				this.falconReturn = Math.max(2.70, Math.min(3.00, this.falconReturn + falconVariation));
+				// Oscilação Falcon: entre 65 e 86
+				const falconVariation = (Math.random() * 2.0 - 1.0); // +/- 1%
+				this.falconReturn = Math.max(65.00, Math.min(86.00, this.falconReturn + falconVariation));
 			}, 45000); // A cada 45 segundos
 		},
 		updateMetaLucro(event) {
