@@ -786,11 +786,21 @@ export default {
             }
         },
         info(newInfo) {
-            // ✅ [CONEXÃO] Se o polling de saldo detectar que a conexão caiu
-            // Redirecionar para o dashboard para reconectar
+            // ✅ [CONEXÃO] Evitar redirecionamento prematuro se estiver carregando saldo
+            if (this.loadingBalance) return;
+
+            // Se o polling detectar que a conexão caiu (info null ou sem loginid)
             if (!newInfo || !newInfo.loginid) {
-                console.warn('[InvestmentIAView] ⚠️ Conexão com Deriv perdida. Redirecionando para Dashboard.');
-                this.$router.push('/dashboard');
+                // VERIFICAÇÃO DE SEGURANÇA: Só redirecionar se realmente NÃO tiver token local
+                // Isso evita redirecionamentos falsos quando a API demora um pouco para responder
+                const hasLocalToken = !!localStorage.getItem('deriv_token');
+                
+                if (!hasLocalToken) {
+                    console.warn('[InvestmentIAView] ⚠️ Conexão com Deriv perdida (sem token local). Redirecionando para Dashboard.');
+                    this.$router.push('/dashboard');
+                } else {
+                    console.warn('[InvestmentIAView] ⚠️ Info incompleto, mas token existe no localStorage. Aguardando recuperação...');
+                }
             }
         }
     },
