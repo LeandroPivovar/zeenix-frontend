@@ -936,7 +936,7 @@ export default {
         getStrategyDescription(name) {
                 const descs = {
                 'Atlas': 'Híbrida: Dígitos + Price Action.',
-                'Apollo': 'IA APOLLO\nDensidade de Dígitos e Microtendências',
+                'Apollo': 'Densidade de Dígitos e Microtendências',
                 'Nexus': 'Price Action com Barreira.',
                 'Orion': 'Estatística de Dígitos e Recuperação.',
                 'Titan': 'Dígitos Par/Ímpar Direcional.'
@@ -2147,7 +2147,7 @@ export default {
                 
                 return {
                     id: strategyId,
-                    title: s.name,
+                    title: strategyId === 'apollo' ? 'IA APOLLO' : s.name,
                     marketType: s.config?.form?.market === 'R_10' ? 'Ups e Downs' : 'Digits',
                     icon: this.getStrategyIcon(s.name),
                     icons: [],
