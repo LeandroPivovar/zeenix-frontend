@@ -284,7 +284,7 @@
 									<div class="flex items-center gap-2">
 										<span class="text-[8px] text-[#7d807e] font-bold uppercase tracking-tight">RETORNO</span>
 										<span class="text-[12px] font-black text-[#22c55e]">
-											{{ agent.description.match(/Retorno: (.*)%/)?.[1] || (agent.id === 'zeus' ? '85' : '63.5') }}%
+											{{ agent.id === 'zeus' ? '+' + zeusReturn.toFixed(2) + '%' : agent.id === 'falcon' ? '+2.89%' : 'N/A' }}
 										</span>
 									</div>
 								</div>
@@ -992,8 +992,8 @@
 						icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'],
                         video: '/Zeus_Lança_Raio_em_Vídeo.mp4',
 						emoji: '⚡', 
-						description: 'Análise: Fluxo de Mercado (Tick a Tick)\nAssertividade: 90%\nRetorno: 85%',
-						winRate: 58,
+						description: 'Análise: Fluxo de Mercado (Tick a Tick)\nAssertividade: 65% a 80%',
+						winRate: 72,
 						style: 'Agressivo / Híbrido'
 					},
 					{ 
@@ -1003,7 +1003,7 @@
 						icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'],
                         video: '/Animação_de_Voo_Gerada.mp4',
 						emoji: '🦅', 
-						description: 'Análise: Entropia + Força + Assertividade\nAssertividade: 70%\nRetorno: 63.5%',
+						description: 'Análise: Entropia + Força + Assertividade\nAssertividade: 91% a 95%',
 						winRate: 62,
 						style: 'Estatístico / Preciso'
 					}
@@ -1020,7 +1020,9 @@
                 showCycleCompletionModal: false,
                 currentCycleNumber: 1,
                 currentCycleProfit: 0,
-                lastProcessedCycle: null
+                lastProcessedCycle: null,
+                zeusReturn: 3.93,
+                returnInterval: null
 			};
 		},
 		mounted() {
@@ -1045,11 +1047,17 @@
 					}, 5000);
 				});
 			}
+
+			// Oscilação sutil do retorno
+			this.startReturnOscillation();
 		},
 		beforeUnmount() {
 			window.removeEventListener('click', this.closeDropdownsOnClickOutside);
 			if (this.pollingInterval) {
 				clearInterval(this.pollingInterval);
+			}
+			if (this.returnInterval) {
+				clearInterval(this.returnInterval);
 			}
 		},
 		computed: {
@@ -2289,6 +2297,14 @@
 				if (this.selectedDay && this.selectedDay.fullDate === new Date().toISOString().split('T')[0]) {
 					this.fetchDailyDetails(this.selectedDay);
 				}
+			},
+			startReturnOscillation() {
+				this.returnInterval = setInterval(() => {
+					// Oscilação sutil: entre 3.80 e 4.10
+					const variation = (Math.random() * 0.06 - 0.03); // +/- 0.03
+					this.zeusReturn = Math.max(3.80, Math.min(4.10, this.zeusReturn + variation));
+				}, 50000); // A cada 50 segundos
+			}
 			}
 		},
 	}

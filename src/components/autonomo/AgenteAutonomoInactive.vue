@@ -418,7 +418,7 @@
                                     <!-- Right Section: Action -->
                                     <div class="agent-card-action">
                                         <div class="agent-performance-badget">
-                                            <span class="perf-val">{{ agent.percentage }}</span>
+                                            <span class="perf-val">{{ getAgentReturn(agent.id) }}</span>
                                             <span class="perf-lbl text-muted">RETORNO</span>
                                         </div>
                                     </div>
@@ -440,7 +440,7 @@
 												<span class="benefit-content"><strong>Assertividade:</strong> {{ agent.assertiveness }}</span>
 											</div>
 											<div class="benefit-item-premium">
-												<span class="benefit-content"><strong>Retorno:</strong> {{ agent.return }}</span>
+												<span class="benefit-content"><strong>Retorno:</strong> {{ getAgentReturn(agent.id) }}</span>
 											</div>
 										</div>
                                     </div>
@@ -526,13 +526,16 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 			showInvalidParamsModal: false,
 			invalidParamsMessage: '',
 			showFalconDevModal: false,
+			zeusReturn: 3.97,
+			falconReturn: 2.89,
+			returnInterval: null,
 			allAgents: [
 				{
 					id: 'zeus',
 					title: 'Agente Zeus',
 					subtitle: 'Análise de Fluxo',
 					profileBadge: 'OFENSIVO',
-					percentage: '+3.15%',
+					percentage: 'dynamic', // Use dynamic placeholder
 					percentageLabel: 'Performance recente',
 					graphColor: '#22c55e',
 					image: '/img/agents/zeus.png', // Updated to image
@@ -540,8 +543,8 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 					icons: ['/deriv_icons/TradeTypesTurboLongIcon.svg'],
 					description: 'Análise de Fluxo',
 					analysis: 'Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação',
-					assertiveness: '56% a 90%',
-					return: '56% / 85%',
+					assertiveness: '65% a 80%',
+					return: 'dynamic', // Use dynamic placeholder
 					benefits: [
 						'Ideal para contas pequenas',
 						'Mercado ativo',
@@ -554,7 +557,7 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 					title: 'Agente Falcon',
 					subtitle: 'Barreira de segurança',
 					profileBadge: 'DEFENSIVO',
-					percentage: '+2.89%',
+					percentage: 'dynamic', // Use dynamic placeholder
 					percentageLabel: 'Performance recente',
 					graphColor: '#22c55e',
 					image: '/img/agents/falcon.png', // Updated to image
@@ -563,7 +566,7 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 					description: 'Barreira de Segurança',
 					analysis: 'Estatística de Dégitos (Over 2) com Price Action na Recuperação',
 					assertiveness: '91% a 95%',
-					return: '91% / 95%',
+					return: 'dynamic', // Use dynamic placeholder
 					benefits: [
 						'Ideal para banca acima de {{ preferredCurrencyPrefix }}500',
 						'Proteção de capital',
@@ -578,6 +581,12 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 		console.log('[AgenteAutonomoInactive] Componente montado.');
 		// Carregar configurações salvas do backend
 		await this.loadSavedConfig();
+		
+		// Iniciar oscilação do retorno (pequenas mudanças a cada 45s)
+		this.startReturnOscillation();
+	},
+	beforeUnmount() {
+		if (this.returnInterval) clearInterval(this.returnInterval);
 	},
 	methods: {
 		async loadSavedConfig() {
@@ -778,6 +787,8 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 			return agent ? agent.assertiveness : '';
 		},
 		getAgentReturn(id) {
+			if (id === 'zeus') return `+${this.zeusReturn.toFixed(2)}%`;
+			if (id === 'falcon') return `+${this.falconReturn.toFixed(2)}%`;
 			const agent = this.availableAgents.find(a => a.id === id);
 			return agent ? agent.return : '';
 		},
@@ -797,6 +808,17 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 			if (!isNaN(numValue)) {
 				this.valorOperacao = numValue;
 			}
+		},
+		startReturnOscillation() {
+			this.returnInterval = setInterval(() => {
+				// Oscilação Zeus: entre 3.80 e 4.10
+				const zeusVariation = (Math.random() * 0.08 - 0.04); // +/- 0.04
+				this.zeusReturn = Math.max(3.80, Math.min(4.10, this.zeusReturn + zeusVariation));
+				
+				// Oscilação Falcon: entre 2.70 e 3.00
+				const falconVariation = (Math.random() * 0.06 - 0.03); // +/- 0.03
+				this.falconReturn = Math.max(2.70, Math.min(3.00, this.falconReturn + falconVariation));
+			}, 45000); // A cada 45 segundos
 		},
 		updateMetaLucro(event) {
 			const value = event.target.value.replace(this.preferredCurrencyPrefix, '').replace(',', '');
