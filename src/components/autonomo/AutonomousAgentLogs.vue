@@ -128,7 +128,7 @@ export default {
     this.stopLogPolling();
   },
   computed: {
-    formattedLogs() {
+    allFormattedLogs() {
       const limitedLogs = this.realtimeLogs;
       return limitedLogs.map(log => {
         const message = log.message || '';
@@ -196,6 +196,10 @@ export default {
 
         return { ...log, logType, icon, title: titleLine, details };
       });
+    },
+    formattedLogs() {
+      // ✅ Limit to 500 logs for rendering to avoid lag
+      return this.allFormattedLogs.slice(0, 500);
     }
   },
   methods: {
@@ -305,7 +309,7 @@ export default {
         const fileName = `zenix-${safeAgentName}-${mode}-${safeSymbol}-${safeProfile}-${safeEnvironment}-${dateISO}.txt`;
 
         // Create content
-        const content = this.formattedLogs.map((log) => {
+        const content = this.allFormattedLogs.map((log) => {
           const timestamp = this.formatTimestamp(log.timestamp);
           // Plain text format: [TIME] [TYPE] TITLE - Details
           return `[${timestamp}] [${log.logType.toUpperCase()}] ${log.title}\n${log.details || ''}`;
