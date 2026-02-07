@@ -665,9 +665,9 @@ export default {
                     marketType: 'Ups e Downs', 
                     icon: 'fas fa-rocket', 
                     icons: [],
-                    description: 'Price Action Puro e Tendência.',
-                    assertividade: '90% a 95%',
-                    retorno: 'de 1% a 126%'
+                    description: 'Densidade de Dígitos e Microtendências.',
+                    assertividade: '60% a 70%',
+                    retorno: '19% a 126%'
                 },
                 { 
                     id: 'nexus', 
