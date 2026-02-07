@@ -2264,9 +2264,12 @@ export default {
                     timeVisible: true,
                     secondsVisible: true,
                     borderColor: 'rgba(42, 42, 42, 0.5)',
-                    rightOffset: 0,
-                    fixLeftEdge: true, 
-                    shiftVisibleRangeOnNewBar: true,
+                    rightOffset: 20,
+                    barSpacing: 15,
+                    minBarSpacing: 5,
+                    fixLeftEdge: true,
+                    fixRightEdge: true,
+                    shiftVisibleRangeOnNewBar: true, // Keep tracking updates
                 },
                 rightPriceScale: {
                     borderColor: 'rgba(42, 42, 42, 0.5)',

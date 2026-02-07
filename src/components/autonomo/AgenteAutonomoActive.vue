@@ -639,8 +639,13 @@
 					</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
 				</div>
-				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-xs sm:text-sm font-bold tabular-nums text-yellow-500 uppercase">{{ agenteData.risco ? agenteData.risco.split('-')[0].split(' ')[0] : 'Normal' }}</div>
+				<div class="flex flex-col items-center justify-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded text-center">
+					<div 
+						class="text-xs sm:text-sm font-bold tabular-nums uppercase" 
+						:style="{ color: riskColor }"
+					>
+						{{ formattedRiskProfile }}
+					</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Gestão</div>
 				</div>
 			</div>
@@ -1198,8 +1203,48 @@
 			},
 			timeframeFinal() {
 				const unidadeMap = { 'minutos': 'm', 'horas': 'h', 'Dias': 'D' };
-				return `${this.valorTimeframeSelecionado}${unidadeMap[this.unidadeTimeframeSelecionada] || ''}`;
+				return `${this.valorTimeframeSelecionado}${unidadeMap[this.unidadeTimeframeSelecionada]}`;
 			},
+            formattedRiskProfile() {
+                if (!this.agenteData || !this.agenteData.risco) return 'Normal';
+                
+                const rawRisk = String(this.agenteData.risco).toLowerCase();
+                const riskMap = {
+                    'conservative': 'Conservador',
+                    'conservador': 'Conservador',
+                    'balanced': 'Moderado',
+                    'moderado': 'Moderado',
+                    'equilibrado': 'Moderado',
+                    'aggressive': 'Agressivo',
+                    'agressivo': 'Agressivo',
+                    'fixed': 'Fixo',
+                    'fixo': 'Fixo',
+                    'normal': 'Normal'
+                };
+
+                // Tentar match direto
+                if (riskMap[rawRisk]) return riskMap[rawRisk];
+                
+                // Tentar match da primeira palavra (ex: "Conservador-Adaptativo" -> "conservador")
+                const firstPart = rawRisk.split('-')[0].split(' ')[0].trim();
+                if (riskMap[firstPart]) return riskMap[firstPart];
+
+                // Fallback para exibir formatado (primeira letra maiúscula) se não estiver no mapa
+                const fallback = this.agenteData.risco.split('-')[0].split(' ')[0].trim();
+                return fallback.charAt(0).toUpperCase() + fallback.slice(1).toLowerCase();
+            },
+            riskColor() {
+                const profile = this.formattedRiskProfile;
+                const colors = {
+                    'Agressivo': '#EF4444', // Vermelho (Tailwind red-500)
+                    'Moderado': '#FBBF24',  // Amarelo (Tailwind amber-400)
+                    'Conservador': '#15803D', // Verde mais escuro (Tailwind green-700)
+                    'Fixo': '#22C55E',      // Verde (Requested)
+                    'Normal': '#A1A1AA'     // Cinza fallback
+                };
+                return colors[profile] || '#FFFFFF';
+            },
+
 			historicoOperacoesFiltradas() {
 				// Simplificado para evitar erro, usando dados mock ou tradeHistory
 				return this.tradeHistory || [];

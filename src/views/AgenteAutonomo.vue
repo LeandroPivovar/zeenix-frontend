@@ -481,6 +481,20 @@
               riskLevel,
               stopLossType, // ✅ FIX: Pass to backend
             };
+
+          // ✅ Salvar configuração ativa no localStorage para persistência imediata no frontend
+          try {
+            localStorage.setItem('ai_active_config', JSON.stringify({ 
+              mode: riskLevel,
+              strategy: strategy,
+              agentType: configData?.agentType || 'sentinel',
+              timestamp: new Date().getTime()
+            }));
+            console.log('[AgenteAutonomo] Configuração salva no localStorage:', riskLevel);
+          } catch (e) {
+            console.warn('[AgenteAutonomo] Erro ao salvar config no localStorage:', e);
+          }
+
           console.log('[AgenteAutonomo] Sending POST request to:', url);
           console.log('[AgenteAutonomo] Request Body:', body);
 
@@ -697,8 +711,13 @@
             // Mapear nível de risco
             const riskMap = {
               'conservative': 'Conservador',
-              'balanced': 'Equilibrado',
-              'aggressive': 'Agressivo'
+              'conservador': 'Conservador',
+              'balanced': 'Moderado',
+              'moderado': 'Moderado',
+              'aggressive': 'Agressivo',
+              'agressivo': 'Agressivo',
+              'fixed': 'Fixo',
+              'fixo': 'Fixo'
             };
             
             // ✅ Atualizar estratégia: usar agentType se disponível, senão usar strategy
@@ -709,8 +728,28 @@
             
             // ✅ Mercado sempre é "Volatility 100 Index" (todos os agentes autônomos usam R_100)
             this.mercado = 'Volatility 100 Index';
-            if (result.data.riskLevel) {
-              this.risco = riskMap[result.data.riskLevel] || 'Equilibrado';
+            
+            // ✅ Verificar múltiplas variações do campo de risco
+            let riskValue = result.data.riskLevel || result.data.riskProfile || result.data.risco;
+            
+            // ✅ Fallback: Tentar recuperar do localStorage se o backend não retornar (Correção Frontend-Only)
+            if (!riskValue) {
+                try {
+                    const savedConfig = localStorage.getItem('ai_active_config');
+                    if (savedConfig) {
+                        const parsed = JSON.parse(savedConfig);
+                        if (parsed.mode) {
+                            console.log('[AgenteAutonomo] ⚠️ Backend sem risco, recuperando do localStorage:', parsed.mode);
+                            riskValue = parsed.mode;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[AgenteAutonomo] Falha ao ler risco do localStorage', e);
+                }
+            }
+
+            if (riskValue) {
+              this.risco = riskMap[riskValue.toLowerCase()] || riskMap[riskValue] || 'Equilibrado';
             }
             if (result.data.dailyLossLimit) {
               this.stopValue = result.data.dailyLossLimit;
@@ -1336,14 +1375,20 @@
       },
       
       getRiskTitle(id) {
+        if (!id) return id;
+        const rawId = String(id).toLowerCase();
         const map = {
           'conservative': 'Conservador',
-          'balanced': 'Equilibrado',
+          'conservador': 'Conservador',
+          'balanced': 'Moderado',
+          'moderado': 'Moderado',
+          'equilibrado': 'Moderado',
           'aggressive': 'Agressivo',
+          'agressivo': 'Agressivo',
           'fixed': 'Fixo',
           'fixo': 'Fixo'
         };
-        return map[id] || id;
+        return map[rawId] || id;
       },
       
       getCurrencyPrefix(currency) {

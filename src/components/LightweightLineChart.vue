@@ -57,9 +57,7 @@ export default {
       handler(newData) {
         if (this.series && newData && newData.length > 0) {
            this.series.setData(newData);
-           if (newData.length < 5) {
-               this.chart.timeScale().fitContent();
-           }
+           this.alignLeft();
         }
       }
     },
@@ -108,6 +106,7 @@ export default {
           fixLeftEdge: true,
           fixRightEdge: false,
           rightOffset: 0,
+          barSpacing: 10, // Espaçamento maior para começar visível da esquerda
           shiftVisibleRangeOnNewBar: true,
         },
         rightPriceScale: {
@@ -163,7 +162,8 @@ export default {
         this.series.setData(this.data);
       }
       
-      this.chart.timeScale().fitContent();
+      // Forçar alinhamento à esquerda inicial
+      this.alignLeft();
 
       // Resize Observer
       this.resizeObserver = new ResizeObserver(entries => {
@@ -171,17 +171,35 @@ export default {
         const { width } = entries[0].contentRect;
         if (this.chart) {
             this.chart.applyOptions({ width });
+            this.alignLeft(); // Re-alinhamento ao redimensionar
         }
       });
       this.resizeObserver.observe(this.$refs.chartContainer);
     },
-    forceUpdate() {
-        if (this.chart) {
-            this.chart.timeScale().fitContent();
+    alignLeft() {
+        if (!this.chart || !this.$refs.chartContainer || !this.data || this.data.length === 0) return;
+
+        const containerWidth = this.$refs.chartContainer.clientWidth;
+        const barSpacing = this.chart.timeScale().options().barSpacing || 10;
+        const visibleBars = containerWidth / barSpacing;
+        
+        // Se temos menos dados do que cabe na tela, empurramos para a esquerda
+        if (this.data.length < visibleBars) {
+            this.chart.timeScale().applyOptions({
+                rightOffset: Math.floor(visibleBars - this.data.length)
+            });
+        } else {
+            // Se já preencheu a tela, voltamos ao comportamento padrão
+            this.chart.timeScale().applyOptions({
+                rightOffset: 0
+            });
         }
+    },
+    forceUpdate() {
+        this.alignLeft();
     }
   }
-};
+}
 </script>
 
 <style scoped>
