@@ -255,6 +255,28 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div v-if="['HIGHER', 'LOWER', 'ONETOUCH', 'NOTOUCH', 'RANGE', 'UPORDOWN'].includes(form.tradeType)">
+                                    <label class="block text-white font-bold mb-2">Barreira (Offset)</label>
+                                    <div class="relative">
+                                        <input 
+                                            type="text" 
+                                            v-model="form.barrier" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                            placeholder="+0.12 or -0.12"
+                                        />
+                                    </div>
+                                </div>
+                                <div v-if="['RANGE', 'UPORDOWN', 'EXPIRYRANGE', 'EXPIRYMISS'].includes(form.tradeType)">
+                                    <label class="block text-white font-bold mb-2">Barreira Baixa</label>
+                                    <div class="relative">
+                                        <input 
+                                            type="text" 
+                                            v-model="form.barrier2" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                            placeholder="-0.12"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -486,6 +508,28 @@
                                                 <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                                     <i class="fa-solid fa-chevron-down text-gray-400"></i>
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div v-if="['HIGHER', 'LOWER', 'ONETOUCH', 'NOTOUCH', 'RANGE', 'UPORDOWN'].includes(recoveryConfig.tradeType)">
+                                            <label class="block text-white font-bold mb-2 text-sm">Barreira (Offset)</label>
+                                            <div class="relative">
+                                                <input 
+                                                    type="text" 
+                                                    v-model="recoveryConfig.barrier" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    placeholder="+0.12"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div v-if="['RANGE', 'UPORDOWN', 'EXPIRYRANGE', 'EXPIRYMISS'].includes(recoveryConfig.tradeType)">
+                                            <label class="block text-white font-bold mb-2 text-sm">Barreira Baixa</label>
+                                            <div class="relative">
+                                                <input 
+                                                    type="text" 
+                                                    v-model="recoveryConfig.barrier2" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    placeholder="-0.12"
+                                                />
                                             </div>
                                         </div>
                                         <div>
@@ -1649,6 +1693,8 @@ export default {
                 market: 'R_100',
                 tradeType: null,
                 prediction: 0, 
+                barrier: 0,
+                barrier2: 0,
                 sorosLevel: 1,
                 expectedPayout: 1.20, // Default for DIGITUNDER 8 (bet $1, get $1.20 total)
                 directionMode: 'both', // 'both', 'up', 'down'
@@ -1679,6 +1725,8 @@ export default {
                 selectedTradeTypeGroup: '',
                 tradeType: '',
                 prediction: 0,
+                barrier: 0,
+                barrier2: 0,
                 lossesToActivate: 1, // Default changed to 1 for immediate recovery (User Preference)
                 martingale: true, // New field for Optional Martingale
                 contractSwitch: true,
