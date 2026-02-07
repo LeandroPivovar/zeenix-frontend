@@ -375,9 +375,19 @@
 								v-for="agent in availableAgents" 
 								:key="agent.id"
 									class="agent-selection-card"
-								:class="{ 'active': selectedAgent === agent.id }"
+								:class="{ 
+									'active': selectedAgent === agent.id,
+									'disabled-card': agent.id === 'falcon'
+								}"
 								@click="selectAgent(agent.id)"
 							>
+								<!-- Overlay para Agente em Desenvolvimento (Falcon) -->
+								<div v-if="agent.id === 'falcon'" class="falcon-overlay">
+									<div class="overlay-badge">
+										<i class="fas fa-hammer mr-2"></i>
+										<span>EM BREVE</span>
+									</div>
+								</div>
 								<!-- Top Row: Avatar, Header, Action -->
                                 <div class="agent-selection-card-top-row">
                                     <!-- Left Section: Avatar (Rectangular) -->
@@ -1109,6 +1119,45 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 .selector-icon-wrapper > *:not(:first-child) {
     display: none !important;
 }
+
+/* Disabled Card and Overlay for Falcon */
+.agent-selection-card.disabled-card {
+    cursor: not-allowed;
+    filter: grayscale(0.4);
+    position: relative;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    pointer-events: none;
+}
+
+.agent-selection-card.disabled-card:hover {
+    transform: none !important;
+    background: transparent !important;
+}
+
+.falcon-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(2px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+.overlay-badge {
+    background: #1C1C1C;
+    border: 1px solid #22C55E;
+    color: #22C55E;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
 
 .selector-icon-wrapper :deep(i), 
 .selector-icon-wrapper :deep(svg) {

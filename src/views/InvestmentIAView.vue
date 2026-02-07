@@ -2140,16 +2140,26 @@ export default {
             strategiesPresets = strategies; // Update module-level variable
             
             // Update component state
-            this.allStrategies = strategies.map(s => ({
-                id: s.id.replace('default_', ''),
-                title: s.name,
-                marketType: s.config?.form?.market === 'R_10' ? 'Ups e Downs' : 'Digits',
-                icon: this.getStrategyIcon(s.name),
-                icons: [],
-                description: this.getStrategyDescription(s.name),
-                assertividade: s.config?.metadata?.assertividade ? `${s.config.metadata.assertividade}%` : 'N/A',
-                retorno: s.config?.metadata?.retorno ? `${s.config.metadata.retorno}%` : 'N/A'
-            }));
+            this.allStrategies = strategies.map(s => {
+                const strategyId = s.id.replace('default_', '');
+                const hardcoded = this.allStrategies.find(h => h.id === strategyId);
+                
+                return {
+                    id: strategyId,
+                    title: s.name,
+                    marketType: s.config?.form?.market === 'R_10' ? 'Ups e Downs' : 'Digits',
+                    icon: this.getStrategyIcon(s.name),
+                    icons: [],
+                    description: this.getStrategyDescription(s.name),
+                    // Se a API retornar N/A, usar o valor fixo (se existir)
+                    assertividade: (s.config?.metadata?.assertividade && s.config.metadata.assertividade !== 'N/A') 
+                        ? `${s.config.metadata.assertividade}%` 
+                        : (hardcoded?.assertividade || 'N/A'),
+                    retorno: (s.config?.metadata?.retorno && s.config.metadata.retorno !== 'N/A') 
+                        ? `${s.config.metadata.retorno}%` 
+                        : (hardcoded?.retorno || 'N/A')
+                };
+            });
 
             console.log('[InvestmentIAView] Estratégias carregadas:', strategiesPresets.length);
         } catch (e) {
