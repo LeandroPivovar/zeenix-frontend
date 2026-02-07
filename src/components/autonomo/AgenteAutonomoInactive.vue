@@ -374,14 +374,10 @@
 							<div 
 								v-for="agent in availableAgents" 
 								:key="agent.id"
-								class="agent-selection-card"
-								:class="{ 'active': selectedAgent === agent.id, 'locked': agent.id === 'falcon' }"
-								@click="agent.id === 'falcon' ? (showFalconDevModal = true) : selectAgent(agent.id)"
+									class="agent-selection-card"
+								:class="{ 'active': selectedAgent === agent.id }"
+								@click="selectAgent(agent.id)"
 							>
-								<!-- Lock Overlay for Falcon -->
-								<div v-if="agent.id === 'falcon'" class="lock-overlay">
-									<i class="fas fa-lock text-4xl text-gray-400"></i>
-								</div>
 								<!-- Top Row: Avatar, Header, Action -->
                                 <div class="agent-selection-card-top-row">
                                     <!-- Left Section: Avatar (Rectangular) -->
