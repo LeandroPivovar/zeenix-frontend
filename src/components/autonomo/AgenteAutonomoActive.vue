@@ -992,7 +992,7 @@
 						icons: ['/deriv_icons/TradeTypesDigitsOverIcon.svg', '/deriv_icons/TradeTypesDigitsUnderIcon.svg'],
                         video: '/Zeus_Lança_Raio_em_Vídeo.mp4',
 						emoji: '⚡', 
-						description: 'Análise: Fluxo de Mercado (Tick a Tick)\nAssertividade: 65% a 80%',
+						description: 'Análise: Fluxo de Mercado (Tick a Tick)\nAssertividade: 65% a 80% Retorno: 19% a 126%',
 						winRate: 72,
 						style: 'Agressivo / Híbrido'
 					},
@@ -1003,7 +1003,7 @@
 						icons: ['/deriv_icons/TradeTypesDigitsEvenIcon.svg', '/deriv_icons/TradeTypesDigitsOddIcon.svg'],
                         video: '/Animação_de_Voo_Gerada.mp4',
 						emoji: '🦅', 
-						description: 'Análise: Estatística de Dígitos (Over 2)\nAssertividade: 91% a 95%',
+						description: 'Análise: Estatística de Dígitos (Over 2)\nAssertividade: 91% a 95% Retorno: 65% a 86%',
 						winRate: 62,
 						style: 'Estatístico / Preciso'
 					}
@@ -1021,8 +1021,8 @@
                 currentCycleNumber: 1,
                 currentCycleProfit: 0,
                 lastProcessedCycle: null,
-                zeusReturn: 62.5,
-                falconReturn: 75.5,
+                zeusReturn: 3.93,
+                falconReturn: 2.89,
                 returnInterval: null
 			};
 		},
@@ -2301,13 +2301,13 @@
 			},
 			startReturnOscillation() {
 				this.returnInterval = setInterval(() => {
-					// Oscilação Zeus: entre 19% e 126%
-					const zeusVar = (Math.random() * 4.0 - 2.0); // +/- 2%
-					this.zeusReturn = Math.max(19.00, Math.min(126.00, this.zeusReturn + zeusVar));
+					// Oscilação Zeus: entre 3.50% e 4.10% (Valor Verde)
+					const zeusVar = (Math.random() * 0.08 - 0.04); // +/- 0.04
+					this.zeusReturn = Math.max(3.50, Math.min(4.10, this.zeusReturn + zeusVar));
 
-					// Oscilação Falcon: entre 65% e 86%
-					const falconVar = (Math.random() * 2.0 - 1.0); // +/- 1%
-					this.falconReturn = Math.max(65.00, Math.min(86.00, this.falconReturn + falconVar));
+					// Oscilação Falcon: entre 2.50% e 3.20% (Valor Verde)
+					const falconVar = (Math.random() * 0.06 - 0.03); // +/- 0.03
+					this.falconReturn = Math.max(2.50, Math.min(3.20, this.falconReturn + falconVar));
 				}, 50000); // A cada 50 segundos
 			}
 		},

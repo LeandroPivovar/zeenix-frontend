@@ -161,7 +161,7 @@
 										<div class="agent-desc-info-row">
 											<span class="info-item"><strong>Análise:</strong> {{ getAgentAnalysis(selectedAgent) }}</span>
 											<span class="info-item"><strong>Assertividade:</strong> {{ getAgentAssertiveness(selectedAgent) }}</span>
-											<span class="info-item"><strong>Retorno:</strong> {{ getAgentReturn(selectedAgent) }}</span>
+											<span class="info-item"><strong>Retorno:</strong> {{ getStaticReturn(selectedAgent) }}</span>
 										</div>
 									</div>
 								</div>
@@ -440,7 +440,7 @@
 												<span class="benefit-content"><strong>Assertividade:</strong> {{ agent.assertiveness }}</span>
 											</div>
 											<div class="benefit-item-premium">
-												<span class="benefit-content"><strong>Retorno:</strong> {{ getAgentReturn(agent.id) }}</span>
+												<span class="benefit-content"><strong>Retorno:</strong> {{ agent.return }}</span>
 											</div>
 										</div>
                                     </div>
@@ -526,8 +526,8 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 			showInvalidParamsModal: false,
 			invalidParamsMessage: '',
 			showFalconDevModal: false,
-			zeusReturn: 62.5,
-			falconReturn: 75.5,
+			zeusReturn: 3.97,
+			falconReturn: 2.89,
 			returnInterval: null,
 			allAgents: [
 				{
@@ -544,7 +544,7 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 					description: 'Análise de Fluxo',
 					analysis: 'Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação',
 					assertiveness: '65% a 80%',
-					return: 'dynamic', // Use dynamic placeholder
+					return: '19% a 126%',
 					benefits: [
 						'Ideal para contas pequenas',
 						'Mercado ativo',
@@ -566,7 +566,7 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 					description: 'Barreira de Segurança',
 					analysis: 'Estatística de Dígitos (Over 2)',
 					assertiveness: '91% a 95%',
-					return: 'dynamic', // Use dynamic placeholder
+					return: '65% a 86%',
 					benefits: [
 						'Ideal para banca acima de {{ preferredCurrencyPrefix }}500',
 						'Proteção de capital',
@@ -792,6 +792,10 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 			const agent = this.availableAgents.find(a => a.id === id);
 			return agent ? agent.return : '';
 		},
+		getStaticReturn(id) {
+			const agent = this.availableAgents.find(a => a.id === id);
+			return agent ? agent.return : '';
+		},
 
 		getRiskTitle(id) {
 			const map = {
@@ -811,13 +815,13 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 		},
 		startReturnOscillation() {
 			this.returnInterval = setInterval(() => {
-				// Oscilação Zeus: entre 19 e 126
-				const zeusVariation = (Math.random() * 4.0 - 2.0); // +/- 2%
-				this.zeusReturn = Math.max(19.00, Math.min(126.00, this.zeusReturn + zeusVariation));
+				// Oscilação Zeus: entre 3.50% e 4.10% (Valor Verde)
+				const zeusVariation = (Math.random() * 0.08 - 0.04); // +/- 0.04
+				this.zeusReturn = Math.max(3.50, Math.min(4.10, this.zeusReturn + zeusVariation));
 				
-				// Oscilação Falcon: entre 65 e 86
-				const falconVariation = (Math.random() * 2.0 - 1.0); // +/- 1%
-				this.falconReturn = Math.max(65.00, Math.min(86.00, this.falconReturn + falconVariation));
+				// Oscilação Falcon: entre 2.50% e 3.20% (Valor Verde)
+				const falconVariation = (Math.random() * 0.06 - 0.03); // +/- 0.03
+				this.falconReturn = Math.max(2.50, Math.min(3.20, this.falconReturn + falconVariation));
 			}, 45000); // A cada 45 segundos
 		},
 		updateMetaLucro(event) {
