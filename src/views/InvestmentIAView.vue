@@ -784,6 +784,14 @@ export default {
                     this.activationEvent.target.checked = false;
                 }
             }
+        },
+        info(newInfo) {
+            // ✅ [CONEXÃO] Se o polling de saldo detectar que a conexão caiu
+            // Redirecionar para o dashboard para reconectar
+            if (!newInfo || !newInfo.loginid) {
+                console.warn('[InvestmentIAView] ⚠️ Conexão com Deriv perdida. Redirecionando para Dashboard.');
+                this.$router.push('/dashboard');
+            }
         }
     },
 
@@ -2137,6 +2145,7 @@ export default {
             }
         },
     },
+
     created() {
         this.checkMobile();
         window.addEventListener('resize', this.checkMobile);
