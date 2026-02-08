@@ -899,7 +899,9 @@ export default {
                         market: this.resolveMarketSymbol(parsed.market || baseConfig.form.market || 'R_100'),
                         expectedPayout: parsed.expectedPayout || baseConfig.form.expectedPayout || 1.20,
                         sorosLevel: parsed.sorosLevel !== undefined ? parsed.sorosLevel : (baseConfig.form.sorosLevel || 1),
-                        attackFilters: (parsed.attackFilters && parsed.attackFilters.length > 0) ? parsed.attackFilters : baseConfig.form.attackFilters // ✅ Fix: Respect saved filters
+                        attackFilters: (parsed.attackFilters && parsed.attackFilters.length > 0) ? parsed.attackFilters : baseConfig.form.attackFilters, // ✅ Fix: Respect saved filters
+                        // ✅ FIX: Map 'stoplossBlindado' (from UI) to 'useBlindado' (internal logic)
+                        useBlindado: parsed.stoplossBlindado !== undefined ? parsed.stoplossBlindado : (parsed.useBlindado || baseConfig.form.useBlindado || false)
                     };
 
                     // 2.5. Carregar Filtros de Segurança (Loss Virtual)
@@ -945,8 +947,9 @@ export default {
                     //    this.recoveryConfig.expectedPayout = 1.26; 
                     // }
                     
-                    // Garantir types corretos
-                    this.currentConfig.initialStake = parseFloat(this.currentConfig.initialStake || this.currentConfig.stake);
+                    // Garantir types corretos e PRECEDÊNCIA CORRETA
+                    // ✅ FIX PRIORIDADE: Stake do usuário (config) > Initial Stake (padrão)
+                    this.currentConfig.initialStake = parseFloat(this.currentConfig.stake || this.currentConfig.initialStake);
                     
                     // Inicializar Risk Session com valores corretos
                     this.sessionState = RiskManager.initSession(this.currentConfig.mode || 'VELOZ');
