@@ -987,8 +987,9 @@ export default {
                     ], 'info');
 
                     // ✅ Start Session Tracking
-                    this.startSession();
-                    this.startTimer(); // Start timer when configuration is loaded and session begins
+                    // Moved to initTickConnection to wait for accountType
+                    // this.startSession();
+                    // this.startTimer();
 
                 } catch (e) {
                     console.error('Error loading config:', e);
@@ -1126,6 +1127,12 @@ export default {
                                 this.rawBalance = baseBalance; // ✅ Store RAW for TopNavbar
                                 this.monitoringStats.balance = msg.authorize.is_virtual && this.isFictitiousBalanceActive ? baseBalance + (Number(this.fictitiousBalance) || 0) : baseBalance;
                                 this.accountType = msg.authorize.is_virtual ? 'demo' : 'real';
+
+                                // ✅ Start Session Tracking (Now that we have accountType)
+                                if (!this.sessionId) {
+                                    this.startSession();
+                                    this.startTimer();
+                                }
                                 
                                 // ✅ AUTO-CORRECTION FOR ACCOUNT MISMATCH
                                 try {
