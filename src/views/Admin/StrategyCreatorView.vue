@@ -2246,7 +2246,7 @@ export default {
              return this.form.selectedTradeTypeGroup;
         },
         selectedTradeTypeLabel() {
-            if (!this.form.tradeType) return 'Selecionar';
+            if (!this.form.tradeType) return this.selectedTradeTypeGroupLabel !== 'Selecionar Tipo' ? this.selectedTradeTypeGroupLabel : 'Selecionar';
             const c = this.contracts.find(x => x.contractType === this.form.tradeType);
             return c ? `${c.contractDisplay}` : this.form.tradeType;
         },
@@ -2295,7 +2295,7 @@ export default {
             return null;
         },
         selectedRecoveryTradeTypeLabel() {
-            if (!this.recoveryConfig.tradeType) return 'Selecionar';
+            if (!this.recoveryConfig.tradeType) return this.selectedRecoveryTradeTypeGroupLabel !== 'Selecionar Tipo' ? this.selectedRecoveryTradeTypeGroupLabel : 'Selecionar';
             const c = this.recoveryContracts.find(x => x.contractType === this.recoveryConfig.tradeType);
             return c ? `${c.contractDisplay}` : this.recoveryConfig.tradeType;
         },
