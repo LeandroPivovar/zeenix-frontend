@@ -640,36 +640,7 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 				console.error('[AgenteAutonomoInactive] Erro ao carregar configuração salva:', error);
 			}
 		},
-        // *** NOVA COMPUTED PROPERTY ***
-        get isAdmin() {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) return false;
-                
-                // Decodificar JWT token
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                
-                // Verificar se o usuário tem role de admin
-                const role = payload.role || payload.roles || payload.userRole || payload.user_role;
-                const isAdminFlag = payload.isAdmin || payload.is_admin;
-                
-                // Verificar se role contém 'admin' ou se isAdmin é true
-                if (isAdminFlag === true || isAdminFlag === 'true') {
-                    return true;
-                }
-                
-                if (role) {
-                    const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
-                    const result = roleStr.includes('admin') || roleStr === 'admin';
-                    return result;
-                }
-                
-                return false;
-            } catch (error) {
-                console.error('[AgenteAutonomoInactive] Erro ao verificar se usuário é admin:', error);
-                return false;
-            }
-        },
+
 		handleToggleChange(event) {
 			if (event.target.checked) {
 				// Quando o toggle é ativado, aguarda delay antes de iniciar o agente
@@ -870,6 +841,38 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 		},
 	},
 	computed: {
+        isAdmin() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+                
+                // Decodificar JWT token
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                
+                // Verificar se o usuário tem role de admin
+                const role = payload.role || payload.roles || payload.userRole || payload.user_role;
+                const isAdminFlag = payload.isAdmin || payload.is_admin;
+                
+                console.log('[AgenteAutonomoInactive] Checking Admin Status:', { role, isAdminFlag, payload });
+
+                // Verificar se role contém 'admin' ou se isAdmin é true
+                if (isAdminFlag === true || isAdminFlag === 'true') {
+                    return true;
+                }
+                
+                if (role) {
+                    const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
+                    const result = roleStr.includes('admin') || roleStr === 'admin';
+                    console.log('[AgenteAutonomoInactive] Role Check Result:', result);
+                    return result;
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('[AgenteAutonomoInactive] Erro ao verificar se usuário é admin:', error);
+                return false;
+            }
+        },
 		availableAgents() {
 			// if (!this.planFeatures) return this.allAgents;
 			
