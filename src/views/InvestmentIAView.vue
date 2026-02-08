@@ -2193,14 +2193,11 @@ export default {
     async mounted() {
         console.log('[InvestmentIAView] mounted() - Modo 100% Frontend');
         
-        // ✅ [VERIFICAÇÃO DE CONEXÃO] Se não estiver conectado ao Deriv, redirecionar para o dashboard
+        // Log de status de conexão na montagem (opcional)
         const derivToken = localStorage.getItem('deriv_token');
         const derivConnection = localStorage.getItem('deriv_connection');
-        
         if (!derivToken || !derivConnection) {
-            console.warn('[InvestmentIAView] ⚠️ Usuário não conectado à Deriv. Redirecionando para Dashboard.');
-            this.$router.push('/dashboard');
-            return;
+            console.log('[InvestmentIAView] ℹ️ Iniciando sem conexão ativa ou cache pendente.');
         }
 
         await this.loadAvailableAccounts();
