@@ -946,7 +946,7 @@ export default {
                     // }
                     
                     // Garantir types corretos
-                    this.currentConfig.initialStake = parseFloat(this.currentConfig.stake);
+                    this.currentConfig.initialStake = parseFloat(this.currentConfig.initialStake || this.currentConfig.stake);
                     
                     // Inicializar Risk Session com valores corretos
                     this.sessionState = RiskManager.initSession(this.currentConfig.mode || 'VELOZ');
