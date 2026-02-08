@@ -153,6 +153,7 @@ export default {
             const strategyKey = (config.strategyName || config.strategy || 'Apollo').toLowerCase();
             const fullConfig = strategyConfigs[strategyKey]?.config || strategyConfigs['apollo'].config;
 
+            this.form = {
                 // Merge with full config for advanced fields
                 ...fullConfig.form,
                 
@@ -163,6 +164,7 @@ export default {
                 profitTarget: config.form?.profitTarget !== undefined ? Number(config.form.profitTarget) : fullConfig.form.profitTarget,
                 stopLoss: config.form?.stopLoss !== undefined ? Number(config.form.stopLoss) : fullConfig.form.stopLoss,
                 useBlindado: config.form?.useBlindado !== undefined ? config.form.useBlindado : fullConfig.form.useBlindado,
+            };
             
             this.recoveryConfig = {
                 ...fullConfig.recoveryConfig
