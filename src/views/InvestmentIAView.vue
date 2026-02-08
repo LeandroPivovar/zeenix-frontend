@@ -943,22 +943,31 @@ export default {
         isAdmin() {
             try {
                 const token = localStorage.getItem('token');
+                console.log('[InvestmentIAView] Verificando token para admin:', token ? 'Token presente' : 'Sem token');
+                
                 if (!token) return false;
                 
                 const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('[InvestmentIAView] Payload do token:', payload);
+                
                 // Verificar várias propriedades comuns para roles e flags de admin
                 const role = payload.role || payload.roles || payload.userRole || payload.user_role;
                 const isAdminFlag = payload.isAdmin || payload.is_admin;
                 
+                console.log('[InvestmentIAView] Role:', role, 'IsAdminFlag:', isAdminFlag);
+
                 // Prioridade para flag booleana
                 if (isAdminFlag === true || isAdminFlag === 'true') {
+                    console.log('[InvestmentIAView] É admin via flag');
                     return true;
                 }
                 
                 // Verificar string de role(s)
                 if (role) {
                     const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
-                    return roleStr.includes('admin') || roleStr === 'admin' || roleStr.includes('master');
+                    const isAdm = roleStr.includes('admin') || roleStr === 'admin' || roleStr.includes('master');
+                    console.log('[InvestmentIAView] É admin via role:', isAdm);
+                    return isAdm;
                 }
                 
                 return false;
@@ -2062,6 +2071,8 @@ export default {
 
         selectStrategy(strategyId) {
             // ✅ BLOCKING LOGIC: Only allow 'apollo' (Except for Admins)
+            console.log('[InvestmentIAView] Verificando acesso à estratégia:', strategyId, 'IsAdmin:', this.isAdmin);
+            
             if (strategyId.toLowerCase() !== 'apollo' && !this.isAdmin) {
                 const strategyName = this.allStrategies.find(s => s.id === strategyId)?.title || strategyId;
                 this.implementationMessage = `A estratégia ${strategyName} está passando por atualizações e será liberada entre segunda e sexta da próxima semana.`;

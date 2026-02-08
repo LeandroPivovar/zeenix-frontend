@@ -435,22 +435,25 @@ export default {
     async loadDerivTutorial() {
         try {
             const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-            const res = await fetch(`${apiBase}/courses/deriv-tutorial-video`);
+            
+            // Timeout de 10 segundos
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Request timed out')), 10000)
+            );
+            
+            const responsePromise = fetch(`${apiBase}/courses/deriv-tutorial-video`);
+            
+            const res = await Promise.race([responsePromise, timeoutPromise]);
+
             if (res.ok) {
                 const data = await res.json();
                 if (data && (data.videoUrl || data.contentLink)) {
-                    // Prioritize videoUrl (upload), fallback to contentLink (external) which is often used for links
-                    // But in LessonEntity we have videoUrl and contentLink. 
-                    // Backend returns { videoUrl, contentLink, contentType }.
-                    // videoUrl handles uploads. contentLink handles links?
-                    // Let's check backend service logic again.
-                    // return { videoUrl: lesson.videoUrl, contentLink: lesson.contentLink ... }
                     this.derivTutorialVideo = data.videoUrl || data.contentLink;
                     this.derivTutorialTitle = data.title;
                 }
             }
         } catch (e) {
-            console.error('Erro ao carregar tutorial:', e);
+            console.warn('[HomeView] Erro ou timeout ao carregar tutorial (ignorando e continuando):', e.message);
         }
     },
     resolveVideoUrl(url) {
