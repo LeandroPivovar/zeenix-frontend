@@ -153,17 +153,16 @@ export default {
             const strategyKey = (config.strategyName || config.strategy || 'Apollo').toLowerCase();
             const fullConfig = strategyConfigs[strategyKey]?.config || strategyConfigs['apollo'].config;
 
-            this.form = {
-                strategy: config.strategyName || config.strategy || 'Apollo',
-                stake: config.form?.initialStake || 0.35,
-                market: config.form?.market || 'R_100',
-                profitTarget: config.form?.profitTarget || 10,
-                stopLoss: config.form?.stopLoss || 50,
                 // Merge with full config for advanced fields
                 ...fullConfig.form,
-                // Overwrites from UI inputs
-                initialStake: config.form?.initialStake || fullConfig.form.initialStake,
-            };
+                
+                strategy: config.strategyName || config.strategy || 'Apollo',
+                // Overwrites from UI inputs (Prioritize User Input)
+                initialStake: config.form?.initialStake !== undefined ? Number(config.form.initialStake) : fullConfig.form.initialStake,
+                market: config.form?.market || fullConfig.form.market || 'R_100',
+                profitTarget: config.form?.profitTarget !== undefined ? Number(config.form.profitTarget) : fullConfig.form.profitTarget,
+                stopLoss: config.form?.stopLoss !== undefined ? Number(config.form.stopLoss) : fullConfig.form.stopLoss,
+                useBlindado: config.form?.useBlindado !== undefined ? config.form.useBlindado : fullConfig.form.useBlindado,
             
             this.recoveryConfig = {
                 ...fullConfig.recoveryConfig
