@@ -1944,6 +1944,9 @@ export default {
                         this.recoveryConfig.lossesToActivate
                     );
 
+                    // ✅ Log trade to backend
+                    this.logTradeToBackend(trade);
+
                     // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
                     const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
                     
@@ -2419,6 +2422,28 @@ export default {
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify({ sessionId: this.sessionId, stats })
             }).catch(() => {});
+        },
+        async logTradeToBackend(trade) {
+            if (!this.sessionId) return;
+            
+            const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+            // Ensure values are numbers
+            const invested = parseFloat(trade.stake);
+            const pnl = parseFloat(trade.pnl);
+            const returned = invested + pnl;
+
+            const payload = {
+                aiSessionsId: this.sessionId,
+                investedValue: invested,
+                returnedValue: returned,
+                result: trade.result // 'WON' or 'LOST'
+            };
+            
+            fetch(`${apiBaseUrl}/ai/trade-log`, {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify(payload)
+            }).catch(e => console.error('Failed to log trade:', e));
         },
         setupProfitChartTooltip() {
             if (!this.$refs.profitChart || this.profitChartSubscribed) return;
