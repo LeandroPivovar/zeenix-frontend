@@ -1020,7 +1020,8 @@
                                         </div>
                                     </div>
                             </div>
-                        </div><div v-else-if="filterStep === 2">
+                        </div>
+                    </div><div v-else-if="filterStep === 2">
                             <h3 class="text-lg font-bold text-white mb-4">Configurar Filtros</h3>
                             
                             <!-- Config Mode Tabs -->
