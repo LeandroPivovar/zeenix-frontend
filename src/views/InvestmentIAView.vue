@@ -938,6 +938,34 @@ export default {
                 'fixo': 'Opera com valor fixo sem multiplicar stakes na recuperação.'
             };
             return descriptions[this.modoMartingale] || descriptions.conservador;
+        },
+
+        isAdmin() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+                
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                // Verificar várias propriedades comuns para roles e flags de admin
+                const role = payload.role || payload.roles || payload.userRole || payload.user_role;
+                const isAdminFlag = payload.isAdmin || payload.is_admin;
+                
+                // Prioridade para flag booleana
+                if (isAdminFlag === true || isAdminFlag === 'true') {
+                    return true;
+                }
+                
+                // Verificar string de role(s)
+                if (role) {
+                    const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
+                    return roleStr.includes('admin') || roleStr === 'admin' || roleStr.includes('master');
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao verificar admin:', error);
+                return false;
+            }
         }
     },
     methods: {
@@ -2033,8 +2061,8 @@ export default {
         },
 
         selectStrategy(strategyId) {
-            // ✅ BLOCKING LOGIC: Only allow 'apollo'
-            if (strategyId.toLowerCase() !== 'apollo') {
+            // ✅ BLOCKING LOGIC: Only allow 'apollo' (Except for Admins)
+            if (strategyId.toLowerCase() !== 'apollo' && !this.isAdmin) {
                 const strategyName = this.allStrategies.find(s => s.id === strategyId)?.title || strategyId;
                 this.implementationMessage = `A estratégia ${strategyName} está passando por atualizações e será liberada entre segunda e sexta da próxima semana.`;
                 this.showImplementationModal = true;
