@@ -3567,7 +3567,6 @@ export default {
                     }
 
                     if (msg.msg_type === 'buy') {
-                        console.log('[WS] Resposta de compra recebida:', msg);
                         if (msg.error) {
                             console.error('[WS] Erro na compra:', msg.error);
                             this.addLog(`❌ ERRO NA COMPRA: ${msg.error.message}`, 'error');
@@ -3577,12 +3576,10 @@ export default {
                             const payout = msg.buy.payout;
                             const stake = msg.buy.buy_price;
                             const profitPercent = (((payout - stake) / stake) * 100).toFixed(0);
+                            const profitExpected = (payout - stake).toFixed(2);
                             
                             console.log(`[WS] Sucesso! ID: ${msg.buy.contract_id}, Entrada: $${stake}, Payout: $${payout} (${profitPercent}%)`);
                             
-                            const profitExpected = (payout - stake).toFixed(2);
-                            
-                            // Get real barrier from proposal config stored in pendingFastResult
                             let barrierInfo = '';
                             if (this.pendingFastResult && this.pendingFastResult.barrier !== undefined) {
                                 barrierInfo = ` (${this.pendingFastResult.barrier})`;
@@ -3596,8 +3593,6 @@ export default {
                                 
                             this.addLog(purchaseLog, 'success');
                             
-                            // Activate fast result calculation if it's 1-tick
-                            // This allows immediate feedback on the NEXT tick
                             // ⚡ REGISTER FOR LOCAL TICK RESULT
                             if (this.pendingFastResult) {
                                  this.localPendingContracts.set(msg.buy.buy_id, {
@@ -3616,68 +3611,8 @@ export default {
                                 });
                                 console.log(`[LocalTick] Contrato ${msg.buy.buy_id} registrado para análise local.`);
                             }
-                            if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
-                                this.pendingFastResult.contractId = msg.buy.contract_id;
-                                this.pendingFastResult.payout = payout; // Store real payout
-                                // this.pendingFastResult.active = true; // ✅ DESATIVADO: Aguardar resultado oficial
-                                console.log('[FastResult] Monitoramento rápido desativado para o próximo tick.');
-                            }
-
-                            // CRITICAL: isNegotiating is NOT reset here. 
-                            // It will be reset in handleContractUpdate or handleTickMessage (Fast Result)
-                            this.subscribeToContract(msg.buy.contract_id);
-                        }
-                    }
-
-                    if (msg.msg_type === 'buy') {
-                         if (msg.error) {
-                            this.addLog(`❌ Erro na compra: ${msg.error.message}`, 'error');
-                            this.isNegotiating = false;
-                         } else {
-                            this.addLog(`🛒 Ordem executada: ID ${msg.buy.buy_id}`, 'info');
-                            this.subscribeToContract(msg.buy.contract_id);
                             
-                            // ⚡ REGISTER FOR LOCAL TICK RESULT
-                            if (this.pendingFastResult) {
-                                 this.localPendingContracts.set(msg.buy.buy_id, {
-                                    id: msg.buy.buy_id,
-                                    contractId: msg.buy.contract_id,
-                                    type: this.pendingFastResult.contractType, 
-                                    prediction: parseInt(this.pendingFastResult.barrier), 
-                                    barrier: this.pendingFastResult.barrier,
-                                    stake: this.pendingFastResult.stake,
-                                    analysisType: this.pendingFastResult.analysisType,
-                                    market: this.pendingFastResult.market || this.form.market,
-                                    active: true,
-                                    entryTick: null, // To be captured on NEXT tick
-                                    entryDigit: null,
-                                    payoutRate: this.sessionState.tempExplicitPayout || 0.95
-                                });
-                                console.log(`[LocalTick] Contrato ${msg.buy.buy_id} registrado para análise local.`);
-                            }
-                         }
-                    }
-
-                    if (msg.msg_type === 'tick') {
-                        this.tickCount++;
-                        const price = msg.tick.quote;
-                        const digit = parseInt(price.toString().slice(-1));
-                        
-                        this.lastTickPrice = price;
-                        
-                        // Update Buffers
-                        this.tickHistory.push(price);
-                        if (this.tickHistory.length > 200) this.tickHistory.shift();
-                        
-                        this.digitHistory.push(digit);
-                        if (this.digitHistory.length > 200) this.digitHistory.shift();
-    
-                        // ⚡ FAST RESULT: Check Local Ticks
-                        this.checkLocalTicks(price, digit);
-    
-                        // Strategy Analysis
-                        if (this.isMonitoring && !this.isNegotiating && !this.sessionState.isStopped) {
-                             this.processTickStrategy(price, digit);
+                            this.subscribeToContract(msg.buy.contract_id);
                         }
                     }
 
@@ -3754,7 +3689,6 @@ export default {
                 }
 
                 // --- Fast Result Calculation (Local) ---
-                const lastDigit = parseInt(price.toString().slice(-1));
                 this.checkLocalTicks(price, lastDigit);
 
                 
@@ -3763,7 +3697,6 @@ export default {
                 this.tickHistory.unshift(price);
                 if (this.tickHistory.length > 100) this.tickHistory.pop();
 
-                const lastDigit = parseInt(price.toString().slice(-1));
                 this.digitHistory.unshift(lastDigit);
                 if (this.digitHistory.length > 100) this.digitHistory.pop();
 
@@ -4195,71 +4128,9 @@ export default {
                     durationUnit: this.form.durationUnit
                 };
 
-                if (msg.tick) {
-                    this.tickCount++;
-                    const price = msg.tick.quote;
-                    const digit = parseInt(price.toString().slice(-1));
-                    
-                    this.lastTickPrice = price;
-                    
-                    // Update Buffers
-                    this.tickHistory.push(price);
-                    if (this.tickHistory.length > 200) this.tickHistory.shift();
-                    
-                    this.digitHistory.push(digit);
-                    if (this.digitHistory.length > 200) this.digitHistory.shift();
-
-                    // ⚡ FAST RESULT: Check Local Ticks
-                    this.checkLocalTicks(price, digit);
-
-                    // Strategy Analysis
-                    if (this.isMonitoring && !this.isNegotiating && !this.sessionState.isStopped) {
-                         this.processTickStrategy(price, digit);
-                    }
-                }
-
-                if (msg.authorize) {
-                    this.isAuthorized = true;
-                    this.addLog('Conectado e Autorizado.', 'success');
-                    // Re-subscribe if needed or just wait for user start
-                }
-
-                if (msg.proposal) {
-                     // ... existing proposal handling ...
-                     // If we are using valid buy flow, we might just use the echo_req to match
-                     if (this.isNegotiating) {
-                        const buyParams = {
-                            buy: msg.proposal.id,
-                            price: msg.proposal.ask_price
-                        };
-                        this.ws.send(JSON.stringify(buyParams));
-                     }
-                }
-
-                if (msg.buy) {
-                    this.addLog(`🛒 Ordem executada: ID ${msg.buy.buy_id}`, 'info');
-                    this.subscribeToContract(msg.buy.contract_id);
-                    
-                    // ⚡ REGISTER FOR LOCAL TICK RESULT
-                    // Use the context we saved in executeRealTrade (pendingFastResult)
-                    if (this.pendingFastResult) {
-                         this.localPendingContracts.set(msg.buy.buy_id, {
-                            id: msg.buy.buy_id,
-                            contractId: msg.buy.contract_id,
-                            type: this.pendingFastResult.contractType, 
-                            prediction: parseInt(this.pendingFastResult.barrier), 
-                            barrier: this.pendingFastResult.barrier,
-                            stake: this.pendingFastResult.stake,
-                            analysisType: this.pendingFastResult.analysisType,
-                            market: this.pendingFastResult.market || this.form.market,
-                            active: true,
-                            entryTick: null, // To be captured on NEXT tick
-                            entryDigit: null,
-                            payoutRate: 0.95 // Default fallback
-                        });
-                        console.log(`[LocalTick] Contrato ${msg.buy.buy_id} registrado para análise local.`);
-                    }
-                }
+                // Step 2: Request Proposal
+                this.ws.send(JSON.stringify(proposalParams));
+            },
         executeVirtualTrade(overrideContractType = null) {
             // Check context
             const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
