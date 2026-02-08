@@ -1019,9 +1019,8 @@
                                             <p class="text-xs text-gray-500 pl-8 leading-relaxed">{{ filter.desc }}</p>
                                         </div>
                                     </div>
-                                </div>
-                        </div>
-                        <div v-else-if="filterStep === 2">
+                            </div>
+                        </div><div v-else-if="filterStep === 2">
                             <h3 class="text-lg font-bold text-white mb-4">Configurar Filtros</h3>
                             
                             <!-- Config Mode Tabs -->
@@ -1527,10 +1526,10 @@
                                 <i class="fa-solid fa-circle-check"></i>
                                 Salvar Filtros Selecionados
                             </button>
-                        </div>
                     </div>
                 </div>
             </div>
+        </div>
         </Teleport>
 
         <!-- Pause Strategy Modal -->
@@ -3221,7 +3220,7 @@ export default {
         checkLocalTicks(price, digit) {
             if (this.localPendingContracts.size === 0) return;
 
-            this.localPendingContracts.forEach((contract, buyId) => {
+            this.localPendingContracts.forEach((contract) => {
                 if (!contract.active) return;
 
                 // 1. Capture Entry Tick (First tick AFTER buy)
@@ -3667,6 +3666,7 @@ export default {
             if (msg.msg_type === 'tick' && msg.tick) {
                 this.tickCount++;
                 const price = msg.tick.quote;
+                const lastDigit = parseInt(price.toString().slice(-1));
                 this.lastTickPrice = price;
                 
                 if (msg.subscription) {
