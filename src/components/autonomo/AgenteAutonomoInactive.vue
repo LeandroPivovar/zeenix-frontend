@@ -377,12 +377,12 @@
 									class="agent-selection-card"
 								:class="{ 
 									'active': selectedAgent === agent.id,
-									'disabled-card': agent.id === 'falcon'
+									'disabled-card': agent.id === 'falcon' && !isAdmin
 								}"
 								@click="selectAgent(agent.id)"
 							>
-								<!-- Overlay para Agente em Desenvolvimento (Falcon) -->
-								<div v-if="agent.id === 'falcon'" class="falcon-overlay">
+								<!-- Overlay para Agente em Desenvolvimento (Falcon) - Apenas se não for admin -->
+								<div v-if="agent.id === 'falcon' && !isAdmin" class="falcon-overlay">
 									<div class="overlay-badge">
 										<i class="fas fa-hammer mr-2"></i>
 										<span>EM BREVE</span>
@@ -640,6 +640,36 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 				console.error('[AgenteAutonomoInactive] Erro ao carregar configuração salva:', error);
 			}
 		},
+        // *** NOVA COMPUTED PROPERTY ***
+        get isAdmin() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+                
+                // Decodificar JWT token
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                
+                // Verificar se o usuário tem role de admin
+                const role = payload.role || payload.roles || payload.userRole || payload.user_role;
+                const isAdminFlag = payload.isAdmin || payload.is_admin;
+                
+                // Verificar se role contém 'admin' ou se isAdmin é true
+                if (isAdminFlag === true || isAdminFlag === 'true') {
+                    return true;
+                }
+                
+                if (role) {
+                    const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
+                    const result = roleStr.includes('admin') || roleStr === 'admin';
+                    return result;
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('[AgenteAutonomoInactive] Erro ao verificar se usuário é admin:', error);
+                return false;
+            }
+        },
 		handleToggleChange(event) {
 			if (event.target.checked) {
 				// Quando o toggle é ativado, aguarda delay antes de iniciar o agente
@@ -727,8 +757,8 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 		},
 
 		selectAgent(agentId) {
-			// ✅ FIX: Block Falcon selection and show dev modal
-			if (agentId === 'falcon') {
+			// ✅ FIX: Block Falcon selection and show dev modal ONLY if not admin
+			if (agentId === 'falcon' && !this.isAdmin) {
 				this.showFalconDevModal = true;
 				this.closeAgentSelectorModal();
                 return;
