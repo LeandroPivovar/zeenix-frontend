@@ -98,8 +98,6 @@
                     @clear-logs="monitoringLogs = []"
                     @update:validator="validator = $event"
                 />
-
-                <!-- CONFIGURATION FORM -->
                 <div v-else class="strategy-creator-form-container px-4">
                      <!-- Tabs -->
                      <div class="flex items-center gap-4 mb-6 border-b border-[#333] pb-4">
@@ -1022,10 +1020,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <!-- Button Removed -->
                         </div>
-
                         <div v-else-if="filterStep === 2">
                             <h3 class="text-lg font-bold text-white mb-4">Configurar Filtros</h3>
                             
@@ -4130,7 +4125,12 @@ export default {
 
                 // Step 2: Request Proposal
                 this.ws.send(JSON.stringify(proposalParams));
-            },
+            } catch (error) {
+                console.error('[StrategyCreator] Erro em executeRealTrade:', error);
+                this.isNegotiating = false;
+                this.addLog('❌ Erro interno ao processar operação.', 'error');
+            }
+        },
         executeVirtualTrade(overrideContractType = null) {
             // Check context
             const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
@@ -4371,7 +4371,8 @@ export default {
 
                 this.activeContracts.delete(id);
                 this.checkLimits();
-            },
+            }
+        },
         simulateLog() {
             const logs = [
                 'Analisando tendência...',
