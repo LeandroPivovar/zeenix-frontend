@@ -1763,6 +1763,7 @@ export default {
             digitHistory: [], // Buffer for Digit Density/Sequence/Majority
             isAuthorized: false,
             activeContracts: new Map(), // To track multiple overlapping trades if any
+            localPendingContracts: new Map(), // For local tick result calculation
 
             balance: 5889.28, // Mock implementation or fetch from store
             isMonitoring: false,
@@ -3221,6 +3222,110 @@ export default {
             // Iniciar Monitoramento de Ticks Real-time
             this.initTickConnection();
         },
+        // ⚡ FAST RESULT SYSTEM ⚡
+        checkLocalTicks(price, digit) {
+            if (this.localPendingContracts.size === 0) return;
+
+            this.localPendingContracts.forEach((contract, buyId) => {
+                if (!contract.active) return;
+
+                // 1. Capture Entry Tick (First tick AFTER buy)
+                if (contract.entryTick === null) {
+                    contract.entryTick = price;
+                    contract.entryDigit = digit;
+                    // console.log(`[LocalTick] Contrato ${buyId}: Entrada capturada ${price} (Dígito ${digit})`);
+                    return; // Wait for NEXT tick to close (for 1-tick duration)
+                }
+
+                // 2. Capture Exit Tick & Calculate Result
+                // Note: This logic assumes 1-tick duration. 
+                // IF duration > 1, we need to count ticks.
+                // Current requirement implies 1-tick (Fast Result).
+                
+                let win = false;
+                const prediction = contract.prediction; // Barrier/Digit
+                const exitDigit = digit;
+                
+                switch (contract.type) {
+                    case 'DIGITUNDER': win = exitDigit < prediction; break;
+                    case 'DIGITOVER': win = exitDigit > prediction; break;
+                    case 'DIGITMATCH': win = exitDigit === prediction; break;
+                    case 'DIGITDIFF': win = exitDigit !== prediction; break;
+                    case 'DIGITEVEN': win = exitDigit % 2 === 0; break;
+                    case 'DIGITODD': win = exitDigit % 2 !== 0; break;
+                    // Add Rise/Fall if needed, comparing price vs contract.entryTick
+                    case 'CALL': win = price > contract.entryTick; break;
+                    case 'PUT': win = price < contract.entryTick; break;
+                     // Safe fallback
+                    default: 
+                        console.warn(`[LocalTick] Tipo de contrato ${contract.type} não suportado para cálculo local.`);
+                        return;
+                }
+
+                // 3. Finish Trade
+                this.finishLocalTrade(contract, win, price, exitDigit);
+            });
+        },
+
+        finishLocalTrade(contract, win, exitPrice, exitDigit) {
+            const stake = contract.stake;
+            const payoutRate = contract.payoutRate || 0.95;
+            const profit = win ? (stake * payoutRate) : -stake;
+            
+            // Log Result
+            this.addLog(
+                `⚡ RESULTADO RÁPIDO: ${win ? 'WIN' : 'LOSS'} (Dígito: ${exitDigit})`, 
+                win ? 'success' : 'error'
+            );
+
+            // Update Stats
+            if (win) this.monitoringStats.wins++;
+            else this.monitoringStats.losses++;
+
+            this.monitoringStats.profit += profit;
+            
+            // Trigger Risk Manager
+            RiskManager.processTradeResult(
+                this.sessionState, 
+                win, 
+                profit, 
+                stake, 
+                contract.analysisType, // 'PRINCIPAL' or 'RECUPERACAO'
+                this.recoveryConfig.lossesToActivate
+            );
+
+            // Mark as processed in Main Contract List to prevent double counting
+            // We need to find the contract in activeContracts if it exists there, 
+            // OR just rely on a set of "processed buy_ids"
+            // Since activeContracts is keyed by contract_id, and we have buy_id...
+            // We need to map them. 
+            // Better: We stored contractId in the localPendingContracts entry!
+            if (contract.contractId) {
+                // If it's already in activeContracts (API might be slow/fast), update it.
+                // If not, we might need to store "processed_contract_ids" in a Set.
+                const trade = this.activeContracts.get(contract.contractId);
+                if (trade) {
+                    trade.result = win ? 'WON' : 'LOST';
+                    trade.profit = profit;
+                    trade.fastResultApplied = true; // Flag for handleContractUpdate
+                } else {
+                    // Create a placeholder so when API sends update, we know to ignore it
+                    this.activeContracts.set(contract.contractId, {
+                        result: win ? 'WON' : 'LOST',
+                        profit: profit,
+                        fastResultApplied: true
+                    });
+                }
+            }
+
+            // Clean up
+            this.localPendingContracts.delete(contract.id);
+            this.isNegotiating = false; // Unlock early!
+            
+            // Check Limits/Pause
+            this.checkLimits();
+        },
+
         // WebSocket Tick Monitoring Methods
         async initTickConnection() {
             if (!this.form.market) {
@@ -3397,7 +3502,7 @@ export default {
                                 }
                             }
 
-                            // 2. Prepare for fast result calculation with the EXACT payout
+
                             this.pendingFastResult.payout = payout;
                             
                             // 🛑 FINAL SAFETY CHECK BEFORE BUY
@@ -3493,6 +3598,24 @@ export default {
                             
                             // Activate fast result calculation if it's 1-tick
                             // This allows immediate feedback on the NEXT tick
+                            // ⚡ REGISTER FOR LOCAL TICK RESULT
+                            if (this.pendingFastResult) {
+                                 this.localPendingContracts.set(msg.buy.buy_id, {
+                                    id: msg.buy.buy_id,
+                                    contractId: msg.buy.contract_id,
+                                    type: this.pendingFastResult.contractType, 
+                                    prediction: parseInt(this.pendingFastResult.barrier), 
+                                    barrier: this.pendingFastResult.barrier,
+                                    stake: this.pendingFastResult.stake,
+                                    analysisType: this.pendingFastResult.analysisType,
+                                    market: this.pendingFastResult.market || this.form.market,
+                                    active: true,
+                                    entryTick: null, // To be captured on NEXT tick
+                                    entryDigit: null,
+                                    payoutRate: this.sessionState.tempExplicitPayout || 0.95
+                                });
+                                console.log(`[LocalTick] Contrato ${msg.buy.buy_id} registrado para análise local.`);
+                            }
                             if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
                                 this.pendingFastResult.contractId = msg.buy.contract_id;
                                 this.pendingFastResult.payout = payout; // Store real payout
@@ -3503,6 +3626,58 @@ export default {
                             // CRITICAL: isNegotiating is NOT reset here. 
                             // It will be reset in handleContractUpdate or handleTickMessage (Fast Result)
                             this.subscribeToContract(msg.buy.contract_id);
+                        }
+                    }
+
+                    if (msg.msg_type === 'buy') {
+                         if (msg.error) {
+                            this.addLog(`❌ Erro na compra: ${msg.error.message}`, 'error');
+                            this.isNegotiating = false;
+                         } else {
+                            this.addLog(`🛒 Ordem executada: ID ${msg.buy.buy_id}`, 'info');
+                            this.subscribeToContract(msg.buy.contract_id);
+                            
+                            // ⚡ REGISTER FOR LOCAL TICK RESULT
+                            if (this.pendingFastResult) {
+                                 this.localPendingContracts.set(msg.buy.buy_id, {
+                                    id: msg.buy.buy_id,
+                                    contractId: msg.buy.contract_id,
+                                    type: this.pendingFastResult.contractType, 
+                                    prediction: parseInt(this.pendingFastResult.barrier), 
+                                    barrier: this.pendingFastResult.barrier,
+                                    stake: this.pendingFastResult.stake,
+                                    analysisType: this.pendingFastResult.analysisType,
+                                    market: this.pendingFastResult.market || this.form.market,
+                                    active: true,
+                                    entryTick: null, // To be captured on NEXT tick
+                                    entryDigit: null,
+                                    payoutRate: this.sessionState.tempExplicitPayout || 0.95
+                                });
+                                console.log(`[LocalTick] Contrato ${msg.buy.buy_id} registrado para análise local.`);
+                            }
+                         }
+                    }
+
+                    if (msg.msg_type === 'tick') {
+                        this.tickCount++;
+                        const price = msg.tick.quote;
+                        const digit = parseInt(price.toString().slice(-1));
+                        
+                        this.lastTickPrice = price;
+                        
+                        // Update Buffers
+                        this.tickHistory.push(price);
+                        if (this.tickHistory.length > 200) this.tickHistory.shift();
+                        
+                        this.digitHistory.push(digit);
+                        if (this.digitHistory.length > 200) this.digitHistory.shift();
+    
+                        // ⚡ FAST RESULT: Check Local Ticks
+                        this.checkLocalTicks(price, digit);
+    
+                        // Strategy Analysis
+                        if (this.isMonitoring && !this.isNegotiating && !this.sessionState.isStopped) {
+                             this.processTickStrategy(price, digit);
                         }
                     }
 
@@ -3578,67 +3753,10 @@ export default {
                     }
                 }
 
-                // --- Fast Result Calculation ---
-                // Process result on the VERY NEXT tick for 1-tick contracts
-                if (this.pendingFastResult && this.pendingFastResult.active) {
-                    const lastDigit = parseInt(price.toString().slice(-1));
-                    const { contractId, barrier, contractType, stake } = this.pendingFastResult;
-                    
-                    let win = false;
-                    if (contractType === 'DIGITUNDER') win = lastDigit < barrier;
-                    else if (contractType === 'DIGITOVER') win = lastDigit > barrier;
-                    else if (contractType === 'DIGITMATCH') win = lastDigit === barrier;
-                    else if (contractType === 'DIGITDIFF') win = lastDigit !== barrier;
-                    else if (contractType === 'DIGITEVEN') win = lastDigit % 2 === 0;
-                    else if (contractType === 'DIGITODD') win = lastDigit % 2 !== 0;
+                // --- Fast Result Calculation (Local) ---
+                const lastDigit = parseInt(price.toString().slice(-1));
+                this.checkLocalTicks(price, lastDigit);
 
-                    this.addLog(`⚡ RESULTADO RÁPIDO: ${win ? 'WIN' : 'LOSS'} (Dígito: ${lastDigit})`, win ? 'success' : 'error');
-                    
-                    // Pre-update trade in activeContracts if present
-                    const trade = this.activeContracts.get(contractId);
-                    if (trade) {
-                        trade.result = win ? 'WON' : 'LOST';
-                        trade.fastResultApplied = true;
-                    }
-
-                    // Update stats immediately to allow next trade
-                    const realPayout = this.pendingFastResult.payout || (stake * (this.sessionState.analysisType === 'RECUPERACAO' ? this.sessionState.lastPayoutRecovery : this.sessionState.lastPayoutPrincipal) + stake);
-                    const estimatedProfit = win 
-                        ? (realPayout - stake)
-                        : -stake;
-
-                    if (win) this.monitoringStats.wins++;
-                    else this.monitoringStats.losses++;
-
-                    RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake, this.pendingFastResult.analysisType, this.recoveryConfig.lossesToActivate);
-                    
-                    // --- PAUSE CHECK (Fast Result) ---
-                    const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
-                    if (!win) {
-                         this.addLog(`🔍 DEBUG PAUSA (Fast): Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
-                    }
-                    const limit = this.recoveryConfig.pauseLosses || 6;
-                    if (!win && totalConsecutiveLosses >= limit) {
-                        const pauseTime = this.recoveryConfig.pauseTime || 2;
-                        const pauseDuration = pauseTime * 60 * 1000;
-                        this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA ESTRATÉGICA: Limite de ${totalConsecutiveLosses} perdas sequenciais atingido. Pausando por ${pauseTime} min.`, 'warning');
-                        // No logic to stop ticks, just block next
-                    }
-
-                    // CRITICAL: Release locks immediately
-                    this.pendingFastResult.active = false;
-                    this.isNegotiating = false; 
-                    
-                    // Sync legacy mode
-                    this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
-
-                    if (!win && this.sessionState.analysisType === 'RECUPERACAO' && this.sessionState.lossStreakRecovery === 1) {
-                         this.addLog('🔄 MODO RECUPERAÇÃO ATIVADO (RÁPIDO)...', 'warning');
-                    }
-
-                    this.checkLimits();
-                }
                 
                 // --- Real-time Analysis Integration ---
                 // Add to history buffers (limit to 100 for performance)
@@ -4077,14 +4195,71 @@ export default {
                     durationUnit: this.form.durationUnit
                 };
 
-                this.ws.send(JSON.stringify(proposalParams));
+                if (msg.tick) {
+                    this.tickCount++;
+                    const price = msg.tick.quote;
+                    const digit = parseInt(price.toString().slice(-1));
+                    
+                    this.lastTickPrice = price;
+                    
+                    // Update Buffers
+                    this.tickHistory.push(price);
+                    if (this.tickHistory.length > 200) this.tickHistory.shift();
+                    
+                    this.digitHistory.push(digit);
+                    if (this.digitHistory.length > 200) this.digitHistory.shift();
 
-            } catch (err) {
-                this.isNegotiating = false;
-                console.error('[StrategyCreator] Erro fatal em executeRealTrade:', err);
-                this.addLog(`❌ ERRO NO SISTEMA: ${err.message}`, 'error');
-            }
-        },
+                    // ⚡ FAST RESULT: Check Local Ticks
+                    this.checkLocalTicks(price, digit);
+
+                    // Strategy Analysis
+                    if (this.isMonitoring && !this.isNegotiating && !this.sessionState.isStopped) {
+                         this.processTickStrategy(price, digit);
+                    }
+                }
+
+                if (msg.authorize) {
+                    this.isAuthorized = true;
+                    this.addLog('Conectado e Autorizado.', 'success');
+                    // Re-subscribe if needed or just wait for user start
+                }
+
+                if (msg.proposal) {
+                     // ... existing proposal handling ...
+                     // If we are using valid buy flow, we might just use the echo_req to match
+                     if (this.isNegotiating) {
+                        const buyParams = {
+                            buy: msg.proposal.id,
+                            price: msg.proposal.ask_price
+                        };
+                        this.ws.send(JSON.stringify(buyParams));
+                     }
+                }
+
+                if (msg.buy) {
+                    this.addLog(`🛒 Ordem executada: ID ${msg.buy.buy_id}`, 'info');
+                    this.subscribeToContract(msg.buy.contract_id);
+                    
+                    // ⚡ REGISTER FOR LOCAL TICK RESULT
+                    // Use the context we saved in executeRealTrade (pendingFastResult)
+                    if (this.pendingFastResult) {
+                         this.localPendingContracts.set(msg.buy.buy_id, {
+                            id: msg.buy.buy_id,
+                            contractId: msg.buy.contract_id,
+                            type: this.pendingFastResult.contractType, 
+                            prediction: parseInt(this.pendingFastResult.barrier), 
+                            barrier: this.pendingFastResult.barrier,
+                            stake: this.pendingFastResult.stake,
+                            analysisType: this.pendingFastResult.analysisType,
+                            market: this.pendingFastResult.market || this.form.market,
+                            active: true,
+                            entryTick: null, // To be captured on NEXT tick
+                            entryDigit: null,
+                            payoutRate: 0.95 // Default fallback
+                        });
+                        console.log(`[LocalTick] Contrato ${msg.buy.buy_id} registrado para análise local.`);
+                    }
+                }
         executeVirtualTrade(overrideContractType = null) {
             // Check context
             const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
@@ -4325,12 +4500,7 @@ export default {
 
                 this.activeContracts.delete(id);
                 this.checkLimits();
-            }
-        },
-        simulateTrade() {
-            // Deprecated in favor of executeRealTrade, but kept for non-authorized testing if needed
-            this.executeRealTrade();
-        },
+            },
         simulateLog() {
             const logs = [
                 'Analisando tendência...',
