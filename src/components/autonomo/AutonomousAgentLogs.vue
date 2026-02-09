@@ -259,11 +259,11 @@ export default {
       } catch (e) { console.error('Log fetch error:', e); }
     },
     startLogPolling() {
-      // ✅ [PERFORMANCE] Desabilitado: Não carregar logs automaticamente para evitar lag
-      // Logs serão carregados apenas ao exportar
-      // this.stopLogPolling();
-      // this.fetchRealtimeLogs();
-      // this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(), 3000);
+      // ✅ [PERFORMANCE] Re-enabled auto-polling with display limit (500 items)
+      // Display limit is handled in formattedLogs computed property
+      this.stopLogPolling();
+      this.fetchRealtimeLogs();
+      this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(), 3000);
     },
     async clearLogs() {
       if (await confirm('Tem certeza que deseja limpar todos os logs?')) {

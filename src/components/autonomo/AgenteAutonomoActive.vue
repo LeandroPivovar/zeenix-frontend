@@ -101,9 +101,7 @@
 						</div>
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital Final</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-left"
-						:class="finalCapital >= initialCapital ? 'text-green-500' : 'text-red-500'"
-					>
+				<div class="text-2xl font-bold mb-1 tabular-nums text-left text-[#FAFAFA]">
 						{{ hideValues ? '••••' : (finalCapital >= 0 ? preferredCurrencyPrefix : '-' + preferredCurrencyPrefix) + formatPrice(Math.abs(finalCapital)) }}
 					</div>
 				</div>
