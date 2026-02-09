@@ -259,9 +259,11 @@ export default {
       } catch (e) { console.error('Log fetch error:', e); }
     },
     startLogPolling() {
-      this.stopLogPolling();
-      this.fetchRealtimeLogs();
-      this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(), 3000);
+      // ✅ [PERFORMANCE] Desabilitado: Não carregar logs automaticamente para evitar lag
+      // Logs serão carregados apenas ao exportar
+      // this.stopLogPolling();
+      // this.fetchRealtimeLogs();
+      // this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(), 3000);
     },
     async clearLogs() {
       if (await confirm('Tem certeza que deseja limpar todos os logs?')) {
@@ -272,6 +274,12 @@ export default {
     },
     async exportLogs() {
       try {
+        // ✅ Buscar logs frescos antes de exportar
+        await this.fetchRealtimeLogs();
+        
+        // Aguardar um pouco para garantir que os logs foram carregados
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Get data for filename
         const agenteName = this.agentName || 'AGENTE';
         const now = new Date();
