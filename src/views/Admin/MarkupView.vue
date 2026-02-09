@@ -14,181 +14,220 @@
 
             <main class="layout-content">
                 <div class="main-header header-markup">
-                <div class="main-header-left">
-                    <h1 style="font-size: 20px;">Markup - Comissões</h1>
-                    <p style="font-size: 14px;">
-                        Comissão de 3% sobre o payout de cada operação realizada
-                    </p>
-                </div>
-                <div class="main-header-right">
-                    <button class="btn pdf-btn" @click="exportReportToPDF"><img src="../../assets/icons/box-down.svg" alt="" width="20px"> Exportar Relatório</button>
-                </div>
-            </div>
-
-            <div class="main-content">
-                <!-- Summary Cards -->
-                <div class="summary-cards">
-                    <div class="card total">
-                        <h3>Saldo Total (Real)</h3>
-                        <p class="value">{{ formatCurrency(summaryCards.totalRealAmount) }}</p>
+                    <div class="main-header-left">
+                        <h1 class="header-title">Markup – Comissões</h1>
+                        <p class="header-subtitle">
+                            Comissão de 3% sobre o payout de cada operação realizada.
+                        </p>
                     </div>
-                    <div class="card count">
-                        <h3>Usuários com Saldo</h3>
-                        <p class="value">{{ summaryCards.usersWithMarkup }}</p>
+                    <div class="main-header-right">
+                        <button class="btn btn-outline-metrics"><img src="../../assets/icons/stats-green.svg" alt="" width="16px"> Análise de Métricas</button>
+                        <button class="btn btn-export" @click="exportReportToPDF"><img src="../../assets/icons/box-down.svg" alt="" width="18px"> Exportar Relatório</button>
                     </div>
                 </div>
 
-                <div class="filter-controls" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
-                    <div class="date-filter">
-                        <span>Data de início</span>
-                        <input type="date" v-model="filterStartDate">
-                    </div>
-                    <div class="date-filter">
-                        <span>Data final</span>
-                        <input type="date" v-model="filterEndDate">
-                    </div>
-                    
-                    <div class="filter-item">
-                        <span style="display: block; font-size: 12px; margin-bottom: 5px; color: #a0a0a0;">País</span>
-                        <select v-model="filterSelectedCountry" class="select-country" style="height: 40px;">
-                            <option value="">Todos</option>
-                            <option v-for="country in availableCountries" :key="country" :value="country">{{ country }}</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-search" @click="fetchData" style="height: 40px; margin-bottom: 0;">Buscar</button>
-                </div>
-
-                <!-- Cards de Resumo -->
-                <div class="summary-cards">
-                    <div class="summary-card">
-                        <div class="summary-card-title">Saldo Total (Real)</div>
-                        <div class="summary-card-value">{{ formatCurrency(totalRealAmountDisplayed) }}</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-card-title">Usuários com Saldo</div>
-                        <div class="summary-card-value">{{ displayedClients.length }}</div>
-                    </div>
-                    <div class="summary-card highlight">
-                        <div class="summary-card-title">Comissão Hoje</div>
-                        <div class="summary-card-value">{{ formatCurrency(todayCommission) }}</div>
-                    </div>
-                </div>
-
-            <!-- Barra de Progresso -->
-            <div v-if="isLoading" class="mb-4">
-                <div class="flex justify-between mb-1">
-                    <span class="text-sm font-medium text-blue-700 dark:text-blue-500">Carregando dados...</span>
-                    <span class="text-sm font-medium text-blue-700 dark:text-blue-500">{{ loadingProgress }}%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                    <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" :style="{ width: loadingProgress + '%' }"></div>
-                </div>
-                <div class="text-xs text-center mt-1 text-gray-500" v-if="totalToLoad > 0">
-                    Processando {{ allUsers.length }} de {{ totalToLoad }} usuários
-                </div>
-            </div>
-
-            <!-- Tabela Desktop -->
-                <div class="table-container desktop-table" id="commission-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>País</th>
-                                <th>Login ID</th>
-                                <th>Saldo Real</th>
-                                <th>Comissão (3%)</th>
-                                <th>WhatsApp</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-if="isLoading">
-                                <td colspan="6" style="text-align: center; padding: 40px;">
-                                    Carregando dados...
-                                </td>
-                            </tr>
-                            <tr v-else-if="error">
-                                <td colspan="6" style="text-align: center; padding: 40px; color: #ff4444;">
-                                    Erro ao carregar dados: {{ error }}
-                                </td>
-                            </tr>
-                            <tr v-else-if="displayedClients.length === 0">
-                                <td colspan="6" style="text-align: center; padding: 40px;">
-                                    Nenhum dado encontrado para o período selecionado
-                                </td>
-                            </tr>
-                            <tr v-else v-for="client in displayedClients" :key="client.userId">
-                                <td>{{ client.name }}</td>
-                                <td>{{ client.country }}</td>
-                                <td>{{ client.email }}</td>
-                                <td>{{ formatCurrency(client.realAmount) }}</td>
-                                <td class="commission-value">{{ formatCurrency(client.commission) }}</td>
-                                <td>
-                                    <a v-if="client.whatsapp || client.phone || client.phoneNumber" 
-                                       :href="`https://wa.me/${(client.whatsapp || client.phone || client.phoneNumber).replace(/\D/g, '')}?text=${encodeURIComponent(`Olá, ${client.name.split(' ')[0]}, como vai?`)}`" 
-                                       target="_blank" 
-                                       class="whatsapp-btn">
-                                        <i class="fab fa-whatsapp"></i> WhatsApp
-                                    </a>
-                                    <span v-else class="whatsapp-btn disabled">
-                                        <i class="fab fa-whatsapp"></i> -
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Cards Mobile -->
-                <div class="mobile-cards-container">
-                    <div v-if="isLoading" class="mobile-card empty-state">
-                        <p>Carregando dados...</p>
-                    </div>
-                    <div v-else-if="error" class="mobile-card empty-state error">
-                        <p>Erro ao carregar dados: {{ error }}</p>
-                    </div>
-                    <div v-else-if="displayedClients.length === 0" class="mobile-card empty-state">
-                        <p>Nenhum dado encontrado para o período selecionado</p>
-                    </div>
-                    <div v-else v-for="client in displayedClients" :key="client.userId" class="mobile-card">
-                        <div class="card-header">
-                            <h3 class="card-name">{{ client.name }}</h3>
+                <div class="main-content">
+                    <!-- Expanded Filters -->
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <label><i class="far fa-calendar-alt"></i> Data de Início</label>
+                            <input type="date" v-model="filterStartDate">
                         </div>
-                        <div class="card-body">
-                            <div class="card-row">
-                                <span class="card-label">País:</span>
-                                <span class="card-value">{{ client.country }}</span>
-                            </div>
-                            <div class="card-row">
-                                <span class="card-label">Login ID:</span>
-                                <span class="card-value">{{ client.email }}</span>
-                            </div>
-                            <div class="card-row">
-                                <span class="card-label">Saldo Real:</span>
-                                <span class="card-value">{{ formatCurrency(client.realAmount) }}</span>
-                            </div>
-                            <div class="card-row">
-                                <span class="card-label">Comissão:</span>
-                                <span class="card-value">{{ formatCurrency(client.commission) }}</span>
-                            </div>
-                            <div class="card-row">
-                                <span class="card-label">WhatsApp:</span>
-                                <span class="card-value">
-                                    <a v-if="client.whatsapp || client.phone || client.phoneNumber" 
-                                       :href="`https://wa.me/${(client.whatsapp || client.phone || client.phoneNumber).replace(/\D/g, '')}?text=${encodeURIComponent(`Olá, ${client.name.split(' ')[0]}, como vai?`)}`" 
-                                       target="_blank" 
-                                       class="whatsapp-btn">
-                                        <i class="fab fa-whatsapp"></i> WhatsApp
-                                    </a>
-                                    <span v-else class="whatsapp-btn disabled">
-                                        <i class="fab fa-whatsapp"></i> -
-                                    </span>
-                                </span>
+                        <div class="filter-group">
+                            <label><i class="far fa-calendar-alt"></i> Data Final</label>
+                            <input type="date" v-model="filterEndDate">
+                        </div>
+                        <div class="filter-group">
+                            <label><i class="fas fa-globe"></i> País</label>
+                            <select v-model="filterSelectedCountry">
+                                <option value="">Todos</option>
+                                <option v-for="country in availableCountries" :key="country" :value="country">{{ country }}</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label><i class="fas fa-bullhorn"></i> Origem do Usuário</label>
+                            <select v-model="filterUserOrigin">
+                                <option value="">Todas Campanhas</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label><i class="fas fa-wallet"></i> Faixa de Depósito</label>
+                            <div class="select-wrapper">
+                                <select v-model="filterDepositRange">
+                                    <option value="">Selecionar faixa</option>
+                                </select>
                             </div>
                         </div>
+                        <button class="btn btn-search" @click="fetchData">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                    </div>
+
+                    <!-- 7 Summary Cards -->
+                    <div class="summary-cards-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Receita Total (Markup 3%)</span>
+                                <div class="stat-row">
+                                    <span class="stat-value">{{ formatCurrency(summaryCards.totalCommission) }}</span>
+                                    <span class="stat-percentage">+12.5%</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-info-circle stat-info-icon"></i>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Volume Total Operado</span>
+                                <div class="stat-row">
+                                    <span class="stat-value">{{ formatCurrency(summaryCards.totalVolume) }}</span>
+                                    <span class="stat-percentage">+8.3%</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-info-circle stat-info-icon"></i>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper">
+                                <i class="fas fa-piggy-bank"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Total Depositado</span>
+                                <div class="stat-row">
+                                    <span class="stat-value">{{ formatCurrency(summaryCards.totalDeposited) }}</span>
+                                    <span class="stat-percentage">+15.2%</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-info-circle stat-info-icon"></i>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Depósito Médio por Usuário</span>
+                                <div class="stat-row">
+                                    <span class="stat-value">{{ formatCurrency(summaryCards.avgDeposit) }}</span>
+                                    <span class="stat-percentage">+3.1%</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-info-circle stat-info-icon"></i>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Receita Média por Usuário</span>
+                                <div class="stat-row">
+                                    <span class="stat-value">{{ formatCurrency(summaryCards.avgRevenue) }}</span>
+                                    <span class="stat-percentage">+5.8%</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-info-circle stat-info-icon"></i>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Usuários com Saldo</span>
+                                <div class="stat-row">
+                                    <span class="stat-value">{{ summaryCards.usersWithBalance }}</span>
+                                    <span class="stat-percentage">+24</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-info-circle stat-info-icon"></i>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon-wrapper">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">LTV Médio por Lead (Markup)</span>
+                                <div class="stat-row">
+                                    <span class="stat-value">{{ formatCurrency(summaryCards.ltvAvg) }}</span>
+                                    <span class="stat-percentage">+18.2%</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-info-circle stat-info-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Table Section -->
+                    <div class="table-section mt-8">
+                        <div class="table-header mb-4">
+                            <h2 class="table-title">Usuários por Receita</h2>
+                            <p class="table-subtitle">Análise detalhada de receita por usuário</p>
+                        </div>
+
+                        <div class="table-container desktop-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>País</th>
+                                        <th>Login ID</th>
+                                        <th>Total Depositado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
+                                        <th>Volume Operado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
+                                        <th>Markup Gerado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
+                                        <th>Markup Médio/Dia</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Contato</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="isLoading">
+                                        <td colspan="9" class="text-center py-12">Carregando dados...</td>
+                                    </tr>
+                                    <tr v-else-if="displayedClients.length === 0">
+                                        <td colspan="9" class="text-center py-12">Nenhum dado encontrado</td>
+                                    </tr>
+                                    <tr v-else v-for="client in displayedClients" :key="client.userId">
+                                        <td class="client-name">{{ client.name }}</td>
+                                        <td>
+                                            <div class="country-cell">
+                                                <span class="country-flag">{{ getCountryFlag(client.country) }}</span>
+                                                <span class="country-name">{{ client.country }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="login-id">{{ client.email }}</td>
+                                        <td class="font-medium text-white">{{ formatCurrency(client.totalDeposited || 0) }}</td>
+                                        <td class="font-medium text-white">{{ formatCurrency(client.volumeOperado || 0) }}</td>
+                                        <td class="markup-value">{{ formatCurrency(client.commission) }}</td>
+                                        <td class="font-medium text-white">{{ formatCurrency(client.markupAvgPerDay || 0) }}</td>
+                                        <td>
+                                            <span class="status-pill premium">
+                                                <i class="fas fa-leaf mr-1 text-[10px]"></i> Alto Valor
+                                            </span>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <a v-if="client.whatsapp || client.phone || client.phoneNumber" 
+                                               :href="`https://wa.me/${(client.whatsapp || client.phone || client.phoneNumber).replace(/\D/g, '')}`" 
+                                               target="_blank" 
+                                               class="whatsapp-action-btn">
+                                                <i class="fab fa-whatsapp"></i> WhatsApp
+                                            </a>
+                                            <div v-else class="whatsapp-action-btn disabled">
+                                                <i class="fab fa-whatsapp"></i> WhatsApp
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
             </main>
         </div>
 
@@ -232,13 +271,14 @@ export default {
             filterStartDate: startOfYear,
             filterEndDate: currentDate,
             filterSelectedCountry: '',
+            filterUserOrigin: '',
+            filterDepositRange: '',
             showSettingsModal: false,
             displayedClients: [],
             allUsers: [],
             isLoading: false,
             error: null,
-            todayCommission: 0, // Novo campo para comissão de hoje
-            // Dados agregados por período
+            todayCommission: 0, 
             periodData: {
                 today: 0,
                 monthly: 0,
@@ -444,6 +484,19 @@ export default {
             
             this.displayedClients = filtered;
         },
+
+        getCountryFlag(countryName) {
+            const flags = {
+                'Brazil': '🇧🇷',
+                'Brasil': '🇧🇷',
+                'UK': '🇬🇧',
+                'USA': '🇺🇸',
+                'Portugal': '🇵🇹',
+                'Angola': '🇦🇴',
+                'Mozambique': '🇲🇿',
+            };
+            return flags[countryName] || '🏳️';
+        },
         
         exportReportToPDF() {
             if (this.displayedClients.length === 0) {
@@ -492,7 +545,6 @@ export default {
     computed: {
         
         totalCommissionDisplayed() {
-            // Agora "commission" vem calculado do backend (markup 3%)
             return this.displayedClients.reduce((sum, client) => sum + (Number(client.commission) || 0), 0);
         },
         
@@ -500,690 +552,405 @@ export default {
             return this.displayedClients.reduce((sum, client) => sum + (Number(client.realAmount) || 0), 0);
         },
 
-        totalTransactionsDisplayed() {
-            // This value is no longer directly available or relevant in the new context
-            return 0;
+        summaryCards() {
+            const totalDeposited = this.displayedClients.reduce((sum, c) => sum + (c.totalDeposited || 0), 0);
+            const totalVolume = this.displayedClients.reduce((sum, c) => sum + (c.volumeOperado || 0), 0);
+            const totalCommission = this.totalCommissionDisplayed;
+            const userCount = this.displayedClients.length || 1;
+
+            return {
+                totalCommission,
+                totalVolume,
+                totalDeposited,
+                avgDeposit: totalDeposited / userCount,
+                avgRevenue: totalCommission / userCount,
+                usersWithBalance: this.displayedClients.length,
+                ltvAvg: totalCommission / userCount, 
+            };
         },
 
         availableCountries() {
             const countries = this.allUsers.map(user => user.country);
-            return [...new Set(countries)].sort();
-        },
-
-        summaryCards() {
-            return {
-                totalRealAmount: this.totalRealAmountDisplayed,
-                usersWithMarkup: this.displayedClients.length,
-            };
+            return [...new Set(countries)].filter(Boolean).sort();
         },
     },
 };
 </script>
 
 <style scoped>
-/* Estilos não alterados */
-/* Layout Base - Padrão Dashboard */
+/* Base Colors & Variables */
+:root {
+    --bg-main: #060606;
+    --bg-card: #121212;
+    --primary-green: #00FF88;
+    --primary-green-dim: rgba(0, 255, 136, 0.1);
+    --border-dim: #222222;
+    --text-muted: #888888;
+    --text-main: #FFFFFF;
+}
+
 .dashboard-layout {
     display: flex;
     min-height: 100vh;
-    background-color: #0B0B0B;
-    color: #fff;
-    font-family: 'Roboto', sans-serif;
-}
-
-.sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    background-color: #060606;
+    color: #FFFFFF;
+    font-family: 'Inter', 'Poppins', sans-serif;
 }
 
 .dashboard-content-wrapper {
     flex-grow: 1;
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
-}
-
-.dashboard-content-wrapper.sidebar-collapsed {
 }
 
 .layout-content {
     flex-grow: 1;
-    padding: 20px;
-    padding-top: 50px;
-    padding-bottom: 40px;
-    background-color: #0B0B0B;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    overflow-x: hidden;
-    overflow-y: auto;
-    box-sizing: border-box;
+    padding: 32px 40px;
 }
 
-
-/* Responsividade */
-@media (max-width: 1024px) {
-    .layout-content {
-        padding-top: 70px;
-    }
-}
-
+/* Header */
 .main-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin: 30px 0;
-    opacity: 0;
-    animation: fadeIn 0.5s ease-out forwards;
+    align-items: flex-start;
+    margin-bottom: 32px;
 }
 
-.main-header-left {
-    width: 90%;
-    text-align: left;
-    
+.header-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
 }
 
-.main-content {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow-x: hidden;
-}
-
-.main-header{
-    width: 100%;
-}
-
-.main-header h1 {
-    font-size: 30px;
+.header-subtitle {
+    font-size: 14px;
+    color: #888888;
     margin: 0;
 }
 
-.main-header p {
-    font-size: 14px;
-    color: #999;
-    margin: 5px 0 0 0;
+.main-header-right {
+    display: flex;
+    gap: 12px;
 }
 
 .btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
-    font-weight: bold;
+    transition: all 0.2s;
+    border: none;
 }
 
-.btn-primary {
-    background-color: #00b862; /* Verde */
-    color: #fff;
+.btn-outline-metrics {
+    background: transparent;
+    border: 1px solid #00FF88;
+    color: #00FF88;
 }
 
-/* Novos Cards de Resumo */
-.summary-cards {
+.btn-outline-metrics:hover {
+    background: rgba(0, 255, 136, 0.1);
+}
+
+.btn-export {
+    background: #00FF88;
+    color: #000;
+}
+
+.btn-export:hover {
+    background: #00e077;
+    transform: translateY(-1px);
+}
+
+/* Filters */
+.filter-controls {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-    margin-bottom: 30px;
-    width: 100%;
+    gap: 16px;
+    background: #0e0e0e;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #222222;
+    margin-bottom: 32px;
+    align-items: flex-end;
 }
 
-.summary-card {
-    background-color: #1E1E1E;
-    border-radius: 12px;
-    padding: 24px;
-    flex: 1;
-    min-width: 250px;
-    border: 1px solid #333;
+.filter-group {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    transition: transform 0.2s, border-color 0.2s;
+    gap: 8px;
+    min-width: 160px;
 }
 
-.summary-card:hover {
-    transform: translateY(-2px);
+.filter-group label {
+    font-size: 11px;
+    color: #555;
+    font-weight: 600;
+    text-transform: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-group label i {
+    font-size: 12px;
+}
+
+.filter-group input, .filter-group select {
+    background: #181818;
+    border: 1px solid #2a2a2a;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.filter-group input:focus, .filter-group select:focus {
     border-color: #444;
 }
 
-.summary-card.highlight {
-    border-left: 4px solid #00b862;
-    background: linear-gradient(145deg, #1E1E1E, #222);
+.btn-search {
+    background: #00FF88;
+    color: #000;
+    padding: 10px 24px;
+    height: 42px;
+    border-radius: 8px;
 }
 
-.summary-card-title {
-    font-size: 14px;
-    color: #a0a0a0;
-    margin-bottom: 8px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.summary-card-value {
-    font-size: 28px;
-    font-weight: bold;
-    color: #ffffff;
-}
-
-@media (max-width: 768px) {
-    .summary-cards {
-        flex-direction: column;
-    }
-    .summary-card {
-        width: 100%;
-    }
-}
-
-/* Cards de Resumo */
-.cards-diary {
+/* Summary Cards Grid */
+.summary-cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px 15px;
-    row-gap: 10px;
-    margin-bottom: 30px;
-    width: 100%;
-    box-sizing: border-box;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
 }
 
-.card {
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
+.stat-card {
+    background: #121212;
+    border: 1px solid #222222;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.stat-card:hover {
+    border-color: #333;
+    transform: translateY(-2px);
+}
+
+.stat-icon-wrapper {
+    width: 32px;
+    height: 32px;
+    background: rgba(0, 255, 136, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.stat-icon-wrapper i {
+    color: #00FF88;
+    font-size: 14px;
+}
+
+.stat-info {
     display: flex;
     flex-direction: column;
 }
 
-.card {
-    background-color: #1e1e1e;
-    padding: 20px;
-    min-height: 100px;
-    border-radius: 8px;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.6s ease-out forwards;
+.stat-label {
+    font-size: 12px;
+    color: #888888;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.stat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.stat-percentage {
+    font-size: 10px;
+    background: rgba(0, 255, 136, 0.1);
+    color: #00FF88;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.stat-info-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 12px;
+    color: #333;
+}
+
+/* Table Section */
+.table-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+}
+
+.table-subtitle {
+    font-size: 13px;
+    color: #888888;
     margin: 0;
 }
 
-/* Delays escalonados para cada card */
-.card:nth-child(1) { animation-delay: 0.1s; }
-.card:nth-child(2) { animation-delay: 0.2s; }
-.card:nth-child(3) { animation-delay: 0.3s; }
-.card:nth-child(4) { animation-delay: 0.4s; }
-.card:nth-child(5) { animation-delay: 0.5s; }
-
-.card h2 {
-    font-size: 14px;
-    color: #cecccc;
-}
-
-.card p strong {
-    font-size: 22px;
-    color: #00ff88; 
-    display: block;
-    font-weight: 500;
-    text-align: left;
-    margin-top: 10px;
-}
-
-/* Filtros */
-.filter-controls {
-    display: flex;
-    gap: 15px;
-    align-items: flex-end;
-    margin-bottom: 20px;
-    opacity: 0;
-    animation: fadeIn 0.6s ease-out forwards;
-    animation-delay: 0.6s;
-    flex-wrap: wrap;
-}
-
-.date-filter {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.date-filter span {
-    display: block;
-    text-align: left;
-    font-size: 13px;
-    color: #afafaf;
-    margin-bottom: 0;
-}
-
-.date-filter input, .select-country {
-    background-color: #1e1e1e;
-    color: #fff;
-    border: 1px solid #333;
-    padding: 8px;
-    border-radius: 4px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.date-filter-wrapper {
-    display: flex;
-    gap: 15px;
-    align-items: flex-end;
-    flex-wrap: nowrap;
-}
-
-.btn-search {
-    background-color: #00b862;
-    color: #fff;
-}
-
-.summary-info p{
-    border-radius: 4px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    color: #7e7d7d;
-    text-align: left;
-    font-weight: 500;
-}
-
-/* Tabela Desktop */
 .table-container {
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: 800px;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.6s ease-out forwards;
-    animation-delay: 0.7s;
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
 }
 
 table {
     width: 100%;
-    border-collapse: collapse;
-    background-color: #1e1e1e;
-    border-radius: 8px;
-    overflow: hidden;
+    border-collapse: separate;
+    border-spacing: 0 8px;
 }
 
-th, td {
-    padding: 12px 15px;
+th {
+    padding: 12px 16px;
     text-align: left;
-    border-bottom: 1px solid #333;
-    
+    color: #444;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: none;
+    border-bottom: 1px solid #111;
 }
 
-thead th {
-    background-color: #252525;
-    color: #ddd;
-    font-weight: 500;
-    text-transform: uppercase;
-    font-size: 12px;
-    font-weight: 600;
+td {
+    padding: 16px;
+    background: #0d0d0d;
+    vertical-align: middle;
 }
 
-tbody tr {
-    color: rgb(182, 182, 182);
-    font-weight: 500;
+tr td:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
 }
 
-tbody tr:hover {
-    background-color: #2a2a2a;
+tr td:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
-.commission-value {
-    color: #00b862; 
-    font-weight: bold;
-}
-
-.whatsapp-btn {
-    display: inline-flex;
+.country-cell {
+    display: flex;
     align-items: center;
     gap: 8px;
-    background-color: #25D366; /* WhatsApp Green */
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
-    transition: background-color 0.2s;
-    border: none;
-    cursor: pointer;
 }
 
-.whatsapp-btn:hover {
-    background-color: #128C7E;
-}
-
-.whatsapp-btn i {
+.country-flag {
     font-size: 16px;
 }
 
-.whatsapp-btn.disabled {
-    background-color: #333;
-    color: #666;
-    cursor: not-allowed;
-    opacity: 0.7;
+.country-name {
+    color: #aaa;
+    font-size: 13px;
 }
 
-/* Cards Mobile */
-.mobile-cards-container {
-    display: none;
-    gap: 10px;
-    flex-direction: column;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.6s ease-out forwards;
-    animation-delay: 0.7s;
-    width: 100%;
-    padding-bottom: 20px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-height: 800px;
-    align-items: flex-start;
+.markup-value {
+    color: #00FF88;
+    font-weight: 700;
 }
 
-.mobile-card {
-    background-color: #1e1e1e;
-    border-radius: 8px;
-    padding: 20px;
-    border: 1px solid #333;
-    width: 100%;
-    box-sizing: border-box;
-    overflow: visible;
-    word-wrap: break-word;
-}
-
-.mobile-card.empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: rgb(182, 182, 182);
-}
-
-.mobile-card.empty-state.error {
-    color: #ff4444;
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #333;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.card-name {
-    font-size: 18px;
-    font-weight: 600;
-    color: #fff;
-    margin: 0;
-    flex: 1;
-    min-width: 0;
-    word-break: break-word;
-}
-
-.card-commission .commission-value {
-    font-size: 20px;
-    color: #00b862;
-    font-weight: bold;
-}
-
-.card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.card-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    min-height: 24px;
-}
-
-.card-label {
-    font-size: 14px;
-    color: #999;
-    font-weight: 500;
-    flex-shrink: 0;
-}
-
-.card-value {
-    font-size: 14px;
-    color: rgb(182, 182, 182);
-    text-align: right;
-    flex: 1;
-    margin-left: 10px;
-    word-break: break-word;
-    overflow-wrap: break-word;
-}
-
-.card-value .whatsapp-icon {
+.status-pill {
     display: inline-flex;
     align-items: center;
-    justify-content: flex-end;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
 }
 
-/* Responsividade - Esconder/Mostrar Tabela e Cards */
-@media (max-width: 768px) {
-    .desktop-table {
-        display: none !important;
-    }
-    
-    .mobile-cards-container {
-        display: flex !important;
-    }
-    
-    .layout-content {
-        padding: 15px;
-        padding-top: 70px;
-        padding-bottom: 30px;
-    }
-    
-    .main-content {
-        width: 100%;
-        overflow: visible;
-    }
-    
-    .mobile-card {
-        padding: 15px;
-    }
-    
-    .card-name {
-        font-size: 16px;
-    }
-    
-    .card-commission .commission-value {
-        font-size: 18px;
-    }
-    
-    .card-label,
-    .card-value {
-        font-size: 13px;
-    }
+.status-pill.premium {
+    background: rgba(0, 255, 136, 0.05);
+    color: #008855;
+    border: 1px solid rgba(0, 255, 136, 0.1);
 }
 
-@media (min-width: 769px) {
-    .desktop-table {
-        display: block !important;
-    }
-    
-    .mobile-cards-container {
-        display: none !important;
-    }
+.client-name {
+    font-weight: 600;
+    color: #fff;
+    font-size: 14px;
 }
 
-@media (min-width: 992px) {
-    .pdf-btn {
-        width: auto;
-        min-width: 190px;
-        margin-right: 20px;
-    }
+.login-id {
+    color: #666;
+    font-size: 13px;
 }
 
-@media (max-width: 992px) {
-	.layout {
-		margin-left: 0;
-		width: 100%;
-		box-sizing: border-box;
-	}
-	
-	.main-header {
-		flex-direction: column;
-		align-items: flex-start;
-	}
-	
-	.main-header-right {
-		margin-top: 15px; 
-		width: 100%;
-		text-align: right;
-	}
-	
-	.btn-primary {
-		width: auto;
-	}
-	
-	.filter-controls {
-		flex-direction: row; 
-		flex-wrap: wrap; 
-	}
-	
-	.date-filter-wrapper {
-		display: flex;
-		gap: 15px;
-		width: 100%;
-	}
-	
-	.date-filter {
-		flex: 1;
-		min-width: 0;
-	}
-	
-	.select-country {
-		width: calc(50% - 7.5px); 
-	}
-	
-	.btn-search {
-		width: 100%; 
-		margin-top: 10px;
-	}
-}
-
-.pdf-btn {
-    background-color: #00b862;
-    color: #000000;
-    width: 100%;
-    display: flex;
+.whatsapp-action-btn {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
+    gap: 8px;
+    background: #00FF88;
+    color: #000;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    transition: transform 0.2s;
 }
 
-/* Animações */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
+.whatsapp-action-btn:hover {
+    transform: scale(1.05);
+}
+
+.whatsapp-action-btn.disabled {
+    opacity: 0.2;
+    filter: grayscale(1);
+    cursor: not-allowed;
+}
+
+/* Responsividade */
+@media (max-width: 1400px) {
+    .summary-cards-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+}
+
+@media (max-width: 1024px) {
+    .summary-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .layout-content {
+        padding: 20px;
     }
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
+@media (max-width: 640px) {
+    .summary-cards-grid {
+        grid-template-columns: 1fr;
     }
-    to {
-        opacity: 1;
+    .main-header {
+        flex-direction: column;
+        gap: 16px;
     }
-}
-
-@media (max-width: 600px) {
-	.layout {
-		padding: 0 10px; 
-	}
-
-	.filter-controls {
-		flex-direction: column; 
-		align-items: stretch; 
-		gap: 10px;
-	}
-	
-	.date-filter-wrapper {
-		display: flex;
-		gap: 10px;
-		width: 100%;
-		flex-direction: row;
-	}
-
-	.date-filter {
-		flex: 1;
-		min-width: 0;
-		width: auto;
-	}
-	
-	.select-country,
-	.btn-search {
-		width: 100%; 
-		margin-top: 0 !important;
-	}
-	
-	.summary-info {
-		font-size: 13px; 
-	}
-	
-	.cards-diary {
-		grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-		width: 100%;
-		gap: 10px;
-	}
-	
-	.card {
-		width: 100%;
-		min-width: 0;
-	}
-	
-	.card p strong {
-		font-size: 18px;
-		text-align: left;
-		margin-top: 10px;
-	}
-}
-
-.background-glow {
-	position: fixed;
-	inset: 0;
-	background: radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.22), transparent 45%),
-		radial-gradient(circle at 80% 15%, rgba(56, 189, 248, 0.18), transparent 50%),
-		radial-gradient(circle at 50% 75%, rgba(16, 185, 129, 0.18), transparent 55%),
-		rgba(9, 10, 12, 0.95);
-	z-index: -2;
-	pointer-events: none;
-}
-
-.background-grid {
-	position: fixed;
-	inset: 0;
-	background-image: linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
-		linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
-	background-size: 48px 48px;
-	z-index: -1;
-	opacity: 0.6;
-	pointer-events: none;
-	animation: moveGrid 18s linear infinite;
-}
-
-@keyframes moveGrid {
-	0% {
-		background-position: 0 0, 0 0;
-	}
-	100% {
-		background-position: -48px -48px, -48px -48px;
-	}
+    .main-header-right {
+        width: 100%;
+        flex-direction: column;
+    }
 }
 </style>
