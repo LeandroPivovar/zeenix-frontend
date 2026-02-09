@@ -1475,10 +1475,13 @@ export default {
             return 'Buscando oportunidades';
         },
         formattedBalance() {
-            // ✅ MOSTRAR APENAS O DADO REAL (Saldo vindo da Corretora)
-            const currentBalance = this.accountBalanceProp || 0;
+            // ✅ Sum fictitious balance if active for display
+            let currentBalance = this.accountBalanceProp || 0;
+            if (this.isFictitiousBalanceActive && this.fictitiousBalance) {
+                currentBalance += Number(this.fictitiousBalance);
+            }
             
-            if (!this.accountBalanceProp) {
+            if (!this.accountBalanceProp && !this.isFictitiousBalanceActive) {
                 const isDemo = this.accountType === 'demo' || 
                               this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
                               (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
@@ -1509,9 +1512,15 @@ export default {
 
         // Profit percentage
         profitPercentage() {
-            if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return null;
+            // ✅ Use summed balance for ROI calculation
+            let totalBalance = this.accountBalanceProp || 0;
+            if (this.isFictitiousBalanceActive && this.fictitiousBalance) {
+                totalBalance += Number(this.fictitiousBalance);
+            }
+
+            if (totalBalance <= 0) return null;
             const profit = this.dailyStats.sessionProfitLoss || 0;
-            const percentage = (profit / this.accountBalanceProp) * 100;
+            const percentage = (profit / totalBalance) * 100;
             const sign = percentage >= 0 ? '+' : '';
             return `${sign}${percentage.toFixed(2)}%`;
         },

@@ -11,7 +11,7 @@
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
           <TopNavbar
             :is-sidebar-collapsed="isSidebarCollapsed"
-            :balance="balanceNumeric"
+            :balance="currentBalance?.balance || info?.balance"
             :account-type="accountType"
             :currency="tradeCurrency"
             :balances-by-currency-real="balancesByCurrencyReal"

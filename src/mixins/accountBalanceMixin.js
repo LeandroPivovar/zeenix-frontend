@@ -103,12 +103,13 @@ export default {
       return this.getCurrencyPrefix?.(this.info?.currency || 'USD') || '$';
     },
     balanceNumeric() {
-      // Se for demo, prioridade 1: demo_amount do backend, senão fallback para balancesByCurrencyDemo['USD']
+      let baseBalance = 0;
+
+      // 1. Calcular Saldo Base (Real vs Demo)
       if (this.accountType === 'demo') {
         const demoAmountFromBackend = this.info?.demo_amount !== undefined ? Number(this.info.demo_amount) : undefined;
         const demoBalanceUSD = this.balancesByCurrencyDemo['USD'];
 
-        let baseBalance = 0;
         if (demoAmountFromBackend !== undefined) {
           baseBalance = demoAmountFromBackend;
         } else if (demoBalanceUSD !== undefined && demoBalanceUSD !== null) {
@@ -117,49 +118,61 @@ export default {
           // Último recurso: somar todos os saldos demo
           baseBalance = Object.values(this.balancesByCurrencyDemo).reduce((acc, val) => acc + (Number(val) || 0), 0);
         }
+      } else {
+        // Lógica para conta Real
+        // Prioridade 1: real_amount do backend
+        if (this.info?.real_amount !== undefined && this.info?.real_amount !== null && Number(this.info.real_amount) > 0) {
+          baseBalance = Number(this.info.real_amount);
+        } else {
+          // Prioridade 2: Saldo USD Real
+          const usdReal = this.balancesByCurrencyReal['USD'];
+          if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
+            baseBalance = Number(usdReal);
+          } else {
+            // Prioridade 3: Qualquer moeda real que tenha saldo > 0
+            let found = false;
+            for (const balance of Object.values(this.balancesByCurrencyReal)) {
+              if (Number(balance) > 0) {
+                baseBalance = Number(balance);
+                found = true;
+                break;
+              }
+            }
 
-        // Se saldo fictício estiver ativo, retornar APENAS o saldo fictício (substituição completa)
-        if (this.isFictitiousBalanceActive) {
-          return Number(this.fictitiousBalance) || 0;
+            // Prioridade 4: BTC Real (se não encontrou outro)
+            if (!found) {
+              const btcReal = this.balancesByCurrencyReal['BTC'];
+              if (btcReal !== undefined && btcReal !== null) {
+                baseBalance = Number(btcReal);
+              }
+            }
+          }
         }
-
-        return baseBalance;
       }
 
-      // Se for real, prioridade 1: real_amount do backend (calculado no servidor como maior saldo)
-      if (this.info?.real_amount !== undefined && this.info?.real_amount !== null && Number(this.info.real_amount) > 0) {
-        return Number(this.info.real_amount);
+      // Fallback: Prioridade 5: Saldo principal do objeto info (se baseBalance ainda for 0)
+      if (baseBalance === 0) {
+        const raw = this.info?.balance;
+        if (typeof raw === 'number') {
+          baseBalance = raw;
+        } else if (typeof raw === 'string') {
+          const parsed = Number(raw);
+          baseBalance = isNaN(parsed) ? 0 : parsed;
+        } else {
+          // Tratamento de objetos {value, balance}
+          const val = raw?.value ?? raw?.balance ?? 0;
+          const num = Number(val);
+          baseBalance = isNaN(num) ? 0 : num;
+        }
       }
 
-      // Prioridade 2: Saldo USD Real (legado / fallback)
-      const usdReal = this.balancesByCurrencyReal['USD'];
-      if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
-        return Number(usdReal);
+      // 2. Adicionar Saldo Fictício (Master Trader)
+      // O saldo fictício é SOMADO ao saldo existente, não substituído.
+      if (this.isFictitiousBalanceActive) {
+        baseBalance += (Number(this.fictitiousBalance) || 0);
       }
 
-      // Prioridade 3: Qualquer moeda real que tenha saldo > 0
-      for (const balance of Object.values(this.balancesByCurrencyReal)) {
-        if (Number(balance) > 0) return Number(balance);
-      }
-
-      // Prioridade 4: BTC Real (específico)
-      const btcReal = this.balancesByCurrencyReal['BTC'];
-      if (btcReal !== undefined && btcReal !== null) {
-        return Number(btcReal);
-      }
-
-      // Prioridade 5: Saldo principal do objeto info
-      const raw = this.info?.balance;
-      if (typeof raw === 'number') return raw;
-      if (typeof raw === 'string') {
-        const parsed = Number(raw);
-        return isNaN(parsed) ? 0 : parsed;
-      }
-
-      // Tratamento de objetos {value, balance}
-      const val = raw?.value ?? raw?.balance ?? 0;
-      const num = Number(val);
-      return isNaN(num) ? 0 : num;
+      return baseBalance;
     },
     formattedBalance() {
       const value = this.balanceNumeric;
@@ -471,6 +484,36 @@ export default {
       this.fictitiousBalance = amount;
     },
 
+    // ✅ Real-time Balance Synchronization Handler
+    handleGlobalBalanceUpdate(event) {
+      if (event.detail && event.detail.balance !== undefined) {
+        const newBalance = event.detail.balance;
+        // Avoid cycle if the change is negligible
+        if (Math.abs(newBalance - this.balanceNumeric) < 0.0001) return;
+
+        console.log('[AccountBalanceMixin] Syncing local balance with global update:', newBalance);
+
+        // Calculate adjusted base balance (real vs demo)
+        let adjustedBase = newBalance;
+        if (this.isFictitiousBalanceActive && this.accountType === 'demo') {
+          adjustedBase = newBalance - (Number(this.fictitiousBalance) || 0);
+        }
+
+        // Update local state components to reflect the synchronized balance
+        if (!this.info) this.info = {};
+
+        if (this.accountType === 'demo') {
+          this.info.demo_amount = adjustedBase;
+          if (this.balancesByCurrencyDemo) this.balancesByCurrencyDemo['USD'] = adjustedBase;
+        } else {
+          this.info.real_amount = adjustedBase;
+          if (this.balancesByCurrencyReal) this.balancesByCurrencyReal['USD'] = adjustedBase;
+        }
+
+        this.info.balance = adjustedBase;
+      }
+    },
+
     /**
      * Troca entre conta Real e Demo (igual ao Dashboard)
      */
@@ -649,6 +692,17 @@ export default {
           console.log('[AccountBalanceMixin] tradeCurrency mudou, accountType atualizado:', { tradeCurrency: newCurrency, accountType: newAccountType });
         }
       }
+    },
+    // ✅ Real-time Balance Synchronization
+    // Emit global event when balance changes for cross-component sync
+    balanceNumeric(newVal, oldVal) {
+      if (newVal !== oldVal && newVal !== undefined && newVal !== null) {
+        console.log('[AccountBalanceMixin] Balance changed:', oldVal, '->', newVal);
+        // Emit global event for components to sync
+        window.dispatchEvent(new CustomEvent('balanceUpdated', {
+          detail: { balance: newVal, timestamp: Date.now() }
+        }));
+      }
     }
   },
   async mounted() {
@@ -661,6 +715,7 @@ export default {
     window.addEventListener('masterTraderSettingsUpdated', (e) => this.handleMasterTraderUpdate(e));
     window.addEventListener('fictitiousBalanceChanged', (e) => this.handleFictitiousBalanceChange(e));
     window.addEventListener('refreshBalance', () => this.reloadBalance());
+    window.addEventListener('balanceUpdated', this.handleGlobalBalanceUpdate);
 
     // Carregar tradeCurrency primeiro para garantir que accountType está correto
     await this.loadTradeCurrency();
@@ -707,6 +762,9 @@ export default {
   beforeUnmount() {
     // Limpar intervalos
     this.stopBalancePolling();
+    window.removeEventListener('masterTraderSettingsUpdated', this.handleMasterTraderUpdate);
+    window.removeEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
+    window.removeEventListener('balanceUpdated', this.handleGlobalBalanceUpdate);
   }
 };
 

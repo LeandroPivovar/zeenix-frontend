@@ -14,7 +14,7 @@
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
-                :balance="rawBalance"
+                :balance="info?.balance"
                 :account-type="accountType"
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -74,16 +74,14 @@
                         <!-- Resultado -->
                         <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center border-l border-border/50 pl-3 lg:pl-6 flex flex-col items-center">
                             <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Resultado</p>
-                            <div class="flex items-baseline justify-center gap-1 lg:gap-3">
-                                <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)]"
-                                   :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
-                                </p>
-                                <span class="text-xs lg:text-lg font-semibold px-2 py-0.5 rounded-lg border hidden md:inline"
-                                      :class="monitoringStats.profit >= 0 ? 'text-success/90 bg-success/10 border-success/20' : 'text-red-500/90 bg-red-500/10 border-red-500/20'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.initialBalance || 1)) * 100).toFixed(2) }}%
+                            <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)]"
+                               :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
+                                {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
+                                <span class="ml-2 px-2 py-0.5 rounded text-xs lg:text-sm font-bold tracking-wide"
+                                      :class="monitoringStats.profit >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'">
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ Math.min(999, ((monitoringStats.profit / Math.max(monitoringStats.initialBalance, monitoringStats.balance * 0.5, 1)) * 100)).toFixed(2) }}%
                                 </span>
-                            </div>
+                            </p>
                             <div class="mt-2 lg:mt-3 h-1 w-[100px] mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
                                  :class="monitoringStats.profit >= 0 ? 'from-success/70 via-success/40 to-transparent' : 'from-red-500/70 via-red-500/40 to-transparent'"></div>
                         </div>
@@ -542,7 +540,7 @@
 
         <SettingsSidebar 
             :is-open="showSettingsModal" 
-            :balance="balanceNumeric"
+            :balance="currentBalance?.balance || info?.balance"
             :account-type="accountType"
             :balances-by-currency-real="balancesByCurrencyReal"
             :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -709,6 +707,7 @@ export default {
                 statusDesc: 'Inicializando WebSocket'
             },
             rawBalance: 0, // ✅ RAW Balance for TopNavbar (prevents double-fictitious adjustment)
+            isBalanceReady: false, // ✅ Loading state flag for balance display
 
             monitoringLogs: [],
             monitoringOperations: [],
@@ -766,25 +765,7 @@ export default {
         }
     },
     watch: {
-        balanceNumeric(newVal) {
-             console.log('[AIMonitoringView] Balance updated from mixin:', newVal);
-             if (newVal !== undefined && newVal !== null) {
-                 this.monitoringStats.balance = newVal;
-
-                 // ✅ SYNC RAW BALANCE (Use replacement logic for fictitious balance)
-                 if (this.accountType === 'demo' && this.isFictitiousBalanceActive) {
-                     this.rawBalance = Number(this.fictitiousBalance) || 0;
-                 } else {
-                     this.rawBalance = newVal;
-                 }
-
-                 // Set initial balance if not set yet (first load)
-                 if (this.monitoringStats.initialBalance === 0 && newVal > 0) {
-                     this.monitoringStats.initialBalance = newVal;
-                     console.log('[AIMonitoringView] Initial Balance Set:', newVal);
-                 }
-             }
-        },
+        // ✅ Removed balanceNumeric watcher - now using global event 'balanceUpdated'
         activeChartMode(val) {
             this.$nextTick(() => {
                 if (val === 'tick') {
@@ -804,7 +785,7 @@ export default {
             }
         },
     },
-    mounted() {
+    async mounted() {
         this.checkMobile();
         window.addEventListener('resize', this.checkMobile);
         
@@ -816,20 +797,15 @@ export default {
         // }
 
         this.loadConfiguration();
-        this.loadMasterTraderSettings();
+        await this.loadMasterTraderSettings();
         
-        // Sincronizar saldo inicial com o mixin se disponível
-        if (this.balanceNumeric > 0) {
-            this.monitoringStats.balance = this.balanceNumeric;
-            
-            // ✅ INITIALIZE RAW BALANCE (Use replacement logic for fictitious balance)
-            if (this.accountType === 'demo' && this.isFictitiousBalanceActive) {
-                this.rawBalance = Number(this.fictitiousBalance) || 0;
-            } else {
-                this.rawBalance = this.balanceNumeric;
-            }
-
-            if (this.monitoringStats.initialBalance === 0) this.monitoringStats.initialBalance = this.balanceNumeric;
+        // Sincronizar tradeCurrency e accountType do mixin
+        await this.loadTradeCurrency();
+        
+        // ✅ Balance will be initialized via tryUpdateRenderedCapital after loading delay
+        // Ensure info is at least minimally populated if possible
+        if (!this.info) {
+            this.info = { balance: 0, currency: 'USD' };
         }
         
         this.initTickConnection();
@@ -838,6 +814,17 @@ export default {
         if (this.activeChartMode === 'profit') {
             setTimeout(() => this.setupProfitChartTooltip(), 1000);
         }
+
+        // ✅ Balance Loading State: Delay before showing real balance (like TopNavbar)
+        const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
+        setTimeout(() => {
+            this.isBalanceReady = true;
+            // Force first balance update
+            this.tryUpdateRenderedCapital(this.balanceNumeric);
+        }, delayTime);
+
+        // ✅ Listen for global balance updates for real-time sync
+        window.addEventListener('balanceUpdated', this.handleBalanceUpdate);
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobile);
@@ -854,6 +841,9 @@ export default {
             clearInterval(this.timerInterval);
         }
         this.stopTickConnection();
+        
+        // ✅ Cleanup balance update listener
+        window.removeEventListener('balanceUpdated', this.handleBalanceUpdate);
     },
     methods: {
         checkMobile() {
@@ -861,6 +851,25 @@ export default {
             if (!this.isMobile) {
                 this.isSidebarOpen = false;
             }
+        },
+
+        tryUpdateRenderedCapital(val) {
+            if (this.isBalanceReady && val > 0) {
+                this.monitoringStats.balance = val;
+                
+                // Set initial balance if not set yet (first load)
+                if (this.monitoringStats.initialBalance === 0) {
+                    this.monitoringStats.initialBalance = val;
+                    console.log('[AIMonitoringView] Initial Balance Set (with fictitious if active):', val);
+                }
+            }
+        },
+
+        // ✅ Handle global balance update event for real-time sync
+        handleBalanceUpdate(event) {
+            const newBalance = event.detail.balance;
+            console.log('[AIMonitoringView] Balance updated via global event:', newBalance);
+            this.tryUpdateRenderedCapital(newBalance);
         },
 
         closeSidebar() {
@@ -1123,10 +1132,21 @@ export default {
                                 }, 3000); // 3 seconds delay for retry
                             } else {
                                  this.isAuthorized = true;
-                                const baseBalance = Number(msg.authorize.balance);
-                                this.rawBalance = baseBalance; // ✅ Store RAW for TopNavbar
-                                this.monitoringStats.balance = msg.authorize.is_virtual && this.isFictitiousBalanceActive ? baseBalance + (Number(this.fictitiousBalance) || 0) : baseBalance;
-                                this.accountType = msg.authorize.is_virtual ? 'demo' : 'real';
+                                 const baseBalance = Number(msg.authorize.balance);
+                                 this.rawBalance = baseBalance; // ✅ Store RAW for TopNavbar
+                                 
+                                 // ✅ Update this.info so balanceNumeric (mixin) can calculate the summed balance
+                                 this.info = {
+                                     ...this.info,
+                                     balance: baseBalance,
+                                     currency: msg.authorize.currency || 'USD',
+                                     real_amount: !msg.authorize.is_virtual ? baseBalance : 0,
+                                     demo_amount: msg.authorize.is_virtual ? baseBalance : 0
+                                 };
+                                 
+                                 // ✅ Use balanceNumeric (summed correctly via mixin)
+                                 this.monitoringStats.balance = this.balanceNumeric;
+                                 this.accountType = msg.authorize.is_virtual ? 'demo' : 'real';
 
                                 // ✅ Start Session Tracking (Now that we have accountType)
                                 if (!this.sessionId) {
@@ -1179,7 +1199,7 @@ export default {
 
                                  this.addLog('✅ Autorizado', [
                                     `Status: Autorizado`,
-                                    `Saldo: ${this.currencySymbol}${this.monitoringStats.balance.toFixed(2)}`
+                                     `Capital: ${this.currencySymbol}${this.balanceNumeric.toFixed(2)}`
                                 ], 'info');
                                 this.subscribeTicks();
                             }

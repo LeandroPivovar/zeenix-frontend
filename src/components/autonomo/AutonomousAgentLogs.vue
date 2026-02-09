@@ -259,6 +259,8 @@ export default {
       } catch (e) { console.error('Log fetch error:', e); }
     },
     startLogPolling() {
+      // ✅ [PERFORMANCE] Re-enabled auto-polling with display limit (500 items)
+      // Display limit is handled in formattedLogs computed property
       this.stopLogPolling();
       this.fetchRealtimeLogs();
       this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(), 3000);
@@ -272,6 +274,12 @@ export default {
     },
     async exportLogs() {
       try {
+        // ✅ Buscar logs frescos antes de exportar
+        await this.fetchRealtimeLogs();
+        
+        // Aguardar um pouco para garantir que os logs foram carregados
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         // Get data for filename
         const agenteName = this.agentName || 'AGENTE';
         const now = new Date();

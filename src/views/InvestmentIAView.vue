@@ -488,7 +488,7 @@
                     :profit-target-config="profitTarget"
                     :loss-limit-config="lossLimit"
                     :mode-config="mode"
-                    :account-balance-prop="balanceNumeric"
+                    :account-balance-prop="info?.balance || currentBalance?.balance || 0"
                     :account-currency-prop="tradeCurrency"
                     :selected-market-prop="selectedMarket"
                     :stoploss-blindado-config="stoplossBlindado"
@@ -571,7 +571,7 @@
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="text-white font-bold tracking-tight text-base">{{ account.currency }} {{ account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
+                                    <div class="text-white font-bold tracking-tight text-base">{{ account.currency }} {{ formatAccountBalance(account.balance, account.isDemo) }}</div>
                                     <div class="text-[9px] text-[#7A7A7A] font-bold uppercase tracking-widest">Saldo Disponível</div>
                                 </div>
                             </div>
@@ -1161,9 +1161,26 @@ export default {
 
                 console.log('[InvestmentIAView] ===== ATIVANDO IA (NOVA LÓGICA) =====');
                 
+                // ✅ Forçar recarregamento das configurações de Master Trader para garantir saldo fictício atualizado
+                await this.loadMasterTraderSettings();
+                console.log('[InvestmentIAView] Configurações recarregadas:', {
+                    active: this.isFictitiousBalanceActive,
+                    amount: this.fictitiousBalance
+                });
+                
                 // Validação de saldo mínimo
                 const currentBalance = this.balanceNumeric || 0;
                 const requiredBalance = this.entryValue;
+
+                console.log('[InvestmentIAView] 🔍 Debug Saldo:', {
+                    balanceNumeric: this.balanceNumeric,
+                    currentBalance: currentBalance,
+                    requiredBalance: requiredBalance,
+                    isFictitiousBalanceActive: this.isFictitiousBalanceActive,
+                    fictitiousBalance: this.fictitiousBalance,
+                    infoBalance: this.info?.balance,
+                    accountType: this.accountType
+                });
 
                 if (currentBalance < requiredBalance) {
                     console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente para iniciar:', currentBalance, '<', requiredBalance);
@@ -1289,6 +1306,15 @@ export default {
                 console.error('[InvestmentIAView] Erro ao obter userId:', error);
                 return null;
             }
+        },
+
+        formatAccountBalance(balance, isDemo = false) {
+            // Add fictitious balance to demo accounts when active  
+            let value = parseFloat(balance) || 0;
+            if (isDemo && this.isFictitiousBalanceActive) {
+                value += (parseFloat(this.fictitiousBalance) || 0);
+            }
+            return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
 
         async handleStartClick(event) {

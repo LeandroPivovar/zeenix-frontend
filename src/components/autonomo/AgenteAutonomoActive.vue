@@ -89,7 +89,7 @@
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium">Entrada Inicial</span>
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">
-						{{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(initialCapital) }}
+						{{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(renderedInitialCapital) }}
 					</div>
 				</div>
 
@@ -99,12 +99,10 @@
 						<div class="p-2 rounded-lg bg-[#22C55E]/10 flex items-center justify-center">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet text-[#22C55E]"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital Final</span>
+						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-left"
-						:class="finalCapital >= initialCapital ? 'text-green-500' : 'text-red-500'"
-					>
-						{{ hideValues ? '••••' : (finalCapital >= 0 ? preferredCurrencyPrefix : '-' + preferredCurrencyPrefix) + formatPrice(Math.abs(finalCapital)) }}
+				<div class="text-2xl font-bold mb-1 tabular-nums text-left text-[#FAFAFA]">
+						{{ hideValues ? '••••' : (renderedFinalCapital >= 0 ? preferredCurrencyPrefix : '-' + preferredCurrencyPrefix) + formatPrice(Math.abs(renderedFinalCapital)) }}
 					</div>
 				</div>
 
@@ -1020,6 +1018,11 @@
                 showCycleCompletionModal: false,
                 currentCycleNumber: 1,
                 currentCycleProfit: 0,
+
+                // ✅ Balance Loading State (like TopNavbar)
+                isBalanceReady: false,
+                renderedFinalCapital: 0,
+                renderedInitialCapital: 0,
                 lastProcessedCycle: null,
                 zeusReturn: 3.93,
                 falconReturn: 2.89,
@@ -1051,6 +1054,13 @@
 
 			// Oscilação sutil do retorno
 			this.startReturnOscillation();
+
+			// ✅ Balance Loading State: Delay before showing real balances (like TopNavbar)
+			const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
+			setTimeout(() => {
+				this.isBalanceReady = true;
+				this.tryUpdateRenderedCapitals();
+			}, delayTime);
 		},
 		beforeUnmount() {
 			window.removeEventListener('click', this.closeDropdownsOnClickOutside);
@@ -1096,28 +1106,10 @@
 				return this.agentConfig?.initialStake || 0;
 			},
 			finalCapital() {
-				// 1. Se for sessão ou hoje, ou se o período filtrado incluir o dia de hoje, usar saldo em tempo real
-				const todayStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-				const includesToday = (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') || 
-					(this.filteredDailyData && this.filteredDailyData.some(d => d.date === todayStr) && !['yesterday', 'lastMonth'].includes(this.selectedPeriod));
-
-				if (includesToday) {
-					return this.balanceNumeric || this.agentConfig?.currentBalance || this.sessionStats?.totalCapital || 0;
-				}
-
-				// 2. Se houver dados filtrados, pegar o capital do dia mais recente do período selecionado
-				if (this.filteredDailyData && this.filteredDailyData.length > 0) {
-					// Puxar valor do capital da última trade do período (dado mais honesto)
-					return this.filteredDailyData[0].capital || 0;
-				}
-				
-				// Fallback padrão: usar saldo real-time da conta (mesmo que TopNavbar) via accountBalanceMixin
-				const mixinBalance = this.balanceNumeric || 0;
-				if (mixinBalance > 0) {
-					return mixinBalance;
-				}
-				
-				return this.agentConfig?.currentBalance || this.sessionStats?.totalCapital || 0;
+				// ✅ Always use current balance from mixin (same pattern as TopNavbar)
+				// This ensures Capital Final matches the balance displayed in the header
+				// FIX: Prioritize balanceNumeric (summed) over info.balance (raw)
+				return this.balanceNumeric || this.currentBalance?.balance || this.info?.balance || 0;
 			},
             periodProfit() {
                 if (this.selectedPeriod === 'session') {
@@ -1491,6 +1483,11 @@
                     if (newVal !== undefined && newVal !== null) {
                         console.log('[AgenteAutonomoActive] 💰 finalCapital changed, emitting update:', newVal);
                         this.$emit('live-balance-update', newVal);
+                        
+                        // ✅ Update rendered capital for loading state
+                        if (this.isBalanceReady && newVal >= 0) {
+                            this.renderedFinalCapital = newVal;
+                        }
                     }
                 }
             },
@@ -1501,10 +1498,23 @@
                        this.checkLogsForStopEvents(newLogs);
                    }
                 }
+            },
+            // ✅ Balance Loading State Watcher for initialCapital
+            initialCapital(newVal) {
+                if (this.isBalanceReady && newVal >= 0) {
+                    this.renderedInitialCapital = newVal;
+                }
             }
 		},
 
 		methods: {
+			// ✅ Balance Loading State Method
+			tryUpdateRenderedCapitals() {
+				if (this.isBalanceReady) {
+					this.renderedFinalCapital = this.finalCapital;
+					this.renderedInitialCapital = this.initialCapital;
+				}
+			},
 			checkStopStatus(status) {
 				if (!status || status === 'active' || status === this.lastProcessedStatus) return;
 				

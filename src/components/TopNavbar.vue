@@ -358,15 +358,11 @@ export default {
         propValue = isNaN(num) ? 0 : num;
       }
 
-      if (propValue > 0) {
-        return propValue;
-      }
+      let baseBalance = 0;
 
-
-      // Prioridade 1: Saldo Demo + Fictício se ativo E conta for demo
+      // Prioridade 1: Saldo Demo
       if (this.accountType === 'demo') {
         const demoBalanceUSD = this.balancesByCurrencyDemo['USD'];
-        let baseBalance = 0;
 
         if (demoBalanceUSD !== undefined && demoBalanceUSD !== null) {
           baseBalance = Number(demoBalanceUSD);
@@ -374,25 +370,34 @@ export default {
              // Fallback: somar todos os saldos demo se 'USD' não existir
              baseBalance = Object.values(this.balancesByCurrencyDemo).reduce((acc, val) => acc + (Number(val) || 0), 0);
         }
-
-        if (this.isFictitiousBalanceActive) {
-          return Number(this.fictitiousBalance) || 0;
+      } else {
+        // Prioridade 2: Saldo Real (USD preferencial)
+        const usdReal = this.balancesByCurrencyReal['USD'];
+        if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
+            baseBalance = Number(usdReal);
+        } else {
+             // Prioridade 2: Qualquer moeda que tenha saldo > 0
+             for (const balance of Object.values(this.balancesByCurrencyReal)) {
+                if (Number(balance) > 0) {
+                    baseBalance = Number(balance);
+                    break;
+                }
+             }
         }
-        return baseBalance;
+      }
+      
+      // Se tivermos um valor válido de propValue (passado pelo pai), usamos ele como base se for maior que o calculado localmente?
+      // Ou continuamos priorizando o local? O código original priorizava propValue > 0.
+      if (propValue > 0) {
+        baseBalance = propValue;
       }
 
-      // Prioridade 2: Saldo Real (USD preferencial)
-      const usdReal = this.balancesByCurrencyReal['USD'];
-      if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
-        return Number(usdReal);
+      // Adicionar Saldo Fictício (Master Trader) - SOMA
+      if (this.isFictitiousBalanceActive) {
+        baseBalance += (Number(this.fictitiousBalance) || 0);
       }
 
-      // Prioridade 2: Qualquer moeda que tenha saldo > 0
-      for (const balance of Object.values(this.balancesByCurrencyReal)) {
-        if (Number(balance) > 0) return Number(balance);
-      }
-
-      return propValue; // Retorna o valor do prop mesmo se for 0, se chegarmos aqui
+      return baseBalance;
     },
     userName() {
       const userInfo = localStorage.getItem('user');
