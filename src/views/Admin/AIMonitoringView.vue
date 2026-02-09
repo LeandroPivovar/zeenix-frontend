@@ -66,8 +66,11 @@
 
                         <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center md:border-l border-border/50 md:pl-4 lg:pl-6">
                             <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Capital</p>
-                            <p class="text-xl lg:text-3xl font-bold text-foreground tracking-tight">
+                            <p v-if="isBalanceReady" class="text-xl lg:text-3xl font-bold text-foreground tracking-tight">
                                 {{ preferredCurrencyPrefix }} {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }},{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}
+                            </p>
+                            <p v-else class="text-xl lg:text-3xl font-bold text-foreground/40 tracking-tight">
+                                {{ preferredCurrencyPrefix }} 0,00
                             </p>
                         </div>
 
@@ -860,14 +863,13 @@ export default {
         },
 
         tryUpdateRenderedCapital(val) {
-            if (this.isBalanceReady && val > 0) {
-                this.monitoringStats.balance = val;
-                
-                // Set initial balance if not set yet (first load)
-                if (this.monitoringStats.initialBalance === 0) {
-                    this.monitoringStats.initialBalance = val;
-                    console.log('[AIMonitoringView] Initial Balance Set (with fictitious if active):', val);
-                }
+            // Update balance regardless of isBalanceReady (so it's ready when the flag flips)
+            this.monitoringStats.balance = Number(val) || 0;
+            
+            // Still only set initialBalance once we have a valid first value
+            if (this.monitoringStats.initialBalance === 0 && val > 0) {
+                this.monitoringStats.initialBalance = val;
+                console.log('[AIMonitoringView] Initial Balance Set:', val);
             }
         },
 

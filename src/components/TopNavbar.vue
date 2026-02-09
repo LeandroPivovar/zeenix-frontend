@@ -25,7 +25,14 @@
               <span v-else>Đ</span>
               {{ formattedBalance }}
             </span>
-            <span v-else>••••••</span>
+            <span v-else-if="balanceHidden">••••••</span>
+            <span v-else class="inline-flex items-center gap-1.5 text-[#DFDFDF]/40">
+              <span v-if="uiAccountType !== 'demo' || showDollarSign">
+                {{ isFictitiousBalanceActive ? '$' : currencyPrefix }}
+              </span>
+              <span v-else>Đ</span>
+              <span>0,00</span>
+            </span>
           </span>
           <button 
             @click="toggleBalance" 
@@ -534,9 +541,8 @@ export default {
           const hasDemoBalance = this.balancesByCurrencyDemo && Object.keys(this.balancesByCurrencyDemo).length > 0;
           if (!hasDemoBalance) return;
       }
-      if (this.isBalanceReady) {
-        this.renderedBalance = val;
-      }
+      
+      this.renderedBalance = val;
     },
     checkMobile() {
       this.isMobile = window.innerWidth <= 1024;
