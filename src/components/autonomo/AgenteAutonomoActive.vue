@@ -1055,6 +1055,9 @@
 			// Oscilação sutil do retorno
 			this.startReturnOscillation();
 
+			// ✅ Real-time Balance Polling (10 segundos) - Atualiza saldo da corretora em tempo real
+			this.startBalancePolling(10000);
+
 			// ✅ Balance Loading State: Delay before showing real balances (like TopNavbar)
 			const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
 			setTimeout(() => {
@@ -1070,6 +1073,8 @@
 			if (this.returnInterval) {
 				clearInterval(this.returnInterval);
 			}
+			// ✅ Parar polling de saldo ao desmontar
+			this.stopBalancePolling();
 		},
 		computed: {
 			currentAgentId() {
