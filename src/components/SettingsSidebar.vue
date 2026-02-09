@@ -257,30 +257,37 @@ export default {
       return value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     },
     balanceNumeric() {
+      let baseBalance = 0;
+
       // Para Real
       if (this.accountType === 'real') {
         // Prioridade 1: Saldo USD Real
         const usdReal = this.balancesByCurrencyReal['USD'];
         if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
-          return Number(usdReal);
+          baseBalance = Number(usdReal);
+        } else {
+            // Prioridade 2: Qualquer moeda que tenha saldo > 0
+            for (const balance of Object.values(this.balancesByCurrencyReal)) {
+              if (Number(balance) > 0) {
+                  baseBalance = Number(balance);
+                  break;
+              }
+            }
         }
         
-        // Prioridade 2: Qualquer moeda que tenha saldo > 0
-        for (const balance of Object.values(this.balancesByCurrencyReal)) {
-          if (Number(balance) > 0) return Number(balance);
+        // Fallback para o prop 'balance' se ainda for 0
+        if (baseBalance === 0) {
+             const raw = this.balance;
+             if (typeof raw === 'number') baseBalance = raw;
+             else {
+                 const val = raw?.value ?? raw?.balance ?? raw ?? 0;
+                 baseBalance = Number(val) || 0;
+             }
         }
-
-        // Fallback para o prop 'balance'
-        const raw = this.balance;
-        if (typeof raw === 'number') return raw;
-        const val = raw?.value ?? raw?.balance ?? raw ?? 0;
-        return Number(val) || 0;
       }
-      
       // Para Demo
-      if (this.accountType === 'demo') {
+      else if (this.accountType === 'demo') {
         const demoBalanceUSD = this.balancesByCurrencyDemo['USD'];
-        let baseBalance = 0;
         
         if (demoBalanceUSD !== undefined && demoBalanceUSD !== null) {
             baseBalance = Number(demoBalanceUSD);
@@ -288,12 +295,14 @@ export default {
              // Fallback: somar todos os saldos demo
              baseBalance = Object.values(this.balancesByCurrencyDemo).reduce((acc, val) => acc + (Number(val) || 0), 0);
         }
-
-        const total = this.isFictitiousBalanceActive ? (baseBalance + Number(this.fictitiousBalance)) : baseBalance;
-        return total;
       }
       
-      return 0;
+      // ✅ ADICIONAR Saldo Fictício (SOMA) para ambos os tipos de conta
+      if (this.isFictitiousBalanceActive) {
+          baseBalance += (Number(this.fictitiousBalance) || 0);
+      }
+      
+      return baseBalance;
     },
     userName() {
       const userInfo = localStorage.getItem('user');
