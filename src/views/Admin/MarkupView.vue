@@ -98,9 +98,9 @@
                                 <i class="fas fa-piggy-bank"></i>
                             </div>
                             <div class="stat-info">
-                                <span class="stat-label">Total Depositado</span>
+                                <span class="stat-label">Total em Saldo Real</span>
                                 <div class="stat-row">
-                                    <span class="stat-value">{{ formatCurrency(summaryCards.totalDeposited) }}</span>
+                                    <span class="stat-value">{{ formatCurrency(summaryCards.totalRealAmount) }}</span>
                                     <span class="stat-percentage">+15.2%</span>
                                 </div>
                             </div>
@@ -178,7 +178,7 @@
                                         <th>Nome</th>
                                         <th>País</th>
                                         <th>Login ID</th>
-                                        <th>Total Depositado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
+                                        <th>Saldo Real <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
                                         <th>Volume Operado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
                                         <th>Markup Gerado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
                                         <th>Markup Médio/Dia</th>
@@ -202,7 +202,7 @@
                                             </div>
                                         </td>
                                         <td class="login-id">{{ client.email }}</td>
-                                        <td class="font-medium text-white">{{ formatCurrency(client.totalDeposited || 0) }}</td>
+                                        <td class="font-medium text-white">{{ formatCurrency(client.realAmount || 0) }}</td>
                                         <td class="font-medium text-white">{{ formatCurrency(client.volumeOperado || 0) }}</td>
                                         <td class="markup-value">{{ formatCurrency(client.commission) }}</td>
                                         <td class="font-medium text-white">{{ formatCurrency(client.markupAvgPerDay || 0) }}</td>
@@ -553,7 +553,7 @@ export default {
         },
 
         summaryCards() {
-            const totalDeposited = this.displayedClients.reduce((sum, c) => sum + (c.totalDeposited || 0), 0);
+            const totalRealAmount = this.displayedClients.reduce((sum, c) => sum + (c.realAmount || 0), 0);
             const totalVolume = this.displayedClients.reduce((sum, c) => sum + (c.volumeOperado || 0), 0);
             const totalCommission = this.totalCommissionDisplayed;
             const userCount = this.displayedClients.length || 1;
@@ -561,8 +561,8 @@ export default {
             return {
                 totalCommission,
                 totalVolume,
-                totalDeposited,
-                avgDeposit: totalDeposited / userCount,
+                totalRealAmount,
+                avgDeposit: totalRealAmount / userCount,
                 avgRevenue: totalCommission / userCount,
                 usersWithBalance: this.displayedClients.length,
                 ltvAvg: totalCommission / userCount, 
