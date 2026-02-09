@@ -152,7 +152,7 @@
                     </div>
 
                     <!-- Projection Chart -->
-                    <ProjectionChart :daily-average="periodData.thirtyDays / 30" />
+                    <ProjectionChart :daily-data="dailyMarkupData" />
 
                     <!-- Table Section -->
                     <div class="table-section mt-8">
@@ -281,6 +281,7 @@ export default {
             },
             loadingProgress: 0,
             totalToLoad: 0,
+            dailyMarkupData: [],
         };
     },
     watch: {
@@ -432,7 +433,7 @@ export default {
                 const startOfYear = `${today.getFullYear()}-01-01`;
                 
                 // Fazer chamadas paralelas para todos os períodos
-                const [todayData, monthlyData, lastMonthData, thirtyDaysData, annualData] = await Promise.all([
+                const [todayData, monthlyData, lastMonthData, thirtyDaysData, annualData, dailyStats] = await Promise.all([
                     fetch(`${apiUrl}/trades/markup?startDate=${startOfToday}&endDate=${endOfToday}${queryParams}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }).then(r => r.json()),
@@ -448,6 +449,9 @@ export default {
                     fetch(`${apiUrl}/trades/markup?startDate=${startOfYear}&endDate=${endOfToday}${queryParams}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }).then(r => r.json()),
+                    fetch(`${apiUrl}/trades/markup/daily?startDate=${startOfThirtyDays}&endDate=${endOfToday}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).then(r => r.json()),
                 ]);
                 
                 this.periodData = {
@@ -457,6 +461,8 @@ export default {
                     thirtyDays: thirtyDaysData.summary?.totalCommission || 0,
                     annual: annualData.summary?.totalCommission || 0,
                 };
+
+                this.dailyMarkupData = dailyStats || [];
                 
             } catch (error) {
                 console.error('Erro ao buscar dados por período:', error);

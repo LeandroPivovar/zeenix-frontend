@@ -29,8 +29,7 @@ Chart.register(...registerables);
 export default {
   name: 'ProjectionChart',
   props: {
-    dailyAverage: { type: Number, default: 0 },
-    historicalData: { type: Array, default: () => [] }
+    dailyData: { type: Array, default: () => [] }
   },
   data() {
     return {
@@ -38,13 +37,21 @@ export default {
     };
   },
   computed: {
+    dailyAverage() {
+      if (!this.dailyData || this.dailyData.length === 0) return 0;
+      const sum = this.dailyData.reduce((acc, curr) => acc + (curr.markup || 0), 0);
+      return sum / 30; // Sempre divide por 30 para média mensal real
+    },
     projectedTotal() {
       return this.dailyAverage * 30;
     }
   },
   watch: {
-    dailyAverage() {
-      this.updateChart();
+    dailyData: {
+      deep: true,
+      handler() {
+        this.updateChart();
+      }
     }
   },
   mounted() {
@@ -57,6 +64,7 @@ export default {
   },
   methods: {
     formatCurrency(value) {
+      if (isNaN(value) || value === null) return '$0.00';
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
