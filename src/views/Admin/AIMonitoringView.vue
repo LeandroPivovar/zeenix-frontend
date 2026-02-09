@@ -765,12 +765,7 @@ export default {
         }
     },
     watch: {
-        balanceNumeric(newVal) {
-             console.log('[AIMonitoringView] Balance updated from mixin:', newVal);
-             
-             // ✅ Use tryUpdateRenderedCapital to respect loading state
-             this.tryUpdateRenderedCapital(newVal);
-        },
+        // ✅ Removed balanceNumeric watcher - now using global event 'balanceUpdated'
         activeChartMode(val) {
             this.$nextTick(() => {
                 if (val === 'tick') {
@@ -827,6 +822,9 @@ export default {
             // Force first balance update
             this.tryUpdateRenderedCapital(this.balanceNumeric);
         }, delayTime);
+
+        // ✅ Listen for global balance updates for real-time sync
+        window.addEventListener('balanceUpdated', this.handleBalanceUpdate);
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobile);
@@ -843,6 +841,9 @@ export default {
             clearInterval(this.timerInterval);
         }
         this.stopTickConnection();
+        
+        // ✅ Cleanup balance update listener
+        window.removeEventListener('balanceUpdated', this.handleBalanceUpdate);
     },
     methods: {
         checkMobile() {
@@ -862,6 +863,13 @@ export default {
                     console.log('[AIMonitoringView] Initial Balance Set (with fictitious if active):', val);
                 }
             }
+        },
+
+        // ✅ Handle global balance update event for real-time sync
+        handleBalanceUpdate(event) {
+            const newBalance = event.detail.balance;
+            console.log('[AIMonitoringView] Balance updated via global event:', newBalance);
+            this.tryUpdateRenderedCapital(newBalance);
         },
 
         closeSidebar() {

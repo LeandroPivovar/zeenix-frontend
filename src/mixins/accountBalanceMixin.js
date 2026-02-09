@@ -484,6 +484,36 @@ export default {
       this.fictitiousBalance = amount;
     },
 
+    // ✅ Real-time Balance Synchronization Handler
+    handleGlobalBalanceUpdate(event) {
+      if (event.detail && event.detail.balance !== undefined) {
+        const newBalance = event.detail.balance;
+        // Avoid cycle if the change is negligible
+        if (Math.abs(newBalance - this.balanceNumeric) < 0.0001) return;
+
+        console.log('[AccountBalanceMixin] Syncing local balance with global update:', newBalance);
+
+        // Calculate adjusted base balance (real vs demo)
+        let adjustedBase = newBalance;
+        if (this.isFictitiousBalanceActive && this.accountType === 'demo') {
+          adjustedBase = newBalance - (Number(this.fictitiousBalance) || 0);
+        }
+
+        // Update local state components to reflect the synchronized balance
+        if (!this.info) this.info = {};
+
+        if (this.accountType === 'demo') {
+          this.info.demo_amount = adjustedBase;
+          if (this.balancesByCurrencyDemo) this.balancesByCurrencyDemo['USD'] = adjustedBase;
+        } else {
+          this.info.real_amount = adjustedBase;
+          if (this.balancesByCurrencyReal) this.balancesByCurrencyReal['USD'] = adjustedBase;
+        }
+
+        this.info.balance = adjustedBase;
+      }
+    },
+
     /**
      * Troca entre conta Real e Demo (igual ao Dashboard)
      */
@@ -662,6 +692,17 @@ export default {
           console.log('[AccountBalanceMixin] tradeCurrency mudou, accountType atualizado:', { tradeCurrency: newCurrency, accountType: newAccountType });
         }
       }
+    },
+    // ✅ Real-time Balance Synchronization
+    // Emit global event when balance changes for cross-component sync
+    balanceNumeric(newVal, oldVal) {
+      if (newVal !== oldVal && newVal !== undefined && newVal !== null) {
+        console.log('[AccountBalanceMixin] Balance changed:', oldVal, '->', newVal);
+        // Emit global event for components to sync
+        window.dispatchEvent(new CustomEvent('balanceUpdated', {
+          detail: { balance: newVal, timestamp: Date.now() }
+        }));
+      }
     }
   },
   async mounted() {
@@ -674,6 +715,7 @@ export default {
     window.addEventListener('masterTraderSettingsUpdated', (e) => this.handleMasterTraderUpdate(e));
     window.addEventListener('fictitiousBalanceChanged', (e) => this.handleFictitiousBalanceChange(e));
     window.addEventListener('refreshBalance', () => this.reloadBalance());
+    window.addEventListener('balanceUpdated', this.handleGlobalBalanceUpdate);
 
     // Carregar tradeCurrency primeiro para garantir que accountType está correto
     await this.loadTradeCurrency();
@@ -720,6 +762,9 @@ export default {
   beforeUnmount() {
     // Limpar intervalos
     this.stopBalancePolling();
+    window.removeEventListener('masterTraderSettingsUpdated', this.handleMasterTraderUpdate);
+    window.removeEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
+    window.removeEventListener('balanceUpdated', this.handleGlobalBalanceUpdate);
   }
 };
 
