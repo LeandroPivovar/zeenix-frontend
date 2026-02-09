@@ -571,7 +571,7 @@
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="text-white font-bold tracking-tight text-base">{{ account.currency }} {{ account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
+                                    <div class="text-white font-bold tracking-tight text-base">{{ account.currency }} {{ formatAccountBalance(account.balance, account.isDemo) }}</div>
                                     <div class="text-[9px] text-[#7A7A7A] font-bold uppercase tracking-widest">Saldo Disponível</div>
                                 </div>
                             </div>
@@ -1306,6 +1306,15 @@ export default {
                 console.error('[InvestmentIAView] Erro ao obter userId:', error);
                 return null;
             }
+        },
+
+        formatAccountBalance(balance, isDemo = false) {
+            // Add fictitious balance to demo accounts when active  
+            let value = parseFloat(balance) || 0;
+            if (isDemo && this.isFictitiousBalanceActive) {
+                value += (parseFloat(this.fictitiousBalance) || 0);
+            }
+            return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
 
         async handleStartClick(event) {

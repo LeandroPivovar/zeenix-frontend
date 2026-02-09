@@ -67,7 +67,7 @@
                         <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center md:border-l border-border/50 md:pl-4 lg:pl-6">
                             <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Capital</p>
                             <p class="text-xl lg:text-3xl font-bold text-foreground tracking-tight">
-                                {{ preferredCurrencyPrefix }} {{ Math.floor(balanceNumeric).toLocaleString('pt-BR') }},{{ (balanceNumeric % 1).toFixed(2).split('.')[1] || '00' }}
+                                {{ preferredCurrencyPrefix }} {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }},{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}
                             </p>
                         </div>
 
@@ -767,17 +767,14 @@ export default {
         balanceNumeric(newVal) {
              console.log('[AIMonitoringView] Balance updated from mixin:', newVal);
              
-             // ✅ FIX: Use newVal (which is balanceNumeric, already summed with fictitious balance if active)
-             // We prioritize newVal because it is the computed, correct, summed balance.
-             const currentBalance = newVal || this.info?.balance || 0;
-             
-             if (currentBalance > 0) {
-                 this.monitoringStats.balance = currentBalance;
+             // ✅ Use newVal directly (balanceNumeric already includes fictitious balance from mixin)
+             if (newVal > 0) {
+                 this.monitoringStats.balance = newVal;
 
                  // Set initial balance if not set yet (first load)
                  if (this.monitoringStats.initialBalance === 0) {
-                     this.monitoringStats.initialBalance = currentBalance;
-                     console.log('[AIMonitoringView] Initial Balance Set:', currentBalance);
+                     this.monitoringStats.initialBalance = newVal;
+                     console.log('[AIMonitoringView] Initial Balance Set (with fictitious if active):', newVal);
                  }
              }
         },
