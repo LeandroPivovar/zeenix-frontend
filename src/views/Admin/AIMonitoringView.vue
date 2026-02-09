@@ -818,15 +818,22 @@ export default {
             setTimeout(() => this.setupProfitChartTooltip(), 1000);
         }
 
-        // ✅ Balance Loading State: Delay before showing real balance (like TopNavbar)
-        const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
-        setTimeout(() => {
-            this.isBalanceReady = true;
-            // Force first balance update from Mixin (Source of Truth)
-            if (this.balanceNumeric > 0) {
-                this.tryUpdateRenderedCapital(this.balanceNumeric);
+        // ✅ Balance Loading State: Wait for authorization + stabilization
+        // This prevents the $2000 fictitious jump before real balance arrives
+        const checkBalanceInterval = setInterval(() => {
+            if (this.isAuthorized && this.info && this.info.balance !== undefined) {
+                setTimeout(() => {
+                    this.isBalanceReady = true;
+                    if (this.balanceNumeric > 0) {
+                        this.tryUpdateRenderedCapital(this.balanceNumeric);
+                    }
+                }, 300);
+                clearInterval(checkBalanceInterval);
             }
-        }, delayTime);
+        }, 100);
+
+        // Safety timeout (max 5s)
+        setTimeout(() => clearInterval(checkBalanceInterval), 5000);
 
         // ✅ Listen for global balance updates for real-time sync
         window.addEventListener('balanceUpdated', this.handleBalanceUpdate);
@@ -875,6 +882,9 @@ export default {
 
         // ✅ Handle global balance update event for real-time sync
         handleBalanceUpdate(event) {
+            // Se o update veio desta própria view, ignorar para evitar loops/glitches
+            if (event.detail?.source === 'AIMonitoringView') return;
+            
             const newBalance = event.detail.balance;
             console.log('[AIMonitoringView] Balance updated via global event:', newBalance);
             this.tryUpdateRenderedCapital(newBalance);
@@ -2139,8 +2149,14 @@ export default {
                 // This ensures TopNavbar gets the update too immediately
                 if (this.info) this.info.balance = this.rawBalance;
                 
+                // IMPORTANT: Send the SUMMED balance (Mixin source of truth) 
+                // to avoid "losing" fictitious balance in other components
                 window.dispatchEvent(new CustomEvent('balanceUpdated', {
-                    detail: { balance: this.rawBalance, timestamp: Date.now() }
+                    detail: { 
+                        balance: this.balanceNumeric, 
+                        source: 'AIMonitoringView', // Tag to avoid loops
+                        timestamp: Date.now() 
+                    }
                 }));
 
                 // ✅ UPDATE PEAK PROFIT & STOP BLINDADO
