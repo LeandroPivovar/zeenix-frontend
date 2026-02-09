@@ -1485,7 +1485,7 @@
                         this.$emit('live-balance-update', newVal);
                         
                         // ✅ Update rendered capital for loading state
-                        if (this.isBalanceReady && newVal >= 0) {
+                        if (newVal >= 0) {
                             this.renderedFinalCapital = newVal;
                         }
                     }

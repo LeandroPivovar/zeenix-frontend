@@ -2135,6 +2135,14 @@ export default {
                 this.monitoringStats.balance = Number(this.monitoringStats.balance) + actualChange;
                 this.rawBalance = Number(this.rawBalance) + actualChange; // ✅ SYNC RAW BALANCE
 
+                // ✅ UPDATE GLOBAL BALANCE VIA MIXIN EVENT
+                // This ensures TopNavbar gets the update too immediately
+                if (this.info) this.info.balance = this.rawBalance;
+                
+                window.dispatchEvent(new CustomEvent('balanceUpdated', {
+                    detail: { balance: this.rawBalance, timestamp: Date.now() }
+                }));
+
                 // ✅ UPDATE PEAK PROFIT & STOP BLINDADO
                 if (this.monitoringStats.profit > this.sessionState.peakProfit) {
                     this.sessionState.peakProfit = this.monitoringStats.profit;
