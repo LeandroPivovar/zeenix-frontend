@@ -99,7 +99,7 @@
 						<div class="p-2 rounded-lg bg-[#22C55E]/10 flex items-center justify-center">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet text-[#22C55E]"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital Final</span>
+						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital</span>
 					</div>
 				<div class="text-2xl font-bold mb-1 tabular-nums text-left text-[#FAFAFA]">
 						{{ hideValues ? '••••' : (finalCapital >= 0 ? preferredCurrencyPrefix : '-' + preferredCurrencyPrefix) + formatPrice(Math.abs(finalCapital)) }}
@@ -1096,7 +1096,8 @@
 			finalCapital() {
 				// ✅ Always use current balance from mixin (same pattern as TopNavbar)
 				// This ensures Capital Final matches the balance displayed in the header
-				return this.currentBalance?.balance || this.info?.balance || this.balanceNumeric || 0;
+				// FIX: Prioritize balanceNumeric (summed) over info.balance (raw)
+				return this.balanceNumeric || this.currentBalance?.balance || this.info?.balance || 0;
 			},
             periodProfit() {
                 if (this.selectedPeriod === 'session') {

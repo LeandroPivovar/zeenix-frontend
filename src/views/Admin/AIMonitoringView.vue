@@ -800,7 +800,7 @@ export default {
             }
         },
     },
-    mounted() {
+    async mounted() {
         this.checkMobile();
         window.addEventListener('resize', this.checkMobile);
         
@@ -812,14 +812,22 @@ export default {
         // }
 
         this.loadConfiguration();
-        this.loadMasterTraderSettings();
+        await this.loadMasterTraderSettings();
+        
+        // Sincronizar tradeCurrency e accountType do mixin
+        await this.loadTradeCurrency();
         
         // ✅ Initialize balance using balanceNumeric (summed)
-        const initialBalance = this.balanceNumeric || this.info?.balance || 0;
-        if (initialBalance > 0) {
-            this.monitoringStats.balance = initialBalance;
+        // Ensure info is at least minimally populated if possible
+        if (!this.info) {
+            this.info = { balance: 0, currency: 'USD' };
+        }
+        
+        const initialBalanceValue = this.balanceNumeric || 0;
+        if (initialBalanceValue > 0) {
+            this.monitoringStats.balance = initialBalanceValue;
             if (this.monitoringStats.initialBalance === 0) {
-                this.monitoringStats.initialBalance = initialBalance;
+                this.monitoringStats.initialBalance = initialBalanceValue;
             }
         }
         
@@ -1114,10 +1122,21 @@ export default {
                                 }, 3000); // 3 seconds delay for retry
                             } else {
                                  this.isAuthorized = true;
-                                const baseBalance = Number(msg.authorize.balance);
-                                this.rawBalance = baseBalance; // ✅ Store RAW for TopNavbar
-                                this.monitoringStats.balance = msg.authorize.is_virtual && this.isFictitiousBalanceActive ? baseBalance + (Number(this.fictitiousBalance) || 0) : baseBalance;
-                                this.accountType = msg.authorize.is_virtual ? 'demo' : 'real';
+                                 const baseBalance = Number(msg.authorize.balance);
+                                 this.rawBalance = baseBalance; // ✅ Store RAW for TopNavbar
+                                 
+                                 // ✅ Update this.info so balanceNumeric (mixin) can calculate the summed balance
+                                 this.info = {
+                                     ...this.info,
+                                     balance: baseBalance,
+                                     currency: msg.authorize.currency || 'USD',
+                                     real_amount: !msg.authorize.is_virtual ? baseBalance : 0,
+                                     demo_amount: msg.authorize.is_virtual ? baseBalance : 0
+                                 };
+                                 
+                                 // ✅ Use balanceNumeric (summed correctly via mixin)
+                                 this.monitoringStats.balance = this.balanceNumeric;
+                                 this.accountType = msg.authorize.is_virtual ? 'demo' : 'real';
 
                                 // ✅ Start Session Tracking (Now that we have accountType)
                                 if (!this.sessionId) {
@@ -1170,7 +1189,7 @@ export default {
 
                                  this.addLog('✅ Autorizado', [
                                     `Status: Autorizado`,
-                                    `Saldo: ${this.currencySymbol}${this.monitoringStats.balance.toFixed(2)}`
+                                     `Capital: ${this.currencySymbol}${this.monitoringStats.balance.toFixed(2)}`
                                 ], 'info');
                                 this.subscribeTicks();
                             }

@@ -246,7 +246,7 @@
                     :profit-target-config="profitTarget"
                     :loss-limit-config="lossLimit"
                     :mode-config="mode"
-                    :account-balance-prop="accountBalance"
+                    :account-balance-prop="accountBalance || 0"
                     :account-currency-prop="accountCurrency"
                         @deactivate="deactivateIA"
                 />
