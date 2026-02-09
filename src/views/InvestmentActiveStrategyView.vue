@@ -51,7 +51,6 @@ import SettingsSidebar from '../components/SettingsSidebar.vue';
 import StrategyManager from '../components/ActiveStrategy/StrategyManager.vue';
 import MonitoringDashboard from '../components/ActiveStrategy/MonitoringDashboard.vue';
 import { StrategyAnalysis } from '../utils/StrategyAnalysis';
-import { StrategyAnalysis } from '../utils/StrategyAnalysis';
 import RiskManager from '../utils/RiskManager'; // ✅ Added RiskManager
 import accountBalanceMixin from '../mixins/accountBalanceMixin'; // ✅ Added Mixin
 
