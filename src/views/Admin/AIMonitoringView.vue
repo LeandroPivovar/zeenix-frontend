@@ -807,18 +807,10 @@ export default {
         // Sincronizar tradeCurrency e accountType do mixin
         await this.loadTradeCurrency();
         
-        // ✅ Initialize balance using balanceNumeric (summed)
+        // ✅ Balance will be initialized via tryUpdateRenderedCapital after loading delay
         // Ensure info is at least minimally populated if possible
         if (!this.info) {
             this.info = { balance: 0, currency: 'USD' };
-        }
-        
-        const initialBalanceValue = this.balanceNumeric || 0;
-        if (initialBalanceValue > 0) {
-            this.monitoringStats.balance = initialBalanceValue;
-            if (this.monitoringStats.initialBalance === 0) {
-                this.monitoringStats.initialBalance = initialBalanceValue;
-            }
         }
         
         this.initTickConnection();
