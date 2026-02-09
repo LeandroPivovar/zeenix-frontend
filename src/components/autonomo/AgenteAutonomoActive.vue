@@ -1096,28 +1096,9 @@
 				return this.agentConfig?.initialStake || 0;
 			},
 			finalCapital() {
-				// 1. Se for sessão ou hoje, ou se o período filtrado incluir o dia de hoje, usar saldo em tempo real
-				const todayStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-				const includesToday = (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') || 
-					(this.filteredDailyData && this.filteredDailyData.some(d => d.date === todayStr) && !['yesterday', 'lastMonth'].includes(this.selectedPeriod));
-
-				if (includesToday) {
-					return this.balanceNumeric || this.agentConfig?.currentBalance || this.sessionStats?.totalCapital || 0;
-				}
-
-				// 2. Se houver dados filtrados, pegar o capital do dia mais recente do período selecionado
-				if (this.filteredDailyData && this.filteredDailyData.length > 0) {
-					// Puxar valor do capital da última trade do período (dado mais honesto)
-					return this.filteredDailyData[0].capital || 0;
-				}
-				
-				// Fallback padrão: usar saldo real-time da conta (mesmo que TopNavbar) via accountBalanceMixin
-				const mixinBalance = this.balanceNumeric || 0;
-				if (mixinBalance > 0) {
-					return mixinBalance;
-				}
-				
-				return this.agentConfig?.currentBalance || this.sessionStats?.totalCapital || 0;
+				// ✅ Always use current balance from mixin (same pattern as TopNavbar)
+				// This ensures Capital Final matches the balance displayed in the header
+				return this.currentBalance?.balance || this.info?.balance || this.balanceNumeric || 0;
 			},
             periodProfit() {
                 if (this.selectedPeriod === 'session') {
