@@ -1161,9 +1161,26 @@ export default {
 
                 console.log('[InvestmentIAView] ===== ATIVANDO IA (NOVA LÓGICA) =====');
                 
+                // ✅ Forçar recarregamento das configurações de Master Trader para garantir saldo fictício atualizado
+                await this.loadMasterTraderSettings();
+                console.log('[InvestmentIAView] Configurações recarregadas:', {
+                    active: this.isFictitiousBalanceActive,
+                    amount: this.fictitiousBalance
+                });
+                
                 // Validação de saldo mínimo
                 const currentBalance = this.balanceNumeric || 0;
                 const requiredBalance = this.entryValue;
+
+                console.log('[InvestmentIAView] 🔍 Debug Saldo:', {
+                    balanceNumeric: this.balanceNumeric,
+                    currentBalance: currentBalance,
+                    requiredBalance: requiredBalance,
+                    isFictitiousBalanceActive: this.isFictitiousBalanceActive,
+                    fictitiousBalance: this.fictitiousBalance,
+                    infoBalance: this.info?.balance,
+                    accountType: this.accountType
+                });
 
                 if (currentBalance < requiredBalance) {
                     console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente para iniciar:', currentBalance, '<', requiredBalance);
