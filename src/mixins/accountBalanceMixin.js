@@ -150,6 +150,22 @@ export default {
         }
       }
 
+      // Fallback: Prioridade 5: Saldo principal do objeto info (se baseBalance ainda for 0)
+      if (baseBalance === 0) {
+        const raw = this.info?.balance;
+        if (typeof raw === 'number') {
+          baseBalance = raw;
+        } else if (typeof raw === 'string') {
+          const parsed = Number(raw);
+          baseBalance = isNaN(parsed) ? 0 : parsed;
+        } else {
+          // Tratamento de objetos {value, balance}
+          const val = raw?.value ?? raw?.balance ?? 0;
+          const num = Number(val);
+          baseBalance = isNaN(num) ? 0 : num;
+        }
+      }
+
       // 2. Adicionar Saldo Fictício (Master Trader)
       // O saldo fictício é SOMADO ao saldo existente, não substituído.
       if (this.isFictitiousBalanceActive) {
@@ -157,19 +173,6 @@ export default {
       }
 
       return baseBalance;
-
-      // Prioridade 5: Saldo principal do objeto info
-      const raw = this.info?.balance;
-      if (typeof raw === 'number') return raw;
-      if (typeof raw === 'string') {
-        const parsed = Number(raw);
-        return isNaN(parsed) ? 0 : parsed;
-      }
-
-      // Tratamento de objetos {value, balance}
-      const val = raw?.value ?? raw?.balance ?? 0;
-      const num = Number(val);
-      return isNaN(num) ? 0 : num;
     },
     formattedBalance() {
       const value = this.balanceNumeric;
