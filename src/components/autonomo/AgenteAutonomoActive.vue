@@ -130,6 +130,16 @@
 					>
 						{{ hideValues ? '••••' : (periodProfit < 0 ? '-' : (periodProfit > 0 ? '+' : '')) + preferredCurrencyPrefix + Math.abs(periodProfit).toFixed(2) }}
 					</div>
+					<!-- ✅ Formatação Dual: Mostrar Percentual -->
+					<div class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium tabular-nums opacity-90 mt-1"
+						:class= "periodProfit >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'"
+					>
+						<span v-if="!hideValues">
+							{{ (periodProfitPercent >= 0 ? '+' : '') + periodProfitPercent.toFixed(2) }}%
+						</span>
+						<span v-else-if="hideValues">••••</span>
+					</div>
+					<!-- Percentage Badge Removed -->
 				</div>
 				<!-- Lucro Medio/Dia -->
 				<div 
@@ -149,7 +159,14 @@
 					>
 						{{ hideValues ? '••••' : (avgDailyProfit < 0 ? '-' : (avgDailyProfit > 0 ? '+' : '')) + preferredCurrencyPrefix + Math.abs(avgDailyProfit).toFixed(2) }}
 					</div>
-
+					<div class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium tabular-nums opacity-90"
+						:class="avgDailyProfit >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'"
+					>
+						<span v-if="!hideValues">
+							{{ (avgDailyProfitPercent >= 0 ? '+' : '') + avgDailyProfitPercent.toFixed(2) + '%' }}
+						</span>
+						<span v-else>••••</span>
+					</div>
 				</div>
 			</div>
 		</div>
