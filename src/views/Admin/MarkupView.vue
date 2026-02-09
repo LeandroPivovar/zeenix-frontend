@@ -63,7 +63,7 @@
                                     <span class="stat-percentage">+12.5%</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon"></i>
+                            <i class="fas fa-info-circle stat-info-icon" title="Soma total da comissão gerada no período. Representa 3% do payout de todas as operações realizadas. Use para entender quanto o marketing trouxe de receita real, não apenas leads"></i>
                         </div>
 
                         <div class="stat-card">
@@ -77,7 +77,7 @@
                                     <span class="stat-percentage">+8.3%</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon"></i>
+                            <i class="fas fa-info-circle stat-info-icon" title="Valor total negociado pelos usuários na corretora. Quanto maior o volume, maior o potencial de geração de markup. Campanhas que atraem usuários com alto volume tendem a gerar mais lucro"></i>
                         </div>
 
                         <div class="stat-card">
@@ -91,7 +91,7 @@
                                     <span class="stat-percentage">+15.2%</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon"></i>
+                            <i class="fas fa-info-circle stat-info-icon" title="Soma de todos os depósitos realizados pelos usuários. Indica a qualidade financeira do tráfego. Leads com depósitos maiores geralmente geram mais volume e mais markup."></i>
                         </div>
 
                         <div class="stat-card">
@@ -105,7 +105,7 @@
                                     <span class="stat-percentage">+3.1%</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon"></i>
+                            <i class="fas fa-info-circle stat-info-icon" title="Valor médio depositado por usuário ativo. Use para comparar campanhas, países ou períodos. Quedas nessa métrica podem indicar tráfego menos qualificado."></i>
                         </div>
 
                         <div class="stat-card">
@@ -119,7 +119,7 @@
                                     <span class="stat-percentage">+5.8%</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon"></i>
+                            <i class="fas fa-info-circle stat-info-icon" title="Receita média de markup gerada por usuário. Mostra a eficiência do funil e da retenção. Ideal para avaliar qualidade além da aquisição."></i>
                         </div>
 
                         <div class="stat-card">
@@ -133,7 +133,7 @@
                                     <span class="stat-percentage">+24</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon"></i>
+                            <i class="fas fa-info-circle stat-info-icon" title="Número de usuários com saldo ativo na corretora. Representa a base real de usuários monetizáveis. Crescimento saudável ocorre quando esse número sobe junto com depósito médio e ARPU."></i>
                         </div>
 
                         <div class="stat-card">
@@ -147,7 +147,7 @@
                                     <span class="stat-percentage">+18.2%</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon"></i>
+                            <i class="fas fa-info-circle stat-info-icon" title="Receita média de markup gerada por cada lead desde a aquisição. Essa é a métrica mais importante para decisões de marketing. Ela mostra quanto dinheiro real cada lead traz, independentemente do custo por lead."></i>
                         </div>
                     </div>
 
