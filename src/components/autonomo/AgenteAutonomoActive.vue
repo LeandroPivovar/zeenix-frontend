@@ -1058,12 +1058,12 @@
 			// ✅ Real-time Balance Polling (10 segundos) - Atualiza saldo da corretora em tempo real
 			this.startBalancePolling(10000);
 
-			// ✅ Balance Loading State: Delay before showing real balances (like TopNavbar)
-			const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
-			setTimeout(() => {
-				this.isBalanceReady = true;
-				this.tryUpdateRenderedCapitals();
-			}, delayTime);
+			// ✅ Balance Loading State: Handled by mixin and isBalanceReady watcher
+			// const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
+			// setTimeout(() => {
+			// 	this.isBalanceReady = true;
+			// 	this.tryUpdateRenderedCapitals();
+			// }, delayTime);
 		},
 		beforeUnmount() {
 			window.removeEventListener('click', this.closeDropdownsOnClickOutside);
@@ -1504,6 +1504,12 @@
                    if (newLogs && newLogs.length > 0) {
                        this.checkLogsForStopEvents(newLogs);
                    }
+                }
+            },
+            // ✅ Watch for mixin's loading state completion
+            isBalanceReady(newVal) {
+                if (newVal) {
+                    this.tryUpdateRenderedCapitals();
                 }
             },
             // ✅ Balance Loading State Watcher for initialCapital
