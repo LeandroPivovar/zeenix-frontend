@@ -74,16 +74,10 @@
                         <!-- Resultado -->
                         <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center border-l border-border/50 pl-3 lg:pl-6 flex flex-col items-center">
                             <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Resultado</p>
-                            <div class="flex items-baseline justify-center gap-1 lg:gap-3">
-                                <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)]"
-                                   :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
-                                </p>
-                                <span class="text-xs lg:text-lg font-semibold px-2 py-0.5 rounded-lg border hidden md:inline"
-                                      :class="monitoringStats.profit >= 0 ? 'text-success/90 bg-success/10 border-success/20' : 'text-red-500/90 bg-red-500/10 border-red-500/20'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ Math.min(999, ((monitoringStats.profit / Math.max(monitoringStats.initialBalance, monitoringStats.balance * 0.5, 1)) * 100)).toFixed(2) }}%
-                                </span>
-                            </div>
+                            <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)]"
+                               :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
+                                {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
+                            </p>
                             <div class="mt-2 lg:mt-3 h-1 w-[100px] mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
                                  :class="monitoringStats.profit >= 0 ? 'from-success/70 via-success/40 to-transparent' : 'from-red-500/70 via-red-500/40 to-transparent'"></div>
                         </div>
