@@ -1062,18 +1062,6 @@
 				this.tryUpdateRenderedCapitals();
 			}, delayTime);
 		},
-		watch: {
-			finalCapital(newVal) {
-				if (this.isBalanceReady && newVal >= 0) {
-					this.renderedFinalCapital = newVal;
-				}
-			},
-			initialCapital(newVal) {
-				if (this.isBalanceReady && newVal >= 0) {
-					this.renderedInitialCapital = newVal;
-				}
-			}
-		},
 		beforeUnmount() {
 			window.removeEventListener('click', this.closeDropdownsOnClickOutside);
 			if (this.pollingInterval) {
@@ -1082,15 +1070,6 @@
 			if (this.returnInterval) {
 				clearInterval(this.returnInterval);
 			}
-		},
-		methods: {
-			tryUpdateRenderedCapitals() {
-				if (this.isBalanceReady) {
-					this.renderedFinalCapital = this.finalCapital;
-					this.renderedInitialCapital = this.initialCapital;
-				}
-			},
-			// Other methods continue below...
 		},
 		computed: {
 			currentAgentId() {
@@ -1504,6 +1483,11 @@
                     if (newVal !== undefined && newVal !== null) {
                         console.log('[AgenteAutonomoActive] 💰 finalCapital changed, emitting update:', newVal);
                         this.$emit('live-balance-update', newVal);
+                        
+                        // ✅ Update rendered capital for loading state
+                        if (this.isBalanceReady && newVal >= 0) {
+                            this.renderedFinalCapital = newVal;
+                        }
                     }
                 }
             },
@@ -1514,10 +1498,23 @@
                        this.checkLogsForStopEvents(newLogs);
                    }
                 }
+            },
+            // ✅ Balance Loading State Watcher for initialCapital
+            initialCapital(newVal) {
+                if (this.isBalanceReady && newVal >= 0) {
+                    this.renderedInitialCapital = newVal;
+                }
             }
 		},
 
 		methods: {
+			// ✅ Balance Loading State Method
+			tryUpdateRenderedCapitals() {
+				if (this.isBalanceReady) {
+					this.renderedFinalCapital = this.finalCapital;
+					this.renderedInitialCapital = this.initialCapital;
+				}
+			},
 			checkStopStatus(status) {
 				if (!status || status === 'active' || status === this.lastProcessedStatus) return;
 				
