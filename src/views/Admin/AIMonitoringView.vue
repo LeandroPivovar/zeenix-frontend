@@ -707,6 +707,7 @@ export default {
                 statusDesc: 'Inicializando WebSocket'
             },
             rawBalance: 0, // ✅ RAW Balance for TopNavbar (prevents double-fictitious adjustment)
+            isBalanceReady: false, // ✅ Loading state flag for balance display
 
             monitoringLogs: [],
             monitoringOperations: [],
@@ -767,16 +768,8 @@ export default {
         balanceNumeric(newVal) {
              console.log('[AIMonitoringView] Balance updated from mixin:', newVal);
              
-             // ✅ Use newVal directly (balanceNumeric already includes fictitious balance from mixin)
-             if (newVal > 0) {
-                 this.monitoringStats.balance = newVal;
-
-                 // Set initial balance if not set yet (first load)
-                 if (this.monitoringStats.initialBalance === 0) {
-                     this.monitoringStats.initialBalance = newVal;
-                     console.log('[AIMonitoringView] Initial Balance Set (with fictitious if active):', newVal);
-                 }
-             }
+             // ✅ Use tryUpdateRenderedCapital to respect loading state
+             this.tryUpdateRenderedCapital(newVal);
         },
         activeChartMode(val) {
             this.$nextTick(() => {
@@ -834,6 +827,14 @@ export default {
         if (this.activeChartMode === 'profit') {
             setTimeout(() => this.setupProfitChartTooltip(), 1000);
         }
+
+        // ✅ Balance Loading State: Delay before showing real balance (like TopNavbar)
+        const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
+        setTimeout(() => {
+            this.isBalanceReady = true;
+            // Force first balance update
+            this.tryUpdateRenderedCapital(this.balanceNumeric);
+        }, delayTime);
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobile);
@@ -856,6 +857,18 @@ export default {
             this.isMobile = window.innerWidth < 768;
             if (!this.isMobile) {
                 this.isSidebarOpen = false;
+            }
+        },
+
+        tryUpdateRenderedCapital(val) {
+            if (this.isBalanceReady && val > 0) {
+                this.monitoringStats.balance = val;
+                
+                // Set initial balance if not set yet (first load)
+                if (this.monitoringStats.initialBalance === 0) {
+                    this.monitoringStats.initialBalance = val;
+                    console.log('[AIMonitoringView] Initial Balance Set (with fictitious if active):', val);
+                }
             }
         },
 

@@ -89,7 +89,7 @@
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium">Entrada Inicial</span>
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">
-						{{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(initialCapital) }}
+						{{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(renderedInitialCapital) }}
 					</div>
 				</div>
 
@@ -102,7 +102,7 @@
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital</span>
 					</div>
 				<div class="text-2xl font-bold mb-1 tabular-nums text-left text-[#FAFAFA]">
-						{{ hideValues ? '••••' : (finalCapital >= 0 ? preferredCurrencyPrefix : '-' + preferredCurrencyPrefix) + formatPrice(Math.abs(finalCapital)) }}
+						{{ hideValues ? '••••' : (renderedFinalCapital >= 0 ? preferredCurrencyPrefix : '-' + preferredCurrencyPrefix) + formatPrice(Math.abs(renderedFinalCapital)) }}
 					</div>
 				</div>
 
@@ -1018,6 +1018,11 @@
                 showCycleCompletionModal: false,
                 currentCycleNumber: 1,
                 currentCycleProfit: 0,
+
+                // ✅ Balance Loading State (like TopNavbar)
+                isBalanceReady: false,
+                renderedFinalCapital: 0,
+                renderedInitialCapital: 0,
                 lastProcessedCycle: null,
                 zeusReturn: 3.93,
                 falconReturn: 2.89,
@@ -1049,6 +1054,25 @@
 
 			// Oscilação sutil do retorno
 			this.startReturnOscillation();
+
+			// ✅ Balance Loading State: Delay before showing real balances (like TopNavbar)
+			const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
+			setTimeout(() => {
+				this.isBalanceReady = true;
+				this.tryUpdateRenderedCapitals();
+			}, delayTime);
+		},
+		watch: {
+			finalCapital(newVal) {
+				if (this.isBalanceReady && newVal >= 0) {
+					this.renderedFinalCapital = newVal;
+				}
+			},
+			initialCapital(newVal) {
+				if (this.isBalanceReady && newVal >= 0) {
+					this.renderedInitialCapital = newVal;
+				}
+			}
 		},
 		beforeUnmount() {
 			window.removeEventListener('click', this.closeDropdownsOnClickOutside);
@@ -1058,6 +1082,15 @@
 			if (this.returnInterval) {
 				clearInterval(this.returnInterval);
 			}
+		},
+		methods: {
+			tryUpdateRenderedCapitals() {
+				if (this.isBalanceReady) {
+					this.renderedFinalCapital = this.finalCapital;
+					this.renderedInitialCapital = this.initialCapital;
+				}
+			},
+			// Other methods continue below...
 		},
 		computed: {
 			currentAgentId() {
