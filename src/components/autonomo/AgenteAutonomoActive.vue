@@ -1484,9 +1484,11 @@
                         console.log('[AgenteAutonomoActive] 💰 finalCapital changed, emitting update:', newVal);
                         this.$emit('live-balance-update', newVal);
                         
-                        // ✅ Update rendered capital for loading state
-                        if (newVal >= 0) {
+                        // ✅ [ZENIX v2.1] Atualizar capital renderizado apenas quando o saldo estiver pronto
+                        if (this.isBalanceReady && newVal >= 0) {
                             this.renderedFinalCapital = newVal;
+                        } else if (!this.isBalanceReady) {
+                            this.renderedFinalCapital = 0;
                         }
                     }
                 }
@@ -1503,6 +1505,8 @@
             initialCapital(newVal) {
                 if (this.isBalanceReady && newVal >= 0) {
                     this.renderedInitialCapital = newVal;
+                } else if (!this.isBalanceReady) {
+                    this.renderedInitialCapital = 0;
                 }
             }
 		},
