@@ -103,10 +103,10 @@ export default {
       return this.getCurrencyPrefix?.(this.info?.currency || 'USD') || '$';
     },
     balanceNumeric() {
-      // ✅ Prioridade Absoluta: Se saldo fictício estiver ativo, retornar APENAS o saldo fictício (substituição completa)
-      // Independentemente de ser Real ou Demo, o "Master Trader" deve ver o saldo fake para fins de interface e validação inicial
-      if (this.isFictitiousBalanceActive) {
-        return Number(this.fictitiousBalance) || 0;
+      // ✅ Prioridade Absoluta: Se saldo fictício estiver ativo E FOR MAIOR QUE ZERO, retornar APENAS o saldo fictício.
+      // Se for zero, assumimos que não foi configurado corretamente ou o usuário quer usar o saldo real/demo mascarado.
+      if (this.isFictitiousBalanceActive && Number(this.fictitiousBalance) > 0) {
+        return Number(this.fictitiousBalance);
       }
 
       // Se for demo, prioridade 1: demo_amount do backend, senão fallback para balancesByCurrencyDemo['USD']
