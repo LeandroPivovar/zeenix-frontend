@@ -819,8 +819,10 @@ export default {
         const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
         setTimeout(() => {
             this.isBalanceReady = true;
-            // Force first balance update
-            this.tryUpdateRenderedCapital(this.balanceNumeric);
+            // Force first balance update from Mixin (Source of Truth)
+            if (this.balanceNumeric > 0) {
+                this.tryUpdateRenderedCapital(this.balanceNumeric);
+            }
         }, delayTime);
 
         // ✅ Listen for global balance updates for real-time sync
@@ -870,6 +872,13 @@ export default {
             const newBalance = event.detail.balance;
             console.log('[AIMonitoringView] Balance updated via global event:', newBalance);
             this.tryUpdateRenderedCapital(newBalance);
+        },
+
+        // ✅ Watch for Mixin Balance Changes (Redundant but safe)
+        updateLocalBalanceFromMixin() {
+             if (this.balanceNumeric > 0) {
+                 this.tryUpdateRenderedCapital(this.balanceNumeric);
+             }
         },
 
         closeSidebar() {
@@ -1475,8 +1484,17 @@ export default {
                     
                     // ✅ UPDATE BALANCE & PROFIT (Real-time sync)
                     this.monitoringStats.profit += estimatedProfit;
-                    this.monitoringStats.balance = Number(this.monitoringStats.balance) + estimatedProfit;
-                    this.rawBalance = Number(this.rawBalance) + estimatedProfit;
+                    
+                    // UPDATE GLOBAL BALANCE VIA MIXIN EVENT
+                    // This ensures TopNavbar gets the update too
+                    const newTotalBalance = Number(this.balanceNumeric) + estimatedProfit;
+                    this.monitoringStats.balance = newTotalBalance;
+                    this.rawBalance = newTotalBalance; // Update local raw
+                    
+                    // Emit Global Event to update TopNavbar
+                    window.dispatchEvent(new CustomEvent('balanceUpdated', {
+                        detail: { balance: newTotalBalance, timestamp: Date.now() }
+                    }));
                     
                     const profitTick = { time: Math.floor(Date.now() / 1000), value: parseFloat(this.monitoringStats.profit.toFixed(2)) };
                     if (this.profitChartData.length > 0 && profitTick.time <= this.profitChartData[this.profitChartData.length - 1].time) {

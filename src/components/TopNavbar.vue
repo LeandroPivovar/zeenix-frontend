@@ -502,6 +502,13 @@ export default {
     window.addEventListener('masterTraderSettingsUpdated', this.handleMasterTraderSettingsUpdate);
     window.addEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
     
+    // ✅ Listen for global balance updates from AIMonitoringView
+    window.addEventListener('balanceUpdated', (e) => {
+        if (e.detail && e.detail.balance !== undefined) {
+             this.tryUpdateRenderedBalance(e.detail.balance);
+        }
+    });
+    
     // Carregar configurações antes de liberar o saldo
     await this.loadMasterTraderSettings();
     await this.loadMasterTraderSettings();
