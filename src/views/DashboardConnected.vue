@@ -17,7 +17,7 @@
         v-if="!isMobile"
         :is-sidebar-collapsed="localSidebarCollapsed"
         :is-dashboard="true"
-        :balance="info?.balance"
+        :balance="currentBalance?.balance || info?.balance"
         :account-type="accountType"
         @open-settings="toggleSettingsModal"
         @account-type-changed="null"
