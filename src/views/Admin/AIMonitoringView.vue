@@ -14,7 +14,7 @@
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
-                :balance="rawBalance"
+                :balance="currentBalance?.balance || info?.balance"
                 :account-type="accountType"
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -542,7 +542,7 @@
 
         <SettingsSidebar 
             :is-open="showSettingsModal" 
-            :balance="balanceNumeric"
+            :balance="currentBalance?.balance || info?.balance"
             :account-type="accountType"
             :balances-by-currency-real="balancesByCurrencyReal"
             :balances-by-currency-demo="balancesByCurrencyDemo"
