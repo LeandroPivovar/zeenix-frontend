@@ -768,20 +768,16 @@ export default {
     watch: {
         balanceNumeric(newVal) {
              console.log('[AIMonitoringView] Balance updated from mixin:', newVal);
-             if (newVal !== undefined && newVal !== null) {
-                 this.monitoringStats.balance = newVal;
-
-                 // ✅ SYNC RAW BALANCE (Use replacement logic for fictitious balance)
-                 if (this.accountType === 'demo' && this.isFictitiousBalanceActive) {
-                     this.rawBalance = Number(this.fictitiousBalance) || 0;
-                 } else {
-                     this.rawBalance = newVal;
-                 }
+             // ✅ Use the same pattern as TopNavbar for consistency
+             const currentBalance = this.currentBalance?.balance || this.info?.balance || newVal || 0;
+             
+             if (currentBalance > 0) {
+                 this.monitoringStats.balance = currentBalance;
 
                  // Set initial balance if not set yet (first load)
-                 if (this.monitoringStats.initialBalance === 0 && newVal > 0) {
-                     this.monitoringStats.initialBalance = newVal;
-                     console.log('[AIMonitoringView] Initial Balance Set:', newVal);
+                 if (this.monitoringStats.initialBalance === 0) {
+                     this.monitoringStats.initialBalance = currentBalance;
+                     console.log('[AIMonitoringView] Initial Balance Set:', currentBalance);
                  }
              }
         },
@@ -818,18 +814,13 @@ export default {
         this.loadConfiguration();
         this.loadMasterTraderSettings();
         
-        // Sincronizar saldo inicial com o mixin se disponível
-        if (this.balanceNumeric > 0) {
-            this.monitoringStats.balance = this.balanceNumeric;
-            
-            // ✅ INITIALIZE RAW BALANCE (Use replacement logic for fictitious balance)
-            if (this.accountType === 'demo' && this.isFictitiousBalanceActive) {
-                this.rawBalance = Number(this.fictitiousBalance) || 0;
-            } else {
-                this.rawBalance = this.balanceNumeric;
+        // ✅ Initialize balance using the same pattern as TopNavbar (currentBalance?.balance || info?.balance)
+        const initialBalance = this.currentBalance?.balance || this.info?.balance || 0;
+        if (initialBalance > 0) {
+            this.monitoringStats.balance = initialBalance;
+            if (this.monitoringStats.initialBalance === 0) {
+                this.monitoringStats.initialBalance = initialBalance;
             }
-
-            if (this.monitoringStats.initialBalance === 0) this.monitoringStats.initialBalance = this.balanceNumeric;
         }
         
         this.initTickConnection();
