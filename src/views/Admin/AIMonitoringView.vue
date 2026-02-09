@@ -77,6 +77,9 @@
                             <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)]"
                                :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
                                 {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
+                                <span class="text-sm lg:text-lg opacity-80 ml-1">
+                                    ({{ monitoringStats.profit >= 0 ? '+' : '' }}{{ Math.min(999, ((monitoringStats.profit / Math.max(monitoringStats.initialBalance, monitoringStats.balance * 0.5, 1)) * 100)).toFixed(2) }}%)
+                                </span>
                             </p>
                             <div class="mt-2 lg:mt-3 h-1 w-[100px] mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
                                  :class="monitoringStats.profit >= 0 ? 'from-success/70 via-success/40 to-transparent' : 'from-red-500/70 via-red-500/40 to-transparent'"></div>
