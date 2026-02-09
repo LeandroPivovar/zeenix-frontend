@@ -13,19 +13,6 @@
             />
 
             <main class="layout-content">
-                <div class="main-header header-markup">
-                    <div class="main-header-left">
-                        <h1 class="header-title">Markup – Comissões</h1>
-                        <p class="header-subtitle">
-                            Comissão de 3% sobre o payout de cada operação realizada.
-                        </p>
-                    </div>
-                    <div class="main-header-right">
-                        <button class="btn btn-outline-metrics"><img src="../../assets/icons/stats-green.svg" alt="" width="16px"> Análise de Métricas</button>
-                        <button class="btn btn-export" @click="exportReportToPDF"><img src="../../assets/icons/box-down.svg" alt="" width="18px"> Exportar Relatório</button>
-                    </div>
-                </div>
-
                 <div class="main-content">
                     <!-- Expanded Filters -->
                     <div class="filter-controls">
