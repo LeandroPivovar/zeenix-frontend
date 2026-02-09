@@ -96,38 +96,6 @@
           </div>
         </div>
 
-        <!-- ✅ MASTER TRADER SECTION (Restored) -->
-        <div v-if="isMasterTrader" class="settings-modal-section settings-modal-section-with-border">
-          <h3 class="text-white font-bold text-sm mb-3 uppercase tracking-wider flex items-center gap-2">
-            <i class="fa-solid fa-user-secret text-[#22C55E]"></i>
-            Master Trader
-          </h3>
-          
-          <div class="glass-card rounded-xl p-4">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-white/80 text-sm font-medium">Saldo Fictício</span>
-              <label class="switch-small">
-                <input type="checkbox" v-model="isFictitiousBalanceActive" @change="saveMasterTraderSettings">
-                <span class="slider-small"></span>
-              </label>
-            </div>
-            
-            <div v-if="isFictitiousBalanceActive" class="space-y-3">
-              <div>
-                <label class="text-[10px] uppercase font-bold text-white/50 mb-1 block">Valor do Saldo</label>
-                <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 font-bold">$</span>
-                  <input 
-                    type="number" 
-                    v-model="fictitiousBalance" 
-                    @change="saveMasterTraderSettings"
-                    class="w-full bg-[#0B0B0B] border border-white/10 rounded-lg py-2 pl-7 pr-3 text-white font-bold focus:border-[#22C55E] focus:outline-none transition-colors"
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
 
 
