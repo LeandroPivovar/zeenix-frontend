@@ -81,7 +81,7 @@
                                 </p>
                                 <span class="text-xs lg:text-lg font-semibold px-2 py-0.5 rounded-lg border hidden md:inline"
                                       :class="monitoringStats.profit >= 0 ? 'text-success/90 bg-success/10 border-success/20' : 'text-red-500/90 bg-red-500/10 border-red-500/20'">
-                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ ((monitoringStats.profit / (monitoringStats.initialBalance || 1)) * 100).toFixed(2) }}%
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ Math.min(999, ((monitoringStats.profit / Math.max(monitoringStats.initialBalance, monitoringStats.balance * 0.5, 1)) * 100)).toFixed(2) }}%
                                 </span>
                             </div>
                             <div class="mt-2 lg:mt-3 h-1 w-[100px] mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
