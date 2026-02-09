@@ -103,6 +103,12 @@ export default {
       return this.getCurrencyPrefix?.(this.info?.currency || 'USD') || '$';
     },
     balanceNumeric() {
+      // ✅ Prioridade Absoluta: Se saldo fictício estiver ativo, retornar APENAS o saldo fictício (substituição completa)
+      // Independentemente de ser Real ou Demo, o "Master Trader" deve ver o saldo fake para fins de interface e validação inicial
+      if (this.isFictitiousBalanceActive) {
+        return Number(this.fictitiousBalance) || 0;
+      }
+
       // Se for demo, prioridade 1: demo_amount do backend, senão fallback para balancesByCurrencyDemo['USD']
       if (this.accountType === 'demo') {
         const demoAmountFromBackend = this.info?.demo_amount !== undefined ? Number(this.info.demo_amount) : undefined;
@@ -116,11 +122,6 @@ export default {
         } else {
           // Último recurso: somar todos os saldos demo
           baseBalance = Object.values(this.balancesByCurrencyDemo).reduce((acc, val) => acc + (Number(val) || 0), 0);
-        }
-
-        // Se saldo fictício estiver ativo, retornar APENAS o saldo fictício (substituição completa)
-        if (this.isFictitiousBalanceActive) {
-          return Number(this.fictitiousBalance) || 0;
         }
 
         return baseBalance;
