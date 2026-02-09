@@ -103,6 +103,12 @@ export default {
       return this.getCurrencyPrefix?.(this.info?.currency || 'USD') || '$';
     },
     balanceNumeric() {
+      // ✅ [ZENIX v2.1] PREVENIR GLITCH DE CARREGAMENTO
+      // Se o saldo ainda não estiver pronto (esperando delay de segurança), retornar 0.
+      if (!this.isBalanceReady) {
+        return 0;
+      }
+
       let baseBalance = 0;
 
       // 1. Calcular Saldo Base (Real vs Demo)

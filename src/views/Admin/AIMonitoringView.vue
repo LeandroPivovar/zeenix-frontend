@@ -66,8 +66,11 @@
 
                         <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center md:border-l border-border/50 md:pl-4 lg:pl-6">
                             <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Capital</p>
-                            <p class="text-xl lg:text-3xl font-bold text-foreground tracking-tight">
+                            <p v-if="isBalanceReady" class="text-xl lg:text-3xl font-bold text-foreground tracking-tight">
                                 {{ preferredCurrencyPrefix }} {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }},{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}
+                            </p>
+                            <p v-else class="text-xl lg:text-3xl font-bold text-foreground/40 tracking-tight">
+                                {{ preferredCurrencyPrefix }} 0,00
                             </p>
                         </div>
 
@@ -815,15 +818,22 @@ export default {
             setTimeout(() => this.setupProfitChartTooltip(), 1000);
         }
 
-        // ✅ Balance Loading State: Delay before showing real balance (like TopNavbar)
-        const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
-        setTimeout(() => {
-            this.isBalanceReady = true;
-            // Force first balance update from Mixin (Source of Truth)
-            if (this.balanceNumeric > 0) {
-                this.tryUpdateRenderedCapital(this.balanceNumeric);
+        // ✅ Balance Loading State: Wait for authorization + stabilization
+        // This prevents the $2000 fictitious jump before real balance arrives
+        const checkBalanceInterval = setInterval(() => {
+            if (this.isAuthorized && this.info && this.info.balance !== undefined) {
+                setTimeout(() => {
+                    this.isBalanceReady = true;
+                    if (this.balanceNumeric > 0) {
+                        this.tryUpdateRenderedCapital(this.balanceNumeric);
+                    }
+                }, 300);
+                clearInterval(checkBalanceInterval);
             }
-        }, delayTime);
+        }, 100);
+
+        // Safety timeout (max 5s)
+        setTimeout(() => clearInterval(checkBalanceInterval), 5000);
 
         // ✅ Listen for global balance updates for real-time sync
         window.addEventListener('balanceUpdated', this.handleBalanceUpdate);
@@ -860,19 +870,21 @@ export default {
         },
 
         tryUpdateRenderedCapital(val) {
-            if (this.isBalanceReady && val > 0) {
-                this.monitoringStats.balance = val;
-                
-                // Set initial balance if not set yet (first load)
-                if (this.monitoringStats.initialBalance === 0) {
-                    this.monitoringStats.initialBalance = val;
-                    console.log('[AIMonitoringView] Initial Balance Set (with fictitious if active):', val);
-                }
+            // Update balance regardless of isBalanceReady (so it's ready when the flag flips)
+            this.monitoringStats.balance = Number(val) || 0;
+            
+            // Still only set initialBalance once we have a valid first value
+            if (this.monitoringStats.initialBalance === 0 && val > 0) {
+                this.monitoringStats.initialBalance = val;
+                console.log('[AIMonitoringView] Initial Balance Set:', val);
             }
         },
 
         // ✅ Handle global balance update event for real-time sync
         handleBalanceUpdate(event) {
+            // Se o update veio desta própria view, ignorar para evitar loops/glitches
+            if (event.detail?.source === 'AIMonitoringView') return;
+            
             const newBalance = event.detail.balance;
             console.log('[AIMonitoringView] Balance updated via global event:', newBalance);
             this.tryUpdateRenderedCapital(newBalance);
@@ -1242,6 +1254,7 @@ export default {
                                      `Capital: ${this.currencySymbol}${this.balanceNumeric.toFixed(2)}`
                                 ], 'info');
                                 this.subscribeTicks();
+                                this.subscribeToBalance(); // ✅ Subscribe to real-time balance updates
                             }
                         }
 
@@ -1391,6 +1404,31 @@ export default {
                         if (msg.msg_type === 'proposal_open_contract') {
                             this.handleContractUpdate(msg.proposal_open_contract);
                         }
+
+                        // ✅ REAL-TIME BALANCE UPDATE
+                        if (msg.msg_type === 'balance') {
+                            const newBalance = parseFloat(msg.balance.balance);
+                            const isVirtual = msg.balance.is_virtual === 1;
+                            
+                            // Update info for mixin
+                            this.info = {
+                                ...this.info,
+                                balance: newBalance,
+                                real_amount: !isVirtual ? newBalance : (this.info?.real_amount || 0),
+                                demo_amount: isVirtual ? newBalance : (this.info?.demo_amount || 0)
+                            };
+                            
+                            // Update monitoringStats
+                            this.monitoringStats.balance = this.balanceNumeric;
+                            this.rawBalance = newBalance;
+                            
+                            // Emit global event for TopNavbar and other components
+                            window.dispatchEvent(new CustomEvent('balanceUpdated', { 
+                                detail: { balance: newBalance, isVirtual } 
+                            }));
+                            
+                            console.log('[AIMonitoring] 💰 Balance updated:', newBalance);
+                        }
                     } catch (e) {
                         console.error('WebSocket message error:', e);
                     }
@@ -1438,6 +1476,16 @@ export default {
                 }));
                 this.monitoringStats.status = 'Monitorando';
                 this.monitoringStats.statusDesc = `Analisando ${market} em tempo real`;
+            }
+        },
+        // ✅ Subscribe to real-time balance updates from Deriv API
+        subscribeToBalance() {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(JSON.stringify({
+                    balance: 1,
+                    subscribe: 1
+                }));
+                console.log('[AIMonitoring] 💰 Subscribed to balance updates');
             }
         },
         handleTickMessage(msg) {
@@ -2132,6 +2180,20 @@ export default {
                 // Update balance locally (will be synced by mixin watcher later)
                 this.monitoringStats.balance = Number(this.monitoringStats.balance) + actualChange;
                 this.rawBalance = Number(this.rawBalance) + actualChange; // ✅ SYNC RAW BALANCE
+
+                // ✅ UPDATE GLOBAL BALANCE VIA MIXIN EVENT
+                // This ensures TopNavbar gets the update too immediately
+                if (this.info) this.info.balance = this.rawBalance;
+                
+                // IMPORTANT: Send the SUMMED balance (Mixin source of truth) 
+                // to avoid "losing" fictitious balance in other components
+                window.dispatchEvent(new CustomEvent('balanceUpdated', {
+                    detail: { 
+                        balance: this.balanceNumeric, 
+                        source: 'AIMonitoringView', // Tag to avoid loops
+                        timestamp: Date.now() 
+                    }
+                }));
 
                 // ✅ UPDATE PEAK PROFIT & STOP BLINDADO
                 if (this.monitoringStats.profit > this.sessionState.peakProfit) {

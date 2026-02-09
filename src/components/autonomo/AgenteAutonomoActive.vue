@@ -1055,12 +1055,15 @@
 			// Oscilação sutil do retorno
 			this.startReturnOscillation();
 
-			// ✅ Balance Loading State: Delay before showing real balances (like TopNavbar)
-			const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
-			setTimeout(() => {
-				this.isBalanceReady = true;
-				this.tryUpdateRenderedCapitals();
-			}, delayTime);
+			// ✅ Real-time Balance Polling (10 segundos) - Atualiza saldo da corretora em tempo real
+			this.startBalancePolling(10000);
+
+			// ✅ Balance Loading State: Handled by mixin and isBalanceReady watcher
+			// const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
+			// setTimeout(() => {
+			// 	this.isBalanceReady = true;
+			// 	this.tryUpdateRenderedCapitals();
+			// }, delayTime);
 		},
 		beforeUnmount() {
 			window.removeEventListener('click', this.closeDropdownsOnClickOutside);
@@ -1070,6 +1073,8 @@
 			if (this.returnInterval) {
 				clearInterval(this.returnInterval);
 			}
+			// ✅ Parar polling de saldo ao desmontar
+			this.stopBalancePolling();
 		},
 		computed: {
 			currentAgentId() {
@@ -1484,9 +1489,11 @@
                         console.log('[AgenteAutonomoActive] 💰 finalCapital changed, emitting update:', newVal);
                         this.$emit('live-balance-update', newVal);
                         
-                        // ✅ Update rendered capital for loading state
+                        // ✅ [ZENIX v2.1] Atualizar capital renderizado apenas quando o saldo estiver pronto
                         if (this.isBalanceReady && newVal >= 0) {
                             this.renderedFinalCapital = newVal;
+                        } else if (!this.isBalanceReady) {
+                            this.renderedFinalCapital = 0;
                         }
                     }
                 }
@@ -1499,10 +1506,18 @@
                    }
                 }
             },
+            // ✅ Watch for mixin's loading state completion
+            isBalanceReady(newVal) {
+                if (newVal) {
+                    this.tryUpdateRenderedCapitals();
+                }
+            },
             // ✅ Balance Loading State Watcher for initialCapital
             initialCapital(newVal) {
                 if (this.isBalanceReady && newVal >= 0) {
                     this.renderedInitialCapital = newVal;
+                } else if (!this.isBalanceReady) {
+                    this.renderedInitialCapital = 0;
                 }
             }
 		},
