@@ -1254,6 +1254,7 @@ export default {
                                      `Capital: ${this.currencySymbol}${this.balanceNumeric.toFixed(2)}`
                                 ], 'info');
                                 this.subscribeTicks();
+                                this.subscribeToBalance(); // ✅ Subscribe to real-time balance updates
                             }
                         }
 
@@ -1403,6 +1404,31 @@ export default {
                         if (msg.msg_type === 'proposal_open_contract') {
                             this.handleContractUpdate(msg.proposal_open_contract);
                         }
+
+                        // ✅ REAL-TIME BALANCE UPDATE
+                        if (msg.msg_type === 'balance') {
+                            const newBalance = parseFloat(msg.balance.balance);
+                            const isVirtual = msg.balance.is_virtual === 1;
+                            
+                            // Update info for mixin
+                            this.info = {
+                                ...this.info,
+                                balance: newBalance,
+                                real_amount: !isVirtual ? newBalance : (this.info?.real_amount || 0),
+                                demo_amount: isVirtual ? newBalance : (this.info?.demo_amount || 0)
+                            };
+                            
+                            // Update monitoringStats
+                            this.monitoringStats.balance = this.balanceNumeric;
+                            this.rawBalance = newBalance;
+                            
+                            // Emit global event for TopNavbar and other components
+                            window.dispatchEvent(new CustomEvent('balanceUpdated', { 
+                                detail: { balance: newBalance, isVirtual } 
+                            }));
+                            
+                            console.log('[AIMonitoring] 💰 Balance updated:', newBalance);
+                        }
                     } catch (e) {
                         console.error('WebSocket message error:', e);
                     }
@@ -1450,6 +1476,16 @@ export default {
                 }));
                 this.monitoringStats.status = 'Monitorando';
                 this.monitoringStats.statusDesc = `Analisando ${market} em tempo real`;
+            }
+        },
+        // ✅ Subscribe to real-time balance updates from Deriv API
+        subscribeToBalance() {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(JSON.stringify({
+                    balance: 1,
+                    subscribe: 1
+                }));
+                console.log('[AIMonitoring] 💰 Subscribed to balance updates');
             }
         },
         handleTickMessage(msg) {
