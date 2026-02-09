@@ -827,6 +827,8 @@ export default {
 
         // ✅ Listen for global balance updates for real-time sync
         window.addEventListener('balanceUpdated', this.handleBalanceUpdate);
+        window.addEventListener('masterTraderSettingsUpdated', this.handleMasterTraderUpdate);
+        window.addEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobile);
@@ -844,8 +846,10 @@ export default {
         }
         this.stopTickConnection();
         
-        // ✅ Cleanup balance update listener
+        // ✅ Cleanup balance update listeners
         window.removeEventListener('balanceUpdated', this.handleBalanceUpdate);
+        window.removeEventListener('masterTraderSettingsUpdated', this.handleMasterTraderUpdate);
+        window.removeEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
     },
     methods: {
         checkMobile() {
@@ -1075,7 +1079,7 @@ export default {
                 const token = localStorage.getItem('token');
                 if (!token) return;
 
-                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const res = await fetch(`${apiBaseUrl}/settings`, {
                     method: 'GET',
                     headers: {
@@ -1087,10 +1091,37 @@ export default {
                 if (res.ok) {
                     const data = await res.json();
                     if (data.isFictitiousBalanceActive !== undefined) this.isFictitiousBalanceActive = data.isFictitiousBalanceActive;
+                    if (data.fictitiousBalance !== undefined) this.fictitiousBalance = parseFloat(data.fictitiousBalance);
                     if (data.showDollarSign !== undefined) this.showDollarSign = data.showDollarSign;
+                    console.log('[AIMonitoringView] Master Trader settings loaded:', {
+                        active: this.isFictitiousBalanceActive,
+                        amount: this.fictitiousBalance
+                    });
                 }
             } catch (error) {
-                console.error('[AIMonitoringView] Erro ao carregar configurações de Master Trader:', error);
+                console.error('[AIMonitoringView] Error loading Master Trader settings:', error);
+            }
+        },
+        handleMasterTraderUpdate(event) {
+            if (event.detail) {
+                this.fictitiousBalance = event.detail.fictitiousBalance || this.fictitiousBalance;
+                this.isFictitiousBalanceActive = event.detail.isFictitiousBalanceActive !== undefined ? event.detail.isFictitiousBalanceActive : this.isFictitiousBalanceActive;
+                this.showDollarSign = event.detail.showDollarSign !== undefined ? event.detail.showDollarSign : this.showDollarSign;
+                
+                // Forçar atualização do capital renderizado se o saldo fictício mudou
+                if (this.balanceNumeric > 0) {
+                    this.tryUpdateRenderedCapital(this.balanceNumeric);
+                }
+            }
+        },
+        handleFictitiousBalanceChange(event) {
+            const { enabled, amount } = event.detail;
+            this.isFictitiousBalanceActive = enabled;
+            this.fictitiousBalance = amount;
+            
+            // Forçar atualização do capital renderizado
+            if (this.balanceNumeric > 0) {
+                this.tryUpdateRenderedCapital(this.balanceNumeric);
             }
         },
         async initTickConnection() {

@@ -511,7 +511,6 @@ export default {
     
     // Carregar configurações antes de liberar o saldo
     await this.loadMasterTraderSettings();
-    await this.loadMasterTraderSettings();
     // await this.loadStudentGroupConfig(); // Movido para Sidebar
 
     // Delay de segurança: 200ms para conta fictícia (conforme solicitado), 300ms para contas normais
