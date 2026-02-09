@@ -51,7 +51,9 @@ import SettingsSidebar from '../components/SettingsSidebar.vue';
 import StrategyManager from '../components/ActiveStrategy/StrategyManager.vue';
 import MonitoringDashboard from '../components/ActiveStrategy/MonitoringDashboard.vue';
 import { StrategyAnalysis } from '../utils/StrategyAnalysis';
+import { StrategyAnalysis } from '../utils/StrategyAnalysis';
 import RiskManager from '../utils/RiskManager'; // ✅ Added RiskManager
+import accountBalanceMixin from '../mixins/accountBalanceMixin'; // ✅ Added Mixin
 
 // Import strategy configurations
 import apolloStrategy from '../utils/strategies/apollo.json';
@@ -77,6 +79,7 @@ export default {
         StrategyManager,
         MonitoringDashboard
     },
+    mixins: [accountBalanceMixin], // ✅ Use Mixin
     data() {
         return {
             isSidebarOpen: true,
@@ -130,9 +133,19 @@ export default {
     mounted() {
         this.handleResize();
         window.addEventListener('resize', this.handleResize);
+        
+        // ✅ Listen for global balance updates
+        window.addEventListener('balanceUpdated', this.handleGlobalBalanceUpdate);
+        
+        // ✅ Initialize balance from mixin if available
+        if (this.balanceNumeric > 0) {
+            this.balance = this.balanceNumeric;
+            this.monitoringStats.balance = this.balanceNumeric;
+        }
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
+        window.removeEventListener('balanceUpdated', this.handleGlobalBalanceUpdate);
         this.stopTickConnection();
     },
     methods: {
@@ -250,8 +263,16 @@ export default {
                                 this.addLog(`❌ Erro de autorização: ${msg.error.message}`, 'error');
                             } else {
                                 this.isAuthorized = true;
-                                this.balance = msg.authorize.balance;
-                                this.monitoringStats.balance = this.balance;
+                                const baseBalance = msg.authorize.balance;
+                                
+                                // ✅ Update local balance but respect mixin source of truth if possible
+                                this.balance = baseBalance;
+                                this.monitoringStats.balance = baseBalance;
+                                
+                                // ✅ Sync Mixin (if needed, though mixin usually handles its own fetch)
+                                // If we want to force update global state from this view:
+                                // window.dispatchEvent(new CustomEvent('balanceUpdated', { detail: { balance: baseBalance } }));
+                                
                                 this.addLog(`✅ Autorizado! Saldo: $${this.balance}`, 'success');
                                 this.subscribeTicks();
                             }
@@ -563,8 +584,15 @@ export default {
 
                 // Update Stats
                 this.monitoringStats.profit += trade.pnl;
-                this.balance = parseFloat(this.balance) + trade.pnl;
-                this.monitoringStats.balance = this.balance;
+                
+                // ✅ Update Balance & Dispatch Global Event
+                const newBalance = parseFloat(this.balance) + trade.pnl;
+                this.balance = newBalance;
+                this.monitoringStats.balance = newBalance;
+                
+                window.dispatchEvent(new CustomEvent('balanceUpdated', {
+                    detail: { balance: newBalance, timestamp: Date.now() }
+                }));
 
                 // Sync RiskManager State
                 RiskManager.processTradeResult(

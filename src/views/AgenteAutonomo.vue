@@ -364,6 +364,12 @@
       handleLiveBalanceUpdate(newBalance) {
         if (newBalance !== undefined && newBalance !== null) {
           console.log('[AgenteAutonomoView] 💰 Recebida atualização de saldo live:', newBalance);
+          
+          // Emit global event for TopNavbar and other listeners
+          window.dispatchEvent(new CustomEvent('balanceUpdated', {
+            detail: { balance: newBalance, timestamp: Date.now() }
+          }));
+
           // O mixin deve atualizar accountBalanceProp. 
           // Se o mixin permitir escrita direta ou se observamos o mesmo barramento.
           if (this.updateBalance) {
