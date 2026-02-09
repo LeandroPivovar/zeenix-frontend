@@ -14,7 +14,7 @@
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
-                :balance="currentBalance?.balance || info?.balance"
+                :balance="info?.balance"
                 :account-type="accountType"
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -766,8 +766,10 @@ export default {
     watch: {
         balanceNumeric(newVal) {
              console.log('[AIMonitoringView] Balance updated from mixin:', newVal);
-             // ✅ Use the same pattern as TopNavbar for consistency
-             const currentBalance = this.currentBalance?.balance || this.info?.balance || newVal || 0;
+             
+             // ✅ FIX: Use newVal (which is balanceNumeric, already summed with fictitious balance if active)
+             // We prioritize newVal because it is the computed, correct, summed balance.
+             const currentBalance = newVal || this.info?.balance || 0;
              
              if (currentBalance > 0) {
                  this.monitoringStats.balance = currentBalance;
@@ -812,8 +814,8 @@ export default {
         this.loadConfiguration();
         this.loadMasterTraderSettings();
         
-        // ✅ Initialize balance using the same pattern as TopNavbar (currentBalance?.balance || info?.balance)
-        const initialBalance = this.currentBalance?.balance || this.info?.balance || 0;
+        // ✅ Initialize balance using balanceNumeric (summed)
+        const initialBalance = this.balanceNumeric || this.info?.balance || 0;
         if (initialBalance > 0) {
             this.monitoringStats.balance = initialBalance;
             if (this.monitoringStats.initialBalance === 0) {
