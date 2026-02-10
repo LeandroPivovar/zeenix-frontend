@@ -3279,15 +3279,47 @@ export default {
 
             this.monitoringStats.profit += profit;
             
+            const oldAnalysis = this.sessionState.analysisType;
+            const oldMode = this.sessionState.negotiationMode || 'VELOZ';
+
             // Trigger Risk Manager
             RiskManager.processTradeResult(
                 this.sessionState, 
                 win, 
                 profit, 
                 stake, 
-                contract.analysisType, // 'PRINCIPAL' or 'RECUPERACAO'
-                this.recoveryConfig.lossesToActivate
+                contract.analysisType, 
+                {
+                    ...this.form,
+                    ...this.recoveryConfig,
+                    riskProfile: this.form.riskProfile || this.sessionState.modoMartingale || 'moderado'
+                }
             );
+
+            // --- Recovery Logs ---
+            const isConservador = (this.form.riskProfile || this.sessionState.modoMartingale || '').toLowerCase() === 'conservador';
+            
+            if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
+                if (isConservador) {
+                    this.addLog('⚠️ <b>Martingale Parcelado Ativo</b><br>Modo CONSERVADOR: Perda será recuperada em 4 parcelas.', 'warning');
+                } else {
+                    this.addLog('⚠️ <b>Ativação de Recuperação</b><br>Modo Martingale iniciado.', 'warning');
+                }
+            } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
+                if (isConservador) {
+                    this.addLog('✅ <b>Recuperação Conservadora Concluída</b><br>Ciclo de parcelas finalizado com sucesso.', 'success');
+                } else {
+                    this.addLog('✅ <b>Recuperação Concluída</b><br>Retornando ao modo principal.', 'success');
+                }
+            } else if (this.sessionState.analysisType === 'RECUPERACAO' && !win) {
+                if (isConservador) {
+                    this.addLog(`📉 <b>Re-parcelamento Ativo</b><br>Loss no parcelamento (${this.sessionState.recoverySplitsUsed}/3). Novo desdobramento iniciado.`, 'warning');
+                }
+            }
+
+            if (this.sessionState.negotiationMode !== oldMode) {
+                this.addLog(`🧭 <b>Alteração de Sensibilidade</b><br>MODO ${this.sessionState.negotiationMode} ATIVADO`, 'warning');
+            }
 
             // Mark as processed in Main Contract List to prevent double counting
             // We need to find the contract in activeContracts if it exists there, 

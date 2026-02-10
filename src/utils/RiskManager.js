@@ -56,7 +56,13 @@ export const RiskManager = {
             totalLossAccumulated: 0,
             recoveredAmount: 0,
             skipSorosNext: false,
-            lastContractType: null
+            lastContractType: null,
+
+            // Conservador specific
+            recoveryInstallmentAmount: 0,
+            recoveryInstallmentsRemaining: 0,
+            recoverySplitsUsed: 0,
+            consecutiveLossesInRecovery: 0
         };
     },
 
@@ -110,41 +116,44 @@ export const RiskManager = {
         // 1. RECOVERY MODE
         if (state.analysisType === 'RECUPERACAO') {
             // ✅ USER REQUEST: Check if Martingale is enabled
-            // config.martingale defaults to true if undefined
             if (config.martingale === false) {
                 console.log('[RiskManager] Martingale Disabled -> Using Base Stake');
                 return baseStake;
             }
 
-            // ✅ RISK PROFILE: FIXO (User Request)
-            // Forces Base Stake during recovery (0% increase) regardless of losses
+            // ✅ RISK PROFILE: FIXO
             if (riskProfile === 'fixo') {
                 console.log('[RiskManager] Risk Profile FIXO -> Using Base Stake');
                 return baseStake;
             }
 
-            // Check Max Levels for Conservador
-            const maxLevels = (riskProfile === 'conservador') ? 5 : null;
-            if (maxLevels && state.lossStreakRecovery >= maxLevels) {
+            // --- CONSERVADOR MODE (Installment-based) ---
+            if (riskProfile === 'conservador') {
+                // If we don't have installments set yet, or we need to recalculate (handled in processTradeResult/refine)
+                if (state.recoveryInstallmentsRemaining <= 0) {
+                    // Initial splitting into 4
+                    const totalToRecover = state.totalLossAccumulated * (1 + profitFactor);
+                    state.recoveryInstallmentAmount = Math.max(0.35, Math.ceil((totalToRecover / 4) / profitRate * 100) / 100);
+                    state.recoveryInstallmentsRemaining = 4;
+                    console.log(`[RiskManager] [CONSERVADOR] Initial Split: Total=$${state.totalLossAccumulated.toFixed(2)}, Installment=$${state.recoveryInstallmentAmount.toFixed(2)} x 4`);
+                }
+
+                return state.recoveryInstallmentAmount;
+            }
+
+            // --- STANDARD RECOVERY (MODERADO / AGRESSIVO) ---
+            // Check Max Levels for Standard Recovery (Legacy logic previously used "conservador" check here, now it has its own block)
+            // We can keep it or remove it. Let's keep a safety level for non-split modes.
+            const maxLevels = 8; // Safety limit
+            if (state.lossStreakRecovery >= maxLevels) {
                 return baseStake;
             }
 
-            // Calculate Stake to recover ALL losses + profit margin
-            const lossToRecover = state.totalLossAccumulated;
-
-            // CORRECT Formula: Stake * ProfitRate = Target
-            // Target = LossToRecover * (1 + profitFactor)
-            // Stake = Target / ProfitRate
-            // Example: Loss $1.00, Margin 2%, ProfitRate 1.26
-            // Target = $1.02
-            // Stake = $1.02 / 1.26 = $0.81
-
-            const target = lossToRecover * (1 + profitFactor);
+            const target = state.totalLossAccumulated * (1 + profitFactor);
             const stake = target / profitRate;
 
-            console.log(`[RiskManager] Recovery Calc: Loss=$${lossToRecover.toFixed(2)}, Rate=${(profitRate * 100).toFixed(0)}%, Margin=${(profitFactor * 100).toFixed(0)}%, Target=$${target.toFixed(2)}, Stake=$${stake.toFixed(2)}`);
+            console.log(`[RiskManager] Recovery Calc: Loss=$${state.totalLossAccumulated.toFixed(2)}, Rate=${(profitRate * 100).toFixed(0)}%, Margin=${(profitFactor * 100).toFixed(0)}%, Target=$${target.toFixed(2)}, Stake=$${stake.toFixed(2)}`);
 
-            // Safety: Min stake 0.35, Round up to 2 decimals
             return Math.max(0.35, Math.ceil(stake * 100) / 100);
         }
 
@@ -188,7 +197,10 @@ export const RiskManager = {
         return baseStake;
     },
 
-    processTradeResult(state, win, profit, stakeUsed, tradeMode = 'PRINCIPAL', recoveryThreshold = 1) {
+    processTradeResult(state, win, profit, stakeUsed, tradeMode = 'PRINCIPAL', config = {}) {
+        const recoveryThreshold = config.lossesToActivate || 1;
+        const riskProfile = (config.riskProfile || 'moderado').toLowerCase();
+
         console.log(`[RiskManager] Process Result: ${win ? 'WIN' : 'LOSS'} | Mode: ${tradeMode} | Pnl: ${profit} | AccumLoss(Before): ${state.totalLossAccumulated}`);
 
         state.lastProfit = profit;
@@ -196,53 +208,40 @@ export const RiskManager = {
         state.lastResultWin = win;
 
         if (win) {
-            // ✅ Constante Consistency: Use total return multiplier (e.g. 1.95)
             const currentPayout = (profit + stakeUsed) / stakeUsed;
 
-            // Track stats specifically by trade mode to avoid pollution
             if (tradeMode === 'RECUPERACAO') {
                 state.lastPayoutRecovery = currentPayout;
                 state.lastProfitRecovery = profit;
                 state.lastStakeRecovery = stakeUsed;
                 state.recoveredAmount += profit;
                 state.lossStreakRecovery = 0;
-                // Don't modify consecutiveWins here, let the else block handle it or separate logic
 
-                console.log(`[RiskManager] Recovery Progress: ${state.recoveredAmount.toFixed(2)} / ${state.totalLossAccumulated.toFixed(2)}`);
+                // --- CONSERVADOR HANDLING ---
+                if (riskProfile === 'conservador') {
+                    state.recoveryInstallmentsRemaining--;
+                    state.consecutiveLossesInRecovery = 0;
 
-                // FORCE RESET ON FIRST WIN (User Request)
-                console.log('%c[RiskManager] ✅ RECOVERY WIN! Resetting to PRINCIPAL mode', 'background: #00ff00; color: #000; font-weight: bold; padding: 4px;');
-                console.log('[RiskManager] -> Before Reset:', {
-                    totalLossAccumulated: state.totalLossAccumulated,
-                    recoveredAmount: state.recoveredAmount,
-                    analysisType: state.analysisType
-                });
+                    console.log(`[RiskManager] [CONSERVADOR] Win in recovery. Remaining installments: ${state.recoveryInstallmentsRemaining}`);
 
-                state.analysisType = 'PRINCIPAL';
-                state.activeStrategy = 'PRINCIPAL';
-                state.negotiationMode = state.initialNegotiationMode || 'VELOZ';
-                state.consecutiveLosses = 0;
-                state.totalLossAccumulated = 0;
-                state.recoveredAmount = 0;
-                state.skipSorosNext = true;
-                state.consecutiveWins = 0; // Reset para começar nova sequência de Soros
-
-                console.log('[RiskManager] -> After Reset:', {
-                    totalLossAccumulated: state.totalLossAccumulated,
-                    recoveredAmount: state.recoveredAmount,
-                    analysisType: state.analysisType
-                });
+                    if (state.recoveryInstallmentsRemaining <= 0) {
+                        console.log('%c[RiskManager] ✅ CONSERVADOR RECOVERY COMPLETE!', 'background: #00ff00; color: #000; font-weight: bold; padding: 4px;');
+                        this._finishRecovery(state);
+                    }
+                } else {
+                    // Standard Recovery: Stop on first win
+                    console.log('%c[RiskManager] ✅ RECOVERY WIN! Resetting to PRINCIPAL mode', 'background: #00ff00; color: #000; font-weight: bold; padding: 4px;');
+                    this._finishRecovery(state);
+                }
             } else {
-                console.log('[RiskManager] -> Principal Win Block Triggered.');
                 state.lastPayoutPrincipal = currentPayout;
                 state.lastProfitPrincipal = parseFloat(profit);
                 state.lastStakePrincipal = parseFloat(stakeUsed);
-                // Main Mode Win
                 state.consecutiveLosses = 0;
                 state.totalLossAccumulated = 0;
                 state.consecutiveWins++;
                 state.skipSorosNext = false;
-                state.negotiationMode = 'VELOZ'; // Reset mode on win
+                state.negotiationMode = 'VELOZ';
                 state.activeStrategy = 'PRINCIPAL';
             }
         } else {
@@ -254,72 +253,91 @@ export const RiskManager = {
             if (state.analysisType === 'RECUPERACAO') {
                 state.lossStreakRecovery++;
 
-                // Mode Switching during Recovery
-                // Total Losses = 1 (Principal) + lossStreakRecovery
-                // Note: consecutiveLosses might track the losses *before* recovery entry.
-                const totalLosses = state.consecutiveLosses + state.lossStreakRecovery;
-                const totalEstimatedLosses = 1 + state.lossStreakRecovery; // Existing logic assumed 1, we should be consistent or use state.consecutiveLosses
+                // --- CONSERVADOR HANDLING ---
+                if (riskProfile === 'conservador') {
+                    state.consecutiveLossesInRecovery++;
 
-                // ✅ UPDATE ACTIVE STRATEGY (Fix)
-                // Ensures we switch to 'RECUPERACAO' filters if we cross the threshold
+                    // Stop on 3 consecutive losses during recovery
+                    if (state.consecutiveLossesInRecovery >= 3) {
+                        console.log('%c[RiskManager] 🛑 CONSERVADOR RECOVERY ABORTED: 3 consecutive losses!', 'background: #ff0000; color: #fff; font-weight: bold; padding: 4px;');
+                        this._finishRecovery(state);
+                        return;
+                    }
+
+                    // Split logic: Recalculate if split count < 3
+                    if (state.recoverySplitsUsed < 3) {
+                        state.recoverySplitsUsed++;
+                        state.recoveryInstallmentsRemaining = 0; // Trigger recalculation in calculateNextStake
+                        console.log(`[RiskManager] [CONSERVADOR] Re-splitting recovery (${state.recoverySplitsUsed}/3)`);
+                    } else {
+                        console.log(`[RiskManager] [CONSERVADOR] Max re-splits reached. Continuing with current installment amount.`);
+                    }
+                }
+
+                const totalLosses = state.consecutiveLosses + state.lossStreakRecovery;
+                const totalEstimatedLosses = 1 + state.lossStreakRecovery;
+
                 if (totalLosses >= recoveryThreshold) {
                     state.activeStrategy = 'RECUPERACAO';
                 }
 
-                if (totalEstimatedLosses >= 4) { // 4th loss
+                if (totalEstimatedLosses >= 4) {
                     state.negotiationMode = 'PRECISO';
-                } else if (totalEstimatedLosses >= 2) { // 2nd loss
+                } else if (totalEstimatedLosses >= 2) {
                     state.negotiationMode = 'NORMAL';
                 }
 
             } else {
                 state.consecutiveLosses++;
-
-                // 1. MARTINGALE / FINANCIAL RECOVERY
-                // Always active immediately after a loss to ensure capital protection
                 state.analysisType = 'RECUPERACAO';
 
-                // CRITICAL: Sync payout estimate for the first Martingale calculation
-                // Use multipliers like 1.95 instead of 0.95
                 if (state.lastPayoutRecovery <= 1.0 && state.lastPayoutPrincipal > 1.0) {
                     state.lastPayoutRecovery = state.lastPayoutPrincipal;
                 }
 
-                // 2. STRATEGIC RECOVERY (FILTERS & CONTRACTS)
-                // Only active if losses >= configured threshold
                 state.activeStrategy = (state.consecutiveLosses >= recoveryThreshold) ? 'RECUPERACAO' : 'PRINCIPAL';
 
-                // 3. NEGOTIATION MODE (VELOZ/NORMAL/PRECISO)
-                // Determines analysis frequency and aggressiveness
                 const initialMode = state.initialNegotiationMode || 'VELOZ';
 
                 if (state.consecutiveLosses >= 4) {
                     state.negotiationMode = 'PRECISO';
                 } else if (state.consecutiveLosses >= 2) {
-                    // Se começou em VELOZ, vai para NORMAL na segunda perda.
-                    // Se começou em NORMAL, continua em NORMAL (até chegar em 4 perdas).
                     if (initialMode === 'VELOZ') {
                         state.negotiationMode = 'NORMAL';
                     } else {
                         state.negotiationMode = initialMode;
                     }
                 } else {
-                    // Menos de 2 perdas: Mantém o modo inicial (Se era NORMAL, continua NORMAL)
                     state.negotiationMode = initialMode;
                 }
 
                 state.lossStreakRecovery = 0;
+
+                // Initialize Conservador Specifics on entry
+                if (riskProfile === 'conservador') {
+                    state.recoverySplitsUsed = 0;
+                    state.consecutiveLossesInRecovery = 1; // The loss that triggered recovery
+                    state.recoveryInstallmentsRemaining = 0; // Trigger first split
+                }
             }
         }
+    },
 
-        // Safety Fallback: Stop Martingale if max levels exceeded (Conservador)
-        // This resets the state if we just suffered a loss at max level
-        /* 
-           This logic is tricky in processTradeResult because we don't know the profile here easily 
-           without passing it. But calculateNextStake handles the stake calculation.
-           Ideally, if we hit max levels, we should reset the mode to PRINCIPAL to stop trying to recover.
-           We can leave that to the caller or allow the stake to drop to baseStake (effectively accepting the loss).
-        */
+    _finishRecovery(state) {
+        state.analysisType = 'PRINCIPAL';
+        state.activeStrategy = 'PRINCIPAL';
+        state.negotiationMode = state.initialNegotiationMode || 'VELOZ';
+        state.consecutiveLosses = 0;
+        state.totalLossAccumulated = 0;
+        state.recoveredAmount = 0;
+        state.skipSorosNext = true;
+        state.consecutiveWins = 0;
+
+        // Conservador reset
+        state.recoveryInstallmentAmount = 0;
+        state.recoveryInstallmentsRemaining = 0;
+        state.recoverySplitsUsed = 0;
+        state.consecutiveLossesInRecovery = 0;
     },
 
     refineTradeResult(state, realProfit, stakeUsed, tradeMode = 'PRINCIPAL') {
@@ -336,11 +354,7 @@ export const RiskManager = {
 
             // Single Win Recovery: Always ensure clean exit on official result
             if (win) {
-                state.analysisType = 'PRINCIPAL';
-                state.activeStrategy = 'PRINCIPAL';
-                state.consecutiveLosses = 0;
-                state.totalLossAccumulated = 0;
-                state.recoveredAmount = 0;
+                this._finishRecovery(state);
             }
         } else {
             state.lastProfitPrincipal = realProfit;
@@ -355,12 +369,6 @@ export const RiskManager = {
             } else {
                 state.lastPayoutPrincipal = currentPayout;
             }
-
-            // Save to granular history if contract type is available in state (needs updates in View to pass it)
-            // For now, we rely on the View passing context or we assume the last used?
-            // Since we don't have contract type here easily, we can't update the specific table perfectly 
-            // unless we change signature. 
-            // BUT, we can make 'processTradeResult' update it? 
         }
     },
 
@@ -384,15 +392,11 @@ export const RiskManager = {
         let adjustedStake = stake;
         const { stopLoss } = config;
 
-        // Payout rate calculation removed as it is no longer used for Profit Target check.
-
         let reason = null;
 
         // 1. Check Stop Blindado (High Priority Protection)
         if (blindadoState && blindadoState.active) {
             const floor = blindadoState.floor;
-            // We want (currentProfit - stake) >= floor
-            // Stake <= currentProfit - floor
             const maxStakeBlindado = currentProfit - floor;
 
             if (adjustedStake > maxStakeBlindado) {
@@ -403,17 +407,10 @@ export const RiskManager = {
         }
 
         // 2. Check Stop Loss (Standard)
-        // Limit: -stopLoss
-        // Scenario: Loss -> PnL becomes (currentProfit - stake)
-        // We want (currentProfit - stake) >= -(stopLoss * 1.01) (1% tolerance)
         if (stopLoss > 0) {
             const limit = -(stopLoss * 1.01);
 
-            // Re-calc projected loss with current adjusted stake
             if ((currentProfit - adjustedStake) < limit) {
-                // Determine max stake allowed
-                // currentProfit - maxStake = limit
-                // maxStake = currentProfit - limit
                 const maxStake = currentProfit - limit;
                 if (maxStake < adjustedStake) {
                     console.log(`[Survival] Clamping Stake for Stop Loss: ${adjustedStake} -> ${maxStake.toFixed(2)}`);
@@ -423,14 +420,6 @@ export const RiskManager = {
             }
         }
 
-        // 3. Check Profit Target - DISABLED by User Request
-        // We allow the bot to overshoot the target without clamping the stake.
-        // if (profitTarget > 0) { ... }
-
-        // Ensure we don't return negative stake. 
-        // We DO NOT round up to 0.35 here if the survival math requires less.
-        // We return the raw LOW value so the caller knows it's too risky.
-        // Actually, let's return 2 decimal precision.
         return {
             stake: parseFloat(adjustedStake.toFixed(2)),
             originalStake: stake,
