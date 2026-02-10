@@ -22,11 +22,13 @@ export const RiskManager = {
         this.payoutHistory = {};
     },
 
-    initSession(initialNegotiationMode = 'VELOZ', strategyName = null) {
-        // ✅ Ensure initialNegotiationMode is always a string (prevents TypeError in evaluate)
+    initSession(initialNegotiationMode = 'VELOZ', config = {}) {
+        // ✅ Ensure initialNegotiationMode is always a string and uppercase
         if (typeof initialNegotiationMode !== 'string') {
             console.warn('[RiskManager] initialNegotiationMode was not a string, defaulting to VELOZ');
             initialNegotiationMode = 'VELOZ';
+        } else {
+            initialNegotiationMode = initialNegotiationMode.toUpperCase();
         }
         return {
             isRecoveryMode: false,
@@ -39,7 +41,8 @@ export const RiskManager = {
             analysisType: 'PRINCIPAL',
             negotiationMode: initialNegotiationMode,
             initialNegotiationMode: initialNegotiationMode, // Store for reset after recovery
-            strategy: strategyName, // Strategy name for display
+            strategy: config.strategy || null, // Strategy name for display
+            initialStake: config.initialStake || 0.35, // ✅ STORE THE BASE STAKE!
             activeStrategy: 'PRINCIPAL',
             lastResultWin: false,
             lastProfit: 0,
@@ -58,16 +61,18 @@ export const RiskManager = {
             skipSorosNext: false,
             lastContractType: null,
 
-            // Conservador specific
-            recoveryInstallmentAmount: 0,
+            // Conservador specific (Martingale Parcelado)
+            prejuizo_acumulado: 0,
+            parcelas_total: 4,
+            valor_parcela: 0,
             recoveryInstallmentsRemaining: 0,
-            recoverySplitsUsed: 0,
             consecutiveLossesInRecovery: 0
         };
     },
 
     calculateNextStake(state, config, explicitPayout = null) {
-        const baseStake = config.initialStake || 0.35;
+        // ✅ PRIORITY: Pass through config > State (initSession) > Default
+        const baseStake = config.initialStake || state.initialStake || 0.35;
         const riskProfile = (config.riskProfile || 'moderado').toLowerCase();
         // Normalize contract type to avoid mismatches
         const tradeType = (config.tradeType || 'CALL').toUpperCase();
@@ -127,18 +132,22 @@ export const RiskManager = {
                 return baseStake;
             }
 
-            // --- CONSERVADOR MODE (Installment-based) ---
+            // --- CONSERVADOR MODE (Martingale Parcelado) ---
             if (riskProfile === 'conservador') {
-                // If we don't have installments set yet, or we need to recalculate (handled in processTradeResult/refine)
-                if (state.recoveryInstallmentsRemaining <= 0) {
-                    // Initial splitting into 4
-                    const totalToRecover = state.totalLossAccumulated * (1 + profitFactor);
-                    state.recoveryInstallmentAmount = Math.max(0.35, Math.ceil((totalToRecover / 4) / profitRate * 100) / 100);
+                // Initial split is handled in processTradeResult
+                if (state.recoveryInstallmentsRemaining <= 0 || state.valor_parcela <= 0) {
+                    state.prejuizo_acumulado = state.totalLossAccumulated;
+                    state.parcelas_total = 4;
+                    state.valor_parcela = state.prejuizo_acumulado / state.parcelas_total;
                     state.recoveryInstallmentsRemaining = 4;
-                    console.log(`[RiskManager] [CONSERVADOR] Initial Split: Total=$${state.totalLossAccumulated.toFixed(2)}, Installment=$${state.recoveryInstallmentAmount.toFixed(2)} x 4`);
+
+                    console.log('--- Martingale Parcelado Ativo ---');
+                    console.log(`Prejuízo Acumulado: $${state.prejuizo_acumulado.toFixed(2)}`);
+                    console.log(`Parcela Alvo: $${state.valor_parcela.toFixed(2)}`);
                 }
 
-                return state.recoveryInstallmentAmount;
+                const stake = state.valor_parcela / profitRate;
+                return Math.max(0.35, Math.ceil(stake * 100) / 100);
             }
 
             // --- STANDARD RECOVERY (MODERADO / AGRESSIVO) ---
@@ -217,16 +226,23 @@ export const RiskManager = {
                 state.recoveredAmount += profit;
                 state.lossStreakRecovery = 0;
 
-                // --- CONSERVADOR HANDLING ---
+                // --- CONSERVADOR HANDLING (Martingale Parcelado) ---
                 if (riskProfile === 'conservador') {
+                    state.prejuizo_acumulado -= profit; // profit here is the gain from the trade
                     state.recoveryInstallmentsRemaining--;
                     state.consecutiveLossesInRecovery = 0;
 
-                    console.log(`[RiskManager] [CONSERVADOR] Win in recovery. Remaining installments: ${state.recoveryInstallmentsRemaining}`);
+                    console.log('--- Auditoria Conservadora ---');
+                    console.log(`Lucro nesta operação: $${profit.toFixed(2)}`);
+                    console.log(`Prejuízo Restante: $${Math.max(0, state.prejuizo_acumulado).toFixed(2)}`);
 
-                    if (state.recoveryInstallmentsRemaining <= 0) {
-                        console.log('%c[RiskManager] ✅ CONSERVADOR RECOVERY COMPLETE!', 'background: #00ff00; color: #000; font-weight: bold; padding: 4px;');
+                    if (state.prejuizo_acumulado <= 0) {
+                        console.log('Recuperação Conservadora Concluída');
+                        console.log('Prejuízo Final: $0.00');
+                        console.log('Ação: retornar ao modo principal');
                         this._finishRecovery(state);
+                    } else {
+                        console.log('Ação: continuar recuperação progressiva');
                     }
                 } else {
                     // Standard Recovery: Stop on first win
@@ -241,7 +257,7 @@ export const RiskManager = {
                 state.totalLossAccumulated = 0;
                 state.consecutiveWins++;
                 state.skipSorosNext = false;
-                state.negotiationMode = 'VELOZ';
+                state.negotiationMode = state.initialNegotiationMode || 'VELOZ';
                 state.activeStrategy = 'PRINCIPAL';
             }
         } else {
@@ -253,25 +269,20 @@ export const RiskManager = {
             if (state.analysisType === 'RECUPERACAO') {
                 state.lossStreakRecovery++;
 
-                // --- CONSERVADOR HANDLING ---
+                // --- CONSERVADOR HANDLING (Martingale Parcelado) ---
                 if (riskProfile === 'conservador') {
+                    state.prejuizo_acumulado += absoluteLoss;
                     state.consecutiveLossesInRecovery++;
 
-                    // Stop on 3 consecutive losses during recovery
-                    if (state.consecutiveLossesInRecovery >= 3) {
-                        console.log('%c[RiskManager] 🛑 CONSERVADOR RECOVERY ABORTED: 3 consecutive losses!', 'background: #ff0000; color: #fff; font-weight: bold; padding: 4px;');
-                        this._finishRecovery(state);
-                        return;
-                    }
+                    // Doc: valor_parcela = prejuizo_acumulado / parcelas_restantes
+                    // parcelas_restantes referenciadas como divisor de suavidade
+                    const divisor = Math.max(1, state.recoveryInstallmentsRemaining);
+                    state.valor_parcela = state.prejuizo_acumulado / divisor;
 
-                    // Split logic: Recalculate if split count < 3
-                    if (state.recoverySplitsUsed < 3) {
-                        state.recoverySplitsUsed++;
-                        state.recoveryInstallmentsRemaining = 0; // Trigger recalculation in calculateNextStake
-                        console.log(`[RiskManager] [CONSERVADOR] Re-splitting recovery (${state.recoverySplitsUsed}/3)`);
-                    } else {
-                        console.log(`[RiskManager] [CONSERVADOR] Max re-splits reached. Continuing with current installment amount.`);
-                    }
+                    console.log('--- Auditoria Conservadora (Loss) ---');
+                    console.log(`Prejuízo Acumulado: $${state.prejuizo_acumulado.toFixed(2)}`);
+                    console.log(`Nova Parcela Alvo: $${state.valor_parcela.toFixed(2)}`);
+                    console.log('Ação: continuar recuperação progressiva');
                 }
 
                 const totalLosses = state.consecutiveLosses + state.lossStreakRecovery;
@@ -283,8 +294,11 @@ export const RiskManager = {
 
                 if (totalEstimatedLosses >= 4) {
                     state.negotiationMode = 'PRECISO';
-                } else if (totalEstimatedLosses >= 2) {
-                    state.negotiationMode = 'NORMAL';
+                } else if (totalEstimatedLosses >= 1) { // Ensure at least NORMAL if in recovery
+                    const currentMode = (state.negotiationMode || 'VELOZ').toUpperCase();
+                    if (currentMode === 'VELOZ') {
+                        state.negotiationMode = 'NORMAL';
+                    }
                 }
 
             } else {
@@ -297,27 +311,28 @@ export const RiskManager = {
 
                 state.activeStrategy = (state.consecutiveLosses >= recoveryThreshold) ? 'RECUPERACAO' : 'PRINCIPAL';
 
-                const initialMode = state.initialNegotiationMode || 'VELOZ';
+                const initialMode = (state.initialNegotiationMode || 'VELOZ').toUpperCase();
 
                 if (state.consecutiveLosses >= 4) {
                     state.negotiationMode = 'PRECISO';
-                } else if (state.consecutiveLosses >= 2) {
+                } else if (state.consecutiveLosses >= 1) {
+                    // Force NORMAL if it was VELOZ
                     if (initialMode === 'VELOZ') {
                         state.negotiationMode = 'NORMAL';
                     } else {
                         state.negotiationMode = initialMode;
                     }
-                } else {
-                    state.negotiationMode = initialMode;
                 }
 
                 state.lossStreakRecovery = 0;
 
                 // Initialize Conservador Specifics on entry
                 if (riskProfile === 'conservador') {
-                    state.recoverySplitsUsed = 0;
+                    state.prejuizo_acumulado = state.totalLossAccumulated;
+                    state.parcelas_total = 4;
+                    state.valor_parcela = state.prejuizo_acumulado / state.parcelas_total;
+                    state.recoveryInstallmentsRemaining = 4;
                     state.consecutiveLossesInRecovery = 1; // The loss that triggered recovery
-                    state.recoveryInstallmentsRemaining = 0; // Trigger first split
                 }
             }
         }
@@ -334,13 +349,14 @@ export const RiskManager = {
         state.consecutiveWins = 0;
 
         // Conservador reset
-        state.recoveryInstallmentAmount = 0;
+        state.prejuizo_acumulado = 0;
+        state.parcelas_total = 4;
+        state.valor_parcela = 0;
         state.recoveryInstallmentsRemaining = 0;
-        state.recoverySplitsUsed = 0;
         state.consecutiveLossesInRecovery = 0;
     },
 
-    refineTradeResult(state, realProfit, stakeUsed, tradeMode = 'PRINCIPAL') {
+    refineTradeResult(state, realProfit, stakeUsed, tradeMode = 'PRINCIPAL', config = {}) {
         const estimatedProfit = (tradeMode === 'RECUPERACAO') ? state.lastProfitRecovery : state.lastProfitPrincipal;
         const win = realProfit > 0;
 
@@ -348,13 +364,20 @@ export const RiskManager = {
         state.lastProfit = realProfit;
 
         if (tradeMode === 'RECUPERACAO') {
+            const riskProfile = (config.riskProfile || 'moderado').toLowerCase();
             state.lastProfitRecovery = realProfit;
             // Deduct the estimated profit and add the real one
             state.recoveredAmount = state.recoveredAmount - (estimatedProfit || 0) + realProfit;
 
-            // Single Win Recovery: Always ensure clean exit on official result
+            // ✅ SMART RECOVERY: Only exit if NOT conservador, or if conservador finished its installments
             if (win) {
-                this._finishRecovery(state);
+                if (riskProfile === 'conservador') {
+                    if (state.recoveryInstallmentsRemaining <= 0) {
+                        this._finishRecovery(state);
+                    }
+                } else {
+                    this._finishRecovery(state);
+                }
             }
         } else {
             state.lastProfitPrincipal = realProfit;

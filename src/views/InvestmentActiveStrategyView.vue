@@ -183,7 +183,7 @@ export default {
             };
 
             // Initialize Risk Session
-            this.sessionState = RiskManager.initSession(this.form.mode || 'VELOZ');
+            this.sessionState = RiskManager.initSession(this.form.mode || 'VELOZ', this.form);
             
             // Populate extra fields for MonitoringDashboard UI
             this.sessionState.strategy = this.form.strategy;

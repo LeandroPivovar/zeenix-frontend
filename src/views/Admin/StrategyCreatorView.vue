@@ -1698,7 +1698,7 @@ export default {
             },
 
             // Strategy Execution State
-            sessionState: RiskManager.initSession('VELOZ'), // Will be re-initialized on strategy start with user's selected mode
+            sessionState: RiskManager.initSession('VELOZ', { initialStake: 0.35 }), // Will be re-initialized on strategy start with user's selected mode
             
             // Internal State
             isNegotiating: false,
@@ -3404,10 +3404,8 @@ export default {
                 try {
                     const msg = JSON.parse(event.data);
                     
-                    // Debug Log for Critical Messages
-                    if (['authorize', 'buy', 'proposal', 'proposal_open_contract'].includes(msg.msg_type) || msg.error) {
-                         console.log(`[WS] Mensagem Recebida (${msg.msg_type}):`, msg);
-                    }
+                    // Debug Log for All Messages
+                    console.log(`[WS] Mensagem Recebida (${msg.msg_type}):`, msg);
                     
                     if (msg.msg_type === 'authorize') {
                         if (msg.error) {
@@ -3643,8 +3641,9 @@ export default {
                             
                             // ⚡ REGISTER FOR LOCAL TICK RESULT
                             if (this.pendingFastResult) {
-                                  this.localPendingContracts.set(msg.buy.buy_id, {
-                                    id: msg.buy.buy_id,
+                                  const trackingId = msg.buy.contract_id || msg.buy.buy_id || 'UNKNOWN';
+                                  this.localPendingContracts.set(trackingId, {
+                                    id: trackingId,
                                     contractId: msg.buy.contract_id,
                                     type: this.pendingFastResult.contractType, 
                                     prediction: parseInt(this.pendingFastResult.barrier), 
@@ -3658,7 +3657,7 @@ export default {
                                     entryDigit: this.pendingFastResult.entryDigit,
                                     payoutRate: this.sessionState.tempExplicitPayout || 0.95
                                 });
-                                console.log(`[LocalTick] Contrato ${msg.buy.buy_id} registrado para análise local.`);
+                                console.log(`[LocalTick] Contrato ${trackingId} registrado com sucesso.`);
                             }
                             
                             this.subscribeToContract(msg.buy.contract_id);
@@ -4057,7 +4056,10 @@ export default {
             RiskManager.reset();
             
             // 2. Reset Session State
-            this.sessionState = RiskManager.initSession(this.sessionState.initialNegotiationMode || 'VELOZ');
+            this.sessionState = RiskManager.initSession(this.sessionState.initialNegotiationMode || 'VELOZ', { 
+                initialStake: this.form.initialStake,
+                strategy: this.sessionState.strategy 
+            });
             
             // 3. Clear History & Buffers
             this.tickHistory = [];
@@ -4133,6 +4135,21 @@ export default {
 
                 const durationDisplay = `${this.form.duration}${this.form.durationUnit === 't' ? 't' : this.form.durationUnit}`;
                 this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${overrideContractType || config.tradeType} $${stake} | Duração: ${durationDisplay}`, 'info');
+                
+                // ✅ DETAILED CONSERVADOR LOGS
+                if (isFinancialRecovery && this.recoveryConfig.riskProfile === 'conservador') {
+                    const totalPlan = 4;
+                    const remaining = this.sessionState.recoveryInstallmentsRemaining || 0;
+                    const currentParcel = remaining > 0 ? (totalPlan - remaining + 1) : 1;
+                    const debt = Math.max(0, this.sessionState.totalLossAccumulated - this.sessionState.recoveredAmount);
+                    
+                    const recoveryMsg = `🛡️ <b>RECUPERAÇÃO CONSERVADORA</b><br>` +
+                        `• Parcela: ${currentParcel}/${totalPlan}<br>` +
+                        `• Dívida Restante: $${debt.toFixed(2)}<br>` +
+                        `• Re-parcelamentos: ${this.sessionState.recoverySplitsUsed || 0}/3`;
+                    
+                    this.addLog(recoveryMsg, 'info');
+                }
                 
                 // Step 1: Request Proposal to get exact payout
                 const proposalParams = {
@@ -4276,13 +4293,13 @@ export default {
                     stake: contract.buy_price,
                     pnl: contract.profit || 0,
                     analysisType: this.sessionState.analysisType,
+                    duration: contract.duration || (this.pendingFastResult ? this.pendingFastResult.duration : this.form.duration),
                     result: 'OPEN',
-                    // Save Barrier for history key update later
                     // Save Barrier for history key update later
                     barrier: contract.barrier,
                     entryPrice: contract.entry_tick_display_value,
                     exitPrice: contract.exit_tick_display_value,
-                    lastDigit: contract.exit_tick_display_value ? contract.exit_tick_display_value.slice(-1) : null
+                    lastDigit: contract.exit_tick_display_value ? contract.exit_tick_display_value.toString().slice(-1) : null
                 };
                 this.monitoringOperations.unshift(trade);
                 this.activeContracts.set(id, trade);
@@ -4290,18 +4307,80 @@ export default {
                 // CRITICAL: Release negotiation lock only when contract is officially tracked
                 // This avoids race conditions where a second buy is triggered before the first is registered.
                 this.isNegotiating = false; 
-                console.log(`[StrategyCreator] Contract ${id} tracked. Releasing isNegotiating lock.`);
+                console.log(`[StrategyCreator] Contract ${id} tracked. Duration: ${trade.duration}. Releasing isNegotiating lock.`);
             } else {
-
                 trade.pnl = contract.profit || 0;
                 if (contract.entry_tick_display_value) trade.entryPrice = contract.entry_tick_display_value;
                 if (contract.exit_tick_display_value) {
                     trade.exitPrice = contract.exit_tick_display_value;
-                    trade.lastDigit = contract.exit_tick_display_value.slice(-1);
+                    trade.lastDigit = contract.exit_tick_display_value.toString().slice(-1);
+                }
+                
+                // ✅ SMART FAST RESULT: Early Settlement Logic
+                const currentTickCount = contract.tick_count || 0;
+                const targetDuration = trade.duration || (this.pendingFastResult ? this.pendingFastResult.duration : this.form.duration);
+                
+                console.log(`[EarlySettlement] Checking ${id}: Ticks=${currentTickCount}, Target=${targetDuration}, Status=${contract.status}, Settled=${!!trade.earlySettled}`);
+
+                // If duration reached but status still 'open', settle now to unlock next trade
+                if (!trade.earlySettled && currentTickCount >= targetDuration && contract.status === 'open') {
+                    const win = (contract.profit || 0) > 0;
+                    trade.earlySettled = true;
+                    trade.result = win ? 'WON' : 'LOST';
+                    
+                    // ✅ FIX: For early settlement, if it's a loss, the profit reported is just the spread (-0.04).
+                    // We MUST use the full stake as loss for correct recovery/balance tracking.
+                    trade.pnl = win ? parseFloat(contract.profit || 0) : -trade.stake;
+                    if (!trade.exitPrice) trade.exitPrice = contract.current_spot_display_value || contract.current_spot;
+                    if (trade.exitPrice) trade.lastDigit = trade.exitPrice.toString().slice(-1);
+
+                    // Add Log
+                    const logPrefix = '⚡ <b>RESULTADO RÁPIDO</b>';
+                    if (win) {
+                        this.addLog(`${logPrefix}: 💰 WIN! +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
+                    } else {
+                        this.addLog(`${logPrefix}: 🔴 LOSS! -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
+                    }
+
+                    // Process Profit for sessions/stats
+                    this.monitoringStats.profit += trade.pnl;
+                    this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
+                    
+                    // Update stats
+                    if (win) this.monitoringStats.wins++;
+                    else this.monitoringStats.losses++;
+
+                    // Update session state via RiskManager
+                    RiskManager.processTradeResult(
+                        this.sessionState, 
+                        win, 
+                        trade.pnl, 
+                        trade.stake, 
+                        trade.analysisType,
+                        this.recoveryConfig
+                    );
+
+                    // ✅ UNLOCK ANALYSIS EARLY
+                    this.activeContracts.delete(id);
+                    this.checkLimits();
+                    
+                    console.log(`[StrategyCreator] Smart Fast Result triggering for ${id}. Analysis released.`);
+                    
+                    // ✅ IMMEDIATE NEXT CYCLE
+                    this.$nextTick(() => {
+                        this.runAnalysis();
+                    });
                 }
             }
 
             if (contract.is_sold) {
+                // ✅ Protection: If already early settled, just update final pnl and exit.
+                if (trade.earlySettled) {
+                    trade.result = contract.status.toUpperCase();
+                    trade.pnl = parseFloat(contract.profit || 0);
+                    trade.isOfficiallyClosed = true;
+                    return; 
+                }
                 // Determine Entry/Exit if not set
                 if (!trade.entryPrice) trade.entryPrice = contract.entry_tick_display_value || contract.entry_tick || contract.entry_spot;
                 
@@ -4341,7 +4420,7 @@ export default {
 
                 // Refinar resultado se já processado pelo resultado rápido
                 if (trade.fastResultApplied) {
-                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
+                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType, this.recoveryConfig);
                 } else {
                     const oldAnalysis = this.sessionState.analysisType;
                     const oldMode = this.sessionState.negotiationMode;
@@ -4358,7 +4437,7 @@ export default {
                         trade.pnl, 
                         trade.stake, 
                         trade.analysisType, 
-                        this.recoveryConfig.lossesToActivate
+                        this.recoveryConfig
                     );
 
                     // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
