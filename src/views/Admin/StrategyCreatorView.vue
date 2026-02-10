@@ -175,7 +175,7 @@
                                                 type="text" 
                                                 v-model="form.strategyName"
                                                 placeholder="Ex: Scalper Pro V2" 
-                                                class="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all" 
+                                                class="w-full !bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all" 
                                                 maxlength="50"
                                             >
                                             <p class="text-xs text-muted-foreground mt-1">{{ form.strategyName ? form.strategyName.length : 0 }}/50 caracteres</p>
