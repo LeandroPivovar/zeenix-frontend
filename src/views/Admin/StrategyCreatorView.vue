@@ -113,6 +113,68 @@
 
                     <form v-show="activeTab === 'config'" @submit.prevent="submitForm" class="space-y-8">
                         <div class="grid grid-cols-12 gap-6">
+                            <!-- Identity Card -->
+                            <div class="col-span-12">
+                                <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
+                                    <div class="absolute top-0 right-0 p-4 opacity-5">
+                                        <i class="fa-solid fa-id-card text-6xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
+                                        <i class="fa-solid fa-fingerprint text-zenix-green"></i>
+                                        Identidade da Estratégia
+                                    </h3>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 relative z-10">
+                                        <!-- Icon Selector -->
+                                        <div class="col-span-12 md:col-span-2">
+                                            <label class="block text-white font-bold mb-2">Ícone</label>
+                                            <div class="relative">
+                                                <button 
+                                                    type="button"
+                                                    class="w-full aspect-square bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-center hover:border-zenix-green transition-all group"
+                                                >
+                                                    <i v-if="form.icon" :class="form.icon + ' text-4xl text-white group-hover:text-zenix-green transition-colors'"></i>
+                                                    <i v-else class="fa-solid fa-robot text-4xl text-gray-600 group-hover:text-gray-400 transition-colors"></i>
+                                                </button>
+                                                <select v-model="form.icon" class="absolute inset-0 opacity-0 cursor-pointer">
+                                                    <option value="fa-solid fa-robot">Robô (Padrão)</option>
+                                                    <option value="fa-solid fa-bolt">Raio (Veloz)</option>
+                                                    <option value="fa-solid fa-chart-line">Gráfico (Tendência)</option>
+                                                    <option value="fa-solid fa-money-bill">Dinheiro</option>
+                                                    <option value="fa-solid fa-shield-alt">Escudo (Seguro)</option>
+                                                    <option value="fa-solid fa-brain">Cérebro (Smart)</option>
+                                                    <option value="fa-solid fa-rocket">Foguete</option>
+                                                    <option value="fa-solid fa-gem">Diamante</option>
+                                                    <option value="fa-solid fa-coins">Moedas</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <!-- Name & Desc -->
+                                        <div class="col-span-12 md:col-span-10 space-y-4">
+                                            <div>
+                                                <label class="block text-white font-bold mb-2">Nome da Estratégia</label>
+                                                <input 
+                                                    type="text" 
+                                                    v-model="form.strategyName" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors font-bold text-lg"
+                                                    placeholder="Ex: Zeenix Titan V1"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label class="block text-white font-bold mb-2">Descrição</label>
+                                                <input 
+                                                    type="text" 
+                                                    v-model="form.description" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    placeholder="Breve descrição da sua estratégia..."
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Mercado e Tipo de Negociação -->
                             <div class="col-span-12 md:col-span-6">
                                 <div class="form-group">
@@ -1677,6 +1739,9 @@ export default {
             contracts: [],
             
             form: {
+                strategyName: '',
+                description: '',
+                icon: 'fa-solid fa-robot',
                 initialStake: 0.35,
                 profitTarget: 10,
                 stopLoss: 50,
@@ -2899,8 +2964,12 @@ export default {
         },
 
         async saveCurrentStrategy() {
-            const name = prompt('Nome da estratégia:', `Minha Estratégia ${new Date().toLocaleDateString()}`);
+            const defaultName = this.form.strategyName || `Minha Estratégia ${new Date().toLocaleDateString()}`;
+            const name = prompt('Nome da estratégia:', defaultName);
             if (!name) return;
+
+            // ✅ Sync Strategy Name back to form for consistency
+            this.form.strategyName = name;
 
             // ✅ Sync filter edits before saving
             this.syncFiltersToConfig();
