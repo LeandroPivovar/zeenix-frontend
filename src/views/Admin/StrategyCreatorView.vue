@@ -146,15 +146,15 @@
                                                         v-for="icon in strategyIcons" 
                                                         :key="icon"
                                                         type="button"
-                                                        @click.stop="selectIcon(icon)"
+                                                        @click="selectIcon(icon)"
                                                         @mouseenter="previewIcon = icon"
                                                         @mouseleave="previewIcon = null"
-                                                        class="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-200 shrink-0"
+                                                        class="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-200 shrink-0 cursor-pointer"
                                                         :class="form.icon === icon ? '' : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#22C55E]/10 hover:text-[#22C55E]'"
                                                         :style="form.icon === icon ? 'background-color: rgba(34, 197, 94, 0.2); color: #22C55E; border: 1px solid #22C55E;' : ''"
                                                         :title="icon"
                                                     >
-                                                        <i :class="icon"></i>
+                                                        <i :class="icon" class="pointer-events-none"></i>
                                                     </button>
                                                 </div>
                                             </div>
@@ -2421,8 +2421,9 @@ export default {
     },
     methods: {
         selectIcon(icon) {
+            console.log('Selected Icon:', icon);
             this.form.icon = icon;
-            // The list should remain open as per user request ("se clicar em outro ele so trocar")
+            this.previewIcon = null; // Clear preview to force showing selected icon
         },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
