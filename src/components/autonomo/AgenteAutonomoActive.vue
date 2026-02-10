@@ -1457,7 +1457,7 @@
 					const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.result !== undefined ? parseFloat(trade.result) : 0));
 					const profit = isNaN(rawProfit) ? 0 : rawProfit;
 					
-					const rawStake = trade.stake !== undefined ? parseFloat(trade.stake) : (trade.buy_price !== undefined ? parseFloat(trade.buy_price) : (trade.entry !== undefined ? parseFloat(trade.entry) : 0));
+					const rawStake = trade.stake !== undefined ? parseFloat(trade.stake) : (trade.stake_amount !== undefined ? parseFloat(trade.stake_amount) : (trade.buy_price !== undefined ? parseFloat(trade.buy_price) : (trade.entry !== undefined ? parseFloat(trade.entry) : 0)));
 					const stake = isNaN(rawStake) ? 0 : rawStake;
 
 					const rawEntry = trade.entry !== undefined ? parseFloat(trade.entry) : (trade.entry_price !== undefined ? parseFloat(trade.entry_price) : (trade.entryPrice !== undefined ? parseFloat(trade.entryPrice) : 0));

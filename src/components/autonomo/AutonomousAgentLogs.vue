@@ -281,8 +281,8 @@ export default {
     async exportLogs() {
       try {
         // ✅ Buscar logs completos (limite alto) antes de exportar
-        // Usar 2000 para garantir que pegamos tudo (backend limita a 1000, mas stream buffer também é 1000)
-        const fullLogs = await this.fetchRealtimeLogs(2000, true);
+        // Usar 50000 para garantir que pegamos tudo
+        const fullLogs = await this.fetchRealtimeLogs(50000, true);
         
         if (!fullLogs || fullLogs.length === 0) {
           alert('Nenhum log para exportar.');
