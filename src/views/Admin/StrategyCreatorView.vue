@@ -3265,7 +3265,11 @@ export default {
         finishLocalTrade(contract, win, exitPrice, exitDigit) {
             const stake = contract.stake;
             const payoutRate = contract.payoutRate || 0.95;
-            const profit = win ? (stake * payoutRate) : -stake;
+            
+            // ✅ Net Profit: If payoutRate is a multiplier (e.g. 1.95), subtract 1 (0.95). 
+            // If it's already a rate (e.g. 0.95), keep it.
+            const netProfitRate = payoutRate > 1.0 ? (payoutRate - 1.0) : payoutRate;
+            const profit = win ? (stake * netProfitRate) : -stake;
             
             // Log Result
             this.addLog(
@@ -3336,13 +3340,15 @@ export default {
                     trade.profit = profit;
                     trade.fastResultApplied = true; // Flag for handleContractUpdate
                     trade.fastResultOutcome = win ? 'WON' : 'LOST'; // Store for comparison
+                    trade.fastResultProfit = profit; // ✅ Store for double-counting adjustment
                 } else {
                     // Create a placeholder so when API sends update, we know to ignore it
                     this.activeContracts.set(contract.contractId, {
                         result: win ? 'WON' : 'LOST',
                         profit: profit,
                         fastResultApplied: true,
-                        fastResultOutcome: win ? 'WON' : 'LOST'
+                        fastResultOutcome: win ? 'WON' : 'LOST',
+                        fastResultProfit: profit
                     });
                 }
             }
@@ -4423,6 +4429,11 @@ export default {
                 }
 
                 // Update official profit and balance
+                // ✅ Adjust for Fast Result double-counting if applicable
+                if (trade.fastResultApplied && trade.fastResultProfit !== undefined) {
+                    this.monitoringStats.profit -= trade.fastResultProfit;
+                }
+                
                 this.monitoringStats.profit += trade.pnl;
                 this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
 
