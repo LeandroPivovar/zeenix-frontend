@@ -449,7 +449,7 @@
                                         </button>
                                     </div>
 
-                                    <div v-if="securityConfig.virtualLoss.enabled" class="space-y-4 pl-4 border-l-2 border-primary/30">
+                                    <div v-if="securityConfig.virtualLoss.enabled" class="space-y-4">
                                         <div>
                                             <label class="zenix-label">Máx. losses virtuais consecutivos</label>
                                             <input 
