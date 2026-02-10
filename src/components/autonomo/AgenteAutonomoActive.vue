@@ -111,31 +111,31 @@
 				<!-- Lucro do Periodo -->
 				<div 
 					class="rounded-lg border bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212] relative overflow-hidden"
-					:class="periodProfit >= 0 ? 'border-green-500/20' : 'border-red-500/20'"
+					:class="renderedPeriodProfit >= 0 ? 'border-green-500/20' : 'border-red-500/20'"
 				>
 					<div 
 						class="absolute inset-0 pointer-events-none"
-						:class="periodProfit >= 0 ? 'bg-green-500/5' : 'bg-red-500/5'"
+						:class="renderedPeriodProfit >= 0 ? 'bg-green-500/5' : 'bg-red-500/5'"
 					></div>
 					<div class="flex items-center gap-2 mb-3 relative z-10">
-						<div :class="periodProfit >= 0 ? 'text-green-500' : 'text-red-500'">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up" v-if="periodProfit >= 0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+						<div :class="renderedPeriodProfit >= 0 ? 'text-green-500' : 'text-red-500'">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up" v-if="renderedPeriodProfit >= 0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down" v-else><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
 						</div>
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Lucro do Período</span>
 					</div>
 					<div 
 						class="text-2xl font-bold mb-1 tabular-nums relative z-10 text-left"
-						:class="periodProfit >= 0 ? 'text-green-500' : 'text-red-500'"
+						:class="renderedPeriodProfit >= 0 ? 'text-green-500' : 'text-red-500'"
 					>
-						{{ hideValues ? '••••' : (periodProfit < 0 ? '-' : (periodProfit > 0 ? '+' : '')) + preferredCurrencyPrefix + Math.abs(periodProfit).toFixed(2) }}
+						{{ hideValues ? '••••' : (renderedPeriodProfit < 0 ? '-' : (renderedPeriodProfit > 0 ? '+' : '')) + preferredCurrencyPrefix + formatPrice(Math.abs(renderedPeriodProfit)) }}
 					</div>
 					<!-- ✅ Formatação Dual: Mostrar Percentual -->
 					<div class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium tabular-nums opacity-90 mt-1"
-						:class= "periodProfit >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'"
+						:class= "renderedPeriodProfit >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'"
 					>
 						<span v-if="!hideValues">
-							{{ (periodProfitPercent >= 0 ? '+' : '') + periodProfitPercent.toFixed(2) }}%
+							{{ (renderedPeriodProfitPercent >= 0 ? '+' : '') + renderedPeriodProfitPercent.toFixed(2) }}%
 						</span>
 						<span v-else-if="hideValues">••••</span>
 					</div>
@@ -145,25 +145,25 @@
 				<div 
 					v-if="!isMobile"
 					class="rounded-lg border bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]"
-					:class="avgDailyProfit >= 0 ? 'border-[#27272a]' : 'border-red-500/20'"
+					:class="renderedAvgDailyProfit >= 0 ? 'border-[#27272a]' : 'border-red-500/20'"
 				>
 					<div class="flex items-center gap-2 mb-3">
-						<div :class="avgDailyProfit >= 0 ? 'text-green-500' : 'text-red-500'">
+						<div :class="renderedAvgDailyProfit >= 0 ? 'text-green-500' : 'text-red-500'">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-column"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
 						</div>
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium">Lucro Médio/Dia</span>
 					</div>
 					<div 
 						class="text-2xl font-bold mb-1 tabular-nums text-left"
-						:class="avgDailyProfit >= 0 ? 'text-green-500' : 'text-red-500'"
+						:class="renderedAvgDailyProfit >= 0 ? 'text-green-500' : 'text-red-500'"
 					>
-						{{ hideValues ? '••••' : (avgDailyProfit < 0 ? '-' : (avgDailyProfit > 0 ? '+' : '')) + preferredCurrencyPrefix + Math.abs(avgDailyProfit).toFixed(2) }}
+						{{ hideValues ? '••••' : (renderedAvgDailyProfit < 0 ? '-' : (renderedAvgDailyProfit > 0 ? '+' : '')) + preferredCurrencyPrefix + formatPrice(Math.abs(renderedAvgDailyProfit)) }}
 					</div>
 					<div class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium tabular-nums opacity-90"
-						:class="avgDailyProfit >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'"
+						:class="renderedAvgDailyProfit >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'"
 					>
 						<span v-if="!hideValues">
-							{{ (avgDailyProfitPercent >= 0 ? '+' : '') + avgDailyProfitPercent.toFixed(2) + '%' }}
+							{{ (renderedAvgDailyProfitPercent >= 0 ? '+' : '') + renderedAvgDailyProfitPercent.toFixed(2) + '%' }}
 						</span>
 						<span v-else>••••</span>
 					</div>
@@ -296,13 +296,13 @@
 				<!-- Resultado do dia -->
 				<div class="flex items-center gap-3">
 					<div class="p-2 bg-[#1a1a1a] rounded-md">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'" v-if="(sessionStats?.netProfit || 0) >= 0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'" v-else><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up" :class="renderedDailyResultValue >= 0 ? 'text-green-500' : 'text-red-500'" v-if="renderedDailyResultValue >= 0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down" :class="renderedDailyResultValue >= 0 ? 'text-green-500' : 'text-red-500'" v-else><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
 					</div>
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Resultado do dia</div>
-						<div class="text-sm font-medium tabular-nums text-left" :class="dailyResultValue >= 0 ? 'text-green-500' : 'text-red-500'">
-							{{ hideValues ? '••••' : (dailyResultValue < 0 ? '-' : (dailyResultValue > 0 ? '+' : '')) + preferredCurrencyPrefix + Math.abs(dailyResultValue).toFixed(2) }}
+						<div class="text-sm font-medium tabular-nums text-left" :class="renderedDailyResultValue >= 0 ? 'text-green-500' : 'text-red-500'">
+							{{ hideValues ? '••••' : (renderedDailyResultValue < 0 ? '-' : (renderedDailyResultValue > 0 ? '+' : '')) + preferredCurrencyPrefix + formatPrice(Math.abs(renderedDailyResultValue)) }}
 						</div>
 					</div>
 				</div>
@@ -314,7 +314,7 @@
 					</div>
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">OPERAÇÕES HOJE</div>
-						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">{{ operacoesHojeDisplay }}</div>
+						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">{{ renderedOperacoesHoje }}</div>
 					</div>
 				</div>
 
@@ -389,14 +389,14 @@
 					<div class="inline-flex items-center rounded-full border border-green-500/30 bg-green-500/10 text-green-500 font-semibold text-[10px] px-2.5 py-0.5">
 						Melhor dia
 					</div>
-					<span class="text-xs text-[#FAFAFA] tabular-nums" v-if="!hideValues">+{{ preferredCurrencyPrefix }}{{ bestDay?.value?.toFixed(2) || '0.00' }} ({{ bestDay?.date || '--' }})</span>
+					<span class="text-xs text-[#FAFAFA] tabular-nums" v-if="!hideValues">+{{ preferredCurrencyPrefix }}{{ formatPrice(bestDay?.value) }} ({{ bestDay?.date || '--' }})</span>
 					<span class="text-xs text-[#FAFAFA] tabular-nums" v-else>•••• ({{ bestDay?.date || '--' }})</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<div class="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 text-red-500 font-semibold text-[10px] px-2.5 py-0.5">
 						Pior dia
 					</div>
-					<span class="text-xs text-[#FAFAFA] tabular-nums" v-if="!hideValues">-{{ preferredCurrencyPrefix }}{{ worstDay?.value?.toFixed(2) || '0.00' }} ({{ worstDay?.date || '--' }})</span>
+					<span class="text-xs text-[#FAFAFA] tabular-nums" v-if="!hideValues">-{{ preferredCurrencyPrefix }}{{ formatPrice(Math.abs(worstDay?.value || 0)) }} ({{ worstDay?.date || '--' }})</span>
 					<span class="text-xs text-[#FAFAFA] tabular-nums" v-else>•••• ({{ worstDay?.date || '--' }})</span>
 				</div>
 			</div>
@@ -460,7 +460,7 @@
 									</div>
 								</td>
 								<td class="text-right py-2.5 px-1 tabular-nums font-medium" :class="week.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-									{{ week.profit < 0 ? '-' : (week.profit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(week.profit).toFixed(2) }}
+									{{ week.profit < 0 ? '-' : (week.profit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ formatPrice(Math.abs(week.profit)) }}
 								</td>
 								<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">{{ preferredCurrencyPrefix }}{{ formatPrice(week.finalCapital) }}</td>
 								<td class="text-right py-2.5 px-1 tabular-nums" :class="week.percent >= 0 ? 'text-green-500' : 'text-red-500'">
@@ -512,7 +512,7 @@
 										</div>
 									</td>
 									<td class="text-right py-3 px-1 tabular-nums font-semibold" :class="day.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-										{{ day.profit < 0 ? '-' : (day.profit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(day.profit).toFixed(2) }}
+										{{ day.profit < 0 ? '-' : (day.profit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ formatPrice(Math.abs(day.profit)) }}
 									</td>
 									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">{{ preferredCurrencyPrefix }}{{ formatPrice(day.capital) }}</td>
 									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">{{ day.ops }}</td>
@@ -1053,7 +1053,15 @@
                 lastProcessedCycle: null,
                 zeusReturn: 3.93,
                 falconReturn: 2.89,
-                returnInterval: null
+                returnInterval: null,
+                
+                // ✅ [ZENIX v2.1] Buffering de valores para evitar blinks de NaN ou 0,00
+                renderedPeriodProfit: 0,
+                renderedPeriodProfitPercent: 0,
+                renderedAvgDailyProfit: 0,
+                renderedAvgDailyProfitPercent: 0,
+                renderedDailyResultValue: 0,
+                renderedOperacoesHoje: '--'
 			};
 		},
 		mounted() {
@@ -1154,12 +1162,16 @@
                          }
                          return sum;
                      }, 0);
+                     
+                     // Se o lucro resultou em algo estranho, retornar NaN para o watcher ignorar
+                     if (isNaN(netProfit)) return null;
+
                      const totalOps = trades.filter(t => t.type === 'trade').length;
                      
                      return {
-                         netProfit: isNaN(netProfit) ? 0 : netProfit,
+                         netProfit,
                          totalOps,
-                         avgProfit: totalOps > 0 ? (isNaN(netProfit / totalOps) ? 0 : netProfit / totalOps) : 0
+                         avgProfit: totalOps > 0 ? netProfit / totalOps : 0
                      };
                 }
                 return null;
@@ -1182,8 +1194,10 @@
                      return sum + profit;
                 }, 0);
                 
+                if (isNaN(netProfit)) return null;
+
                 return {
-                    netProfit: isNaN(netProfit) ? 0 : netProfit,
+                    netProfit,
                     totalOps: todayTrades.length
                 };
             },
@@ -1598,6 +1612,7 @@
 				// Atualizar dados quando o filtro mudar
 				this.fetchProfitEvolution();
                 this.fetchDailyStats();
+                this.syncRenderedValues();
 			},
 			'agenteData.sessionStatus'(newStatus) {
 				// Apenas logar, o modal agora é controlado exclusivamente pelos LOGS (checkLogsForStopEvents)
@@ -1650,7 +1665,42 @@
                 } else if (!this.isBalanceReady) {
                     this.renderedInitialCapital = 0;
                 }
-            }
+            },
+            
+            // ✅ [ZENIX v2.1] Watchers de Buffering: Manter valor antigo se o novo for inválido
+            periodProfit(newVal) {
+                if (newVal !== null && !isNaN(newVal)) {
+                    this.renderedPeriodProfit = newVal;
+                }
+            },
+            periodProfitPercent(newVal) {
+                if (newVal !== null && !isNaN(newVal)) {
+                    this.renderedPeriodProfitPercent = newVal;
+                }
+            },
+            avgDailyProfit(newVal) {
+                if (newVal !== null && !isNaN(newVal)) {
+                    this.renderedAvgDailyProfit = newVal;
+                }
+            },
+            avgDailyProfitPercent(newVal) {
+                if (newVal !== null && !isNaN(newVal)) {
+                    this.renderedAvgDailyProfitPercent = newVal;
+                }
+            },
+            dailyResultValue(newVal) {
+                if (newVal !== null && !isNaN(newVal)) {
+                    this.renderedDailyResultValue = newVal;
+                }
+            },
+            operacoesHojeDisplay(newVal) {
+                if (newVal && newVal !== '--' && newVal !== '0 ops') {
+                    this.renderedOperacoesHoje = newVal;
+                } else if (newVal === '0 ops' && (this.renderedOperacoesHoje === '--' || this.selectedPeriod === 'session')) {
+                    // Permitir 0 ops se for o estado inicial ou estiver na sessão (que reseta)
+                    this.renderedOperacoesHoje = newVal;
+                }
+            },
 		},
 
 		methods: {
@@ -1659,8 +1709,18 @@
 				if (this.isBalanceReady) {
 					this.renderedFinalCapital = this.finalCapital;
 					this.renderedInitialCapital = this.initialCapital;
+                    this.syncRenderedValues();
 				}
 			},
+            syncRenderedValues() {
+                // Sincronização inicial ou pós-filtro
+                this.renderedPeriodProfit = this.periodProfit || 0;
+                this.renderedPeriodProfitPercent = this.periodProfitPercent || 0;
+                this.renderedAvgDailyProfit = this.avgDailyProfit || 0;
+                this.renderedAvgDailyProfitPercent = this.avgDailyProfitPercent || 0;
+                this.renderedDailyResultValue = this.dailyResultValue || 0;
+                this.renderedOperacoesHoje = this.operacoesHojeDisplay || '--';
+            },
 			checkStopStatus(status) {
 				if (!status || status === 'active' || status === this.lastProcessedStatus) return;
 				

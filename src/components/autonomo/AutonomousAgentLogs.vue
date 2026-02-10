@@ -198,8 +198,8 @@ export default {
       });
     },
     formattedLogs() {
-      // ✅ Limit to 500 logs for rendering to avoid lag
-      return this.allFormattedLogs.slice(0, 500);
+      // ✅ Limit to 200 logs for rendering to avoid lag
+      return this.allFormattedLogs.slice(0, 200);
     }
   },
   methods: {
@@ -238,7 +238,7 @@ export default {
         return ts;
       }
     },
-    async fetchRealtimeLogs(limit = 500, returnDataOnly = false) {
+    async fetchRealtimeLogs(limit = 200, returnDataOnly = false) {
       try {
         let userId = this.userId || localStorage.getItem('userId');
         if (!userId) return;
@@ -266,10 +266,10 @@ export default {
       return [];
     },
     startLogPolling() {
-      // ✅ [PERFORMANCE] Display limit (500 items)
+      // ✅ [PERFORMANCE] Display limit (200 items)
       this.stopLogPolling();
-      this.fetchRealtimeLogs(500);
-      this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(500), 3000);
+      this.fetchRealtimeLogs(200);
+      this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(200), 3000);
     },
     async clearLogs() {
       if (await confirm('Tem certeza que deseja limpar todos os logs?')) {
