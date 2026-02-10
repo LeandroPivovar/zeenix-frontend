@@ -399,11 +399,6 @@ export default {
         baseBalance = propValue;
       }
 
-      // Adicionar Saldo Fictício (Master Trader) - SOMA
-      if (this.isFictitiousBalanceActive) {
-        baseBalance += (Number(this.fictitiousBalance) || 0);
-      }
-
       return baseBalance;
     },
     userName() {
