@@ -4133,6 +4133,21 @@ export default {
                 const durationDisplay = `${this.form.duration}${this.form.durationUnit === 't' ? 't' : this.form.durationUnit}`;
                 this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${overrideContractType || config.tradeType} $${stake} | Duração: ${durationDisplay}`, 'info');
                 
+                // ✅ DETAILED CONSERVADOR LOGS
+                if (isFinancialRecovery && this.recoveryConfig.riskProfile === 'conservador') {
+                    const totalPlan = 4;
+                    const remaining = this.sessionState.recoveryInstallmentsRemaining || 0;
+                    const currentParcel = remaining > 0 ? (totalPlan - remaining + 1) : 1;
+                    const debt = Math.max(0, this.sessionState.totalLossAccumulated - this.sessionState.recoveredAmount);
+                    
+                    const recoveryMsg = `🛡️ <b>RECUPERAÇÃO CONSERVADORA</b><br>` +
+                        `• Parcela: ${currentParcel}/${totalPlan}<br>` +
+                        `• Dívida Restante: $${debt.toFixed(2)}<br>` +
+                        `• Re-parcelamentos: ${this.sessionState.recoverySplitsUsed || 0}/3`;
+                    
+                    this.addLog(recoveryMsg, 'info');
+                }
+                
                 // Step 1: Request Proposal to get exact payout
                 const proposalParams = {
                     proposal: 1,
