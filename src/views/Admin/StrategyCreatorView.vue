@@ -146,9 +146,10 @@
                                                         v-for="icon in strategyIcons" 
                                                         :key="icon"
                                                         type="button"
-                                                        @click="form.icon = icon"
-                                                        class="w-10 h-10 rounded-lg flex items-center justify-center text-xl hover:bg-primary/20 transition-all duration-200 shrink-0"
-                                                        :class="form.icon === icon ? 'bg-[#22C55E]/20 ring-1 ring-[#22C55E] text-[#22C55E]' : 'bg-[#1a1a1a] text-gray-400'"
+                                                        @click.stop="selectIcon(icon)"
+                                                        class="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-200 shrink-0"
+                                                        :class="form.icon === icon ? '' : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#22C55E]/10 hover:text-[#22C55E]'"
+                                                        :style="form.icon === icon ? 'background-color: rgba(34, 197, 94, 0.2); color: #22C55E; border: 1px solid #22C55E;' : ''"
                                                         :title="icon"
                                                     >
                                                         <i :class="icon"></i>
@@ -2416,6 +2417,10 @@ export default {
         window.removeEventListener('resize', this.handleResize);
     },
     methods: {
+        selectIcon(icon) {
+            this.form.icon = icon;
+            // The list should remain open as per user request ("se clicar em outro ele so trocar")
+        },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
             if (this.isMobile) {
