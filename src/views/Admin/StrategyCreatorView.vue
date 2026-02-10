@@ -175,7 +175,7 @@
                                                 type="text" 
                                                 v-model="form.strategyName"
                                                 placeholder="Ex: Scalper Pro V2" 
-                                                class="w-full !bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all" 
+                                                class="w-full !bg-[#0f0f0f] border border-[#27272a] rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all" 
                                                 maxlength="50"
                                             >
                                             <p class="text-xs text-muted-foreground mt-1">{{ form.strategyName ? form.strategyName.length : 0 }}/50 caracteres</p>
@@ -185,7 +185,7 @@
                                             <textarea 
                                                 v-model="form.description"
                                                 placeholder="Descreva brevemente a lógica e objetivo da estratégia..." 
-                                                class="w-full !bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all min-h-[80px] resize-none" 
+                                                class="w-full !bg-[#0f0f0f] border border-[#27272a] rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all min-h-[80px] resize-none" 
                                                 maxlength="300"
                                             ></textarea>
                                             <p class="text-xs text-muted-foreground mt-1">{{ form.description ? form.description.length : 0 }}/300 caracteres</p>
@@ -360,57 +360,117 @@
                             </div>
                         </div>
 
-                        <!-- Filtros de Ataque (Primary Entry) -->
+                        <!-- Motores de Entrada (Unified) -->
                         <div class="col-span-12">
-                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
-                                <div class="absolute top-0 right-0 p-4 opacity-5">
-                                    <i class="fa-solid fa-bolt text-6xl"></i>
+                            <div class="zenix-card">
+                                <div class="zenix-card-header !pb-2">
+                                    <h2 class="zenix-card-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap w-5 h-5 text-primary">
+                                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                                        </svg>
+                                        Motores de Entrada
+                                    </h2>
                                 </div>
-                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
-                                    <i class="fa-solid fa-crosshairs text-zenix-green"></i>
-                                    Filtros de Ataque (Sinal de Entrada)
-                                </h3>
-                                
-                                <div class="space-y-4 relative z-10">
-                                    <div v-if="activeAttackFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
-                                        <p class="text-gray-400 text-sm mb-3">Nenhum filtro de ataque configurado. O robô entrará em cada sinal disponível.</p>
+
+                                <!-- Tab Switcher -->
+                                <div class="flex bg-[#0f0f0f] p-1 rounded-xl mb-6 border border-[#1a1a1a]">
+                                    <button 
+                                        type="button"
+                                        @click="activeEngineTab = 'main'"
+                                        class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                        :class="activeEngineTab === 'main' ? 'bg-primary text-white shadow-lg' : 'text-gray-500 hover:text-white'"
+                                    >
+                                        Análise Principal
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        @click="activeEngineTab = 'recovery'"
+                                        class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                        :class="activeEngineTab === 'recovery' ? 'bg-primary text-white shadow-lg' : 'text-gray-500 hover:text-white'"
+                                    >
+                                        Análise de Recuperação
+                                    </button>
+                                </div>
+
+                                <div class="space-y-6">
+                                    <!-- Performance Mode Selector -->
+                                    <div>
+                                        <label class="zenix-label !mb-3">Nível de Dificuldade / Velocidade</label>
+                                        <div class="flex gap-3">
+                                            <button 
+                                                v-for="mode in [{id:'VELOZ', label:'Veloz'}, {id:'NORMAL', label:'Normal'}, {id:'PRECISO', label:'Preciso'}]"
+                                                :key="mode.id"
+                                                type="button"
+                                                @click="sessionState.negotiationMode = mode.id"
+                                                class="flex-1 py-3 border-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                                                :class="sessionState.negotiationMode === mode.id ? 'border-primary bg-primary/10 text-primary shadow-[0_0_15px_rgba(34,197,94,0.1)]' : 'border-[#1a1a1a] bg-[#0f0f0f] text-gray-500 hover:border-[#333]'"
+                                            >
+                                                {{ mode.label }}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Filter Library Button -->
+                                    <div>
                                         <button 
-                                            type="button" 
-                                            @click="openFilterModal('main')"
-                                            class="bg-zenix-green/10 text-zenix-green border border-zenix-green/30 px-6 py-2 rounded-lg hover:bg-zenix-green/20 transition-all font-bold text-sm"
+                                            type="button"
+                                            @click="openFilterModal(activeEngineTab)"
+                                            class="w-full py-4 bg-[#1a1a1a] border-2 border-dashed border-[#333] hover:border-primary/50 hover:bg-primary/5 rounded-xl transition-all group flex items-center justify-center gap-3"
                                         >
-                                            Adicionar Filtros
+                                            <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </div>
+                                            <span class="text-sm font-bold text-gray-400 group-hover:text-white transition-colors">Biblioteca de Filtros ZENIX</span>
                                         </button>
                                     </div>
-                                    
-                                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div v-for="filter in activeAttackFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
-                                            <div class="flex items-center gap-3">
-                                                 <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                                    <i class="fa-solid fa-filter"></i>
-                                                 </div>
-                                                 <div>
-                                                    <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
-                                                    <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
-                                                 </div>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <button type="button" @click="openFilterConfigDirect(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
-                                                    <i class="fa-solid fa-gear text-xs"></i>
-                                                </button>
-                                                <button type="button" @click="removeFilter(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
-                                                    <i class="fa-solid fa-times text-xs"></i>
-                                                </button>
+
+                                    <!-- Active Filters List -->
+                                    <div v-if="activeEngineTab === 'main' ? activeAttackFilters.length : activeRecoveryFilters.length" class="space-y-3">
+                                        <label class="zenix-label">Filtros Ativos ({{ activeEngineTab === 'main' ? 'Ataque' : 'Recuperação' }})</label>
+                                        <div class="grid grid-cols-1 gap-2">
+                                            <div 
+                                                v-for="filter in (activeEngineTab === 'main' ? activeAttackFilters : activeRecoveryFilters)" 
+                                                :key="filter.id"
+                                                class="p-4 bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl flex items-center justify-between group hover:border-[#333] transition-all"
+                                            >
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+                                                        <i class="fa-solid fa-filter text-xs"></i>
+                                                    </div>
+                                                    <div>
+                                                        <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
+                                                        <span class="text-[9px] text-gray-500 uppercase font-black tracking-tighter">Ativo na análise de {{ activeEngineTab === 'main' ? 'sinal' : 'recuperação' }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <button type="button" @click="openFilterConfigDirect(filter, activeEngineTab)" class="w-8 h-8 rounded-lg bg-[#1a1a1a] hover:bg-[#222] text-gray-500 hover:text-white transition-all border border-[#27272a]">
+                                                        <i class="fa-solid fa-gear text-xs"></i>
+                                                    </button>
+                                                    <button type="button" @click="removeFilter(filter, activeEngineTab)" class="w-8 h-8 rounded-lg bg-[#1a1a1a] hover:bg-red-500/10 text-gray-500 hover:text-red-500 transition-all border border-[#27272a] hover:border-red-500/30">
+                                                        <i class="fa-solid fa-trash-alt text-xs"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                        <button 
-                                            type="button" 
-                                            @click="openFilterModal('main')"
-                                            class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
-                                        >
-                                            <i class="fa-solid fa-plus text-xs"></i>
-                                            <span class="text-sm">Adicionar Filtro</span>
-                                        </button>
+                                    </div>
+
+                                    <!-- Governance Summary (Mocked based on image) -->
+                                    <div class="pt-4 border-t border-[#1a1a1a]">
+                                        <label class="zenix-label !mb-3">Resumo de Governança</label>
+                                        <div class="flex flex-wrap gap-2">
+                                            <div class="px-3 py-1.5 bg-[#0a0a0a] border border-[#1a1a1a] rounded flex items-center gap-2">
+                                                <i class="fa-solid fa-lock text-[10px] text-primary/60"></i>
+                                                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-tight">Análise de Liquidez</span>
+                                            </div>
+                                            <div class="px-3 py-1.5 bg-[#0a0a0a] border border-[#1a1a1a] rounded flex items-center gap-2">
+                                                <i class="fa-solid fa-lock text-[10px] text-primary/60"></i>
+                                                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-tight">Spread Protection</span>
+                                            </div>
+                                            <div class="px-3 py-1.5 bg-[#0a0a0a] border border-[#1a1a1a] rounded flex items-center gap-2">
+                                                <i class="fa-solid fa-lock text-[10px] text-primary/60"></i>
+                                                <span class="text-[10px] text-gray-500 font-bold uppercase tracking-tight">Slippage Guard</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -663,61 +723,7 @@
                             </div>
                         </div>
 
-                        <!-- Filtros de Recuperação (Standalone Card) -->
-                        <div class="col-span-12">
-                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden" :class="{ 'opacity-50 grayscale pointer-events-none': !recoveryConfig.enabled }">
-                                <div class="absolute top-0 right-0 p-4 opacity-5">
-                                    <i class="fa-solid fa-rotate-left text-6xl"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
-                                    <i class="fa-solid fa-filter text-zenix-green"></i>
-                                    Filtros de Recuperação
-                                </h3>
-                                
-                                <div class="space-y-4 relative z-10">
-                                    <div v-if="activeRecoveryFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
-                                        <p class="text-gray-400 text-sm mb-3">Nenhum filtro de recuperação configurado.</p>
-                                        <button 
-                                            type="button" 
-                                            @click="openFilterModal('recovery')"
-                                            class="bg-zenix-green/10 text-zenix-green border border-zenix-green/30 px-6 py-2 rounded-lg hover:bg-zenix-green/20 transition-all font-bold text-sm"
-                                        >
-                                            Adicionar Filtros
-                                        </button>
-                                    </div>
-                                    
-                                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div v-for="filter in activeRecoveryFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
-                                            <div class="flex items-center gap-3">
-                                                 <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                                    <i class="fa-solid fa-filter"></i>
-                                                 </div>
-                                                 <div>
-                                                    <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
-                                                    <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
-                                                 </div>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <button type="button" @click="openFilterConfigDirect(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
-                                                    <i class="fa-solid fa-gear text-xs"></i>
-                                                </button>
-                                                <button type="button" @click="removeFilter(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
-                                                    <i class="fa-solid fa-times text-xs"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <button 
-                                            type="button" 
-                                            @click="openFilterModal('recovery')"
-                                            class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
-                                        >
-                                            <i class="fa-solid fa-plus text-xs"></i>
-                                            <span class="text-sm">Adicionar Filtro</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- (Filtros de Recuperação now unified in Motores de Entrada) -->
 
                         <!-- Valores Monetários -->
                         <div class="col-span-12">
@@ -748,42 +754,111 @@
                                     </div>
                                     <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.profitTarget) }}% do saldo</p>
                                 </div>
+                                <!-- (Performance Mode moved to Entrance Motors) -->
+
                                 <div>
-                                    <label class="block text-white font-bold mb-2">Modo Inicial</label>
-                                    <div class="relative">
-                                        <select 
-                                            v-model="sessionState.negotiationMode" 
-                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                    <label class="block text-white font-bold mb-4">Perfil de Risco</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <!-- Conservador -->
+                                        <div 
+                                            @click="form.riskProfile = 'conservador'"
+                                            class="zenix-card !p-4 cursor-pointer transition-all border-2 relative group overflow-hidden"
+                                            :class="form.riskProfile === 'conservador' ? 'border-primary bg-primary/5' : 'border-[#27272a] hover:border-[#333] bg-[#0f0f0f]'"
                                         >
-                                            <option value="VELOZ">Veloz (Rápido)</option>
-                                            <option value="NORMAL">Moderado (Normal)</option>
-                                            <option value="PRECISO">Preciso (Lento)</option>
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
-                                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                            <div class="flex items-start justify-between mb-2">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                                                    <span class="font-bold text-sm text-white">Conservador</span>
+                                                </div>
+                                                <div 
+                                                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                                                    :class="form.riskProfile === 'conservador' ? 'border-primary bg-primary' : 'border-[#333]'"
+                                                >
+                                                    <i v-if="form.riskProfile === 'conservador'" class="fa-solid fa-check text-[10px] text-white"></i>
+                                                </div>
+                                            </div>
+                                            <p class="text-[10px] text-gray-400 leading-snug">Ideal para iniciantes. Foca na preservação do capital e retorno gradual.</p>
+                                            
+                                            <!-- Inline Martingale Limit if active -->
+                                            <div v-if="form.riskProfile === 'conservador'" class="mt-3 pt-3 border-t border-primary/20 animate-in fade-in slide-in-from-top-1">
+                                                <label class="text-[9px] uppercase font-bold text-primary mb-1 block">Limite de Martingale</label>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="form.martingaleLimit"
+                                                    @click.stop
+                                                    class="w-full bg-black/40 border border-primary/30 rounded p-1.5 text-xs text-white outline-none focus:border-primary"
+                                                    min="1" max="20"
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <!-- Moderado -->
+                                        <div 
+                                            @click="form.riskProfile = 'moderado'"
+                                            class="zenix-card !p-4 cursor-pointer transition-all border-2 relative group overflow-hidden"
+                                            :class="form.riskProfile === 'moderado' ? 'border-primary bg-primary/5' : 'border-[#27272a] hover:border-[#333] bg-[#0f0f0f]'"
+                                        >
+                                            <div class="flex items-start justify-between mb-2">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-3 h-3 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]"></div>
+                                                    <span class="font-bold text-sm text-white">Moderado</span>
+                                                </div>
+                                                <div 
+                                                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                                                    :class="form.riskProfile === 'moderado' ? 'border-primary bg-primary' : 'border-[#333]'"
+                                                >
+                                                    <i v-if="form.riskProfile === 'moderado'" class="fa-solid fa-check text-[10px] text-white"></i>
+                                                </div>
+                                            </div>
+                                            <p class="text-[10px] text-gray-400 leading-snug">Equilíbrio entre risco e recompensa. Busca recuperação + lucro moderado.</p>
+                                            
+                                            <div v-if="form.riskProfile === 'moderado'" class="mt-3 pt-3 border-t border-primary/20 animate-in fade-in slide-in-from-top-1">
+                                                <label class="text-[9px] uppercase font-bold text-primary mb-1 block">Limite de Martingale</label>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="form.martingaleLimit"
+                                                    @click.stop
+                                                    class="w-full bg-black/40 border border-primary/30 rounded p-1.5 text-xs text-white outline-none focus:border-primary"
+                                                    min="1" max="20"
+                                                >
+                                            </div>
+                                        </div>
+
+                                        <!-- Agressivo -->
+                                        <div 
+                                            @click="form.riskProfile = 'agressivo'"
+                                            class="zenix-card !p-4 cursor-pointer transition-all border-2 relative group overflow-hidden"
+                                            :class="form.riskProfile === 'agressivo' ? 'border-primary bg-primary/5' : 'border-[#27272a] hover:border-[#333] bg-[#0f0f0f]'"
+                                        >
+                                            <div class="flex items-start justify-between mb-2">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                                                    <span class="font-bold text-sm text-white">Agressivo</span>
+                                                </div>
+                                                <div 
+                                                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                                                    :class="form.riskProfile === 'agressivo' ? 'border-primary bg-primary' : 'border-[#333]'"
+                                                >
+                                                    <i v-if="form.riskProfile === 'agressivo'" class="fa-solid fa-check text-[10px] text-white"></i>
+                                                </div>
+                                            </div>
+                                            <p class="text-[10px] text-gray-400 leading-snug">Alta performance e alavancagem. Destinado a traders experientes.</p>
+                                            
+                                            <div v-if="form.riskProfile === 'agressivo'" class="mt-3 pt-3 border-t border-primary/20 animate-in fade-in slide-in-from-top-1">
+                                                <label class="text-[9px] uppercase font-bold text-primary mb-1 block">Limite de Martingale</label>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="form.martingaleLimit"
+                                                    @click.stop
+                                                    class="w-full bg-black/40 border border-primary/30 rounded p-1.5 text-xs text-white outline-none focus:border-primary"
+                                                    min="1" max="20"
+                                                >
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <label class="block text-white font-bold mb-2">Perfil de Risco</label>
-                                    <div class="relative">
-                                        <select 
-                                            v-model="form.riskProfile" 
-                                            :disabled="!recoveryConfig.martingale"
-                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <option value="conservador">Conservador (Recupera Perda)</option>
-                                        <option value="moderado">Moderado (Recupera + Lucro)</option>
-                                        <option value="agressivo">Agressivo (Alavancagem)</option>
-                                        <option value="fixo">Fixo (Mão Fixa - Sem Martingale)</option>
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
-                                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
-                                        </div>
-                                    </div>
-                                    <p v-if="!recoveryConfig.martingale" class="mt-2 text-[10px] text-yellow-500 font-bold leading-tight">
-                                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>
-                                        Esta estratégia tem uma gestão de risco fixa (para a ativação envie o valor de conservador)
+                                    <p v-if="!recoveryConfig.martingale" class="mt-3 text-[10px] text-yellow-500/80 font-bold leading-tight flex items-center gap-2">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                        Gestão fixa detectada. Algumas opções podem ser limitadas pelo bot.
                                     </p>
                                 </div>
                                 <div>
@@ -1075,7 +1150,7 @@
         <!-- Advanced Filter Modal -->
         <Teleport to="body">
             <div v-if="showFilterModal" class="modal-overlay" @click.self="showFilterModal = false">
-                <div class="modal-content categorized-modal" style="max-width: 600px">
+                <div class="modal-content !p-0 !max-w-[1000px] !h-[800px] overflow-hidden">
                     <div class="modal-header">
                         <div class="flex items-center gap-3">
                             <button v-if="filterStep === 2" @click="prevFilterStep" class="text-gray-400 hover:text-white transition-colors">
@@ -1089,40 +1164,104 @@
                     </div>
                     <div class="modal-body custom-scrollbar" style="max-height: 70vh; overflow-y: auto;">
                         <!-- Step 1: Selection -->
-                         <div v-if="filterStep === 1" class="space-y-4">
-                            <p class="text-sm text-gray-400 mb-4 px-1">Selecione os filtros desejados para as entradas de {{ modalContext === 'main' ? 'ataque' : 'recuperação' }}. Todos os filtros devem ser atendidos para executar uma operação.</p>
-                            <div class="space-y-8">
-                                <div v-for="group in groupedFiltersForModal" :key="group.id" class="space-y-3">
-                                    <div class="flex items-center gap-2 px-1 mb-4">
-                                        <div class="w-2 h-4 bg-zenix-green rounded-full"></div>
-                                        <i :class="[group.icon, 'text-zenix-green text-xs']"></i>
-                                        <h4 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">{{ group.label }}</h4>
-                                    </div>
-                                    <div class="grid grid-cols-1 gap-3">
-                                        <div 
-                                            v-for="filter in group.filters" 
-                                            :key="filter.id" 
-                                            @click="toggleFilter(filter)"
-                                            class="p-4 rounded-xl border transition-all cursor-pointer group/item"
-                                            :class="[
-                                                filter.active ? 'border-zenix-green bg-zenix-green/5' : 'border-[#333] bg-[#111] hover:border-[#444]'
-                                            ]"
-                                        >
-                                            <div class="flex items-center gap-3 mb-2">
-                                                <div 
-                                                    class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
-                                                    :class="filter.active ? 'bg-zenix-green border-zenix-green text-black' : 'border-[#444] group-hover/item:border-gray-500'"
-                                                >
-                                                    <i v-if="filter.active" class="fa-solid fa-check text-[10px]"></i>
-                                                </div>
-                                                <span class="text-white font-bold">{{ filter.name }}</span>
-                                            </div>
-                                            <p class="text-xs text-gray-500 pl-8 leading-relaxed">{{ filter.desc }}</p>
+                        <!-- Step 1: Library-style Selection -->
+                         <div v-if="filterStep === 1" class="flex flex-col h-full bg-[#0a0a0a]">
+                            <!-- Sidebar + Content Row -->
+                            <div class="flex flex-1 overflow-hidden min-h-[600px]">
+                                <!-- Sidebar Categories -->
+                                <div class="w-64 border-r border-[#1a1a1a] p-4 flex flex-col gap-2">
+                                    <h4 class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 px-2">Categorias</h4>
+                                    <button 
+                                        v-for="cat in [
+                                            {id: 'all', label: 'Todos os Filtros', icon: 'fa-layer-group'},
+                                            {id: 'price', label: 'Análise de Mercado', icon: 'fa-chart-area'},
+                                            {id: 'indicators', label: 'Indicadores Técnicos', icon: 'fa-wave-square'},
+                                            {id: 'digit', label: 'Análise de Dígitos', icon: 'fa-hashtag'}
+                                        ]"
+                                        :key="cat.id"
+                                        @click="activeFilterCategory = cat.id"
+                                        class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all"
+                                        :class="activeFilterCategory === cat.id ? 'bg-primary/10 text-primary shadow-inner shadow-primary/5' : 'text-gray-500 hover:text-white hover:bg-[#111]'"
+                                    >
+                                        <i :class="['fa-solid', cat.icon, 'text-xs w-4']"></i>
+                                        {{ cat.label }}
+                                    </button>
+                                </div>
+
+                                <!-- Main Content Area -->
+                                <div class="flex-1 flex flex-col min-h-0">
+                                    <!-- Search & Info -->
+                                    <div class="p-6 border-b border-[#1a1a1a] space-y-4">
+                                        <div class="relative">
+                                            <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                                            <input 
+                                                v-model="filterSearchQuery"
+                                                type="text" 
+                                                placeholder="Pesquisar por nome ou funcionalidade do filtro..."
+                                                class="w-full bg-[#111] border border-[#1a1a1a] rounded-xl pl-12 pr-4 py-4 text-sm text-white focus:border-primary/50 outline-none transition-all placeholder:text-gray-600"
+                                            >
                                         </div>
                                     </div>
+
+                                    <!-- Filters Grid -->
+                                    <div class="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div 
+                                                v-for="filter in filteredLibraryFilters" 
+                                                :key="filter.id" 
+                                                @click="toggleFilter(filter)"
+                                                class="p-5 rounded-2xl border-2 transition-all cursor-pointer group flex flex-col justify-between h-full"
+                                                :class="[
+                                                    filter.active ? 'border-primary bg-primary/5' : 'border-[#1a1a1a] bg-[#0d0d0d] hover:border-[#333]'
+                                                ]"
+                                            >
+                                                <div class="mb-4">
+                                                    <div class="flex items-start justify-between mb-3">
+                                                        <div 
+                                                            class="w-10 h-10 rounded-xl flex items-center justify-center transition-all bg-opacity-20"
+                                                            :class="filter.active ? 'bg-primary text-primary' : 'bg-gray-800 text-gray-500 group-hover:bg-gray-700'"
+                                                        >
+                                                            <i class="fa-solid fa-microchip"></i>
+                                                        </div>
+                                                        <div 
+                                                            class="px-2 py-1 rounded text-[8px] font-black uppercase tracking-tighter"
+                                                            :class="filter.active ? 'bg-primary text-white shadow-[0_0_10px_rgba(34,197,94,0.3)]' : 'bg-gray-800 text-gray-500'"
+                                                        >
+                                                            {{ filter.active ? 'Ativado' : 'Desativado' }}
+                                                        </div>
+                                                    </div>
+                                                    <h4 class="text-white font-black text-sm mb-1 tracking-tight">{{ filter.name }}</h4>
+                                                    <p class="text-[10px] text-gray-500 leading-snug line-clamp-2">{{ filter.desc }}</p>
+                                                </div>
+                                                
+                                                <div class="flex items-center justify-between pt-3 border-t border-[#1a1a1a]">
+                                                    <span class="text-[9px] font-bold uppercase tracking-widest text-gray-600">IA Optimizer Ready</span>
+                                                    <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center" :class="filter.active ? 'border-primary bg-primary' : 'border-[#333]'">
+                                                        <i v-if="filter.active" class="fa-solid fa-check text-[10px] text-white"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Selection Footer -->
+                                    <div class="p-6 border-t border-[#1a1a1a] flex items-center justify-between bg-[#0a0a0a]">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Selecionados:</span>
+                                            <span class="text-primary font-black text-lg">{{ activeFiltersForModal.filter(f => f.active).length }}</span>
+                                        </div>
+                                        <button 
+                                            @click="nextFilterStep"
+                                            :disabled="activeFiltersForModal.filter(f => f.active).length === 0"
+                                            class="px-8 py-4 bg-primary hover:bg-green-600 disabled:opacity-50 disabled:grayscale text-black font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.1)] flex items-center gap-2"
+                                        >
+                                            Adicionar {{ activeFiltersForModal.filter(f => f.active).length }} Filtros
+                                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div><div v-else-if="filterStep === 2">
+                        </div><div v-else-if="filterStep === 2">
                             <h3 class="text-lg font-bold text-white mb-4">Configurar Filtros</h3>
                             
                             <!-- Config Mode Tabs -->
@@ -1773,6 +1912,9 @@ export default {
             modalContext: 'main', // 'main' or 'recovery'
             filterStep: 1, // 1: Selection, 2: Configuration
             activeTab: 'config',
+            activeEngineTab: 'main', // 'main' or 'recovery'
+            filterSearchQuery: '',
+            activeFilterCategory: 'all',
             validator: {
                 aiStarted: false,
                 attackFilterCorrect: false,
@@ -1796,6 +1938,7 @@ export default {
                 profitTarget: 10,
                 stopLoss: 50,
                 riskProfile: 'moderado', // 'conservador', 'moderado', 'agressivo'
+                martingaleLimit: 7, // Default limit
                 useBlindado: false,
                 stopBlindadoPercent: 50,
                 duration: 1,
@@ -1946,7 +2089,7 @@ export default {
                     id: 'price_ma',
                     name: 'Preço vs. Média Móvel',
                     active: false,
-                    type: 'price',
+                    type: 'indicators',
                     desc: 'Verifica se o preço está acima ou abaixo da média móvel.',
                     config: { period: 14, type: 'SMA', op: '>' }
                 },
@@ -1963,7 +2106,7 @@ export default {
                     id: 'ma_crossover',
                     name: 'Cruzamento de Médias',
                     active: false,
-                    type: 'price',
+                    type: 'indicators',
                     desc: 'Verifica cruzamento de médias móveis.',
                     config: { periodShort: 9, periodLong: 21, type: 'EMA', direction: 'up' }
                 },
@@ -1971,7 +2114,7 @@ export default {
                     id: 'rsi',
                     name: 'Índice de Força Relativa (RSI)',
                     active: false,
-                    type: 'price',
+                    type: 'indicators',
                     desc: 'Verifica níveis de sobrecompra ou sobrevenda.',
                     config: { period: 14, level: 30, condition: '<' }
                 },
@@ -2029,7 +2172,7 @@ export default {
                     id: 'ma_slope',
                     name: 'Inclinação da Média Móvel',
                     active: false,
-                    type: 'price',
+                    type: 'indicators',
                     desc: 'Verifica se a MM está subindo ou descendo.',
                     config: { period: 14, lookback: 2, direction: 'up' }
                 },
@@ -2037,7 +2180,7 @@ export default {
                     id: 'macd',
                     name: 'MACD',
                     active: false,
-                    type: 'price',
+                    type: 'indicators',
                     desc: 'Condições do MACD (Linha vs Sinal).',
                     config: { fast: 12, slow: 26, signal: 9, condition: 'cross_up' }
                 },
@@ -2045,7 +2188,7 @@ export default {
                     id: 'stochastic',
                     name: 'Estocástico',
                     active: false,
-                    type: 'price',
+                    type: 'indicators',
                     desc: 'Condições do Estocástico.',
                     config: { k: 14, d: 3, smooth: 3, condition: 'oversold', level: 20 }
                 },
@@ -2053,7 +2196,7 @@ export default {
                     id: 'bollinger_bands',
                     name: 'Bandas de Bollinger',
                     active: false,
-                    type: 'price',
+                    type: 'indicators',
                     desc: 'Preço em relação às bandas.',
                     config: { period: 20, stdDev: 2, condition: 'cross_lower' }
                 },
@@ -2061,7 +2204,7 @@ export default {
                     id: 'bb_width',
                     name: 'Largura BB (Volatilidade)',
                     active: false,
-                    type: 'price',
+                    type: 'indicators',
                     desc: 'Largura aumentando ou diminuindo.',
                     config: { period: 20, stdDev: 2, lookback: 5, direction: 'increasing' }
                 },
@@ -2069,7 +2212,7 @@ export default {
                     id: 'price_action',
                     name: 'Sequência de Ticks (PA)',
                     active: false,
-                    type: 'price',
+                    type: 'indicators',
                     desc: 'Sequência de ticks de alta ou baixa.',
                     config: { length: 3, direction: 'rise' }
                 },
@@ -2078,7 +2221,7 @@ export default {
                     id: 'spike_detect',
                     name: 'Detecção de Spike',
                     active: false,
-                    type: 'price',
+                    type: 'indicators',
                     desc: 'Detecta movimento brusco (Crash/Boom).',
                     config: { multiplier: 5, window: 10 }
                 },
@@ -2086,7 +2229,7 @@ export default {
                     id: 'step_pattern',
                     name: 'Padrão Step Index',
                     active: false,
-                    type: 'price',
+                    type: 'indicators',
                     desc: 'Lateralização seguida de salto.',
                     config: { rangeTicks: 10, jumpThreshold: 50 }
                 }
@@ -2319,6 +2462,16 @@ export default {
         
         activeFiltersForModal() {
             return this.modalContext === 'main' ? this.filters : this.recoveryFilters;
+        },
+
+        filteredLibraryFilters() {
+            const filters = this.activeFiltersForModal;
+            return filters.filter(f => {
+                const matchesSearch = f.name.toLowerCase().includes(this.filterSearchQuery.toLowerCase()) || 
+                                    f.desc.toLowerCase().includes(this.filterSearchQuery.toLowerCase());
+                const matchesCategory = this.activeFilterCategory === 'all' || f.type === this.activeFilterCategory;
+                return matchesSearch && matchesCategory;
+            });
         },
 
         groupedFiltersForModal() {
