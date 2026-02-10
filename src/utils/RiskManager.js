@@ -22,7 +22,7 @@ export const RiskManager = {
         this.payoutHistory = {};
     },
 
-    initSession(initialNegotiationMode = 'VELOZ', strategyName = null) {
+    initSession(initialNegotiationMode = 'VELOZ', config = {}) {
         // ✅ Ensure initialNegotiationMode is always a string (prevents TypeError in evaluate)
         if (typeof initialNegotiationMode !== 'string') {
             console.warn('[RiskManager] initialNegotiationMode was not a string, defaulting to VELOZ');
@@ -39,7 +39,8 @@ export const RiskManager = {
             analysisType: 'PRINCIPAL',
             negotiationMode: initialNegotiationMode,
             initialNegotiationMode: initialNegotiationMode, // Store for reset after recovery
-            strategy: strategyName, // Strategy name for display
+            strategy: config.strategy || null, // Strategy name for display
+            initialStake: config.initialStake || 0.35, // ✅ STORE THE BASE STAKE!
             activeStrategy: 'PRINCIPAL',
             lastResultWin: false,
             lastProfit: 0,
@@ -67,7 +68,8 @@ export const RiskManager = {
     },
 
     calculateNextStake(state, config, explicitPayout = null) {
-        const baseStake = config.initialStake || 0.35;
+        // ✅ PRIORITY: Pass through config > State (initSession) > Default
+        const baseStake = config.initialStake || state.initialStake || 0.35;
         const riskProfile = (config.riskProfile || 'moderado').toLowerCase();
         // Normalize contract type to avoid mismatches
         const tradeType = (config.tradeType || 'CALL').toUpperCase();

@@ -985,8 +985,8 @@ export default {
                     // ✅ FIX PRIORIDADE: Stake do usuário (config) > Initial Stake (padrão)
                     this.currentConfig.initialStake = parseFloat(this.currentConfig.stake || this.currentConfig.initialStake);
                     
-                    // Inicializar Risk Session com valores corretos
-                    this.sessionState = RiskManager.initSession(this.currentConfig.mode || 'VELOZ');
+                    // Inicializar Risk Session com valores corretos (Passando config para armazenar Initial Stake)
+                    this.sessionState = RiskManager.initSession(this.currentConfig.mode || 'VELOZ', this.currentConfig);
                     this.sessionState.activeStrategy = 'PRINCIPAL';
                     
                     // ✅ Popula sessionState com valores carregados para evitar erro no log
@@ -1035,12 +1035,14 @@ export default {
                 return;
             }
 
-            // ✅ CLEAN & SAVE: Ensure the sanitized config is what persists for reloads
-            // This fulfills "apague os dados no localstorage e salve novamente" with CORRECT data
-            const cleanConfig = {
-                ...this.currentConfig,
-                recoveryConfig: this.recoveryConfig
-            };
+                // ✅ CLEAN & SAVE: Ensure the sanitized config is what persists for reloads
+                // Sync initial stakes to avoid reset to $1 in Fixo mode
+                this.recoveryConfig.initialStake = this.currentConfig.initialStake;
+
+                const cleanConfig = {
+                    ...this.currentConfig,
+                    recoveryConfig: this.recoveryConfig
+                };
             localStorage.setItem('ai_active_config', JSON.stringify(cleanConfig));
         },
         getDerivToken() {
@@ -1781,10 +1783,12 @@ export default {
             const config = {
                 ...this.currentConfig,
                 ...(isRecovery ? this.recoveryConfig : {}),
+                // ✅ FORCE SYNC: Ensure the base stake used is ALWAYS the one from main configuration
+                initialStake: this.currentConfig.initialStake,
                 // Force mapping of internal lossLimit to RiskManager's expected stopLoss
                 stopLoss: this.currentConfig.lossLimit || 50,
                 profitTarget: this.currentConfig.profitTarget || 10,
-                riskProfile: this.currentConfig.riskProfile || this.currentConfig.modoMartingale || 'moderado'
+                riskProfile: this.recoveryConfig.riskProfile || this.currentConfig.modoMartingale || 'moderado'
             };
             
             console.log('[AIMonitoring] calculateNextStake:', {

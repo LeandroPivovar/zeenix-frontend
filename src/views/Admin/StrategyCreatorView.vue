@@ -1698,7 +1698,7 @@ export default {
             },
 
             // Strategy Execution State
-            sessionState: RiskManager.initSession('VELOZ'), // Will be re-initialized on strategy start with user's selected mode
+            sessionState: RiskManager.initSession('VELOZ', { initialStake: 0.35 }), // Will be re-initialized on strategy start with user's selected mode
             
             // Internal State
             isNegotiating: false,
@@ -4056,7 +4056,10 @@ export default {
             RiskManager.reset();
             
             // 2. Reset Session State
-            this.sessionState = RiskManager.initSession(this.sessionState.initialNegotiationMode || 'VELOZ');
+            this.sessionState = RiskManager.initSession(this.sessionState.initialNegotiationMode || 'VELOZ', { 
+                initialStake: this.form.initialStake,
+                strategy: this.sessionState.strategy 
+            });
             
             // 3. Clear History & Buffers
             this.tickHistory = [];
