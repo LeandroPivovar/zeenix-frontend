@@ -1148,16 +1148,18 @@
                 if (this.selectedPeriod === 'session' && this.tradeHistory && this.tradeHistory.length > 0) {
                      const trades = this.formattedSessionItems; // Use normalized list
                      const netProfit = trades.reduce((sum, item) => {
-                         if (item.type === 'trade') return sum + parseFloat(item.data.profit);
+                         if (item.type === 'trade') {
+                             const profit = parseFloat(item.data.profit);
+                             return sum + (isNaN(profit) ? 0 : profit);
+                         }
                          return sum;
                      }, 0);
                      const totalOps = trades.filter(t => t.type === 'trade').length;
                      
                      return {
-                         netProfit,
+                         netProfit: isNaN(netProfit) ? 0 : netProfit,
                          totalOps,
-                         avgProfit: totalOps > 0 ? netProfit / totalOps : 0
-
+                         avgProfit: totalOps > 0 ? (isNaN(netProfit / totalOps) ? 0 : netProfit / totalOps) : 0
                      };
                 }
                 return null;
@@ -1173,14 +1175,15 @@
                 if (todayTrades.length === 0) return null;
 
                 const netProfit = todayTrades.reduce((sum, t) => {
-                     const profit = t.profit !== undefined ? parseFloat(t.profit) : 
-                                   (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 
-                                   (t.result !== undefined ? parseFloat(t.result) : 0));
+                     const val = t.profit !== undefined ? parseFloat(t.profit) : 
+                                 (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 
+                                 (t.result !== undefined ? parseFloat(t.result) : 0));
+                     const profit = isNaN(val) ? 0 : val;
                      return sum + profit;
                 }, 0);
                 
                 return {
-                    netProfit,
+                    netProfit: isNaN(netProfit) ? 0 : netProfit,
                     totalOps: todayTrades.length
                 };
             },
@@ -1195,31 +1198,38 @@
 			periodProfit() {
 				// Use realtime stats for 'today' or 'session'
                 if (this.selectedPeriod === 'session') {
-                    if (this.realtimeStats) return this.realtimeStats.netProfit;
-                    return this.sessionStats?.netProfit || 0;
+                    if (this.realtimeStats) return isNaN(this.realtimeStats.netProfit) ? 0 : this.realtimeStats.netProfit;
+                    const val = this.sessionStats?.netProfit;
+                    return (val === undefined || val === null || isNaN(val)) ? 0 : val;
                 }
 				if (this.selectedPeriod === 'today') {
-					if (this.dailyRealtimeStats) return this.dailyRealtimeStats.netProfit;
+					if (this.dailyRealtimeStats) return isNaN(this.dailyRealtimeStats.netProfit) ? 0 : this.dailyRealtimeStats.netProfit;
 				}
 				
 				// Fallback to filtered data sum (if implemented) or raw dailyData
 				// Note: Ideally should sum filteredDailyData, but sticking to existing pattern for non-today
                 if (!this.dailyData || this.dailyData.length === 0) return 0;
-                return this.dailyData.reduce((sum, day) => sum + (day.profit || 0), 0);
+                const total = this.dailyData.reduce((sum, day) => {
+                    const profit = day.profit;
+                    return sum + (isNaN(profit) ? 0 : (profit || 0));
+                }, 0);
+                return isNaN(total) ? 0 : total;
             },
 			periodProfitPercent() {
 				const profit = this.periodProfit;
                 const base = this.finalCapital;
                 
-                if (!base || base <= 0) return 0;
-                return (profit / base) * 100;
+                if (!base || base <= 0 || isNaN(profit) || isNaN(base)) return 0;
+                const percent = (profit / base) * 100;
+                return isNaN(percent) ? 0 : percent;
 			},
 			avgDailyProfitPercent() {
 				const avgProfit = this.avgDailyProfit;
                 const base = this.finalCapital;
 
-                if (!base || base <= 0) return 0;
-                return (avgProfit / base) * 100;
+                if (!base || base <= 0 || isNaN(avgProfit) || isNaN(base)) return 0;
+                const percent = (avgProfit / base) * 100;
+                return isNaN(percent) ? 0 : percent;
 			},
 			avgDailyProfit() {
 				// Se for sessão, cálculo de média/dia baseado na duração da sessão
@@ -1243,11 +1253,13 @@
 	avgProfitPerOp() {
 		// Calculate average profit per operation
         if (this.selectedPeriod === 'session' && this.realtimeStats) {
-            return this.realtimeStats.avgProfit;
+            return isNaN(this.realtimeStats.avgProfit) ? 0 : this.realtimeStats.avgProfit;
         }
 		const totalOps = this.sessionStats?.totalTrades || 0;
 		if (totalOps === 0) return 0;
-		return this.periodProfit / totalOps;
+        const profit = this.periodProfit;
+        const avg = profit / totalOps;
+		return isNaN(avg) ? 0 : avg;
 	},
 			bestDay() {
 				if (!Array.isArray(this.dailyData) || this.dailyData.length === 0) {
@@ -1473,13 +1485,17 @@
 				const normalizedTrades = sourceTrades.map(trade => {
 					// Handle potential snake_case from backend vs camelCase from frontend mapping
 					const createdAt = trade.createdAt || trade.created_at || trade.time;
-					const profit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.result !== undefined ? parseFloat(trade.result) : 0));
+					const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.result !== undefined ? parseFloat(trade.result) : 0));
+					const profit = isNaN(rawProfit) ? 0 : rawProfit;
 					
-					const stake = trade.stake !== undefined ? parseFloat(trade.stake) : (trade.buy_price !== undefined ? parseFloat(trade.buy_price) : (trade.entry !== undefined ? parseFloat(trade.entry) : 0));
+					const rawStake = trade.stake !== undefined ? parseFloat(trade.stake) : (trade.buy_price !== undefined ? parseFloat(trade.buy_price) : (trade.entry !== undefined ? parseFloat(trade.entry) : 0));
+					const stake = isNaN(rawStake) ? 0 : rawStake;
 
-					const entry = trade.entry !== undefined ? parseFloat(trade.entry) : (trade.entry_price !== undefined ? parseFloat(trade.entry_price) : (trade.entryPrice !== undefined ? parseFloat(trade.entryPrice) : 0));
+					const rawEntry = trade.entry !== undefined ? parseFloat(trade.entry) : (trade.entry_price !== undefined ? parseFloat(trade.entry_price) : (trade.entryPrice !== undefined ? parseFloat(trade.entryPrice) : 0));
+					const entry = isNaN(rawEntry) ? 0 : rawEntry;
 
-					const exit = trade.exit !== undefined ? parseFloat(trade.exit) : (trade.exit_price !== undefined ? parseFloat(trade.exit_price) : (trade.exitPrice !== undefined ? parseFloat(trade.exitPrice) : 0));
+					const rawExit = trade.exit !== undefined ? parseFloat(trade.exit) : (trade.exit_price !== undefined ? parseFloat(trade.exit_price) : (trade.exitPrice !== undefined ? parseFloat(trade.exitPrice) : 0));
+					const exit = isNaN(rawExit) ? 0 : rawExit;
 					
 					const market = trade.market || trade.symbol || trade.asset || 'Unknown';
 					
@@ -1668,7 +1684,7 @@
 					.replace(/Retorno:/g, '<span style="color: white; font-weight: bold;">Retorno:</span>');
 			},
             formatPrice(value) {
-                if (value === null || value === undefined) return '0,00';
+                if (value === null || value === undefined || isNaN(value)) return '0,00';
                 return Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             },
 			getUserId() {
