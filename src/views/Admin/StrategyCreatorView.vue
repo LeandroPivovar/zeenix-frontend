@@ -175,7 +175,7 @@
                                             <textarea 
                                                 v-model="form.description"
                                                 placeholder="Descreva brevemente a lógica e objetivo da estratégia..." 
-                                                class="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all min-h-[80px] resize-none" 
+                                                class="w-full !bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all min-h-[80px] resize-none" 
                                                 maxlength="300"
                                             ></textarea>
                                             <p class="text-xs text-muted-foreground mt-1">{{ form.description ? form.description.length : 0 }}/300 caracteres</p>
