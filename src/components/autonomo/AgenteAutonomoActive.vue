@@ -1,4 +1,4 @@
-﻿<template>
+<template>
 	<div class="min-h-screen text-[#FAFAFA] font-sans" :style="{ 
 		paddingTop: isMobile ? '30px' : '2.2rem',
 		paddingLeft: isMobile ? '1rem' : '0',
@@ -301,9 +301,8 @@
 					</div>
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Resultado do dia</div>
-						<div class="text-sm font-medium tabular-nums text-left" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'">
-						<div class="text-sm font-medium tabular-nums text-left" :class="((dailyRealtimeStats && dailyRealtimeStats.netProfit) || (sessionStats?.netProfit || 0)) >= 0 ? 'text-green-500' : 'text-red-500'">
-							{{ hideValues ? '••••' : (((dailyRealtimeStats ? dailyRealtimeStats.netProfit : (sessionStats?.netProfit || 0)) < 0 ? '-' : ((dailyRealtimeStats ? dailyRealtimeStats.netProfit : (sessionStats?.netProfit || 0)) > 0 ? '+' : '')) + preferredCurrencyPrefix + Math.abs((dailyRealtimeStats ? dailyRealtimeStats.netProfit : (sessionStats?.netProfit || 0))).toFixed(2)) }}
+						<div class="text-sm font-medium tabular-nums text-left" :class="dailyResultValue >= 0 ? 'text-green-500' : 'text-red-500'">
+							{{ hideValues ? '••••' : (dailyResultValue < 0 ? '-' : (dailyResultValue > 0 ? '+' : '')) + preferredCurrencyPrefix + Math.abs(dailyResultValue).toFixed(2) }}
 						</div>
 					</div>
 				</div>
@@ -573,7 +572,7 @@
 	</div>
 
 	<!-- Daily Details Modal -->
-    <Teleport to="body">
+	<Teleport to="body">
 	<div v-if="selectedDay" 
 		class="!fixed !inset-0 !z-[9999] flex items-center justify-center bg-black/95 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-300" 
 		@click.self="selectedDay = null"
@@ -745,7 +744,7 @@
     </Teleport>
 
 	<!-- Stop Status Modal -->
-    <Teleport to="body">
+	<Teleport to="body">
 	<div v-if="showStopStatusModal" 
 		class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300"
 		@click.self="closeStopStatusModal"
@@ -791,7 +790,7 @@
 			</div>
 		</div>
 	</div>
-    </Teleport>
+	</Teleport>
 
 	<!-- Novo Modal Unificado de Resumo da Sessão -->
 	<SessionSummaryModal
@@ -1184,6 +1183,14 @@
                     netProfit,
                     totalOps: todayTrades.length
                 };
+            },
+            dailyResultValue() {
+                if (this.dailyRealtimeStats) return this.dailyRealtimeStats.netProfit;
+                return this.sessionStats?.netProfit || 0;
+            },
+            dailyOpsValue() {
+                if (this.dailyRealtimeStats) return this.dailyRealtimeStats.totalOps;
+                return this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
             },
 			periodProfit() {
 				// Use realtime stats for 'today' or 'session'
