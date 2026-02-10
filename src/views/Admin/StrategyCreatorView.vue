@@ -4297,9 +4297,48 @@ export default {
                     trade.exitPrice = contract.exit_tick_display_value;
                     trade.lastDigit = contract.exit_tick_display_value.slice(-1);
                 }
+                
+                // ✅ SMART FAST RESULT: Early Settlement Logic
+                // If duration reached but status still 'open', settle now to unlock next trade
+                if (!trade.earlySettled && contract.tick_count >= contract.duration && contract.status === 'open') {
+                    const win = contract.profit > 0;
+                    trade.earlySettled = true;
+                    trade.result = win ? 'WON' : 'LOST';
+                    trade.pnl = parseFloat(contract.profit || 0);
+                    if (!trade.exitPrice) trade.exitPrice = contract.current_spot_display_value || contract.current_spot;
+                    if (trade.exitPrice) trade.lastDigit = trade.exitPrice.toString().slice(-1);
+
+                    // Add Log
+                    const logPrefix = '⚡ <b>RESULTADO RÁPIDO</b>';
+                    if (win) {
+                        this.addLog(`${logPrefix}: 💰 WIN! +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
+                    } else {
+                        this.addLog(`${logPrefix}: 🔴 LOSS! -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
+                    }
+
+                    // Process Profit for sessions/stats
+                    this.monitoringStats.profit += trade.pnl;
+                    this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
+                    
+                    // Update session state via RiskManager
+                    RiskManager.processTradeResult(this.sessionState, win, trade.pnl, trade.id, trade.barrier);
+
+                    // ✅ UNLOCK ANALYSIS EARLY
+                    this.activeContracts.delete(id);
+                    this.checkLimits();
+                    
+                    console.log(`[StrategyCreator] Smart Fast Result triggering for ${id}. Analysis released.`);
+                }
             }
 
             if (contract.is_sold) {
+                // ✅ Protection: If already early settled, just update final pnl and exit.
+                if (trade.earlySettled) {
+                    trade.result = contract.status.toUpperCase();
+                    trade.pnl = parseFloat(contract.profit || 0);
+                    trade.isOfficiallyClosed = true;
+                    return; 
+                }
                 // Determine Entry/Exit if not set
                 if (!trade.entryPrice) trade.entryPrice = contract.entry_tick_display_value || contract.entry_tick || contract.entry_spot;
                 
