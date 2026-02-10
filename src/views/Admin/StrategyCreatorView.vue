@@ -4309,7 +4309,10 @@ export default {
                     const win = (contract.profit || 0) > 0;
                     trade.earlySettled = true;
                     trade.result = win ? 'WON' : 'LOST';
-                    trade.pnl = parseFloat(contract.profit || 0);
+                    
+                    // ✅ FIX: For early settlement, if it's a loss, the profit reported is just the spread (-0.04).
+                    // We MUST use the full stake as loss for correct recovery/balance tracking.
+                    trade.pnl = win ? parseFloat(contract.profit || 0) : -trade.stake;
                     if (!trade.exitPrice) trade.exitPrice = contract.current_spot_display_value || contract.current_spot;
                     if (trade.exitPrice) trade.lastDigit = trade.exitPrice.toString().slice(-1);
 
