@@ -151,6 +151,9 @@
                         </div>
                     </div>
 
+                    <!-- Projection Chart -->
+                    <ProjectionChart :daily-data="dailyMarkupData" />
+
                     <!-- Table Section -->
                     <div class="table-section mt-8">
                         <div class="table-header mb-4">
@@ -233,6 +236,8 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
+import ProjectionChart from '../../components/Admin/ProjectionChart.vue';
+
 
 
 // NOTA: DESCOMENTE AS LINHAS ABAIXO APÓS INSTALAR AS DEPENDÊNCIAS (npm install jspdf html2canvas)
@@ -245,6 +250,7 @@ export default {
         AppSidebar,
         TopNavbar,
         SettingsSidebar,
+        ProjectionChart,
     },
     data() {
         const currentDate = new Date().toISOString().split('T')[0];
@@ -271,9 +277,11 @@ export default {
                 monthly: 0,
                 lastMonth: 0,
                 annual: 0,
+                thirtyDays: 0,
             },
             loadingProgress: 0,
             totalToLoad: 0,
+            dailyMarkupData: [],
         };
     },
     watch: {
@@ -418,11 +426,14 @@ export default {
                 // Último dia do mês passado
                 const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
                 
+                // 30 dias atrás
+                const startOfThirtyDays = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+                
                 // Primeiro dia do ano atual
                 const startOfYear = `${today.getFullYear()}-01-01`;
                 
                 // Fazer chamadas paralelas para todos os períodos
-                const [todayData, monthlyData, lastMonthData, annualData] = await Promise.all([
+                const [todayData, monthlyData, lastMonthData, thirtyDaysData, annualData, dailyStats] = await Promise.all([
                     fetch(`${apiUrl}/trades/markup?startDate=${startOfToday}&endDate=${endOfToday}${queryParams}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }).then(r => r.json()),
@@ -432,7 +443,13 @@ export default {
                     fetch(`${apiUrl}/trades/markup?startDate=${startOfLastMonth}&endDate=${endOfLastMonth}${queryParams}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }).then(r => r.json()),
+                    fetch(`${apiUrl}/trades/markup?startDate=${startOfThirtyDays}&endDate=${endOfToday}${queryParams}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).then(r => r.json()),
                     fetch(`${apiUrl}/trades/markup?startDate=${startOfYear}&endDate=${endOfToday}${queryParams}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).then(r => r.json()),
+                    fetch(`${apiUrl}/trades/markup/daily?startDate=${startOfThirtyDays}&endDate=${endOfToday}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     }).then(r => r.json()),
                 ]);
@@ -441,8 +458,11 @@ export default {
                     today: todayData.summary?.totalCommission || 0,
                     monthly: monthlyData.summary?.totalCommission || 0,
                     lastMonth: lastMonthData.summary?.totalCommission || 0,
+                    thirtyDays: thirtyDaysData.summary?.totalCommission || 0,
                     annual: annualData.summary?.totalCommission || 0,
                 };
+
+                this.dailyMarkupData = dailyStats || [];
                 
             } catch (error) {
                 console.error('Erro ao buscar dados por período:', error);
