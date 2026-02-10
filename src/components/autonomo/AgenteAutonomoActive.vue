@@ -79,7 +79,7 @@
             />
 			
 			<!-- Metric Cards -->
-			<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+			<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
 				<!-- Capital Inicial -->
 				<div v-if="!isMobile" class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
 					<div class="flex items-center mb-4 gap-2">
@@ -93,31 +93,7 @@
 					</div>
 				</div>
 
-                <!-- Meta Diária -->
-                <div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="p-2 rounded-lg bg-[#22C55E]/10 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-target text-[#22C55E]"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
-                        </div>
-                        <span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Meta Diária</span>
-                    </div>
-                    <div class="text-2xl font-bold mb-1 tabular-nums text-left text-[#FAFAFA]">
-                        {{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(agenteData.goalValue || agentConfig?.profitTarget || 50) }}
-                    </div>
-                </div>
 
-                <!-- Stop Loss -->
-                <div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="p-2 rounded-lg bg-red-500/10 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert text-red-500"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
-                        </div>
-                        <span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Stop Loss</span>
-                    </div>
-                    <div class="text-2xl font-bold mb-1 tabular-nums text-left text-[#FAFAFA]">
-                        {{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(agenteData.stopValue || agentConfig?.lossLimit || 25) }}
-                    </div>
-                </div>
 
 				<!-- Capital Final -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
@@ -197,7 +173,7 @@
 
 		<!-- Additional Stats Row -->
 		<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-4 mb-6 relative">
-			<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+			<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
 				
 				<!-- Estrategia -->
 				<div class="relative flex-1 agent-switcher-container">
@@ -326,7 +302,8 @@
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Resultado do dia</div>
 						<div class="text-sm font-medium tabular-nums text-left" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'">
-							{{ hideValues ? '••••' : ((sessionStats?.netProfit || 0) < 0 ? '-' : ((sessionStats?.netProfit || 0) > 0 ? '+' : '')) + preferredCurrencyPrefix + Math.abs(sessionStats?.netProfit || 0).toFixed(2) }}
+						<div class="text-sm font-medium tabular-nums text-left" :class="((dailyRealtimeStats && dailyRealtimeStats.netProfit) || (sessionStats?.netProfit || 0)) >= 0 ? 'text-green-500' : 'text-red-500'">
+							{{ hideValues ? '••••' : (((dailyRealtimeStats ? dailyRealtimeStats.netProfit : (sessionStats?.netProfit || 0)) < 0 ? '-' : ((dailyRealtimeStats ? dailyRealtimeStats.netProfit : (sessionStats?.netProfit || 0)) > 0 ? '+' : '')) + preferredCurrencyPrefix + Math.abs((dailyRealtimeStats ? dailyRealtimeStats.netProfit : (sessionStats?.netProfit || 0))).toFixed(2)) }}
 						</div>
 					</div>
 				</div>
@@ -350,6 +327,31 @@
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Tempo ativo</div>
 						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">{{ tempoAtivoDisplay }}</div>
+					</div>
+				</div>
+				<!-- Meta Diária -->
+				<div class="flex items-center gap-3">
+					<div class="p-2 rounded-lg bg-[#22C55E]/10 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-target text-[#22C55E]"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+					</div>
+					<div>
+						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Meta Diária</div>
+						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
+							{{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(agenteData.goalValue || agentConfig?.profitTarget || 50) }}
+						</div>
+					</div>
+				</div>
+
+				<!-- Stop Loss -->
+				<div class="flex items-center gap-3">
+					<div class="p-2 rounded-lg bg-red-500/10 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert text-red-500"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+					</div>
+					<div>
+						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Stop Loss</div>
+						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
+							{{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(agenteData.stopValue || agentConfig?.lossLimit || 25) }}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -1156,16 +1158,45 @@
                          netProfit,
                          totalOps,
                          avgProfit: totalOps > 0 ? netProfit / totalOps : 0
+
                      };
                 }
                 return null;
             },
-            periodProfit() {
+            dailyRealtimeStats() {
+                if (!this.tradeHistory || this.tradeHistory.length === 0) return null;
+                const today = new Date().toISOString().split('T')[0];
+                const todayTrades = this.tradeHistory.filter(t => {
+                    const d = t.createdAt || t.created_at || t.time;
+                    return d && (String(d).startsWith(today) || new Date(d).toISOString().split('T')[0] === today);
+                });
+                
+                if (todayTrades.length === 0) return null;
+
+                const netProfit = todayTrades.reduce((sum, t) => {
+                     const profit = t.profit !== undefined ? parseFloat(t.profit) : 
+                                   (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 
+                                   (t.result !== undefined ? parseFloat(t.result) : 0));
+                     return sum + profit;
+                }, 0);
+                
+                return {
+                    netProfit,
+                    totalOps: todayTrades.length
+                };
+            },
+			periodProfit() {
+				// Use realtime stats for 'today' or 'session'
                 if (this.selectedPeriod === 'session') {
-                    // Use realtime calculated stats if available
                     if (this.realtimeStats) return this.realtimeStats.netProfit;
                     return this.sessionStats?.netProfit || 0;
                 }
+				if (this.selectedPeriod === 'today') {
+					if (this.dailyRealtimeStats) return this.dailyRealtimeStats.netProfit;
+				}
+				
+				// Fallback to filtered data sum (if implemented) or raw dailyData
+				// Note: Ideally should sum filteredDailyData, but sticking to existing pattern for non-today
                 if (!this.dailyData || this.dailyData.length === 0) return 0;
                 return this.dailyData.reduce((sum, day) => sum + (day.profit || 0), 0);
             },
@@ -1256,6 +1287,7 @@
 				if (this.selectedPeriod === 'session' && this.realtimeStats) {
 					return this.realtimeStats.totalOps;
 				}
+				if (this.dailyRealtimeStats) return this.dailyRealtimeStats.totalOps;
 				return this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
 			},
 			totalCapital() {
@@ -1339,12 +1371,14 @@
                     }
 
                     // Fallback para sessionStats se dailyData não tiver hoje (menos provável com polling)
+					// Mas priorizar realtimeStats se existir
+					const rt = this.dailyRealtimeStats;
 					return {
 						...this.selectedDay,
-						profit: this.sessionStats?.netProfit || 0,
-                        ops: this.sessionStats?.totalTrades || 0,
+						profit: rt ? rt.netProfit : (this.sessionStats?.netProfit || 0),
+                        ops: rt ? rt.totalOps : (this.sessionStats?.totalTrades || 0),
                         winRate: this.sessionStats?.winRate || 0,
-                        capital: (this.agentConfig?.initialBalance || 0) + (this.sessionStats?.netProfit || 0),
+                        capital: (this.agentConfig?.initialBalance || 0) + (rt ? rt.netProfit : (this.sessionStats?.netProfit || 0)),
 					};
 				}
 				
