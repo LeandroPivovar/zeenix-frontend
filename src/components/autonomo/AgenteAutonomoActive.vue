@@ -79,7 +79,7 @@
             />
 			
 			<!-- Metric Cards -->
-			<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+			<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
 				<!-- Capital Inicial -->
 				<div v-if="!isMobile" class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
 					<div class="flex items-center mb-4 gap-2">
@@ -92,6 +92,32 @@
 						{{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(renderedInitialCapital) }}
 					</div>
 				</div>
+
+                <!-- Meta Diária -->
+                <div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="p-2 rounded-lg bg-[#22C55E]/10 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-target text-[#22C55E]"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                        </div>
+                        <span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Meta Diária</span>
+                    </div>
+                    <div class="text-2xl font-bold mb-1 tabular-nums text-left text-[#FAFAFA]">
+                        {{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(agenteData.goalValue || agentConfig?.profitTarget || 50) }}
+                    </div>
+                </div>
+
+                <!-- Stop Loss -->
+                <div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="p-2 rounded-lg bg-red-500/10 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert text-red-500"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+                        </div>
+                        <span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Stop Loss</span>
+                    </div>
+                    <div class="text-2xl font-bold mb-1 tabular-nums text-left text-[#FAFAFA]">
+                        {{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(agenteData.stopValue || agentConfig?.lossLimit || 25) }}
+                    </div>
+                </div>
 
 				<!-- Capital Final -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
@@ -1116,8 +1142,28 @@
 				// FIX: Prioritize balanceNumeric (summed) over info.balance (raw)
 				return this.balanceNumeric || this.currentBalance?.balance || this.info?.balance || 0;
 			},
+            realtimeStats() {
+                // Calculate stats from tradeHistory when in session mode
+                if (this.selectedPeriod === 'session' && this.tradeHistory && this.tradeHistory.length > 0) {
+                     const trades = this.formattedSessionItems; // Use normalized list
+                     const netProfit = trades.reduce((sum, item) => {
+                         if (item.type === 'trade') return sum + parseFloat(item.data.profit);
+                         return sum;
+                     }, 0);
+                     const totalOps = trades.filter(t => t.type === 'trade').length;
+                     
+                     return {
+                         netProfit,
+                         totalOps,
+                         avgProfit: totalOps > 0 ? netProfit / totalOps : 0
+                     };
+                }
+                return null;
+            },
             periodProfit() {
                 if (this.selectedPeriod === 'session') {
+                    // Use realtime calculated stats if available
+                    if (this.realtimeStats) return this.realtimeStats.netProfit;
                     return this.sessionStats?.netProfit || 0;
                 }
                 if (!this.dailyData || this.dailyData.length === 0) return 0;
@@ -1140,6 +1186,9 @@
 			avgDailyProfit() {
 				// Se for sessão, cálculo de média/dia baseado na duração da sessão
                 if (this.selectedPeriod === 'session') {
+                     // Use realtime stats for consistenc
+                     if (this.realtimeStats) return this.realtimeStats.netProfit; // For session, avg/day is essentially the session profit as it is 1 day
+                     
                      if (!this.agentConfig || !this.agentConfig.sessionDate) return this.periodProfit; 
                      const sessionStart = new Date(this.agentConfig.sessionDate);
                      const now = new Date();
@@ -1155,6 +1204,9 @@
 			},
 	avgProfitPerOp() {
 		// Calculate average profit per operation
+        if (this.selectedPeriod === 'session' && this.realtimeStats) {
+            return this.realtimeStats.avgProfit;
+        }
 		const totalOps = this.sessionStats?.totalTrades || 0;
 		if (totalOps === 0) return 0;
 		return this.periodProfit / totalOps;
@@ -1201,6 +1253,9 @@
 				return '0h 0m 0s';
 			},
 			operacoesHojeDisplay() {
+				if (this.selectedPeriod === 'session' && this.realtimeStats) {
+					return this.realtimeStats.totalOps;
+				}
 				return this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
 			},
 			totalCapital() {
@@ -1360,106 +1415,125 @@
                 // Retorna 'Semanal', 'Mensal' etc baseado na range geral se quiser, por padrão 'Semanal' baseada na tabela
 				return 'Semanal';
 			},
-            formattedSessionItems() {
-                if (!this.dailyTrades || this.dailyTrades.length === 0) return [];
-                
-                // 1. Agrupar trades em sessões (gap de 30 min)
-                const sessions = [];
-                let currentSessionTrades = [];
-                
-                // Clone e order DESC (mais recente primeiro)
-                const trades = [...this.dailyTrades].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                
-                if (trades.length > 0) {
-                     currentSessionTrades.push(trades[0]);
-                     
-                     for (let i = 1; i < trades.length; i++) {
-                         const prevTradeTime = new Date(trades[i-1].createdAt).getTime();
-                         const currTradeTime = new Date(trades[i].createdAt).getTime();
-                         
-                         // Gap check: se trade atual é muito mais antigo que o anterior (pois a ordem é DESC)
-                         // Então houve um intervalo GRANDE antes do trade[i-1]. 
-                         // Ou seja, trade[i-1] foi o ÚLTIMO de uma sessão, e trade[i] é o PRIMEIRO da sessão anterior.
-                         const diffMinutes = (prevTradeTime - currTradeTime) / (1000 * 60);
-                         
-                         if (diffMinutes > 30) {
-                             sessions.push(currentSessionTrades);
-                             currentSessionTrades = [];
-                         }
-                         currentSessionTrades.push(trades[i]);
-                     }
-                     sessions.push(currentSessionTrades);
-                }
-                
-                // 2. Criar lista flat com Header(Início) -> Trades -> Footer(Fim)
-                // Como trades estão DESC, sessions[0] é a mais recente.
-                // Mas dentro da sessão, trades[0] é o mais recente (FIM), trades[last] é INICIO.
-                // Na tabela queremos mostrar DESC? Geralmente sim (mais recente no topo).
-                // MAS o user pediu "Inicio a sessão ... Trades ... Fim".
-                // Se a ordem for DESC visualmente (topo->baixo), o "Fim" (mais recente) deveria estar em cima?
-                // Visualmente Logs costumam ser mais recentes em cima.
-                // Mas o pedido "Inicio... Trades... Fim" sugere ordem CRONOLÓGICA (ASC) dentro da sessão ou visualização de bloco.
-                // "Sessão 1 - Inicio 11:14" (Yellow).
-                // Se mostrar DESC, o Inicio fica EM BAIXO.
-                // A imagem mostra "Sessão 01 - Inicio" no TOPO da lista de trades dessa sessão.
-                // E os trades abaixo parecem ser os daquela sessão.
-                // Assumindo ordem DESC global (sessão mais recente em cima),
-                // Mas dentro da sessão, os trades devem estar DESC também?
-                // Se o header é "Inicio", ele deveria marcar o começo do bloco visual.
-                
-                const items = [];
-                
-                sessions.forEach((sessionTrades, idx) => {
-                    const sessionNum = sessions.length - idx; // Sessão 1 é a mais antiga
-                    
-                    // Calcular dados da sessão
-                    const startTime = this.formatToSPTime(sessionTrades[sessionTrades.length - 1].createdAt);
-                    const endTime = this.formatToSPTime(sessionTrades[0].createdAt);
-                    const totalProfit = sessionTrades.reduce((acc, t) => acc + t.profit, 0);
-                    
-                    // 1. Footer: FIM (Agora no TOPO do bloco porque trades são DESC)
-                    let footerText = `FIM DA SESSÃO - ${endTime}`;
-                    
-                    if (idx === 0 && this.agenteData.sessionStatus !== 'active' && this.agenteData.sessionStatus) {
-                        const statusMap = {
-                            'paused': 'AGENTE PAUSADO',
-                            'stopped_loss': 'STOP LOSS ATINGIDO',
-                            'stopped_profit': 'META ATINGIDA',
-                            'stopped_blindado': 'STOP BLINDADO ATINGIDO',
-                            'error': 'ERRO NO SISTEMA',
-                            'inactive': 'SESSÃO ENCERRADA'
-                        };
-                        const reason = statusMap[this.agenteData.sessionStatus] || statusMap[this.lastProcessedStatus] || this.agenteData.sessionStatus.toUpperCase();
-                        footerText += ` (${reason})`;
-                    }
+			formattedSessionItems() {
+				// Decide source array based on selectedPeriod
+				let sourceTrades = [];
+				if (this.selectedPeriod === 'session') {
+					// Prioritize the reactive tradeHistory prop for real-time updates
+					sourceTrades = this.tradeHistory || [];
+				} else {
+					// Fallback to dailyTrades for historical views
+					sourceTrades = this.dailyTrades || [];
+				}
 
-                    items.push({
-                        type: 'footer',
-                        id: `footer-${idx}`,
-                        endTime: footerText,
-                        totalProfit: totalProfit
-                    });
+				if (!sourceTrades || sourceTrades.length === 0) return [];
+				
+				// 1. Normalize and Sort Trades
+				const normalizedTrades = sourceTrades.map(trade => {
+					// Handle potential snake_case from backend vs camelCase from frontend mapping
+					const createdAt = trade.createdAt || trade.created_at || trade.time;
+					const profit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.result !== undefined ? parseFloat(trade.result) : 0));
+					
+					const stake = trade.stake !== undefined ? parseFloat(trade.stake) : (trade.buy_price !== undefined ? parseFloat(trade.buy_price) : (trade.entry !== undefined ? parseFloat(trade.entry) : 0));
 
-                    // 2. Trades (Mantendo DESC: mais recentes primeiro)
-                    sessionTrades.forEach(trade => {
-                        items.push({
-                            type: 'trade',
-                            id: trade.id,
-                            data: trade
-                        });
-                    });
+					const entry = trade.entry !== undefined ? parseFloat(trade.entry) : (trade.entry_price !== undefined ? parseFloat(trade.entry_price) : (trade.entryPrice !== undefined ? parseFloat(trade.entryPrice) : 0));
 
-                    // 3. Header: INICIO (Agora na BASE do bloco)
-                    items.push({
-                        type: 'header',
-                        id: `header-${idx}`,
-                        sessionNumber: sessionNum,
-                        startTime: startTime
-                    });
-                });
-                
-                return items;
-            },
+					const exit = trade.exit !== undefined ? parseFloat(trade.exit) : (trade.exit_price !== undefined ? parseFloat(trade.exit_price) : (trade.exitPrice !== undefined ? parseFloat(trade.exitPrice) : 0));
+					
+					const market = trade.market || trade.symbol || trade.asset || 'Unknown';
+					
+					const contract = trade.contract || trade.contract_type || trade.contractType || trade.type || 'Unknown';
+
+					return {
+						id: trade.id || Math.random().toString(36).substr(2, 9),
+						createdAt, // Date object or ISO string
+						market,
+						contract,
+						entry: entry.toFixed(2),
+						exit: exit.toFixed(2),
+						stake: stake.toFixed(2),
+						profit: profit.toFixed(2),
+						// Keep original for referencing if needed
+						original: trade 
+					};
+				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Newest first
+
+				// 2. Group trades into sessions (gap of 30 min)
+				const sessions = [];
+				let currentSessionTrades = [];
+				
+				if (normalizedTrades.length > 0) {
+					currentSessionTrades.push(normalizedTrades[0]);
+					
+					for (let i = 1; i < normalizedTrades.length; i++) {
+						const prevTradeTime = new Date(normalizedTrades[i-1].createdAt).getTime();
+						const currTradeTime = new Date(normalizedTrades[i].createdAt).getTime();
+						
+						// Gap check
+						const diffMinutes = (prevTradeTime - currTradeTime) / (1000 * 60);
+						
+						if (diffMinutes > 30) {
+							sessions.push(currentSessionTrades);
+							currentSessionTrades = [];
+						}
+						currentSessionTrades.push(normalizedTrades[i]);
+					}
+					sessions.push(currentSessionTrades);
+				}
+				
+				const items = [];
+				
+				sessions.forEach((sessionTrades, idx) => {
+					const sessionNum = sessions.length - idx; // Session 1 is the oldest
+					
+					// Calculate session data
+					const startTime = this.formatToSPTime(sessionTrades[sessionTrades.length - 1].createdAt);
+					const endTime = this.formatToSPTime(sessionTrades[0].createdAt);
+					const totalProfit = sessionTrades.reduce((acc, t) => acc + parseFloat(t.profit), 0);
+					
+					// 1. Footer: END (At TOP of block because trades are DESC)
+					let footerText = `FIM DA SESSÃO - ${endTime}`;
+					
+					if (idx === 0 && this.agenteData.sessionStatus !== 'active' && this.agenteData.sessionStatus) {
+						const statusMap = {
+							'paused': 'AGENTE PAUSADO',
+							'stopped_loss': 'STOP LOSS ATINGIDO',
+							'stopped_profit': 'META ATINGIDA',
+							'stopped_blindado': 'STOP BLINDADO ATINGIDO',
+							'error': 'ERRO NO SISTEMA',
+							'inactive': 'SESSÃO ENCERRADA'
+						};
+						const reason = statusMap[this.agenteData.sessionStatus] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || this.agenteData.sessionStatus.toUpperCase();
+						footerText += ` (${reason})`;
+					}
+
+					items.push({
+						type: 'footer',
+						id: `footer-${idx}`,
+						endTime: footerText,
+						totalProfit: totalProfit
+					});
+
+					// 2. Trades (Newest first)
+					sessionTrades.forEach(trade => {
+						items.push({
+							type: 'trade',
+							id: trade.id,
+							data: trade
+						});
+					});
+
+					// 3. Header: START (At BOTTOM of block)
+					items.push({
+						type: 'header',
+						id: `header-${idx}`,
+						sessionNumber: sessionNum,
+						startTime: startTime
+					});
+				});
+				
+				return items;
+			},
 		},
 		watch: {
 			'agenteData.accountBalance'() { this.$forceUpdate(); },

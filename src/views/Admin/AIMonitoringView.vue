@@ -1423,11 +1423,17 @@ export default {
                             this.rawBalance = newBalance;
                             
                             // Emit global event for TopNavbar and other components
+                            // ✅ FIX: Use balanceNumeric (which includes fictitious) instead of raw
+                            // ✅ FIX: Add source to prevent loop
                             window.dispatchEvent(new CustomEvent('balanceUpdated', { 
-                                detail: { balance: newBalance, isVirtual } 
+                                detail: { 
+                                    balance: this.balanceNumeric, // Use computed property with fictitious sum
+                                    isVirtual,
+                                    source: 'AIMonitoringView' // Prevent self-consumption
+                                } 
                             }));
                             
-                            console.log('[AIMonitoring] 💰 Balance updated:', newBalance);
+                            console.log('[AIMonitoring] 💰 Balance updated (Global Event Emitted):', this.balanceNumeric);
                         }
                     } catch (e) {
                         console.error('WebSocket message error:', e);
