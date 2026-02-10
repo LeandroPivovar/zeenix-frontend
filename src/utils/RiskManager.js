@@ -358,6 +358,21 @@ export const RiskManager = {
             }
         } else {
             state.lastProfitPrincipal = realProfit;
+
+            // ✅ CORRECTION: Check if Fast Result incorrectly triggered recovery for a PRINCIPAL win
+            if (win && state.analysisType === 'RECUPERACAO' && state.consecutiveWins === 0) {
+                console.log('%c[RiskManager] 🔄 CORRECTION: Official WIN received. Cancelling false Fast Result LOSS.', 'background: #0000ff; color: #fff; font-weight: bold; padding: 4px;');
+
+                // Rollback the false loss
+                state.totalLossAccumulated = Math.max(0, state.totalLossAccumulated - stakeUsed);
+                state.consecutiveLosses = Math.max(0, state.consecutiveLosses - 1);
+
+                // If no more accumulated loss, exit recovery and restore win streak
+                if (state.totalLossAccumulated <= 0) {
+                    this._finishRecovery(state);
+                    state.consecutiveWins = 1; // It was a win after all
+                }
+            }
         }
 
         // 2. Update payout rate with official data

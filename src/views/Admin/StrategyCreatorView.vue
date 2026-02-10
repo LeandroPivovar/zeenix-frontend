@@ -3738,10 +3738,6 @@ export default {
                     }
                 }
 
-                // --- Fast Result Calculation (Local) ---
-                this.checkLocalTicks(price, lastDigit);
-
-                
                 // --- Real-time Analysis Integration ---
                 // Add to history buffers (limit to 100 for performance)
                 this.tickHistory.unshift(price);
@@ -3762,9 +3758,7 @@ export default {
             if (activeFilters.length === 0) return;
             
             // Prevent spamming analysis
-            // ✅ Only block if there are contracts that have NOT been fast-processed yet
-            const activeUnsettledContracts = [...this.activeContracts.values()].filter(c => !c.fastResultApplied);
-            if (activeUnsettledContracts.length > 0 || this.isNegotiating) return;
+            if (this.activeContracts.size > 0 || this.isNegotiating) return;
             
             if (this.pendingFastResult && this.pendingFastResult.active) return;
     if (this.pendingVirtualTrade) return;
@@ -4172,7 +4166,7 @@ export default {
                     contractId: null,
                     barrier: parseInt(proposalParams.barrier || config.prediction || 8), 
                     contractType: overrideContractType || config.tradeType,
-                    active: true, // ✅ RE-ENABLED FAST RESULT
+                    active: false, // ❌ DISABLED FAST RESULT
                     stake: stake,
                     analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
                     payout: null,
@@ -4338,17 +4332,11 @@ export default {
                 trade.result = contract.status.toUpperCase(); // 'WON' or 'LOST'
                 trade.pnl = parseFloat(contract.profit || 0);
 
-            if (trade.result === 'WON') {
-                // Only log if not already handled by fast result or if there is a discrepancy
-                if (!trade.fastResultApplied || trade.fastResultOutcome !== 'WON') {
+                if (trade.result === 'WON') {
                     this.addLog(`💰 WIN! Resultado: +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
-                }
-            } else {
-                // Only log if not already handled by fast result or if there is a discrepancy
-                if (!trade.fastResultApplied || trade.fastResultOutcome !== 'LOST') {
+                } else {
                     this.addLog(`🔴 LOSS! Prejuízo: -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
                 }
-            }
 
                 // Refinar resultado se já processado pelo resultado rápido
                 if (trade.fastResultApplied) {
@@ -4406,7 +4394,7 @@ export default {
                          this.addLog(`📉 Loss na Recuperação. Ajustando Martingale...`, 'warning');
                     }
                     // Refine result from Fast Result logic with official data
-                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake);
+                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
                 }
                 
                 // Always update payout history for this contract type (Win or Loss? Payout is mostly constant per type unless barrier changes)
@@ -4432,11 +4420,6 @@ export default {
                 }
 
                 // Update official profit and balance
-                // ✅ Adjust for Fast Result double-counting if applicable
-                if (trade.fastResultApplied && trade.fastResultProfit !== undefined) {
-                    this.monitoringStats.profit -= trade.fastResultProfit;
-                }
-                
                 this.monitoringStats.profit += trade.pnl;
                 this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
 
