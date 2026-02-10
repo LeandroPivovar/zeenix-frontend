@@ -119,6 +119,7 @@
         ws: null,
         isAuthorized: false,
         rawBalance: 0,
+        processedContractIds: [], // ✅ [ZENIX v2.3] Track processed IDs for real-time sync
   
         // Dados de simulação para o gráfico
         realTimeOperations: [
@@ -1188,27 +1189,49 @@
           this.apiTradeHistory = [normalizedTrade, ...this.apiTradeHistory].slice(0, 100);
         }
 
-        // 4. Se o contrato terminou, atualizar estatísticas locais IMEDIATAMENTE
+        // 4. Se o contrato terminou, atualizar estatísticas locais IMEDIATAMENTE (Otimista)
         if (contract.is_sold || status !== 'open') {
           console.log('[AgenteAutonomo] 🏁 Operação finalizada. Atualizando stats locais...');
           
-          // Recalcular SessionStats localmente para feedback instantâneo
-          // Isso será sobrescrito pelo fetch do backend em 2s, mas dá o "feel" real-time
-          if (this.sessionStats) {
-            // Só somar se não tivermos processado este contrato ainda como finalizado
-            // (Evita duplicidade se o WS mandar 2x)
-            if (contract.is_sold && !contract.already_indexed) {
-               // Nota: No mundo real usaríamos um set de IDs processados
+          const cid = String(contractId);
+          if (!this.processedContractIds.includes(cid)) {
+            // ✅ [ZENIX v2.3] Atualização Otimista: Atualiza prop sessionStats instantaneamente
+            if (this.sessionStats) {
+                const p = parseFloat(contract.profit) || 0;
+                const win = status === 'won';
+                
+                this.sessionStats.totalTrades += 1;
+                this.sessionStats.operationsToday += 1;
+                this.sessionStats.netProfit += p;
+                
+                if (win) {
+                    this.sessionStats.wins += 1;
+                    this.sessionStats.totalProfit += p;
+                } else {
+                    this.sessionStats.losses += 1;
+                    this.sessionStats.totalLoss += Math.abs(p);
+                }
+                
+                // Recalcular winRate
+                if (this.sessionStats.totalTrades > 0) {
+                    this.sessionStats.winRate = (this.sessionStats.wins / this.sessionStats.totalTrades) * 100;
+                }
+                
+                this.processedContractIds.push(cid);
+                if (this.processedContractIds.length > 200) this.processedContractIds.shift();
+
+                console.log('[AgenteAutonomo] ⚡ Stats atualizados otimisticamente:', this.sessionStats.netProfit);
             }
           }
 
-          // Sincronizar com o backend após um pequeno delay para garantir que o banco processou tudo
+          // Sincronizar com o backend após um delay maior (10s) para garantir consistência final
+          // mas sem pressa já que o UI já atualizou otimisticamente
           if (this.syncTimeout) clearTimeout(this.syncTimeout);
           this.syncTimeout = setTimeout(() => {
             this.loadSessionStats();
             this.loadTradeHistory();
-            this.loadAgentLogs(); // Pegar logs do servidor também
-          }, 2000);
+            this.loadAgentLogs(); 
+          }, 10000); 
         }
       },
       
