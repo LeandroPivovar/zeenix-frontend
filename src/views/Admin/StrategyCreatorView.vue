@@ -137,7 +137,7 @@
                                                     @click="toggleIconSelector"
                                                     class="w-16 h-16 rounded-xl bg-[#1a1a1a] border-2 border-dashed border-[#333] hover:border-primary/50 transition-all duration-200 flex items-center justify-center group shrink-0"
                                                 >
-                                                    <i :class="[getDisplayedIconClass(), 'text-3xl text-white group-hover:text-primary transition-colors']"></i>
+                                                    <i :class="[previewIcon || form.icon || 'fa-solid fa-plus', 'text-3xl text-white group-hover:text-primary transition-colors']"></i>
                                                 </button>
                                                 
                                                 <div v-if="showIconSelector" class="flex-1 flex flex-wrap gap-2 p-3 bg-[#0f0f0f] rounded-lg border border-[#1a1a1a]">
@@ -2418,11 +2418,6 @@ export default {
         window.removeEventListener('resize', this.handleResize);
     },
     methods: {
-        getDisplayedIconClass() {
-            if (this.previewIcon) return this.previewIcon;
-            if (this.form.icon) return this.form.icon;
-            return 'fa-solid fa-plus';
-        },
         toggleIconSelector() {
             this.showIconSelector = !this.showIconSelector;
         },
