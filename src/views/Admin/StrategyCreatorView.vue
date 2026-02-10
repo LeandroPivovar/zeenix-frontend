@@ -138,8 +138,13 @@
                                                     class="w-16 h-16 rounded-xl bg-[#1a1a1a] border-2 border-dashed border-[#333] hover:border-primary/50 transition-all duration-200 flex items-center justify-center group shrink-0"
                                                 >
                                                     <i 
-                                                        :key="form.icon || 'plus'"
-                                                        :class="[form.icon || 'fa-solid fa-plus', 'text-3xl text-white group-hover:text-primary transition-colors']"
+                                                        v-if="form.icon"
+                                                        :key="form.icon"
+                                                        :class="[form.icon, 'text-3xl text-white group-hover:text-primary transition-colors']"
+                                                    ></i>
+                                                    <i 
+                                                        v-else
+                                                        class="fa-solid fa-plus text-3xl text-white group-hover:text-primary transition-colors"
                                                     ></i>
                                                 </button>
                                                 
@@ -149,7 +154,7 @@
                                                         :key="icon"
                                                         type="button"
                                                         class="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-200 shrink-0 cursor-pointer"
-                                                        :class="form.icon === icon ? '!bg-zenix-green/20 !text-zenix-green ring-1 ring-zenix-green' : 'bg-[#1a1a1a] text-gray-400 hover:bg-zenix-green/10 hover:text-zenix-green'"
+                                                        :class="form.icon === icon ? '!bg-[#22C55E]/20 !text-[#22C55E] ring-2 ring-[#22C55E]' : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#22C55E]/10 hover:text-[#22C55E]'"
                                                         :title="icon"
                                                         @click="selectIcon(icon)"
                                                     >
