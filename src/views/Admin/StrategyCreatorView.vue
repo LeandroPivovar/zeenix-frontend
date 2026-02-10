@@ -138,8 +138,8 @@
                                                     class="w-16 h-16 rounded-xl bg-[#1a1a1a] border-2 border-dashed border-[#333] hover:border-primary/50 transition-all duration-200 flex items-center justify-center group shrink-0"
                                                 >
                                                     <i 
-                                                        :key="previewIcon || form.icon || 'plus'"
-                                                        :class="[previewIcon || form.icon || 'fa-solid fa-plus', 'text-3xl text-white group-hover:text-primary transition-colors']"
+                                                        :key="form.icon || 'plus'"
+                                                        :class="[form.icon || 'fa-solid fa-plus', 'text-3xl text-white group-hover:text-primary transition-colors']"
                                                     ></i>
                                                 </button>
                                                 
@@ -148,12 +148,10 @@
                                                         v-for="icon in strategyIcons" 
                                                         :key="icon"
                                                         type="button"
-                                                        @click="selectIcon(icon)"
-                                                        @mouseenter="previewIcon = icon"
-                                                        @mouseleave="previewIcon = null"
                                                         class="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-200 shrink-0 cursor-pointer"
-                                                        :class="form.icon === icon ? '!bg-zenix-green/30 !text-zenix-green ring-2 ring-zenix-green' : 'bg-[#1a1a1a] text-gray-400 hover:bg-zenix-green/10 hover:text-zenix-green'"
+                                                        :class="form.icon === icon ? '!bg-zenix-green/20 !text-zenix-green ring-1 ring-zenix-green' : 'bg-[#1a1a1a] text-gray-400 hover:bg-zenix-green/10 hover:text-zenix-green'"
                                                         :title="icon"
+                                                        @click="selectIcon(icon)"
                                                     >
                                                         <i :class="icon" class="pointer-events-none"></i>
                                                     </button>
@@ -1731,7 +1729,6 @@ export default {
             selectedSavedStrategyId: '',
             currentVersion: '',
             currentStrategyName: '',
-            previewIcon: null, // Stores the icon currently being hovered
             recoveryFilters: [],
             strategyIcons: [
                 // Technology & AI
@@ -2427,8 +2424,6 @@ export default {
         selectIcon(icon) {
             console.log('Selected Icon:', icon);
             this.form.icon = icon;
-            // Removed previewIcon clearing to prevent UI flash/state confusion
-            // The hover logic will handle previewIcon clearing on mouseleave
         },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
