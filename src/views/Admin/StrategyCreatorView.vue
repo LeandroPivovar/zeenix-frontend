@@ -3224,11 +3224,11 @@ export default {
             this.localPendingContracts.forEach((contract) => {
                 if (!contract.active) return;
 
-                // 1. Capture Entry Tick (First tick AFTER buy)
+                // 1. Capture Entry Tick (if not already captured at buy time)
                 if (contract.entryTick === null) {
                     contract.entryTick = price;
                     contract.entryDigit = digit;
-                    // console.log(`[LocalTick] Contrato ${buyId}: Entrada capturada ${price} (Dígito ${digit})`);
+                    console.log(`[LocalTick] Contrato ${contract.id}: Entrada capturada em tempo real (Tick Secundário)`);
                     return; // Wait for NEXT tick to close (for 1-tick duration)
                 }
 
@@ -3348,6 +3348,11 @@ export default {
             // Clean up
             this.localPendingContracts.delete(contract.id);
             this.isNegotiating = false; // Unlock early!
+            
+            // ✅ Disable fast result state to allow next analysis loop
+            if (this.pendingFastResult) {
+                this.pendingFastResult.active = false;
+            }
             
             // Check Limits/Pause
             this.checkLimits();
@@ -3622,7 +3627,7 @@ export default {
                             
                             // ⚡ REGISTER FOR LOCAL TICK RESULT
                             if (this.pendingFastResult) {
-                                 this.localPendingContracts.set(msg.buy.buy_id, {
+                                  this.localPendingContracts.set(msg.buy.buy_id, {
                                     id: msg.buy.buy_id,
                                     contractId: msg.buy.contract_id,
                                     type: this.pendingFastResult.contractType, 
@@ -3632,8 +3637,9 @@ export default {
                                     analysisType: this.pendingFastResult.analysisType,
                                     market: this.pendingFastResult.market || this.form.market,
                                     active: true,
-                                    entryTick: null, // To be captured on NEXT tick
-                                    entryDigit: null,
+                                    // ✅ Use the captured entry point from context
+                                    entryTick: this.pendingFastResult.entryTick,
+                                    entryDigit: this.pendingFastResult.entryDigit,
                                     payoutRate: this.sessionState.tempExplicitPayout || 0.95
                                 });
                                 console.log(`[LocalTick] Contrato ${msg.buy.buy_id} registrado para análise local.`);
@@ -4145,15 +4151,17 @@ export default {
                 // Store current context for fast result (will be activated on buy response)
                 this.pendingFastResult = {
                     contractId: null,
-                    barrier: parseInt(proposalParams.barrier || config.prediction || 8), // Ensure we capture the calculated barrier
-
+                    barrier: parseInt(proposalParams.barrier || config.prediction || 8), 
                     contractType: overrideContractType || config.tradeType,
-                    active: false, // DISABLED FAST RESULT as per user request
+                    active: true, // ✅ RE-ENABLED FAST RESULT
                     stake: stake,
                     analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
-                    payout: null, // Will be filled when proposal arrives
+                    payout: null,
                     duration: this.form.duration,
-                    durationUnit: this.form.durationUnit
+                    durationUnit: this.form.durationUnit,
+                    // ✅ Capture current tick as entry point
+                    entryTick: this.lastTickPrice,
+                    entryDigit: parseInt(this.lastTickPrice.toString().slice(-1))
                 };
 
                 // Step 2: Request Proposal
