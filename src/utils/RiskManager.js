@@ -292,8 +292,11 @@ export const RiskManager = {
 
                 if (totalEstimatedLosses >= 4) {
                     state.negotiationMode = 'PRECISO';
-                } else if (totalEstimatedLosses >= 2) {
-                    state.negotiationMode = 'NORMAL';
+                } else if (totalEstimatedLosses >= 1) { // Ensure at least NORMAL if in recovery
+                    const currentMode = state.negotiationMode || 'VELOZ';
+                    if (currentMode === 'VELOZ') {
+                        state.negotiationMode = 'NORMAL';
+                    }
                 }
 
             } else {
@@ -310,14 +313,13 @@ export const RiskManager = {
 
                 if (state.consecutiveLosses >= 4) {
                     state.negotiationMode = 'PRECISO';
-                } else if (state.consecutiveLosses >= 2) {
+                } else if (state.consecutiveLosses >= 1) {
+                    // Force NORMAL if it was VELOZ
                     if (initialMode === 'VELOZ') {
                         state.negotiationMode = 'NORMAL';
                     } else {
                         state.negotiationMode = initialMode;
                     }
-                } else {
-                    state.negotiationMode = initialMode;
                 }
 
                 state.lossStreakRecovery = 0;
