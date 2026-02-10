@@ -1061,7 +1061,8 @@
                 renderedAvgDailyProfit: 0,
                 renderedAvgDailyProfitPercent: 0,
                 renderedDailyResultValue: 0,
-                renderedOperacoesHoje: '--'
+                renderedOperacoesHoje: '--',
+                lastProcessedLogId: null, // ✅ [ZENIX v2.2] Evitar re-processar logs já vistos
 			};
 		},
 		mounted() {
@@ -1621,7 +1622,7 @@
 				}
 			},
             realtimeLogs: {
-                deep: true,
+                // ✅ [ZENIX v2.2] Removido 'deep: true' para performance (logs são substituídos, não mutados)
                 handler(newLogs) {
                     if (newLogs && newLogs.length > 0) {
                         this.checkLogsForStopEvents(newLogs);
@@ -1632,8 +1633,9 @@
                 immediate: true,
                 handler(newVal) {
                     if (newVal !== undefined && newVal !== null) {
-                        console.log('[AgenteAutonomoActive] 💰 finalCapital changed, emitting update:', newVal);
-                        this.$emit('live-balance-update', newVal);
+                        // console.log('[AgenteAutonomoActive] 💰 finalCapital changed:', newVal);
+                        // ✅ [ZENIX v2.2] REMOVIDO: this.$emit('live-balance-update', newVal);
+                        // O emit era redundante e circular (causava múltiplos updates globais)
                         
                         // ✅ [ZENIX v2.1] Atualizar capital renderizado apenas quando o saldo estiver pronto
                         if (this.isBalanceReady && newVal >= 0) {
@@ -1644,14 +1646,7 @@
                     }
                 }
             },
-            logs: {
-                deep: true,
-                handler(newLogs) {
-                   if (newLogs && newLogs.length > 0) {
-                       this.checkLogsForStopEvents(newLogs);
-                   }
-                }
-            },
+            // ✅ [ZENIX v2.2] Removido watcher redundante 'logs' (consolidado no realtimeLogs)
             // ✅ Watch for mixin's loading state completion
             isBalanceReady(newVal) {
                 if (newVal) {
@@ -2251,10 +2246,17 @@
     checkLogsForStopEvents(logs) {
         if (!logs || logs.length === 0) return;
         
+        // ✅ [ZENIX v2.2] Performance: Evitar re-processar se o log mais recente for o mesmo
+        const latestLog = logs[0];
+        const latestId = latestLog.id || latestLog.timestamp + latestLog.message;
+        if (this.lastProcessedLogId === latestId) return;
+        this.lastProcessedLogId = latestId;
+
         // Se já estiver mostrando modal ou já tiver reconhecido, ignora
         if (this.showSessionSummaryModal || window.zenixStopModalActive) return;
 
-        const recentLogs = logs;
+        // ✅ [ZENIX v2.2] Performance: Analisar apenas os últimos 20 logs (os mais recentes tem prioridade)
+        const recentLogs = logs.slice(0, 20);
         let stopDetected = false;
         let stopReason = '';
         let stopCycle = 1;
@@ -2262,9 +2264,8 @@
 
         // ✅ Helper: Encontrar o ciclo mais recente nos logs (Contexto)
         const findRecentCycle = (logsList) => {
-            // Procura nos últimos 10 logs por menção de ciclo
-            const cycleLogs = logsList.slice(0, 15); 
-            for (const log of cycleLogs) {
+            // Procura nos últimos 15 logs por menção de ciclo
+            for (const log of logsList) {
                 const match = log.message && log.message.match(/(?:cycle=|ciclo\s)(\d+)/i);
                 if (match) return parseInt(match[1]);
             }
@@ -2273,19 +2274,13 @@
 
         // ✅ Helper: Tentar extrair lucro do log de resultado ou stop
         const findRecentProfit = (logsList) => {
-            const profitLogs = logsList.slice(0, 5);
-            for (const log of profitLogs) {
-                // Tenta achar "Lucro/Prejuízo: $X" ou "Profit: $X" ou "Balance: $X"
-                // Ex: "Lucro/Prejuízo: -$18.26"
-                // Ex: "DRAWDOWN ... ($-18.26)"
+            // Tenta achar nos últimos 10 logs
+            const subset = logsList.slice(0, 10);
+            for (const log of subset) {
                 const text = log.message || '';
-                
-                // Regex para capturar valor monetário (positivo ou negativo)
-                // Fix: Exige o símbolo $ ou R$ ou sinal explícito, ou formato decimal estrito para evitar pegar número do ciclo (ex: "Ciclo 4")
                 const moneyRegex = /(?:Lucro\/Prejuízo|Profit|Loss|Drawdown|Resultado).*?(?:\$|R\$)\s*([+-]?\d+(?:\.\d{2})?)/i;
                 const match = text.match(moneyRegex);
                 if (match) {
-                     // Se achou, verifica se é um número válido
                      const val = parseFloat(match[1]);
                      if (!isNaN(val)) return val;
                 }
