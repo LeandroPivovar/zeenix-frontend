@@ -1081,10 +1081,8 @@
 					// Buscar dados iniciais
 					this.fetchAllStats();
 					
-					// Iniciar Polling (3 segundos para parecer real-time)
-					this.pollingInterval = setInterval(() => {
-						this.fetchAllStats();
-					}, 3000);
+					// ✅ [ZENIX v2.3] Polling de 3s removido para evitar pulos de dados e consumo excessivo.
+                    // O sistema agora é 100% orientado a eventos e WebSockets vindos do pai.
 				});
 			}
 
@@ -1092,7 +1090,7 @@
 			this.startReturnOscillation();
 
 			// ✅ Real-time Balance Polling (5 segundos) - Atualiza saldo da corretora em tempo real
-			this.startBalancePolling(5000);
+			//  [ZENIX v2.3] Balance Polling removido (WS-driven)
 
 			// ✅ Balance Loading State: Handled by mixin and isBalanceReady watcher
 			// const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
@@ -1153,53 +1151,17 @@
 				return this.balanceNumeric || this.currentBalance?.balance || this.info?.balance || 0;
 			},
             realtimeStats() {
-                // Calculate stats from tradeHistory when in session mode
-                if (this.selectedPeriod === 'session' && this.tradeHistory && this.tradeHistory.length > 0) {
-                     const trades = this.formattedSessionItems; // Use normalized list
-                     const netProfit = trades.reduce((sum, item) => {
-                         if (item.type === 'trade') {
-                             const profit = parseFloat(item.data.profit);
-                             return sum + (isNaN(profit) ? 0 : profit);
-                         }
-                         return sum;
-                     }, 0);
-                     
-                     // Se o lucro resultou em algo estranho, retornar NaN para o watcher ignorar
-                     if (isNaN(netProfit)) return null;
-
-                     const totalOps = trades.filter(t => t.type === 'trade').length;
-                     
-                     return {
-                         netProfit,
-                         totalOps,
-                         avgProfit: totalOps > 0 ? netProfit / totalOps : 0
-                     };
-                }
-                return null;
+                // ✅ [ZENIX v2.3] Prioridade absoluta para sessionStats (vido do pai via WS)
+                return {
+                    netProfit: this.sessionStats?.netProfit || 0,
+                    totalOps: this.sessionStats?.operationsToday || 0,
+                    avgProfit: (this.sessionStats?.totalTrades > 0) ? (this.sessionStats.netProfit / this.sessionStats.totalTrades) : 0
+                };
             },
             dailyRealtimeStats() {
-                if (!this.tradeHistory || this.tradeHistory.length === 0) return null;
-                const today = new Date().toISOString().split('T')[0];
-                const todayTrades = this.tradeHistory.filter(t => {
-                    const d = t.createdAt || t.created_at || t.time;
-                    return d && (String(d).startsWith(today) || new Date(d).toISOString().split('T')[0] === today);
-                });
-                
-                if (todayTrades.length === 0) return null;
-
-                const netProfit = todayTrades.reduce((sum, t) => {
-                     const val = t.profit !== undefined ? parseFloat(t.profit) : 
-                                 (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 
-                                 (t.result !== undefined ? parseFloat(t.result) : 0));
-                     const profit = isNaN(val) ? 0 : val;
-                     return sum + profit;
-                }, 0);
-                
-                if (isNaN(netProfit)) return null;
-
                 return {
-                    netProfit,
-                    totalOps: todayTrades.length
+                    netProfit: this.sessionStats?.netProfit || 0,
+                    totalOps: this.sessionStats?.operationsToday || 0
                 };
             },
             dailyResultValue() {
@@ -1211,18 +1173,13 @@
                 return this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
             },
 			periodProfit() {
-				// Use realtime stats for 'today' or 'session'
-                if (this.selectedPeriod === 'session') {
-                    if (this.realtimeStats) return isNaN(this.realtimeStats.netProfit) ? 0 : this.realtimeStats.netProfit;
+				// ✅ [ZENIX v2.3] Prioridade absoluta para sessionStats (vido do pai via WS) para evitar flickering
+                if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
                     const val = this.sessionStats?.netProfit;
                     return (val === undefined || val === null || isNaN(val)) ? 0 : val;
                 }
-				if (this.selectedPeriod === 'today') {
-					if (this.dailyRealtimeStats) return isNaN(this.dailyRealtimeStats.netProfit) ? 0 : this.dailyRealtimeStats.netProfit;
-				}
 				
-				// Fallback to filtered data sum (if implemented) or raw dailyData
-				// Note: Ideally should sum filteredDailyData, but sticking to existing pattern for non-today
+				// Fallback para soma de dados históricos (filtros passados)
                 if (!this.dailyData || this.dailyData.length === 0) return 0;
                 const total = this.dailyData.reduce((sum, day) => {
                     const profit = day.profit;
@@ -1318,10 +1275,7 @@
 				return '0h 0m 0s';
 			},
 			operacoesHojeDisplay() {
-				if (this.selectedPeriod === 'session' && this.realtimeStats) {
-					return this.realtimeStats.totalOps;
-				}
-				if (this.dailyRealtimeStats) return this.dailyRealtimeStats.totalOps;
+				// ✅ [ZENIX v2.3] Consistência absoluta com sessionStats
 				return this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
 			},
 			totalCapital() {
