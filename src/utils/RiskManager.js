@@ -340,7 +340,7 @@ export const RiskManager = {
         state.consecutiveLossesInRecovery = 0;
     },
 
-    refineTradeResult(state, realProfit, stakeUsed, tradeMode = 'PRINCIPAL') {
+    refineTradeResult(state, realProfit, stakeUsed, tradeMode = 'PRINCIPAL', config = {}) {
         const estimatedProfit = (tradeMode === 'RECUPERACAO') ? state.lastProfitRecovery : state.lastProfitPrincipal;
         const win = realProfit > 0;
 
@@ -348,13 +348,20 @@ export const RiskManager = {
         state.lastProfit = realProfit;
 
         if (tradeMode === 'RECUPERACAO') {
+            const riskProfile = (config.riskProfile || 'moderado').toLowerCase();
             state.lastProfitRecovery = realProfit;
             // Deduct the estimated profit and add the real one
             state.recoveredAmount = state.recoveredAmount - (estimatedProfit || 0) + realProfit;
 
-            // Single Win Recovery: Always ensure clean exit on official result
+            // ✅ SMART RECOVERY: Only exit if NOT conservador, or if conservador finished its installments
             if (win) {
-                this._finishRecovery(state);
+                if (riskProfile === 'conservador') {
+                    if (state.recoveryInstallmentsRemaining <= 0) {
+                        this._finishRecovery(state);
+                    }
+                } else {
+                    this._finishRecovery(state);
+                }
             }
         } else {
             state.lastProfitPrincipal = realProfit;

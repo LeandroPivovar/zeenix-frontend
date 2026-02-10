@@ -4339,7 +4339,7 @@ export default {
                         trade.pnl, 
                         trade.stake, 
                         trade.analysisType,
-                        this.recoveryConfig.lossesToActivate
+                        this.recoveryConfig
                     );
 
                     // ✅ UNLOCK ANALYSIS EARLY
@@ -4402,7 +4402,7 @@ export default {
 
                 // Refinar resultado se já processado pelo resultado rápido
                 if (trade.fastResultApplied) {
-                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
+                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType, this.recoveryConfig);
                 } else {
                     const oldAnalysis = this.sessionState.analysisType;
                     const oldMode = this.sessionState.negotiationMode;
@@ -4419,7 +4419,7 @@ export default {
                         trade.pnl, 
                         trade.stake, 
                         trade.analysisType, 
-                        this.recoveryConfig.lossesToActivate
+                        this.recoveryConfig
                     );
 
                     // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
