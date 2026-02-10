@@ -3404,10 +3404,8 @@ export default {
                 try {
                     const msg = JSON.parse(event.data);
                     
-                    // Debug Log for Critical Messages
-                    if (['authorize', 'buy', 'proposal', 'proposal_open_contract'].includes(msg.msg_type) || msg.error) {
-                         console.log(`[WS] Mensagem Recebida (${msg.msg_type}):`, msg);
-                    }
+                    // Debug Log for All Messages
+                    console.log(`[WS] Mensagem Recebida (${msg.msg_type}):`, msg);
                     
                     if (msg.msg_type === 'authorize') {
                         if (msg.error) {
