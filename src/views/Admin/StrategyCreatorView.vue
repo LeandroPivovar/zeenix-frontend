@@ -3335,12 +3335,14 @@ export default {
                     trade.result = win ? 'WON' : 'LOST';
                     trade.profit = profit;
                     trade.fastResultApplied = true; // Flag for handleContractUpdate
+                    trade.fastResultOutcome = win ? 'WON' : 'LOST'; // Store for comparison
                 } else {
                     // Create a placeholder so when API sends update, we know to ignore it
                     this.activeContracts.set(contract.contractId, {
                         result: win ? 'WON' : 'LOST',
                         profit: profit,
-                        fastResultApplied: true
+                        fastResultApplied: true,
+                        fastResultOutcome: win ? 'WON' : 'LOST'
                     });
                 }
             }
@@ -3349,10 +3351,15 @@ export default {
             this.localPendingContracts.delete(contract.id);
             this.isNegotiating = false; // Unlock early!
             
-            // ✅ Disable fast result state to allow next analysis loop
+            // ✅ Disable fast result state to allow next analysis loop immediately
             if (this.pendingFastResult) {
                 this.pendingFastResult.active = false;
             }
+            
+            // Trigger next analysis check immediately if not negotiating
+            this.$nextTick(() => {
+                if (!this.isNegotiating) this.runAnalysis();
+            });
             
             // Check Limits/Pause
             this.checkLimits();
@@ -3746,7 +3753,10 @@ export default {
             if (activeFilters.length === 0) return;
             
             // Prevent spamming analysis
-            if (this.activeContracts.size > 0 || this.isNegotiating) return;
+            // ✅ Only block if there are contracts that have NOT been fast-processed yet
+            const activeUnsettledContracts = [...this.activeContracts.values()].filter(c => !c.fastResultApplied);
+            if (activeUnsettledContracts.length > 0 || this.isNegotiating) return;
+            
             if (this.pendingFastResult && this.pendingFastResult.active) return;
     if (this.pendingVirtualTrade) return;
 
@@ -4319,11 +4329,17 @@ export default {
                 trade.result = contract.status.toUpperCase(); // 'WON' or 'LOST'
                 trade.pnl = parseFloat(contract.profit || 0);
 
-                if (trade.result === 'WON') {
+            if (trade.result === 'WON') {
+                // Only log if not already handled by fast result or if there is a discrepancy
+                if (!trade.fastResultApplied || trade.fastResultOutcome !== 'WON') {
                     this.addLog(`💰 WIN! Resultado: +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
-                } else {
+                }
+            } else {
+                // Only log if not already handled by fast result or if there is a discrepancy
+                if (!trade.fastResultApplied || trade.fastResultOutcome !== 'LOST') {
                     this.addLog(`🔴 LOSS! Prejuízo: -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
                 }
+            }
 
                 // Refinar resultado se já processado pelo resultado rápido
                 if (trade.fastResultApplied) {
