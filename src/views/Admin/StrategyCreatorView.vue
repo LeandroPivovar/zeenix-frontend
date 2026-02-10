@@ -139,8 +139,8 @@
                                                 >
                                                     <i 
                                                         v-if="form.icon"
-                                                        :key="form.icon"
-                                                        :class="[form.icon, 'text-3xl text-white group-hover:text-primary transition-colors']"
+                                                        :key="`icon-${form.icon}`"
+                                                        :class="[form.icon, 'text-3xl text-[#22C55E] group-hover:text-primary transition-colors']"
                                                     ></i>
                                                     <i 
                                                         v-else
@@ -154,7 +154,7 @@
                                                         :key="icon"
                                                         type="button"
                                                         class="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-200 shrink-0 cursor-pointer"
-                                                        :class="form.icon === icon ? '!bg-[#22C55E]/20 !text-[#22C55E] ring-2 ring-[#22C55E]' : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#22C55E]/10 hover:text-[#22C55E]'"
+                                                        :class="form.icon === icon ? 'bg-[#22C55E]/10 text-[#22C55E] ring-2 ring-[#22C55E] border-transparent' : 'bg-[#1a1a1a] text-gray-400 border border-[#333] hover:bg-[#22C55E]/10 hover:text-[#22C55E]'"
                                                         :title="icon"
                                                         @click="selectIcon(icon)"
                                                     >
@@ -2427,8 +2427,14 @@ export default {
             this.showIconSelector = !this.showIconSelector;
         },
         selectIcon(icon) {
-            console.log('Selected Icon:', icon);
-            this.form.icon = icon;
+            console.log('--- VUE: ATUALIZANDO ÍCONE ---');
+            console.log('Anterior:', this.form.icon);
+            console.log('Novo:', icon);
+            
+            // Usar $set para garantir reatividade total no Vue 2
+            this.$set(this.form, 'icon', icon);
+            
+            console.log('Estado Final:', this.form.icon);
         },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
