@@ -3440,6 +3440,9 @@ export default {
                             // Deriv Payout = Stake + Profit. 
                             const realPayoutRate = payout / stakeValue;
                             
+                            // ✅ CRITICAL: Flag for buy logic to use the real rate in Fast Result
+                            this.sessionState.tempExplicitPayout = realPayoutRate;
+                            
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
                                 this.sessionState.lastPayoutRecovery = realPayoutRate;
                             } else {
