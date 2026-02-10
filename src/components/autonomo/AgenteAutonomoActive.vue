@@ -1601,6 +1601,12 @@
                 }
             },
             // ✅ [ZENIX v2.2] Removido watcher redundante 'logs' (consolidado no realtimeLogs)
+            // ✅ [ZENIX v2.3] Watcher para garantir que o Capital Final seja reativo ao saldo global
+            finalCapital(newVal) {
+                if (this.isBalanceReady && newVal !== null && !isNaN(newVal)) {
+                    this.renderedFinalCapital = newVal;
+                }
+            },
             // ✅ Watch for mixin's loading state completion
             isBalanceReady(newVal) {
                 if (newVal) {
