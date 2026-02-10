@@ -1072,18 +1072,18 @@
 					// Buscar dados iniciais
 					this.fetchAllStats();
 					
-					// Iniciar Polling (5 segundos)
+					// Iniciar Polling (3 segundos para parecer real-time)
 					this.pollingInterval = setInterval(() => {
 						this.fetchAllStats();
-					}, 5000);
+					}, 3000);
 				});
 			}
 
 			// Oscilação sutil do retorno
 			this.startReturnOscillation();
 
-			// ✅ Real-time Balance Polling (10 segundos) - Atualiza saldo da corretora em tempo real
-			this.startBalancePolling(10000);
+			// ✅ Real-time Balance Polling (5 segundos) - Atualiza saldo da corretora em tempo real
+			this.startBalancePolling(5000);
 
 			// ✅ Balance Loading State: Handled by mixin and isBalanceReady watcher
 			// const delayTime = this.isFictitiousBalanceActive ? 200 : 300;
