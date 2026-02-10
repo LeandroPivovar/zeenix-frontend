@@ -350,7 +350,57 @@ export default {
       // Formatar (sem prefixo aqui, pois o prefixo está no template)
       return value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     },
-  
+    balanceNumeric() {
+      // Prioridade 0: Fallback para o prop 'balance' (Sincronização em tempo real para IA/Monitoramento)
+      // Se o prop balance for passado e for diferente de zero, usá-lo como fonte de verdade absoluta
+      const raw = this.balance;
+      let propValue = 0;
+      if (typeof raw === 'number') propValue = raw;
+      else if (typeof raw === 'string') {
+        const parsed = Number(raw);
+        propValue = isNaN(parsed) ? 0 : parsed;
+      } else if (raw !== null && raw !== undefined) {
+        const val = raw?.value ?? raw?.balance ?? 0;
+        const num = Number(val);
+        propValue = isNaN(num) ? 0 : num;
+      }
+
+      let baseBalance = 0;
+
+      // Prioridade 1: Saldo Demo
+      if (this.accountType === 'demo') {
+        const demoBalanceUSD = this.balancesByCurrencyDemo['USD'];
+
+        if (demoBalanceUSD !== undefined && demoBalanceUSD !== null) {
+          baseBalance = Number(demoBalanceUSD);
+        } else {
+             // Fallback: somar todos os saldos demo se 'USD' não existir
+             baseBalance = Object.values(this.balancesByCurrencyDemo).reduce((acc, val) => acc + (Number(val) || 0), 0);
+        }
+      } else {
+        // Prioridade 2: Saldo Real (USD preferencial)
+        const usdReal = this.balancesByCurrencyReal['USD'];
+        if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
+            baseBalance = Number(usdReal);
+        } else {
+             // Prioridade 2: Qualquer moeda que tenha saldo > 0
+             for (const balance of Object.values(this.balancesByCurrencyReal)) {
+                if (Number(balance) > 0) {
+                    baseBalance = Number(balance);
+                    break;
+                }
+             }
+        }
+      }
+      
+      // Se tivermos um valor válido de propValue (passado pelo pai), usamos ele como base se for maior que o calculado localmente?
+      // Ou continuamos priorizando o local? O código original priorizava propValue > 0.
+      if (propValue > 0) {
+        baseBalance = propValue;
+      }
+
+      return baseBalance;
+    },
     userName() {
       const userInfo = localStorage.getItem('user');
       if (userInfo) {
@@ -457,8 +507,7 @@ export default {
     // ✅ Listen for global balance updates from AIMonitoringView
     window.addEventListener('balanceUpdated', (e) => {
         if (e.detail && e.detail.balance !== undefined) {
-             const fictitious = this.isFictitiousBalanceActive ? (Number(this.fictitiousBalance) || 0) : 0;
-             this.tryUpdateRenderedBalance(e.detail.balance + fictitious);
+             this.tryUpdateRenderedBalance(e.detail.balance);
         }
     });
     
@@ -483,13 +532,18 @@ export default {
   },
   methods: {
     tryUpdateRenderedBalance(val) {
-      if (val === null || val === undefined || isNaN(val)) {
-          // Fallback para o balanceNumeric atual (que já é somado no mixin)
-          this.renderedBalance = this.balanceNumeric;
-          return;
+      if (this.isFictitiousBalanceActive && val === this.fictitiousBalance) {
+          const hasDemoBalance = this.balancesByCurrencyDemo && Object.keys(this.balancesByCurrencyDemo).length > 0;
+          if (!hasDemoBalance) return;
       }
       
-      this.renderedBalance = val;
+      // ✅ [ZENIX v2.3] Se o saldo fictício estiver ativo, o valor recebido (RAW) deve ser somado ao valor fictício
+      let finalVal = val;
+      if (this.isFictitiousBalanceActive && !isNaN(this.fictitiousBalance)) {
+          finalVal = val + Number(this.fictitiousBalance);
+      }
+      
+      this.renderedBalance = finalVal;
     },
     checkMobile() {
       this.isMobile = window.innerWidth <= 1024;
