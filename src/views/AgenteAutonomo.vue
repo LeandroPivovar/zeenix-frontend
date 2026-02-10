@@ -1179,8 +1179,6 @@
           // Recalcular SessionStats localmente para feedback instantâneo
           // Isso será sobrescrito pelo fetch do backend em 2s, mas dá o "feel" real-time
           if (this.sessionStats) {
-            const isWin = status === 'won';
-            
             // Só somar se não tivermos processado este contrato ainda como finalizado
             // (Evita duplicidade se o WS mandar 2x)
             if (contract.is_sold && !contract.already_indexed) {
