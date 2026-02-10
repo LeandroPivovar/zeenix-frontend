@@ -399,11 +399,6 @@ export default {
         baseBalance = propValue;
       }
 
-      // Adicionar Saldo Fictício (Master Trader) - SOMA
-      if (this.isFictitiousBalanceActive) {
-        baseBalance += (Number(this.fictitiousBalance) || 0);
-      }
-
       return baseBalance;
     },
     userName() {
@@ -542,7 +537,13 @@ export default {
           if (!hasDemoBalance) return;
       }
       
-      this.renderedBalance = val;
+      // ✅ [ZENIX v2.3] Se o saldo fictício estiver ativo, o valor recebido (RAW) deve ser somado ao valor fictício
+      let finalVal = val;
+      if (this.isFictitiousBalanceActive && !isNaN(this.fictitiousBalance)) {
+          finalVal = val + Number(this.fictitiousBalance);
+      }
+      
+      this.renderedBalance = finalVal;
     },
     checkMobile() {
       this.isMobile = window.innerWidth <= 1024;
