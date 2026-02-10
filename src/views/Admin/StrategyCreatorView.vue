@@ -2963,7 +2963,7 @@ export default {
             // Ensure expectedPayout and sorosLevel fallback for legacy saves
             if (!this.form.expectedPayout) this.form.expectedPayout = 1.20;
             if (this.form.sorosLevel === undefined) this.form.sorosLevel = 1;
-            if (!this.form.duration) this.form.duration = 5; // Default safety
+            if (!this.form.duration) this.form.duration = 1; // Default safety changed from 5 to 1
             if (!this.form.durationUnit) this.form.durationUnit = 't';
 
             const savedRecovery = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
@@ -3151,7 +3151,7 @@ export default {
                         if (!this.form.expectedPayout) this.form.expectedPayout = 1.20;
                         if (this.form.sorosLevel === undefined) this.form.sorosLevel = 1;
                         // Duration defaults
-                        if (!this.form.duration) this.form.duration = 5; 
+                        if (!this.form.duration) this.form.duration = 1; // Default safety changed from 5 to 1
                         if (!this.form.durationUnit) this.form.durationUnit = 't';
 
                         const importedRecovery = JSON.parse(JSON.stringify(data.config.recoveryConfig));
@@ -4131,7 +4131,8 @@ export default {
                     return;
                 }
 
-                this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${overrideContractType || config.tradeType} $${stake}`, 'info');
+                const durationDisplay = `${this.form.duration}${this.form.durationUnit === 't' ? 't' : this.form.durationUnit}`;
+                this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${overrideContractType || config.tradeType} $${stake} | Duração: ${durationDisplay}`, 'info');
                 
                 // Step 1: Request Proposal to get exact payout
                 const proposalParams = {
