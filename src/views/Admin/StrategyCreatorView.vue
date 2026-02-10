@@ -132,34 +132,40 @@
                                         <div>
                                             <label class="zenix-label">Ícone da Estratégia</label>
                                             <div class="flex items-start gap-4">
-                                                <button 
-                                                    type="button"
-                                                    @click="toggleIconSelector"
-                                                    class="w-16 h-16 rounded-xl bg-[#1a1a1a] border-2 border-dashed border-[#333] hover:border-primary/50 transition-all duration-200 flex items-center justify-center group shrink-0"
-                                                >
-                                                    <i 
-                                                        v-if="form.icon"
-                                                        :key="`icon-${form.icon}`"
-                                                        :class="[form.icon, 'text-3xl text-[#22C55E] group-hover:text-primary transition-colors']"
-                                                    ></i>
-                                                    <i 
-                                                        v-else
-                                                        class="fa-solid fa-plus text-3xl text-white group-hover:text-primary transition-colors"
-                                                    ></i>
-                                                </button>
-                                                
-                                                <div v-if="showIconSelector" class="flex-1 flex flex-wrap gap-2 p-3 bg-[#0f0f0f] rounded-lg border border-[#1a1a1a]">
+                                                <div class="flex items-center gap-3">
                                                     <button 
-                                                        v-for="icon in strategyIcons" 
-                                                        :key="icon"
                                                         type="button"
-                                                        class="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-200 shrink-0 cursor-pointer"
-                                                        :class="form.icon === icon ? 'bg-[#22C55E]/10 text-[#22C55E] ring-2 ring-[#22C55E] border-transparent' : 'bg-[#1a1a1a] text-gray-400 border border-[#333] hover:bg-[#22C55E]/10 hover:text-[#22C55E]'"
-                                                        :title="icon"
-                                                        @click="selectIcon(icon)"
+                                                        @click="toggleIconSelector"
+                                                        class="w-16 h-16 rounded-xl bg-[#1a1a1a] border-2 border-dashed border-[#333] hover:border-[#22C55E]/50 transition-all duration-200 flex items-center justify-center group shrink-0"
                                                     >
-                                                        <i :class="icon" class="pointer-events-none"></i>
+                                                        <!-- Container com :key força o re-render total, obrigando o FontAwesome a reprocessar -->
+                                                        <div :key="form.icon || 'default'" class="flex items-center justify-center">
+                                                            <i 
+                                                                v-if="form.icon"
+                                                                :class="form.icon" 
+                                                                class="text-3xl"
+                                                                style="color: #22C55E !important;"
+                                                            ></i>
+                                                            <i 
+                                                                v-else
+                                                                class="fa-solid fa-plus text-3xl text-white group-hover:text-[#22C55E] transition-colors"
+                                                            ></i>
+                                                        </div>
                                                     </button>
+                                                    
+                                                    <div v-if="showIconSelector" class="flex-1 flex flex-wrap gap-2 p-3 bg-[#0f0f0f] rounded-lg border border-[#1a1a1a]">
+                                                        <button 
+                                                            v-for="icon in strategyIcons" 
+                                                            :key="icon"
+                                                            type="button"
+                                                            class="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-200 shrink-0 cursor-pointer"
+                                                            :style="form.icon === icon ? 'background: rgba(34, 197, 94, 0.15); color: #22C55E; box-shadow: 0 0 0 2px #22C55E;' : 'background: #1a1a1a; color: #9ca3af; border: 1px solid #333;'"
+                                                            :title="icon"
+                                                            @click="selectIcon(icon)"
+                                                        >
+                                                            <i :class="icon" class="pointer-events-none"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
