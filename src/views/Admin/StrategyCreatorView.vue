@@ -3641,7 +3641,7 @@ export default {
                             
                             // ⚡ REGISTER FOR LOCAL TICK RESULT
                             if (this.pendingFastResult) {
-                                  const trackingId = msg.buy.buy_id || msg.buy.contract_id;
+                                  const trackingId = msg.buy.contract_id || msg.buy.buy_id || 'UNKNOWN';
                                   this.localPendingContracts.set(trackingId, {
                                     id: trackingId,
                                     contractId: msg.buy.contract_id,
@@ -3657,7 +3657,7 @@ export default {
                                     entryDigit: this.pendingFastResult.entryDigit,
                                     payoutRate: this.sessionState.tempExplicitPayout || 0.95
                                 });
-                                console.log(`[LocalTick] Contrato ${trackingId} registrado para análise local.`);
+                                console.log(`[LocalTick] Contrato ${trackingId} registrado com sucesso.`);
                             }
                             
                             this.subscribeToContract(msg.buy.contract_id);
@@ -4299,10 +4299,13 @@ export default {
                 }
                 
                 // ✅ SMART FAST RESULT: Early Settlement Logic
-                // If duration reached but status still 'open', settle now to unlock next trade
                 const currentTickCount = contract.tick_count || 0;
-                if (!trade.earlySettled && currentTickCount >= trade.duration && contract.status === 'open') {
-                    // Deriv confirms result by bid_price/profit in first update
+                const targetDuration = trade.duration || (this.pendingFastResult ? this.pendingFastResult.duration : this.form.duration);
+                
+                console.log(`[EarlySettlement] Checking ${id}: Ticks=${currentTickCount}, Target=${targetDuration}, Status=${contract.status}, Settled=${!!trade.earlySettled}`);
+
+                // If duration reached but status still 'open', settle now to unlock next trade
+                if (!trade.earlySettled && currentTickCount >= targetDuration && contract.status === 'open') {
                     const win = (contract.profit || 0) > 0;
                     trade.earlySettled = true;
                     trade.result = win ? 'WON' : 'LOST';
@@ -4322,14 +4325,30 @@ export default {
                     this.monitoringStats.profit += trade.pnl;
                     this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
                     
+                    // Update stats
+                    if (win) this.monitoringStats.wins++;
+                    else this.monitoringStats.losses++;
+
                     // Update session state via RiskManager
-                    RiskManager.processTradeResult(this.sessionState, win, trade.pnl, trade.id, trade.barrier);
+                    RiskManager.processTradeResult(
+                        this.sessionState, 
+                        win, 
+                        trade.pnl, 
+                        trade.stake, 
+                        trade.analysisType,
+                        this.recoveryConfig.lossesToActivate
+                    );
 
                     // ✅ UNLOCK ANALYSIS EARLY
                     this.activeContracts.delete(id);
                     this.checkLimits();
                     
                     console.log(`[StrategyCreator] Smart Fast Result triggering for ${id}. Analysis released.`);
+                    
+                    // ✅ IMMEDIATE NEXT CYCLE
+                    this.$nextTick(() => {
+                        this.runAnalysis();
+                    });
                 }
             }
 
