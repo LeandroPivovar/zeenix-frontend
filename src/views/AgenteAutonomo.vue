@@ -864,10 +864,14 @@
           const result = await response.json();
           if (result.success && result.data && Array.isArray(result.data)) {
             // Armazenar histórico completo da API
-            this.apiTradeHistory = result.data;
+            // Garantir que cada item tenha o contractId acessível para o ID check
+            this.apiTradeHistory = result.data.map(t => ({
+              ...t,
+              id: t.contractId || t.contract_id || t.id // Normalizar ID principal
+            }));
             
             // Converter histórico da API para o formato esperado pelo componente
-            this.operationHistory = result.data.map(trade => {
+            this.operationHistory = this.apiTradeHistory.map(trade => {
               // Formatar timestamp de forma segura
               let formattedTime = '--';
               if (trade.createdAt) {
@@ -1160,7 +1164,12 @@
         };
 
         // 3. Atualizar apiTradeHistory localmente (Imediato)
-        const existingIdx = this.apiTradeHistory.findIndex(t => t.id === contractId);
+        // Check por contractId (Deriv) ou ID interno (Banco) para evitar duplicação
+        const existingIdx = this.apiTradeHistory.findIndex(t => 
+          String(t.id) === String(contractId) || 
+          String(t.contractId) === String(contractId) ||
+          String(t.contract_id) === String(contractId)
+        );
         if (existingIdx !== -1) {
           // Usar Vue.set ou similar se necessário, mas aqui estamos em AgenteAutonomoView que usa data() comum
           // Substituir item existente
