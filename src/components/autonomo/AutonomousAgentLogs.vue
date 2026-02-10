@@ -238,32 +238,38 @@ export default {
         return ts;
       }
     },
-    async fetchRealtimeLogs() {
+    async fetchRealtimeLogs(limit = 500, returnDataOnly = false) {
       try {
         let userId = this.userId || localStorage.getItem('userId');
         if (!userId) return;
         
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-        const response = await fetch(`${apiBase}/autonomous-agent/logs/${userId}`, {
+        // ✅ [PERFORMANCE] Limit configurable (default 500 for display, 2000 for export)
+        const response = await fetch(`${apiBase}/autonomous-agent/logs/${userId}?limit=${limit}`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data) {
-            console.log('[AutonomousAgentLogs] Logs recebidos:', result.data.length);
-            this.realtimeLogs = result.data;
-            this.$emit('update-logs', this.realtimeLogs);
+            console.log(`[AutonomousAgentLogs] Logs recebidos (limit=${limit}):`, result.data.length);
+            
+            if (returnDataOnly) {
+              return result.data;
+            } else {
+              this.realtimeLogs = result.data;
+              this.$emit('update-logs', this.realtimeLogs);
+            }
           }
         }
       } catch (e) { console.error('Log fetch error:', e); }
+      return [];
     },
     startLogPolling() {
-      // ✅ [PERFORMANCE] Re-enabled auto-polling with display limit (500 items)
-      // Display limit is handled in formattedLogs computed property
+      // ✅ [PERFORMANCE] Display limit (500 items)
       this.stopLogPolling();
-      this.fetchRealtimeLogs();
-      this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(), 3000);
+      this.fetchRealtimeLogs(500);
+      this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(500), 3000);
     },
     async clearLogs() {
       if (await confirm('Tem certeza que deseja limpar todos os logs?')) {
@@ -274,11 +280,25 @@ export default {
     },
     async exportLogs() {
       try {
-        // ✅ Buscar logs frescos antes de exportar
-        await this.fetchRealtimeLogs();
+        // ✅ Buscar logs completos (limite alto) antes de exportar
+        // Usar 2000 para garantir que pegamos tudo (backend limita a 1000, mas stream buffer também é 1000)
+        const fullLogs = await this.fetchRealtimeLogs(2000, true);
         
-        // Aguardar um pouco para garantir que os logs foram carregados
-        await new Promise(resolve => setTimeout(resolve, 500));
+        if (!fullLogs || fullLogs.length === 0) {
+          alert('Nenhum log para exportar.');
+          return;
+        }
+
+        // Formatar logs para exportação (usando lógica similar ao computed mas no array completo)
+        const formattedFullLogs = fullLogs.map(log => {
+           // Reutilizar lógica de formatação simples aqui ou extrair método se fosse complexo
+           // Para texto puro, a formatação visual (cores) não importa, apenas Title/Details
+            const message = log.message || '';
+            const lines = message.split('\n');
+            const titleLine = lines[0].replace(/^\[.*?\]\s*/, '').trim().toUpperCase();
+            const details = lines.length > 1 ? lines.slice(1).join('\n') : '';
+            return { ...log, title: titleLine, details, timestamp: log.timestamp };
+        });
         
         // Get data for filename
         const agenteName = this.agentName || 'AGENTE';
@@ -292,20 +312,15 @@ export default {
         
         // Sanitize and format fields
         const safeAgentName = agenteName.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const mode = 'auto'; // Autonomous agent is always auto
+        const mode = 'auto'; 
         
-        // Sanitize market (simbolo) 
-        // Ex: 'Volatility 100 Index' -> '1hz100v' (custom mapping if needed, or simple sanitize)
-        // User example: '1hz100v'. Let's try to map if possible, or just slugify safely.
-        // Simple slugify for now as strict mapping table isn't provided for all assets.
         let safeSymbol = (this.market || 'market').toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-        // Attempt basic mapping for common Deriv indices if discernible
         if (safeSymbol.includes('volatility100')) safeSymbol = '1hz100v';
         else if (safeSymbol.includes('volatility75')) safeSymbol = 'r75';
         else if (safeSymbol.includes('volatility10')) safeSymbol = 'r10';
         
         // Map risk profile
-        let safeProfile = 'mod'; // Default
+        let safeProfile = 'mod'; 
         const riskLower = (this.riskProfile || '').toLowerCase();
         if (riskLower.includes('conservador')) safeProfile = 'cons';
         else if (riskLower.includes('agressivo')) safeProfile = 'agr';
@@ -313,14 +328,13 @@ export default {
         
         const safeEnvironment = this.accountType || 'test';
         
-        // Construct filename: zenix-{agente}-{modo}-{simbolo}-{perfil}-{ambiente}-{data}
+        // Construct filename
         const fileName = `zenix-${safeAgentName}-${mode}-${safeSymbol}-${safeProfile}-${safeEnvironment}-${dateISO}.txt`;
 
         // Create content
-        const content = this.allFormattedLogs.map((log) => {
+        const content = formattedFullLogs.map((log) => {
           const timestamp = this.formatTimestamp(log.timestamp);
-          // Plain text format: [TIME] [TYPE] TITLE - Details
-          return `[${timestamp}] [${log.logType.toUpperCase()}] ${log.title}\n${log.details || ''}`;
+          return `[${timestamp}] [${(log.logLevel || 'INFO').toUpperCase()}] ${log.title}\n${log.details || ''}`;
         }).join('\n\n----------------------------------------\n\n');
 
         const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -333,7 +347,7 @@ export default {
         
         URL.revokeObjectURL(link.href);
 
-        console.log(`[AutonomousAgentLogs] Logs exportados: ${fileName}`);
+        console.log(`[AutonomousAgentLogs] Logs exportados: ${fileName} (${formattedFullLogs.length} registros)`);
       } catch (error) {
         console.error('[AutonomousAgentLogs] Erro ao exportar logs:', error);
         alert('Erro ao exportar logs.');

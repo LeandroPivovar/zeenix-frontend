@@ -377,6 +377,13 @@
           await alert('Erro ao alterar moeda. Tente novamente.');
         }
       },
+      formatCurrency(value) {
+        if (value === undefined || value === null) return 'R$ 0,00';
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+      },
+      handleRefreshBalance() {
+        this.fetchAccountBalance();
+      },
       handleLiveBalanceUpdate(newBalance) {
         if (newBalance !== undefined && newBalance !== null) {
           console.log('[AgenteAutonomoView] 💰 Recebida atualização de saldo live:', newBalance);
@@ -1610,7 +1617,9 @@
         this.checkMobile();
 
         window.addEventListener("resize", this.checkMobile);
-        window.addEventListener("refreshBalance", () => this.fetchAccountBalance());
+		// Listeners must be named methods for removal to work
+        window.addEventListener("refreshBalance", this.handleRefreshBalance);
+        window.addEventListener("balanceUpdated", this.handleBalanceUpdate);
 
         // Carregar saldo primeiro para que esteja disponível quando agenteData for computado
         await this.fetchAccountBalance();
@@ -1634,7 +1643,10 @@
       this.stopSimulations();
       this.stopPolling();
       this.stopBalanceUpdates();
+      this.stopBalanceUpdates();
       window.removeEventListener("resize", this.checkMobile);
+      window.removeEventListener("refreshBalance", this.handleRefreshBalance);
+      window.removeEventListener('balanceUpdated', this.handleBalanceUpdate); // Remove new listener
   
       if (this.timeAndMetricsInterval) {
         clearInterval(this.timeAndMetricsInterval);
