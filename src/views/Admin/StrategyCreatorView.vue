@@ -115,62 +115,66 @@
                         <div class="grid grid-cols-12 gap-6">
                             <!-- Identity Card -->
                             <div class="col-span-12">
-                                <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
-                                    <div class="absolute top-0 right-0 p-4 opacity-5">
-                                        <i class="fa-solid fa-id-card text-6xl"></i>
+                                <div class="zenix-card">
+                                    <div class="zenix-card-header">
+                                        <h2 class="zenix-card-title">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles w-5 h-5 text-primary">
+                                                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
+                                                <path d="M20 3v4"></path>
+                                                <path d="M22 5h-4"></path>
+                                                <path d="M4 17v2"></path>
+                                                <path d="M5 18H3"></path>
+                                            </svg>
+                                            Identidade
+                                        </h2>
                                     </div>
-                                    <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
-                                        <i class="fa-solid fa-fingerprint text-zenix-green"></i>
-                                        Identidade da Estratégia
-                                    </h3>
-                                    
-                                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 relative z-10">
-                                        <!-- Icon Selector -->
-                                        <div class="col-span-12 md:col-span-2">
-                                            <label class="block text-white font-bold mb-2">Ícone</label>
-                                            <div class="relative">
+                                    <div class="space-y-5">
+                                        <div>
+                                            <label class="zenix-label">Ícone da Estratégia</label>
+                                            <div class="flex items-start gap-4">
                                                 <button 
                                                     type="button"
-                                                    class="w-full aspect-square bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-center hover:border-zenix-green transition-all group"
+                                                    class="w-16 h-16 rounded-xl bg-[#1a1a1a] border-2 border-dashed border-[#333] hover:border-primary/50 transition-all duration-200 flex items-center justify-center group"
                                                 >
-                                                    <i v-if="form.icon" :class="form.icon + ' text-4xl text-white group-hover:text-zenix-green transition-colors'"></i>
-                                                    <i v-else class="fa-solid fa-robot text-4xl text-gray-600 group-hover:text-gray-400 transition-colors"></i>
+                                                    <i :class="[form.icon || 'fa-solid fa-robot', 'text-3xl text-white group-hover:text-primary transition-colors']"></i>
                                                 </button>
-                                                <select v-model="form.icon" class="absolute inset-0 opacity-0 cursor-pointer">
-                                                    <option value="fa-solid fa-robot">Robô (Padrão)</option>
-                                                    <option value="fa-solid fa-bolt">Raio (Veloz)</option>
-                                                    <option value="fa-solid fa-chart-line">Gráfico (Tendência)</option>
-                                                    <option value="fa-solid fa-money-bill">Dinheiro</option>
-                                                    <option value="fa-solid fa-shield-alt">Escudo (Seguro)</option>
-                                                    <option value="fa-solid fa-brain">Cérebro (Smart)</option>
-                                                    <option value="fa-solid fa-rocket">Foguete</option>
-                                                    <option value="fa-solid fa-gem">Diamante</option>
-                                                    <option value="fa-solid fa-coins">Moedas</option>
-                                                </select>
+                                                <div class="flex flex-wrap gap-2 p-3 bg-[#0f0f0f] rounded-lg border border-[#1a1a1a]">
+                                                    <button 
+                                                        v-for="icon in ['fa-solid fa-robot', 'fa-solid fa-bolt', 'fa-solid fa-chart-line', 'fa-solid fa-money-bill', 'fa-solid fa-shield-alt', 'fa-solid fa-brain', 'fa-solid fa-rocket', 'fa-solid fa-gem', 'fa-solid fa-coins']" 
+                                                        :key="icon"
+                                                        type="button"
+                                                        @click="form.icon = icon"
+                                                        class="w-10 h-10 rounded-lg flex items-center justify-center text-xl hover:bg-primary/20 transition-all duration-200"
+                                                        :class="form.icon === icon ? 'bg-primary/30 ring-2 ring-primary text-primary' : 'bg-[#1a1a1a] text-gray-400'"
+                                                        :title="icon"
+                                                    >
+                                                        <i :class="icon"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-
-                                        <!-- Name & Desc -->
-                                        <div class="col-span-12 md:col-span-10 space-y-4">
-                                            <div>
-                                                <label class="block text-white font-bold mb-2">Nome da Estratégia</label>
-                                                <input 
-                                                    type="text" 
-                                                    v-model="form.strategyName" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors font-bold text-lg"
-                                                    placeholder="Ex: Zeenix Titan V1"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label class="block text-white font-bold mb-2">Descrição</label>
-                                                <input 
-                                                    type="text" 
-                                                    v-model="form.description" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                    placeholder="Breve descrição da sua estratégia..."
-                                                />
-                                            </div>
+                                        <div>
+                                            <label class="zenix-label">Nome da Estratégia *</label>
+                                            <input 
+                                                type="text" 
+                                                v-model="form.strategyName"
+                                                placeholder="Ex: Scalper Pro V2" 
+                                                class="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all" 
+                                                maxlength="50"
+                                            >
+                                            <p class="text-xs text-muted-foreground mt-1">{{ form.strategyName ? form.strategyName.length : 0 }}/50 caracteres</p>
                                         </div>
+                                        <div>
+                                            <label class="zenix-label">Descrição</label>
+                                            <textarea 
+                                                v-model="form.description"
+                                                placeholder="Descreva brevemente a lógica e objetivo da estratégia..." 
+                                                class="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all min-h-[80px] resize-none" 
+                                                maxlength="300"
+                                            ></textarea>
+                                            <p class="text-xs text-muted-foreground mt-1">{{ form.description ? form.description.length : 0 }}/300 caracteres</p>
+                                        </div>
+                                        <p class="text-xs text-muted-foreground bg-[#0a0a0a] p-3 rounded-lg border border-[#1a1a1a]">Visível para administradores, logs e relatórios.</p>
                                     </div>
                                 </div>
                             </div>
@@ -5040,5 +5044,87 @@ button[type="submit"].bg-zenix-green {
 button[type="submit"].bg-zenix-green:hover {
     box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
     transform: translateY(-2px);
+}
+
+/* Strategy Identity Card Styles */
+.zenix-card {
+    background-color: #000000;
+    border: 1px solid #333333;
+    border-radius: 0.75rem; /* 12px */
+    padding: 1.5rem; /* 24px */
+    position: relative;
+    overflow: hidden;
+}
+
+.zenix-card-header {
+    margin-bottom: 1rem;
+}
+
+.zenix-card-title {
+    font-size: 1.25rem; /* 20px */
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.zenix-label {
+    display: block;
+    color: #e5e7eb; /* text-gray-200 */
+    font-size: 0.875rem; /* 14px */
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Helper classes for the new design if not already present in Tailwind config */
+.text-primary {
+    color: #22C55E !important; /* zenix-green */
+}
+
+.bg-primary\/30 {
+    background-color: rgba(34, 197, 94, 0.3);
+}
+
+.ring-primary {
+    --tw-ring-color: #22C55E;
+}
+
+.hover\:border-primary\/50:hover {
+    border-color: rgba(34, 197, 94, 0.5);
+}
+
+.focus\:ring-primary:focus {
+    --tw-ring-color: #22C55E;
+}
+
+.hover\:bg-primary\/20:hover {
+    background-color: rgba(34, 197, 94, 0.2);
+}
+
+.text-muted-foreground {
+    color: #a1a1aa; /* zinc-400 */
+}
+
+.text-foreground {
+    color: white;
+}
+
+/* Scrollbar customization for textarea */
+textarea::-webkit-scrollbar {
+    width: 6px;
+}
+
+textarea::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+textarea::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 </style>
