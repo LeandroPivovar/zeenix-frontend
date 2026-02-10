@@ -2427,12 +2427,12 @@ export default {
             this.showIconSelector = !this.showIconSelector;
         },
         selectIcon(icon) {
-            console.log('--- VUE: ATUALIZANDO ÍCONE ---');
+            console.log('--- VUE 3: ATUALIZANDO ÍCONE ---');
             console.log('Anterior:', this.form.icon);
             console.log('Novo:', icon);
             
-            // Usar $set para garantir reatividade total no Vue 2
-            this.$set(this.form, 'icon', icon);
+            // Atribuição direta para Vue 3
+            this.form.icon = icon;
             
             console.log('Estado Final:', this.form.icon);
         },
