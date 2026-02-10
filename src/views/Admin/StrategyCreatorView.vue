@@ -148,7 +148,7 @@
                                                         type="button"
                                                         @click="form.icon = icon"
                                                         class="w-10 h-10 rounded-lg flex items-center justify-center text-xl hover:bg-primary/20 transition-all duration-200 shrink-0"
-                                                        :class="form.icon === icon ? 'bg-primary/30 ring-2 ring-primary text-primary' : 'bg-[#1a1a1a] text-gray-400'"
+                                                        :class="form.icon === icon ? 'bg-[#22C55E]/20 ring-1 ring-[#22C55E] text-[#22C55E]' : 'bg-[#1a1a1a] text-gray-400'"
                                                         :title="icon"
                                                     >
                                                         <i :class="icon"></i>
@@ -1729,24 +1729,14 @@ export default {
             currentStrategyName: '',
             recoveryFilters: [],
             strategyIcons: [
-                // Algo & Bot
-                'fa-solid fa-robot', 'fa-solid fa-brain', 'fa-solid fa-microchip', 'fa-solid fa-laptop-code', 'fa-solid fa-cogs', 'fa-solid fa-network-wired',
-                // Finance & Money
-                'fa-solid fa-money-bill', 'fa-solid fa-coins', 'fa-solid fa-sack-dollar', 'fa-solid fa-wallet', 'fa-solid fa-credit-card', 'fa-solid fa-vault',
-                // Market & Analysis
-                'fa-solid fa-chart-line', 'fa-solid fa-chart-pie', 'fa-solid fa-chart-bar', 'fa-solid fa-chart-area', 'fa-solid fa-arrow-trend-up', 'fa-solid fa-arrow-trend-down',
-                // Speed & Power
-                'fa-solid fa-bolt', 'fa-solid fa-rocket', 'fa-solid fa-fire', 'fa-solid fa-gauge-high', 'fa-solid fa-jet-fighter', 'fa-solid fa-stopwatch',
-                // Security & Protection
-                'fa-solid fa-shield-alt', 'fa-solid fa-lock', 'fa-solid fa-user-shield', 'fa-solid fa-umbrella', 'fa-solid fa-anchor',
-                // Success & Rewards
-                'fa-solid fa-gem', 'fa-solid fa-trophy', 'fa-solid fa-crown', 'fa-solid fa-medal', 'fa-solid fa-star', 'fa-solid fa-diamond',
-                // Logic & Strategy
-                'fa-solid fa-chess', 'fa-solid fa-chess-knight', 'fa-solid fa-chess-rook', 'fa-solid fa-puzzle-piece', 'fa-solid fa-lightbulb', 'fa-solid fa-glasses',
-                // Animals (Bull/Bear)
-                'fa-solid fa-hippo', 'fa-solid fa-dragon', 'fa-solid fa-otter', 'fa-solid fa-paw',
-                // Misc
-                'fa-solid fa-globe', 'fa-solid fa-infinity', 'fa-solid fa-layer-group', 'fa-solid fa-cubes', 'fa-solid fa-magnet', 'fa-solid fa-atom'
+                // Technology & AI
+                'fa-solid fa-robot', 'fa-solid fa-brain', 'fa-solid fa-microchip', 'fa-solid fa-laptop-code', 'fa-solid fa-network-wired', 'fa-solid fa-fingerprint',
+                // Money & Finance
+                'fa-solid fa-money-bill', 'fa-solid fa-coins', 'fa-solid fa-sack-dollar', 'fa-solid fa-wallet', 'fa-solid fa-credit-card', 'fa-solid fa-vault', 'fa-solid fa-chart-line', 'fa-solid fa-arrow-trend-up',
+                // Luxury & Success
+                'fa-solid fa-gem', 'fa-solid fa-diamond', 'fa-solid fa-crown', 'fa-solid fa-trophy', 'fa-solid fa-star', 'fa-solid fa-medal',
+                // Power & Speed (Tech related)
+                'fa-solid fa-bolt', 'fa-solid fa-rocket', 'fa-solid fa-jet-fighter'
             ],
             modalContext: 'main', // 'main' or 'recovery'
             filterStep: 1, // 1: Selection, 2: Configuration
