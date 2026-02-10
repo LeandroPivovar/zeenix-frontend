@@ -134,7 +134,7 @@
                                             <div class="flex items-start gap-4">
                                                 <button 
                                                     type="button"
-                                                    @click="showIconSelector = !showIconSelector"
+                                                    @click="toggleIconSelector"
                                                     class="w-16 h-16 rounded-xl bg-[#1a1a1a] border-2 border-dashed border-[#333] hover:border-primary/50 transition-all duration-200 flex items-center justify-center group shrink-0"
                                                 >
                                                     <i v-if="previewIcon || form.icon" :class="[previewIcon || form.icon, 'text-3xl text-white group-hover:text-primary transition-colors']"></i>
@@ -150,8 +150,7 @@
                                                         @mouseenter="previewIcon = icon"
                                                         @mouseleave="previewIcon = null"
                                                         class="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-200 shrink-0 cursor-pointer"
-                                                        :class="form.icon === icon ? '' : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#22C55E]/10 hover:text-[#22C55E]'"
-                                                        :style="form.icon === icon ? 'background-color: rgba(34, 197, 94, 0.2); color: #22C55E; border: 1px solid #22C55E;' : ''"
+                                                        :class="form.icon === icon ? '!bg-[#22C55E]/20 !text-[#22C55E] ring-1 ring-[#22C55E]' : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#22C55E]/10 hover:text-[#22C55E]'"
                                                         :title="icon"
                                                     >
                                                         <i :class="icon" class="pointer-events-none"></i>
@@ -2420,10 +2419,14 @@ export default {
         window.removeEventListener('resize', this.handleResize);
     },
     methods: {
+        toggleIconSelector() {
+            this.showIconSelector = !this.showIconSelector;
+        },
         selectIcon(icon) {
             console.log('Selected Icon:', icon);
             this.form.icon = icon;
-            this.previewIcon = null; // Clear preview to force showing selected icon
+            // Removed previewIcon clearing to prevent UI flash/state confusion
+            // The hover logic will handle previewIcon clearing on mouseleave
         },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
