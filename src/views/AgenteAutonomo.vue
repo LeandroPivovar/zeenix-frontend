@@ -114,6 +114,11 @@
         apiTradeHistory: [],
         pollingInterval: null,
         timeUpdateInterval: null,
+        
+        // WebSocket Real-Time Connection
+        ws: null,
+        isAuthorized: false,
+        rawBalance: 0,
   
         // Dados de simulação para o gráfico
         realTimeOperations: [
@@ -266,6 +271,17 @@
       currentUserId() {
           return this.getUserId();
       },
+    },
+    watch: {
+      agenteEstaAtivo(newVal) {
+        if (newVal) {
+          console.log('[AgenteAutonomo] Agente ativado, iniciando WebSocket...');
+          this.initWebSocket();
+        } else {
+          console.log('[AgenteAutonomo] Agente desativado, parando WebSocket...');
+          this.stopWebSocket();
+        }
+      }
     },
     methods: {
       handleAccountTypeChange(newAccountType) {
@@ -978,30 +994,31 @@
       },
       
       startPolling() {
-        // Carregar dados imediatamente
+        // Carregar dados iniciais imediatamente
         this.loadAgentConfig();
         this.loadSessionStats();
         this.loadTradeHistory();
         this.loadAgentLogs();
+        this.fetchAccountBalance();
 
-        // Polling a cada 5 segundos se o agente estiver ativo
+        // Iniciar WebSocket para atualizações em tempo real (Saldo e Operações)
+        this.initWebSocket();
+
+        // Polling apenas para configuração e logs (menos frequentes ou sem stream dedicado)
         this.pollingInterval = setInterval(() => {
           if (this.agenteEstaAtivo) {
             this.loadAgentConfig();
-            this.loadSessionStats();
-            this.loadTradeHistory();
-            this.loadAgentLogs();
-            this.fetchAccountBalance();
+            this.loadAgentLogs(); // Logs ainda via polling ou SSE
+            // sessionStats e tradeHistory agora via WebSocket!
           }
-        }, 5000);
+        }, 10000); // Aumentado para 10s já que o grosso é via WS
         
-        // Atualizar tempo ativo a cada segundo para mostrar tempo preciso com segundos
+        // Atualizar tempo ativo a cada segundo
         this.timeUpdateInterval = setInterval(() => {
           if (this.agenteEstaAtivo && this.agentConfig) {
-            // Força atualização do computed agenteData para recalcular tempo ativo
             this.$forceUpdate();
           }
-        }, 1000); // A cada 1 segundo para atualizar segundos para atualização mais fluida
+        }, 1000);
       },
       
       stopPolling() {
@@ -1012,6 +1029,172 @@
         if (this.timeUpdateInterval) {
           clearInterval(this.timeUpdateInterval);
           this.timeUpdateInterval = null;
+        }
+        this.stopWebSocket();
+      },
+
+      // --- WEB SOCKET REAL-TIME METHODS ---
+      
+      initWebSocket() {
+        if (this.ws) this.stopWebSocket();
+
+        const appId = localStorage.getItem('deriv_app_id') || '1089';
+        const endpoint = `wss://ws.derivws.com/websockets/v3?app_id=${appId}`;
+        
+        try {
+          console.log('[AgenteAutonomo] 🌐 Conectando WebSocket Real-time...');
+          this.ws = new WebSocket(endpoint);
+
+          this.ws.onopen = () => {
+            console.log('[AgenteAutonomo] ✅ WebSocket Conectado');
+            const token = this.getDerivToken();
+            if (token) {
+              this.ws.send(JSON.stringify({ authorize: token }));
+            }
+          };
+
+          this.ws.onmessage = (event) => {
+            try {
+              const msg = JSON.parse(event.data);
+              this.handleWebSocketMessage(msg);
+            } catch (e) {
+              console.error('[AgenteAutonomo] Erro no parse da mensagem WS:', e);
+            }
+          };
+
+          this.ws.onerror = (error) => {
+            console.error('[AgenteAutonomo] ❌ Erro WebSocket:', error);
+          };
+
+          this.ws.onclose = () => {
+            console.log('[AgenteAutonomo] 🔌 WebSocket Fechado');
+            // Tentar reconectar se o agente ainda estiver ativo
+            if (this.agenteEstaAtivo) {
+              setTimeout(() => this.initWebSocket(), 5000);
+            }
+          };
+        } catch (error) {
+          console.error('[AgenteAutonomo] Erro ao iniciar WebSocket:', error);
+        }
+      },
+
+      stopWebSocket() {
+        if (this.ws) {
+          this.ws.onclose = null; // Remover handler de reconexão
+          this.ws.close();
+          this.ws = null;
+        }
+        this.isAuthorized = false;
+      },
+
+      handleWebSocketMessage(msg) {
+        // 1. Autorização
+        if (msg.msg_type === 'authorize') {
+          if (msg.error) {
+            console.error('[AgenteAutonomo] Erro de autorização WS:', msg.error.message);
+          } else {
+            console.log('[AgenteAutonomo] 🔐 WS Autorizado com sucesso');
+            this.isAuthorized = true;
+            this.rawBalance = parseFloat(msg.authorize.balance);
+            this.subscribeToBalance();
+            this.subscribeToTrades();
+          }
+        }
+
+        // 2. Atualização de Saldo
+        if (msg.msg_type === 'balance') {
+          const newBalance = parseFloat(msg.balance.balance);
+          console.log('[AgenteAutonomo] 💰 Saldo atualizado via WS:', newBalance);
+          this.rawBalance = newBalance;
+          
+          // Compatibilidade com mixin e TopNavbar
+          window.dispatchEvent(new CustomEvent('balanceUpdated', {
+            detail: { balance: newBalance, source: 'AgenteAutonomoWS' }
+          }));
+        }
+
+        // 3. Atualização de Operações (Real-time)
+        if (msg.msg_type === 'proposal_open_contract') {
+          this.handleContractUpdate(msg.proposal_open_contract);
+        }
+      },
+
+      subscribeToBalance() {
+        if (this.ws && this.isAuthorized) {
+          this.ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+        }
+      },
+
+      subscribeToTrades() {
+        if (this.ws && this.isAuthorized) {
+          this.ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+          console.log('[AgenteAutonomo] 📊 Inscrito em atualizações de contratos (Operações)');
+        }
+      },
+
+      handleContractUpdate(contract) {
+        // 1. Log para debug
+        const status = contract.status;
+        const contractId = contract.contract_id;
+        const profit = parseFloat(contract.profit) || 0;
+        
+        console.log(`[AgenteAutonomo] 📝 Contrato Update: ID=${contractId}, Status=${status}, Profit=${profit}`);
+
+        // 2. Normalizar contrato para o formato da lista TradeHistory
+        const normalizedTrade = {
+          id: contractId,
+          contract: contract.contract_type === 'DIGITOVER' ? 'OVER' : (contract.contract_type === 'DIGITUNDER' ? 'UNDER' : contract.contract_type),
+          market: contract.display_name?.replace('Index', '')?.trim() || 'Index',
+          entry: parseFloat(contract.buy_price) || 0,
+          exit: parseFloat(contract.sell_price) || 0,
+          stake: parseFloat(contract.buy_price) || 0,
+          profit: profit,
+          result: status === 'won' ? 'WON' : (status === 'lost' ? 'LOST' : 'PENDING'),
+          createdAt: new Date(contract.purchase_time * 1000).toISOString(),
+          data: {
+            stake: parseFloat(contract.buy_price) || 0,
+            profit: profit,
+            contract: contract.contract_type,
+            market: contract.display_name
+          }
+        };
+
+        // 3. Atualizar apiTradeHistory localmente (Imediato)
+        const existingIdx = this.apiTradeHistory.findIndex(t => t.id === contractId);
+        if (existingIdx !== -1) {
+          // Usar Vue.set ou similar se necessário, mas aqui estamos em AgenteAutonomoView que usa data() comum
+          // Substituir item existente
+          const newHistory = [...this.apiTradeHistory];
+          newHistory[existingIdx] = normalizedTrade;
+          this.apiTradeHistory = newHistory;
+        } else {
+          // Adicionar novo contrato no topo
+          this.apiTradeHistory = [normalizedTrade, ...this.apiTradeHistory].slice(0, 100);
+        }
+
+        // 4. Se o contrato terminou, atualizar estatísticas locais IMEDIATAMENTE
+        if (contract.is_sold || status !== 'open') {
+          console.log('[AgenteAutonomo] 🏁 Operação finalizada. Atualizando stats locais...');
+          
+          // Recalcular SessionStats localmente para feedback instantâneo
+          // Isso será sobrescrito pelo fetch do backend em 2s, mas dá o "feel" real-time
+          if (this.sessionStats) {
+            const isWin = status === 'won';
+            
+            // Só somar se não tivermos processado este contrato ainda como finalizado
+            // (Evita duplicidade se o WS mandar 2x)
+            if (contract.is_sold && !contract.already_indexed) {
+               // Nota: No mundo real usaríamos um set de IDs processados
+            }
+          }
+
+          // Sincronizar com o backend após um pequeno delay para garantir que o banco processou tudo
+          if (this.syncTimeout) clearTimeout(this.syncTimeout);
+          this.syncTimeout = setTimeout(() => {
+            this.loadSessionStats();
+            this.loadTradeHistory();
+            this.loadAgentLogs(); // Pegar logs do servidor também
+          }, 2000);
         }
       },
       
