@@ -23,10 +23,12 @@ export const RiskManager = {
     },
 
     initSession(initialNegotiationMode = 'VELOZ', config = {}) {
-        // ✅ Ensure initialNegotiationMode is always a string (prevents TypeError in evaluate)
+        // ✅ Ensure initialNegotiationMode is always a string and uppercase
         if (typeof initialNegotiationMode !== 'string') {
             console.warn('[RiskManager] initialNegotiationMode was not a string, defaulting to VELOZ');
             initialNegotiationMode = 'VELOZ';
+        } else {
+            initialNegotiationMode = initialNegotiationMode.toUpperCase();
         }
         return {
             isRecoveryMode: false,
@@ -255,7 +257,7 @@ export const RiskManager = {
                 state.totalLossAccumulated = 0;
                 state.consecutiveWins++;
                 state.skipSorosNext = false;
-                state.negotiationMode = 'VELOZ';
+                state.negotiationMode = state.initialNegotiationMode || 'VELOZ';
                 state.activeStrategy = 'PRINCIPAL';
             }
         } else {
@@ -293,7 +295,7 @@ export const RiskManager = {
                 if (totalEstimatedLosses >= 4) {
                     state.negotiationMode = 'PRECISO';
                 } else if (totalEstimatedLosses >= 1) { // Ensure at least NORMAL if in recovery
-                    const currentMode = state.negotiationMode || 'VELOZ';
+                    const currentMode = (state.negotiationMode || 'VELOZ').toUpperCase();
                     if (currentMode === 'VELOZ') {
                         state.negotiationMode = 'NORMAL';
                     }
@@ -309,7 +311,7 @@ export const RiskManager = {
 
                 state.activeStrategy = (state.consecutiveLosses >= recoveryThreshold) ? 'RECUPERACAO' : 'PRINCIPAL';
 
-                const initialMode = state.initialNegotiationMode || 'VELOZ';
+                const initialMode = (state.initialNegotiationMode || 'VELOZ').toUpperCase();
 
                 if (state.consecutiveLosses >= 4) {
                     state.negotiationMode = 'PRECISO';
