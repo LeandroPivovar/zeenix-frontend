@@ -3641,8 +3641,9 @@ export default {
                             
                             // ⚡ REGISTER FOR LOCAL TICK RESULT
                             if (this.pendingFastResult) {
-                                  this.localPendingContracts.set(msg.buy.buy_id, {
-                                    id: msg.buy.buy_id,
+                                  const trackingId = msg.buy.buy_id || msg.buy.contract_id;
+                                  this.localPendingContracts.set(trackingId, {
+                                    id: trackingId,
                                     contractId: msg.buy.contract_id,
                                     type: this.pendingFastResult.contractType, 
                                     prediction: parseInt(this.pendingFastResult.barrier), 
@@ -3656,7 +3657,7 @@ export default {
                                     entryDigit: this.pendingFastResult.entryDigit,
                                     payoutRate: this.sessionState.tempExplicitPayout || 0.95
                                 });
-                                console.log(`[LocalTick] Contrato ${msg.buy.buy_id} registrado para análise local.`);
+                                console.log(`[LocalTick] Contrato ${trackingId} registrado para análise local.`);
                             }
                             
                             this.subscribeToContract(msg.buy.contract_id);
@@ -4274,13 +4275,13 @@ export default {
                     stake: contract.buy_price,
                     pnl: contract.profit || 0,
                     analysisType: this.sessionState.analysisType,
+                    duration: contract.duration || (this.pendingFastResult ? this.pendingFastResult.duration : this.form.duration),
                     result: 'OPEN',
-                    // Save Barrier for history key update later
                     // Save Barrier for history key update later
                     barrier: contract.barrier,
                     entryPrice: contract.entry_tick_display_value,
                     exitPrice: contract.exit_tick_display_value,
-                    lastDigit: contract.exit_tick_display_value ? contract.exit_tick_display_value.slice(-1) : null
+                    lastDigit: contract.exit_tick_display_value ? contract.exit_tick_display_value.toString().slice(-1) : null
                 };
                 this.monitoringOperations.unshift(trade);
                 this.activeContracts.set(id, trade);
@@ -4288,20 +4289,21 @@ export default {
                 // CRITICAL: Release negotiation lock only when contract is officially tracked
                 // This avoids race conditions where a second buy is triggered before the first is registered.
                 this.isNegotiating = false; 
-                console.log(`[StrategyCreator] Contract ${id} tracked. Releasing isNegotiating lock.`);
+                console.log(`[StrategyCreator] Contract ${id} tracked. Duration: ${trade.duration}. Releasing isNegotiating lock.`);
             } else {
-
                 trade.pnl = contract.profit || 0;
                 if (contract.entry_tick_display_value) trade.entryPrice = contract.entry_tick_display_value;
                 if (contract.exit_tick_display_value) {
                     trade.exitPrice = contract.exit_tick_display_value;
-                    trade.lastDigit = contract.exit_tick_display_value.slice(-1);
+                    trade.lastDigit = contract.exit_tick_display_value.toString().slice(-1);
                 }
                 
                 // ✅ SMART FAST RESULT: Early Settlement Logic
                 // If duration reached but status still 'open', settle now to unlock next trade
-                if (!trade.earlySettled && contract.tick_count >= contract.duration && contract.status === 'open') {
-                    const win = contract.profit > 0;
+                const currentTickCount = contract.tick_count || 0;
+                if (!trade.earlySettled && currentTickCount >= trade.duration && contract.status === 'open') {
+                    // Deriv confirms result by bid_price/profit in first update
+                    const win = (contract.profit || 0) > 0;
                     trade.earlySettled = true;
                     trade.result = win ? 'WON' : 'LOST';
                     trade.pnl = parseFloat(contract.profit || 0);
