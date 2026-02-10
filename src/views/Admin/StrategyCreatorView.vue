@@ -416,68 +416,87 @@
                             </div>
                         </div>
 
-                        <!-- Filtros de Segurança (Loss Virtual) -->
+                        <!-- Loss Virtual -->
                         <div class="col-span-12">
-                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
-                                <div class="absolute top-0 right-0 p-4 opacity-5">
-                                    <i class="fa-solid fa-user-secret text-6xl"></i>
+                            <div class="zenix-card">
+                                <div class="zenix-card-header">
+                                    <h2 class="zenix-card-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ghost w-5 h-5 text-primary">
+                                            <path d="M9 10h.01"></path>
+                                            <path d="M15 10h.01"></path>
+                                            <path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"></path>
+                                        </svg>
+                                        Loss Virtual
+                                    </h2>
+                                    <span class="text-xs text-muted-foreground bg-[#1a1a1a] px-2 py-1 rounded">Opcional</span>
                                 </div>
-                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center justify-between gap-2">
-                                    <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-user-secret text-zenix-green"></i>
-                                        Filtros de Segurança (Loss Virtual)
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between p-4 bg-[#0f0f0f] rounded-lg border border-[#1a1a1a]">
+                                        <div>
+                                            <div class="font-medium text-foreground text-sm">Ativar Loss Virtual</div>
+                                            <div class="text-xs text-muted-foreground">Simula perdas antes de usar saldo real</div>
+                                        </div>
+                                        <button 
+                                            type="button"
+                                            @click="securityConfig.virtualLoss.enabled = !securityConfig.virtualLoss.enabled"
+                                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200"
+                                            :class="securityConfig.virtualLoss.enabled ? 'bg-primary' : 'bg-[#333]'"
+                                        >
+                                            <span 
+                                                class="inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform"
+                                                :class="securityConfig.virtualLoss.enabled ? 'translate-x-5' : 'translate-x-0.5'"
+                                            ></span>
+                                        </button>
                                     </div>
-                                    <label class="relative inline-flex items-center cursor-pointer scale-90">
-                                        <input type="checkbox" v-model="securityConfig.virtualLoss.enabled" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zenix-green"></div>
-                                        <span class="ms-3 text-xs font-bold text-gray-400 uppercase tracking-tighter">{{ securityConfig.virtualLoss.enabled ? 'Ativo' : 'Inativo' }}</span>
-                                    </label>
-                                </h3>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10" :class="{ 'opacity-40 grayscale pointer-events-none': !securityConfig.virtualLoss.enabled }">
-                                    <div>
-                                        <label class="block text-white font-bold mb-2 text-sm">Contagem de Loss Virtual</label>
-                                        <p class="text-xs text-gray-400 mb-2">Quantas simulações perdedoras consecutivas esperar antes da entrada real.</p>
-                                        <div class="relative">
-                                             <input 
+
+                                    <div v-if="securityConfig.virtualLoss.enabled" class="space-y-4 pl-4 border-l-2 border-primary/30">
+                                        <div>
+                                            <label class="zenix-label">Máx. losses virtuais consecutivos</label>
+                                            <input 
                                                 type="number" 
-                                                v-model.number="securityConfig.virtualLoss.target" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                min="1"
-                                                placeholder="Ex: 2"
-                                            />
-                                            <div class="absolute inset-y-0 right-0 px-3 flex items-center pointer-events-none">
-                                                <span class="text-gray-500 text-xs font-bold">LOSSES</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    
-                                    <div>
-                                        <label class="block text-white font-bold mb-2 text-sm">Modo de Operação</label>
-                                        <p class="text-xs text-gray-400 mb-2">Quando aplicar o filtro de segurança.</p>
-                                        <div class="relative">
-                                            <select 
-                                                v-model="securityConfig.virtualLoss.mode"
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm appearance-none"
+                                                v-model.number="securityConfig.virtualLoss.target"
+                                                class="w-24 bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-2.5 text-foreground text-center focus:ring-2 focus:ring-primary focus:border-transparent transition-all" 
+                                                min="1" 
+                                                max="10"
                                             >
-                                                <option value="warmup">Aquecimento (Apenas no Início)</option>
-                                                <option value="attack">Antes do Ataque (Modo Principal)</option>
-                                                <option value="recovery">Antes da Recuperação (Modo Rec.)</option>
-                                                <option value="cyclic">Cíclico (Sempre - Ataque e Rec.)</option>
-                                            </select>
-                                            <div class="absolute inset-y-0 right-0 px-3 flex items-center pointer-events-none">
-                                                <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <label class="zenix-label">Aplicar em</label>
+                                            <div class="flex gap-4">
+                                                <label class="flex items-center gap-2 cursor-pointer group">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        v-model="virtualLossPrincipal"
+                                                        class="sr-only"
+                                                    >
+                                                    <div 
+                                                        class="w-5 h-5 rounded border-2 flex items-center justify-center transition-all"
+                                                        :class="virtualLossPrincipal ? 'border-primary bg-primary' : 'border-[#333] group-hover:border-[#444]'"
+                                                    >
+                                                        <svg v-if="virtualLossPrincipal" class="w-3 h-3 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <span class="text-sm text-foreground">Principal</span>
+                                                </label>
+                                                <label class="flex items-center gap-2 cursor-pointer group">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        v-model="virtualLossRecovery"
+                                                        class="sr-only"
+                                                    >
+                                                    <div 
+                                                        class="w-5 h-5 rounded border-2 flex items-center justify-center transition-all"
+                                                        :class="virtualLossRecovery ? 'border-primary bg-primary' : 'border-[#333] group-hover:border-[#444]'"
+                                                    >
+                                                        <svg v-if="virtualLossRecovery" class="w-3 h-3 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <span class="text-sm text-foreground">Recuperação</span>
+                                                </label>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div class="col-span-1 md:col-span-2 flex items-center justify-center p-4 bg-[#1E1E1E] border border-dashed border-[#333] rounded-lg mt-2">
-                                        <p class="text-xs text-center text-gray-400">
-                                            <i class="fa-solid fa-circle-info mb-1 block text-base text-zenix-green"></i>
-                                            O robô simulará operações silenciosamente. Só enviará a ordem real após <b>{{ securityConfig.virtualLoss.target }}</b> perdas virtuais consecutivas.
-
-                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -2413,6 +2432,32 @@ export default {
             if (!this.form.attackFilters || !this.form.attackFilters.length) return '';
             return this.form.attackFilters.map(f => f.name).join(', ');
         },
+
+        // Virtual Loss Context Getters/Setters
+        virtualLossPrincipal: {
+            get() {
+                return this.securityConfig.virtualLoss.mode === 'attack' || this.securityConfig.virtualLoss.mode === 'cyclic' || this.securityConfig.virtualLoss.mode === 'warmup';
+            },
+            set(val) {
+                const recovery = this.virtualLossRecovery;
+                if (val && recovery) this.securityConfig.virtualLoss.mode = 'cyclic';
+                else if (val) this.securityConfig.virtualLoss.mode = 'attack';
+                else if (recovery) this.securityConfig.virtualLoss.mode = 'recovery';
+                else this.securityConfig.virtualLoss.mode = 'warmup'; // Default fallback
+            }
+        },
+        virtualLossRecovery: {
+            get() {
+                return this.securityConfig.virtualLoss.mode === 'recovery' || this.securityConfig.virtualLoss.mode === 'cyclic';
+            },
+            set(val) {
+                const principal = this.virtualLossPrincipal;
+                if (val && principal) this.securityConfig.virtualLoss.mode = 'cyclic';
+                else if (val) this.securityConfig.virtualLoss.mode = 'recovery';
+                else if (principal) this.securityConfig.virtualLoss.mode = 'attack';
+                else this.securityConfig.virtualLoss.mode = 'warmup'; // Default fallback
+            }
+        }
     },
 
     mounted() {
