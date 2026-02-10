@@ -131,23 +131,23 @@
                                     <div class="space-y-5">
                                         <div>
                                             <label class="zenix-label">Ícone da Estratégia</label>
-                                            <div class="relative">
+                                            <div class="flex items-start gap-4">
                                                 <button 
                                                     type="button"
                                                     @click="showIconSelector = !showIconSelector"
-                                                    class="w-16 h-16 rounded-xl bg-[#1a1a1a] border-2 border-dashed border-[#333] hover:border-primary/50 transition-all duration-200 flex items-center justify-center group"
+                                                    class="w-16 h-16 rounded-xl bg-[#1a1a1a] border-2 border-dashed border-[#333] hover:border-primary/50 transition-all duration-200 flex items-center justify-center group shrink-0"
                                                 >
                                                     <i v-if="form.icon" :class="[form.icon, 'text-3xl text-white group-hover:text-primary transition-colors']"></i>
                                                     <i v-else class="fa-solid fa-plus text-3xl text-white group-hover:text-primary transition-colors"></i>
                                                 </button>
                                                 
-                                                <div v-if="showIconSelector" class="absolute top-full left-0 mt-2 z-50 w-[280px] flex flex-wrap gap-2 p-3 bg-[#0f0f0f] rounded-lg border border-[#1a1a1a] shadow-xl">
+                                                <div v-if="showIconSelector" class="flex-1 flex flex-wrap gap-2 p-3 bg-[#0f0f0f] rounded-lg border border-[#1a1a1a]">
                                                     <button 
-                                                        v-for="icon in ['fa-solid fa-robot', 'fa-solid fa-bolt', 'fa-solid fa-chart-line', 'fa-solid fa-money-bill', 'fa-solid fa-shield-alt', 'fa-solid fa-brain', 'fa-solid fa-rocket', 'fa-solid fa-gem', 'fa-solid fa-coins']" 
+                                                        v-for="icon in strategyIcons" 
                                                         :key="icon"
                                                         type="button"
-                                                        @click="form.icon = icon; showIconSelector = false"
-                                                        class="w-10 h-10 rounded-lg flex items-center justify-center text-xl hover:bg-primary/20 transition-all duration-200"
+                                                        @click="form.icon = icon"
+                                                        class="w-10 h-10 rounded-lg flex items-center justify-center text-xl hover:bg-primary/20 transition-all duration-200 shrink-0"
                                                         :class="form.icon === icon ? 'bg-primary/30 ring-2 ring-primary text-primary' : 'bg-[#1a1a1a] text-gray-400'"
                                                         :title="icon"
                                                     >
@@ -1728,6 +1728,26 @@ export default {
             currentVersion: '',
             currentStrategyName: '',
             recoveryFilters: [],
+            strategyIcons: [
+                // Algo & Bot
+                'fa-solid fa-robot', 'fa-solid fa-brain', 'fa-solid fa-microchip', 'fa-solid fa-laptop-code', 'fa-solid fa-cogs', 'fa-solid fa-network-wired',
+                // Finance & Money
+                'fa-solid fa-money-bill', 'fa-solid fa-coins', 'fa-solid fa-sack-dollar', 'fa-solid fa-wallet', 'fa-solid fa-credit-card', 'fa-solid fa-vault',
+                // Market & Analysis
+                'fa-solid fa-chart-line', 'fa-solid fa-chart-pie', 'fa-solid fa-chart-bar', 'fa-solid fa-chart-area', 'fa-solid fa-arrow-trend-up', 'fa-solid fa-arrow-trend-down',
+                // Speed & Power
+                'fa-solid fa-bolt', 'fa-solid fa-rocket', 'fa-solid fa-fire', 'fa-solid fa-gauge-high', 'fa-solid fa-jet-fighter', 'fa-solid fa-stopwatch',
+                // Security & Protection
+                'fa-solid fa-shield-alt', 'fa-solid fa-lock', 'fa-solid fa-user-shield', 'fa-solid fa-umbrella', 'fa-solid fa-anchor',
+                // Success & Rewards
+                'fa-solid fa-gem', 'fa-solid fa-trophy', 'fa-solid fa-crown', 'fa-solid fa-medal', 'fa-solid fa-star', 'fa-solid fa-diamond',
+                // Logic & Strategy
+                'fa-solid fa-chess', 'fa-solid fa-chess-knight', 'fa-solid fa-chess-rook', 'fa-solid fa-puzzle-piece', 'fa-solid fa-lightbulb', 'fa-solid fa-glasses',
+                // Animals (Bull/Bear)
+                'fa-solid fa-hippo', 'fa-solid fa-dragon', 'fa-solid fa-otter', 'fa-solid fa-paw',
+                // Misc
+                'fa-solid fa-globe', 'fa-solid fa-infinity', 'fa-solid fa-layer-group', 'fa-solid fa-cubes', 'fa-solid fa-magnet', 'fa-solid fa-atom'
+            ],
             modalContext: 'main', // 'main' or 'recovery'
             filterStep: 1, // 1: Selection, 2: Configuration
             activeTab: 'config',
@@ -5129,6 +5149,25 @@ textarea::-webkit-scrollbar-thumb {
 }
 
 textarea::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Custom Scrollbar for Icon Selector */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
 </style>
