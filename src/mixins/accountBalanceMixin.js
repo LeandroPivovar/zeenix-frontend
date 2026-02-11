@@ -1,8 +1,8 @@
 ﻿/**
  * Mixin para padronizar carregamento de saldo e funcionalidades da sidebar
- * em todas as pÃ¡ginas, igual ao Dashboard
+ * em todas as páginas, igual ao Dashboard
  */
-// NÃ£o precisa mais importar balanceLoader, usa a mesma lÃ³gica do Dashboard
+// Não precisa mais importar balanceLoader, usa a mesma lógica do Dashboard
 import { loadAvailableAccounts } from '../utils/accountsLoader';
 
 export default {
@@ -93,7 +93,7 @@ export default {
       return this.accountType;
     },
     preferredCurrencyPrefix() {
-      // Se saldo fictÃ­cio estiver ativo, forÃ§ar prefixo '$' (mascarar conta Real)
+      // Se saldo fictÃ­cio estiver ativo, forçar prefixo '$' (mascarar conta Real)
       if (this.isFictitiousBalanceActive) {
         return '$';
       }
@@ -103,8 +103,8 @@ export default {
       return this.getCurrencyPrefix?.(this.info?.currency || 'USD') || '$';
     },
     balanceNumeric() {
-      // âœ… [ZENIX v2.1] PREVENIR GLITCH DE CARREGAMENTO
-      // Se o saldo ainda nÃ£o estiver pronto (esperando delay de seguranÃ§a), retornar 0.
+      // ✅ [ZENIX v2.1] PREVENIR GLITCH DE CARREGAMENTO
+      // Se o saldo ainda não estiver pronto (esperando delay de segurança), retornar 0.
       if (!this.isBalanceReady) {
         return 0;
       }
@@ -125,7 +125,7 @@ export default {
           baseBalance = Object.values(this.balancesByCurrencyDemo).reduce((acc, val) => acc + (Number(val) || 0), 0);
         }
       } else {
-        // LÃ³gica para conta Real
+        // Lógica para conta Real
         // Prioridade 1: real_amount do backend
         if (this.info?.real_amount !== undefined && this.info?.real_amount !== null && Number(this.info.real_amount) > 0) {
           baseBalance = Number(this.info.real_amount);
@@ -145,7 +145,7 @@ export default {
               }
             }
 
-            // Prioridade 4: BTC Real (se nÃ£o encontrou outro)
+            // Prioridade 4: BTC Real (se não encontrou outro)
             if (!found) {
               const btcReal = this.balancesByCurrencyReal['BTC'];
               if (btcReal !== undefined && btcReal !== null) {
@@ -173,7 +173,7 @@ export default {
       }
 
       // 2. Adicionar Saldo FictÃ­cio (Master Trader)
-      // O saldo fictÃ­cio Ã© SOMADO ao saldo existente, nÃ£o substituÃ­do.
+      // O saldo fictÃ­cio é SOMADO ao saldo existente, não substituÃ­do.
       if (this.isFictitiousBalanceActive) {
         baseBalance += (Number(this.fictitiousBalance) || 0);
       }
@@ -189,14 +189,14 @@ export default {
         return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       }
 
-      // Mesma lÃ³gica do Dashboard - usa tradeCurrency para determinar se Ã© demo
+      // Mesma lógica do Dashboard - usa tradeCurrency para determinar se é demo
       if (this.tradeCurrency === 'DEMO') {
         return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       }
 
-      // FormataÃ§Ã£o para Real - detectar se Ã© BTC para usar 8 casas
+      // Formatação para Real - detectar se é BTC para usar 8 casas
       const currency = this.info?.currency || 'USD';
-      const isCrypto = ['BTC', 'ETH', 'LTC', 'USDC', 'UST'].includes(currency.toUpperCase()) || prefix === 'â‚¿' || prefix === 'Îž';
+      const isCrypto = ['BTC', 'ETH', 'LTC', 'USDC', 'UST'].includes(currency.toUpperCase()) || prefix === '₿' || prefix === 'Ξ';
       const decimals = isCrypto ? (currency === 'BTC' ? 8 : 4) : 2;
 
       return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
@@ -206,22 +206,22 @@ export default {
     getCurrencyPrefix(currency) {
       const prefixes = {
         'USD': '$',
-        'EUR': 'â‚¬',
-        'GBP': 'Â£',
-        'BTC': 'â‚¿',
-        'ETH': 'Îž'
+        'EUR': '€',
+        'GBP': '£',
+        'BTC': '₿',
+        'ETH': 'Ξ'
       };
       return prefixes[currency?.toUpperCase()] || '$';
     },
     /**
      * Carrega o saldo da conta - EXATAMENTE como o Dashboard faz
-     * Copia a lÃ³gica do HomeView.checkConnection
+     * Copia a lógica do HomeView.checkConnection
      */
     async loadAccountBalanceInfo(forceRefresh = false) {
       this.loadingBalance = true;
       try {
         // MESMA LÃ“GICA DO HomeView.checkConnection
-        // Verificar se hÃ¡ token vÃ¡lido antes de usar cache
+        // Verificar se há token válido antes de usar cache
         let hasToken = !!localStorage.getItem('deriv_token');
         if (!hasToken) {
           try {
@@ -275,9 +275,9 @@ export default {
           }
         }
 
-        // Se nÃ£o hÃ¡ token, limpar cache e retornar
+        // Se não há token, limpar cache e retornar
         if (!hasToken) {
-          console.warn('[AccountBalanceMixin] âš ï¸ Nenhum token Deriv encontrado. Abortando busca.');
+          console.warn('[AccountBalanceMixin] ⚠️ Nenhum token Deriv encontrado. Abortando busca.');
           this.info = { balance: 0, currency: 'USD', loginid: null, isDemo: false };
           this.loadingBalance = false;
           return;
@@ -287,7 +287,7 @@ export default {
         const storedAppId = localStorage.getItem('deriv_app_id');
         let derivToken = localStorage.getItem('deriv_token');
 
-        // Se nÃ£o tiver deriv_token, tentar pegar do deriv_connection (mais robusto)
+        // Se não tiver deriv_token, tentar pegar do deriv_connection (mais robusto)
         if (!derivToken && saved) {
           try {
             const parsed = JSON.parse(saved);
@@ -302,7 +302,7 @@ export default {
         console.log('[AccountBalanceMixin] Iniciando busca na API...', { hasDerivToken: !!derivToken, hasToken: !!token });
 
         if (!token) {
-          console.warn('[AccountBalanceMixin] âš ï¸ Token do sistema ausente. Abortando busca.');
+          console.warn('[AccountBalanceMixin] ⚠️ Token do sistema ausente. Abortando busca.');
           this.info = { balance: 0, currency: 'USD', loginid: null, isDemo: false };
           this.loadingBalance = false;
           return;
@@ -347,7 +347,7 @@ export default {
 
             console.log('[AccountBalanceMixin] Cache atualizado:', cacheData);
 
-            // Corrigido: Usar isDemo da API para determinar tradeCurrency, nÃ£o o localStorage
+            // Corrigido: Usar isDemo da API para determinar tradeCurrency, não o localStorage
             // O localStorage pode estar desatualizado se a troca de conta foi recente
             this.tradeCurrency = isDemo ? 'DEMO' : 'USD';
             this.accountType = isDemo ? 'demo' : 'real';
@@ -356,7 +356,7 @@ export default {
             localStorage.setItem('trade_currency', this.tradeCurrency);
             console.log('[AccountBalanceMixin] Saldo carregado da API - LOGINID:', loginid, 'Type:', this.accountType);
           } else {
-            console.warn('[AccountBalanceMixin] âš ï¸ API retornou status OK mas sem LOGINID:', data);
+            console.warn('[AccountBalanceMixin] ⚠️ API retornou status OK mas sem LOGINID:', data);
             this.info = { balance: 0, currency: 'USD', loginid: null, isDemo: false };
           }
         } else {
@@ -401,7 +401,7 @@ export default {
         const token = localStorage.getItem('token');
 
         if (!token) {
-          console.warn('[AccountBalanceMixin] Token nÃ£o disponÃ­vel');
+          console.warn('[AccountBalanceMixin] Token não disponÃ­vel');
           return;
         }
 
@@ -447,7 +447,7 @@ export default {
     },
 
     /**
-     * Carrega configuraÃ§Ãµes do Master Trader (Saldo FictÃ­cio)
+     * Carrega configurações do Master Trader (Saldo FictÃ­cio)
      */
     async loadMasterTraderSettings() {
       try {
@@ -467,13 +467,13 @@ export default {
           const data = await res.json();
           if (data.isFictitiousBalanceActive !== undefined) this.isFictitiousBalanceActive = data.isFictitiousBalanceActive;
           if (data.fictitiousBalance !== undefined) this.fictitiousBalance = parseFloat(data.fictitiousBalance);
-          console.log('[AccountBalanceMixin] ConfiguraÃ§Ãµes Master Trader carregadas:', {
+          console.log('[AccountBalanceMixin] Configurações Master Trader carregadas:', {
             active: this.isFictitiousBalanceActive,
             amount: this.fictitiousBalance
           });
         }
       } catch (error) {
-        console.error('[AccountBalanceMixin] Erro ao carregar configuraÃ§Ãµes de Master Trader:', error);
+        console.error('[AccountBalanceMixin] Erro ao carregar configurações de Master Trader:', error);
       }
     },
 
@@ -490,7 +490,7 @@ export default {
       this.fictitiousBalance = amount;
     },
 
-    // âœ… Real-time Balance Synchronization Handler
+    // ✅ Real-time Balance Synchronization Handler
     handleGlobalBalanceUpdate(event) {
       if (event.detail && event.detail.balance !== undefined) {
         const newBalance = event.detail.balance;
@@ -526,7 +526,7 @@ export default {
     async switchAccount(type) {
       try {
         if (this.isFictitiousBalanceActive) {
-          console.log('[AccountBalanceMixin] Saldo fictÃ­cio ativo - ignorando troca de conta. UI jÃ¡ mostra como Real.');
+          console.log('[AccountBalanceMixin] Saldo fictÃ­cio ativo - ignorando troca de conta. UI já mostra como Real.');
           return;
         }
 
@@ -534,15 +534,15 @@ export default {
         const token = localStorage.getItem('token');
 
         if (!token) {
-          console.warn('[AccountBalanceMixin] Token nÃ£o disponÃ­vel');
+          console.warn('[AccountBalanceMixin] Token não disponÃ­vel');
           return;
         }
 
         const isDemo = type === 'demo';
         let selectedToken = null;
 
-        // EstratÃ©gia 1: Tentar encontrar em availableAccounts (se jÃ¡ tiver sido carregado)
-        // O mixin nÃ£o tem availableAccounts no data, mas podemos tentar carregar
+        // Estratégia 1: Tentar encontrar em availableAccounts (se já tiver sido carregado)
+        // O mixin não tem availableAccounts no data, mas podemos tentar carregar
         console.log('[AccountBalanceMixin] Carregando contas disponÃ­veis para encontrar token...');
         try {
           const accounts = await loadAvailableAccounts(false);
@@ -557,7 +557,7 @@ export default {
           console.error('[AccountBalanceMixin] Erro ao carregar contas via loader:', loaderError);
         }
 
-        // EstratÃ©gia 2: Fallback para localStorage legado
+        // Estratégia 2: Fallback para localStorage legado
         if (!selectedToken) {
           console.log('[AccountBalanceMixin] Tentando fallback para localStorage...');
           const derivConnectionStr = localStorage.getItem('deriv_connection');
@@ -604,14 +604,14 @@ export default {
             localStorage.setItem('deriv_token', selectedToken);
             this.accountType = type;
             this.tradeCurrency = type === 'demo' ? 'DEMO' : 'USD';
-            console.log('[AccountBalanceMixin] âœ… Conta e token sincronizados com sucesso');
+            console.log('[AccountBalanceMixin] ✅ Conta e token sincronizados com sucesso');
             window.location.reload();
             return;
           }
         }
 
         // Fallback final: apenas atualizar moeda
-        console.warn('[AccountBalanceMixin] âš ï¸ Token nÃ£o encontrado, tentando atualizar apenas moeda...');
+        console.warn('[AccountBalanceMixin] ⚠️ Token não encontrado, tentando atualizar apenas moeda...');
         const response = await fetch(`${apiBase}/settings`, {
           method: 'PUT',
           headers: {
@@ -637,7 +637,7 @@ export default {
     },
 
     /**
-     * Inicia polling de atualizaÃ§Ã£o de saldo (opcional)
+     * Inicia polling de atualização de saldo (opcional)
      */
     startBalancePolling(intervalMs = 5000) {
       if (this.balanceUpdateInterval) {
@@ -650,7 +650,7 @@ export default {
     },
 
     /**
-     * Para o polling de atualizaÃ§Ã£o de saldo
+     * Para o polling de atualização de saldo
      */
     stopBalancePolling() {
       if (this.balanceUpdateInterval) {
@@ -660,10 +660,10 @@ export default {
     },
 
     /**
-     * Recarrega o saldo forÃ§ando atualizaÃ§Ã£o (ignora cache)
+     * Recarrega o saldo forçando atualização (ignora cache)
      */
     async reloadBalance() {
-      // ForÃ§ar recarregamento ignorando cache
+      // Forçar recarregamento ignorando cache
       await this.loadAccountBalanceInfo(true);
     },
   },
@@ -677,9 +677,9 @@ export default {
       });
     },
     accountType(newType, oldType) {
-      // Quando accountType muda, garantir que o info estÃ¡ sincronizado
+      // Quando accountType muda, garantir que o info está sincronizado
       if (this.info && newType !== oldType) {
-        // O TopNavbar jÃ¡ usa balancesByCurrencyReal/Demo corretamente
+        // O TopNavbar já usa balancesByCurrencyReal/Demo corretamente
         // Mas podemos atualizar o info.balance para refletir o tipo correto
         if (newType === 'demo') {
           this.info.isDemo = true;
@@ -699,12 +699,12 @@ export default {
         }
       }
     },
-    // âœ… Real-time Balance Synchronization
+    // ✅ Real-time Balance Synchronization
     // Emit global event when balance changes for cross-component sync
     balanceNumeric(newVal, oldVal) {
       if (newVal !== oldVal && newVal !== undefined && newVal !== null) {
-        // âœ… [ZENIX v2.3] SEMPRE emitir o saldo RAW no barramento global.
-        // Isso permite que cada componente aplique sua prÃ³pria lÃ³gica de saldo fictÃ­cio.
+        // ✅ [ZENIX v2.3] SEMPRE emitir o saldo RAW no barramento global.
+        // Isso permite que cada componente aplique sua própria lógica de saldo fictÃ­cio.
         const rawBalance = newVal - (this.isFictitiousBalanceActive ? (Number(this.fictitiousBalance) || 0) : 0);
 
         window.dispatchEvent(new CustomEvent('balanceUpdated', {
@@ -714,22 +714,22 @@ export default {
     }
   },
   async mounted() {
-    this.loadingBalance = true; // ForÃ§ar loading inicial para evitar glitch
+    this.loadingBalance = true; // Forçar loading inicial para evitar glitch
 
-    // Carregar configuraÃ§Ãµes de Master Trader
+    // Carregar configurações de Master Trader
     await this.loadMasterTraderSettings();
 
-    // Ouvir eventos de atualizaÃ§Ã£o de saldo fictÃ­cio
+    // Ouvir eventos de atualização de saldo fictÃ­cio
     window.addEventListener('masterTraderSettingsUpdated', (e) => this.handleMasterTraderUpdate(e));
     window.addEventListener('fictitiousBalanceChanged', (e) => this.handleFictitiousBalanceChange(e));
     window.addEventListener('refreshBalance', () => this.reloadBalance());
     window.addEventListener('balanceUpdated', this.handleGlobalBalanceUpdate);
 
-    // Carregar tradeCurrency primeiro para garantir que accountType estÃ¡ correto
+    // Carregar tradeCurrency primeiro para garantir que accountType está correto
     await this.loadTradeCurrency();
 
-    // Garantir que accountType estÃ¡ sincronizado com tradeCurrency
-    // Isso Ã© importante caso o loadTradeCurrency nÃ£o tenha atualizado corretamente
+    // Garantir que accountType está sincronizado com tradeCurrency
+    // Isso é importante caso o loadTradeCurrency não tenha atualizado corretamente
     if (this.tradeCurrency === 'DEMO' && this.accountType !== 'demo') {
       this.accountType = 'demo';
     } else if (this.tradeCurrency !== 'DEMO' && this.accountType !== 'real') {
@@ -741,11 +741,11 @@ export default {
       accountType: this.accountType
     });
 
-    // Depois carregar saldo (forÃ§ar recarregamento na primeira vez, igual ao Dashboard/HomeView)
+    // Depois carregar saldo (forçar recarregamento na primeira vez, igual ao Dashboard/HomeView)
     await this.loadAccountBalanceInfo(true);
 
-    // ApÃ³s carregar saldo, garantir novamente que accountType estÃ¡ correto
-    // baseado no tradeCurrency (nÃ£o no isDemo do saldo carregado)
+    // Após carregar saldo, garantir novamente que accountType está correto
+    // baseado no tradeCurrency (não no isDemo do saldo carregado)
     if (this.tradeCurrency === 'DEMO') {
       this.accountType = 'demo';
     } else {
@@ -760,7 +760,7 @@ export default {
       balancesByCurrencyDemo: this.balancesByCurrencyDemo
     });
 
-    // Pequeno atraso artificial para garantir que a UI nÃ£o mostre valores intermediÃ¡rios
+    // Pequeno atraso artificial para garantir que a UI não mostre valores intermediários
     // Isso resolve o glitch visual do "pulo" do saldo fictÃ­cio
     setTimeout(() => {
       this.isBalanceReady = true;

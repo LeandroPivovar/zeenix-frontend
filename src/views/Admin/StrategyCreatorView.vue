@@ -393,8 +393,8 @@
                                          </button>
                                      </div>
 
-                                     <!-- Performance Mode Selector (Dots Style) - Only visible for Main Analysis -->
-                                     <div v-if="activeEngineTab === 'main'" class="flex gap-2 mb-4">
+                                     <!-- Performance Mode Selector (Dots Style) -->
+                                     <div class="flex gap-2 mb-4">
                                          <button 
                                              v-for="mode in [{id:'VELOZ', label:'Veloz'}, {id:'NORMAL', label:'Normal'}, {id:'PRECISO', label:'Preciso'}]"
                                              :key="mode.id"
@@ -1250,7 +1250,7 @@
                                             
                                             <button 
                                                 v-if="!isFilterActive(filter)"
-                                                @click="toggleFilterInModal(filter)"
+                                                @click="selectFilterInLibrary(filter)"
                                                 class="px-3 py-1.5 rounded-lg border border-primary/30 text-[10px] font-black uppercase tracking-wider text-primary hover:bg-primary/10 hover:border-primary transition-all shadow-[0_0_10px_-5px_#22c55e]"
                                             >
                                                 Adicionar

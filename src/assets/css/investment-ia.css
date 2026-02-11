@@ -748,7 +748,7 @@ svg:not(:root).svg-inline--fa {
     /* Force equal height on desktop */
 }
 
-/* Order para desktop - ordem padrÃ£o */
+/* Order para desktop - ordem padrão */
 #market-strategy-card {
     order: 1;
 }
@@ -1609,7 +1609,7 @@ svg:not(:root).svg-inline--fa {
         z-index: 1;
     }
 
-    /* SettingsSidebar nÃ£o deve ser afetado pelo z-index do zenix-layout */
+    /* SettingsSidebar não deve ser afetado pelo z-index do zenix-layout */
     .zenix-layout> :deep(.settings-modal-overlay) {
         position: fixed !important;
         z-index: 100000 !important;
@@ -1626,7 +1626,7 @@ svg:not(:root).svg-inline--fa {
         width: 100%;
     }
 
-    /* Gradiente no fundo da pÃ¡gina - apenas mobile */
+    /* Gradiente no fundo da página - apenas mobile */
     .main-content {
         margin-top: 0px;
         padding: 0rem 15px;
@@ -1634,7 +1634,7 @@ svg:not(:root).svg-inline--fa {
         position: relative;
     }
 
-    /* Gradiente nos cards de configuraÃ§Ã£o - apenas mobile */
+    /* Gradiente nos cards de configuração - apenas mobile */
     .config-card {
         background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
         background-color: transparent !important;
@@ -1688,7 +1688,7 @@ svg:not(:root).svg-inline--fa {
         flex-direction: column;
     }
 
-    /* ReorganizaÃ§Ã£o da ordem no mobile */
+    /* Reorganização da ordem no mobile */
     #market-strategy-card {
         order: 1;
     }
@@ -1730,7 +1730,7 @@ svg:not(:root).svg-inline--fa {
         margin: 0;
     }
 
-    /* Gradiente nos cards de configuraÃ§Ã£o - apenas mobile */
+    /* Gradiente nos cards de configuração - apenas mobile */
     .config-card {
         padding: 1rem;
         background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
@@ -2607,10 +2607,10 @@ svg:not(:root).svg-inline--fa {
     display: none;
 }
 
-/* Estilos especÃ­ficos para VisÃ£o da IA no Mobile */
+/* Estilos especÃ­ficos para Visão da IA no Mobile */
 @media (max-width: 768px) {
 
-    /* Remove o fundo do container principal da VisÃ£o da IA */
+    /* Remove o fundo do container principal da Visão da IA */
     #ai-vision-panel .ai-vision-container {
         background: transparent !important;
         border: none !important;
@@ -2654,7 +2654,7 @@ svg:not(:root).svg-inline--fa {
         height: auto;
     }
 
-    /* Esconde a Ã¡rea de visualizaÃ§Ã£o AI completa no mobile */
+    /* Esconde a área de visualização AI completa no mobile */
     #ai-vision-panel .ai-visualization-area {
         display: none !important;
     }
