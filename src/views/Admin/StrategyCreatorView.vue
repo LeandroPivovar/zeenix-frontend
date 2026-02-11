@@ -2456,15 +2456,19 @@ export default {
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // Simplified selection: Always select, allowing user to switch freely.
-            // Visual feedback will handle the "selected" state.
-            config.market = symbol;
+            // Force reactivity by using $set
+            this.$set(config, 'market', symbol);
             
             const market = this.markets.find(m => m.symbol === symbol);
             this.$root.$toast.success(`Mercado selecionado: ${market ? (market.displayName || market.label) : symbol}`);
             
+            // Close modal if open
             if (this.showMarketModal) this.closeMarketModal();
-            this.onMarketChange(context);
+            
+            // Trigger contract fetch with a small delay to ensure UI updates first
+            this.$nextTick(() => {
+                this.onMarketChange(context);
+            });
         },
         toggleMarketCategory(category) {
             const index = this.expandedCategories.indexOf(category);
@@ -2502,12 +2506,12 @@ export default {
             const config = customConfig || this.currentConfig;
             
             if (!config.selectedTradeTypeGroups) {
-                config.selectedTradeTypeGroups = [];
+                this.$set(config, 'selectedTradeTypeGroups', []);
             }
 
             const index = config.selectedTradeTypeGroups.indexOf(item.value);
             if (index > -1) {
-                // Remove if already selected
+                // Remove if already selected - use splice which is reactive
                 config.selectedTradeTypeGroups.splice(index, 1);
             } else {
                 // Add if not selected
@@ -2519,10 +2523,14 @@ export default {
             // But with multi-selection, the execution logic should probably use selectedTradeTypeGroups array.
             if (config.selectedTradeTypeGroups.length > 0) {
                 // Keep .tradeType for backwards compatibility or as a primary selection
-                config.tradeType = item.directions && item.directions.length > 0 ? item.directions[0].value : item.value;
+                const newTradeType = item.directions && item.directions.length > 0 ? item.directions[0].value : item.value;
+                this.$set(config, 'tradeType', newTradeType);
             } else {
-                config.tradeType = '';
+                this.$set(config, 'tradeType', '');
             }
+            
+            // Force UI update
+            this.$forceUpdate();
         },
         isTradeTypeItemSelected(item, customConfig = null) {
             const config = customConfig || this.currentConfig;
