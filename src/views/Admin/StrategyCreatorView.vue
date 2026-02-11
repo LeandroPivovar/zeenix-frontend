@@ -130,7 +130,7 @@
                                     </div>
                                     <div class="space-y-5">
                                         <div>
-                                            <label class="zenix-label">Ãcone da EstratÃ©gia</label>
+                                            <label class="zenix-label">Ícone da Estratégia</label>
                                             <div class="flex items-start gap-4">
                                                 <div class="flex items-center gap-3">
                                                     <button 
@@ -212,7 +212,7 @@
 
                             <div class="col-span-12 md:col-span-6">
                                 <div class="form-group">
-                                    <label class="block text-white font-bold mb-2">Tipo de NegociaÃ§Ã£o</label>
+                                    <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
                                     <button
                                         type="button"
                                         @click="openTradeTypeModal('main')"
@@ -322,7 +322,7 @@
                                     />
                                 </div>
                                 <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)">
-                                    <label class="block text-white font-bold mb-2">DÃ­gito Alvo (PrevisÃ£o)</label>
+                                    <label class="block text-white font-bold mb-2">Dígito Alvo (Previsão)</label>
                                     <div class="relative">
                                         <select 
                                             v-model.number="form.prediction" 
@@ -386,7 +386,7 @@
                                              class="flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all"
                                              :class="activeEngineTab === 'main' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'"
                                          >
-                                             AnÃƒÂ¡lise Principal <span class="ml-2 text-xs opacity-70">({{ activeAttackFilters.length }}/3)</span>
+                                             Análise Principal <span class="ml-2 text-xs opacity-70">({{ activeAttackFilters.length }}/3)</span>
                                          </button>
                                          <button 
                                              type="button"
@@ -394,7 +394,7 @@
                                              class="flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all"
                                              :class="activeEngineTab === 'recovery' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'"
                                          >
-                                             AnÃƒÂ¡lise de RecuperaÃƒÂ§ÃƒÂ£o <span class="ml-2 text-xs opacity-70">({{ activeRecoveryFilters.length }}/3)</span>
+                                             Análise de Recuperação <span class="ml-2 text-xs opacity-70">({{ activeRecoveryFilters.length }}/3)</span>
                                          </button>
                                      </div>
  
@@ -461,16 +461,16 @@
                                      <div class="bg-[hsl(var(--zenix-elevated))] rounded-lg border border-border/50 p-4">
                                          <div class="flex items-center gap-2 mb-3">
                                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield w-4 h-4 text-primary"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1-1z"></path></svg>
-                                             <span class="text-sm font-medium text-foreground">Filtros de GovernanÃƒÂ§a Ativos</span>
+                                             <span class="text-sm font-medium text-foreground">Filtros de Governança Ativos</span>
                                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock w-3 h-3 text-muted-foreground"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                                          </div>
                                          <div class="grid grid-cols-2 gap-2">
-                                             <div v-for="gov in ['Verificador de Perfil de Risco', 'Verificador de Modo de OperaÃ§Ã£o', 'Verificador de AnÃ¡lise Ativa', 'Verificador de Pausa EstratÃ©gica']" :key="gov" class="flex items-center gap-2 text-xs text-muted-foreground p-2 rounded bg-muted/30">
+                                             <div v-for="gov in ['Verificador de Perfil de Risco', 'Verificador de Modo de Operação', 'Verificador de Análise Ativa', 'Verificador de Pausa Estratégica']" :key="gov" class="flex items-center gap-2 text-xs text-muted-foreground p-2 rounded bg-muted/30">
                                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check w-3 h-3 text-primary"><path d="M20 6 9 17l-5-5"></path></svg>
                                                  <span>{{ gov }}</span>
                                              </div>
                                              <div class="col-span-2 text-center mt-2">
-                                                 <button type="button" class="text-xs text-primary hover:underline">Ver todos os filtros de governanÃƒÂ§a Ã¢â€ â€™</button>
+                                                 <button type="button" class="text-xs text-primary hover:underline">Ver todos os filtros de governança &rarr;</button>
                                              </div>
                                          </div>
                                      </div>
@@ -488,7 +488,7 @@
                                      </div>
  
                                      <p class="text-xs text-muted-foreground bg-[hsl(var(--zenix-elevated))] p-3 rounded-lg border border-border/50">
-                                         EstratÃƒÂ©gias definem apenas ENTRADAS. GestÃƒÂ£o ÃƒÂ© controlada pelo ZENIX.
+                                         Estratégias definem apenas ENTRADAS. Gestão é controlada pelo ZENIX.
                                      </p>
                                  </div>
                              </div>
@@ -571,7 +571,7 @@
                                                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                                         </svg>
                                                     </div>
-                                                    <span class="text-sm text-foreground">RecuperaÃ§Ã£o</span>
+                                                    <span class="text-sm text-foreground">Recuperação</span>
                                                 </label>
                                             </div>
                                         </div>
@@ -589,7 +589,7 @@
                                 <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center justify-between gap-2">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-shield-heart text-zenix-green"></i>
-                                        ConfiguraÃ§Ã£o de RecuperaÃ§Ã£o
+                                        Configuração de Recuperação
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer scale-90">
                                         <input type="checkbox" v-model="recoveryConfig.enabled" class="sr-only peer">
@@ -600,7 +600,7 @@
                                 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10" :class="{ 'opacity-40 grayscale pointer-events-none': !recoveryConfig.enabled }">
                                     <div>
-                                        <label class="block text-white font-bold mb-2">Mercado de RecuperaÃ§Ã£o</label>
+                                        <label class="block text-white font-bold mb-2">Mercado de Recuperação</label>
                                         <button
                                             type="button"
                                             @click="openMarketModal('recovery')"
@@ -611,7 +611,7 @@
                                         </button>
                                     </div>
                                     <div>
-                                        <label class="block text-white font-bold mb-2">Tipo de NegociaÃ§Ã£o</label>
+                                        <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
                                         <button
                                             type="button"
                                             @click="openTradeTypeModal('recovery')"
@@ -630,7 +630,7 @@
                                     <div v-if="recoveryConfig.selectedTradeTypeGroup" class="md:col-span-2">
                                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[#181818] p-5 rounded-xl border border-[#333] mb-4">
                                             <div class="md:col-span-2">
-                                                <label class="block text-white font-bold mb-2 text-[10px] uppercase tracking-[0.2em] opacity-70">DireÃ§Ã£o Permitida (REC)</label>
+                                                <label class="block text-white font-bold mb-2 text-[10px] uppercase tracking-[0.2em] opacity-70">Direção Permitida (REC)</label>
                                                 <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
                                                     <button 
                                                         type="button"
@@ -674,7 +674,7 @@
                                     <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
 
                                         <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(recoveryConfig.tradeType)">
-                                            <label class="block text-white font-bold mb-2 text-sm">DÃ­gito Alvo Rec.</label>
+                                            <label class="block text-white font-bold mb-2 text-sm">Dígito Alvo Rec.</label>
                                             <div class="relative">
                                                 <select 
                                                     v-model.number="recoveryConfig.prediction" 
@@ -749,7 +749,7 @@
                                 <div>
                                     <label class="block text-white font-bold mb-2">Quantia inicial</label>
                                     <div class="relative">
-                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ã</span>
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">$</span>
                                         <input 
                                             type="number" 
                                             v-model.number="form.initialStake" 
@@ -762,7 +762,7 @@
                                 <div>
                                     <label class="block text-white font-bold mb-2">Lucro alvo</label>
                                     <div class="relative">
-                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ã</span>
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">$</span>
                                         <input 
                                             type="number" 
                                             v-model.number="form.profitTarget" 
@@ -795,7 +795,7 @@
                                                     <i v-if="form.riskProfile === 'conservador'" class="fa-solid fa-check text-[10px] text-white"></i>
                                                 </div>
                                             </div>
-                                            <p class="text-[10px] text-gray-400 leading-snug">Ideal para iniciantes. Foca na preservaÃ§Ã£o do capital e retorno gradual.</p>
+                                            <p class="text-[10px] text-gray-400 leading-snug">Ideal para iniciantes. Foca na preservação do capital e retorno gradual.</p>
                                             
                                             <!-- Inline Martingale Limit if active -->
                                             <div v-if="form.riskProfile === 'conservador'" class="mt-3 pt-3 border-t border-primary/20 animate-in fade-in slide-in-from-top-1">
@@ -828,7 +828,7 @@
                                                     <i v-if="form.riskProfile === 'moderado'" class="fa-solid fa-check text-[10px] text-white"></i>
                                                 </div>
                                             </div>
-                                            <p class="text-[10px] text-gray-400 leading-snug">EquilÃ­brio entre risco e recompensa. Busca recuperaÃ§Ã£o + lucro moderado.</p>
+                                            <p class="text-[10px] text-gray-400 leading-snug">Equilíbrio entre risco e recompensa. Busca recuperação + lucro moderado.</p>
                                             
                                             <div v-if="form.riskProfile === 'moderado'" class="mt-3 pt-3 border-t border-primary/20 animate-in fade-in slide-in-from-top-1">
                                                 <label class="text-[9px] uppercase font-bold text-primary mb-1 block">Limite de Martingale</label>
@@ -876,7 +876,7 @@
                                     </div>
                                     <p v-if="!recoveryConfig.martingale" class="mt-3 text-[10px] text-yellow-500/80 font-bold leading-tight flex items-center gap-2">
                                         <i class="fa-solid fa-triangle-exclamation"></i>
-                                        GestÃ£o fixa detectada. Algumas opÃ§Ãµes podem ser limitadas pelo bot.
+                                        Gestão fixa detectada. Algumas opções podem ser limitadas pelo bot.
                                     </p>
                                 </div>
                                 <div>
@@ -884,7 +884,7 @@
                                         <label class="block text-white font-bold">Limite de perda</label>
                                     </div>
                                     <div class="relative">
-                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ã</span>
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">$</span>
                                         <input 
                                             type="number" 
                                             v-model.number="form.stopLoss" 
@@ -923,7 +923,7 @@
                                 <!-- Target Digits (Conditional) -->
                                 <div v-if="['digits_over_under', 'digits_match_diff'].includes(form.selectedTradeTypeGroup)" class="col-span-1 md:col-span-2 grid grid-cols-2 gap-4 bg-[#1E1E1E] border border-[#333] rounded-lg p-3">
                                     <div>
-                                        <label class="block text-white font-bold mb-1 text-xs">DÃ­gito Alvo (CIMA/OVER)</label>
+                                        <label class="block text-white font-bold mb-1 text-xs">Dígito Alvo (CIMA/OVER)</label>
                                         <div class="relative">
                                             <input 
                                                 type="number" 
@@ -934,7 +934,7 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-white font-bold mb-1 text-xs">DÃ­gito Alvo (BAIXO/UNDER)</label>
+                                        <label class="block text-white font-bold mb-1 text-xs">Dígito Alvo (BAIXO/UNDER)</label>
                                         <div class="relative">
                                             <input 
                                                 type="number" 
@@ -957,7 +957,7 @@
                                 class="w-full bg-zenix-green hover:bg-green-600 text-black font-bold text-lg py-4 rounded-lg flex justify-center items-center gap-3 transition-colors shadow-lg hover:shadow-zenix-green/20"
                             >
                                 <i class="fa-solid fa-play"></i>
-                                <span>Iniciar RobÃ´</span>
+                                <span>Iniciar Robô</span>
                             </button>
                         </div>
                     </div>
@@ -991,15 +991,15 @@
                     <div class="modal-body">
                         <div v-if="isLoadingAccounts" class="flex flex-col items-center justify-center py-10 gap-4">
                             <div class="w-10 h-10 border-4 border-zenix-green/30 border-t-zenix-green rounded-full animate-spin"></div>
-                            <p class="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Carregando contas disponÃ­veis...</p>
+                            <p class="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Carregando contas disponíveis...</p>
                         </div>
                         <div v-else-if="availableAccounts.length === 0" class="text-center py-10">
                             <i class="fa-solid fa-triangle-exclamation text-yellow-500 text-3xl mb-4"></i>
                             <p class="text-white font-bold uppercase">Nenhuma conta encontrada</p>
-                            <p class="text-gray-400 text-xs mt-2 font-bold uppercase">Certifique-se de que vocÃª estÃ¡ conectado Ã  Deriv.</p>
+                            <p class="text-gray-400 text-xs mt-2 font-bold uppercase">Certifique-se de que você está conectado à Deriv.</p>
                         </div>
                         <div v-else class="space-y-3">
-                            <p class="text-xs text-gray-500 mb-4 font-bold uppercase tracking-widest">Escolha a conta para iniciar as operaÃ§Ãµes:</p>
+                            <p class="text-xs text-gray-500 mb-4 font-bold uppercase tracking-widest">Escolha a conta para iniciar as operações:</p>
                             <div 
                                 v-for="account in availableAccounts" 
                                 :key="account.loginid"
@@ -1022,7 +1022,7 @@
                                 </div>
                                 <div class="text-right">
                                     <div class="text-white font-bold tracking-tight">{{ account.currency }} {{ account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) }}</div>
-                                    <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Saldo DisponÃ­vel</div>
+                                    <div class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Saldo Disponível</div>
                                 </div>
                             </div>
                         </div>
@@ -1051,7 +1051,7 @@
                             <div v-for="(marketsList, category) in marketsByCategory" :key="category" class="category-card">
                                 <div class="category-card-header">
                                     <div class="category-icon-wrapper">
-                                        <svg v-if="category === 'Ãndices ContÃ­nuos' || category === 'Continuous Indices'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <svg v-if="category === 'Índices Contínuos' || category === 'Continuous Indices'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                             <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
@@ -1099,7 +1099,7 @@
             >
                 <div class="modal-content categorized-modal">
                     <div class="modal-header">
-                        <h3 class="modal-title">Selecionar Tipo de NegociaÃ§Ã£o</h3>
+                        <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
                         <button @click="closeTradeTypeModal" class="modal-close-btn">
                             <i class="fa-solid fa-times"></i>
                         </button>
@@ -1113,7 +1113,7 @@
                                             <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                             <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
-                                        <svg v-else-if="category.id === 'daily_reset_indices' || category.id === 'Ãndices Daily Reset'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <svg v-else-if="category.id === 'daily_reset_indices' || category.id === 'Índices Daily Reset'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M12 2V22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
                                             <path d="M17 7L12 2L7 7" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                                             <path d="M17 17L12 22L7 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1397,7 +1397,7 @@
             <div v-if="showPauseModal" class="modal-overlay" @click.self="showPauseModal = false">
                 <div class="modal-content" style="max-width: 500px">
                      <div class="modal-header">
-                        <h3 class="modal-title">Pausa EstratÃ©gica</h3>
+                        <h3 class="modal-title">Pausa Estratégica</h3>
                         <button @click="showPauseModal = false" class="modal-close-btn">
                             <i class="fa-solid fa-times"></i>
                         </button>
@@ -1413,7 +1413,7 @@
                         </div>
                         
                         <div class="pt-4 border-t border-[#333]">
-                            <h4 class="text-lg font-bold text-white mb-3">Filtro de SaÃ­da (Retomar)</h4>
+                            <h4 class="text-lg font-bold text-white mb-3">Filtro de Saída (Retomar)</h4>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs text-gray-400 mb-1">Volatilidade (DVX &lt; ?)</label>
@@ -1438,7 +1438,7 @@
                         
                         <div class="pt-4">
                             <button @click="showPauseModal = false" class="w-full bg-zenix-green text-black font-bold py-3 rounded-lg">
-                                Salvar ConfiguraÃ§Ã£o
+                                Salvar Configuração
                             </button>
                         </div>
                     </div>
@@ -1650,7 +1650,7 @@ export default {
                 wins: 0,
                 losses: 0,
                 status: 'Aguardando sinal...',
-                statusDesc: 'Analisando condiÃ§Ãµes de mercado'
+                statusDesc: 'Analisando condições de mercado'
             },
             monitoringLogs: [],
             logCounter: 0,
@@ -1659,18 +1659,18 @@ export default {
             filters: [
                 { 
                     id: 'digit_density', 
-                    name: 'Densidade de DÃ­gitos (Apollo)', 
+                    name: 'Densidade de Dígitos (Apollo)', 
                     active: false, 
                     type: 'digit',
-                    desc: 'Analisa a frequÃªncia de dÃ­gitos especÃ­ficos numa janela.',
+                    desc: 'Analisa a frequência de dígitos específicos numa janela.',
                     config: { window: 20, digits: '8,9', operator: '<', threshold: 5, unique: false }
                 },
                 { 
                     id: 'digit_sequence', 
-                    name: 'SequÃªncia de DÃ­gitos (Orion)', 
+                    name: 'Sequência de Dígitos (Orion)', 
                     active: false, 
                     type: 'digit',
-                    desc: 'Busca sequÃªncias de dÃ­gitos (Par, Ãmpar, <4, etc).',
+                    desc: 'Busca sequências de dígitos (Par, Ímpar, <4, etc).',
                     config: { length: 3, target: 'under_4' }
                 },
                 { 
@@ -1678,123 +1678,123 @@ export default {
                     name: 'Maioria de Paridade (Titan)', 
                     active: false, 
                     type: 'digit',
-                    desc: 'Exige que um lado (Par/Ãmpar) domine a janela.',
+                    desc: 'Exige que um lado (Par/Ímpar) domine a janela.',
                     config: { window: 24, percentage: 60, maxNoise: 8 }
                 },
                 { 
                     id: 'price_momentum', 
-                    name: 'Momentum de PreÃ§o (Nexus)', 
+                    name: 'Momentum de Preço (Nexus)', 
                     active: false, 
                     type: 'price',
-                    desc: 'Analisa a forÃ§a e direÃ§Ã£o dos tiques de preÃ§o.',
+                    desc: 'Analisa a força e direção dos tiques de preço.',
                     config: { window: 10, ticksToConfirm: 2, minDelta: 0.1 }
                 },
                 // Phase 1 Filters
                 {
                     id: 'parity_sequence',
-                    name: 'SequÃªncia de Paridade',
+                    name: 'Sequência de Paridade',
                     active: false,
                     type: 'digit',
-                    desc: 'Verifica se os Ãºltimos X dÃ­gitos tÃªm a mesma paridade.',
+                    desc: 'Verifica se os últimos X dígitos têm a mesma paridade.',
                     config: { length: 3, parity: 'even' }
                 },
                 {
                     id: 'over_under_sequence',
-                    name: 'SequÃªncia Over/Under',
+                    name: 'Sequência Over/Under',
                     active: false,
                     type: 'digit',
-                    desc: 'Verifica se os Ãºltimos X dÃ­gitos estÃ£o acima ou abaixo de um valor.',
+                    desc: 'Verifica se os últimos X dígitos estão acima ou abaixo de um valor.',
                     config: { length: 3, type: 'under', threshold: 5 }
                 },
                 {
                     id: 'price_ma',
-                    name: 'PreÃ§o vs. MÃ©dia MÃ³vel',
+                    name: 'Preço vs. Média Móvel',
                     active: false,
                     type: 'indicators',
-                    desc: 'Verifica se o preÃ§o estÃ¡ acima ou abaixo da mÃ©dia mÃ³vel.',
+                    desc: 'Verifica se o preço está acima ou abaixo da média móvel.',
                     config: { period: 14, type: 'SMA', op: '>' }
                 },
                 // Phase 2 Filters
                 {
                     id: 'digit_absence',
-                    name: 'AusÃªncia de DÃ­gito',
+                    name: 'Ausência de Dígito',
                     active: false,
                     type: 'digit',
-                    desc: 'Verifica se um dÃ­gito nÃ£o apareceu nos Ãºltimos X ticks.',
+                    desc: 'Verifica se um dígito não apareceu nos últimos X ticks.',
                     config: { period: 10, digit: 0 }
                 },
                 {
                     id: 'ma_crossover',
-                    name: 'Cruzamento de MÃ©dias',
+                    name: 'Cruzamento de Médias',
                     active: false,
                     type: 'indicators',
-                    desc: 'Verifica cruzamento de mÃ©dias mÃ³veis.',
+                    desc: 'Verifica cruzamento de médias móveis.',
                     config: { periodShort: 9, periodLong: 21, type: 'EMA', direction: 'up' }
                 },
                 {
                     id: 'rsi',
-                    name: 'Ãndice de ForÃ§a Relativa (RSI)',
+                    name: 'Índice de Força Relativa (RSI)',
                     active: false,
                     type: 'indicators',
-                    desc: 'Verifica nÃ­veis de sobrecompra ou sobrevenda.',
+                    desc: 'Verifica níveis de sobrecompra ou sobrevenda.',
                     config: { period: 14, level: 30, condition: '<' }
                 },
                 // Phase 3 Filters - Digits
                 {
                     id: 'digit_equal_sequence',
-                    name: 'SequÃªncia DÃ­gitos Iguais',
+                    name: 'Sequência Dígitos Iguais',
                     active: false,
                     type: 'digit',
-                    desc: 'Verifica se Ãºltimos X ticks terminaram com dÃ­gito Y.',
+                    desc: 'Verifica se últimos X ticks terminaram com dígito Y.',
                     config: { length: 3, digit: 0 }
                 },
                 {
                     id: 'digit_diff_sequence',
-                    name: 'SequÃªncia DÃ­gitos Diferentes',
+                    name: 'Sequência Dígitos Diferentes',
                     active: false,
                     type: 'digit',
-                    desc: 'Verifica se Ãºltimos X ticks sÃ£o todos diferentes.',
+                    desc: 'Verifica se últimos X ticks são todos diferentes.',
                     config: { length: 3 }
                 },
                 {
                     id: 'parity_alternation',
-                    name: 'AlternÃ¢ncia de Paridade',
+                    name: 'Alternância de Paridade',
                     active: false,
                     type: 'digit',
-                    desc: 'Verifica padrÃ£o alternado (Par, Ãmpar...).',
+                    desc: 'Verifica padrão alternado (Par, Ímpar...).',
                     config: { length: 4 }
                 },
                  {
                     id: 'digit_frequency',
-                    name: 'FrequÃªncia de DÃ­gito',
+                    name: 'Frequência de Dígito',
                     active: false,
                     type: 'digit',
-                    desc: 'Contagem de dÃ­gito Y em X ticks satisfaz condiÃ§Ã£o.',
+                    desc: 'Contagem de dígito Y em X ticks satisfaz condição.',
                     config: { digit: 0, period: 20, op: '>=', count: 3 }
                 },
                 {
                     id: 'digit_average',
-                    name: 'MÃ©dia dos Ãšltimos DÃ­gitos',
+                    name: 'Média dos Últimos Dígitos',
                     active: false,
                     type: 'digit',
-                    desc: 'MÃ©dia dos Ãºltimos X dÃ­gitos Ã© Op L.',
+                    desc: 'Média dos últimos X dígitos é Op L.',
                     config: { period: 10, op: '>', threshold: 4.5 }
                 },
                 {
                     id: 'digit_position_return',
-                    name: 'DÃ­gito Retorna',
+                    name: 'Dígito Retorna',
                     active: false,
                     type: 'digit',
-                    desc: 'Ãšltimo dÃ­gito igual ao de X ticks atrÃ¡s.',
+                    desc: 'Último dígito igual ao de X ticks atrás.',
                     config: { period: 5 }
                 },
                 // Phase 3 Filters - Indicators
                 {
                     id: 'ma_slope',
-                    name: 'InclinaÃ§Ã£o da MÃ©dia MÃ³vel',
+                    name: 'Inclinação da Média Móvel',
                     active: false,
                     type: 'indicators',
-                    desc: 'Verifica se a MM estÃ¡ subindo ou descendo.',
+                    desc: 'Verifica se a MM está subindo ou descendo.',
                     config: { period: 14, lookback: 2, direction: 'up' }
                 },
                 {
@@ -1802,15 +1802,15 @@ export default {
                     name: 'MACD',
                     active: false,
                     type: 'indicators',
-                    desc: 'CondiÃ§Ãµes do MACD (Linha vs Sinal).',
+                    desc: 'Condições do MACD (Linha vs Sinal).',
                     config: { fast: 12, slow: 26, signal: 9, condition: 'cross_up' }
                 },
                 {
                     id: 'stochastic',
-                    name: 'EstocÃ¡stico',
+                    name: 'Estocástico',
                     active: false,
                     type: 'indicators',
-                    desc: 'CondiÃ§Ãµes do EstocÃ¡stico.',
+                    desc: 'Condições do Estocástico.',
                     config: { k: 14, d: 3, smooth: 3, condition: 'oversold', level: 20 }
                 },
                 {
@@ -1818,7 +1818,7 @@ export default {
                     name: 'Bandas de Bollinger',
                     active: false,
                     type: 'indicators',
-                    desc: 'PreÃ§o em relaÃ§Ã£o Ã s bandas.',
+                    desc: 'Preço em relação às bandas.',
                     config: { period: 20, stdDev: 2, condition: 'cross_lower' }
                 },
                 {
@@ -1831,16 +1831,16 @@ export default {
                 },
                 {
                     id: 'price_action',
-                    name: 'SequÃªncia de Ticks (PA)',
+                    name: 'Sequência de Ticks (PA)',
                     active: false,
                     type: 'indicators',
-                    desc: 'SequÃªncia de ticks de alta ou baixa.',
+                    desc: 'Sequência de ticks de alta ou baixa.',
                     config: { length: 3, direction: 'rise' }
                 },
                 // Phase 3 Filters - Specific
                 {
                     id: 'spike_detect',
-                    name: 'DetecÃ§Ã£o de Spike',
+                    name: 'Detecção de Spike',
                     active: false,
                     type: 'indicators',
                     desc: 'Detecta movimento brusco (Crash/Boom).',
@@ -1848,10 +1848,10 @@ export default {
                 },
                 {
                     id: 'step_pattern',
-                    name: 'PadrÃ£o Step Index',
+                    name: 'Padrão Step Index',
                     active: false,
                     type: 'indicators',
-                    desc: 'LateralizaÃ§Ã£o seguida de salto.',
+                    desc: 'Lateralização seguida de salto.',
                     config: { rangeTicks: 10, jumpThreshold: 50 }
                 }
             ],
@@ -1983,11 +1983,11 @@ export default {
             
             // Priority Order (Matching OperationChart)
             const categoryPriority = {
-                'Ãndices ContÃ­nuos': 1,
-                'Ãndices Daily Reset': 2,
-                'Ãndices Step': 3,
-                'Ãndices JUMP': 4,
-                'Ãndices Crash/Boom': 5,
+                'Índices Contínuos': 1,
+                'Índices Daily Reset': 2,
+                'Índices Step': 3,
+                'Índices JUMP': 4,
+                'Índices Crash/Boom': 5,
                 'Criptomoedas': 6,
                 'Forex Majors': 7,
                 'Major Pairs': 7,
@@ -1996,13 +1996,13 @@ export default {
             };
 
             const nameMap = {
-                'Indices Step': 'Ãndices Step',
-                'Jump Indices': 'Ãndices JUMP',
-                'Boom/Crash': 'Ãndices Crash/Boom',
-                'Daily Reset Indices': 'Ãndices Daily Reset',
+                'Indices Step': 'Índices Step',
+                'Jump Indices': 'Índices JUMP',
+                'Boom/Crash': 'Índices Crash/Boom',
+                'Daily Reset Indices': 'Índices Daily Reset',
                 'Major Pairs': 'Forex Majors',
                 'Minor Pairs': 'Forex Minors',
-                'Continuous Indices': 'Ãndices ContÃ­nuos'
+                'Continuous Indices': 'Índices Contínuos'
             };
             
             this.markets.forEach(market => {
@@ -2100,19 +2100,19 @@ export default {
             const groups = [
                 {
                     id: 'digits',
-                    label: 'AnÃ¡lise de DÃ­gito',
+                    label: 'Análise de Dígito',
                     icon: 'fas fa-hashtag',
                     filters: filters.filter(f => f.type === 'digit')
                 },
                 {
                     id: 'indicators',
-                    label: 'AnÃ¡lise de PreÃ§o (Indicadores)',
+                    label: 'Análise de Preço (Indicadores)',
                     icon: 'fas fa-chart-line',
                     filters: filters.filter(f => f.type === 'price' && !['spike_detect', 'step_pattern'].includes(f.id))
                 },
                 {
                     id: 'specific',
-                    label: 'AnÃ¡lise de Mercados EspecÃ­ficos',
+                    label: 'Análise de Mercados Específicos',
                     icon: 'fas fa-microchip',
                     filters: filters.filter(f => ['spike_detect', 'step_pattern'].includes(f.id))
                 }
@@ -2161,7 +2161,7 @@ export default {
             if (market) return market.displayName || market.label;
             
             const marketByValue = this.markets.find(m => m.value === this.recoveryConfig.market);
-            return marketByValue ? marketByValue.label : 'Mercado de RecuperaÃ§Ã£o';
+            return marketByValue ? marketByValue.label : 'Mercado de Recuperação';
         },
         selectedRecoveryTradeTypeGroupLabel() {
             if (!this.recoveryConfig.selectedTradeTypeGroup) return 'Selecionar Tipo';
@@ -2228,49 +2228,10 @@ export default {
                 const principal = this.virtualLossPrincipal;
                 if (val && principal) this.securityConfig.virtualLoss.mode = 'cyclic';
                 else if (val) this.securityConfig.virtualLoss.mode = 'recovery';
-                else if (principal) this.securityConfig.virtualLoss.mode = 'attack';
-                else this.securityConfig.virtualLoss.mode = 'warmup'; // Default fallback
             }
         },
 
-        activeFiltersForModal() {
-            return this.modalContext === 'main' ? this.filters : this.recoveryFilters;
-        },
 
-        filteredLibraryFilters() {
-            const filters = this.activeFiltersForModal;
-            return filters.filter(f => {
-                const matchesSearch = f.name.toLowerCase().includes(this.filterSearchQuery.toLowerCase()) || 
-                                    f.desc.toLowerCase().includes(this.filterSearchQuery.toLowerCase());
-                const matchesCategory = this.activeFilterCategory === 'all' || f.type === this.activeFilterCategory;
-                return matchesSearch && matchesCategory;
-            });
-        },
-
-        groupedFiltersForModal() {
-            const filters = this.activeFiltersForModal;
-            const groups = [
-                {
-                    id: 'digits',
-                    label: 'Análise de Dígito',
-                    icon: 'fas fa-hashtag',
-                    filters: filters.filter(f => f.type === 'digit')
-                },
-                {
-                    id: 'indicators',
-                    label: 'Análise de Preço (Indicadores)',
-                    icon: 'fas fa-chart-line',
-                    filters: filters.filter(f => f.type === 'indicators' || (f.type === 'price' && !['spike_detect', 'step_pattern'].includes(f.id)))
-                },
-                {
-                    id: 'specific',
-                    label: 'Análise de Mercados Específicos',
-                    icon: 'fas fa-microchip',
-                    filters: filters.filter(f => f.type === 'specific' || ['spike_detect', 'step_pattern'].includes(f.id))
-                }
-            ];
-            return groups.filter(g => g.filters.length > 0);
-        }
     },
 
     mounted() {
@@ -2291,11 +2252,11 @@ export default {
             this.showIconSelector = !this.showIconSelector;
         },
         selectIcon(icon) {
-            console.log('--- VUE 3: ATUALIZANDO ÃCONE ---');
+            console.log('--- VUE 3: ATUALIZANDO ÍCONE ---');
             console.log('Anterior:', this.form.icon);
             console.log('Novo:', icon);
             
-            // AtribuiÃ§Ã£o direta para Vue 3
+            // Atribuição direta para Vue 3
             this.form.icon = icon;
             
             console.log('Estado Final:', this.form.icon);
@@ -2349,7 +2310,7 @@ export default {
                         } else if (m.symbol.startsWith('cry')) {
                             category = 'Criptomoedas';
                         } else if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ')) {
-                            category = 'Ãndices ContÃ­nuos';
+                            category = 'Índices Contínuos';
                         } else if (m.symbol.startsWith('JDM')) {
                             category = 'Jump Indices';
                         } else if (m.symbol.startsWith('BOOM') || m.symbol.startsWith('CRASH')) {
@@ -2571,7 +2532,7 @@ export default {
             // Alias for saveFilters or could have specific logic
             this.saveFilters();
         },
-        // âœ… Helper to sync filter edits to form/recoveryConfig before saving
+        // ✅ Helper to sync filter edits to form/recoveryConfig before saving
         syncFiltersToConfig() {
             // Sync main filters
             this.form.attackFilters = this.filters
@@ -2621,7 +2582,7 @@ export default {
             }
 
             if (!contracts.length) {
-                this.$root.$toast.warning('Selecione um mercado vÃ¡lido primeiro.');
+                this.$root.$toast.warning('Selecione um mercado válido primeiro.');
                 return;
             }
 
@@ -2647,7 +2608,7 @@ export default {
             if (this.modalContext === 'main') {
                 this.form.selectedTradeTypeGroup = item.value; // Store Item Value for UI
                 
-                // âœ… Respect Direction Mode: If AMBOS is selected, tradeType MUST be empty
+                // ✅ Respect Direction Mode: If AMBOS is selected, tradeType MUST be empty
                 if (this.form.directionMode === 'both') {
                     this.form.tradeType = '';
                     console.log(`[selectTradeType] Modal: AMBOS mode detected, clearing tradeType for dynamic signaling`);
@@ -2663,7 +2624,7 @@ export default {
             } else {
                 this.recoveryConfig.selectedTradeTypeGroup = item.value;
 
-                // âœ… Respect Direction Mode (Recovery)
+                // ✅ Respect Direction Mode (Recovery)
                 if (this.recoveryConfig.directionMode === 'both') {
                     this.recoveryConfig.tradeType = '';
                     console.log(`[selectTradeType] Modal (REC): AMBOS mode detected, clearing tradeType`);
@@ -2682,7 +2643,7 @@ export default {
             this.closeTradeTypeModal();
         },
         
-        // âœ… NEW: Auto-update tradeType when direction mode changes
+        // ✅ NEW: Auto-update tradeType when direction mode changes
         updateRecoveryDirection(mode, specificType = null) {
             this.recoveryConfig.directionMode = mode;
             
@@ -2730,7 +2691,7 @@ export default {
                     }
                 }
                 
-                // 2. Fallback para deriv_token padrÃ£o
+                // 2. Fallback para deriv_token padrão
                 const defaultToken = localStorage.getItem('deriv_token');
                 return defaultToken ? defaultToken.trim() : null;
             } catch (e) {
@@ -2748,7 +2709,7 @@ export default {
                  const userToken = localStorage.getItem('token');
                  
                  if (!userToken) {
-                     this.$root.$toast.error('SessÃ£o expirada. FaÃ§a login novamente.');
+                     this.$root.$toast.error('Sessão expirada. Faça login novamente.');
                      return;
                  }
 
@@ -2759,7 +2720,7 @@ export default {
                      }
                  });
 
-                 if (!response.ok) throw new Error('Falha ao buscar configuraÃ§Ãµes do backend');
+                 if (!response.ok) throw new Error('Falha ao buscar configurações do backend');
 
                  const data = await response.json();
                  const accounts = [];
@@ -2804,7 +2765,7 @@ export default {
             this.balance = balanceValue;
             this.monitoringStats.balance = balanceValue;
 
-            // âœ… Sync with Global State for TopNavbar and Mixin
+            // ✅ Sync with Global State for TopNavbar and Mixin
             const connection = {
                 token: account.token,
                 loginid: account.loginid,
@@ -2832,18 +2793,18 @@ export default {
                 : 'Custom Strategy';
             this.sessionState.mode = this.sessionState.negotiationMode || 'VELOZ';
             this.sessionState.modoMartingale = this.form.riskProfile || 'Moderado';
-            // âœ… Explicitly save Martingale Boolean
+            // ✅ Explicitly save Martingale Boolean
             this.sessionState.martingale = this.recoveryConfig.martingale !== false; 
             this.recoveryConfig.riskProfile = this.form.riskProfile || 'moderado';
             this.sessionState.stake = this.form.initialStake;
             this.sessionState.profitTarget = this.form.profitTarget;
             this.sessionState.lossLimit = this.form.stopLoss;
             this.sessionState.stoplossBlindado = this.form.useBlindado || false;
-            // âœ… Pass Version
+            // ✅ Pass Version
             this.sessionState.version = this.currentVersion || '1.0';
 
             this.startSimulation();
-            this.$root.$toast.success('EstratÃ©gia iniciada com sucesso!');
+            this.$root.$toast.success('Estratégia iniciada com sucesso!');
         },
 
         // --- Local Strategy Library Methods ---
@@ -2852,7 +2813,7 @@ export default {
                 const stored = localStorage.getItem('zeenix_saved_strategies');
                 let userStrategies = stored ? JSON.parse(stored) : [];
 
-                // âœ… Load default strategies from API (always fresh)
+                // ✅ Load default strategies from API (always fresh)
                 const defaultStrategyNames = ['apollo', 'atlas', 'nexus', 'orion', 'titan'];
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 const token = localStorage.getItem('token');
@@ -2888,7 +2849,7 @@ export default {
 
                 this.savedStrategies = userStrategies;
             } catch (e) {
-                console.error('Erro ao carregar estratÃ©gias:', e);
+                console.error('Erro ao carregar estratégias:', e);
                 this.savedStrategies = [];
             }
         },
@@ -2905,14 +2866,14 @@ export default {
         },
 
         async saveCurrentStrategy() {
-            const defaultName = this.form.strategyName || `Minha EstratÃ©gia ${new Date().toLocaleDateString()}`;
-            const name = prompt('Nome da estratÃ©gia:', defaultName);
+            const defaultName = this.form.strategyName || `Minha Estratégia ${new Date().toLocaleDateString()}`;
+            const name = prompt('Nome da estratégia:', defaultName);
             if (!name) return;
 
-            // âœ… Sync Strategy Name back to form for consistency
+            // ✅ Sync Strategy Name back to form for consistency
             this.form.strategyName = name;
 
-            // âœ… Sync filter edits before saving
+            // ✅ Sync filter edits before saving
             this.syncFiltersToConfig();
 
             const newStrategy = {
@@ -2927,7 +2888,7 @@ export default {
                 }
             };
 
-            // âœ… Save to server as JSON file
+            // ✅ Save to server as JSON file
             try {
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 const token = localStorage.getItem('token');
@@ -2952,7 +2913,7 @@ export default {
             this.selectedSavedStrategyId = newStrategy.id;
             this.currentStrategyName = newStrategy.name;
             this.currentVersion = newStrategy.version;
-            this.$root.$toast.success('EstratÃ©gia salva com sucesso!');
+            this.$root.$toast.success('Estratégia salva com sucesso!');
         },
 
         loadSavedStrategy() {
@@ -2964,7 +2925,7 @@ export default {
             const savedForm = JSON.parse(JSON.stringify(strategy.config.form));
             this.form = { ...this.form, ...savedForm };
 
-            // âœ… Load Validation: If directionMode is 'both', tradeType MUST be empty for dynamic signaling
+            // ✅ Load Validation: If directionMode is 'both', tradeType MUST be empty for dynamic signaling
             if (this.form.directionMode === 'both') {
                 this.form.tradeType = '';
                 console.log(`[loadSavedStrategy] Main: AMBOS detected, clearing tradeType`);
@@ -2979,7 +2940,7 @@ export default {
             const savedRecovery = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
             this.recoveryConfig = { ...this.recoveryConfig, ...savedRecovery };
 
-            // âœ… Load Validation (Recovery)
+            // ✅ Load Validation (Recovery)
             if (this.recoveryConfig.directionMode === 'both') {
                 this.recoveryConfig.tradeType = '';
                 console.log(`[loadSavedStrategy] Recovery: AMBOS detected, clearing tradeType`);
@@ -3025,7 +2986,7 @@ export default {
                 this.recoveryFilters.splice(index, 1, newFilter);
             });
 
-            // âœ… ENFORCE: If Martingale is disabled, force Conservador
+            // ✅ ENFORCE: If Martingale is disabled, force Conservador
             if (this.recoveryConfig.martingale === false) {
                  this.form.riskProfile = 'conservador';
                  // Optional: Debug log
@@ -3036,8 +2997,8 @@ export default {
             this.currentStrategyName = strategy.name;
             this.currentVersion = strategy.version || '1.0';
 
-            this.addLog(`ðŸ“‚ EstratÃ©gia carregada: ${strategy.name} (v${this.currentVersion})`, 'info');
-            this.$root.$toast.success(`EstratÃ©gia "${strategy.name}" carregada!`);
+            this.addLog(`📂 Estratégia carregada: ${strategy.name} (v${this.currentVersion})`, 'info');
+            this.$root.$toast.success(`Estratégia "${strategy.name}" carregada!`);
         },
 
         async updateCurrentStrategy() {
@@ -3049,7 +3010,7 @@ export default {
             
             const strategy = this.savedStrategies[strategyIndex];
 
-            // âœ… Sync filter edits before updating
+            // ✅ Sync filter edits before updating
             this.syncFiltersToConfig();
 
             // Calculate new version
@@ -3068,7 +3029,7 @@ export default {
                 }
             };
 
-            // âœ… If updating a default strategy, save to server JSON file
+            // ✅ If updating a default strategy, save to server JSON file
             const defaultStrategyNames = ['apollo', 'atlas', 'nexus', 'orion', 'titan'];
             const strategyName = strategy.name.toLowerCase().trim();
             
@@ -3087,13 +3048,13 @@ export default {
                     });
 
                     if (!response.ok) {
-                        throw new Error('Falha ao atualizar arquivo da estratÃ©gia');
+                        throw new Error('Falha ao atualizar arquivo da estratégia');
                     }
 
                     console.log(`[StrategyCreator] Updated ${strategyName}.json on server`);
                 } catch (error) {
                     console.error('[StrategyCreator] Error updating strategy file:', error);
-                    this.$root.$toast.error('Erro ao salvar no servidor. AlteraÃ§Ãµes salvas localmente.');
+                    this.$root.$toast.error('Erro ao salvar no servidor. Alterações salvas localmente.');
                 }
             }
 
@@ -3109,16 +3070,16 @@ export default {
         },
 
         deleteSavedStrategy() {
-            if (!confirm('Tem certeza que deseja excluir esta estratÃ©gia?')) return;
+            if (!confirm('Tem certeza que deseja excluir esta estratégia?')) return;
             
             this.savedStrategies = this.savedStrategies.filter(s => s.id !== this.selectedSavedStrategyId);
             localStorage.setItem('zeenix_saved_strategies', JSON.stringify(this.savedStrategies));
             this.selectedSavedStrategyId = '';
-            this.$root.$toast.info('EstratÃ©gia excluÃ­da.');
+            this.$root.$toast.info('Estratégia excluída.');
         },
 
         exportToJSON() {
-            // âœ… Sync filter edits before exporting
+            // ✅ Sync filter edits before exporting
             this.syncFiltersToConfig();
 
             const strategyData = {
@@ -3189,10 +3150,10 @@ export default {
                             if (active) f.config = { ...active.config };
                         });
 
-                        this.addLog('ðŸ“ EstratÃ©gia importada com sucesso de arquivo.', 'success');
-                        this.$root.$toast.success('EstratÃ©gia importada com sucesso!');
+                        this.addLog('📄 Estratégia importada com sucesso de arquivo.', 'success');
+                        this.$root.$toast.success('Estratégia importada com sucesso!');
                     } else {
-                        throw new Error('Formato de arquivo invÃ¡lido.');
+                        throw new Error('Formato de arquivo inválido.');
                     }
                 } catch (err) {
                     this.$root.$toast.error('Erro ao importar JSON: ' + err.message);
@@ -3206,28 +3167,28 @@ export default {
             const mode = this.sessionState.negotiationMode;
             const profile = this.form.riskProfile || 'MODERADO';
             
-            const configLog = `âš™ï¸ CONFIGURAÃ‡ÃƒO INICIAL<br>` +
-                `â€¢ Agente: ${this.sessionState.strategy?.toUpperCase() || 'CUSTOM'} (Strategy Creator)<br>` +
-                `â€¢ Modo: ${mode}<br>` +
-                `â€¢ Perfil: ${profile.toUpperCase()}<br>` +
-                `â€¢ Meta Lucro: $${this.form.profitTarget.toFixed(2)}<br>` +
-                `â€¢ Stop Loss: $${this.form.stopLoss.toFixed(2)}<br>` +
-                `â€¢ Stop Blindado: ${this.form.useBlindado ? 'ATIVO ðŸ›¡ï¸' : 'INATIVO âŒ'}`;
+            const configLog = `⚙️ CONFIGURAÇÃO INICIAL<br>` +
+                `• Agente: ${this.sessionState.strategy?.toUpperCase() || 'CUSTOM'} (Strategy Creator)<br>` +
+                `• Modo: ${mode}<br>` +
+                `• Perfil: ${profile.toUpperCase()}<br>` +
+                `• Meta Lucro: $${this.form.profitTarget.toFixed(2)}<br>` +
+                `• Stop Loss: $${this.form.stopLoss.toFixed(2)}<br>` +
+                `• Stop Blindado: ${this.form.useBlindado ? 'ATIVO 🛡️' : 'INATIVO ❌'}`;
             
             this.addLog(configLog, 'info');
 
-            const sessionLog = `ðŸš€ INICIANDO SESSÃƒO DE OPERAÃ‡Ã•ES<br>` +
-                `â€¢ Banca Inicial: $${this.balance.toFixed(2)}<br>` +
-                `â€¢ Meta do Dia: +$${this.form.profitTarget.toFixed(2)}<br>` +
-                `â€¢ Stop Loss: -$${this.form.stopLoss.toFixed(2)}<br>` +
-                `â€¢ Modo Inicial: ${mode}`;
+            const sessionLog = `🚀 INICIANDO SESSÃO DE OPERAÇÕES<br>` +
+                `• Banca Inicial: $${this.balance.toFixed(2)}<br>` +
+                `• Meta do Dia: +$${this.form.profitTarget.toFixed(2)}<br>` +
+                `• Stop Loss: -$${this.form.stopLoss.toFixed(2)}<br>` +
+                `• Modo Inicial: ${mode}`;
 
             this.addLog(sessionLog, 'info');
             
             // Iniciar Monitoramento de Ticks Real-time
             this.initTickConnection();
         },
-        // âš¡ FAST RESULT SYSTEM âš¡
+        // ⚡ FAST RESULT SYSTEM ⚡
         checkLocalTicks(price, digit) {
             if (this.localPendingContracts.size === 0) return;
 
@@ -3238,7 +3199,7 @@ export default {
                 if (contract.entryTick === null) {
                     contract.entryTick = price;
                     contract.entryDigit = digit;
-                    console.log(`[LocalTick] Contrato ${contract.id}: Entrada capturada em tempo real (Tick SecundÃ¡rio)`);
+                    console.log(`[LocalTick] Contrato ${contract.id}: Entrada capturada em tempo real (Tick Secundário)`);
                     return; // Wait for NEXT tick to close (for 1-tick duration)
                 }
 
@@ -3263,7 +3224,7 @@ export default {
                     case 'PUT': win = price < contract.entryTick; break;
                      // Safe fallback
                     default: 
-                        console.warn(`[LocalTick] Tipo de contrato ${contract.type} nÃ£o suportado para cÃ¡lculo local.`);
+                        console.warn(`[LocalTick] Tipo de contrato ${contract.type} não suportado para cálculo local.`);
                         return;
                 }
 
@@ -3276,14 +3237,14 @@ export default {
             const stake = contract.stake;
             const payoutRate = contract.payoutRate || 0.95;
             
-            // âœ… Net Profit: If payoutRate is a multiplier (e.g. 1.95), subtract 1 (0.95). 
+            // ✅ Net Profit: If payoutRate is a multiplier (e.g. 1.95), subtract 1 (0.95). 
             // If it's already a rate (e.g. 0.95), keep it.
             const netProfitRate = payoutRate > 1.0 ? (payoutRate - 1.0) : payoutRate;
             const profit = win ? (stake * netProfitRate) : -stake;
             
             // Log Result
             this.addLog(
-                `âš¡ RESULTADO RÃPIDO: ${win ? 'WIN' : 'LOSS'} (DÃ­gito: ${exitDigit})`, 
+                `⚡ RESULTADO RÁPIDO: ${win ? 'WIN' : 'LOSS'} (Dígito: ${exitDigit})`, 
                 win ? 'success' : 'error'
             );
 
@@ -3315,24 +3276,24 @@ export default {
             
             if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
                 if (isConservador) {
-                    this.addLog('âš ï¸ <b>Martingale Parcelado Ativo</b><br>Modo CONSERVADOR: Perda serÃ¡ recuperada em 4 parcelas.', 'warning');
+                    this.addLog('⚠️ <b>Martingale Parcelado Ativo</b><br>Modo CONSERVADOR: Perda será recuperada em 4 parcelas.', 'warning');
                 } else {
-                    this.addLog('âš ï¸ <b>AtivaÃ§Ã£o de RecuperaÃ§Ã£o</b><br>Modo Martingale iniciado.', 'warning');
+                    this.addLog('⚠️ <b>Ativação de Recuperação</b><br>Modo Martingale iniciado.', 'warning');
                 }
             } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
                 if (isConservador) {
-                    this.addLog('âœ… <b>RecuperaÃ§Ã£o Conservadora ConcluÃ­da</b><br>Ciclo de parcelas finalizado com sucesso.', 'success');
+                    this.addLog('✅ <b>Recuperação Conservadora Concluída</b><br>Ciclo de parcelas finalizado com sucesso.', 'success');
                 } else {
-                    this.addLog('âœ… <b>RecuperaÃ§Ã£o ConcluÃ­da</b><br>Retornando ao modo principal.', 'success');
+                    this.addLog('✅ <b>Recuperação Concluída</b><br>Retornando ao modo principal.', 'success');
                 }
             } else if (this.sessionState.analysisType === 'RECUPERACAO' && !win) {
                 if (isConservador) {
-                    this.addLog(`ðŸ“‰ <b>Re-parcelamento Ativo</b><br>Loss no parcelamento (${this.sessionState.recoverySplitsUsed}/3). Novo desdobramento iniciado.`, 'warning');
+                    this.addLog(`📉 <b>Re-parcelamento Ativo</b><br>Loss no parcelamento (${this.sessionState.recoverySplitsUsed}/3). Novo desdobramento iniciado.`, 'warning');
                 }
             }
 
             if (this.sessionState.negotiationMode !== oldMode) {
-                this.addLog(`ðŸ§­ <b>AlteraÃ§Ã£o de Sensibilidade</b><br>MODO ${this.sessionState.negotiationMode} ATIVADO`, 'warning');
+                this.addLog(`🧮 <b>Alteração de Sensibilidade</b><br>MODO ${this.sessionState.negotiationMode} ATIVADO`, 'warning');
             }
 
             // Mark as processed in Main Contract List to prevent double counting
@@ -3350,7 +3311,7 @@ export default {
                     trade.profit = profit;
                     trade.fastResultApplied = true; // Flag for handleContractUpdate
                     trade.fastResultOutcome = win ? 'WON' : 'LOST'; // Store for comparison
-                    trade.fastResultProfit = profit; // âœ… Store for double-counting adjustment
+                    trade.fastResultProfit = profit; // ✅ Store for double-counting adjustment
                 } else {
                     // Create a placeholder so when API sends update, we know to ignore it
                     this.activeContracts.set(contract.contractId, {
@@ -3367,7 +3328,7 @@ export default {
             this.localPendingContracts.delete(contract.id);
             this.isNegotiating = false; // Unlock early!
             
-            // âœ… Disable fast result state to allow next analysis loop immediately
+            // ✅ Disable fast result state to allow next analysis loop immediately
             if (this.pendingFastResult) {
                 this.pendingFastResult.active = false;
             }
@@ -3384,7 +3345,7 @@ export default {
         // WebSocket Tick Monitoring Methods
         async initTickConnection() {
             if (!this.form.market) {
-                this.addLog('âš ï¸ Nenhum mercado selecionado.', 'error');
+                this.addLog('⚠️ Nenhum mercado selecionado.', 'error');
                 return;
             }
 
@@ -3397,15 +3358,15 @@ export default {
             this.ws = new WebSocket(endpoint);
 
             this.ws.onopen = () => {
-                this.addLog(`ðŸ”Œ Conectado. Autorizando...`, 'info');
+                this.addLog(`🔌 Conectado. Autorizando...`, 'info');
                 const token = this.selectedToken || this.getDerivToken();
                 
                 if (token) {
-                    console.log('[WS] Enviando token de autorizaÃ§Ã£o Deriv...');
+                    console.log('[WS] Enviando token de autorização Deriv...');
                     this.ws.send(JSON.stringify({ authorize: token }));
                 } else {
-                    console.warn('[WS] Token Deriv nÃ£o encontrado!');
-                    this.addLog('âš ï¸ Token Deriv nÃ£o encontrado. OperaÃ§Ãµes reais desativadas.', 'warning');
+                    console.warn('[WS] Token Deriv não encontrado!');
+                    this.addLog('⚠️ Token Deriv não encontrado. Operações reais desativadas.', 'warning');
                     this.subscribeTicks();
                 }
             };
@@ -3419,36 +3380,36 @@ export default {
                     
                     if (msg.msg_type === 'authorize') {
                         if (msg.error) {
-                            console.error('[WS] Erro na autorizaÃ§Ã£o:', msg.error);
-                            this.addLog(`âŒ Falha na autorizaÃ§Ã£o: ${msg.error.message}`, 'error');
+                            console.error('[WS] Erro na autorização:', msg.error);
+                            this.addLog(`❌ Falha na autorização: ${msg.error.message}`, 'error');
                         } else {
                             this.isAuthorized = true;
                             const balanceValue = Number(msg.authorize.balance);
                             this.balance = balanceValue;
                             this.monitoringStats.balance = balanceValue;
                             console.log('[WS] Autorizado com sucesso! Dados:', msg.authorize);
-                            this.addLog(`âœ… Autorizado! Saldo: $${balanceValue.toFixed(2)}`, 'success');
+                            this.addLog(`✅ Autorizado! Saldo: $${balanceValue.toFixed(2)}`, 'success');
                             this.subscribeTicks();
                         }
                     }
 
                     if (msg.msg_type === 'proposal') {
                         if (msg.error) {
-                            this.addLog(`âŒ Erro na proposta: ${msg.error.message}`, 'error');
+                            this.addLog(`❌ Erro na proposta: ${msg.error.message}`, 'error');
                             this.isNegotiating = false; // Reset lock on error
-                            this.retryingProposal = false; // âœ… Reset deadlocked flag
+                            this.retryingProposal = false; // ✅ Reset deadlocked flag
                         } else {
                             const proposalId = msg.proposal.id;
                             const payout = msg.proposal.payout;
                             const stakeValue = msg.proposal.ask_price;
                             
-                            this.addLog(`ðŸ” Proposta recebida: Payout $${payout} (Stake: $${stakeValue})`, 'info');
+                            this.addLog(`🔍 Proposta recebida: Payout $${payout} (Stake: $${stakeValue})`, 'info');
                             
                             // 1. Update sessionState with the real PROFIT RATE for accuracy in next calculations
                             // Deriv Payout = Stake + Profit. 
                             const realPayoutRate = payout / stakeValue;
                             
-                            // âœ… CRITICAL: Flag for buy logic to use the real rate in Fast Result
+                            // ✅ CRITICAL: Flag for buy logic to use the real rate in Fast Result
                             this.sessionState.tempExplicitPayout = realPayoutRate;
                             
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
@@ -3494,7 +3455,7 @@ export default {
                                 // BETTER: We now pass it explicitly to ensure precision regardless of history state
                                 let exactStake = RiskManager.calculateNextStake(this.sessionState, config, realPayoutRate);
                                 
-                                // âœ… SURVIVAL MODE CHECK (AGAIN)
+                                // ✅ SURVIVAL MODE CHECK (AGAIN)
                                 // Prevent Martingale Calibration from creating an unsafe stake
                                 const currentProfit = this.monitoringStats.profit || 0; 
                                 const estimatedPayout = config.expectedPayout || 1.20;
@@ -3506,7 +3467,7 @@ export default {
                                 const { stake: survivalStake, reason: survivalReason } = RiskManager.applySurvivalMode(exactStake, currentProfit, config, estimatedPayout, blindadoState);
                                 
                                 if (survivalStake < exactStake) {
-                                    this.addLog('ðŸ›¡ï¸ Survival Mode (CalibraÃ§Ã£o)', [
+                                    this.addLog('🛡️ Survival Mode (Calibração)', [
                                         `Limitando ajuste de Martingale`,
                                         `Motivo: ${survivalReason}`,
                                         `Ideal: $${exactStake.toFixed(2)}`,
@@ -3515,20 +3476,20 @@ export default {
                                     exactStake = survivalStake;
                                 }
 
-                                // âœ… CRITICAL: Check Minimum Stake During Calibration
+                                // ✅ CRITICAL: Check Minimum Stake During Calibration
                                 if (exactStake < 0.35) {
-                                  this.addLog('ðŸ›‘ STOP PROTEÃ‡ÃƒO (CalibraÃ§Ã£o)', [
-                                      `Margem insuficiente apÃ³s calibraÃ§Ã£o`,
+                                  this.addLog('🛑 STOP PROTEÇÃO (Calibração)', [
+                                      `Margem insuficiente após calibração`,
                                       `Stake: $${exactStake.toFixed(2)}`,
-                                      `MÃ­nimo: $0.35`
+                                      `Mínimo: $0.35`
                                   ], 'error');
-                                  this.stopMonitoring('Stop de SeguranÃ§a (Stake < 0.35)');
+                                  this.stopMonitoring('Stop de Segurança (Stake < 0.35)');
                                   return; // Abort
                                 }
                                 
                                 // Tolerance check
                                 if (Math.abs(exactStake - stakeValue) > 0.02) {
-                                    this.addLog(`âš ï¸ Calibrando Martingale: Payout ${realPayoutRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
+                                    this.addLog(`⚠️ Calibrando Martingale: Payout ${realPayoutRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
                                     
                                     // RE-REQUEST PROPOSAL with corrected stake
                                     // Track retries using a request ID based mechanism or simple session state flag (less robust but works for single thread)
@@ -3553,7 +3514,7 @@ export default {
                                         return; // ABORT BUY
                                     } else {
                                         this.retryingProposal = false; // Reset flag
-                                        this.addLog(`âš ï¸ Stake ajustado novamente. Aceitando $${stakeValue} para evitar loop.`, 'warning');
+                                        this.addLog(`⚠️ Stake ajustado novamente. Aceitando $${stakeValue} para evitar loop.`, 'warning');
                                     }
                                 }
                             }
@@ -3561,10 +3522,10 @@ export default {
 
                             this.pendingFastResult.payout = payout;
                             
-                            // ðŸ›‘ FINAL SAFETY CHECK BEFORE BUY
+                            // 🛑 FINAL SAFETY CHECK BEFORE BUY
                             // Re-verify if the stake we are about to pay is safe
                             // Define needed variables locally to avoid reference errors
-                            // âœ… FIX: Start with Global Config (this.form) to ensure stopLoss/profitTarget are present
+                            // ✅ FIX: Start with Global Config (this.form) to ensure stopLoss/profitTarget are present
                             const localConfig = {
                                 ...this.form,
                                 ...(this.sessionState.analysisType === 'RECUPERACAO' ? this.recoveryConfig : {}),
@@ -3583,7 +3544,7 @@ export default {
                             // If the stake we are about to pay ($7.53) is significantly higher than the safe limit ($5.46)
                             // Allow small tolerance (e.g. 0.05) for rounding
                             if (stakeValue > (preBuyLimit.stake + 0.05)) {
-                                this.addLog('ðŸ›‘ COMPRA BLOQUEADA (Safety Net)', [
+                                this.addLog('🛑 COMPRA BLOQUEADA (Safety Net)', [
                                     `Tentativa de compra acima do limite seguro`,
                                     `Stake Tentativa: $${stakeValue.toFixed(2)}`,
                                     `Limite Seguro: $${preBuyLimit.stake.toFixed(2)}`,
@@ -3599,7 +3560,7 @@ export default {
                                     this.ws.send(JSON.stringify(newParams));
                                 } else {
                                     // Deadlock Fix: If we already retried and it's STILL blocked, abort.
-                                    this.addLog('âš ï¸ Cancelando negociaÃ§Ã£o: Ajuste de seguranÃ§a falhou ou limite atingido.', 'warning');
+                                    this.addLog('⚠️ Cancelando negociação: Ajuste de segurança falhou ou limite atingido.', 'warning');
                                     this.isNegotiating = false; // Release lock
                                     this.retryingProposal = false;
                                 }
@@ -3607,7 +3568,7 @@ export default {
                             }
 
                             // 3. Execute the Buy
-                            this.addLog(`ðŸ’¸ Comprando contrato via ID: ${proposalId}`, 'info');
+                            this.addLog(`💸 Comprando contrato via ID: ${proposalId}`, 'info');
                             this.ws.send(JSON.stringify({
                                 buy: proposalId,
                                 price: stakeValue
@@ -3625,7 +3586,7 @@ export default {
                     if (msg.msg_type === 'buy') {
                         if (msg.error) {
                             console.error('[WS] Erro na compra:', msg.error);
-                            this.addLog(`âŒ ERRO NA COMPRA: ${msg.error.message}`, 'error');
+                            this.addLog(`❌ ERRO NA COMPRA: ${msg.error.message}`, 'error');
                             this.isNegotiating = false; // Reset lock on buy error
                             this.retryingProposal = false; // Ensure flag is cleared
                         } else {
@@ -3641,15 +3602,15 @@ export default {
                                 barrierInfo = ` (${this.pendingFastResult.barrier})`;
                             }
 
-                            const purchaseLog = `ðŸš€ COMPRA REALIZADA!<br>` +
-                                `â€¢ Contrato: ${this.sessionState.lastContractType || 'Desconhecido'}${barrierInfo}<br>` +
-                                `â€¢ Investimento: $${stake.toFixed(2)}<br>` +
-                                `â€¢ Payout Esperado: $${payout.toFixed(2)} (${profitPercent}%)<br>` +
-                                `â€¢ Lucro Esperado: $${profitExpected}`;
+                            const purchaseLog = `🚀 COMPRA REALIZADA!<br>` +
+                                `• Contrato: ${this.sessionState.lastContractType || 'Desconhecido'}${barrierInfo}<br>` +
+                                `• Investimento: $${stake.toFixed(2)}<br>` +
+                                `• Payout Esperado: $${payout.toFixed(2)} (${profitPercent}%)<br>` +
+                                `• Lucro Esperado: $${profitExpected}`;
                                 
                             this.addLog(purchaseLog, 'success');
                             
-                            // âš¡ REGISTER FOR LOCAL TICK RESULT
+                            // ⚡ REGISTER FOR LOCAL TICK RESULT
                             if (this.pendingFastResult) {
                                   const trackingId = msg.buy.contract_id || msg.buy.buy_id || 'UNKNOWN';
                                   this.localPendingContracts.set(trackingId, {
@@ -3662,7 +3623,7 @@ export default {
                                     analysisType: this.pendingFastResult.analysisType,
                                     market: this.pendingFastResult.market || this.form.market,
                                     active: true,
-                                    // âœ… Use the captured entry point from context
+                                    // ✅ Use the captured entry point from context
                                     entryTick: this.pendingFastResult.entryTick,
                                     entryDigit: this.pendingFastResult.entryDigit,
                                     payoutRate: this.sessionState.tempExplicitPayout || 0.95
@@ -3675,7 +3636,7 @@ export default {
                     }
 
                     if (msg.msg_type === 'proposal_open_contract') {
-                        console.log('[WS] AtualizaÃ§Ã£o de contrato:', msg.proposal_open_contract);
+                        console.log('[WS] Atualização de contrato:', msg.proposal_open_contract);
                         this.handleContractUpdate(msg.proposal_open_contract);
                     }
 
@@ -3687,12 +3648,12 @@ export default {
 
             this.ws.onerror = (e) => {
                 console.error('[WS] Erro:', e);
-                this.addLog('âŒ Erro na conexÃ£o com o mercado.', 'error');
+                this.addLog('❌ Erro na conexão com o mercado.', 'error');
             };
 
             this.ws.onclose = () => {
                 if (this.isMonitoring) {
-                    this.addLog('ðŸ“¡ ConexÃ£o encerrada. Tentando reconectar...', 'info');
+                    this.addLog('📡 Conexão encerrada. Tentando reconectar...', 'info');
                     setTimeout(() => {
                         if (this.isMonitoring) this.initTickConnection();
                     }, 3000);
@@ -3723,7 +3684,7 @@ export default {
 
         handleTickMessage(msg) {
             if (msg.error) {
-                this.addLog(`âŒ Erro Deriv: ${msg.error.message}`, 'error');
+                this.addLog(`❌ Erro Deriv: ${msg.error.message}`, 'error');
                 return;
             }
 
@@ -3737,7 +3698,7 @@ export default {
                     this.tickSubscriptionId = msg.subscription.id;
                 }
 
-                this.addLog(`ðŸ“ˆ Tick recebido: ${price} - Tick #${this.tickCount}`, 'info');
+                this.addLog(`📈 Tick recebido: ${price} - Tick #${this.tickCount}`, 'info');
 
                 // --- Virtual Trade Processing ---
                 if (this.pendingVirtualTrade) {
@@ -3779,7 +3740,7 @@ export default {
                 } else {
                     // Pause Expired
                     this.pauseUntil = 0;
-                    this.addLog('â–¶ï¸ Pausa de resfriamento finalizada. Retomando operaÃ§Ãµes.', 'success');
+                    this.addLog('▶️ Pausa de resfriamento finalizada. Retomando operações.', 'success');
                 }
             }
 
@@ -3796,12 +3757,12 @@ export default {
             
             results.forEach(res => {
                 if (!res.pass) {
-                     this.addLog(`â¸ï¸ ENTRADA BLOQUEADA: ${res.reason}`, 'warning');
+                     this.addLog(`⛔ ENTRADA BLOQUEADA: ${res.reason}`, 'warning');
                 }
             });
 
                 if (allPassed) {
-                    // âœ… DYNAMIC DIRECTION LOGIC (Simulation)
+                    // ✅ DYNAMIC DIRECTION LOGIC (Simulation)
                     const directions = results.map(r => r.direction).filter(d => d);
                     let dynamicContractType = null;
 
@@ -3813,10 +3774,10 @@ export default {
                             const configModel = isRec ? this.recoveryConfig : this.form;
                             const baseType = (configModel.tradeType || '').toUpperCase();
 
-                            // ðŸ” DEBUG LOG for recovery vs principal config
-                            console.log(`[Direction Check] Mode: ${isRec ? 'RECUPERAÃ‡ÃƒO' : 'PRINCIPAL'}, Signal: ${signal}, Configured Type: ${baseType}`);
+                            // 🔍 DEBUG LOG for recovery vs principal config
+                            console.log(`[Direction Check] Mode: ${isRec ? 'RECUPERAÇÃO' : 'PRINCIPAL'}, Signal: ${signal}, Configured Type: ${baseType}`);
 
-                            // âœ… CRITICAL: Check if user configured a specific contract type (not a group)
+                            // ✅ CRITICAL: Check if user configured a specific contract type (not a group)
                          // If so, only allow dynamic direction if it matches the configured type
                          const isSpecificContract = ['DIGITOVER', 'DIGITUNDER', 'DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'CALL', 'PUT'].includes(baseType);
                          
@@ -3829,10 +3790,10 @@ export default {
                                 const signalIsDown = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
                                 
                                 if ((configuredIsUp && !signalIsUp) || (configuredIsDown && !signalIsDown)) {
-                                    this.addLog('ðŸš« Sinal IncompatÃ­vel', [
+                                    this.addLog('🚫 Sinal Incompatível', [
                                         `Sinal ${signal} ignorado`,
                                         `Tipo configurado: ${baseType}`,
-                                        `Motivo: DireÃ§Ã£o do sinal nÃ£o corresponde ao tipo de contrato configurado`
+                                        `Motivo: Direção do sinal não corresponde ao tipo de contrato configurado`
                                     ], 'info');
                                     return;
                                 }
@@ -3855,7 +3816,7 @@ export default {
                                 }
                             }
 
-                            // âœ… Direction Mode Restriction (applies to dynamic groups)
+                            // ✅ Direction Mode Restriction (applies to dynamic groups)
                             const directionMode = configModel.directionMode || 'both';
 
                             if (directionMode !== 'both' && !isSpecificContract) {
@@ -3863,22 +3824,22 @@ export default {
                                 const isDownSignal = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
                                 
                                 if ((directionMode === 'up' && !isUpSignal) || (directionMode === 'down' && !isDownSignal)) {
-                                    this.addLog(`ðŸš« DireÃ§Ã£o Restrita (SimulaÃ§Ã£o): Sinal ${signal} ignorado.`, 'info');
+                                    this.addLog(`🚫 Direção Restrita (Simulação): Sinal ${signal} ignorado.`, 'info');
                                     return;
                                 }
                             }
 
-                            // âœ… Resolve Dynamic Payout
+                            // ✅ Resolve Dynamic Payout
                             const directionPayouts = configModel.directionPayouts || {};
                             const explicitPayout = directionPayouts[dynamicContractType] || null;
                             this.sessionState.tempExplicitPayout = explicitPayout;
 
-                            this.addLog('ðŸ§­ DireÃ§Ã£o DinÃ¢mica (SimulaÃ§Ã£o)', [
-                                `Sinal: ${signal} â†’ ${dynamicContractType}`,
-                                explicitPayout ? `Payout: ${(explicitPayout * 100).toFixed(0)}%` : 'Payout: PadrÃ£o'
+                            this.addLog('🧮 Direção Dinâmica (Simulação)', [
+                                `Sinal: ${signal} → ${dynamicContractType}`,
+                                explicitPayout ? `Payout: ${(explicitPayout * 100).toFixed(0)}%` : 'Payout: Padrão'
                             ], 'info');
                         } else {
-                            this.addLog('âš ï¸ Conflito de DireÃ§Ã£o (SimulaÃ§Ã£o)', `Filtros divergentes: ${uniqueDirections.join(', ')}`, 'warning');
+                            this.addLog('⚠️ Conflito de Direção (Simulação)', `Filtros divergentes: ${uniqueDirections.join(', ')}`, 'warning');
                             return;
                         }
                     }
@@ -3902,7 +3863,7 @@ export default {
                         if (vl && vl.enabled) {
                             if (vl.mode === 'cyclic') {
                                 vl.current = 0;
-                                this.addLog('ðŸ›¡ï¸ SeguranÃ§a: Ciclo Reiniciado (Modo CÃ­clico).', 'info');
+                                this.addLog('🛡️ Segurança: Ciclo Reiniciado (Modo Cíclico).', 'info');
                             } else if (vl.mode === 'attack' && !isRecovery) {
                                 vl.current = 0;
                             } else if (vl.mode === 'recovery' && isRecovery) {
@@ -3923,11 +3884,11 @@ export default {
 
             // 1. Profit Target
             if (target > 0 && lucroAtual >= target) {
-                this.addLog(`ðŸŽ¯ META ATINGIDA: +$${lucroAtual.toFixed(2)}`, 'success');
+                this.addLog(`🎯 META ATINGIDA: +$${lucroAtual.toFixed(2)}`, 'success');
                 this.stopMonitoring('Meta atingida');
                 this.stopResult = {
-                    title: 'Meta Batida! ðŸš€',
-                    message: 'ParabÃ©ns! VocÃª atingiu sua meta de lucro.',
+                    title: 'Meta Batida! 🚀',
+                    message: 'Parabéns! Você atingiu sua meta de lucro.',
                     profit: lucroAtual,
                     type: 'success'
                 };
@@ -3946,7 +3907,7 @@ export default {
                     if (!this.sessionState.stopBlindadoActive) {
                         this.sessionState.stopBlindadoActive = true;
                         this.sessionState.stopBlindadoFloor = protectedAmount;
-                        this.addLog(`ðŸ›¡ï¸ STOP BLINDADO ATIVADO! (Meta > 50%) - Protegendo: $${protectedAmount.toFixed(2)}`, 'info');
+                        this.addLog(`🛡️ STOP BLINDADO ATIVADO! (Meta > 50%) - Protegendo: $${protectedAmount.toFixed(2)}`, 'info');
                     } else {
                         // Update floor if peak increases (Trailing)
                         if (protectedAmount > this.sessionState.stopBlindadoFloor) {
@@ -3955,11 +3916,11 @@ export default {
                     }
 
                     if (lucroAtual <= this.sessionState.stopBlindadoFloor) {
-                        this.addLog(`ðŸ›¡ï¸ STOP BLINDADO ATINGIDO: Protegendo $${lucroAtual.toFixed(2)}`, 'warning');
+                        this.addLog(`🛡️ STOP BLINDADO ATINGIDO: Protegendo $${lucroAtual.toFixed(2)}`, 'warning');
                         this.stopMonitoring('Stop Blindado atingido');
                         this.stopResult = {
-                            title: 'Stop Blindado ðŸ›¡ï¸',
-                            message: `Parada de seguranÃ§a acionada. VocÃª garantiu $${lucroAtual.toFixed(2)} de lucro!`,
+                            title: 'Stop Blindado 🛡️',
+                            message: `Parada de segurança acionada. Você garantiu $${lucroAtual.toFixed(2)} de lucro!`,
                             profit: lucroAtual,
                             type: 'warning'
                         };
@@ -3971,11 +3932,11 @@ export default {
 
             // 3. Stop Loss
             if (stopLoss > 0 && lucroAtual <= -stopLoss) {
-                this.addLog(`ðŸ›‘ STOP LOSS ATINGIDO: -$${Math.abs(lucroAtual).toFixed(2)}`, 'error');
+                this.addLog(`🛑 STOP LOSS ATINGIDO: -$${Math.abs(lucroAtual).toFixed(2)}`, 'error');
                 this.stopMonitoring('Stop Loss atingido');
                 this.stopResult = {
-                    title: 'Stop Loss Atingido ðŸ›‘',
-                    message: 'Limite de perda alcanÃ§ado. Respeite seu gerenciamento.',
+                    title: 'Stop Loss Atingido 🛑',
+                    message: 'Limite de perda alcançado. Respeite seu gerenciamento.',
                     profit: lucroAtual,
                     type: 'error'
                 };
@@ -4004,7 +3965,7 @@ export default {
 
             // Log Protected Amount if Active
             if (blindadoState.active) {
-                 this.addLog(`ðŸ›¡ï¸ VALIDAÃ‡ÃƒO DE ENTRADA: Protegendo $${blindadoState.floor.toFixed(2)} do lucro acumulado.`, 'info');
+                 this.addLog(`🛡️ VALIDAÇÃO DE ENTRADA: Protegendo $${blindadoState.floor.toFixed(2)} do lucro acumulado.`, 'info');
             }
 
             const survivalResult = RiskManager.applySurvivalMode(stake, currentProfit, globalConfig, explicitPayout || payoutRate, blindadoState);
@@ -4012,23 +3973,23 @@ export default {
             const survivalReason = survivalResult.reason;
 
             if (survivalStake < stake) {
-                 this.addLog(`ðŸ›¡ï¸ Survival Mode: Stake ajustada para proteger limites. Motivo: ${survivalReason || 'Ajuste de Risco'} (${stake.toFixed(2)} -> ${survivalStake.toFixed(2)})`, 'warning');
+                 this.addLog(`🛡️ Survival Mode: Stake ajustada para proteger limites. Motivo: ${survivalReason || 'Ajuste de Risco'} (${stake.toFixed(2)} -> ${survivalStake.toFixed(2)})`, 'warning');
                  stake = survivalStake;
             }
             
             // CRITICAL: Stop if stake is too low (Survival Mode Triggered Hard)
             if (stake < 0.35) {
-                this.addLog(`âš ï¸ VISÃƒO DE SOBREVIVÃŠNCIA: Ajuste de stake ($${stake.toFixed(2)}) menor que o mÃ­nimo ($0.35). Parando para proteger capital.`, 'warning');
+                this.addLog(`⚠️ VISÃO DE SOBREVIVÊNCIA: Ajuste de stake ($${stake.toFixed(2)}) menor que o mínimo ($0.35). Parando para proteger capital.`, 'warning');
                 
-                let stopReason = 'Stop de SeguranÃ§a (Stake MÃ­nimo)';
+                let stopReason = 'Stop de Segurança (Stake Mínimo)';
                 if (blindadoState.active && (currentProfit - stake < blindadoState.floor)) {
                     stopReason = 'Stop Blindado (Margem Insuficiente)';
                 }
                 
                 this.stopMonitoring(stopReason);
                 this.stopResult = {
-                    title: 'ProteÃ§Ã£o Ativada ðŸ›¡ï¸',
-                    message: `O robÃ´ parou porque a prÃ³xima entrada arriscaria seu lucro protegido ou limite de perda.`,
+                    title: 'Proteção Ativada 🛡️',
+                    message: `O robô parou porque a próxima entrada arriscaria seu lucro protegido ou limite de perda.`,
                     profit: currentProfit,
                     type: 'warning'
                 };
@@ -4044,16 +4005,16 @@ export default {
                 this.sessionState.lastResultWin) {
                 
                 if (stake > config.initialStake) {
-                     this.addLog(`ðŸš€ SOROS ATIVADO: Stake base + Ãºltimo lucro = $${stake.toFixed(2)}`, 'info');
+                     this.addLog(`🚀 SOROS ATIVADO: Stake base + último lucro = $${stake.toFixed(2)}`, 'info');
                 }
             }
 
             console.log('[StrategyCreator] Calculated stake:', stake);
             return stake;
         },
-        stopMonitoring(reason = 'Finalizado pelo usuÃ¡rio') {
+        stopMonitoring(reason = 'Finalizado pelo usuário') {
             // Handle PointerEvents if called from @click
-            const stopReason = (reason instanceof Event) ? 'Finalizado pelo usuÃ¡rio' : reason;
+            const stopReason = (reason instanceof Event) ? 'Finalizado pelo usuário' : reason;
             
             this.isMonitoring = false;
             this.sessionState.isStopped = true;
@@ -4061,7 +4022,7 @@ export default {
             this.monitoringStats.statusDesc = stopReason;
             this.stopTickConnection();
             
-            // âœ… FULL SESSION RESET (User Request: "100% from zero")
+            // ✅ FULL SESSION RESET (User Request: "100% from zero")
             // 1. Reset RiskManager State
             RiskManager.reset();
             
@@ -4098,12 +4059,12 @@ export default {
                 statusDesc: stopReason
             };
 
-            this.$root.$toast.info('SessÃ£o finalizada e registros limpos.');
+            this.$root.$toast.info('Sessão finalizada e registros limpos.');
         },
         executeRealTrade(overrideContractType = null, explicitPayout = null) {
             try {
                 if (!this.isAuthorized) {
-                    this.addLog('âš ï¸ Entrada negada: NÃ£o autorizado (Token invÃ¡lido ou ausente).', 'warning');
+                    this.addLog('⚠️ Entrada negada: Não autorizado (Token inválido ou ausente).', 'warning');
                     return;
                 }
 
@@ -4122,15 +4083,15 @@ export default {
                 // So we override 'config' to recoveryConfig if isFinancialRecovery is true.
                 const config = (isFinancialRecovery || isRecoveryStrategy) ? this.recoveryConfig : this.form;
                 
-                // ðŸ” DEBUG: Log which config is being used
-                console.log(`[executeRealTrade] Mode: ${isFinancialRecovery ? 'RECUPERAÃ‡ÃƒO' : 'PRINCIPAL'}, ` +
+                // 🔎 DEBUG: Log which config is being used
+                console.log(`[executeRealTrade] Mode: ${isFinancialRecovery ? 'RECUPERAÇÃO' : 'PRINCIPAL'}, ` +
                     `Using Config: ${isFinancialRecovery || isRecoveryStrategy ? 'recoveryConfig' : 'form'}, ` +
                     `TradeType: ${config.tradeType}, ` +
                     `Override: ${overrideContractType || 'NONE'}`);
                 
                 // Check for Contract Switch
                 if (this.sessionState.lastContractType && this.sessionState.lastContractType !== (overrideContractType || config.tradeType)) {
-                    this.addLog(`ðŸ“Š CONTRATO ALTERADO: ${this.sessionState.lastContractType} âž” ${overrideContractType || config.tradeType}`, 'info');
+                    this.addLog(`📊 CONTRATO ALTERADO: ${this.sessionState.lastContractType} ➜ ${overrideContractType || config.tradeType}`, 'info');
                 }
                 this.sessionState.lastContractType = overrideContractType || config.tradeType;
                 
@@ -4139,24 +4100,24 @@ export default {
                 const stake = this.calculateNextStake(explicitPayout);
 
                 if (!stake || stake <= 0) {
-                    console.warn('[StrategyCreator] Stake invÃ¡lido (0 ou Cancelado). Abortando entrada.');
+                    console.warn('[StrategyCreator] Stake inválido (0 ou Cancelado). Abortando entrada.');
                     return;
                 }
 
                 const durationDisplay = `${this.form.duration}${this.form.durationUnit === 't' ? 't' : this.form.durationUnit}`;
-                this.addLog(`ðŸ“¡ Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÃ‡ÃƒO/MARTINGALE' : 'PRINCIPAL'}): ${overrideContractType || config.tradeType} $${stake} | DuraÃ§Ã£o: ${durationDisplay}`, 'info');
+                this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${overrideContractType || config.tradeType} $${stake} | Duração: ${durationDisplay}`, 'info');
                 
-                // âœ… DETAILED CONSERVADOR LOGS
+                // ✅ DETAILED CONSERVADOR LOGS
                 if (isFinancialRecovery && this.recoveryConfig.riskProfile === 'conservador') {
                     const totalPlan = 4;
                     const remaining = this.sessionState.recoveryInstallmentsRemaining || 0;
                     const currentParcel = remaining > 0 ? (totalPlan - remaining + 1) : 1;
                     const debt = Math.max(0, this.sessionState.totalLossAccumulated - this.sessionState.recoveredAmount);
                     
-                    const recoveryMsg = `ðŸ›¡ï¸ <b>RECUPERAÃ‡ÃƒO CONSERVADORA</b><br>` +
-                        `â€¢ Parcela: ${currentParcel}/${totalPlan}<br>` +
-                        `â€¢ DÃ­vida Restante: $${debt.toFixed(2)}<br>` +
-                        `â€¢ Re-parcelamentos: ${this.sessionState.recoverySplitsUsed || 0}/3`;
+                    const recoveryMsg = `🛡️ <b>RECUPERAÇÃO CONSERVADORA</b><br>` +
+                        `• Parcela: ${currentParcel}/${totalPlan}<br>` +
+                        `• Dívida Restante: $${debt.toFixed(2)}<br>` +
+                        `• Re-parcelamentos: ${this.sessionState.recoverySplitsUsed || 0}/3`;
                     
                     this.addLog(recoveryMsg, 'info');
                 }
@@ -4194,13 +4155,13 @@ export default {
                     contractId: null,
                     barrier: parseInt(proposalParams.barrier || config.prediction || 8), 
                     contractType: overrideContractType || config.tradeType,
-                    active: false, // âŒ DISABLED FAST RESULT
+                    active: false, // ❌ DISABLED FAST RESULT
                     stake: stake,
                     analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
                     payout: null,
                     duration: this.form.duration,
                     durationUnit: this.form.durationUnit,
-                    // âœ… Capture current tick as entry point
+                    // ✅ Capture current tick as entry point
                     entryTick: this.lastTickPrice,
                     entryDigit: parseInt(this.lastTickPrice.toString().slice(-1))
                 };
@@ -4210,13 +4171,13 @@ export default {
             } catch (error) {
                 console.error('[StrategyCreator] Erro em executeRealTrade:', error);
                 this.isNegotiating = false;
-                this.addLog('âŒ Erro interno ao processar operaÃ§Ã£o.', 'error');
+                this.addLog('❌ Erro interno ao processar operação.', 'error');
             }
         },
         executeVirtualTrade(overrideContractType = null) {
             // Check context
             const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
-            // âœ… FIX: Correctly merge configs
+            // ✅ FIX: Correctly merge configs
             const config = {
                 ...this.form,
                 ...(isRecoveryStrategy ? this.recoveryConfig : {})
@@ -4226,9 +4187,9 @@ export default {
             const current = vl.current + 1; // Current attempt
             const target = vl.target;
 
-            this.addLog('Filtro de SeguranÃ§a (Loss Virtual)', [
-                `Status: Simulando OperaÃ§Ã£o ${current}/${target}`,
-                `AÃ§Ã£o: Entrada simulada (sem valor financeiro)`
+            this.addLog('Filtro de Segurança (Loss Virtual)', [
+                `Status: Simulando Operação ${current}/${target}`,
+                `Ação: Entrada simulada (sem valor financeiro)`
             ], 'info');
 
             // Set State
@@ -4267,16 +4228,16 @@ export default {
             if (win) {
                 // Win Virtual = Reset sequence
                 vl.current = 0;
-                this.addLog(`ðŸ‘» SIMULAÃ‡ÃƒO WIN (DÃ­gito ${lastDigit}) âž” SequÃªncia quebrada. Reiniciando contagem.`, 'success');
+                this.addLog(`👻 SIMULAÇÃO WIN (Dígito ${lastDigit}) ➜ Sequência quebrada. Reiniciando contagem.`, 'success');
             } else {
                 // Loss Virtual = Increment sequence
                 vl.current++;
                 const faltam = vl.target - vl.current;
                 
                 if (faltam > 0) {
-                    this.addLog(`ðŸ‘» SIMULAÃ‡ÃƒO LOSS (DÃ­gito ${lastDigit}) âž” Confirmado Loss Virtual #${vl.current}. Faltam ${faltam}.`, 'warning');
+                    this.addLog(`👻 SIMULAÇÃO LOSS (Dígito ${lastDigit}) ➜ Confirmado Loss Virtual #${vl.current}. Faltam ${faltam}.`, 'warning');
                 } else {
-                    this.addLog(`ðŸ‘» SIMULAÃ‡ÃƒO LOSS (DÃ­gito ${lastDigit}) âž” Alvo Atingido (${vl.current}/${vl.target})! PRÃ“XIMA ENTRADA SERÃ REAL.`, 'warning');
+                    this.addLog(`👻 SIMULAÇÃO LOSS (Dígito ${lastDigit}) ➜ Alvo Atingido (${vl.current}/${vl.target})! PRÓXIMA ENTRADA SERÁ REAL.`, 'warning');
                 }
             }
         },
@@ -4323,10 +4284,10 @@ export default {
                 if (contract.entry_tick_display_value) trade.entryPrice = contract.entry_tick_display_value;
                 if (contract.exit_tick_display_value) {
                     trade.exitPrice = contract.exit_tick_display_value;
-                    trade.lastDigit = contract.exit_tick_display_value.toString().slice(-1);
+                    trade.lastDigit = trade.exitPrice.toString().slice(-1);
                 }
                 
-                // âœ… SMART FAST RESULT: Early Settlement Logic
+                // ✅ SMART FAST RESULT: Early Settlement Logic
                 const currentTickCount = contract.tick_count || 0;
                 const targetDuration = trade.duration || (this.pendingFastResult ? this.pendingFastResult.duration : this.form.duration);
                 
@@ -4338,18 +4299,18 @@ export default {
                     trade.earlySettled = true;
                     trade.result = win ? 'WON' : 'LOST';
                     
-                    // âœ… FIX: For early settlement, if it's a loss, the profit reported is just the spread (-0.04).
+                    // ✅ FIX: For early settlement, if it's a loss, the profit reported is just the spread (-0.04).
                     // We MUST use the full stake as loss for correct recovery/balance tracking.
                     trade.pnl = win ? parseFloat(contract.profit || 0) : -trade.stake;
                     if (!trade.exitPrice) trade.exitPrice = contract.current_spot_display_value || contract.current_spot;
                     if (trade.exitPrice) trade.lastDigit = trade.exitPrice.toString().slice(-1);
 
                     // Add Log
-                    const logPrefix = 'âš¡ <b>RESULTADO RÃPIDO</b>';
+                    const logPrefix = '⚡ <b>RESULTADO RÁPIDO</b>';
                     if (win) {
-                        this.addLog(`${logPrefix}: ðŸ’° WIN! +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
+                        this.addLog(`${logPrefix}: 💸 WIN! +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
                     } else {
-                        this.addLog(`${logPrefix}: ðŸ”´ LOSS! -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
+                        this.addLog(`${logPrefix}: 🔴 LOSS! -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
                     }
 
                     // Process Profit for sessions/stats
@@ -4370,13 +4331,13 @@ export default {
                         this.recoveryConfig
                     );
 
-                    // âœ… UNLOCK ANALYSIS EARLY
+                    // ✅ UNLOCK ANALYSIS EARLY
                     this.activeContracts.delete(id);
                     this.checkLimits();
                     
                     console.log(`[StrategyCreator] Smart Fast Result triggering for ${id}. Analysis released.`);
                     
-                    // âœ… IMMEDIATE NEXT CYCLE
+                    // ✅ IMMEDIATE NEXT CYCLE
                     this.$nextTick(() => {
                         this.runAnalysis();
                     });
@@ -4384,7 +4345,7 @@ export default {
             }
 
             if (contract.is_sold) {
-                // âœ… Protection: If already early settled, just update final pnl and exit.
+                // ✅ Protection: If already early settled, just update final pnl and exit.
                 if (trade.earlySettled) {
                     trade.result = contract.status.toUpperCase();
                     trade.pnl = parseFloat(contract.profit || 0);
@@ -4423,19 +4384,19 @@ export default {
                 trade.pnl = parseFloat(contract.profit || 0);
 
                 if (trade.result === 'WON') {
-                    this.addLog(`ðŸ’° WIN! Resultado: +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
+                    this.addLog(`💸 WIN! Resultado: +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
                 } else {
-                    this.addLog(`ðŸ”´ LOSS! PrejuÃ­zo: -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
+                    this.addLog(`🔴 LOSS! Prejuízo: -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
                 }
 
-                // Refinar resultado se jÃ¡ processado pelo resultado rÃ¡pido
+                // Refinar resultado se já processado pelo resultado rápido
                 if (trade.fastResultApplied) {
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType, this.recoveryConfig);
                 } else {
                     const oldAnalysis = this.sessionState.analysisType;
                     const oldMode = this.sessionState.negotiationMode;
 
-                    // âœ… CORRECTED LOGIC: Process ALL results (WIN and LOSS) if not fast-processed
+                    // ✅ CORRECTED LOGIC: Process ALL results (WIN and LOSS) if not fast-processed
                     trade.fastResultApplied = true;
                     if (trade.result === 'WON') this.monitoringStats.wins++;
                     else this.monitoringStats.losses++;
@@ -4477,11 +4438,11 @@ export default {
                     // Special Recovery Logs
                     if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
                          const lossSum = this.sessionState.totalLossAccumulated || this.sessionState.lastStakePrincipal;
-                         this.addLog(`📊 Loss acumulado ($${lossSum.toFixed(2)}). Ativando RECUPERACAO.`, 'warning');
+                         this.addLog(`📊 Loss acumulado ($${lossSum.toFixed(2)}). Ativando RECUPERAÇÃO.`, 'warning');
                     } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
-                         this.addLog('✅ RECUPERACAO CONCLUIDA!', 'success');
+                         this.addLog('✅ RECUPERAÇÃO CONCLUÍDA!', 'success');
                     } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST') {
-                         this.addLog(`📊 Loss na Recuperacao. Ajustando Martingale...`, 'warning');
+                         this.addLog(`📊 Loss na Recuperação. Ajustando Martingale...`, 'warning');
                     }
                     // Refine result from Fast Result logic with official data
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
@@ -4519,12 +4480,12 @@ export default {
         },
         simulateLog() {
             const logs = [
-                'Analisando tendÃªncia...',
+                'Analisando tendência...',
                 'EMA 20 cruzando para cima.',
-                'RSI em nÃ­vel de neutralidade.',
-                'Aguardando confirmaÃ§Ã£o de RSI...',
+                'RSI em nível de neutralidade.',
+                'Aguardando confirmação de RSI...',
                 'Filtro de volatilidade OK.',
-                'PadrÃ£o Candlestick detectado.'
+                'Padrão Candlestick detectado.'
             ];
             const msg = logs[Math.floor(Math.random() * logs.length)];
             this.addLog(msg, 'info');
@@ -4547,7 +4508,7 @@ export default {
                     this.form.riskProfile = 'conservador';
                     console.log('[StrategyCreator] Martingale Disabled -> Enforcing Risk Profile: Conservador');
                 } else {
-                    // âœ… Re-enable logic: If profile was Conservador (likely forced), switch to Moderado or keep current if valid
+                    // ✅ Re-enable logic: If profile was Conservador (likely forced), switch to Moderado or keep current if valid
                     // We default to 'Moderado' as a safe "Active" state if it was stuck on Conservador
                     if (this.form.riskProfile === 'conservador') {
                         this.form.riskProfile = 'moderado';
