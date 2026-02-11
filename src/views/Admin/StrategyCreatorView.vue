@@ -950,10 +950,11 @@
                                                     ? 'bg-zenix-green/10 border-zenix-green' 
                                                     : 'bg-[#111] border-[#333] hover:border-gray-500'">
                                             
-                                            <div class="w-3 h-3 rounded-full border flex items-center justify-center flex-shrink-0"
+                                            <div class="w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors"
                                                  :class="(modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol 
-                                                    ? 'border-zenix-green bg-zenix-green' 
+                                                    ? 'border-zenix-green bg-zenix-green text-black' 
                                                     : 'border-gray-600 group-hover:border-gray-400'">
+                                                <i v-if="(modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol" class="fas fa-check text-[8px]"></i>
                                             </div>
                                             
                                             <span class="text-xs font-medium truncate" 
@@ -1007,7 +1008,7 @@
                                         
                                         <button v-for="item in category.items" :key="item.value"
                                                 type="button"
-                                                @click.stop="selectTradeTypeItem(item)"
+                                                @click.stop.prevent="selectTradeTypeItem(item)"
                                                 class="px-4 py-2 rounded-lg text-xs font-bold border transition-all"
                                                 :class="isTradeTypeItemSelected(item) 
                                                     ? 'bg-zenix-green text-black border-zenix-green shadow-lg shadow-green-900/20' 
@@ -2428,17 +2429,16 @@ export default {
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // Se clicar no mesmo, apenas fecha
+            // Se for o mesmo mercado, apenas agendamos o fechamento
             if (config.market === symbol) {
-                this.closeMarketModal();
+                setTimeout(() => this.closeMarketModal(), 100);
                 return;
             }
 
-            // --- ATRIBUIÇÃO DIRETA (A Mágica do Vue 3) ---
-            // Apenas defina o valor. O Proxy do Vue 3 detecta e atualiza a tela.
+            // 1. ATUALIZAÇÃO DE DADOS (Imediata)
             config.market = symbol;
 
-            // Limpa dependentes para evitar dados órfãos
+            // Limpeza de segurança
             if (context === 'main') {
                 this.form.selectedTradeTypeGroups = [];
                 this.form.tradeType = '';
@@ -2449,17 +2449,20 @@ export default {
                 this.recoveryContracts = [];
             }
 
-            // Feedback
-            const marketName = this.markets.find(m => (m.symbol === symbol || m.value === symbol))?.label || symbol;
-            this.$root.$toast.success(`Mercado: ${marketName}`);
+            // 2. ATUALIZAÇÃO VISUAL (Força o DOM a processar a cor verde)
+            this.$nextTick(() => {
+                const marketName = this.markets.find(m => (m.symbol === symbol || m.value === symbol))?.label || symbol;
+                this.$root.$toast.success(`Mercado: ${marketName}`);
 
-            // Fecha e busca dados
-            this.closeMarketModal();
-            
-            // Pequeno delay para garantir que a UI feche suavemente antes do fetch pesar
-            setTimeout(() => {
-                this.onMarketChange(context, false);
-            }, 10);
+                // 3. FECHAMENTO SEGURO (O Segredo para não dar erro _vei)
+                // Esperamos 150ms para o Vue terminar de processar o clique antes de destruir o modal
+                setTimeout(() => {
+                    this.closeMarketModal();
+                    
+                    // Busca os dados depois que a animação terminar
+                    this.onMarketChange(context, false);
+                }, 150);
+            });
         },
         async onMarketChange(context = 'main', preserveSelection = false) {
             const config = context === 'main' ? this.form : this.recoveryConfig;
@@ -2526,6 +2529,9 @@ export default {
             }
         },
         toggleMarketCategory(category) {
+            // Verifica se o array existe (segurança)
+            if (!this.expandedCategories) this.expandedCategories = [];
+            
             const index = this.expandedCategories.indexOf(category);
             if (index > -1) {
                 this.expandedCategories.splice(index, 1);
@@ -2534,6 +2540,8 @@ export default {
             }
         },
         toggleTradeTypeCategory(id) {
+            if (!this.expandedTradeTypeCategories) this.expandedTradeTypeCategories = [];
+
             const index = this.expandedTradeTypeCategories.indexOf(id);
             if (index > -1) {
                 this.expandedTradeTypeCategories.splice(index, 1);
@@ -2558,23 +2566,19 @@ export default {
             this.modalContext = 'main';
         },
         selectTradeTypeItem(item) {
-            console.log('[UI] Tipo selecionado:', item.value);
-            
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // Substitui o array inteiro por um novo contendo apenas este item.
-            // Isso garante que visualmente só 1 fique selecionado e remove bugs de "lixo" anterior.
+            // Array novo com apenas 1 item
             config.selectedTradeTypeGroups = [item.value];
 
-            // Define a string de contrato para a API
+            // Define string para API
             if (item.directions && item.directions.length > 0) {
                 config.tradeType = item.directions[0].value;
             } else {
                 config.tradeType = item.value;
             }
             
-            // Não precisa de $forceUpdate. A troca do array dispara a reatividade.
             this.$root.$toast.success(`Selecionado: ${item.label}`);
         },
         isTradeTypeItemSelected(item) {
