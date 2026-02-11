@@ -207,9 +207,9 @@
                                                             v-for="item in category.items" 
                                                             :key="item.value"
                                                             type="button"
-                                                            @click.stop="selectTradeTypeItem(item, form)"
+                                                            @click.stop="selectTradeTypeItem(item)"
                                                             class="px-4 py-2 rounded-full text-xs font-bold border transition-all"
-                                                            :class="isTradeTypeItemSelected(item, form) ? 'bg-zenix-green/10 border-zenix-green text-zenix-green' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
+                                                            :class="isTradeTypeItemSelected(item) ? 'bg-zenix-green/10 border-zenix-green text-zenix-green' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
                                                         >
                                                         {{ item.label }}
                                                     </button>
@@ -519,7 +519,7 @@
                                     </div>
 
                                     <!-- Direção e Payouts (Recovery) -->
-                                    <div v-if="recoveryConfig.selectedTradeTypeGroup" class="md:col-span-2">
+                                    <div v-if="recoveryConfig.selectedTradeTypeGroups && recoveryConfig.selectedTradeTypeGroups.length > 0" class="md:col-span-2">
                                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[#181818] p-5 rounded-xl border border-[#333] mb-4">
                                             <div class="md:col-span-2">
                                                 <label class="block text-white font-bold mb-2 text-[10px] uppercase tracking-[0.2em] opacity-70">Direção Permitida (REC)</label>
@@ -1031,7 +1031,7 @@
                                         v-for="item in category.items"
                                         :key="item.value"
                                         @click.stop="selectTradeTypeItem(item)"
-                                        :class="['category-item-btn', { 'active': isTradeTypeItemSelected(item, modalContext === 'main' ? form : recoveryConfig) }]"
+                                        :class="['category-item-btn', { 'active': isTradeTypeItemSelected(item) }]"
                                     >
                                         <div class="flex items-center gap-2">
                                             <div class="w-5 h-5 flex items-center justify-center text-zenix-green">
@@ -1780,7 +1780,7 @@ export default {
                 directionMode: 'both', // 'both', 'up', 'down'
                 directionPayouts: {}, // { [contractType]: payout }
                 attackFilters: [],
-                selectedTradeTypeGroups: [] // Support multi-selection
+                selectedTradeTypeGroups: [] // Support single-selection via direct assignment
             },
 
             // Strategy Execution State
@@ -2586,36 +2586,38 @@ export default {
             this.showTradeTypeModal = false;
             this.modalContext = 'main';
         },
-        selectTradeTypeItem(item, customConfig = null) {
-            const config = customConfig || this.currentConfig;
+        selectTradeTypeItem(item) {
+            // 1. Identification of context (Main or Recovery)
+            const context = this.modalContext || 'main';
+            const config = context === 'main' ? this.form : this.recoveryConfig;
+
+            // 2. DIRECT ASSIGNMENT (Single Selection)
+            // Force the array to contain ONLY this item
+            config.selectedTradeTypeGroups = [item.value];
+
+            // 3. Update tradeType for API/backwards compatibility
+            if (item.directions && item.directions.length > 0) {
+                config.tradeType = item.directions[0].value;
+            } else {
+                config.tradeType = item.value;
+            }
+
+            // 4. Feedback
+            this.$root.$toast.success(`Tipo selecionado: ${item.label}`);
             
-            if (!config.selectedTradeTypeGroups) {
-                config.selectedTradeTypeGroups = [];
-            }
-
-            const index = config.selectedTradeTypeGroups.indexOf(item.value);
-            if (index > -1) {
-                // Remove if already selected - splice is reactive in Vue 3
-                config.selectedTradeTypeGroups.splice(index, 1);
-            } else {
-                // Add if not selected - push is reactive in Vue 3
-                config.selectedTradeTypeGroups.push(item.value);
-            }
-
-            // For compatibility with single tradeType logic elsewhere,
-            // we set form.tradeType to the first selected item's direction if needed.
-            // But with multi-selection, the execution logic should probably use selectedTradeTypeGroups array.
-            if (config.selectedTradeTypeGroups.length > 0) {
-                // Keep .tradeType for backwards compatibility or as a primary selection
-                const newTradeType = item.directions && item.directions.length > 0 ? item.directions[0].value : item.value;
-                config.tradeType = newTradeType;
-            } else {
-                config.tradeType = '';
-            }
+            // Optional: Close modal automatically for smoother UX
+            // this.closeTradeTypeModal(); 
         },
-        isTradeTypeItemSelected(item, customConfig = null) {
-            const config = customConfig || this.currentConfig;
-            return config.selectedTradeTypeGroups && config.selectedTradeTypeGroups.includes(item.value);
+        isTradeTypeItemSelected(item) {
+            // Verify context
+            const context = this.modalContext || 'main';
+            const config = context === 'main' ? this.form : this.recoveryConfig;
+
+            // Null check
+            if (!config.selectedTradeTypeGroups) return false;
+
+            // Check if value is in array
+            return config.selectedTradeTypeGroups.includes(item.value);
         },
         isCategoryFullySelected(category, customConfig = null) {
             if (!category.items || category.items.length === 0) return false;
