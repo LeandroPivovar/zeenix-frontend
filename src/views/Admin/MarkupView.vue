@@ -272,13 +272,6 @@ export default {
             isLoading: false,
             error: null,
             todayCommission: 0, 
-            periodData: {
-                today: 0,
-                monthly: 0,
-                lastMonth: 0,
-                annual: 0,
-                thirtyDays: 0,
-            },
             loadingProgress: 0,
             totalToLoad: 0,
             dailyMarkupData: [],
@@ -319,7 +312,6 @@ export default {
             // Limpar dados anteriores mas manter estrutura
             this.allUsers = [];
             this.displayedClients = [];
-            this.periodData = { today: 0, monthly: 0, lastMonth: 0, annual: 0 };
             this.loadingProgress = 0;
             this.totalToLoad = 0;
             
@@ -362,6 +354,9 @@ export default {
 
                 // 2. Buscar dados de HOJE separadamente para o card "Comissão Hoje"
                 this.fetchTodayData(token, apiUrl);
+
+                // 3. Buscar dados do gráfico de projeção
+                this.fetchChartData(token, apiUrl);
 
                 this.isLoading = false;
                 this.loadingProgress = 100;
@@ -408,71 +403,23 @@ export default {
             console.log('[MarkupView] handleStreamEvent (deprecated):', event);
         },
         
-        async fetchPeriodData(token, apiUrl) {
+        async fetchChartData(token, apiUrl) {
             try {
-                let queryParams = '';
                 const today = new Date();
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                const startOfToday = `${year}-${month}-${day}`;
-                const endOfToday = startOfToday;
-                
-                // Primeiro dia do mês atual
-                const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-                
-                // Primeiro dia do mês passado
-                const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
-                // Último dia do mês passado
-                const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
-                
-                // 30 dias atrás
+                const endOfToday = today.toISOString().split('T')[0];
                 const startOfThirtyDays = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
                 
-                // Primeiro dia do ano atual
-                const startOfYear = `${today.getFullYear()}-01-01`;
-                
-                // Fazer chamadas paralelas para todos os períodos
-                const [todayData, monthlyData, lastMonthData, thirtyDaysData, annualData, dailyStats] = await Promise.all([
-                    fetch(`${apiUrl}/trades/markup?startDate=${startOfToday}&endDate=${endOfToday}${queryParams}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }).then(r => r.json()),
-                    fetch(`${apiUrl}/trades/markup?startDate=${startOfMonth}&endDate=${endOfToday}${queryParams}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }).then(r => r.json()),
-                    fetch(`${apiUrl}/trades/markup?startDate=${startOfLastMonth}&endDate=${endOfLastMonth}${queryParams}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }).then(r => r.json()),
-                    fetch(`${apiUrl}/trades/markup?startDate=${startOfThirtyDays}&endDate=${endOfToday}${queryParams}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }).then(r => r.json()),
-                    fetch(`${apiUrl}/trades/markup?startDate=${startOfYear}&endDate=${endOfToday}${queryParams}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }).then(r => r.json()),
-                    fetch(`${apiUrl}/trades/markup/daily?startDate=${startOfThirtyDays}&endDate=${endOfToday}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }).then(r => r.json()),
-                ]);
-                
-                this.periodData = {
-                    today: todayData.summary?.totalCommission || 0,
-                    monthly: monthlyData.summary?.totalCommission || 0,
-                    lastMonth: lastMonthData.summary?.totalCommission || 0,
-                    thirtyDays: thirtyDaysData.summary?.totalCommission || 0,
-                    annual: annualData.summary?.totalCommission || 0,
-                };
+                const response = await fetch(`${apiUrl}/trades/markup/daily?startDate=${startOfThirtyDays}&endDate=${endOfToday}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-                this.dailyMarkupData = dailyStats || [];
-                
+                if (response.ok) {
+                    const dailyStats = await response.json();
+                    this.dailyMarkupData = dailyStats || [];
+                }
             } catch (error) {
-                console.error('Erro ao buscar dados por período:', error);
-                // Em caso de erro, manter valores em 0
-                this.periodData = {
-                    today: 0,
-                    monthly: 0,
-                    lastMonth: 0,
-                    annual: 0,
-                };
+                console.error('Erro ao buscar dados do gráfico:', error);
+                this.dailyMarkupData = [];
             }
         },
         
