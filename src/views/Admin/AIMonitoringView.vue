@@ -2035,7 +2035,7 @@ export default {
         },
         handleContractUpdate(contract) {
             const id = contract.contract_id;
-            let trade = this.monitoringOperations.find(o => o.id === id);
+            let trade = this.activeContracts.get(id) || this.monitoringOperations.find(o => o.id === id);
             
             if (!trade) {
                 trade = {
@@ -2057,7 +2057,7 @@ export default {
                     duration: contract.duration || (this.pendingFastResult ? this.pendingFastResult.duration : 1), // ✅ Store duration
                     estimatedPnl: 0 // ✅ Reset/Initialize
                 };
-                this.monitoringOperations.unshift(trade);
+                // this.monitoringOperations.unshift(trade); // ✅ REMOVED: Only show in history after result
                 this.activeContracts.set(id, trade);
                 
                 // Release lock if not handled by Fast Result
@@ -2108,6 +2108,9 @@ export default {
                         riskProfile: this.currentConfig.riskProfile || this.currentConfig.modoMartingale || 'moderado'
                     });
 
+                    // ✅ SHOW IN HISTORY NOW
+                    if (!this.monitoringOperations.includes(trade)) this.monitoringOperations.unshift(trade);
+
                     this.updateChartMarkers(trade, 'tick');
                     this.updateChartMarkers(trade, 'profit');
 
@@ -2148,11 +2151,16 @@ export default {
                 if (trade.earlySettled) {
                     trade.result = contract.status.toUpperCase();
                     trade.pnl = parseFloat(contract.profit || 0);
+                    // Ensure it's in history if somehow missed (safety)
+                    if (!this.monitoringOperations.includes(trade)) this.monitoringOperations.unshift(trade);
                     this.activeContracts.delete(id); // Ensure removed
                     return;
                 }
 
                 trade.result = contract.status.toUpperCase(); // 'WON' or 'LOST'
+                // ✅ SHOW IN HISTORY NOW
+                if (!this.monitoringOperations.includes(trade)) this.monitoringOperations.unshift(trade);
+                
                 if (trade.fastResultApplied) {
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
                 } else {
