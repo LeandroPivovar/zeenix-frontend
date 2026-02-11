@@ -1,4 +1,4 @@
-﻿<template>
+<template>
 	<div class="dashboard-layout">
 		<div
 			v-if="isSidebarOpen && isMobile"

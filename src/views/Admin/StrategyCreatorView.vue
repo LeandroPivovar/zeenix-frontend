@@ -1,4 +1,4 @@
-﻿<template>
+<template>
     <div class="dashboard-layout">
         <div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
         
@@ -399,18 +399,18 @@
                                              v-for="mode in [{id:'VELOZ', label:'Veloz'}, {id:'NORMAL', label:'Normal'}, {id:'PRECISO', label:'Preciso'}]"
                                              :key="mode.id"
                                              type="button"
-                                             @click="activeConfigTab = mode.label"
+                                             @click="activeEngineTab === 'main' ? activeConfigTab = mode.label : activeRecoveryConfigTab = mode.label"
                                              class="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 border"
-                                             :class="activeConfigTab === mode.label ? 'bg-muted text-foreground border-zenix-green text-zenix-green' : 'bg-[hsl(var(--zenix-elevated))] text-muted-foreground hover:text-foreground border-border/50'"
+                                             :class="(activeEngineTab === 'main' ? activeConfigTab : activeRecoveryConfigTab) === mode.label ? 'bg-muted text-foreground border-zenix-green text-zenix-green' : 'bg-[hsl(var(--zenix-elevated))] text-muted-foreground hover:text-foreground border-border/50'"
                                          >
-                                             <span class="w-2 h-2 rounded-full" :class="activeConfigTab === mode.label ? 'bg-zenix-green' : 'bg-muted-foreground/30'"></span>
+                                             <span class="w-2 h-2 rounded-full" :class="(activeEngineTab === 'main' ? activeConfigTab : activeRecoveryConfigTab) === mode.label ? 'bg-zenix-green' : 'bg-muted-foreground/30'"></span>
                                              {{ mode.label }}
                                          </button>
                                      </div>
  
                                      <!-- Active Filters / Empty State -->
                                      <div class="min-h-[200px] bg-[hsl(var(--zenix-elevated))] rounded-lg border border-border/50 p-4">
-                                         <div v-if="!(activeEngineTab === 'main' ? (filterModes[activeConfigTab] && filterModes[activeConfigTab].length) : activeRecoveryFilters.length)" class="text-center py-8 text-muted-foreground">
+                                         <div v-if="!(activeEngineTab === 'main' ? (filterModes[activeConfigTab] && filterModes[activeConfigTab].length) : (recoveryFilterModes[activeRecoveryConfigTab] && recoveryFilterModes[activeRecoveryConfigTab].length))" class="text-center py-8 text-muted-foreground">
                                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu w-8 h-8 mx-auto mb-2 opacity-50">
                                                  <rect width="16" height="16" x="4" y="4" rx="2"></rect>
                                                  <rect width="6" height="6" x="9" y="9" rx="1"></rect>
@@ -421,7 +421,7 @@
  
                                          <div v-else class="space-y-2 mb-4">
                                              <div 
-                                                 v-for="filter in (activeEngineTab === 'main' ? filterModes[activeConfigTab] : activeRecoveryFilters)" 
+                                                 v-for="filter in (activeEngineTab === 'main' ? filterModes[activeConfigTab] : recoveryFilterModes[activeRecoveryConfigTab])" 
                                                  :key="filter.id"
                                                  class="flex items-center justify-between p-3 rounded-lg bg-background border border-border/20"
                                              >
@@ -1250,7 +1250,7 @@
                                             
                                             <button 
                                                 v-if="!isFilterActive(filter)"
-                                                @click="selectFilterInLibrary(filter)"
+                                                @click="toggleFilterInModal(filter)"
                                                 class="px-3 py-1.5 rounded-lg border border-primary/30 text-[10px] font-black uppercase tracking-wider text-primary hover:bg-primary/10 hover:border-primary transition-all shadow-[0_0_10px_-5px_#22c55e]"
                                             >
                                                 Adicionar
@@ -1523,7 +1523,8 @@ export default {
             availableAccounts: [],
             
             // New UI State for Filter Modal
-            activeConfigTab: 'Veloz', 
+            activeConfigTab: 'Normal',
+            activeRecoveryConfigTab: 'Normal', 
             filterStep: 1, 
             configuringFilter: null,
             modalContext: 'main', 
@@ -1559,6 +1560,7 @@ export default {
                 recoveryModeEntered: false,
                 recoveryContractSwitched: false,
                 recoveryFilters: {}, // Dynamic keys based on filter.id
+                recoveryFilterModes: {}, // Validator keys per mode
                 martingale100: false
             },
 
@@ -1636,6 +1638,11 @@ export default {
             },
 
             filterModes: {
+                Veloz: [],
+                Normal: [],
+                Preciso: []
+            },
+            recoveryFilterModes: {
                 Veloz: [],
                 Normal: [],
                 Preciso: []
@@ -2256,26 +2263,29 @@ export default {
         },
         
         recoveryAnalysisCount() {
-             return this.recoveryFilters.filter(f => f.active).length;
+             if (!this.recoveryFilterModes[this.activeRecoveryConfigTab]) return 0;
+             return this.recoveryFilterModes[this.activeRecoveryConfigTab].length;
         },
 
         totalConfiguredFiltersCount() {
-            // Sum of all active filters across all modes + recovery
+            // Sum of all active filters across all modes + recovery modes
             let count = 0;
-            // Count from modes
+            // Count from main modes
             Object.values(this.filterModes).forEach(modeFilters => {
                 count += modeFilters.length;
             });
-            // Count from recovery
-            count += this.recoveryAnalysisCount;
+            // Count from recovery modes
+            Object.values(this.recoveryFilterModes).forEach(modeFilters => {
+                count += modeFilters.length;
+            });
             return count;
         },
 
         activeFiltersForModal() {
-            // Updated to use the new structure
             return this.modalContext === 'main' ? this.filters : this.recoveryFilters; 
-            // Note: 'this.filters' is now the Library source. 
-            // The active filters for the current mode are in this.filterModes[this.activeConfigTab]
+        },
+        currentActiveConfigTab() {
+            return this.modalContext === 'main' ? this.activeConfigTab : this.activeRecoveryConfigTab;
         },
     },
 
@@ -2294,6 +2304,10 @@ export default {
         
         // Initialize recovery filters as a clone of main filters
         this.recoveryFilters = JSON.parse(JSON.stringify(this.filters));
+        
+        // Ensure all filters are NOT active initially in library
+        this.filters.forEach(f => f.active = false);
+        this.recoveryFilters.forEach(f => f.active = false);
         this.onMarketChange('main');
         this.onMarketChange('recovery');
     },
@@ -2441,10 +2455,7 @@ export default {
             }
         },
         selectFilterInLibrary(filter) {
-            // In Step 1, selection just marks it for configuration in Step 2 
-            // or toggles its active state if we're doing bulk.
-            // But let's follow the plan: click -> configuringFilter = filter -> nextStep.
-            filter.active = true;
+            // User selects a filter to configure. We don't activate it yet.
             this.configuringFilter = filter;
             this.filterStep = 2;
         },
@@ -2459,34 +2470,26 @@ export default {
             return this.activeFiltersForModal.some(f => f.id === filter.id && f.active);
         },
         toggleFilter(filter) {
-            console.log(`[toggleFilter] Clicked: ${filter.name} (${filter.id}) | Current Active: ${filter.active}`);
-            
-            const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
-            const index = targetArray.findIndex(f => f.id === filter.id);
-
-            if (index === -1) return;
-
-            // If already active, just close (or maybe user clicked by mistake)
-            if (filter.active) {
-                this.showFilterModal = false;
-                return;
-            }
-
-            // Force Reactivity: Create new object and splice it in
-            const newFilter = { ...filter, active: true };
-            targetArray.splice(index, 1, newFilter);
-            
-            // Close Modal Immediately
-            this.showFilterModal = false;
+            // Legacy/Direct toggle if needed
+            filter.active = !filter.active;
+            this.applyFilters();
         },
         
         removeFilter(filter, context) {
-             const targetArray = context === 'main' ? this.filters : this.recoveryFilters;
+             const modeTab = context === 'main' ? this.activeConfigTab : this.activeRecoveryConfigTab;
+             const targetArray = context === 'main' ? this.filterModes[modeTab] : this.recoveryFilterModes[modeTab];
+             
+             if (!targetArray) return;
+             
              const index = targetArray.findIndex(f => f.id === filter.id);
              
              if (index !== -1) {
-                 const newFilter = { ...filter, active: false };
-                 targetArray.splice(index, 1, newFilter);
+                 targetArray.splice(index, 1);
+                 // Also deactivate in library source for that context
+                 const lib = context === 'main' ? this.filters : this.recoveryFilters;
+                 const libIdx = lib.findIndex(f => f.id === filter.id);
+                 if (libIdx !== -1) lib[libIdx].active = false;
+                 
                  this.$root.$toast.info(`Filtro ${filter.name} removido.`);
              }
         },
@@ -2582,20 +2585,28 @@ export default {
         },
 
         applyFilters() {
+            // When user clicks "Confirmar" (Salvar e Aplicar)
+            if (this.configuringFilter) {
+                this.configuringFilter.active = true;
+            }
+
             const filtersToApply = this.activeFiltersForModal.filter(f => f.active);
+            const currentTab = this.modalContext === 'main' ? this.activeConfigTab : this.activeRecoveryConfigTab;
             
             if (this.modalContext === 'main') {
                 // Update specific mode list
-                this.filterModes[this.activeConfigTab] = JSON.parse(JSON.stringify(filtersToApply));
+                this.filterModes[currentTab] = JSON.parse(JSON.stringify(filtersToApply));
                 
-                // Sync to form for submission
-                this.form.attackFilters = this.filterModes[this.activeConfigTab].map(f => ({
+                // Sync to form for submission (using current active mode)
+                this.form.attackFilters = this.filterModes[currentTab].map(f => ({
                     id: f.id,
                     name: f.name,
                     config: f.config
                 }));
             } else {
-                this.recoveryConfig.attackFilters = filtersToApply.map(f => ({
+                this.recoveryFilterModes[currentTab] = JSON.parse(JSON.stringify(filtersToApply));
+                
+                this.recoveryConfig.attackFilters = this.recoveryFilterModes[currentTab].map(f => ({
                     id: f.id,
                     name: f.name,
                     config: f.config
@@ -2604,13 +2615,14 @@ export default {
             
             // Sync to validator
             if (this.modalContext === 'recovery') {
-                this.validator.recoveryFilters = {};
+                if (!this.validator.recoveryFilterModes) this.$set(this.validator, 'recoveryFilterModes', {});
+                this.validator.recoveryFilterModes[currentTab] = {};
                 filtersToApply.forEach(f => {
-                    this.validator.recoveryFilters[f.id] = false;
+                    this.validator.recoveryFilterModes[currentTab][f.id] = false;
                 });
             }
             
-            console.log(`[applyFilters] Applied ${filtersToApply.length} filters to ${this.activeConfigTab} mode.`);
+            console.log(`[applyFilters] Applied ${filtersToApply.length} filters to ${currentTab} mode (${this.modalContext}).`);
             
             this.showFilterModal = false;
             this.filterStep = 1;
