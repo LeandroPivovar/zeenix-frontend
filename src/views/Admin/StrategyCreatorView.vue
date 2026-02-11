@@ -207,7 +207,7 @@
                                                             v-for="item in category.items" 
                                                             :key="item.value"
                                                             type="button"
-                                                            @click="selectTradeTypeItem(item, form)"
+                                                            @click.stop="selectTradeTypeItem(item, form)"
                                                             class="px-4 py-2 rounded-full text-xs font-bold border transition-all"
                                                             :class="isTradeTypeItemSelected(item, form) ? 'bg-zenix-green/10 border-zenix-green text-zenix-green' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
                                                         >
@@ -231,7 +231,7 @@
                                         <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
                                             <button 
                                                 type="button"
-                                                @click="updatePrincipalDirection('both')"
+                                                @click.stop="updatePrincipalDirection('both')"
                                                 class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                 :class="form.directionMode === 'both' ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
                                                 :style="form.directionMode === 'both' ? 'background-color: #22C55E !important;' : ''"
@@ -242,7 +242,7 @@
                                                 v-for="(dir, idx) in selectedDirections" 
                                                 :key="dir.value"
                                                 type="button"
-                                                @click="updatePrincipalDirection(idx === 0 ? 'up' : 'down', dir.value)"
+                                                @click.stop="updatePrincipalDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                 class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                 :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
                                                 :style="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'background-color: #22C55E !important;' : ''"
@@ -384,10 +384,10 @@
                                                  </div>
                                             </div>
                                             <div class="flex items-center gap-2">
-                                                <button type="button" @click="openFilterConfigDirect(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
+                                                <button type="button" @click.stop="openFilterConfigDirect(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
                                                     <i class="fa-solid fa-gear text-xs"></i>
                                                 </button>
-                                                <button type="button" @click="removeFilter(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
+                                                <button type="button" @click.stop="removeFilter(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
                                                     <i class="fa-solid fa-times text-xs"></i>
                                                 </button>
                                             </div>
@@ -526,7 +526,7 @@
                                                 <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
                                                     <button 
                                                         type="button"
-                                                        @click="updateRecoveryDirection('both')"
+                                                        @click.stop="updateRecoveryDirection('both')"
                                                         class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                         :class="recoveryConfig.directionMode === 'both' ? 'text-white' : 'text-gray-500 hover:text-white'"
                                                         :style="recoveryConfig.directionMode === 'both' ? 'background-color: #22C55E !important;' : ''"
@@ -537,7 +537,7 @@
                                                         v-for="(dir, idx) in selectedRecoveryDirections" 
                                                         :key="dir.value"
                                                         type="button"
-                                                        @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
+                                                        @click.stop="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                         class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                         :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'text-white' : 'text-gray-500 hover:text-white'"
                                                         :style="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'background-color: #22C55E !important;' : ''"
@@ -668,10 +668,10 @@
                                                  </div>
                                             </div>
                                             <div class="flex items-center gap-2">
-                                                <button type="button" @click="openFilterConfigDirect(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
+                                                <button type="button" @click.stop="openFilterConfigDirect(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
                                                     <i class="fa-solid fa-gear text-xs"></i>
                                                 </button>
-                                                <button type="button" @click="removeFilter(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
+                                                <button type="button" @click.stop="removeFilter(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
                                                     <i class="fa-solid fa-times text-xs"></i>
                                                 </button>
                                             </div>
