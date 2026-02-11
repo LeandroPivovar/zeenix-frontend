@@ -33,7 +33,7 @@ export default {
   },
   data() {
     return {
-      chart: null
+      // chart: null // Removed to avoid reactivity issues with Chart.js
     };
   },
   computed: {
