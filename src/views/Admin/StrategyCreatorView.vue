@@ -925,7 +925,10 @@
                     <div class="modal-body">
                         <div class="categories-grid">
                             <div v-for="(marketsList, category) in marketsByCategory" :key="category" class="category-card">
-                                <div class="category-card-header">
+                                <div 
+                                    class="category-card-header cursor-pointer hover:bg-[#222] transition-colors"
+                                    @click="toggleMarketCategory(category)"
+                                >
                                     <div class="category-icon-wrapper">
                                         <svg v-if="category === 'Índices Contínuos' || category === 'Continuous Indices'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -946,13 +949,16 @@
                                         </svg>
                                         <i v-else class="fa-solid fa-bars text-white"></i>
                                     </div>
-                                    <h4 class="category-card-title">{{ category }}</h4>
+                                    <div class="flex-1 flex justify-between items-center">
+                                        <h4 class="category-card-title">{{ category }}</h4>
+                                        <i class="fa-solid fa-chevron-down text-gray-500 text-xs transition-transform duration-200" :class="{ 'rotate-180': expandedCategories.includes(category) }"></i>
+                                    </div>
                                 </div>
-                                <div class="category-items-list">
+                                <div v-show="expandedCategories.includes(category)" class="category-items-list">
                                     <button
                                         v-for="m in marketsList"
                                         :key="m.value"
-                                        @click="selectMarket(m.value)"
+                                        @click.stop="selectMarket(m.value)"
                                         :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.market : recoveryConfig.market) === m.value }]"
                                     >
                                         {{ m.label }}
@@ -983,7 +989,10 @@
                     <div class="modal-body">
                         <div class="categories-grid">
                             <div v-for="category in availableTradeTypeGroups" :key="category.id" class="category-card">
-                                <div class="category-card-header">
+                                <div 
+                                    class="category-card-header cursor-pointer hover:bg-[#222] transition-colors"
+                                    @click="toggleTradeTypeCategory(category.id)"
+                                >
                                     <div class="category-icon-wrapper">
                                         <svg v-if="category.id === 'rising_falling'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1011,13 +1020,16 @@
                                         </svg>
                                         <i v-else :class="category.icon"></i>
                                     </div>
-                                    <h4 class="category-card-title">{{ category.label }}</h4>
+                                    <div class="flex-1 flex justify-between items-center">
+                                        <h4 class="category-card-title">{{ category.label }}</h4>
+                                        <i class="fa-solid fa-chevron-down text-gray-500 text-xs transition-transform duration-200" :class="{ 'rotate-180': expandedTradeTypeCategories.includes(category.id) }"></i>
+                                    </div>
                                 </div>
-                                <div class="category-items-list">
+                                <div v-show="expandedTradeTypeCategories.includes(category.id)" class="category-items-list">
                                     <button
                                         v-for="item in category.items"
                                         :key="item.value"
-                                        @click="selectTradeType(item)"
+                                        @click.stop="selectTradeTypeItem(item)"
                                         :class="['category-item-btn', { 'active': isTradeTypeItemSelected(item, modalContext === 'main' ? form : recoveryConfig) }]"
                                     >
                                         <div class="flex items-center gap-2">
@@ -1715,8 +1727,8 @@ export default {
             // UI Modals
             showMarketModal: false,
             showFilterModal: false,
-            expandedCategory: null, // Track which market category is expanded
-            expandedTradeTypeCategory: null, // Track which trade type category is expanded
+            expandedCategories: [], // Array for multiple open market categories
+            expandedTradeTypeCategories: [], // Array for multiple open trade type categories
             showPauseModal: false,
             showAccountModal: false,
             showStopModal: false, // New Stop Result Modal
@@ -2443,12 +2455,8 @@ export default {
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // Radio behavior: If already selected, do nothing (keep it selected)
-            // This prevents accidental deselection which confuses users
-            if (config.market === symbol) {
-                return;
-            }
-
+            // Simplified selection: Always select, allowing user to switch freely.
+            // Visual feedback will handle the "selected" state.
             config.market = symbol;
             
             const market = this.markets.find(m => m.symbol === symbol);
@@ -2458,10 +2466,20 @@ export default {
             this.onMarketChange(context);
         },
         toggleMarketCategory(category) {
-            this.expandedCategory = this.expandedCategory === category ? null : category;
+            const index = this.expandedCategories.indexOf(category);
+            if (index > -1) {
+                this.expandedCategories.splice(index, 1);
+            } else {
+                this.expandedCategories.push(category);
+            }
         },
         toggleTradeTypeCategory(id) {
-            this.expandedTradeTypeCategory = this.expandedTradeTypeCategory === id ? null : id;
+            const index = this.expandedTradeTypeCategories.indexOf(id);
+            if (index > -1) {
+                this.expandedTradeTypeCategories.splice(index, 1);
+            } else {
+                this.expandedTradeTypeCategories.push(id);
+            }
         },
         openMarketModal(context = 'main') {
             this.modalContext = context;
@@ -2605,7 +2623,8 @@ export default {
                             ...m,
                             value: m.symbol,
                             label: m.displayName,
-                            category: category
+                            category: category,
+                            symbol: m.symbol
                         });
                     });
 
@@ -2627,13 +2646,10 @@ export default {
             // Clear previous contracts immediately to give feedback
             if (context === 'main') {
                 this.contracts = [];
-                // Do not clear trade type immediately if we want to keep UI stable, 
-                // but usually it's better to clear to avoid mismatch.
-                // However, user wants "dropdown" feel. 
-                // We'll clear them but the auto-expand will help.
+                // Clear trade types to prevent invalid states
                 this.form.selectedTradeTypeGroups = [];
                 this.form.tradeType = '';
-                this.expandedTradeTypeCategory = null; // Reset expansion
+                this.expandedTradeTypeCategories = []; // Reset expansion
             } else {
                 this.recoveryContracts = [];
                 this.recoveryConfig.selectedTradeTypeGroups = [];
@@ -2644,7 +2660,10 @@ export default {
             
             this.isFetchingContracts = true;
             try {
-                const token = localStorage.getItem('token');
+                // Use helper for token
+                const token = this.getDerivToken(); 
+                if (!token) return;
+
                 const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 
                 // Capture the symbol we are fetching for (Race Condition Fix)
@@ -2668,7 +2687,7 @@ export default {
                         // Auto-expand the first available trade type category for better UX
                         this.$nextTick(() => {
                             if (this.mainTradeTypeGroups && this.mainTradeTypeGroups.length > 0) {
-                                this.expandedTradeTypeCategory = this.mainTradeTypeGroups[0].id;
+                                this.expandedTradeTypeCategories.push(this.mainTradeTypeGroups[0].id);
                             }
                         });
                     } else {
