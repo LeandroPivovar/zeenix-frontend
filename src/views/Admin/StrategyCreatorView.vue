@@ -2443,10 +2443,9 @@ export default {
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // If already selected, deselect it
+            // Radio behavior: If already selected, do nothing (keep it selected)
+            // This prevents accidental deselection which confuses users
             if (config.market === symbol) {
-                config.market = '';
-                this.onMarketChange(context);
                 return;
             }
 
@@ -2472,146 +2471,20 @@ export default {
             this.showMarketModal = false;
             this.modalContext = 'main';
         },
-        selectTradeTypeItem(item, customConfig = null) {
-            const config = customConfig || this.currentConfig;
-            
-            if (!config.selectedTradeTypeGroups) {
-                config.selectedTradeTypeGroups = [];
-            }
-
-            const index = config.selectedTradeTypeGroups.indexOf(item.value);
-            if (index > -1) {
-                // Remove if already selected
-                config.selectedTradeTypeGroups.splice(index, 1);
-            } else {
-                // Add if not selected
-                config.selectedTradeTypeGroups.push(item.value);
-            }
-
-            // For compatibility with single tradeType logic elsewhere,
-            // we set form.tradeType to the first selected item's direction if needed.
-            // But with multi-selection, the execution logic should probably use selectedTradeTypeGroups array.
-            if (config.selectedTradeTypeGroups.length > 0) {
-                // Keep .tradeType for backwards compatibility or as a primary selection
-                config.tradeType = item.directions && item.directions.length > 0 ? item.directions[0].value : item.value;
-            } else {
-                config.tradeType = '';
-            }
-        },
-        isTradeTypeItemSelected(item, customConfig = null) {
-            const config = customConfig || this.currentConfig;
-            return config.selectedTradeTypeGroups && config.selectedTradeTypeGroups.includes(item.value);
-        },
-        isCategoryFullySelected(category, customConfig = null) {
-            if (!category.items || category.items.length === 0) return false;
-            const config = customConfig || this.currentConfig;
-            if (!config.selectedTradeTypeGroups) return false;
-            
-            return category.items.every(item => config.selectedTradeTypeGroups.includes(item.value));
-        },
-        isCategoryPartiallySelected(category, customConfig = null) {
-            const config = customConfig || this.currentConfig;
-            if (!config.selectedTradeTypeGroups) return false;
-            
-            const hasSome = category.items.some(item => config.selectedTradeTypeGroups.includes(item.value));
-            const hasAll = this.isCategoryFullySelected(category, customConfig);
-            return hasSome && !hasAll;
-        },
-        getCategorySelectionCount(category, customConfig = null) {
-            const config = customConfig || this.currentConfig;
-            if (!config.selectedTradeTypeGroups) return `0/${category.items.length}`;
-            
-            const selected = category.items.filter(item => config.selectedTradeTypeGroups.includes(item.value)).length;
-            return `${selected}/${category.items.length}`;
-        },
-        handleResize() {
-            this.isMobile = window.innerWidth < 1024;
-            if (this.isMobile) {
-                this.isSidebarOpen = false;
-            }
-        },
-        toggleSidebarCollapse() {
-            this.isSidebarCollapsed = !this.isSidebarCollapsed;
-        },
-        async fetchMarkets() {
-            try {
-                const token = localStorage.getItem('token');
-                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-                
-                const res = await fetch(`${apiBaseUrl}/markets`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    
-                    const allowedForex = ['frxEURUSD', 'frxUSDJPY', 'frxGBPUSD', 'frxAUDUSD', 'frxUSDCHF', 'frxUSDCAD', 'frxNZDUSD', 'frxEURGBP', 'frxEURJPY', 'frxGBPJPY'];
-                    const allowedCrypto = ['cryBTCUSD', 'cryETHUSD', 'cryLTCUSD', 'cryXRPUSD', 'cryBCHUSD'];
-                    const allowedSynthetic = ['Continuous Indices', 'Daily Reset Indices', 'Indices Step', 'Jump Indices', 'Boom/Crash'];
-
-                    const filteredData = data.filter(m => {
-                        if (m.symbol.startsWith('frx')) return allowedForex.includes(m.symbol);
-                        if (m.symbol.startsWith('cry')) return allowedCrypto.includes(m.symbol);
-                        
-                        const submarket = m.submarketDisplayName;
-                        if (allowedSynthetic.includes(submarket)) return true;
-                        
-                        if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ') || 
-                            m.symbol.startsWith('JDM') || m.symbol.startsWith('BOOM') || 
-                            m.symbol.startsWith('CRASH') || m.symbol.startsWith('STP') ||
-                            m.symbol.startsWith('RDBEAR') || m.symbol.startsWith('RDBULL')) {
-                            return true;
-                        }
-                        return false;
-                    });
-
-                    const marketMap = new Map();
-                    
-                    filteredData.forEach(m => {
-                        if (marketMap.has(m.symbol)) return;
-
-                        let category = m.submarketDisplayName || m.marketDisplayName || 'Outros';
-                        
-                        if (m.symbol.startsWith('frx')) {
-                            category = 'Major Pairs';
-                        } else if (m.symbol.startsWith('cry')) {
-                            category = 'Criptomoedas';
-                        } else if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ')) {
-                            category = 'Índices Contínuos';
-                        } else if (m.symbol.startsWith('JDM')) {
-                            category = 'Jump Indices';
-                        } else if (m.symbol.startsWith('BOOM') || m.symbol.startsWith('CRASH')) {
-                            category = 'Boom/Crash';
-                        } else if (m.symbol.startsWith('STP')) {
-                            category = 'Indices Step';
-                        } else if (m.symbol.startsWith('RDBEAR') || m.symbol.startsWith('RDBULL')) {
-                            category = 'Daily Reset Indices';
-                        }
-
-                        marketMap.set(m.symbol, {
-                            ...m,
-                            value: m.symbol,
-                            label: m.displayName,
-                            category: category,
-                            symbol: m.symbol // Ensure symbol is clearly mapped
-                        });
-                    });
-
-                    this.markets = Array.from(marketMap.values());
-                }
-            } catch (error) {
-                console.error('Erro ao buscar mercados:', error);
-                this.$root.$toast.error('Erro ao carregar mercados');
-            }
-        },
         async onMarketChange(context = 'main') {
             const config = context === 'main' ? this.form : this.recoveryConfig;
             const market = config.market;
             
+            // Clear previous contracts immediately to give feedback
             if (context === 'main') {
                 this.contracts = [];
+                // Do not clear trade type immediately if we want to keep UI stable, 
+                // but usually it's better to clear to avoid mismatch.
+                // However, user wants "dropdown" feel. 
+                // We'll clear them but the auto-expand will help.
                 this.form.selectedTradeTypeGroups = [];
                 this.form.tradeType = '';
+                this.expandedTradeTypeCategory = null; // Reset expansion
             } else {
                 this.recoveryContracts = [];
                 this.recoveryConfig.selectedTradeTypeGroups = [];
@@ -2625,14 +2498,30 @@ export default {
                 const token = localStorage.getItem('token');
                 const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 
+                // Capture the symbol we are fetching for (Race Condition Fix)
+                const fetchingForMarket = market;
+
                 const res = await fetch(`${apiBaseUrl}/markets/${market}/contracts`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 if (res.ok) {
                     const contracts = await res.json();
+                    
+                    // Check if the config.market matches what we fetched (Stale Check)
+                    if (config.market !== fetchingForMarket) {
+                        console.log('Ignored stale contracts for', fetchingForMarket);
+                        return;
+                    }
+
                     if (context === 'main') {
                         this.contracts = contracts;
+                        // Auto-expand the first available trade type category for better UX
+                        this.$nextTick(() => {
+                            if (this.mainTradeTypeGroups && this.mainTradeTypeGroups.length > 0) {
+                                this.expandedTradeTypeCategory = this.mainTradeTypeGroups[0].id;
+                            }
+                        });
                     } else {
                         this.recoveryContracts = contracts;
                     }
@@ -2641,6 +2530,8 @@ export default {
                 console.error('Erro ao buscar contratos:', error);
                 this.$root.$toast.error('Erro ao carregar contratos do mercado');
             } finally {
+                // Only turn off loading if we are still on the same market 
+                // (roughly check, though simple bool is usually fine for UI spinner)
                 this.isFetchingContracts = false;
             }
         },
