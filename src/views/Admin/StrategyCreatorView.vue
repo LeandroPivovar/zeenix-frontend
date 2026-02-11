@@ -2544,49 +2544,6 @@ export default {
                 config.tradeType = '';
             }
         },
-        loadSavedStrategy() {
-            const strategy = this.savedStrategies.find(s => s.id === this.selectedSavedStrategyId);
-            if (!strategy) return;
-
-            // 1. DEEP CLONE (Deep copy to prevent reference binding)
-            // Using JSON.parse ensures the loaded IA doesn't stay "linked" to the saved one in the database
-            const savedForm = JSON.parse(JSON.stringify(strategy.config.form));
-            this.form = { ...this.form, ...savedForm };
-
-            const savedRecovery = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
-            this.recoveryConfig = { ...this.recoveryConfig, ...savedRecovery };
-
-            // 2. FILTER SYNCHRONIZATION (The Key Fix)
-            // Loop through visual filters and activate only those in the loaded IA
-            this.filters.forEach((f, index) => {
-                const savedFilter = this.form.attackFilters.find(af => af.id === f.id);
-                const newFilter = { 
-                    ...f, 
-                    active: !!savedFilter, // Activate if exists in IA
-                    config: savedFilter ? JSON.parse(JSON.stringify(savedFilter.config)) : f.config 
-                };
-                this.filters.splice(index, 1, newFilter); // Splice ensures Vue renders the change
-            });
-
-            // Repeat for recovery filters
-            this.recoveryFilters.forEach((f, index) => {
-                const savedFilter = this.recoveryConfig.attackFilters.find(af => af.id === f.id);
-                const newFilter = { 
-                    ...f, 
-                    active: !!savedFilter,
-                    config: savedFilter ? JSON.parse(JSON.stringify(savedFilter.config)) : f.config 
-                };
-                this.recoveryFilters.splice(index, 1, newFilter);
-            });
-
-            // 3. RELOAD CONTRACTS
-            this.onMarketChange('main');
-            this.onMarketChange('recovery');
-
-            this.currentVersion = strategy.version || '1.0';
-            this.currentStrategyName = strategy.name;
-            this.$root.$toast.success(`Estratégia ${strategy.name} carregada com sucesso!`);
-        },
         isTradeTypeItemSelected(item, customConfig = null) {
             const config = customConfig || this.currentConfig;
             return config.selectedTradeTypeGroups && config.selectedTradeTypeGroups.includes(item.value);
