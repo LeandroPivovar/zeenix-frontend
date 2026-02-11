@@ -619,7 +619,7 @@
                         </div>
 
                         <!-- NOVOS CARDS: Configurações Operacionais e Payout -->
-                        <div class="col-span-12 grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                        <div class="col-span-12 space-y-6 mt-4">
                             <!-- Card: Configurações Operacionais -->
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
                                 <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
@@ -974,10 +974,17 @@
                                     <button
                                         v-for="m in marketsList"
                                         :key="m.value"
-                                        @click="selectMarket(m.value)"
-                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.market : recoveryConfig.market) === m.value }]"
+                                        type="button"
+                                        @click.stop.prevent="selectMarket(m.value)"
+                                        class="category-item-btn group relative"
+                                        :class="{ 'active': (modalContext === 'main' ? form.market : recoveryConfig.market) === m.value }"
                                     >
-                                        {{ m.label }}
+                                        <div class="flex items-center justify-between w-full">
+                                            <span>{{ m.label }}</span>
+                                            <div v-if="(modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol" class="w-4 h-4 bg-zenix-green rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                                                <i class="fa-solid fa-check text-[10px] text-black font-bold"></i>
+                                            </div>
+                                        </div>
                                     </button>
                                 </div>
                             </div>
@@ -1039,8 +1046,10 @@
                                     <button
                                         v-for="item in category.items"
                                         :key="item.value"
-                                        @click="selectTradeType(item)"
-                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.selectedTradeTypeGroup : recoveryConfig.selectedTradeTypeGroup) === item.value }]"
+                                        type="button"
+                                        @click.stop.prevent="selectTradeType(item)"
+                                        class="category-item-btn group relative"
+                                        :class="{ 'active': (modalContext === 'main' ? form.selectedTradeTypeGroup : recoveryConfig.selectedTradeTypeGroup) === item.value }"
                                     >
                                         <div class="flex items-center gap-2">
                                             <div class="w-5 h-5 flex items-center justify-center text-zenix-green">
@@ -2687,6 +2696,7 @@ export default {
             this.showMarketModal = false;
         },
         selectMarket(symbol) {
+            // Priority 1: Update Data instantly for visual feedback
             if (this.modalContext === 'main') {
                 this.form.market = symbol;
             } else {
@@ -2695,9 +2705,16 @@ export default {
             
             const market = this.markets.find(m => m.symbol === symbol);
             this.$root.$toast.success(`Mercado selecionado: ${market ? market.label : symbol}`);
-            
-            this.closeMarketModal();
-            this.onMarketChange(this.modalContext);
+
+            // Priority 2: Use nextTick to ensure Vue paints the selection state before closing
+            this.$nextTick(() => {
+                // Priority 3: Strategic delay (150ms) to prevent Symbol(_vei) race condition
+                // This gives Vue time to finish processing the click event before the element is destroyed
+                setTimeout(() => {
+                    this.closeMarketModal();
+                    this.onMarketChange(this.modalContext);
+                }, 150);
+            });
         },
         openTradeTypeModal(context = 'main') {
             const contracts = context === 'main' ? this.contracts : this.recoveryContracts;
@@ -2766,7 +2783,13 @@ export default {
             }
             
             this.$root.$toast.success(`Selecionado: ${item.label} (${selectedDirection.label})`);
-            this.closeTradeTypeModal();
+
+            // Race Condition Fix: Delay closure
+            this.$nextTick(() => {
+                setTimeout(() => {
+                    this.closeTradeTypeModal();
+                }, 150);
+            });
         },
         
         // ✅ NEW: Auto-update tradeType when direction mode changes
@@ -3058,6 +3081,7 @@ export default {
             if (this.form.sorosLevel === undefined) this.form.sorosLevel = 1;
             if (!this.form.duration) this.form.duration = 1; // Default safety changed from 5 to 1
             if (!this.form.durationUnit) this.form.durationUnit = 't';
+            if (this.form.minPayout === undefined) this.form.minPayout = 80;
 
             const savedRecovery = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
             this.recoveryConfig = { ...this.recoveryConfig, ...savedRecovery };
@@ -3069,6 +3093,7 @@ export default {
             }
 
             if (!this.recoveryConfig.expectedPayout) this.recoveryConfig.expectedPayout = 2.26;
+            if (this.recoveryConfig.lossesToActivate === undefined) this.recoveryConfig.lossesToActivate = 100;
             
             if (strategy.config.validator) {
                 const savedValidator = JSON.parse(JSON.stringify(strategy.config.validator));
