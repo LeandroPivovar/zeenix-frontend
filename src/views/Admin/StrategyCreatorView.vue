@@ -2456,34 +2456,102 @@ export default {
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // If clicking the already-active market, just close the modal
+            // 1. If clicking the same market that's already active:
+            // Just close the modal and do nothing (don't reset)
             if (config.market === symbol) {
                 this.closeMarketModal();
                 return;
             }
 
-            // 1. UPDATE MARKET AND CLEAN UP PREVIOUS MARKET'S DATA
-            config.market = symbol;
+            // 2. Market Switch (Total Reset)
+            // Use direct assignment to ensure UI updates
             if (context === 'main') {
-                this.form.selectedTradeTypeGroup = '';
+                this.form.market = symbol;
+                this.form.selectedTradeTypeGroups = [];
                 this.form.tradeType = '';
-                this.contracts = []; // Clear old contracts to prevent UI lock
+                this.contracts = []; // Clear visually before loading new ones
             } else {
-                this.recoveryConfig.selectedTradeTypeGroup = '';
+                this.recoveryConfig.market = symbol;
+                this.recoveryConfig.selectedTradeTypeGroups = [];
                 this.recoveryConfig.tradeType = '';
                 this.recoveryContracts = [];
             }
 
+            // Visual feedback
             const market = this.markets.find(m => m.symbol === symbol);
-            this.$root.$toast.success(`Mercado selecionado: ${market ? (market.displayName || market.label) : symbol}`);
+            this.$root.$toast.success(`Mercado alterado para: ${market ? (market.displayName || market.label) : symbol}`);
             
-            // 2. CLOSE MODAL IMMEDIATELY (Prevents visual lock)
+            // 3. Close modal IMMEDIATELY
             this.closeMarketModal();
             
-            // 3. FETCH NEW COMPATIBLE CONTRACTS
+            // 4. Fetch data (passing false for preserveSelection, as this is a manual switch)
             this.$nextTick(() => {
-                this.onMarketChange(context);
+                this.onMarketChange(context, false);
             });
+        },
+        async onMarketChange(context = 'main', preserveSelection = false) {
+            const config = context === 'main' ? this.form : this.recoveryConfig;
+            const market = config.market;
+            
+            // 1. Smart Cleanup
+            if (context === 'main') {
+                this.contracts = [];
+                // ONLY clear if NOT loading a saved strategy
+                if (!preserveSelection) {
+                    this.form.selectedTradeTypeGroups = [];
+                    this.form.tradeType = '';
+                    this.expandedTradeTypeCategories = [];
+                }
+            } else {
+                this.recoveryContracts = [];
+                if (!preserveSelection) {
+                    this.recoveryConfig.selectedTradeTypeGroups = [];
+                    this.recoveryConfig.tradeType = '';
+                }
+            }
+
+            if (!market) return;
+            
+            this.isFetchingContracts = true;
+            try {
+                const token = this.getDerivToken(); 
+                if (!token) return;
+
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                
+                // Capture current market to avoid "Race Condition" (delayed response)
+                const fetchingForMarket = market;
+
+                const res = await fetch(`${apiBaseUrl}/markets/${market}/contracts`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const contracts = await res.json();
+                    
+                    // Check if market changed while loading
+                    if (config.market !== fetchingForMarket) return;
+
+                    if (context === 'main') {
+                        this.contracts = contracts;
+                        // Auto-expand only if manual selection
+                        if (!preserveSelection) {
+                            this.$nextTick(() => {
+                                if (this.mainTradeTypeGroups && this.mainTradeTypeGroups.length > 0) {
+                                    this.expandedTradeTypeCategories.push(this.mainTradeTypeGroups[0].id);
+                                }
+                            });
+                        }
+                    } else {
+                        this.recoveryContracts = contracts;
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching contracts:', error);
+                this.$root.$toast.error('Erro ao carregar contratos do mercado');
+            } finally {
+                this.isFetchingContracts = false;
+            }
         },
         toggleMarketCategory(category) {
             const index = this.expandedCategories.indexOf(category);
@@ -3236,10 +3304,13 @@ export default {
                  console.log('[loadSavedStrategy] Martingale OFF -> Enforcing Risk Profile: Conservador');
             }
 
+            // CRITICAL: Load contracts but PRESERVE (true) the loaded selection
+            this.onMarketChange('main', true);
+            this.onMarketChange('recovery', true);
+
             // Set current strategy info for display
             this.currentStrategyName = strategy.name;
             this.currentVersion = strategy.version || '1.0';
-
             this.addLog(`📂 Estratégia carregada: ${strategy.name} (v${this.currentVersion})`, 'info');
             this.$root.$toast.success(`Estratégia "${strategy.name}" carregada!`);
         },
