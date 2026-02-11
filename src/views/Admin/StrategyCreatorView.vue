@@ -2456,16 +2456,31 @@ export default {
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // Direct assignment works in Vue 3 (no need for $set)
+            // If clicking the already-active market, just close the modal
+            if (config.market === symbol) {
+                this.closeMarketModal();
+                return;
+            }
+
+            // 1. UPDATE MARKET AND CLEAN UP PREVIOUS MARKET'S DATA
             config.market = symbol;
-            
+            if (context === 'main') {
+                this.form.selectedTradeTypeGroup = '';
+                this.form.tradeType = '';
+                this.contracts = []; // Clear old contracts to prevent UI lock
+            } else {
+                this.recoveryConfig.selectedTradeTypeGroup = '';
+                this.recoveryConfig.tradeType = '';
+                this.recoveryContracts = [];
+            }
+
             const market = this.markets.find(m => m.symbol === symbol);
             this.$root.$toast.success(`Mercado selecionado: ${market ? (market.displayName || market.label) : symbol}`);
             
-            // Close modal if open
-            if (this.showMarketModal) this.closeMarketModal();
+            // 2. CLOSE MODAL IMMEDIATELY (Prevents visual lock)
+            this.closeMarketModal();
             
-            // Trigger contract fetch with a small delay to ensure UI updates first
+            // 3. FETCH NEW COMPATIBLE CONTRACTS
             this.$nextTick(() => {
                 this.onMarketChange(context);
             });
@@ -2528,6 +2543,49 @@ export default {
             } else {
                 config.tradeType = '';
             }
+        },
+        loadSavedStrategy() {
+            const strategy = this.savedStrategies.find(s => s.id === this.selectedSavedStrategyId);
+            if (!strategy) return;
+
+            // 1. DEEP CLONE (Deep copy to prevent reference binding)
+            // Using JSON.parse ensures the loaded IA doesn't stay "linked" to the saved one in the database
+            const savedForm = JSON.parse(JSON.stringify(strategy.config.form));
+            this.form = { ...this.form, ...savedForm };
+
+            const savedRecovery = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
+            this.recoveryConfig = { ...this.recoveryConfig, ...savedRecovery };
+
+            // 2. FILTER SYNCHRONIZATION (The Key Fix)
+            // Loop through visual filters and activate only those in the loaded IA
+            this.filters.forEach((f, index) => {
+                const savedFilter = this.form.attackFilters.find(af => af.id === f.id);
+                const newFilter = { 
+                    ...f, 
+                    active: !!savedFilter, // Activate if exists in IA
+                    config: savedFilter ? JSON.parse(JSON.stringify(savedFilter.config)) : f.config 
+                };
+                this.filters.splice(index, 1, newFilter); // Splice ensures Vue renders the change
+            });
+
+            // Repeat for recovery filters
+            this.recoveryFilters.forEach((f, index) => {
+                const savedFilter = this.recoveryConfig.attackFilters.find(af => af.id === f.id);
+                const newFilter = { 
+                    ...f, 
+                    active: !!savedFilter,
+                    config: savedFilter ? JSON.parse(JSON.stringify(savedFilter.config)) : f.config 
+                };
+                this.recoveryFilters.splice(index, 1, newFilter);
+            });
+
+            // 3. RELOAD CONTRACTS
+            this.onMarketChange('main');
+            this.onMarketChange('recovery');
+
+            this.currentVersion = strategy.version || '1.0';
+            this.currentStrategyName = strategy.name;
+            this.$root.$toast.success(`Estratégia ${strategy.name} carregada com sucesso!`);
         },
         isTradeTypeItemSelected(item, customConfig = null) {
             const config = customConfig || this.currentConfig;
