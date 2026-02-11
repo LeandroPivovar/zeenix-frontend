@@ -2456,8 +2456,8 @@ export default {
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // Force reactivity by using $set
-            this.$set(config, 'market', symbol);
+            // Direct assignment works in Vue 3 (no need for $set)
+            config.market = symbol;
             
             const market = this.markets.find(m => m.symbol === symbol);
             this.$root.$toast.success(`Mercado selecionado: ${market ? (market.displayName || market.label) : symbol}`);
@@ -2506,15 +2506,15 @@ export default {
             const config = customConfig || this.currentConfig;
             
             if (!config.selectedTradeTypeGroups) {
-                this.$set(config, 'selectedTradeTypeGroups', []);
+                config.selectedTradeTypeGroups = [];
             }
 
             const index = config.selectedTradeTypeGroups.indexOf(item.value);
             if (index > -1) {
-                // Remove if already selected - use splice which is reactive
+                // Remove if already selected - splice is reactive in Vue 3
                 config.selectedTradeTypeGroups.splice(index, 1);
             } else {
-                // Add if not selected
+                // Add if not selected - push is reactive in Vue 3
                 config.selectedTradeTypeGroups.push(item.value);
             }
 
@@ -2524,13 +2524,10 @@ export default {
             if (config.selectedTradeTypeGroups.length > 0) {
                 // Keep .tradeType for backwards compatibility or as a primary selection
                 const newTradeType = item.directions && item.directions.length > 0 ? item.directions[0].value : item.value;
-                this.$set(config, 'tradeType', newTradeType);
+                config.tradeType = newTradeType;
             } else {
-                this.$set(config, 'tradeType', '');
+                config.tradeType = '';
             }
-            
-            // Force UI update
-            this.$forceUpdate();
         },
         isTradeTypeItemSelected(item, customConfig = null) {
             const config = customConfig || this.currentConfig;
