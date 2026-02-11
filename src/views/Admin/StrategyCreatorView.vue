@@ -131,7 +131,7 @@
                                             >
                                                 <div 
                                                     class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all rounded-xl"
-                                                    @click="expandedCategory = expandedCategory === category ? null : category"
+                                                    @click="toggleMarketCategory(category)"
                                                 >
                                                     <div class="flex items-center gap-4">
                                                         <div class="custom-checkbox" :class="{ 'checked': expandedCategory === category }">
@@ -146,11 +146,11 @@
                                                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
                                                         <div v-for="m in markets" :key="m.symbol"
                                                             class="bg-[#181818] border border-[#333] rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-zenix-green/50 hover:bg-zenix-green/5 transition-all"
-                                                            :class="{ 'border-zenix-green bg-zenix-green/10': (modalContext === 'main' || !modalContext ? form.market : recoveryConfig.market) === m.symbol }"
-                                                            @click="selectMarket(m.symbol)"
+                                                            :class="{ 'border-zenix-green bg-zenix-green/10': m.symbol && currentMarket === m.symbol }"
+                                                            @click.stop="selectMarket(m.symbol)"
                                                         >
-                                                            <div class="custom-checkbox sm" :class="{ 'checked': (modalContext === 'main' || !modalContext ? form.market : recoveryConfig.market) === m.symbol }">
-                                                                <i v-if="(modalContext === 'main' || !modalContext ? form.market : recoveryConfig.market) === m.symbol" class="fa-solid fa-check"></i>
+                                                            <div class="custom-checkbox sm" :class="{ 'checked': m.symbol && currentMarket === m.symbol }">
+                                                                <i v-if="m.symbol && currentMarket === m.symbol" class="fa-solid fa-check"></i>
                                                             </div>
                                                             <span class="text-sm font-medium text-white">{{ m.displayName || m.label }}</span>
                                                         </div>
@@ -177,7 +177,7 @@
                                         >
                                             <div 
                                                 class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all rounded-xl"
-                                                @click="expandedTradeTypeCategory = expandedTradeTypeCategory === category.id ? null : category.id"
+                                                @click="toggleTradeTypeCategory(category.id)"
                                             >
                                                 <div class="flex items-center gap-4">
                                                     <div class="custom-checkbox" 
@@ -2249,8 +2249,14 @@ export default {
             return this.recoveryContracts.map(c => c.contractType.toUpperCase());
         },
         // Helpers to get the current list based on context
+        currentConfig() {
+            return (this.modalContext || 'main') === 'main' ? this.form : this.recoveryConfig;
+        },
+        currentMarket() {
+            return this.currentConfig.market;
+        },
         currentContextContracts() {
-            return this.modalContext === 'main' ? this.contracts : this.recoveryContracts;
+            return (this.modalContext || 'main') === 'main' ? this.contracts : this.recoveryContracts;
         },
         
         // DYNAMIC GENERATION OF CATEGORIES
@@ -2275,7 +2281,7 @@ export default {
         },
         
         activeFiltersForModal() {
-            return this.modalContext === 'main' ? this.filters : this.recoveryFilters;
+            return (this.modalContext || 'main') === 'main' ? this.filters : this.recoveryFilters;
         },
 
         groupedFiltersForModal() {
@@ -2440,28 +2446,30 @@ export default {
     },
     methods: {
         selectMarket(symbol) {
+            if (!symbol) return;
+            const context = this.modalContext || 'main';
+            const config = context === 'main' ? this.form : this.recoveryConfig;
+
             // If already selected, deselect it
-            if (this.form.market === symbol) {
-                this.form.market = '';
+            if (config.market === symbol) {
+                config.market = '';
+                this.onMarketChange(context);
                 return;
             }
 
-            if (this.modalContext === 'main' || !this.modalContext) {
-                this.form.market = symbol;
-            } else {
-                this.recoveryConfig.market = symbol;
-            }
+            config.market = symbol;
             
             const market = this.markets.find(m => m.symbol === symbol);
             this.$root.$toast.success(`Mercado selecionado: ${market ? (market.displayName || market.label) : symbol}`);
             
             if (this.showMarketModal) this.closeMarketModal();
-            this.onMarketChange(this.modalContext || 'main');
-            
-            // Auto-close category after selection if requested
-            setTimeout(() => {
-                this.expandedCategory = null;
-            }, 300);
+            this.onMarketChange(context);
+        },
+        toggleMarketCategory(category) {
+            this.expandedCategory = this.expandedCategory === category ? null : category;
+        },
+        toggleTradeTypeCategory(id) {
+            this.expandedTradeTypeCategory = this.expandedTradeTypeCategory === id ? null : id;
         },
         openMarketModal(context = 'main') {
             this.modalContext = context;
@@ -2469,9 +2477,10 @@ export default {
         },
         closeMarketModal() {
             this.showMarketModal = false;
+            this.modalContext = 'main';
         },
         selectTradeTypeItem(item) {
-            const config = this.modalContext === 'main' || !this.modalContext ? this.form : this.recoveryConfig;
+            const config = this.currentConfig;
             
             if (!config.selectedTradeTypeGroups) {
                 config.selectedTradeTypeGroups = [];
@@ -2497,18 +2506,17 @@ export default {
             }
         },
         isTradeTypeItemSelected(item) {
-            const config = this.modalContext === 'main' || !this.modalContext ? this.form : this.recoveryConfig;
-            return config.selectedTradeTypeGroups && config.selectedTradeTypeGroups.includes(item.value);
+            return this.currentConfig.selectedTradeTypeGroups && this.currentConfig.selectedTradeTypeGroups.includes(item.value);
         },
         isCategoryFullySelected(category) {
             if (!category.items || category.items.length === 0) return false;
-            const config = this.modalContext === 'main' || !this.modalContext ? this.form : this.recoveryConfig;
+            const config = this.currentConfig;
             if (!config.selectedTradeTypeGroups) return false;
             
             return category.items.every(item => config.selectedTradeTypeGroups.includes(item.value));
         },
         isCategoryPartiallySelected(category) {
-            const config = this.modalContext === 'main' || !this.modalContext ? this.form : this.recoveryConfig;
+            const config = this.currentConfig;
             if (!config.selectedTradeTypeGroups) return false;
             
             const hasSome = category.items.some(item => config.selectedTradeTypeGroups.includes(item.value));
@@ -2516,7 +2524,7 @@ export default {
             return hasSome && !hasAll;
         },
         getCategorySelectionCount(category) {
-            const config = this.modalContext === 'main' || !this.modalContext ? this.form : this.recoveryConfig;
+            const config = this.currentConfig;
             if (!config.selectedTradeTypeGroups) return `0/${category.items.length}`;
             
             const selected = category.items.filter(item => config.selectedTradeTypeGroups.includes(item.value)).length;
@@ -2596,8 +2604,8 @@ export default {
             }
         },
         async onMarketChange(context = 'main') {
-            const market = context === 'main' ? this.form.market : this.recoveryConfig.market;
-            if (!market) return;
+            const config = context === 'main' ? this.form : this.recoveryConfig;
+            const market = config.market;
             
             if (context === 'main') {
                 this.contracts = [];
@@ -2608,6 +2616,8 @@ export default {
                 this.recoveryConfig.selectedTradeTypeGroups = [];
                 this.recoveryConfig.tradeType = '';
             }
+
+            if (!market) return;
             
             this.isFetchingContracts = true;
             try {
