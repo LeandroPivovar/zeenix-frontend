@@ -1,5 +1,4 @@
-﻿<!-- Build Refresh: 2026-02-11 16:22 -->
-<template>
+﻿<template>
     <div class="dashboard-layout">
         <div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
         
@@ -114,111 +113,44 @@
 
                     <form v-show="activeTab === 'config'" @submit.prevent="submitForm" class="space-y-8">
                         <div class="grid grid-cols-12 gap-6">
-                            <!-- Mercado -->
-                            <div class="col-span-12">
-                                <div class="bg-[#111] border border-[#333] rounded-2xl p-6">
-                                    <div class="flex items-center gap-2 mb-6 text-white">
-                                        <i class="fa-solid fa-chart-line text-zenix-green text-xl"></i>
-                                        <h2 class="text-xl font-bold">Mercados e Ativos</h2>
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <label class="block text-[#7D7D7D] text-sm mb-4 uppercase tracking-wider font-semibold">Categoria de Mercado</label>
-                                        
-                                        <div class="space-y-3">
-                                            <div v-for="(markets, category) in marketsByCategory" :key="category" 
-                                                class="market-category-container"
-                                                :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedCategories.includes(category) }"
-                                            >
-                                                <div 
-                                                    class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/10 transition-all rounded-xl"
-                                                    @click="toggleMarketCategory(category)"
-                                                >
-                                                    <div class="flex items-center gap-4">
-                                                        <div class="custom-checkbox" :class="{ 'checked': expandedCategories.includes(category) && (modalContext === 'main' ? form.market : recoveryConfig.market) === markets[0]?.symbol }">
-                                                            <i v-if="expandedCategories.includes(category)" class="fa-solid fa-check"></i>
-                                                        </div>
-                                                        <span class="text-lg font-medium text-white">{{ category }}</span>
-                                                    </div>
-                                                    <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': !expandedCategories.includes(category) }"></i>
-                                                </div>
-
-                                                <div v-show="expandedCategories.includes(category)" class="p-4 pt-0 border-t border-[#333]/50 mt-2 category-assets-grid">
-                                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-                                                        <div v-for="m in markets" :key="m.symbol"
-                                                            class="bg-[#181818] border border-[#333] rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-zenix-green/50 hover:bg-zenix-green/5 transition-all select-none"
-                                                            :class="{ 'border-zenix-green bg-zenix-green/10': m.symbol && (modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol }"
-                                                            @click.stop="selectMarket(m.symbol)"
-                                                        >
-                                                            <div class="custom-checkbox sm" :class="{ 'checked': m.symbol && (modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol }">
-                                                                <i v-if="m.symbol && (modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol" class="fa-solid fa-check"></i>
-                                                            </div>
-                                                            <span class="text-sm font-medium text-white">{{ m.displayName || m.label }}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <!-- Mercado e Tipo de Negociação -->
+                            <div class="col-span-12 md:col-span-6">
+                                <div class="form-group">
+                                    <label class="block text-white font-bold mb-2">Mercado</label>
+                                    <button
+                                        type="button"
+                                        @click="openMarketModal('main')"
+                                        class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
+                                    >
+                                        <span class="font-medium text-lg">{{ selectedMarketLabel }}</span>
+                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                    </button>
                                 </div>
                             </div>
 
-                            <!-- Tipo de Negociação -->
-                            <div class="col-span-12">
-                                <div class="bg-[#111] border border-[#333] rounded-2xl p-6">
-                                    <div class="flex items-center gap-2 mb-6 text-white">
-                                        <i class="fa-solid fa-layer-group text-zenix-green text-xl"></i>
-                                        <h2 class="text-xl font-bold">Tipos de Negociação</h2>
-                                    </div>
-
-                                    <div class="space-y-3">
-                                        <div v-for="category in mainTradeTypeGroups" :key="category.id" 
-                                            class="market-category-container"
-                                            :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedTradeTypeCategories.includes(category.id) }"
-                                        >
-                                            <div 
-                                                class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/10 transition-all rounded-xl"
-                                                @click="toggleTradeTypeCategory(category.id)"
-                                            >
-                                                <div class="flex items-center gap-4">
-                                                    <div class="custom-checkbox" 
-                                                        :class="{ 
-                                                            'checked': isCategoryFullySelected(category, form)
-                                                        }"
-                                                    >
-                                                        <i v-if="isCategoryFullySelected(category, form)" class="fa-solid fa-check"></i>
-                                                    </div>
-                                                    <div class="flex items-center gap-2">
-                                                        <i :class="category.icon" class="text-zenix-green text-sm"></i>
-                                                        <span class="text-lg font-medium text-white">{{ category.label }}</span>
-                                                    </div>
-                                                </div>
-                                                <div class="flex items-center gap-4">
-                                                    <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': !expandedTradeTypeCategories.includes(category.id) }"></i>
-                                                </div>
+                            <div class="col-span-12 md:col-span-6">
+                                <div class="form-group">
+                                    <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
+                                    <button
+                                        type="button"
+                                        @click="openTradeTypeModal('main')"
+                                        :disabled="!contracts.length && !form.market"
+                                        class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <div class="flex items-center gap-3">
+                                            <div v-if="selectedTradeTypeIcon" class="w-6 h-6 flex items-center justify-center text-zenix-green">
+                                                <i class="fa-solid fa-chart-line" v-if="form.tradeType === 'CALL' || form.tradeType === 'PUT'"></i>
+                                                <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11L13.5 15.5L8.5 10.5L2 14"/><path d="M16 11H22V17"/></svg>
                                             </div>
-
-                                            <div v-show="expandedTradeTypeCategories.includes(category.id)" class="p-4 pt-0 border-t border-[#333]/50 mt-2">
-                                                <div class="flex flex-wrap gap-2 mt-4">
-                                                        <button 
-                                                            v-for="item in category.items" 
-                                                            :key="item.value"
-                                                            type="button"
-                                                            @click.stop="selectTradeTypeItem(item)"
-                                                            class="px-4 py-2 rounded-full text-xs font-bold border transition-all select-none"
-                                                            :class="isTradeTypeItemSelected(item) ? 'bg-zenix-green text-black border-zenix-green shadow-[0_0_10px_rgba(34,197,94,0.3)]' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
-                                                        >
-                                                        {{ item.label }}
-                                                    </button>
-                                                </div>
-                                            </div>
+                                            <span class="font-medium text-lg">{{ selectedTradeTypeLabel }}</span>
                                         </div>
-                                    </div>
+                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                    </button>
                                 </div>
                             </div>
 
                             <!-- Direção e Payouts (Attack) -->
-                            <div v-if="form.selectedTradeTypeGroups && form.selectedTradeTypeGroups.length > 0" class="col-span-12 mt-2">
+                            <div v-if="form.selectedTradeTypeGroup" class="col-span-12 mt-2">
                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-[#181818] p-6 rounded-xl border border-[#333] shadow-inner">
                                     <div class="md:col-span-2">
                                         <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
@@ -228,7 +160,7 @@
                                         <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
                                             <button 
                                                 type="button"
-                                                @click.stop="updatePrincipalDirection('both')"
+                                                @click="updatePrincipalDirection('both')"
                                                 class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                 :class="form.directionMode === 'both' ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
                                                 :style="form.directionMode === 'both' ? 'background-color: #22C55E !important;' : ''"
@@ -239,7 +171,7 @@
                                                 v-for="(dir, idx) in selectedDirections" 
                                                 :key="dir.value"
                                                 type="button"
-                                                @click.stop="updatePrincipalDirection(idx === 0 ? 'up' : 'down', dir.value)"
+                                                @click="updatePrincipalDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                 class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                 :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
                                                 :style="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'background-color: #22C55E !important;' : ''"
@@ -381,10 +313,10 @@
                                                  </div>
                                             </div>
                                             <div class="flex items-center gap-2">
-                                                <button type="button" @click.stop="openFilterConfigDirect(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
+                                                <button type="button" @click="openFilterConfigDirect(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
                                                     <i class="fa-solid fa-gear text-xs"></i>
                                                 </button>
-                                                <button type="button" @click.stop="removeFilter(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
+                                                <button type="button" @click="removeFilter(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
                                                     <i class="fa-solid fa-times text-xs"></i>
                                                 </button>
                                             </div>
@@ -516,14 +448,14 @@
                                     </div>
 
                                     <!-- Direção e Payouts (Recovery) -->
-                                    <div v-if="recoveryConfig.selectedTradeTypeGroups && recoveryConfig.selectedTradeTypeGroups.length > 0" class="md:col-span-2">
+                                    <div v-if="recoveryConfig.selectedTradeTypeGroup" class="md:col-span-2">
                                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[#181818] p-5 rounded-xl border border-[#333] mb-4">
                                             <div class="md:col-span-2">
                                                 <label class="block text-white font-bold mb-2 text-[10px] uppercase tracking-[0.2em] opacity-70">Direção Permitida (REC)</label>
                                                 <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
                                                     <button 
                                                         type="button"
-                                                        @click.stop="updateRecoveryDirection('both')"
+                                                        @click="updateRecoveryDirection('both')"
                                                         class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                         :class="recoveryConfig.directionMode === 'both' ? 'text-white' : 'text-gray-500 hover:text-white'"
                                                         :style="recoveryConfig.directionMode === 'both' ? 'background-color: #22C55E !important;' : ''"
@@ -534,7 +466,7 @@
                                                         v-for="(dir, idx) in selectedRecoveryDirections" 
                                                         :key="dir.value"
                                                         type="button"
-                                                        @click.stop="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
+                                                        @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                         class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                         :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'text-white' : 'text-gray-500 hover:text-white'"
                                                         :style="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'background-color: #22C55E !important;' : ''"
@@ -665,10 +597,10 @@
                                                  </div>
                                             </div>
                                             <div class="flex items-center gap-2">
-                                                <button type="button" @click.stop="openFilterConfigDirect(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
+                                                <button type="button" @click="openFilterConfigDirect(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
                                                     <i class="fa-solid fa-gear text-xs"></i>
                                                 </button>
-                                                <button type="button" @click.stop="removeFilter(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
+                                                <button type="button" @click="removeFilter(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
                                                     <i class="fa-solid fa-times text-xs"></i>
                                                 </button>
                                             </div>
@@ -681,6 +613,98 @@
                                             <i class="fa-solid fa-plus text-xs"></i>
                                             <span class="text-sm">Adicionar Filtro</span>
                                         </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NOVOS CARDS: Configurações Operacionais e Payout -->
+                        <div class="col-span-12 grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <!-- Card: Configurações Operacionais -->
+                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
+                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
+                                    <i class="fa-solid fa-gear text-zenix-green text-lg"></i>
+                                    Configurações Operacionais
+                                </h3>
+
+                                <div class="space-y-4">
+                                    <div class="flex items-start gap-3 p-3 rounded-lg bg-zenix-green/5 border border-zenix-green/20">
+                                        <i class="fa-solid fa-lock text-zenix-green mt-1 text-sm"></i>
+                                        <div>
+                                            <p class="text-sm font-bold text-white">Regra Imutável</p>
+                                            <p class="text-xs text-gray-400">O gatilho de troca é sempre <strong>2 perdas consecutivas</strong>. Este valor não pode ser alterado.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="p-4 rounded-lg bg-[#111] border border-[#333]">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <i class="fa-solid fa-right-left text-zenix-green text-sm"></i>
+                                            <span class="font-bold text-white text-sm">Tipo de Troca Após Perdas</span>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 gap-2">
+                                            <button 
+                                                type="button"
+                                                @click="recoveryConfig.lossesToActivate = 100" 
+                                                :class="recoveryConfig.lossesToActivate > 10 ? 'border-zenix-green bg-zenix-green/10' : 'border-[#222] bg-[#181818]'"
+                                                class="p-3 rounded-lg text-left transition-all border-2"
+                                            >
+                                                <span class="text-sm font-bold" :class="recoveryConfig.lossesToActivate > 10 ? 'text-zenix-green' : 'text-white'">Sem troca</span>
+                                                <p class="text-[10px] text-gray-500 mt-1">Mantém contrato e tipo de negociação fixos</p>
+                                            </button>
+
+                                            <button 
+                                                type="button"
+                                                @click="recoveryConfig.lossesToActivate = 2" 
+                                                :class="recoveryConfig.lossesToActivate === 2 ? 'border-zenix-green bg-zenix-green/10' : 'border-[#222] bg-[#181818]'"
+                                                class="p-3 rounded-lg text-left transition-all border-2"
+                                            >
+                                                <span class="text-sm font-bold" :class="recoveryConfig.lossesToActivate === 2 ? 'text-zenix-green' : 'text-white'">Apenas contrato</span>
+                                                <p class="text-[10px] text-gray-500 mt-1">Troca apenas o contrato após 2 perdas</p>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <p class="text-[10px] text-gray-500 bg-[#111] p-3 rounded-lg border border-[#333]">
+                                        ⚠️ O modo inicial de execução é escolhido pelo usuário ao ligar a IA, não faz parte da estratégia.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Card: Payout e Viabilidade -->
+                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
+                                <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
+                                    <i class="fa-solid fa-dollar-sign text-zenix-green text-lg"></i>
+                                    Payout e Viabilidade
+                                </h3>
+
+                                <div class="space-y-6">
+                                    <div>
+                                        <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">
+                                            Payout mínimo global (%)
+                                        </label>
+                                        <div class="flex items-center gap-4">
+                                            <input 
+                                                type="number" 
+                                                v-model.number="form.minPayout"
+                                                class="w-20 bg-[#111] border border-[#333] rounded-lg py-2 text-white text-center focus:border-zenix-green outline-none"
+                                            >
+                                            <div class="flex-1 h-2 bg-[#111] rounded-full overflow-hidden border border-[#333]">
+                                                <div class="h-full bg-zenix-green transition-all" :style="{ width: (form.minPayout || 80) + '%' }"></div>
+                                            </div>
+                                            <span class="text-sm font-bold text-gray-400 w-10 text-right">{{ form.minPayout || 80 }}%</span>
+                                        </div>
+                                    </div>
+
+                                    <button type="button" class="flex items-center gap-2 text-xs text-gray-500 hover:text-white transition-colors">
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                        <span>Configurações avançadas por perfil</span>
+                                    </button>
+
+                                    <div class="bg-[#0b0b0b] p-3 rounded-lg border border-[#222]">
+                                        <p class="text-[11px] text-gray-500 leading-tight">
+                                            Esses valores garantem que a estratégia consiga recuperar perdas de forma matemática e segura.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -921,48 +945,40 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="space-y-3">
-                            <div v-for="(markets, category) in marketsByCategory" :key="category" 
-                                 class="rounded-lg border border-[#1a1a1a] overflow-hidden bg-[#0f0f0f]">
-                                
-                                <div @click.stop="toggleMarketCategory(category)"
-                                     class="flex items-center justify-between p-3 cursor-pointer hover:bg-[#1a1a1a] transition-colors select-none">
-                                    
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-6 h-6 rounded bg-[#1a1a1a] border border-[#333] flex items-center justify-center text-gray-400">
-                                            <i v-if="expandedCategories.includes(category)" class="fas fa-folder-open text-zenix-green"></i>
-                                            <i v-else class="fas fa-folder"></i>
-                                        </div>
-                                        <span class="text-sm font-bold text-white">{{ category }}</span>
+                        <div class="categories-grid">
+                            <div v-for="(marketsList, category) in marketsByCategory" :key="category" class="category-card">
+                                <div class="category-card-header">
+                                    <div class="category-icon-wrapper">
+                                        <svg v-if="category === 'Índices Contínuos' || category === 'Continuous Indices'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category === 'Criptomoedas'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
+                                            <path d="M9 12H15M12 9V15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
+                                        </svg>
+                                        <svg v-else-if="category === 'Forex Majors' || category === 'Minor Pairs' || category === 'Major Pairs'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
+                                            <path d="M12 7V17M15 12H9" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                                        </svg>
+                                        <svg v-else-if="category === 'Metais'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M6 4L18 4L21 9L12 21L3 9L6 4Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M3 9H21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M12 21V9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <i v-else class="fa-solid fa-bars text-white"></i>
                                     </div>
-
-                                    <i class="fas fa-chevron-down text-gray-500 transition-transform duration-200"
-                                       :class="{ 'rotate-180': expandedCategories.includes(category) }"></i>
+                                    <h4 class="category-card-title">{{ category }}</h4>
                                 </div>
-
-                                <div v-if="expandedCategories.includes(category)" class="p-2 border-t border-[#1a1a1a] bg-[#0a0a0a]">
-                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                        <button v-for="m in markets" :key="m.symbol"
-                                                type="button"
-                                                @click.stop="selectMarket(m.symbol)"
-                                                class="flex items-center gap-2 p-2 rounded-lg border transition-all text-left w-full relative overflow-hidden group"
-                                                :class="(modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol 
-                                                    ? 'bg-zenix-green/10 border-zenix-green' 
-                                                    : 'bg-[#111] border-[#333] hover:border-gray-500'">
-                                            
-                                            <div class="w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors"
-                                                 :class="(modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol 
-                                                    ? 'border-zenix-green bg-zenix-green text-black' 
-                                                    : 'border-gray-600 group-hover:border-gray-400'">
-                                                <i v-if="(modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol" class="fas fa-check text-[8px]"></i>
-                                            </div>
-                                            
-                                            <span class="text-xs font-medium truncate" 
-                                                  :class="(modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol ? 'text-zenix-green' : 'text-gray-400 group-hover:text-white'">
-                                                {{ m.displayName || m.label }}
-                                            </span>
-                                        </button>
-                                    </div>
+                                <div class="category-items-list">
+                                    <button
+                                        v-for="m in marketsList"
+                                        :key="m.value"
+                                        @click="selectMarket(m.value)"
+                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.market : recoveryConfig.market) === m.value }]"
+                                    >
+                                        {{ m.label }}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -987,36 +1003,58 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="space-y-3">
-                            <div v-for="category in availableTradeTypeGroups" :key="category.id" 
-                                 class="rounded-lg border border-[#1a1a1a] overflow-hidden bg-[#0f0f0f]">
-                                
-                                <div @click.stop="toggleTradeTypeCategory(category.id)"
-                                     class="flex items-center justify-between p-3 cursor-pointer hover:bg-[#1a1a1a] select-none">
-                                    
-                                    <div class="flex items-center gap-3">
-                                        <i :class="category.icon" class="text-gray-400 text-xs"></i>
-                                        <span class="text-sm font-bold text-white">{{ category.label }}</span>
+                        <div class="categories-grid">
+                            <div v-for="category in availableTradeTypeGroups" :key="category.id" class="category-card">
+                                <div class="category-card-header">
+                                    <div class="category-icon-wrapper">
+                                        <svg v-if="category.id === 'rising_falling'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category.id === 'daily_reset_indices' || category.id === 'Índices Daily Reset'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 2V22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                                            <path d="M17 7L12 2L7 7" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M17 17L12 22L7 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category.id === 'digits'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M4 9H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M4 15H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M10 3L8 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 3L14 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category.id === 'accumulators'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M2 17L12 22L22 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category.id === 'multipliers'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
+                                            <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                                        </svg>
+                                        <i v-else :class="category.icon"></i>
                                     </div>
-                                    
-                                    <i class="fas fa-chevron-down text-gray-500 transition-transform duration-200"
-                                       :class="{ 'rotate-180': expandedTradeTypeCategories.includes(category.id) }"></i>
+                                    <h4 class="category-card-title">{{ category.label }}</h4>
                                 </div>
-
-                                <div v-if="expandedTradeTypeCategories.includes(category.id)" class="p-3 border-t border-[#1a1a1a] bg-[#0a0a0a]">
-                                    <div class="flex flex-wrap gap-2">
-                                        
-                                        <button v-for="item in category.items" :key="item.value"
-                                                type="button"
-                                                @click.stop.prevent="selectTradeTypeItem(item)"
-                                                class="px-4 py-2 rounded-lg text-xs font-bold border transition-all"
-                                                :class="isTradeTypeItemSelected(item) 
-                                                    ? 'bg-zenix-green text-black border-zenix-green shadow-lg shadow-green-900/20' 
-                                                    : 'bg-[#181818] text-gray-400 border-[#333] hover:border-gray-500 hover:text-white'">
-                                            {{ item.label }}
-                                        </button>
-
-                                    </div>
+                                <div class="category-items-list">
+                                    <button
+                                        v-for="item in category.items"
+                                        :key="item.value"
+                                        @click="selectTradeType(item)"
+                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.selectedTradeTypeGroup : recoveryConfig.selectedTradeTypeGroup) === item.value }]"
+                                    >
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-5 h-5 flex items-center justify-center text-zenix-green">
+                                                <img 
+                                                    v-if="item.icon && item.icon.endsWith('.svg')" 
+                                                    :src="`/deriv_icons/${item.icon}`" 
+                                                    class="w-full h-full object-contain filter-zenix-green" 
+                                                    :alt="item.label" 
+                                                />
+                                                <i v-else :class="item.icon"></i>
+                                            </div>
+                                            <span>{{ item.label }}</span>
+                                        </div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1698,10 +1736,8 @@ export default {
             
             // UI Modals
             showMarketModal: false,
+            showTradeTypeModal: false,
             showFilterModal: false,
-            expandedCategories: [], // Array for multiple open market categories
-            expandedTradeTypeCategories: [], // Array for multiple open trade type categories
-            showTradeTypeModal: false, // Added missing property
             showPauseModal: false,
             showAccountModal: false,
             showStopModal: false, // New Stop Result Modal
@@ -1751,7 +1787,7 @@ export default {
                 directionMode: 'both', // 'both', 'up', 'down'
                 directionPayouts: {}, // { [contractType]: payout }
                 attackFilters: [],
-                selectedTradeTypeGroups: [] // Support single-selection via direct assignment
+                minPayout: 80
             },
 
             // Strategy Execution State
@@ -1774,7 +1810,7 @@ export default {
             recoveryConfig: {
                 enabled: true,
                 market: '',
-                selectedTradeTypeGroups: [],
+                selectedTradeTypeGroup: '',
                 tradeType: '',
                 prediction: 0,
                 barrier: 0,
@@ -2234,32 +2270,33 @@ export default {
             return this.recoveryContracts.map(c => c.contractType.toUpperCase());
         },
         // Helpers to get the current list based on context
-        currentConfig() {
-            return (this.modalContext || 'main') === 'main' ? this.form : this.recoveryConfig;
-        },
-        currentMarket() {
-            return this.currentConfig.market;
-        },
         currentContextContracts() {
-            return (this.modalContext || 'main') === 'main' ? this.contracts : this.recoveryContracts;
+            return this.modalContext === 'main' ? this.contracts : this.recoveryContracts;
         },
         
         // DYNAMIC GENERATION OF CATEGORIES
-        mainTradeTypeGroups() {
-            const availableTypes = this.contracts.map(c => c.contractType.toUpperCase());
-            return this.getFilteredTradeTypeGroups(availableTypes);
-        },
-        recoveryTradeTypeGroups() {
-            const availableTypes = this.recoveryContracts.map(c => c.contractType.toUpperCase());
-            return this.getFilteredTradeTypeGroups(availableTypes);
-        },
         availableTradeTypeGroups() {
-            // Deprecated helper, use mainTradeTypeGroups or recoveryTradeTypeGroups
-            return (this.modalContext || 'main') === 'main' ? this.mainTradeTypeGroups : this.recoveryTradeTypeGroups;
+            // Filter categories and items based on available contracts
+            const availableTypes = this.currentContextContracts.map(c => c.contractType.toUpperCase());
+            
+            return this.tradeTypeCategories.map(category => {
+                const filteredItems = category.items.filter(item => {
+                    // Item is shown if ANY of its directions are available
+                    return item.directions.some(dir => availableTypes.includes(dir.value.toUpperCase()));
+                });
+                
+                if (filteredItems.length > 0) {
+                    return {
+                        ...category,
+                        items: filteredItems
+                    };
+                }
+                return null;
+            }).filter(Boolean);
         },
         
         activeFiltersForModal() {
-            return (this.modalContext || 'main') === 'main' ? this.filters : this.recoveryFilters;
+            return this.modalContext === 'main' ? this.filters : this.recoveryFilters;
         },
 
         groupedFiltersForModal() {
@@ -2289,16 +2326,13 @@ export default {
         
         // --- Label Helpers using Contracts Data directly ---
         selectedTradeTypeGroupLabel() {
-             const groups = this.form.selectedTradeTypeGroups || [];
-             if (groups.length === 0) return 'Selecionar Tipo';
-             if (groups.length === 1) {
-                 for (const cat of this.tradeTypeCategories) {
-                     const item = cat.items.find(i => i.value === groups[0]);
-                     if (item) return item.label;
-                 }
-                 return groups[0];
+             if (!this.form.selectedTradeTypeGroup) return 'Selecionar Tipo';
+             // Check in static categories
+             for (const cat of this.tradeTypeCategories) {
+                 const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
+                 if (item) return item.label;
              }
-             return `${groups.length} Grupos Selecionados`;
+             return this.form.selectedTradeTypeGroup;
         },
         selectedTradeTypeLabel() {
             if (!this.form.tradeType) return this.selectedTradeTypeGroupLabel !== 'Selecionar Tipo' ? this.selectedTradeTypeGroupLabel : 'Selecionar';
@@ -2306,35 +2340,23 @@ export default {
             return c ? `${c.contractDisplay}` : this.form.tradeType;
         },
         selectedTradeTypeIcon() {
-            const groups = this.form.selectedTradeTypeGroups || [];
-            if (groups.length === 0) return null;
+            if (!this.form.selectedTradeTypeGroup) return null;
              for (const cat of this.tradeTypeCategories) {
-                 const item = cat.items.find(i => i.value === groups[0]);
+                 const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
+                 // Use specific item icon if available, otherwise category icon could be used but item icon is preferred
                  if (item && item.icon) return `/deriv_icons/${item.icon}`;
              }
+            // Fallback to contract type check if needed
             return null;
         },
 
         selectedDirections() {
-            const groups = this.form.selectedTradeTypeGroups || [];
-            if (groups.length === 0) return [];
-            
-            const allDirs = [];
-            const seen = new Set();
-            
+            if (!this.form.selectedTradeTypeGroup) return [];
             for (const cat of this.tradeTypeCategories) {
-                cat.items.forEach(item => {
-                    if (groups.includes(item.value)) {
-                        item.directions.forEach(dir => {
-                            if (!seen.has(dir.value)) {
-                                allDirs.push(dir);
-                                seen.add(dir.value);
-                            }
-                        });
-                    }
-                });
+                const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
+                if (item) return item.directions;
             }
-            return allDirs;
+            return [];
         },
         
         // Recovery Labels
@@ -2346,22 +2368,17 @@ export default {
             return marketByValue ? marketByValue.label : 'Mercado de Recuperação';
         },
         selectedRecoveryTradeTypeGroupLabel() {
-            const groups = this.recoveryConfig.selectedTradeTypeGroups || [];
-            if (groups.length === 0) return 'Selecionar Tipo';
-            if (groups.length === 1) {
-                for (const cat of this.tradeTypeCategories) {
-                    const item = cat.items.find(i => i.value === groups[0]);
-                    if (item) return item.label;
-                }
-                return groups[0];
-            }
-            return `${groups.length} Grupos Selecionados`;
+            if (!this.recoveryConfig.selectedTradeTypeGroup) return 'Selecionar Tipo';
+            for (const cat of this.tradeTypeCategories) {
+                 const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
+                 if (item) return item.label;
+             }
+             return this.recoveryConfig.selectedTradeTypeGroup;
         },
         selectedRecoveryTradeTypeGroupIcon() {
-            const groups = this.recoveryConfig.selectedTradeTypeGroups || [];
-            if (groups.length === 0) return null;
+            if (!this.recoveryConfig.selectedTradeTypeGroup) return null;
             for (const cat of this.tradeTypeCategories) {
-                 const item = cat.items.find(i => i.value === groups[0]);
+                 const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
                  if (item && item.icon) return `/deriv_icons/${item.icon}`;
              }
             return null;
@@ -2372,35 +2389,21 @@ export default {
             return c ? `${c.contractDisplay}` : this.recoveryConfig.tradeType;
         },
         selectedRecoveryTradeTypeIcon() {
-            const groups = this.recoveryConfig.selectedTradeTypeGroups || [];
-            if (groups.length === 0) return null;
+             if (!this.recoveryConfig.selectedTradeTypeGroup) return null;
             for (const cat of this.tradeTypeCategories) {
-                 const item = cat.items.find(i => i.value === groups[0]);
+                 const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
                  if (item && item.icon) return `/deriv_icons/${item.icon}`;
              }
             return null;
         },
 
         selectedRecoveryDirections() {
-            const groups = this.recoveryConfig.selectedTradeTypeGroups || [];
-            if (groups.length === 0) return [];
-            
-            const allDirs = [];
-            const seen = new Set();
-            
+            if (!this.recoveryConfig.selectedTradeTypeGroup) return [];
             for (const cat of this.tradeTypeCategories) {
-                cat.items.forEach(item => {
-                    if (groups.includes(item.value)) {
-                        item.directions.forEach(dir => {
-                            if (!seen.has(dir.value)) {
-                                allDirs.push(dir);
-                                seen.add(dir.value);
-                            }
-                        });
-                    }
-                });
+                const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
+                if (item) return item.directions;
             }
-            return allDirs;
+            return [];
         },
         
         activeAttackFilterNames() {
@@ -2423,193 +2426,6 @@ export default {
         window.removeEventListener('resize', this.handleResize);
     },
     methods: {
-        selectMarket(symbol) {
-            console.log('[UI] Selecionando Mercado:', symbol);
-            
-            const context = this.modalContext || 'main';
-            const config = context === 'main' ? this.form : this.recoveryConfig;
-
-            // Se for o mesmo mercado, apenas agendamos o fechamento
-            if (config.market === symbol) {
-                setTimeout(() => this.closeMarketModal(), 100);
-                return;
-            }
-
-            // 1. ATUALIZAÇÃO DE DADOS (Imediata)
-            config.market = symbol;
-
-            // Limpeza de segurança
-            if (context === 'main') {
-                this.form.selectedTradeTypeGroups = [];
-                this.form.tradeType = '';
-                this.contracts = []; 
-            } else {
-                this.recoveryConfig.selectedTradeTypeGroups = [];
-                this.recoveryConfig.tradeType = '';
-                this.recoveryContracts = [];
-            }
-
-            // 2. ATUALIZAÇÃO VISUAL (Força o DOM a processar a cor verde)
-            this.$nextTick(() => {
-                const marketName = this.markets.find(m => (m.symbol === symbol || m.value === symbol))?.label || symbol;
-                this.$root.$toast.success(`Mercado: ${marketName}`);
-
-                // 3. FECHAMENTO SEGURO (O Segredo para não dar erro _vei)
-                // Esperamos 150ms para o Vue terminar de processar o clique antes de destruir o modal
-                setTimeout(() => {
-                    this.closeMarketModal();
-                    
-                    // Busca os dados depois que a animação terminar
-                    this.onMarketChange(context, false);
-                }, 150);
-            });
-        },
-        async onMarketChange(context = 'main', preserveSelection = false) {
-            const config = context === 'main' ? this.form : this.recoveryConfig;
-            const market = config.market;
-            
-            // 1. Smart Cleanup
-            if (context === 'main') {
-                this.contracts = [];
-                // ONLY clear if NOT loading a saved strategy
-                if (!preserveSelection) {
-                    this.form.selectedTradeTypeGroups = [];
-                    this.form.tradeType = '';
-                    this.expandedTradeTypeCategories = [];
-                }
-            } else {
-                this.recoveryContracts = [];
-                if (!preserveSelection) {
-                    this.recoveryConfig.selectedTradeTypeGroups = [];
-                    this.recoveryConfig.tradeType = '';
-                }
-            }
-
-            if (!market) return;
-            
-            this.isFetchingContracts = true;
-            try {
-                const token = this.getDerivToken(); 
-                if (!token) return;
-
-                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-                
-                // Capture current market to avoid "Race Condition" (delayed response)
-                const fetchingForMarket = market;
-
-                const res = await fetch(`${apiBaseUrl}/markets/${market}/contracts`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (res.ok) {
-                    const contracts = await res.json();
-                    
-                    // Check if market changed while loading
-                    if (config.market !== fetchingForMarket) return;
-
-                    if (context === 'main') {
-                        this.contracts = contracts;
-                        // Auto-expand only if manual selection
-                        if (!preserveSelection) {
-                            this.$nextTick(() => {
-                                if (this.mainTradeTypeGroups && this.mainTradeTypeGroups.length > 0) {
-                                    this.expandedTradeTypeCategories.push(this.mainTradeTypeGroups[0].id);
-                                }
-                            });
-                        }
-                    } else {
-                        this.recoveryContracts = contracts;
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching contracts:', error);
-                this.$root.$toast.error('Erro ao carregar contratos do mercado');
-            } finally {
-                this.isFetchingContracts = false;
-            }
-        },
-        toggleMarketCategory(category) {
-            // Verifica se o array existe (segurança)
-            if (!this.expandedCategories) this.expandedCategories = [];
-            
-            const index = this.expandedCategories.indexOf(category);
-            if (index > -1) {
-                this.expandedCategories.splice(index, 1);
-            } else {
-                this.expandedCategories.push(category);
-            }
-        },
-        toggleTradeTypeCategory(id) {
-            if (!this.expandedTradeTypeCategories) this.expandedTradeTypeCategories = [];
-
-            const index = this.expandedTradeTypeCategories.indexOf(id);
-            if (index > -1) {
-                this.expandedTradeTypeCategories.splice(index, 1);
-            } else {
-                this.expandedTradeTypeCategories.push(id);
-            }
-        },
-        openMarketModal(context = 'main') {
-            this.modalContext = context;
-            this.showMarketModal = true;
-        },
-        closeMarketModal() {
-            this.showMarketModal = false;
-            this.modalContext = 'main';
-        },
-        openTradeTypeModal(context = 'main') {
-            this.modalContext = context;
-            this.showTradeTypeModal = true;
-        },
-        closeTradeTypeModal() {
-            this.showTradeTypeModal = false;
-            this.modalContext = 'main';
-        },
-        selectTradeTypeItem(item) {
-            const context = this.modalContext || 'main';
-            const config = context === 'main' ? this.form : this.recoveryConfig;
-
-            // Array novo com apenas 1 item
-            config.selectedTradeTypeGroups = [item.value];
-
-            // Define string para API
-            if (item.directions && item.directions.length > 0) {
-                config.tradeType = item.directions[0].value;
-            } else {
-                config.tradeType = item.value;
-            }
-            
-            this.$root.$toast.success(`Selecionado: ${item.label}`);
-        },
-        isTradeTypeItemSelected(item) {
-            const context = this.modalContext || 'main';
-            const config = context === 'main' ? this.form : this.recoveryConfig;
-            
-            // Verificação segura
-            return config.selectedTradeTypeGroups && config.selectedTradeTypeGroups.includes(item.value);
-        },
-        isCategoryFullySelected(category, customConfig = null) {
-            if (!category.items || category.items.length === 0) return false;
-            const config = customConfig || this.currentConfig;
-            if (!config.selectedTradeTypeGroups) return false;
-            
-            return category.items.every(item => config.selectedTradeTypeGroups.includes(item.value));
-        },
-        isCategoryPartiallySelected(category, customConfig = null) {
-            const config = customConfig || this.currentConfig;
-            if (!config.selectedTradeTypeGroups) return false;
-            
-            const hasSome = category.items.some(item => config.selectedTradeTypeGroups.includes(item.value));
-            const hasAll = this.isCategoryFullySelected(category, customConfig);
-            return hasSome && !hasAll;
-        },
-        getCategorySelectionCount(category, customConfig = null) {
-            const config = customConfig || this.currentConfig;
-            if (!config.selectedTradeTypeGroups) return `0/${category.items.length}`;
-            
-            const selected = category.items.filter(item => config.selectedTradeTypeGroups.includes(item.value)).length;
-            return `${selected}/${category.items.length}`;
-        },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
             if (this.isMobile) {
@@ -2621,24 +2437,15 @@ export default {
         },
         async fetchMarkets() {
             try {
-                // Use the robust helper to get the token, fallback if needed
-                const token = this.getDerivToken(); 
-                if (!token) {
-                    console.error('[StrategyCreator] No token found for fetching markets.');
-                    this.$root.$toast.error('Erro de autenticação ao buscar mercados.');
-                    return;
-                }
-
+                const token = localStorage.getItem('token');
                 const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 
-                console.log('[StrategyCreator] Fetching markets...');
                 const res = await fetch(`${apiBaseUrl}/markets`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
                 if (res.ok) {
                     const data = await res.json();
-                    console.log(`[StrategyCreator] Raw markets fetched: ${data.length}`);
                     
                     const allowedForex = ['frxEURUSD', 'frxUSDJPY', 'frxGBPUSD', 'frxAUDUSD', 'frxUSDCHF', 'frxUSDCAD', 'frxNZDUSD', 'frxEURGBP', 'frxEURJPY', 'frxGBPJPY'];
                     const allowedCrypto = ['cryBTCUSD', 'cryETHUSD', 'cryLTCUSD', 'cryXRPUSD', 'cryBCHUSD'];
@@ -2660,16 +2467,7 @@ export default {
                         return false;
                     });
 
-                    console.log(`[StrategyCreator] Filtered markets: ${filteredData.length}`);
-
-                    // Deduplication using Set to track seen symbols
-                    const uniqueMarkets = [];
-                    const seenSymbols = new Set();
-                    
-                    filteredData.forEach(m => {
-                        if (seenSymbols.has(m.symbol)) return;
-                        seenSymbols.add(m.symbol);
-
+                    this.markets = filteredData.map(m => {
                         let category = m.submarketDisplayName || m.marketDisplayName || 'Outros';
                         
                         if (m.symbol.startsWith('frx')) {
@@ -2688,40 +2486,56 @@ export default {
                             category = 'Daily Reset Indices';
                         }
 
-                        uniqueMarkets.push({
+                        return {
                             ...m,
                             value: m.symbol,
                             label: m.displayName,
-                            category: category,
-                            symbol: m.symbol
-                        });
+                            category: category
+                        };
                     });
-
-                    this.markets = uniqueMarkets;
-                    console.log(`[StrategyCreator] Final unique markets: ${this.markets.length}`);
-                } else {
-                    console.error('[StrategyCreator] Market fetch failed:', res.status, res.statusText);
-                    this.$root.$toast.error('Falha ao buscar mercados.');
                 }
             } catch (error) {
                 console.error('Erro ao buscar mercados:', error);
                 this.$root.$toast.error('Erro ao carregar mercados');
             }
         },
-        getFilteredTradeTypeGroups(availableTypes) {
-            return this.tradeTypeCategories.map(category => {
-                const filteredItems = category.items.filter(item => {
-                    return item.directions.some(dir => availableTypes.includes(dir.value.toUpperCase()));
-                });
+        async onMarketChange(context = 'main') {
+            const market = context === 'main' ? this.form.market : this.recoveryConfig.market;
+            if (!market) return;
+            
+            if (context === 'main') {
+                this.contracts = [];
+                this.form.selectedTradeTypeGroup = '';
+                this.form.tradeType = '';
+            } else {
+                this.recoveryContracts = [];
+                this.recoveryConfig.selectedTradeTypeGroup = '';
+                this.recoveryConfig.tradeType = '';
+            }
+            
+            this.isFetchingContracts = true;
+            try {
+                const token = localStorage.getItem('token');
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 
-                if (filteredItems.length > 0) {
-                    return {
-                        ...category,
-                        items: filteredItems
-                    };
+                const res = await fetch(`${apiBaseUrl}/markets/${market}/contracts`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const contracts = await res.json();
+                    if (context === 'main') {
+                        this.contracts = contracts;
+                    } else {
+                        this.recoveryContracts = contracts;
+                    }
                 }
-                return null;
-            }).filter(Boolean);
+            } catch (error) {
+                console.error('Erro ao buscar contratos:', error);
+                this.$root.$toast.error('Erro ao carregar contratos do mercado');
+            } finally {
+                this.isFetchingContracts = false;
+            }
         },
         // Filter Management Methods
         openFilterModal(context = 'main') {
@@ -2864,7 +2678,96 @@ export default {
                     config: JSON.parse(JSON.stringify(f.config))
                 }));
         },
-        // ----------------------------
+        // Modal Handlers
+        openMarketModal(context = 'main') {
+            this.modalContext = context;
+            this.showMarketModal = true;
+        },
+        closeMarketModal() {
+            this.showMarketModal = false;
+        },
+        selectMarket(symbol) {
+            if (this.modalContext === 'main') {
+                this.form.market = symbol;
+            } else {
+                this.recoveryConfig.market = symbol;
+            }
+            
+            const market = this.markets.find(m => m.symbol === symbol);
+            this.$root.$toast.success(`Mercado selecionado: ${market ? market.label : symbol}`);
+            
+            this.closeMarketModal();
+            this.onMarketChange(this.modalContext);
+        },
+        openTradeTypeModal(context = 'main') {
+            const contracts = context === 'main' ? this.contracts : this.recoveryContracts;
+            
+            if (this.isFetchingContracts) {
+                this.$root.$toast.info('Carregando contratos... Por favor, aguarde.');
+                return;
+            }
+
+            if (!contracts.length) {
+                this.$root.$toast.warning('Selecione um mercado válido primeiro.');
+                return;
+            }
+
+            this.modalContext = context;
+            this.showTradeTypeModal = true;
+        },
+        closeTradeTypeModal() {
+            this.showTradeTypeModal = false;
+        },
+        selectTradeType(item) {
+            // Determine the default direction (Contract Type)
+            const contracts = this.modalContext === 'main' ? this.contracts : this.recoveryContracts;
+            const availableTypes = contracts.map(c => c.contractType.toUpperCase());
+            
+            // Find first direction that exists in available contracts
+            let selectedDirection = item.directions.find(d => availableTypes.includes(d.value.toUpperCase()));
+            
+            // Fallback if none found
+            if (!selectedDirection) {
+                selectedDirection = item.directions[0]; 
+            }
+
+            if (this.modalContext === 'main') {
+                this.form.selectedTradeTypeGroup = item.value; // Store Item Value for UI
+                
+                // ✅ Respect Direction Mode: If AMBOS is selected, tradeType MUST be empty
+                if (this.form.directionMode === 'both') {
+                    this.form.tradeType = '';
+                    console.log(`[selectTradeType] Modal: AMBOS mode detected, clearing tradeType for dynamic signaling`);
+                } else {
+                    this.form.tradeType = selectedDirection.value; // Store Actual Contract Type for API
+                }
+                
+                // Initialize Direction Payouts
+                this.form.directionPayouts = {};
+                item.directions.forEach(d => {
+                    this.form.directionPayouts[d.value] = this.form.expectedPayout || 1.20;
+                });
+            } else {
+                this.recoveryConfig.selectedTradeTypeGroup = item.value;
+
+                // ✅ Respect Direction Mode (Recovery)
+                if (this.recoveryConfig.directionMode === 'both') {
+                    this.recoveryConfig.tradeType = '';
+                    console.log(`[selectTradeType] Modal (REC): AMBOS mode detected, clearing tradeType`);
+                } else {
+                    this.recoveryConfig.tradeType = selectedDirection.value;
+                }
+
+                // Initialize Direction Payouts
+                this.recoveryConfig.directionPayouts = {};
+                item.directions.forEach(d => {
+                    this.recoveryConfig.directionPayouts[d.value] = this.recoveryConfig.expectedPayout || 2.26;
+                });
+            }
+            
+            this.$root.$toast.success(`Selecionado: ${item.label} (${selectedDirection.label})`);
+            this.closeTradeTypeModal();
+        },
         
         // ✅ NEW: Auto-update tradeType when direction mode changes
         updateRecoveryDirection(mode, specificType = null) {
@@ -3212,13 +3115,10 @@ export default {
                  console.log('[loadSavedStrategy] Martingale OFF -> Enforcing Risk Profile: Conservador');
             }
 
-            // CRITICAL: Load contracts but PRESERVE (true) the loaded selection
-            this.onMarketChange('main', true);
-            this.onMarketChange('recovery', true);
-
             // Set current strategy info for display
             this.currentStrategyName = strategy.name;
             this.currentVersion = strategy.version || '1.0';
+
             this.addLog(`📂 Estratégia carregada: ${strategy.name} (v${this.currentVersion})`, 'info');
             this.$root.$toast.success(`Estratégia "${strategy.name}" carregada!`);
         },
@@ -4023,26 +3923,18 @@ export default {
                                 dynamicContractType = baseType;
                             } else {
                                 // Dynamic group or EMPTY tradeType - map signal to contract type
-                                // If baseType is empty, we must infer the contract group from the signal or activeTradeTypeGroups
-                                const groups = configModel.selectedTradeTypeGroups || [];
-                                
-                                // Check if signal matches any of the selected groups
-                                if (['CALL', 'UP'].includes(signal)) {
-                                    // Prioritize Digit group if selected, or fallback to Rise/Fall
-                                    const hasDigit = groups.some(g => g.includes('digit'));
-                                    dynamicContractType = hasDigit ? 'DIGITOVER' : 'CALL';
-                                } else if (['PUT', 'DOWN'].includes(signal)) {
-                                    const hasDigit = groups.some(g => g.includes('digit'));
-                                    dynamicContractType = hasDigit ? 'DIGITUNDER' : 'PUT';
-                                } else if (['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal)) {
-                                    // If signal is a specific digit type, check if it's in our allowed groups
-                                    const signalGroup = signal.startsWith('DIGIT') ? 'digits' : signal; 
-                                    const isAllowed = groups.some(g => g === signalGroup || g === signal);
-                                    if (isAllowed) dynamicContractType = signal;
-                                }
+                                // If baseType is empty, we must infer the contract group from the signal or activeTradeTypeGroup
+                                const group = configModel.selectedTradeTypeGroup || '';
+                                const isDigitGroup = group.includes('digit') || ['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal);
 
-                                if (!dynamicContractType) {
-                                    dynamicContractType = baseType || signal; // Fallback
+                                if (['CALL', 'UP'].includes(signal)) {
+                                    dynamicContractType = isDigitGroup ? 'DIGITOVER' : 'CALL';
+                                } else if (['PUT', 'DOWN'].includes(signal)) {
+                                    dynamicContractType = isDigitGroup ? 'DIGITUNDER' : 'PUT';
+                                } else if (['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal)) {
+                                    dynamicContractType = signal;
+                                } else {
+                                    dynamicContractType = baseType || signal; // Fallback to signal if baseType is empty
                                 }
                             }
 
@@ -4761,73 +4653,6 @@ export default {
 </script>
 
 <style>
-/* New Market Selection UI Styles */
-.market-category-container {
-    background: #181818;
-    border: 1px solid #333;
-    border-radius: 1rem;
-    overflow: hidden;
-    transition: all 0.2s ease;
-}
-
-.custom-checkbox {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #333;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    transition: all 0.2s ease;
-    color: #111;
-}
-
-.custom-checkbox.sm {
-    width: 16px;
-    height: 16px;
-}
-
-.custom-checkbox.checked {
-    background: #00ff88;
-    border-color: #00ff88;
-}
-
-.custom-checkbox.half-checked {
-    background: #00ff88;
-    border-color: #00ff88;
-}
-
-.custom-checkbox.half-checked::after {
-    content: '';
-    width: 8px;
-    height: 2px;
-    background: #111;
-    border-radius: 1px;
-}
-
-.custom-checkbox i {
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.custom-checkbox.sm i {
-    font-size: 8px;
-}
-
-.market-category-container:hover {
-    border-color: #444;
-}
-
-.rotate-180 {
-    transform: rotate(180deg);
-}
-
-.category-assets-grid {
-    border-top: 1px solid rgba(51, 51, 51, 0.5);
-}
-
-/* Original Styles */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
