@@ -131,11 +131,11 @@
                                                 :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedCategories.includes(category) }"
                                             >
                                                 <div 
-                                                    class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all rounded-xl"
+                                                    class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/10 transition-all rounded-xl"
                                                     @click="toggleMarketCategory(category)"
                                                 >
                                                     <div class="flex items-center gap-4">
-                                                        <div class="custom-checkbox" :class="{ 'checked': expandedCategories.includes(category) }">
+                                                        <div class="custom-checkbox" :class="{ 'checked': expandedCategories.includes(category) && (modalContext === 'main' ? form.market : recoveryConfig.market) === markets[0]?.symbol }">
                                                             <i v-if="expandedCategories.includes(category)" class="fa-solid fa-check"></i>
                                                         </div>
                                                         <span class="text-lg font-medium text-white">{{ category }}</span>
@@ -143,15 +143,15 @@
                                                     <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': !expandedCategories.includes(category) }"></i>
                                                 </div>
 
-                                                <div v-if="expandedCategories.includes(category)" class="p-4 pt-0 border-t border-[#333]/50 mt-2 category-assets-grid">
+                                                <div v-show="expandedCategories.includes(category)" class="p-4 pt-0 border-t border-[#333]/50 mt-2 category-assets-grid">
                                                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
                                                         <div v-for="m in markets" :key="m.symbol"
-                                                            class="bg-[#181818] border border-[#333] rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-zenix-green/50 hover:bg-zenix-green/5 transition-all"
-                                                            :class="{ 'border-zenix-green bg-zenix-green/10': m.symbol && form.market === m.symbol }"
+                                                            class="bg-[#181818] border border-[#333] rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-zenix-green/50 hover:bg-zenix-green/5 transition-all select-none"
+                                                            :class="{ 'border-zenix-green bg-zenix-green/10': m.symbol && (modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol }"
                                                             @click.stop="selectMarket(m.symbol)"
                                                         >
-                                                            <div class="custom-checkbox sm" :class="{ 'checked': m.symbol && form.market === m.symbol }">
-                                                                <i v-if="m.symbol && form.market === m.symbol" class="fa-solid fa-check"></i>
+                                                            <div class="custom-checkbox sm" :class="{ 'checked': m.symbol && (modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol }">
+                                                                <i v-if="m.symbol && (modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol" class="fa-solid fa-check"></i>
                                                             </div>
                                                             <span class="text-sm font-medium text-white">{{ m.displayName || m.label }}</span>
                                                         </div>
@@ -177,18 +177,16 @@
                                             :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedTradeTypeCategories.includes(category.id) }"
                                         >
                                             <div 
-                                                class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all rounded-xl"
+                                                class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/10 transition-all rounded-xl"
                                                 @click="toggleTradeTypeCategory(category.id)"
                                             >
                                                 <div class="flex items-center gap-4">
                                                     <div class="custom-checkbox" 
                                                         :class="{ 
-                                                            'checked': isCategoryFullySelected(category, form),
-                                                            'half-checked': isCategoryPartiallySelected(category, form)
+                                                            'checked': isCategoryFullySelected(category, form)
                                                         }"
                                                     >
                                                         <i v-if="isCategoryFullySelected(category, form)" class="fa-solid fa-check"></i>
-                                                        <div v-else-if="isCategoryPartiallySelected(category, form)" class="w-2 h-0.5 bg-black rounded-full"></div>
                                                     </div>
                                                     <div class="flex items-center gap-2">
                                                         <i :class="category.icon" class="text-zenix-green text-sm"></i>
@@ -196,20 +194,19 @@
                                                     </div>
                                                 </div>
                                                 <div class="flex items-center gap-4">
-                                                    <span class="text-xs font-bold text-gray-500">{{ getCategorySelectionCount(category, form) }}</span>
                                                     <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': !expandedTradeTypeCategories.includes(category.id) }"></i>
                                                 </div>
                                             </div>
 
-                                            <div v-if="expandedTradeTypeCategories.includes(category.id)" class="p-4 pt-0 border-t border-[#333]/50 mt-2">
+                                            <div v-show="expandedTradeTypeCategories.includes(category.id)" class="p-4 pt-0 border-t border-[#333]/50 mt-2">
                                                 <div class="flex flex-wrap gap-2 mt-4">
                                                         <button 
                                                             v-for="item in category.items" 
                                                             :key="item.value"
                                                             type="button"
                                                             @click.stop="selectTradeTypeItem(item)"
-                                                            class="px-4 py-2 rounded-full text-xs font-bold border transition-all"
-                                                            :class="isTradeTypeItemSelected(item) ? 'bg-zenix-green/10 border-zenix-green text-zenix-green' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
+                                                            class="px-4 py-2 rounded-full text-xs font-bold border transition-all select-none"
+                                                            :class="isTradeTypeItemSelected(item) ? 'bg-zenix-green text-black border-zenix-green shadow-[0_0_10px_rgba(34,197,94,0.3)]' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
                                                         >
                                                         {{ item.label }}
                                                     </button>
@@ -924,46 +921,48 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="categories-grid">
-                            <div v-for="(marketsList, category) in marketsByCategory" :key="category" class="category-card">
-                                <div 
-                                    class="category-card-header cursor-pointer hover:bg-[#222] transition-colors"
-                                    @click="toggleMarketCategory(category)"
-                                >
-                                    <div class="category-icon-wrapper">
-                                        <svg v-if="category === 'Índices Contínuos' || category === 'Continuous Indices'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                        <svg v-else-if="category === 'Criptomoedas'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
-                                            <path d="M9 12H15M12 9V15" stroke="#FF444F" stroke-width="2.5" stroke-linecap="round"/>
-                                        </svg>
-                                        <svg v-else-if="category === 'Forex Majors' || category === 'Minor Pairs' || category === 'Major Pairs'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
-                                            <path d="M12 7V17M15 12H9" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
-                                        </svg>
-                                        <svg v-else-if="category === 'Metais'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M6 4L18 4L21 9L12 21L3 9L6 4Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M3 9H21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M12 21V9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                        <i v-else class="fa-solid fa-bars text-white"></i>
+                        <div class="space-y-3">
+                            <div v-for="(markets, category) in marketsByCategory" :key="category" 
+                                 class="rounded-lg border border-[#1a1a1a] overflow-hidden bg-[#0f0f0f]">
+                                
+                                <div @click.stop="toggleMarketCategory(category)"
+                                     class="flex items-center justify-between p-3 cursor-pointer hover:bg-[#1a1a1a] transition-colors select-none">
+                                    
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-6 h-6 rounded bg-[#1a1a1a] border border-[#333] flex items-center justify-center text-gray-400">
+                                            <i v-if="expandedCategories.includes(category)" class="fas fa-folder-open text-zenix-green"></i>
+                                            <i v-else class="fas fa-folder"></i>
+                                        </div>
+                                        <span class="text-sm font-bold text-white">{{ category }}</span>
                                     </div>
-                                    <div class="flex-1 flex justify-between items-center">
-                                        <h4 class="category-card-title">{{ category }}</h4>
-                                        <i class="fa-solid fa-chevron-down text-gray-500 text-xs transition-transform duration-200" :class="{ 'rotate-180': expandedCategories.includes(category) }"></i>
-                                    </div>
+
+                                    <i class="fas fa-chevron-down text-gray-500 transition-transform duration-200"
+                                       :class="{ 'rotate-180': expandedCategories.includes(category) }"></i>
                                 </div>
-                                <div v-show="expandedCategories.includes(category)" class="category-items-list">
-                                    <button
-                                        v-for="m in marketsList"
-                                        :key="m.value"
-                                        @click.stop="selectMarket(m.value)"
-                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.market : recoveryConfig.market) === m.value }]"
-                                    >
-                                        {{ m.label }}
-                                    </button>
+
+                                <div v-if="expandedCategories.includes(category)" class="p-2 border-t border-[#1a1a1a] bg-[#0a0a0a]">
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                        <button v-for="m in markets" :key="m.symbol"
+                                                type="button"
+                                                @click.stop="selectMarket(m.symbol)"
+                                                class="flex items-center gap-2 p-2 rounded-lg border transition-all text-left w-full relative overflow-hidden group"
+                                                :class="(modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol 
+                                                    ? 'bg-zenix-green/10 border-zenix-green' 
+                                                    : 'bg-[#111] border-[#333] hover:border-gray-500'">
+                                            
+                                            <div class="w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors"
+                                                 :class="(modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol 
+                                                    ? 'border-zenix-green bg-zenix-green text-black' 
+                                                    : 'border-gray-600 group-hover:border-gray-400'">
+                                                <i v-if="(modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol" class="fas fa-check text-[8px]"></i>
+                                            </div>
+                                            
+                                            <span class="text-xs font-medium truncate" 
+                                                  :class="(modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol ? 'text-zenix-green' : 'text-gray-400 group-hover:text-white'">
+                                                {{ m.displayName || m.label }}
+                                            </span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -988,64 +987,36 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="categories-grid">
-                            <div v-for="category in availableTradeTypeGroups" :key="category.id" class="category-card">
-                                <div 
-                                    class="category-card-header cursor-pointer hover:bg-[#222] transition-colors"
-                                    @click="toggleTradeTypeCategory(category.id)"
-                                >
-                                    <div class="category-icon-wrapper">
-                                        <svg v-if="category.id === 'rising_falling'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                        <svg v-else-if="category.id === 'daily_reset_indices' || category.id === 'Índices Daily Reset'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M12 2V22" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-                                            <path d="M17 7L12 2L7 7" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M17 17L12 22L7 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                        <svg v-else-if="category.id === 'digits'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M4 9H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M4 15H20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M10 3L8 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M16 3L14 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                        <svg v-else-if="category.id === 'accumulators'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M2 17L12 22L22 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                        <svg v-else-if="category.id === 'multipliers'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2.5"/>
-                                            <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
-                                        </svg>
-                                        <i v-else :class="category.icon"></i>
+                        <div class="space-y-3">
+                            <div v-for="category in availableTradeTypeGroups" :key="category.id" 
+                                 class="rounded-lg border border-[#1a1a1a] overflow-hidden bg-[#0f0f0f]">
+                                
+                                <div @click.stop="toggleTradeTypeCategory(category.id)"
+                                     class="flex items-center justify-between p-3 cursor-pointer hover:bg-[#1a1a1a] select-none">
+                                    
+                                    <div class="flex items-center gap-3">
+                                        <i :class="category.icon" class="text-gray-400 text-xs"></i>
+                                        <span class="text-sm font-bold text-white">{{ category.label }}</span>
                                     </div>
-                                    <div class="flex-1 flex justify-between items-center">
-                                        <h4 class="category-card-title">{{ category.label }}</h4>
-                                        <i class="fa-solid fa-chevron-down text-gray-500 text-xs transition-transform duration-200" :class="{ 'rotate-180': expandedTradeTypeCategories.includes(category.id) }"></i>
-                                    </div>
+                                    
+                                    <i class="fas fa-chevron-down text-gray-500 transition-transform duration-200"
+                                       :class="{ 'rotate-180': expandedTradeTypeCategories.includes(category.id) }"></i>
                                 </div>
-                                <div v-show="expandedTradeTypeCategories.includes(category.id)" class="category-items-list">
-                                    <button
-                                        v-for="item in category.items"
-                                        :key="item.value"
-                                        @click.stop="selectTradeTypeItem(item)"
-                                        :class="['category-item-btn', { 'active': isTradeTypeItemSelected(item) }]"
-                                    >
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-5 h-5 flex items-center justify-center text-zenix-green">
-                                                <img 
-                                                    v-if="item.icon && item.icon.endsWith('.svg')" 
-                                                    :src="`/deriv_icons/${item.icon}`" 
-                                                    class="w-full h-full object-contain filter-zenix-green" 
-                                                    :alt="item.label" 
-                                                />
-                                                <i v-else :class="item.icon"></i>
-                                            </div>
-                                            <span>{{ item.label }}</span>
-                                        </div>
-                                    </button>
+
+                                <div v-if="expandedTradeTypeCategories.includes(category.id)" class="p-3 border-t border-[#1a1a1a] bg-[#0a0a0a]">
+                                    <div class="flex flex-wrap gap-2">
+                                        
+                                        <button v-for="item in category.items" :key="item.value"
+                                                type="button"
+                                                @click.stop.prevent="selectTradeTypeItem(item)"
+                                                class="px-4 py-2 rounded-lg text-xs font-bold border transition-all"
+                                                :class="isTradeTypeItemSelected(item) 
+                                                    ? 'bg-zenix-green text-black border-zenix-green shadow-lg shadow-green-900/20' 
+                                                    : 'bg-[#181818] text-gray-400 border-[#333] hover:border-gray-500 hover:text-white'">
+                                            {{ item.label }}
+                                        </button>
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2453,41 +2424,44 @@ export default {
     },
     methods: {
         selectMarket(symbol) {
-            if (!symbol) return;
+            console.log('[UI] Selecionando Mercado:', symbol);
+            
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // 1. If clicking the same market that's already active:
-            // Just close the modal and do nothing (don't reset)
+            // Se for o mesmo mercado, apenas agendamos o fechamento
             if (config.market === symbol) {
-                this.closeMarketModal();
+                setTimeout(() => this.closeMarketModal(), 100);
                 return;
             }
 
-            // 2. Market Switch (Total Reset)
-            // Use direct assignment to ensure UI updates
+            // 1. ATUALIZAÇÃO DE DADOS (Imediata)
+            config.market = symbol;
+
+            // Limpeza de segurança
             if (context === 'main') {
-                this.form.market = symbol;
                 this.form.selectedTradeTypeGroups = [];
                 this.form.tradeType = '';
-                this.contracts = []; // Clear visually before loading new ones
+                this.contracts = []; 
             } else {
-                this.recoveryConfig.market = symbol;
                 this.recoveryConfig.selectedTradeTypeGroups = [];
                 this.recoveryConfig.tradeType = '';
                 this.recoveryContracts = [];
             }
 
-            // Visual feedback
-            const market = this.markets.find(m => m.symbol === symbol);
-            this.$root.$toast.success(`Mercado alterado para: ${market ? (market.displayName || market.label) : symbol}`);
-            
-            // 3. Close modal IMMEDIATELY
-            this.closeMarketModal();
-            
-            // 4. Fetch data (passing false for preserveSelection, as this is a manual switch)
+            // 2. ATUALIZAÇÃO VISUAL (Força o DOM a processar a cor verde)
             this.$nextTick(() => {
-                this.onMarketChange(context, false);
+                const marketName = this.markets.find(m => (m.symbol === symbol || m.value === symbol))?.label || symbol;
+                this.$root.$toast.success(`Mercado: ${marketName}`);
+
+                // 3. FECHAMENTO SEGURO (O Segredo para não dar erro _vei)
+                // Esperamos 150ms para o Vue terminar de processar o clique antes de destruir o modal
+                setTimeout(() => {
+                    this.closeMarketModal();
+                    
+                    // Busca os dados depois que a animação terminar
+                    this.onMarketChange(context, false);
+                }, 150);
             });
         },
         async onMarketChange(context = 'main', preserveSelection = false) {
@@ -2555,6 +2529,9 @@ export default {
             }
         },
         toggleMarketCategory(category) {
+            // Verifica se o array existe (segurança)
+            if (!this.expandedCategories) this.expandedCategories = [];
+            
             const index = this.expandedCategories.indexOf(category);
             if (index > -1) {
                 this.expandedCategories.splice(index, 1);
@@ -2563,6 +2540,8 @@ export default {
             }
         },
         toggleTradeTypeCategory(id) {
+            if (!this.expandedTradeTypeCategories) this.expandedTradeTypeCategories = [];
+
             const index = this.expandedTradeTypeCategories.indexOf(id);
             if (index > -1) {
                 this.expandedTradeTypeCategories.splice(index, 1);
@@ -2587,37 +2566,27 @@ export default {
             this.modalContext = 'main';
         },
         selectTradeTypeItem(item) {
-            // 1. Identification of context (Main or Recovery)
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // 2. DIRECT ASSIGNMENT (Single Selection)
-            // Force the array to contain ONLY this item
+            // Array novo com apenas 1 item
             config.selectedTradeTypeGroups = [item.value];
 
-            // 3. Update tradeType for API/backwards compatibility
+            // Define string para API
             if (item.directions && item.directions.length > 0) {
                 config.tradeType = item.directions[0].value;
             } else {
                 config.tradeType = item.value;
             }
-
-            // 4. Feedback
-            this.$root.$toast.success(`Tipo selecionado: ${item.label}`);
             
-            // Optional: Close modal automatically for smoother UX
-            // this.closeTradeTypeModal(); 
+            this.$root.$toast.success(`Selecionado: ${item.label}`);
         },
         isTradeTypeItemSelected(item) {
-            // Verify context
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
-
-            // Null check
-            if (!config.selectedTradeTypeGroups) return false;
-
-            // Check if value is in array
-            return config.selectedTradeTypeGroups.includes(item.value);
+            
+            // Verificação segura
+            return config.selectedTradeTypeGroups && config.selectedTradeTypeGroups.includes(item.value);
         },
         isCategoryFullySelected(category, customConfig = null) {
             if (!category.items || category.items.length === 0) return false;
