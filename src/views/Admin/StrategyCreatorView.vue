@@ -2572,37 +2572,6 @@ export default {
              }
         },
 
-        clearMode() {
-            const context = this.activeEngineTab;
-            const modeTab = context === 'main' ? this.activeConfigTab : this.activeRecoveryConfigTab;
-            const targetArray = context === 'main' ? this.filterModes[modeTab] : this.recoveryFilterModes[modeTab];
-            
-            if (targetArray) {
-                targetArray.splice(0, targetArray.length);
-                this.$root.$toast.info(`Configuração do modo ${modeTab} limpa.`);
-            }
-        },
-
-        copyLogic() {
-            const context = this.activeEngineTab;
-            const currentMode = context === 'main' ? this.activeConfigTab : this.activeRecoveryConfigTab;
-            const modes = ['Veloz', 'Normal', 'Preciso'].filter(m => m !== currentMode);
-            
-            // Simple prompt for now, but in a real UI we could use a custom modal
-            const sourceMode = window.prompt(`Copiar de qual modo? (${modes.join(', ')})`);
-            
-            if (sourceMode && modes.includes(sourceMode)) {
-                const sourceArray = context === 'main' ? this.filterModes[sourceMode] : this.recoveryFilterModes[sourceMode];
-                const targetArray = context === 'main' ? this.filterModes[currentMode] : this.recoveryFilterModes[currentMode];
-                
-                if (sourceArray && targetArray) {
-                    targetArray.splice(0, targetArray.length, ...JSON.parse(JSON.stringify(sourceArray)));
-                    this.$root.$toast.success(`Lógica copiada de ${sourceMode} para ${currentMode}.`);
-                }
-            }
-        },
-
-        
         getTradeTypeIconName(type) {
             type = type.toUpperCase();
             if (['CALL', 'PUT', 'CALLE', 'PUTE', 'RISE', 'FALL', 'EXPIRYRANGE', 'EXPIRYMISS', 'RANGE', 'UPORDOWN'].some(t => type.includes(t))) return 'TradeTypesRiseFallIcon.svg';
