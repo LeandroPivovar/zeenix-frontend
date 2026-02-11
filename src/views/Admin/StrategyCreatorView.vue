@@ -127,22 +127,22 @@
                                         <div class="space-y-3">
                                             <div v-for="(markets, category) in marketsByCategory" :key="category" 
                                                 class="market-category-container"
-                                                :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedCategory === category }"
+                                                :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedCategories.includes(category) }"
                                             >
                                                 <div 
                                                     class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all rounded-xl"
                                                     @click="toggleMarketCategory(category)"
                                                 >
                                                     <div class="flex items-center gap-4">
-                                                        <div class="custom-checkbox" :class="{ 'checked': expandedCategory === category }">
-                                                            <i v-if="expandedCategory === category" class="fa-solid fa-check"></i>
+                                                        <div class="custom-checkbox" :class="{ 'checked': expandedCategories.includes(category) }">
+                                                            <i v-if="expandedCategories.includes(category)" class="fa-solid fa-check"></i>
                                                         </div>
                                                         <span class="text-lg font-medium text-white">{{ category }}</span>
                                                     </div>
-                                                    <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': expandedCategory !== category }"></i>
+                                                    <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': !expandedCategories.includes(category) }"></i>
                                                 </div>
 
-                                                <div v-if="expandedCategory === category" class="p-4 pt-0 border-t border-[#333]/50 mt-2 category-assets-grid">
+                                                <div v-if="expandedCategories.includes(category)" class="p-4 pt-0 border-t border-[#333]/50 mt-2 category-assets-grid">
                                                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
                                                         <div v-for="m in markets" :key="m.symbol"
                                                             class="bg-[#181818] border border-[#333] rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-zenix-green/50 hover:bg-zenix-green/5 transition-all"
@@ -173,7 +173,7 @@
                                     <div class="space-y-3">
                                         <div v-for="category in mainTradeTypeGroups" :key="category.id" 
                                             class="market-category-container"
-                                            :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedTradeTypeCategory === category.id }"
+                                            :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedTradeTypeCategories.includes(category.id) }"
                                         >
                                             <div 
                                                 class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all rounded-xl"
@@ -196,11 +196,11 @@
                                                 </div>
                                                 <div class="flex items-center gap-4">
                                                     <span class="text-xs font-bold text-gray-500">{{ getCategorySelectionCount(category, form) }}</span>
-                                                    <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': expandedTradeTypeCategory !== category.id }"></i>
+                                                    <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': !expandedTradeTypeCategories.includes(category.id) }"></i>
                                                 </div>
                                             </div>
 
-                                            <div v-if="expandedTradeTypeCategory === category.id" class="p-4 pt-0 border-t border-[#333]/50 mt-2">
+                                            <div v-if="expandedTradeTypeCategories.includes(category.id)" class="p-4 pt-0 border-t border-[#333]/50 mt-2">
                                                 <div class="flex flex-wrap gap-2 mt-4">
                                                         <button 
                                                             v-for="item in category.items" 
@@ -1729,6 +1729,7 @@ export default {
             showFilterModal: false,
             expandedCategories: [], // Array for multiple open market categories
             expandedTradeTypeCategories: [], // Array for multiple open trade type categories
+            showTradeTypeModal: false, // Added missing property
             showPauseModal: false,
             showAccountModal: false,
             showStopModal: false, // New Stop Result Modal
@@ -2487,6 +2488,14 @@ export default {
         },
         closeMarketModal() {
             this.showMarketModal = false;
+            this.modalContext = 'main';
+        },
+        openTradeTypeModal(context = 'main') {
+            this.modalContext = context;
+            this.showTradeTypeModal = true;
+        },
+        closeTradeTypeModal() {
+            this.showTradeTypeModal = false;
             this.modalContext = 'main';
         },
         selectTradeTypeItem(item, customConfig = null) {
