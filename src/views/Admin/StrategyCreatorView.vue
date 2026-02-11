@@ -23,12 +23,12 @@
                 <div class="content-header mb-6 flex justify-between items-center px-4 w-full">
                     <div>
                         <h1 class="text-2xl font-bold text-white">
-                            {{ isMonitoring ? 'Acompanhamento de EstratÃ©gia [BETA]' : 'Criador de EstratÃ©gias [BETA]' }}
+                            {{ isMonitoring ? 'Acompanhamento de Estratégia [BETA]' : 'Criador de Estratégias [BETA]' }}
                             <span v-if="!isMonitoring && selectedSavedStrategyId && currentVersion" class="text-zenix-green ml-2 text-lg">
                                 - {{ currentStrategyName }} v{{ currentVersion }}
                             </span>
                         </h1>
-                        <p class="text-sm text-[#7D7D7D]">{{ isMonitoring ? 'Acompanhe a atividade do robÃ´ em tempo real.' : 'Configure sua estratÃ©gia automatizada para execuÃ§Ã£o no mercado.' }}</p>
+                        <p class="text-sm text-[#7D7D7D]">{{ isMonitoring ? 'Acompanhe a atividade do robô em tempo real.' : 'Configure sua estratégia automatizada para execução no mercado.' }}</p>
                     </div>
 
                     <div v-if="!isMonitoring" class="flex flex-wrap items-center gap-3">
@@ -38,13 +38,13 @@
                                 @change="loadSavedStrategy"
                                 class="bg-[#141414] text-white text-xs border-none focus:ring-0 min-w-[150px] cursor-pointer hover:text-zenix-green transition-colors"
                             >
-                                <option value="" disabled class="bg-[#141414] text-gray-500">Selecionar EstratÃ©gia</option>
+                                <option value="" disabled class="bg-[#141414] text-gray-500">Selecionar Estratégia</option>
                                 <option v-for="s in savedStrategies" :key="s.id" :value="s.id" class="bg-[#141414] text-white">{{ s.name }}</option>
                             </select>
                             <button 
                                 v-if="selectedSavedStrategyId"
                                 @click="deleteSavedStrategy"
-                                title="Excluir estratÃ©gia"
+                                title="Excluir estratégia"
                                 class="text-red-500 hover:text-red-400 p-2 transition-colors"
                             >
                                 <i class="fas fa-trash-alt text-xs"></i>
@@ -107,7 +107,7 @@
                             class="text-sm font-bold uppercase tracking-wider pb-2 border-b-2 transition-all"
                             :class="activeTab === 'config' ? 'text-zenix-green border-zenix-green' : 'text-gray-500 border-transparent hover:text-white'"
                         >
-                            ConfiguraÃ§Ã£o
+                            Configuração
                         </button>
                     </div>
 
@@ -138,7 +138,7 @@
                                                         @click="toggleIconSelector"
                                                         class="w-16 h-16 rounded-xl bg-[#1a1a1a] border-2 border-dashed border-[#333] hover:border-[#22C55E]/50 transition-all duration-200 flex items-center justify-center group shrink-0"
                                                     >
-                                                        <!-- Container com :key forÃ§a o re-render total, obrigando o FontAwesome a reprocessar -->
+                                                        <!-- Container com :key força o re-render total, obrigando o FontAwesome a reprocessar -->
                                                         <div :key="form.icon || 'default'" class="flex items-center justify-center">
                                                             <i 
                                                                 v-if="form.icon"
@@ -170,7 +170,7 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <label class="zenix-label">Nome da EstratÃ©gia *</label>
+                                            <label class="zenix-label">Nome da Estratégia *</label>
                                             <input 
                                                 type="text" 
                                                 v-model="form.strategyName"
@@ -181,21 +181,21 @@
                                             <p class="text-xs text-muted-foreground mt-1">{{ form.strategyName ? form.strategyName.length : 0 }}/50 caracteres</p>
                                         </div>
                                         <div>
-                                            <label class="zenix-label">DescriÃ§Ã£o</label>
+                                            <label class="zenix-label">Descrição</label>
                                             <textarea 
                                                 v-model="form.description"
-                                                placeholder="Descreva brevemente a lÃ³gica e objetivo da estratÃ©gia..." 
+                                                placeholder="Descreva brevemente a lógica e objetivo da estratégia..." 
                                                 class="w-full !bg-[#0f0f0f] border border-[#27272a] rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all min-h-[80px] resize-none" 
                                                 maxlength="300"
                                             ></textarea>
                                             <p class="text-xs text-muted-foreground mt-1">{{ form.description ? form.description.length : 0 }}/300 caracteres</p>
                                         </div>
-                                        <p class="text-xs text-muted-foreground bg-[#0a0a0a] p-3 rounded-lg border border-[#1a1a1a]">VisÃ­vel para administradores, logs e relatÃ³rios.</p>
+                                        <p class="text-xs text-muted-foreground bg-[#0a0a0a] p-3 rounded-lg border border-[#1a1a1a]">Visível para administradores, logs e relatórios.</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Mercado e Tipo de NegociaÃ§Ã£o -->
+                            <!-- Mercado e Tipo de Negociação -->
                             <div class="col-span-12 md:col-span-6">
                                 <div class="form-group">
                                     <label class="block text-white font-bold mb-2">Mercado</label>
@@ -231,13 +231,13 @@
                                 </div>
                             </div>
 
-                            <!-- DireÃ§Ã£o e Payouts (Attack) -->
+                            <!-- Direção e Payouts (Attack) -->
                             <div v-if="form.selectedTradeTypeGroup" class="col-span-12 mt-2">
                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-[#181818] p-6 rounded-xl border border-[#333] shadow-inner">
                                     <div class="md:col-span-2">
                                         <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
                                             <i class="fa-solid fa-compass text-zenix-green"></i>
-                                            DireÃ§Ã£o Permitida
+                                            Direção Permitida
                                         </label>
                                         <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
                                             <button 
@@ -283,11 +283,11 @@
                                 </div>
                             </div>
 
-                        <!-- ParÃ¢metros de ExecuÃ§Ã£o -->
+                        <!-- Parâmetros de Execução -->
                         <div class="col-span-12">
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div>
-                                    <label class="block text-white font-bold mb-2">DuraÃ§Ã£o</label>
+                                    <label class="block text-white font-bold mb-2">Duração</label>
                                     <input 
                                         type="number" 
                                         v-model.number="form.duration" 
@@ -313,7 +313,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-white font-bold mb-2">NÃ­vel de Soros</label>
+                                    <label class="block text-white font-bold mb-2">Nível de Soros</label>
                                     <input 
                                         type="number" 
                                         v-model.number="form.sorosLevel" 
@@ -524,7 +524,7 @@
 
                                     <div v-if="securityConfig.virtualLoss.enabled" class="space-y-4">
                                         <div>
-                                            <label class="zenix-label">MÃ¡x. losses virtuais consecutivos</label>
+                                            <label class="zenix-label">Máx. losses virtuais consecutivos</label>
                                             <input 
                                                 type="number" 
                                                 v-model.number="securityConfig.virtualLoss.target"
@@ -575,7 +575,7 @@
                             </div>
                         </div>
 
-                        <!-- ConfiguraÃ§Ã£o de RecuperaÃ§Ã£o (New Section) -->
+                        <!-- Configuração de Recuperação (New Section) -->
                         <div class="col-span-12">
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
                                 <div class="absolute top-0 right-0 p-4 opacity-5">
@@ -599,10 +599,10 @@
                                         <button
                                             type="button"
                                             @click="openMarketModal('recovery')"
-                                            class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-3 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
+                                            class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
                                         >
-                                            <span class="font-medium text-sm">{{ selectedRecoveryMarketLabel }}</span>
-                                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                            <span class="font-medium text-lg">{{ selectedRecoveryMarketLabel }}</span>
+                                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
                                         </button>
                                     </div>
                                     <div>
@@ -611,17 +611,17 @@
                                             type="button"
                                             @click="openTradeTypeModal('recovery')"
                                             :disabled="!recoveryContracts.length && !recoveryConfig.market"
-                                            class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-3 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                                            class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            <div class="flex items-center gap-2">
-                                                <img v-if="selectedRecoveryTradeTypeIcon" :src="selectedRecoveryTradeTypeIcon" class="w-4 h-4 contrast-[1.5] brightness-[1.5]" alt="" />
-                                                <span class="font-medium text-sm">{{ selectedRecoveryTradeTypeLabel }}</span>
+                                            <div class="flex items-center gap-3">
+                                                <img v-if="selectedRecoveryTradeTypeIcon" :src="selectedRecoveryTradeTypeIcon" class="w-6 h-6 contrast-[1.5] brightness-[1.5]" alt="" />
+                                                <span class="font-medium text-lg">{{ selectedRecoveryTradeTypeLabel }}</span>
                                             </div>
-                                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
                                         </button>
                                     </div>
 
-                                    <!-- DireÃ§Ã£o e Payouts (Recovery) -->
+                                    <!-- Direção e Payouts (Recovery) -->
                                     <div v-if="recoveryConfig.selectedTradeTypeGroup" class="md:col-span-2">
                                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[#181818] p-5 rounded-xl border border-[#333] mb-4">
                                             <div class="md:col-span-2">
@@ -630,7 +630,7 @@
                                                     <button 
                                                         type="button"
                                                         @click="updateRecoveryDirection('both')"
-                                                        class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                                        class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                         :class="recoveryConfig.directionMode === 'both' ? 'text-white' : 'text-gray-500 hover:text-white'"
                                                         :style="recoveryConfig.directionMode === 'both' ? 'background-color: #22C55E !important;' : ''"
                                                     >
@@ -641,7 +641,7 @@
                                                         :key="dir.value"
                                                         type="button"
                                                         @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
-                                                        class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                                        class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
                                                         :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'text-white' : 'text-gray-500 hover:text-white'"
                                                         :style="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'background-color: #22C55E !important;' : ''"
                                                     >
@@ -650,17 +650,20 @@
                                                 </div>
                                             </div>
                                             <div v-for="dir in selectedRecoveryDirections" :key="'payout-rec-' + dir.value">
-                                                <label class="block text-white font-bold mb-2 text-[10px] uppercase tracking-[0.2em] opacity-70">Payout ({{ dir.label }})</label>
+                                                <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
+                                                    <i class="fa-solid fa-hand-holding-dollar text-zenix-green"></i>
+                                                    Payout ({{ dir.label }})
+                                                </label>
                                                 <div class="relative group">
                                                     <input 
                                                         type="number" 
                                                         v-model.number="recoveryConfig.directionPayouts[dir.value]" 
-                                                        class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-2.5 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
+                                                        class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
                                                         step="1"
                                                         min="1"
                                                     />
-                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                        <span class="text-[10px] text-gray-500 font-bold">%</span>
+                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                                        <span class="text-xs text-gray-500 font-black">%</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -736,9 +739,9 @@
                             </div>
                         </div>
 
-                        <!-- (Filtros de RecuperaÃ§Ã£o now unified in Motores de Entrada) -->
+                        <!-- (Filtros de Recuperação now unified in Motores de Entrada) -->
 
-                        <!-- Valores MonetÃ¡rios -->
+                        <!-- Valores Monetários -->
                         <div class="col-span-12">
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <div>
@@ -2441,18 +2444,15 @@ export default {
             // In Step 1, selection just marks it for configuration in Step 2 
             // or toggles its active state if we're doing bulk.
             // But let's follow the plan: click -> configuringFilter = filter -> nextStep.
+            filter.active = true;
             this.configuringFilter = filter;
             this.filterStep = 2;
         },
         toggleFilterInModal(filter) {
-            const index = this.activeFiltersForModal.findIndex(f => f.id === filter.id);
-            if (index === -1) {
-                // Add filter
-                const newFilter = { ...filter, active: true };
-                this.activeFiltersForModal.push(newFilter);
-            } else {
-                // Remove filter
-                this.activeFiltersForModal.splice(index, 1);
+            const targetArray = this.modalContext === 'main' ? this.filters : this.recoveryFilters;
+            const index = targetArray.findIndex(f => f.id === filter.id);
+            if (index !== -1) {
+                targetArray[index].active = !targetArray[index].active;
             }
         },
         isFilterActive(filter) {
@@ -2600,6 +2600,14 @@ export default {
                     name: f.name,
                     config: f.config
                 }));
+            }
+            
+            // Sync to validator
+            if (this.modalContext === 'recovery') {
+                this.validator.recoveryFilters = {};
+                filtersToApply.forEach(f => {
+                    this.validator.recoveryFilters[f.id] = false;
+                });
             }
             
             console.log(`[applyFilters] Applied ${filtersToApply.length} filters to ${this.activeConfigTab} mode.`);
