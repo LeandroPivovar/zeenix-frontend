@@ -154,6 +154,9 @@
                     <!-- Projection Chart -->
                     <ProjectionChart :daily-data="dailyMarkupData" />
 
+                    <!-- Daily Markup Chart -->
+                    <DailyMarkupChart :daily-data="dailyMarkupData" />
+
                     <!-- Table Section -->
                     <div class="table-section mt-8">
                         <div class="table-header mb-4">
@@ -237,8 +240,7 @@ import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import ProjectionChart from '../../components/Admin/ProjectionChart.vue';
-
-
+import DailyMarkupChart from '../../components/Admin/DailyMarkupChart.vue';
 
 // NOTA: DESCOMENTE AS LINHAS ABAIXO APÓS INSTALAR AS DEPENDÊNCIAS (npm install jspdf html2canvas)
 // import jsPDF from 'jspdf';
@@ -251,6 +253,7 @@ export default {
         TopNavbar,
         SettingsSidebar,
         ProjectionChart,
+        DailyMarkupChart,
     },
     data() {
         const currentDate = new Date().toISOString().split('T')[0];
