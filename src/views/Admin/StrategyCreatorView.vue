@@ -113,34 +113,69 @@
 
                     <form v-show="activeTab === 'config'" @submit.prevent="submitForm" class="space-y-8">
                         <div class="grid grid-cols-12 gap-6">
-                            <!-- Mercado e Tipo de Negociação -->
-                            <div class="col-span-12 md:col-span-6">
-                                <div class="form-group">
-                                    <label class="block text-white font-bold mb-2">Mercado</label>
-                                    <button
-                                        type="button"
-                                        @click="openMarketModal('main')"
-                                        class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
-                                    >
-                                        <span class="font-medium text-lg">{{ selectedMarketLabel }}</span>
-                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                    </button>
+                            <!-- Mercado -->
+                            <div class="col-span-12">
+                                <div class="bg-[#111] border border-[#333] rounded-2xl p-6">
+                                    <div class="flex items-center gap-2 mb-6 text-white">
+                                        <i class="fa-solid fa-chart-line text-zenix-green text-xl"></i>
+                                        <h2 class="text-xl font-bold">Mercados e Ativos</h2>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="block text-[#7D7D7D] text-sm mb-4 uppercase tracking-wider font-semibold">Categoria de Mercado</label>
+                                        
+                                        <div class="space-y-3">
+                                            <div v-for="(markets, category) in marketsByCategory" :key="category" 
+                                                class="market-category-container"
+                                                :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedCategory === category }"
+                                            >
+                                                <div 
+                                                    class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all rounded-xl"
+                                                    @click="expandedCategory = expandedCategory === category ? null : category"
+                                                >
+                                                    <div class="flex items-center gap-4">
+                                                        <div class="custom-checkbox" :class="{ 'checked': expandedCategory === category }">
+                                                            <i v-if="expandedCategory === category" class="fa-solid fa-check"></i>
+                                                        </div>
+                                                        <span class="text-lg font-medium text-white">{{ category }}</span>
+                                                    </div>
+                                                    <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': expandedCategory !== category }"></i>
+                                                </div>
+
+                                                <div v-if="expandedCategory === category" class="p-4 pt-0 border-t border-[#333]/50 mt-2 category-assets-grid">
+                                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                                                        <div v-for="m in markets" :key="m.symbol"
+                                                            class="bg-[#181818] border border-[#333] rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-zenix-green/50 hover:bg-zenix-green/5 transition-all"
+                                                            :class="{ 'border-zenix-green bg-zenix-green/10': form.market === m.symbol }"
+                                                            @click="selectMarket(m.symbol)"
+                                                        >
+                                                            <div class="custom-checkbox sm" :class="{ 'checked': form.market === m.symbol }">
+                                                                <i v-if="form.market === m.symbol" class="fa-solid fa-check"></i>
+                                                            </div>
+                                                            <span class="text-sm font-medium text-white">{{ m.displayName || m.label }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="col-span-12 md:col-span-6">
+                            <!-- Tipo de Negociação -->
+                            <div class="col-span-12">
                                 <div class="form-group">
-                                    <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
+                                    <label class="block text-[#7D7D7D] text-sm mb-2 uppercase tracking-wider font-semibold">Tipo de Negociação</label>
                                     <button
                                         type="button"
                                         @click="openTradeTypeModal('main')"
                                         :disabled="!contracts.length && !form.market"
-                                        class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                                        class="w-full bg-[#111] border border-[#333] rounded-xl py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <div class="flex items-center gap-3">
                                             <div v-if="selectedTradeTypeIcon" class="w-6 h-6 flex items-center justify-center text-zenix-green">
                                                 <i class="fa-solid fa-chart-line" v-if="form.tradeType === 'CALL' || form.tradeType === 'PUT'"></i>
-                                                <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11L13.5 15.5L8.5 10.5L2 14"/><path d="M16 11H22V17"/></svg>
+                                                <img v-else :src="selectedTradeTypeIcon" class="w-full h-full" />
                                             </div>
                                             <span class="font-medium text-lg">{{ selectedTradeTypeLabel }}</span>
                                         </div>
@@ -1646,6 +1681,7 @@ export default {
             showMarketModal: false,
             showTradeTypeModal: false,
             showFilterModal: false,
+            expandedCategory: null, // Track which market category is expanded
             showPauseModal: false,
             showAccountModal: false,
             showStopModal: false, // New Stop Result Modal
@@ -2333,6 +2369,19 @@ export default {
         window.removeEventListener('resize', this.handleResize);
     },
     methods: {
+        selectMarket(symbol) {
+            if (this.modalContext === 'main' || !this.modalContext) {
+                this.form.market = symbol;
+            } else {
+                this.recoveryConfig.market = symbol;
+            }
+            
+            const market = this.markets.find(m => m.symbol === symbol);
+            this.$root.$toast.success(`Mercado selecionado: ${market ? (market.displayName || market.label) : symbol}`);
+            
+            if (this.showMarketModal) this.closeMarketModal();
+            this.onMarketChange(this.modalContext || 'main');
+        },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
             if (this.isMobile) {
@@ -2592,19 +2641,6 @@ export default {
         },
         closeMarketModal() {
             this.showMarketModal = false;
-        },
-        selectMarket(symbol) {
-            if (this.modalContext === 'main') {
-                this.form.market = symbol;
-            } else {
-                this.recoveryConfig.market = symbol;
-            }
-            
-            const market = this.markets.find(m => m.symbol === symbol);
-            this.$root.$toast.success(`Mercado selecionado: ${market ? market.label : symbol}`);
-            
-            this.closeMarketModal();
-            this.onMarketChange(this.modalContext);
         },
         openTradeTypeModal(context = 'main') {
             const contracts = context === 'main' ? this.contracts : this.recoveryContracts;
@@ -4560,6 +4596,60 @@ export default {
 </script>
 
 <style>
+/* New Market Selection UI Styles */
+.market-category-container {
+    background: #181818;
+    border: 1px solid #333;
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.custom-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #333;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    transition: all 0.2s ease;
+    color: #111;
+}
+
+.custom-checkbox.sm {
+    width: 16px;
+    height: 16px;
+}
+
+.custom-checkbox.checked {
+    background: #00ff88;
+    border-color: #00ff88;
+}
+
+.custom-checkbox i {
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.custom-checkbox.sm i {
+    font-size: 8px;
+}
+
+.market-category-container:hover {
+    border-color: #444;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+.category-assets-grid {
+    border-top: 1px solid rgba(51, 51, 51, 0.5);
+}
+
+/* Original Styles */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
