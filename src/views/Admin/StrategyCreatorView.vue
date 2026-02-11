@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div class="dashboard-layout">
         <div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
         
@@ -362,132 +362,175 @@
 
                         <!-- Motores de Entrada (Refined) -->
                         <div class="col-span-12">
-                             <div class="zenix-card">
-                                 <!-- Header with Total Counter -->
-                                 <div class="flex items-center justify-between mb-4">
-                                     <h2 class="text-lg font-bold flex items-center gap-2 text-white">
-                                         <i class="fa-solid fa-microchip text-zenix-green"></i>
-                                         Motores de Entrada
-                                     </h2>
-                                     <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ totalConfiguredFiltersCount }}/6 configurados</span>
-                                 </div>
+                            <div class="zenix-card">
+                                <div class="zenix-card-header">
+                                    <h2 class="zenix-card-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu w-5 h-5 text-primary"><rect width="16" height="16" x="4" y="4" rx="2"></rect><rect width="6" height="6" x="9" y="9" rx="1"></rect><path d="M15 2v2"></path><path d="M15 20v2"></path><path d="M2 15h2"></path><path d="M2 9h2"></path><path d="M20 15h2"></path><path d="M20 9h2"></path><path d="M9 2v2"></path><path d="M9 20v2"></path></svg>
+                                        Motores de Entrada
+                                    </h2>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-muted-foreground">{{ totalConfiguredFiltersCount }}/6 configurados</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-4">
+                                    <!-- Analysis Type Tabs -->
+                                    <div class="flex gap-2 p-1 bg-[hsl(var(--zenix-elevated))] rounded-lg border border-border/50">
+                                        <button 
+                                            type="button"
+                                            @click="activeEngineTab = 'main'"
+                                            class="flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all"
+                                            :class="activeEngineTab === 'main' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'"
+                                        >
+                                            Análise Principal<span class="ml-2 text-xs opacity-70">({{ mainAnalysisCount }}/3)</span>
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            @click="activeEngineTab = 'recovery'"
+                                            class="flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all"
+                                            :class="activeEngineTab === 'recovery' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'"
+                                        >
+                                            Análise de Recuperação<span class="ml-2 text-xs opacity-70">({{ recoveryAnalysisCount }}/3)</span>
+                                        </button>
+                                    </div>
 
-                                 <div class="bg-[#141414] border border-[#333] rounded-xl p-1">
-                                     <!-- Analysis Type Tabs -->
-                                     <div class="grid grid-cols-2 gap-1 mb-4 p-1 bg-black/40 rounded-lg">
-                                         <button 
-                                             type="button"
-                                             @click="activeEngineTab = 'main'"
-                                             class="py-3 text-sm font-bold rounded-md transition-all relative overflow-hidden"
-                                             :class="activeEngineTab === 'main' ? 'bg-zenix-green text-black shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'text-gray-400 hover:text-white hover:bg-white/5'"
-                                         >
-                                             Análise Principal <span class="opacity-70 text-xs ml-1">({{ mainAnalysisCount }}/3)</span>
-                                         </button>
-                                         <button 
-                                             type="button"
-                                             @click="activeEngineTab = 'recovery'"
-                                             class="py-3 text-sm font-bold rounded-md transition-all relative overflow-hidden"
-                                             :class="activeEngineTab === 'recovery' ? 'bg-zenix-green text-black shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'text-gray-400 hover:text-white hover:bg-white/5'"
-                                         >
-                                             Análise de Recuperação <span class="opacity-70 text-xs ml-1">({{ recoveryAnalysisCount }}/3)</span>
-                                         </button>
-                                     </div>
+                                    <!-- Performance Mode Selector -->
+                                    <div class="flex gap-2">
+                                        <button 
+                                            v-for="mode in [{id:'VELOZ', label:'Veloz'}, {id:'NORMAL', label:'Normal'}, {id:'PRECISO', label:'Preciso'}]"
+                                            :key="mode.id"
+                                            type="button"
+                                            @click="activeEngineTab === 'main' ? activeConfigTab = mode.label : activeRecoveryConfigTab = mode.label"
+                                            class="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 border"
+                                            :class="(activeEngineTab === 'main' ? activeConfigTab : activeRecoveryConfigTab) === mode.label ? 'bg-muted text-foreground border-primary/50' : 'bg-[hsl(var(--zenix-elevated))] text-muted-foreground hover:text-foreground border-border/50'"
+                                        >
+                                            <span class="w-2 h-2 rounded-full" :class="(activeEngineTab === 'main' ? activeConfigTab : activeRecoveryConfigTab) === mode.label ? 'bg-primary' : 'bg-muted-foreground/30'"></span>
+                                            {{ mode.label }}
+                                        </button>
+                                    </div>
+ 
+                                    <!-- Active Filters / Empty State -->
+                                    <div class="min-h-[200px] bg-[hsl(var(--zenix-elevated))] rounded-lg border border-border/50 p-4">
+                                        <div v-if="!(activeEngineTab === 'main' ? (filterModes[activeConfigTab] && filterModes[activeConfigTab].length) : (recoveryFilterModes[activeRecoveryConfigTab] && recoveryFilterModes[activeRecoveryConfigTab].length))" class="text-center py-8 text-muted-foreground">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu w-8 h-8 mx-auto mb-2 opacity-50">
+                                                <rect width="16" height="16" x="4" y="4" rx="2"></rect>
+                                                <rect width="6" height="6" x="9" y="9" rx="1"></rect>
+                                            </svg>
+                                            <p class="text-sm">Nenhum filtro configurado</p>
+                                            <p class="text-xs">Adicione filtros da Biblioteca ZENIX</p>
+                                        </div>
+ 
+                                        <div v-else class="space-y-2 mb-4">
+                                            <div 
+                                                v-for="(filter, idx) in (activeEngineTab === 'main' ? filterModes[activeConfigTab] : recoveryFilterModes[activeRecoveryConfigTab])" 
+                                                :key="filter.id"
+                                                class="flex items-start justify-between p-3 bg-card rounded-lg border border-border/50 group"
+                                            >
+                                                <div class="flex items-start gap-3 flex-1">
+                                                    <span class="text-xs text-muted-foreground w-6 pt-0.5">{{ idx + 1 }}.</span>
+                                                    <div class="flex-1">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="text-sm text-foreground font-medium">{{ filter.name }}</span>
+                                                            <button class="p-0.5 rounded hover:bg-muted">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info w-3.5 h-3.5 text-muted-foreground"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                                                            </button>
+                                                        </div>
+                                                        <p class="text-xs text-muted-foreground mt-0.5">{{ filter.desc }}</p>
+                                                        <div class="flex flex-wrap gap-1.5 mt-2">
+                                                            <span v-for="(val, key) in (getFilterConfig(filter)[(activeEngineTab === 'main' ? activeConfigTab : activeRecoveryConfigTab).toLowerCase() === 'moderado' ? 'normal' : (activeEngineTab === 'main' ? activeConfigTab : activeRecoveryConfigTab).toLowerCase()])" :key="key" class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">
+                                                                {{ key.replace(/_/g, ' ') }}: {{ val }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center gap-1">
+                                                    <button type="button" @click="openFilterConfigDirect(filter, activeEngineTab)" class="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings2 w-4 h-4"><path d="M20 7h-9"></path><path d="M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg>
+                                                    </button>
+                                                    <button type="button" @click="removeFilter(filter, activeEngineTab)" class="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 w-4 h-4"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+ 
+                                        <button 
+                                            type="button"
+                                            @click="openFilterModal(activeEngineTab)"
+                                            class="w-full py-3 rounded-lg border-2 border-dashed border-border hover:border-primary/50 text-muted-foreground hover:text-foreground transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus w-4 h-4"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                                            Adicionar Filtro
+                                        </button>
+                                    </div>
+ 
+                                    <!-- Explanation Section -->
+                                    <div class="bg-[hsl(var(--zenix-elevated))] rounded-lg border border-border/50 p-4">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-info w-4 h-4 text-primary"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+                                            <span class="text-sm font-medium text-foreground">Explicação: {{ activeEngineTab === 'main' ? 'Análise Principal' : 'Análise de Recuperação' }} — {{ activeEngineTab === 'main' ? activeConfigTab : activeRecoveryConfigTab }}</span>
+                                        </div>
+                                        <div class="text-sm text-muted-foreground whitespace-pre-line bg-card/50 rounded-lg p-3 border border-border/30">
+                                            <div v-for="(filter, idx) in (activeEngineTab === 'main' ? filterModes[activeConfigTab] : recoveryFilterModes[activeRecoveryConfigTab])" :key="filter.id">
+                                                {{ idx + 1 }}. {{ filter.name }} ({{ Object.entries(getFilterConfig(filter)[(activeEngineTab === 'main' ? activeConfigTab : activeRecoveryConfigTab).toLowerCase() === 'moderado' ? 'normal' : (activeEngineTab === 'main' ? activeConfigTab : activeRecoveryConfigTab).toLowerCase()]).map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`).join(', ') }})
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                     <!-- Performance Mode Selector (Dots Style) -->
-                                     <div class="flex gap-2 mb-4">
-                                         <button 
-                                             v-for="mode in [{id:'VELOZ', label:'Veloz'}, {id:'NORMAL', label:'Normal'}, {id:'PRECISO', label:'Preciso'}]"
-                                             :key="mode.id"
-                                             type="button"
-                                             @click="activeEngineTab === 'main' ? activeConfigTab = mode.label : activeRecoveryConfigTab = mode.label"
-                                             class="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 border"
-                                             :class="(activeEngineTab === 'main' ? activeConfigTab : activeRecoveryConfigTab) === mode.label ? 'bg-muted text-foreground border-zenix-green text-zenix-green' : 'bg-[hsl(var(--zenix-elevated))] text-muted-foreground hover:text-foreground border-border/50'"
-                                         >
-                                             <span class="w-2 h-2 rounded-full" :class="(activeEngineTab === 'main' ? activeConfigTab : activeRecoveryConfigTab) === mode.label ? 'bg-zenix-green' : 'bg-muted-foreground/30'"></span>
-                                             {{ mode.label }}
-                                         </button>
-                                     </div>
+                                    <!-- Strategy Summary -->
+                                    <div class="bg-[hsl(var(--zenix-elevated))] rounded-lg border border-primary/20 p-4">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu w-4 h-4 text-primary"><rect width="16" height="16" x="4" y="4" rx="2"></rect><rect width="6" height="6" x="9" y="9" rx="1"></rect><path d="M15 2v2"></path><path d="M15 20v2"></path><path d="M2 15h2"></path><path d="M2 9h2"></path><path d="M20 15h2"></path><path d="M20 9h2"></path><path d="M9 2v2"></path><path d="M9 20v2"></path></svg>
+                                            <span class="text-sm font-medium text-foreground">Resumo da Estratégia</span>
+                                        </div>
+                                        <div class="space-y-4">
+                                            <div>
+                                                <h4 class="text-xs font-medium text-primary mb-2">Análise Principal</h4>
+                                                <div class="text-sm text-muted-foreground whitespace-pre-line bg-card/50 rounded-lg p-3 border border-border/30">
+                                                    <div v-for="(filter, idx) in filterModes[activeConfigTab]" :key="filter.id">
+                                                        {{ idx + 1 }}. {{ filter.name }} ({{ Object.entries(getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()]).map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`).join(', ') }})
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
  
-                                     <!-- Active Filters / Empty State -->
-                                     <div class="min-h-[200px] bg-[hsl(var(--zenix-elevated))] rounded-lg border border-border/50 p-4">
-                                         <div v-if="!(activeEngineTab === 'main' ? (filterModes[activeConfigTab] && filterModes[activeConfigTab].length) : (recoveryFilterModes[activeRecoveryConfigTab] && recoveryFilterModes[activeRecoveryConfigTab].length))" class="text-center py-8 text-muted-foreground">
-                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu w-8 h-8 mx-auto mb-2 opacity-50">
-                                                 <rect width="16" height="16" x="4" y="4" rx="2"></rect>
-                                                 <rect width="6" height="6" x="9" y="9" rx="1"></rect>
-                                             </svg>
-                                             <p class="text-sm">Nenhum filtro configurado</p>
-                                             <p class="text-xs">Adicione filtros da Biblioteca ZENIX</p>
-                                         </div>
+                                    <!-- Governance Summary -->
+                                    <div class="bg-[hsl(var(--zenix-elevated))] rounded-lg border border-border/50 p-4">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield w-4 h-4 text-primary"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1-1z"></path></svg>
+                                            <span class="text-sm font-medium text-foreground">Filtros de Governança Ativos</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock w-3 h-3 text-muted-foreground"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div v-for="gov in ['Verificador de Perfil de Risco', 'Verificador de Modo de Operação', 'Verificador de Análise Ativa', 'Verificador de Pausa Estratégica']" :key="gov" class="flex items-center gap-2 text-xs text-muted-foreground p-2 rounded bg-muted/30">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check w-3 h-3 text-primary"><path d="M20 6 9 17l-5-5"></path></svg>
+                                                <span>{{ gov }}</span>
+                                            </div>
+                                            <div class="col-span-2 text-center mt-2">
+                                                <button type="button" class="text-xs text-primary hover:underline">Ver todos os filtros de governança &rarr;</button>
+                                            </div>
+                                        </div>
+                                    </div>
  
-                                         <div v-else class="space-y-2 mb-4">
-                                             <div 
-                                                 v-for="filter in (activeEngineTab === 'main' ? filterModes[activeConfigTab] : recoveryFilterModes[activeRecoveryConfigTab])" 
-                                                 :key="filter.id"
-                                                 class="flex items-center justify-between p-3 rounded-lg bg-background border border-border/20"
-                                             >
-                                                 <div class="flex items-center gap-3">
-                                                     <div class="p-1.5 rounded bg-primary/10 text-primary">
-                                                         <i class="fa-solid fa-filter text-xs"></i>
-                                                     </div>
-                                                     <span class="text-sm font-medium text-foreground">{{ filter.name }}</span>
-                                                 </div>
-                                                 <div class="flex items-center gap-2">
-                                                     <button type="button" @click="openFilterConfigDirect(filter, activeEngineTab)" class="p-1.5 rounded hover:bg-muted text-muted-foreground transition-colors">
-                                                         <i class="fa-solid fa-gear text-xs"></i>
-                                                     </button>
-                                                     <button type="button" @click="removeFilter(filter, activeEngineTab)" class="p-1.5 rounded hover:bg-red-500/10 text-muted-foreground hover:text-red-500 transition-colors">
-                                                         <i class="fa-solid fa-trash-alt text-xs"></i>
-                                                     </button>
-                                                 </div>
-                                             </div>
-                                         </div>
+                                    <!-- Card Footer Actions -->
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border border-border/50 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy w-4 h-4"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                                            Copiar lógica de outro modo
+                                        </button>
+                                        <button type="button" @click="clearMode" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border border-border/50 text-sm text-muted-foreground hover:text-destructive transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 w-4 h-4"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+                                            Limpar modo
+                                        </button>
+                                    </div>
  
-                                         <button 
-                                             type="button"
-                                             @click="openFilterModal(activeEngineTab)"
-                                             class="w-full py-3 rounded-lg border-2 border-dashed border-border hover:border-primary/50 text-muted-foreground hover:text-foreground transition-all flex items-center justify-center gap-2"
-                                         >
-                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus w-4 h-4"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
-                                             Adicionar Filtro
-                                         </button>
-                                     </div>
- 
-                                     <!-- Governance Summary -->
-                                     <div class="bg-[hsl(var(--zenix-elevated))] rounded-lg border border-border/50 p-4">
-                                         <div class="flex items-center gap-2 mb-3">
-                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield w-4 h-4 text-primary"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1-1z"></path></svg>
-                                             <span class="text-sm font-medium text-foreground">Filtros de Governança Ativos</span>
-                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock w-3 h-3 text-muted-foreground"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                                         </div>
-                                         <div class="grid grid-cols-2 gap-2">
-                                             <div v-for="gov in ['Verificador de Perfil de Risco', 'Verificador de Modo de Operação', 'Verificador de Análise Ativa', 'Verificador de Pausa Estratégica']" :key="gov" class="flex items-center gap-2 text-xs text-muted-foreground p-2 rounded bg-muted/30">
-                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check w-3 h-3 text-primary"><path d="M20 6 9 17l-5-5"></path></svg>
-                                                 <span>{{ gov }}</span>
-                                             </div>
-                                             <div class="col-span-2 text-center mt-2">
-                                                 <button type="button" class="text-xs text-primary hover:underline">Ver todos os filtros de governança &rarr;</button>
-                                             </div>
-                                         </div>
-                                     </div>
- 
-                                     <!-- Card Footer Actions -->
-                                     <div class="flex items-center gap-2">
-                                         <button type="button" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border border-border/50 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy w-4 h-4"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
-                                             Copiar lógica de outro modo
-                                         </button>
-                                         <button type="button" @click="clearMode" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted border border-border/50 text-sm text-muted-foreground hover:text-destructive transition-colors">
-                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2 w-4 h-4"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
-                                             Limpar modo
-                                         </button>
-                                     </div>
- 
-                                     <p class="text-xs text-muted-foreground bg-[hsl(var(--zenix-elevated))] p-3 rounded-lg border border-border/50">
-                                         Estratégias definem apenas ENTRADAS. Gestão é controlada pelo ZENIX.
-                                     </p>
-                                 </div>
-                             </div>
-                         </div>
+                                    <p class="text-xs text-muted-foreground bg-[hsl(var(--zenix-elevated))] p-3 rounded-lg border border-border/50">
+                                        Estratégias definem apenas ENTRADAS. Gestão é controlada pelo ZENIX.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Loss Virtual -->
                         <div class="col-span-12">
@@ -1249,35 +1292,16 @@
                                             </div>
                                             
                                             <button 
-                                                v-if="!isFilterActive(filter)"
-                                                @click="toggleFilterInModal(filter)"
-                                                class="px-3 py-1.5 rounded-lg border border-primary/30 text-[10px] font-black uppercase tracking-wider text-primary hover:bg-primary/10 hover:border-primary transition-all shadow-[0_0_10px_-5px_#22c55e]"
+                                                @click="selectFilterInLibrary(filter)"
+                                                class="px-3 py-1.5 rounded-lg border border-primary/30 text-[10px] font-black uppercase tracking-wider text-primary hover:bg-primary hover:text-black transition-all"
                                             >
                                                 Adicionar
-                                            </button>
-                                            <button 
-                                                v-else
-                                                @click="removeFilter(filter, modalContext)"
-                                                class="px-3 py-1.5 rounded-lg border border-red-500/30 text-[10px] font-black uppercase tracking-wider text-red-500 hover:bg-red-500/10 hover:border-red-500 transition-all"
-                                            >
-                                                Remover
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                         <!-- Footer (Step 1) -->
-                        <div class="p-6 border-t border-[#1a1a1a] bg-[#0a0a0a]">
-                             <button 
-                                 @click="nextFilterStep"
-                                 :disabled="!activeFiltersForModal.some(f => f.active)"
-                                 class="w-full py-4 bg-primary hover:bg-green-400 disabled:opacity-50 disabled:grayscale text-black font-black uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
-                             >
-                                 Configurar {{ activeFiltersForModal.filter(f => f.active).length }} Selecionados
-                                 <i class="fa-solid fa-arrow-right text-xs"></i>
-                             </button>
-                         </div>
                     </div>
  
                     <!-- Body (Step 2: Configuration) -->
@@ -1287,118 +1311,95 @@
                             <div class="mb-6 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-start gap-3">
                                 <i class="fa-solid fa-circle-info text-blue-400 mt-0.5"></i>
                                 <div>
-                                    <p class="text-xs text-blue-300 font-bold mb-1">Configuração em Lote</p>
-                                    <p class="text-[10px] text-blue-400/80">Você está configurando os filtros selecionados. As alterações serão salvas para o modo <strong>{{ activeConfigTab }}</strong>.</p>
+                                    <p class="text-xs text-blue-300 font-bold mb-1">Configuração de Filtro</p>
+                                    <p class="text-[10px] text-blue-400/80">As alterações serão salvas para o modo <strong>{{ activeConfigTab }}</strong> da {{ modalContext === 'main' ? 'Análise Principal' : 'Análise de Recuperação' }}.</p>
                                 </div>
                             </div>
 
-                             <!-- Config Header & Mode Selector -->
-                             <div class="flex items-center justify-between mb-6">
-                                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Modo de Operação</h3>
-                                 <div class="flex bg-[#0f0f0f] p-1 rounded-lg border border-[#1a1a1a]">
-                                     <button v-for="mode in ['Veloz', 'Normal', 'Preciso']" :key="mode" @click="activeConfigTab = mode" class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md transition-all" :class="activeConfigTab === mode ? 'bg-[#1a1a1a] text-primary border border-[#333] shadow-lg shadow-black/50' : 'text-gray-600 hover:text-gray-300'">
-                                         {{ mode }}
-                                     </button>
+                             <!-- Config Header -->
+                             <div class="mb-6">
+                                 <div class="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-4 flex gap-4 items-start relative overflow-hidden group">
+                                     <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                                     <div class="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center text-primary border border-[#333] shrink-0 z-10">
+                                         <i v-if="configuringFilter.type === 'digit'" class="fa-solid fa-hashtag text-lg"></i>
+                                         <i v-else-if="configuringFilter.type === 'price' || configuringFilter.type === 'indicators'" class="fa-solid fa-chart-line text-lg"></i>
+                                         <i v-else class="fa-solid fa-microchip text-lg"></i>
+                                     </div>
+                                     <div class="relative z-10 w-full">
+                                         <h3 class="text-sm font-bold text-white mb-2">{{ configuringFilter.name }}</h3>
+                                         <p class="text-[10px] text-gray-500 leading-relaxed mb-3">{{ configuringFilter.desc }}</p>
+                                         
+                                         <!-- Loftop Summary if available -->
+                                         <div v-if="getFilterDescription(configuringFilter)" class="space-y-1.5 border-t border-[#1a1a1a] pt-2">
+                                             <div class="grid grid-cols-[80px_1fr] gap-2 text-[10px] items-baseline">
+                                                 <span class="text-primary font-bold uppercase tracking-wider text-[9px]">Observa:</span>
+                                                 <span class="text-gray-400 leading-tight">{{ getFilterDescription(configuringFilter).loftop.what }}</span>
+                                             </div>
+                                             <div class="grid grid-cols-[80px_1fr] gap-2 text-[10px] items-baseline">
+                                                 <span class="text-green-400/80 font-bold uppercase tracking-wider text-[9px]">Válido se:</span>
+                                                 <span class="text-gray-400 leading-tight">{{ getFilterDescription(configuringFilter).loftop.when }}</span>
+                                             </div>
+                                         </div>
+                                     </div>
                                  </div>
                              </div>
 
-                             <!-- Loop through Active Filters for Configuration -->
-                             <div v-for="filter in activeFiltersForModal.filter(f => f.active)" :key="filter.id" class="mb-8 border-b border-[#1a1a1a] pb-8 last:border-0">
-                                 <!-- Info Card -->
-                                 <div class="mb-4">
-                                     <div class="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-4 flex gap-4 items-start relative overflow-hidden group">
-                                         <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                                         <div class="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center text-primary border border-[#333] shrink-0 z-10">
-                                             <i v-if="filter.type === 'digit'" class="fa-solid fa-hashtag text-lg"></i>
-                                             <i v-else-if="filter.type === 'price' || filter.type === 'indicators'" class="fa-solid fa-chart-line text-lg"></i>
-                                             <i v-else class="fa-solid fa-microchip text-lg"></i>
+                             <!-- Parameters -->
+                             <div class="space-y-6">
+                                 <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                                     Parâmetros de Configuração
+                                     <div class="h-px bg-[#1a1a1a] flex-1"></div>
+                                 </h4>
+                                 
+                                 <div class="space-y-5">
+                                     <div v-for="(value, key) in getFilterConfig(configuringFilter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()]" :key="key" class="space-y-2 group">
+                                         <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-focus-within:text-white transition-colors">
+                                             {{ key.replace(/_/g, ' ') }}
+                                         </label>
+                                         
+                                         <div v-if="['<', '>', '=', '>=', '<='].includes(value) || ['operator', 'op', 'condition', 'direction', 'target', 'parity', 'type'].includes(key)" class="relative">
+                                             <select v-model="getFilterConfig(configuringFilter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#0c0c0c] border border-[#1a1a1a] rounded-lg px-4 py-3 text-sm text-white focus:border-primary/50 outline-none transition-all appearance-none">
+                                                 <option value="<">Menor que (&lt;)</option>
+                                                 <option value=">">Maior que (&gt;)</option>
+                                                 <option value="=">Igual a (=)</option>
+                                                 <option value=">=">Maior ou Igual (&gt;=)</option>
+                                                 <option value="<=">Menor ou Igual (&lt;=)</option>
+                                                 <option value="rise">Alta</option>
+                                                 <option value="fall">Baixa</option>
+                                                 <option value="even">Pares</option>
+                                                 <option value="odd">Ímpares</option>
+                                                 <option value="under_4">Abaixo de 4</option>
+                                                 <option value="over_5">Acima de 5</option>
+                                                 <option value="SMA">Simples (SMA)</option>
+                                                 <option value="EMA">Exponencial (EMA)</option>
+                                             </select>
+                                             <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 text-[10px]"></i>
                                          </div>
-                                         <div class="relative z-10 w-full">
-                                             <h3 class="text-sm font-bold text-white mb-2">{{ filter.name }}</h3>
-                                             
-                                             <!-- Loftop Section -->
-                                             <div v-if="getFilterDescription(filter)" class="space-y-1.5 border-t border-[#1a1a1a] pt-2 mt-1">
-                                                 <div class="grid grid-cols-[80px_1fr] gap-2 text-[10px] items-baseline">
-                                                     <span class="text-primary font-bold uppercase tracking-wider text-[9px]">Observa:</span>
-                                                     <span class="text-gray-400 leading-tight">{{ getFilterDescription(filter).loftop.what }}</span>
-                                                 </div>
-                                                 <div class="grid grid-cols-[80px_1fr] gap-2 text-[10px] items-baseline">
-                                                     <span class="text-green-400/80 font-bold uppercase tracking-wider text-[9px]">Válido se:</span>
-                                                     <span class="text-gray-400 leading-tight">{{ getFilterDescription(filter).loftop.when }}</span>
-                                                 </div>
-                                                 <div class="grid grid-cols-[80px_1fr] gap-2 text-[10px] items-baseline">
-                                                     <span class="text-white/60 font-bold uppercase tracking-wider text-[9px]">Ação:</span>
-                                                     <span class="text-gray-400 leading-tight">{{ getFilterDescription(filter).loftop.result }}</span>
-                                                 </div>
-                                             </div>
-                                             <p v-else class="text-[10px] text-gray-500 italic leading-relaxed">{{ filter.desc }}</p>
-                                         </div>
-                                     </div>
-                                 </div>
- 
-                                 <!-- Parameters -->
-                                 <div class="space-y-4">
-                                     <div class="flex items-center gap-2 mb-4">
-                                         <div class="h-px bg-[#1a1a1a] flex-1"></div>
-                                         <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-500">Parâmetros</h4>
-                                         <div class="h-px bg-[#1a1a1a] flex-1"></div>
-                                     </div>
-                                     
-                                     <div class="space-y-5">
-                                         <div v-for="(value, key) in getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()]" :key="key" class="space-y-2 group">
-                                             <div class="flex items-center justify-between">
-                                                 <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2 group-focus-within:text-white transition-colors">
-                                                     {{ key.replace(/_/g, ' ') }} 
-                                                     <i class="fa-regular fa-circle-question text-[8px] text-gray-700 hover:text-primary cursor-help"></i>
-                                                 </label>
-                                                 <span class="text-[8px] font-mono text-gray-700 bg-[#111] px-1.5 py-0.5 rounded border border-[#222]">0-9</span>
-                                             </div>
-                                             
-                                             <div v-if="['<', '>', '=', '>=', '<='].includes(value) || ['operator', 'op', 'condition', 'direction', 'target', 'parity', 'type'].includes(key)" class="relative">
-                                                 <select v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#0c0c0c] border border-[#1a1a1a] rounded-lg px-4 py-3 text-sm text-white focus:border-primary/50 focus:bg-[#111] outline-none transition-all appearance-none shadow-inner zenix-input-dark font-medium">
-                                                     <option value="<">Menor que (&lt;)</option>
-                                                     <option value=">">Maior que (&gt;)</option>
-                                                     <option value="=">Igual a (=)</option>
-                                                     <option value=">=">Maior ou Igual (&gt;=)</option>
-                                                     <option value="<=">Menor ou Igual (&lt;=)</option>
-                                                     <option value="cross_up">Cruzar para Cima</option>
-                                                     <option value="cross_down">Cruzar para Baixo</option>
-                                                     <option value="oversold">Abaixo de (Sobrevenda)</option>
-                                                     <option value="overbought">Acima de (Sobrecompra)</option>
-                                                     <option value="increasing">Aumentando</option>
-                                                     <option value="decreasing">Diminuindo</option>
-                                                     <option value="rise">Alta</option>
-                                                     <option value="fall">Baixa</option>
-                                                     <option value="even">Pares</option>
-                                                     <option value="odd">Ímpares</option>
-                                                     <option value="under_4">Abaixo de 4</option>
-                                                     <option value="over_5">Acima de 5</option>
-                                                     <option value="SMA">Simples (SMA)</option>
-                                                     <option value="EMA">Exponencial (EMA)</option>
-                                                 </select>
-                                                 <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none text-[10px]"></i>
-                                             </div>
-                                             
-                                             <input v-else type="text" v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#0c0c0c] border border-[#1a1a1a] rounded-lg px-4 py-3 text-sm text-white focus:border-primary/50 focus:bg-[#111] outline-none transition-all shadow-inner zenix-input-dark font-mono placeholder:text-gray-800" />
-                                         </div>
+                                         <input v-else type="text" v-model="getFilterConfig(configuringFilter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#0c0c0c] border border-[#1a1a1a] rounded-lg px-4 py-3 text-sm text-white focus:border-primary/50 outline-none transition-all" />
                                      </div>
                                  </div>
                              </div>
                         </div>
 
                          <!-- Footer (Step 2) -->
-                        <div class="p-6 border-t border-[#1a1a1a] bg-[#0a0a0a]">
+                        <div class="p-6 border-t border-[#1a1a1a] bg-[#0a0a0a] flex gap-3">
+                             <button 
+                                 @click="filterStep = 1; configuringFilter = null"
+                                 class="flex-1 py-4 border border-[#1a1a1a] hover:bg-[#1a1a1a] text-white font-bold rounded-xl transition-all"
+                             >
+                                 Cancelar
+                             </button>
                              <button 
                                  @click="applyFilters"
-                                 class="w-full py-4 bg-primary hover:bg-green-400 text-black font-black uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
+                                 class="flex-[2] py-4 bg-primary hover:bg-green-400 text-black font-black uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
                              >
-                                 Salvar e Aplicar
-                                 <i class="fa-solid fa-check text-xs"></i>
+                                 Adicionar Filtro
+                                 <i class="fa-solid fa-plus text-xs"></i>
                              </button>
-                         </div>
+                        </div>
                     </div>
-                 </div>
-             </div>
+                </div>
+            </div>
          </Teleport>
 
         <!-- Pause Strategy Modal -->
