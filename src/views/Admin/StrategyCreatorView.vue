@@ -2471,6 +2471,155 @@ export default {
             this.showMarketModal = false;
             this.modalContext = 'main';
         },
+        selectTradeTypeItem(item, customConfig = null) {
+            const config = customConfig || this.currentConfig;
+            
+            if (!config.selectedTradeTypeGroups) {
+                config.selectedTradeTypeGroups = [];
+            }
+
+            const index = config.selectedTradeTypeGroups.indexOf(item.value);
+            if (index > -1) {
+                // Remove if already selected
+                config.selectedTradeTypeGroups.splice(index, 1);
+            } else {
+                // Add if not selected
+                config.selectedTradeTypeGroups.push(item.value);
+            }
+
+            // For compatibility with single tradeType logic elsewhere,
+            // we set form.tradeType to the first selected item's direction if needed.
+            // But with multi-selection, the execution logic should probably use selectedTradeTypeGroups array.
+            if (config.selectedTradeTypeGroups.length > 0) {
+                // Keep .tradeType for backwards compatibility or as a primary selection
+                config.tradeType = item.directions && item.directions.length > 0 ? item.directions[0].value : item.value;
+            } else {
+                config.tradeType = '';
+            }
+        },
+        isTradeTypeItemSelected(item, customConfig = null) {
+            const config = customConfig || this.currentConfig;
+            return config.selectedTradeTypeGroups && config.selectedTradeTypeGroups.includes(item.value);
+        },
+        isCategoryFullySelected(category, customConfig = null) {
+            if (!category.items || category.items.length === 0) return false;
+            const config = customConfig || this.currentConfig;
+            if (!config.selectedTradeTypeGroups) return false;
+            
+            return category.items.every(item => config.selectedTradeTypeGroups.includes(item.value));
+        },
+        isCategoryPartiallySelected(category, customConfig = null) {
+            const config = customConfig || this.currentConfig;
+            if (!config.selectedTradeTypeGroups) return false;
+            
+            const hasSome = category.items.some(item => config.selectedTradeTypeGroups.includes(item.value));
+            const hasAll = this.isCategoryFullySelected(category, customConfig);
+            return hasSome && !hasAll;
+        },
+        getCategorySelectionCount(category, customConfig = null) {
+            const config = customConfig || this.currentConfig;
+            if (!config.selectedTradeTypeGroups) return `0/${category.items.length}`;
+            
+            const selected = category.items.filter(item => config.selectedTradeTypeGroups.includes(item.value)).length;
+            return `${selected}/${category.items.length}`;
+        },
+        handleResize() {
+            this.isMobile = window.innerWidth < 1024;
+            if (this.isMobile) {
+                this.isSidebarOpen = false;
+            }
+        },
+        toggleSidebarCollapse() {
+            this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        },
+        async fetchMarkets() {
+            try {
+                // Use the robust helper to get the token, fallback if needed
+                const token = this.getDerivToken(); 
+                if (!token) {
+                    console.error('[StrategyCreator] No token found for fetching markets.');
+                    this.$root.$toast.error('Erro de autenticação ao buscar mercados.');
+                    return;
+                }
+
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                
+                console.log('[StrategyCreator] Fetching markets...');
+                const res = await fetch(`${apiBaseUrl}/markets`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log(`[StrategyCreator] Raw markets fetched: ${data.length}`);
+                    
+                    const allowedForex = ['frxEURUSD', 'frxUSDJPY', 'frxGBPUSD', 'frxAUDUSD', 'frxUSDCHF', 'frxUSDCAD', 'frxNZDUSD', 'frxEURGBP', 'frxEURJPY', 'frxGBPJPY'];
+                    const allowedCrypto = ['cryBTCUSD', 'cryETHUSD', 'cryLTCUSD', 'cryXRPUSD', 'cryBCHUSD'];
+                    const allowedSynthetic = ['Continuous Indices', 'Daily Reset Indices', 'Indices Step', 'Jump Indices', 'Boom/Crash'];
+
+                    const filteredData = data.filter(m => {
+                        if (m.symbol.startsWith('frx')) return allowedForex.includes(m.symbol);
+                        if (m.symbol.startsWith('cry')) return allowedCrypto.includes(m.symbol);
+                        
+                        const submarket = m.submarketDisplayName;
+                        if (allowedSynthetic.includes(submarket)) return true;
+                        
+                        if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ') || 
+                            m.symbol.startsWith('JDM') || m.symbol.startsWith('BOOM') || 
+                            m.symbol.startsWith('CRASH') || m.symbol.startsWith('STP') ||
+                            m.symbol.startsWith('RDBEAR') || m.symbol.startsWith('RDBULL')) {
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    console.log(`[StrategyCreator] Filtered markets: ${filteredData.length}`);
+
+                    // Deduplication using Set to track seen symbols
+                    const uniqueMarkets = [];
+                    const seenSymbols = new Set();
+                    
+                    filteredData.forEach(m => {
+                        if (seenSymbols.has(m.symbol)) return;
+                        seenSymbols.add(m.symbol);
+
+                        let category = m.submarketDisplayName || m.marketDisplayName || 'Outros';
+                        
+                        if (m.symbol.startsWith('frx')) {
+                            category = 'Major Pairs';
+                        } else if (m.symbol.startsWith('cry')) {
+                            category = 'Criptomoedas';
+                        } else if (m.symbol.startsWith('R_') || m.symbol.startsWith('1HZ')) {
+                            category = 'Índices Contínuos';
+                        } else if (m.symbol.startsWith('JDM')) {
+                            category = 'Jump Indices';
+                        } else if (m.symbol.startsWith('BOOM') || m.symbol.startsWith('CRASH')) {
+                            category = 'Boom/Crash';
+                        } else if (m.symbol.startsWith('STP')) {
+                            category = 'Indices Step';
+                        } else if (m.symbol.startsWith('RDBEAR') || m.symbol.startsWith('RDBULL')) {
+                            category = 'Daily Reset Indices';
+                        }
+
+                        uniqueMarkets.push({
+                            ...m,
+                            value: m.symbol,
+                            label: m.displayName,
+                            category: category
+                        });
+                    });
+
+                    this.markets = uniqueMarkets;
+                    console.log(`[StrategyCreator] Final unique markets: ${this.markets.length}`);
+                } else {
+                    console.error('[StrategyCreator] Market fetch failed:', res.status, res.statusText);
+                    this.$root.$toast.error('Falha ao buscar mercados.');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar mercados:', error);
+                this.$root.$toast.error('Erro ao carregar mercados');
+            }
+        },
         async onMarketChange(context = 'main') {
             const config = context === 'main' ? this.form : this.recoveryConfig;
             const market = config.market;
