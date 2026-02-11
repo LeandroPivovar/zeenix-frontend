@@ -146,11 +146,11 @@
                                                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
                                                         <div v-for="m in markets" :key="m.symbol"
                                                             class="bg-[#181818] border border-[#333] rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-zenix-green/50 hover:bg-zenix-green/5 transition-all"
-                                                            :class="{ 'border-zenix-green bg-zenix-green/10': m.symbol && currentMarket === m.symbol }"
+                                                            :class="{ 'border-zenix-green bg-zenix-green/10': m.symbol && form.market === m.symbol }"
                                                             @click.stop="selectMarket(m.symbol)"
                                                         >
-                                                            <div class="custom-checkbox sm" :class="{ 'checked': m.symbol && currentMarket === m.symbol }">
-                                                                <i v-if="m.symbol && currentMarket === m.symbol" class="fa-solid fa-check"></i>
+                                                            <div class="custom-checkbox sm" :class="{ 'checked': m.symbol && form.market === m.symbol }">
+                                                                <i v-if="m.symbol && form.market === m.symbol" class="fa-solid fa-check"></i>
                                                             </div>
                                                             <span class="text-sm font-medium text-white">{{ m.displayName || m.label }}</span>
                                                         </div>
@@ -171,7 +171,7 @@
                                     </div>
 
                                     <div class="space-y-3">
-                                        <div v-for="category in availableTradeTypeGroups" :key="category.id" 
+                                        <div v-for="category in mainTradeTypeGroups" :key="category.id" 
                                             class="market-category-container"
                                             :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedTradeTypeCategory === category.id }"
                                         >
@@ -182,12 +182,12 @@
                                                 <div class="flex items-center gap-4">
                                                     <div class="custom-checkbox" 
                                                         :class="{ 
-                                                            'checked': isCategoryFullySelected(category),
-                                                            'half-checked': isCategoryPartiallySelected(category)
+                                                            'checked': isCategoryFullySelected(category, form),
+                                                            'half-checked': isCategoryPartiallySelected(category, form)
                                                         }"
                                                     >
-                                                        <i v-if="isCategoryFullySelected(category)" class="fa-solid fa-check"></i>
-                                                        <div v-else-if="isCategoryPartiallySelected(category)" class="w-2 h-0.5 bg-black rounded-full"></div>
+                                                        <i v-if="isCategoryFullySelected(category, form)" class="fa-solid fa-check"></i>
+                                                        <div v-else-if="isCategoryPartiallySelected(category, form)" class="w-2 h-0.5 bg-black rounded-full"></div>
                                                     </div>
                                                     <div class="flex items-center gap-2">
                                                         <i :class="category.icon" class="text-zenix-green text-sm"></i>
@@ -195,7 +195,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="flex items-center gap-4">
-                                                    <span class="text-xs font-bold text-gray-500">{{ getCategorySelectionCount(category) }}</span>
+                                                    <span class="text-xs font-bold text-gray-500">{{ getCategorySelectionCount(category, form) }}</span>
                                                     <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': expandedTradeTypeCategory !== category.id }"></i>
                                                 </div>
                                             </div>
@@ -206,9 +206,9 @@
                                                             v-for="item in category.items" 
                                                             :key="item.value"
                                                             type="button"
-                                                            @click="selectTradeTypeItem(item)"
+                                                            @click="selectTradeTypeItem(item, form)"
                                                             class="px-4 py-2 rounded-full text-xs font-bold border transition-all"
-                                                            :class="isTradeTypeItemSelected(item) ? 'bg-zenix-green/10 border-zenix-green text-zenix-green' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
+                                                            :class="isTradeTypeItemSelected(item, form) ? 'bg-zenix-green/10 border-zenix-green text-zenix-green' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
                                                         >
                                                         {{ item.label }}
                                                     </button>
@@ -1018,7 +1018,7 @@
                                         v-for="item in category.items"
                                         :key="item.value"
                                         @click="selectTradeType(item)"
-                                        :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.selectedTradeTypeGroup : recoveryConfig.selectedTradeTypeGroup) === item.value }]"
+                                        :class="['category-item-btn', { 'active': isTradeTypeItemSelected(item, modalContext === 'main' ? form : recoveryConfig) }]"
                                     >
                                         <div class="flex items-center gap-2">
                                             <div class="w-5 h-5 flex items-center justify-center text-zenix-green">
@@ -2260,24 +2260,17 @@ export default {
         },
         
         // DYNAMIC GENERATION OF CATEGORIES
+        mainTradeTypeGroups() {
+            const availableTypes = this.contracts.map(c => c.contractType.toUpperCase());
+            return this.getFilteredTradeTypeGroups(availableTypes);
+        },
+        recoveryTradeTypeGroups() {
+            const availableTypes = this.recoveryContracts.map(c => c.contractType.toUpperCase());
+            return this.getFilteredTradeTypeGroups(availableTypes);
+        },
         availableTradeTypeGroups() {
-            // Filter categories and items based on available contracts
-            const availableTypes = this.currentContextContracts.map(c => c.contractType.toUpperCase());
-            
-            return this.tradeTypeCategories.map(category => {
-                const filteredItems = category.items.filter(item => {
-                    // Item is shown if ANY of its directions are available
-                    return item.directions.some(dir => availableTypes.includes(dir.value.toUpperCase()));
-                });
-                
-                if (filteredItems.length > 0) {
-                    return {
-                        ...category,
-                        items: filteredItems
-                    };
-                }
-                return null;
-            }).filter(Boolean);
+            // Deprecated helper, use mainTradeTypeGroups or recoveryTradeTypeGroups
+            return (this.modalContext || 'main') === 'main' ? this.mainTradeTypeGroups : this.recoveryTradeTypeGroups;
         },
         
         activeFiltersForModal() {
@@ -2479,8 +2472,8 @@ export default {
             this.showMarketModal = false;
             this.modalContext = 'main';
         },
-        selectTradeTypeItem(item) {
-            const config = this.currentConfig;
+        selectTradeTypeItem(item, customConfig = null) {
+            const config = customConfig || this.currentConfig;
             
             if (!config.selectedTradeTypeGroups) {
                 config.selectedTradeTypeGroups = [];
@@ -2505,26 +2498,27 @@ export default {
                 config.tradeType = '';
             }
         },
-        isTradeTypeItemSelected(item) {
-            return this.currentConfig.selectedTradeTypeGroups && this.currentConfig.selectedTradeTypeGroups.includes(item.value);
+        isTradeTypeItemSelected(item, customConfig = null) {
+            const config = customConfig || this.currentConfig;
+            return config.selectedTradeTypeGroups && config.selectedTradeTypeGroups.includes(item.value);
         },
-        isCategoryFullySelected(category) {
+        isCategoryFullySelected(category, customConfig = null) {
             if (!category.items || category.items.length === 0) return false;
-            const config = this.currentConfig;
+            const config = customConfig || this.currentConfig;
             if (!config.selectedTradeTypeGroups) return false;
             
             return category.items.every(item => config.selectedTradeTypeGroups.includes(item.value));
         },
-        isCategoryPartiallySelected(category) {
-            const config = this.currentConfig;
+        isCategoryPartiallySelected(category, customConfig = null) {
+            const config = customConfig || this.currentConfig;
             if (!config.selectedTradeTypeGroups) return false;
             
             const hasSome = category.items.some(item => config.selectedTradeTypeGroups.includes(item.value));
-            const hasAll = this.isCategoryFullySelected(category);
+            const hasAll = this.isCategoryFullySelected(category, customConfig);
             return hasSome && !hasAll;
         },
-        getCategorySelectionCount(category) {
-            const config = this.currentConfig;
+        getCategorySelectionCount(category, customConfig = null) {
+            const config = customConfig || this.currentConfig;
             if (!config.selectedTradeTypeGroups) return `0/${category.items.length}`;
             
             const selected = category.items.filter(item => config.selectedTradeTypeGroups.includes(item.value)).length;
@@ -2571,7 +2565,11 @@ export default {
                         return false;
                     });
 
-                    this.markets = filteredData.map(m => {
+                    const marketMap = new Map();
+                    
+                    filteredData.forEach(m => {
+                        if (marketMap.has(m.symbol)) return;
+
                         let category = m.submarketDisplayName || m.marketDisplayName || 'Outros';
                         
                         if (m.symbol.startsWith('frx')) {
@@ -2590,13 +2588,16 @@ export default {
                             category = 'Daily Reset Indices';
                         }
 
-                        return {
+                        marketMap.set(m.symbol, {
                             ...m,
                             value: m.symbol,
                             label: m.displayName,
-                            category: category
-                        };
+                            category: category,
+                            symbol: m.symbol // Ensure symbol is clearly mapped
+                        });
                     });
+
+                    this.markets = Array.from(marketMap.values());
                 }
             } catch (error) {
                 console.error('Erro ao buscar mercados:', error);
@@ -2642,6 +2643,21 @@ export default {
             } finally {
                 this.isFetchingContracts = false;
             }
+        },
+        getFilteredTradeTypeGroups(availableTypes) {
+            return this.tradeTypeCategories.map(category => {
+                const filteredItems = category.items.filter(item => {
+                    return item.directions.some(dir => availableTypes.includes(dir.value.toUpperCase()));
+                });
+                
+                if (filteredItems.length > 0) {
+                    return {
+                        ...category,
+                        items: filteredItems
+                    };
+                }
+                return null;
+            }).filter(Boolean);
         },
         // Filter Management Methods
         openFilterModal(context = 'main') {
