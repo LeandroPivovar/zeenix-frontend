@@ -1,4 +1,5 @@
-﻿<template>
+﻿<!-- Build Refresh: 2026-02-11 16:22 -->
+<template>
     <div class="dashboard-layout">
         <div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
         
