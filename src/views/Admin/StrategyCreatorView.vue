@@ -164,23 +164,58 @@
 
                             <!-- Tipo de Negociação -->
                             <div class="col-span-12">
-                                <div class="form-group">
-                                    <label class="block text-[#7D7D7D] text-sm mb-2 uppercase tracking-wider font-semibold">Tipo de Negociação</label>
-                                    <button
-                                        type="button"
-                                        @click="openTradeTypeModal('main')"
-                                        :disabled="!contracts.length && !form.market"
-                                        class="w-full bg-[#111] border border-[#333] rounded-xl py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <div class="flex items-center gap-3">
-                                            <div v-if="selectedTradeTypeIcon" class="w-6 h-6 flex items-center justify-center text-zenix-green">
-                                                <i class="fa-solid fa-chart-line" v-if="form.tradeType === 'CALL' || form.tradeType === 'PUT'"></i>
-                                                <img v-else :src="selectedTradeTypeIcon" class="w-full h-full" />
+                                <div class="bg-[#111] border border-[#333] rounded-2xl p-6">
+                                    <div class="flex items-center gap-2 mb-6 text-white">
+                                        <i class="fa-solid fa-layer-group text-zenix-green text-xl"></i>
+                                        <h2 class="text-xl font-bold">Tipos de Negociação</h2>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <div v-for="category in availableTradeTypeGroups" :key="category.id" 
+                                            class="market-category-container"
+                                            :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedTradeTypeCategory === category.id }"
+                                        >
+                                            <div 
+                                                class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all rounded-xl"
+                                                @click="expandedTradeTypeCategory = expandedTradeTypeCategory === category.id ? null : category.id"
+                                            >
+                                                <div class="flex items-center gap-4">
+                                                    <div class="custom-checkbox" 
+                                                        :class="{ 
+                                                            'checked': isCategoryFullySelected(category),
+                                                            'half-checked': isCategoryPartiallySelected(category)
+                                                        }"
+                                                    >
+                                                        <i v-if="isCategoryFullySelected(category)" class="fa-solid fa-check"></i>
+                                                        <div v-else-if="isCategoryPartiallySelected(category)" class="w-2 h-0.5 bg-black rounded-full"></div>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <i :class="category.icon" class="text-zenix-green text-sm"></i>
+                                                        <span class="text-lg font-medium text-white">{{ category.label }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center gap-4">
+                                                    <span class="text-xs font-bold text-gray-500">{{ getCategorySelectionCount(category) }}</span>
+                                                    <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': expandedTradeTypeCategory !== category.id }"></i>
+                                                </div>
                                             </div>
-                                            <span class="font-medium text-lg">{{ selectedTradeTypeLabel }}</span>
+
+                                            <div v-if="expandedTradeTypeCategory === category.id" class="p-4 pt-0 border-t border-[#333]/50 mt-2">
+                                                <div class="flex flex-wrap gap-2 mt-4">
+                                                    <button 
+                                                        v-for="item in category.items" 
+                                                        :key="item.value"
+                                                        type="button"
+                                                        @click="selectTradeTypeItem(item)"
+                                                        class="px-4 py-2 rounded-full text-xs font-bold border transition-all"
+                                                        :class="form.selectedTradeTypeGroup === item.value ? 'bg-zenix-green/10 border-zenix-green text-zenix-green' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
+                                                    >
+                                                        {{ item.label }}
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                    </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1679,9 +1714,9 @@ export default {
             
             // UI Modals
             showMarketModal: false,
-            showTradeTypeModal: false,
             showFilterModal: false,
             expandedCategory: null, // Track which market category is expanded
+            expandedTradeTypeCategory: null, // Track which trade type category is expanded
             showPauseModal: false,
             showAccountModal: false,
             showStopModal: false, // New Stop Result Modal
@@ -2370,6 +2405,12 @@ export default {
     },
     methods: {
         selectMarket(symbol) {
+            // If already selected, deselect it
+            if (this.form.market === symbol) {
+                this.form.market = '';
+                return;
+            }
+
             if (this.modalContext === 'main' || !this.modalContext) {
                 this.form.market = symbol;
             } else {
@@ -2381,6 +2422,41 @@ export default {
             
             if (this.showMarketModal) this.closeMarketModal();
             this.onMarketChange(this.modalContext || 'main');
+        },
+        openMarketModal(context = 'main') {
+            this.modalContext = context;
+            this.showMarketModal = true;
+        },
+        closeMarketModal() {
+            this.showMarketModal = false;
+        },
+        selectTradeTypeItem(item) {
+            // Toggle selection: if already selected group, we can either keep it or deselect. 
+            // Usually in these UIs, clicking the same pill deselects.
+            if (this.form.selectedTradeTypeGroup === item.value) {
+                this.form.selectedTradeTypeGroup = '';
+                this.form.tradeType = '';
+                return;
+            }
+
+            this.form.selectedTradeTypeGroup = item.value;
+            // Set the first direction as default tradeType
+            if (item.directions && item.directions.length > 0) {
+                this.form.tradeType = item.directions[0].value;
+            }
+        },
+        isCategoryFullySelected() {
+            // For single selection, we use the dash (half-checked) style usually.
+            // But if there's only one item and it's selected, it could be "fully".
+            // However, the design seems to use the dash for "something is selected in here".
+            return false; 
+        },
+        isCategoryPartiallySelected(category) {
+            return category.items.some(item => this.form.selectedTradeTypeGroup === item.value);
+        },
+        getCategorySelectionCount(category) {
+            const selected = category.items.filter(item => this.form.selectedTradeTypeGroup === item.value).length;
+            return `${selected}/${category.items.length}`;
         },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
@@ -2634,83 +2710,7 @@ export default {
                     config: JSON.parse(JSON.stringify(f.config))
                 }));
         },
-        // Modal Handlers
-        openMarketModal(context = 'main') {
-            this.modalContext = context;
-            this.showMarketModal = true;
-        },
-        closeMarketModal() {
-            this.showMarketModal = false;
-        },
-        openTradeTypeModal(context = 'main') {
-            const contracts = context === 'main' ? this.contracts : this.recoveryContracts;
-            
-            if (this.isFetchingContracts) {
-                this.$root.$toast.info('Carregando contratos... Por favor, aguarde.');
-                return;
-            }
-
-            if (!contracts.length) {
-                this.$root.$toast.warning('Selecione um mercado válido primeiro.');
-                return;
-            }
-
-            this.modalContext = context;
-            this.showTradeTypeModal = true;
-        },
-        closeTradeTypeModal() {
-            this.showTradeTypeModal = false;
-        },
-        selectTradeType(item) {
-            // Determine the default direction (Contract Type)
-            const contracts = this.modalContext === 'main' ? this.contracts : this.recoveryContracts;
-            const availableTypes = contracts.map(c => c.contractType.toUpperCase());
-            
-            // Find first direction that exists in available contracts
-            let selectedDirection = item.directions.find(d => availableTypes.includes(d.value.toUpperCase()));
-            
-            // Fallback if none found
-            if (!selectedDirection) {
-                selectedDirection = item.directions[0]; 
-            }
-
-            if (this.modalContext === 'main') {
-                this.form.selectedTradeTypeGroup = item.value; // Store Item Value for UI
-                
-                // ✅ Respect Direction Mode: If AMBOS is selected, tradeType MUST be empty
-                if (this.form.directionMode === 'both') {
-                    this.form.tradeType = '';
-                    console.log(`[selectTradeType] Modal: AMBOS mode detected, clearing tradeType for dynamic signaling`);
-                } else {
-                    this.form.tradeType = selectedDirection.value; // Store Actual Contract Type for API
-                }
-                
-                // Initialize Direction Payouts
-                this.form.directionPayouts = {};
-                item.directions.forEach(d => {
-                    this.form.directionPayouts[d.value] = this.form.expectedPayout || 1.20;
-                });
-            } else {
-                this.recoveryConfig.selectedTradeTypeGroup = item.value;
-
-                // ✅ Respect Direction Mode (Recovery)
-                if (this.recoveryConfig.directionMode === 'both') {
-                    this.recoveryConfig.tradeType = '';
-                    console.log(`[selectTradeType] Modal (REC): AMBOS mode detected, clearing tradeType`);
-                } else {
-                    this.recoveryConfig.tradeType = selectedDirection.value;
-                }
-
-                // Initialize Direction Payouts
-                this.recoveryConfig.directionPayouts = {};
-                item.directions.forEach(d => {
-                    this.recoveryConfig.directionPayouts[d.value] = this.recoveryConfig.expectedPayout || 2.26;
-                });
-            }
-            
-            this.$root.$toast.success(`Selecionado: ${item.label} (${selectedDirection.label})`);
-            this.closeTradeTypeModal();
-        },
+        // ----------------------------
         
         // ✅ NEW: Auto-update tradeType when direction mode changes
         updateRecoveryDirection(mode, specificType = null) {
@@ -4626,6 +4626,19 @@ export default {
 .custom-checkbox.checked {
     background: #00ff88;
     border-color: #00ff88;
+}
+
+.custom-checkbox.half-checked {
+    background: #00ff88;
+    border-color: #00ff88;
+}
+
+.custom-checkbox.half-checked::after {
+    content: '';
+    width: 8px;
+    height: 2px;
+    background: #111;
+    border-radius: 1px;
 }
 
 .custom-checkbox i {
