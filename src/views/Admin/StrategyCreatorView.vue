@@ -363,59 +363,54 @@
                         <!-- Motores de Entrada (Refined) -->
                         <div class="col-span-12">
                              <div class="zenix-card">
-                                 <div class="zenix-card-header !pb-2">
-                                     <h2 class="zenix-card-title flex items-center justify-between w-full">
-                                         <div class="flex items-center gap-2">
-                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu w-5 h-5 text-primary">
-                                                 <rect width="16" height="16" x="4" y="4" rx="2"></rect>
-                                                 <rect width="6" height="6" x="9" y="9" rx="1"></rect>
-                                                 <path d="M15 2v2"></path><path d="M15 20v2"></path><path d="M2 15h2"></path><path d="M2 9h2"></path><path d="M20 15h2"></path><path d="M20 9h2"></path><path d="M9 2v2"></path><path d="M9 20v2"></path>
-                                             </svg>
-                                             Motores de Entrada
-                                         </div>
-                                         <span class="text-xs text-muted-foreground font-medium">{{ activeEngineTab === 'main' ? activeAttackFilters.length : activeRecoveryFilters.length }}/3 configurados</span>
+                                 <!-- Header with Total Counter -->
+                                 <div class="flex items-center justify-between mb-4">
+                                     <h2 class="text-lg font-bold flex items-center gap-2 text-white">
+                                         <i class="fa-solid fa-microchip text-zenix-green"></i>
+                                         Motores de Entrada
                                      </h2>
+                                     <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">{{ totalConfiguredFiltersCount }}/6 configurados</span>
                                  </div>
- 
-                                 <div class="space-y-4">
-                                     <!-- Tab Switcher -->
-                                     <div class="flex gap-2 p-1 bg-[hsl(var(--zenix-elevated))] rounded-lg border border-border/50">
+
+                                 <div class="bg-[#141414] border border-[#333] rounded-xl p-1">
+                                     <!-- Analysis Type Tabs -->
+                                     <div class="grid grid-cols-2 gap-1 mb-4 p-1 bg-black/40 rounded-lg">
                                          <button 
                                              type="button"
                                              @click="activeEngineTab = 'main'"
-                                             class="flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all"
-                                             :class="activeEngineTab === 'main' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'"
+                                             class="py-3 text-sm font-bold rounded-md transition-all relative overflow-hidden"
+                                             :class="activeEngineTab === 'main' ? 'bg-zenix-green text-black shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'text-gray-400 hover:text-white hover:bg-white/5'"
                                          >
-                                             Análise Principal <span class="ml-2 text-xs opacity-70">({{ activeAttackFilters.length }}/3)</span>
+                                             Análise Principal <span class="opacity-70 text-xs ml-1">({{ mainAnalysisCount }}/3)</span>
                                          </button>
                                          <button 
                                              type="button"
                                              @click="activeEngineTab = 'recovery'"
-                                             class="flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all"
-                                             :class="activeEngineTab === 'recovery' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'"
+                                             class="py-3 text-sm font-bold rounded-md transition-all relative overflow-hidden"
+                                             :class="activeEngineTab === 'recovery' ? 'bg-zenix-green text-black shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'text-gray-400 hover:text-white hover:bg-white/5'"
                                          >
-                                             Análise de Recuperação <span class="ml-2 text-xs opacity-70">({{ activeRecoveryFilters.length }}/3)</span>
+                                             Análise de Recuperação <span class="opacity-70 text-xs ml-1">({{ recoveryAnalysisCount }}/3)</span>
                                          </button>
                                      </div>
- 
-                                     <!-- Performance Mode Selector (Dots Style) -->
-                                     <div class="flex gap-2">
+
+                                     <!-- Performance Mode Selector (Dots Style) - Only visible for Main Analysis -->
+                                     <div v-if="activeEngineTab === 'main'" class="flex gap-2 mb-4">
                                          <button 
                                              v-for="mode in [{id:'VELOZ', label:'Veloz'}, {id:'NORMAL', label:'Normal'}, {id:'PRECISO', label:'Preciso'}]"
                                              :key="mode.id"
                                              type="button"
-                                             @click="sessionState.negotiationMode = mode.id"
+                                             @click="activeConfigTab = mode.label"
                                              class="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 border"
-                                             :class="sessionState.negotiationMode === mode.id ? 'bg-muted text-foreground border-primary/50' : 'bg-[hsl(var(--zenix-elevated))] text-muted-foreground hover:text-foreground border-border/50'"
+                                             :class="activeConfigTab === mode.label ? 'bg-muted text-foreground border-zenix-green text-zenix-green' : 'bg-[hsl(var(--zenix-elevated))] text-muted-foreground hover:text-foreground border-border/50'"
                                          >
-                                             <span class="w-2 h-2 rounded-full" :class="sessionState.negotiationMode === mode.id ? 'bg-primary' : 'bg-muted-foreground/30'"></span>
+                                             <span class="w-2 h-2 rounded-full" :class="activeConfigTab === mode.label ? 'bg-zenix-green' : 'bg-muted-foreground/30'"></span>
                                              {{ mode.label }}
                                          </button>
                                      </div>
  
                                      <!-- Active Filters / Empty State -->
                                      <div class="min-h-[200px] bg-[hsl(var(--zenix-elevated))] rounded-lg border border-border/50 p-4">
-                                         <div v-if="!(activeEngineTab === 'main' ? activeAttackFilters.length : activeRecoveryFilters.length)" class="text-center py-8 text-muted-foreground">
+                                         <div v-if="!(activeEngineTab === 'main' ? (filterModes[activeConfigTab] && filterModes[activeConfigTab].length) : activeRecoveryFilters.length)" class="text-center py-8 text-muted-foreground">
                                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu w-8 h-8 mx-auto mb-2 opacity-50">
                                                  <rect width="16" height="16" x="4" y="4" rx="2"></rect>
                                                  <rect width="6" height="6" x="9" y="9" rx="1"></rect>
@@ -426,7 +421,7 @@
  
                                          <div v-else class="space-y-2 mb-4">
                                              <div 
-                                                 v-for="filter in (activeEngineTab === 'main' ? activeAttackFilters : activeRecoveryFilters)" 
+                                                 v-for="filter in (activeEngineTab === 'main' ? filterModes[activeConfigTab] : activeRecoveryFilters)" 
                                                  :key="filter.id"
                                                  class="flex items-center justify-between p-3 rounded-lg bg-background border border-border/20"
                                              >
@@ -1172,11 +1167,11 @@
                  class="fixed inset-0 z-[100] flex justify-end"
              >
                  <!-- Backdrop -->
-                 <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" @click="showFilterModal = false"></div>
+                 <div class="modal-overlay" @click="showFilterModal = false"></div>
                  
                  <!-- Drawer Content -->
                  <div 
-                     class="relative w-full max-w-[500px] h-full bg-[#0a0a0a] border-l border-[#1a1a1a] shadow-2xl flex flex-col transform transition-transform duration-300"
+                     class="relative w-full max-w-[500px] h-full bg-[#0a0a0a] border-l border-[#1a1a1a] shadow-2xl flex flex-col transform transition-transform duration-300 z-[10000000001] pointer-events-auto"
                  >
                      <!-- Header -->
                      <div class="flex flex-col p-6 border-b border-[#1a1a1a]">
@@ -1191,7 +1186,7 @@
                                          <rect width="6" height="6" x="9" y="9" rx="1"></rect>
                                          <path d="M15 2v2"></path><path d="M15 20v2"></path><path d="M2 15h2"></path><path d="M2 9h2"></path><path d="M20 15h2"></path><path d="M20 9h2"></path><path d="M9 2v2"></path><path d="M9 20v2"></path>
                                      </svg>
-                                    {{ filterStep === 1 ? 'Biblioteca de Filtros ZENIX' : 'Configurar Filtro' }}
+                                    {{ filterStep === 1 ? 'Biblioteca de Filtros ZENIX' : 'Configurar Filtros' }}
                                 </h2>
                              </div>
                              <button @click="showFilterModal = false" class="w-8 h-8 rounded-lg hover:bg-[#1a1a1a] flex items-center justify-center text-gray-500 hover:text-white transition-all">
@@ -1213,9 +1208,6 @@
  
                     <!-- Body (Step 1: Selection) -->
                     <div v-if="filterStep === 1" class="flex-1 flex flex-col overflow-hidden h-full bg-[#0a0a0a]">
-                        <!-- Search (Moved inside body for better flow control if needed, but keeping in header per original) -->
-                        
-                        <!-- Accordions List -->
                         <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
                             <div 
                                 v-for="group in groupedFiltersForModal" 
@@ -1239,7 +1231,7 @@
                                     </div>
                                     <i class="fa-solid fa-chevron-down text-xs text-gray-500 transition-transform duration-300" :class="{ 'rotate-180': openAccordions.includes(group.id) }"></i>
                                 </button>
-
+                                
                                 <!-- Accordion Body -->
                                 <div v-show="openAccordions.includes(group.id)" class="border-t border-[#1a1a1a] bg-[#0a0a0a]">
                                     <div class="divide-y divide-[#1a1a1a]">
@@ -1254,7 +1246,7 @@
                                             </div>
                                             
                                             <button 
-                                                v-if="!filter.active"
+                                                v-if="!isFilterActive(filter)"
                                                 @click="toggleFilterInModal(filter)"
                                                 class="px-3 py-1.5 rounded-lg border border-primary/30 text-[10px] font-black uppercase tracking-wider text-primary hover:bg-primary/10 hover:border-primary transition-all shadow-[0_0_10px_-5px_#22c55e]"
                                             >
@@ -1272,122 +1264,136 @@
                                 </div>
                             </div>
                         </div>
+                         <!-- Footer (Step 1) -->
+                        <div class="p-6 border-t border-[#1a1a1a] bg-[#0a0a0a]">
+                             <button 
+                                 @click="nextFilterStep"
+                                 :disabled="!activeFiltersForModal.some(f => f.active)"
+                                 class="w-full py-4 bg-primary hover:bg-green-400 disabled:opacity-50 disabled:grayscale text-black font-black uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
+                             >
+                                 Configurar {{ activeFiltersForModal.filter(f => f.active).length }} Selecionados
+                                 <i class="fa-solid fa-arrow-right text-xs"></i>
+                             </button>
+                         </div>
                     </div>
  
                     <!-- Body (Step 2: Configuration) -->
-                    <div v-else-if="filterStep === 2" class="flex-1 overflow-y-auto custom-scrollbar p-6 bg-[#0a0a0a]">
-                        <!-- Config Header & Mode Selector -->
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Modo de Operação</h3>
-                            <div class="flex bg-[#0f0f0f] p-1 rounded-lg border border-[#1a1a1a]">
-                                <button v-for="mode in ['Veloz', 'Moderado', 'Preciso']" :key="mode" @click="activeConfigTab = mode" class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md transition-all" :class="activeConfigTab === mode ? 'bg-[#1a1a1a] text-primary border border-[#333] shadow-lg shadow-black/50' : 'text-gray-600 hover:text-gray-300'">
-                                    {{ mode }}
-                                </button>
+                    <div v-else-if="filterStep === 2" class="flex-1 flex flex-col h-full bg-[#0a0a0a]">
+                        <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                            <!-- Helper Text -->
+                            <div class="mb-6 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg flex items-start gap-3">
+                                <i class="fa-solid fa-circle-info text-blue-400 mt-0.5"></i>
+                                <div>
+                                    <p class="text-xs text-blue-300 font-bold mb-1">Configuração em Lote</p>
+                                    <p class="text-[10px] text-blue-400/80">Você está configurando os filtros selecionados. As alterações serão salvas para o modo <strong>{{ activeConfigTab }}</strong>.</p>
+                                </div>
                             </div>
+
+                             <!-- Config Header & Mode Selector -->
+                             <div class="flex items-center justify-between mb-6">
+                                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Modo de Operação</h3>
+                                 <div class="flex bg-[#0f0f0f] p-1 rounded-lg border border-[#1a1a1a]">
+                                     <button v-for="mode in ['Veloz', 'Normal', 'Preciso']" :key="mode" @click="activeConfigTab = mode" class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md transition-all" :class="activeConfigTab === mode ? 'bg-[#1a1a1a] text-primary border border-[#333] shadow-lg shadow-black/50' : 'text-gray-600 hover:text-gray-300'">
+                                         {{ mode }}
+                                     </button>
+                                 </div>
+                             </div>
+
+                             <!-- Loop through Active Filters for Configuration -->
+                             <div v-for="filter in activeFiltersForModal.filter(f => f.active)" :key="filter.id" class="mb-8 border-b border-[#1a1a1a] pb-8 last:border-0">
+                                 <!-- Info Card -->
+                                 <div class="mb-4">
+                                     <div class="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-4 flex gap-4 items-start relative overflow-hidden group">
+                                         <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                                         <div class="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center text-primary border border-[#333] shrink-0 z-10">
+                                             <i v-if="filter.type === 'digit'" class="fa-solid fa-hashtag text-lg"></i>
+                                             <i v-else-if="filter.type === 'price' || filter.type === 'indicators'" class="fa-solid fa-chart-line text-lg"></i>
+                                             <i v-else class="fa-solid fa-microchip text-lg"></i>
+                                         </div>
+                                         <div class="relative z-10 w-full">
+                                             <h3 class="text-sm font-bold text-white mb-2">{{ filter.name }}</h3>
+                                             
+                                             <!-- Loftop Section -->
+                                             <div v-if="getFilterDescription(filter)" class="space-y-1.5 border-t border-[#1a1a1a] pt-2 mt-1">
+                                                 <div class="grid grid-cols-[80px_1fr] gap-2 text-[10px] items-baseline">
+                                                     <span class="text-primary font-bold uppercase tracking-wider text-[9px]">Observa:</span>
+                                                     <span class="text-gray-400 leading-tight">{{ getFilterDescription(filter).loftop.what }}</span>
+                                                 </div>
+                                                 <div class="grid grid-cols-[80px_1fr] gap-2 text-[10px] items-baseline">
+                                                     <span class="text-green-400/80 font-bold uppercase tracking-wider text-[9px]">Válido se:</span>
+                                                     <span class="text-gray-400 leading-tight">{{ getFilterDescription(filter).loftop.when }}</span>
+                                                 </div>
+                                                 <div class="grid grid-cols-[80px_1fr] gap-2 text-[10px] items-baseline">
+                                                     <span class="text-white/60 font-bold uppercase tracking-wider text-[9px]">Ação:</span>
+                                                     <span class="text-gray-400 leading-tight">{{ getFilterDescription(filter).loftop.result }}</span>
+                                                 </div>
+                                             </div>
+                                             <p v-else class="text-[10px] text-gray-500 italic leading-relaxed">{{ filter.desc }}</p>
+                                         </div>
+                                     </div>
+                                 </div>
+ 
+                                 <!-- Parameters -->
+                                 <div class="space-y-4">
+                                     <div class="flex items-center gap-2 mb-4">
+                                         <div class="h-px bg-[#1a1a1a] flex-1"></div>
+                                         <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-500">Parâmetros</h4>
+                                         <div class="h-px bg-[#1a1a1a] flex-1"></div>
+                                     </div>
+                                     
+                                     <div class="space-y-5">
+                                         <div v-for="(value, key) in getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()]" :key="key" class="space-y-2 group">
+                                             <div class="flex items-center justify-between">
+                                                 <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2 group-focus-within:text-white transition-colors">
+                                                     {{ key.replace(/_/g, ' ') }} 
+                                                     <i class="fa-regular fa-circle-question text-[8px] text-gray-700 hover:text-primary cursor-help"></i>
+                                                 </label>
+                                                 <span class="text-[8px] font-mono text-gray-700 bg-[#111] px-1.5 py-0.5 rounded border border-[#222]">0-9</span>
+                                             </div>
+                                             
+                                             <div v-if="['<', '>', '=', '>=', '<='].includes(value) || ['operator', 'op', 'condition', 'direction', 'target', 'parity', 'type'].includes(key)" class="relative">
+                                                 <select v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#0c0c0c] border border-[#1a1a1a] rounded-lg px-4 py-3 text-sm text-white focus:border-primary/50 focus:bg-[#111] outline-none transition-all appearance-none shadow-inner zenix-input-dark font-medium">
+                                                     <option value="<">Menor que (&lt;)</option>
+                                                     <option value=">">Maior que (&gt;)</option>
+                                                     <option value="=">Igual a (=)</option>
+                                                     <option value=">=">Maior ou Igual (&gt;=)</option>
+                                                     <option value="<=">Menor ou Igual (&lt;=)</option>
+                                                     <option value="cross_up">Cruzar para Cima</option>
+                                                     <option value="cross_down">Cruzar para Baixo</option>
+                                                     <option value="oversold">Abaixo de (Sobrevenda)</option>
+                                                     <option value="overbought">Acima de (Sobrecompra)</option>
+                                                     <option value="increasing">Aumentando</option>
+                                                     <option value="decreasing">Diminuindo</option>
+                                                     <option value="rise">Alta</option>
+                                                     <option value="fall">Baixa</option>
+                                                     <option value="even">Pares</option>
+                                                     <option value="odd">Ímpares</option>
+                                                     <option value="under_4">Abaixo de 4</option>
+                                                     <option value="over_5">Acima de 5</option>
+                                                     <option value="SMA">Simples (SMA)</option>
+                                                     <option value="EMA">Exponencial (EMA)</option>
+                                                 </select>
+                                                 <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none text-[10px]"></i>
+                                             </div>
+                                             
+                                             <input v-else type="text" v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#0c0c0c] border border-[#1a1a1a] rounded-lg px-4 py-3 text-sm text-white focus:border-primary/50 focus:bg-[#111] outline-none transition-all shadow-inner zenix-input-dark font-mono placeholder:text-gray-800" />
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
                         </div>
 
-                        <!-- Info Card -->
-                        <div v-if="configuringFilter" class="mb-6">
-                            <div class="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-4 flex gap-4 items-start relative overflow-hidden group">
-                                <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-                                <div class="w-10 h-10 rounded-lg bg-[#1a1a1a] flex items-center justify-center text-primary border border-[#333] shrink-0 z-10">
-                                    <!-- Simple Icon Logic based on Type -->
-                                    <i v-if="configuringFilter.type === 'digit'" class="fa-solid fa-hashtag text-lg"></i>
-                                    <i v-else-if="configuringFilter.type === 'price' || configuringFilter.type === 'indicators'" class="fa-solid fa-chart-line text-lg"></i>
-                                    <i v-else class="fa-solid fa-microchip text-lg"></i>
-                                </div>
-                                <div class="relative z-10">
-                                    <h3 class="text-sm font-bold text-white mb-2">{{ configuringFilter.name }}</h3>
-                                    
-                                    <!-- Loftop Section -->
-                                    <div v-if="getFilterDescription(configuringFilter)" class="space-y-1.5 border-t border-[#1a1a1a] pt-2 mt-1">
-                                        <div class="grid grid-cols-[80px_1fr] gap-2 text-[10px] items-baseline">
-                                            <span class="text-primary font-bold uppercase tracking-wider text-[9px]">Observa:</span>
-                                            <span class="text-gray-400 leading-tight">{{ getFilterDescription(configuringFilter).loftop.what }}</span>
-                                        </div>
-                                        <div class="grid grid-cols-[80px_1fr] gap-2 text-[10px] items-baseline">
-                                            <span class="text-green-400/80 font-bold uppercase tracking-wider text-[9px]">Válido se:</span>
-                                            <span class="text-gray-400 leading-tight">{{ getFilterDescription(configuringFilter).loftop.when }}</span>
-                                        </div>
-                                        <div class="grid grid-cols-[80px_1fr] gap-2 text-[10px] items-baseline">
-                                            <span class="text-white/60 font-bold uppercase tracking-wider text-[9px]">Ação:</span>
-                                            <span class="text-gray-400 leading-tight">{{ getFilterDescription(configuringFilter).loftop.result }}</span>
-                                        </div>
-                                    </div>
-                                    <p v-else class="text-[10px] text-gray-500 italic leading-relaxed">{{ configuringFilter.desc }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Parameters -->
-                        <div v-if="configuringFilter" class="space-y-4">
-                            <div class="flex items-center gap-2 mb-4">
-                                <div class="h-px bg-[#1a1a1a] flex-1"></div>
-                                <h4 class="text-[10px] font-black uppercase tracking-widest text-gray-500">Parâmetros</h4>
-                                <div class="h-px bg-[#1a1a1a] flex-1"></div>
-                            </div>
-                            
-                            <div class="space-y-5">
-                                <div v-for="(value, key) in getFilterConfig(configuringFilter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()]" :key="key" class="space-y-2 group">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 flex items-center gap-2 group-focus-within:text-white transition-colors">
-                                            {{ key.replace(/_/g, ' ') }} 
-                                            <i class="fa-regular fa-circle-question text-[8px] text-gray-700 hover:text-primary cursor-help"></i>
-                                        </label>
-                                        <span class="text-[8px] font-mono text-gray-700 bg-[#111] px-1.5 py-0.5 rounded border border-[#222]">0-9</span>
-                                    </div>
-                                    
-                                    <div v-if="['<', '>', '=', '>=', '<='].includes(value) || ['operator', 'op', 'condition', 'direction', 'target', 'parity', 'type'].includes(key)" class="relative">
-                                        <select v-model="getFilterConfig(configuringFilter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#0c0c0c] border border-[#1a1a1a] rounded-lg px-4 py-3 text-sm text-white focus:border-primary/50 focus:bg-[#111] outline-none transition-all appearance-none shadow-inner zenix-input-dark font-medium">
-                                            <option value="<">Menor que (&lt;)</option>
-                                            <option value=">">Maior que (&gt;)</option>
-                                            <option value="=">Igual a (=)</option>
-                                            <option value=">=">Maior ou Igual (&gt;=)</option>
-                                            <option value="<=">Menor ou Igual (&lt;=)</option>
-                                            <option value="cross_up">Cruzar para Cima</option>
-                                            <option value="cross_down">Cruzar para Baixo</option>
-                                            <option value="oversold">Abaixo de (Sobrevenda)</option>
-                                            <option value="overbought">Acima de (Sobrecompra)</option>
-                                            <option value="increasing">Aumentando</option>
-                                            <option value="decreasing">Diminuindo</option>
-                                            <option value="rise">Alta</option>
-                                            <option value="fall">Baixa</option>
-                                            <option value="even">Pares</option>
-                                            <option value="odd">Ímpares</option>
-                                            <option value="under_4">Abaixo de 4</option>
-                                            <option value="over_5">Acima de 5</option>
-                                            <option value="SMA">Simples (SMA)</option>
-                                            <option value="EMA">Exponencial (EMA)</option>
-                                        </select>
-                                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none text-[10px]"></i>
-                                    </div>
-                                    
-                                    <input v-else type="text" v-model="getFilterConfig(configuringFilter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#0c0c0c] border border-[#1a1a1a] rounded-lg px-4 py-3 text-sm text-white focus:border-primary/50 focus:bg-[#111] outline-none transition-all shadow-inner zenix-input-dark font-mono placeholder:text-gray-800" />
-                                </div>
-                            </div>
-                        </div>
+                         <!-- Footer (Step 2) -->
+                        <div class="p-6 border-t border-[#1a1a1a] bg-[#0a0a0a]">
+                             <button 
+                                 @click="applyFilters"
+                                 class="w-full py-4 bg-primary hover:bg-green-400 text-black font-black uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
+                             >
+                                 Salvar e Aplicar
+                                 <i class="fa-solid fa-check text-xs"></i>
+                             </button>
+                         </div>
                     </div>
-
-                    <!-- Footer -->
-                    <div class="p-6 border-t border-[#1a1a1a] bg-[#0a0a0a]">
-                         <button 
-                             v-if="filterStep === 1"
-                             @click="nextFilterStep"
-                             :disabled="!activeFiltersForModal.some(f => f.active)"
-                             class="w-full py-4 bg-primary hover:bg-green-400 disabled:opacity-50 disabled:grayscale text-black font-black uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
-                         >
-                             Configurar {{ activeFiltersForModal.filter(f => f.active).length }} Selecionados
-                             <i class="fa-solid fa-arrow-right text-xs"></i>
-                         </button>
-                         <button 
-                             v-else
-                             @click="applyFilters"
-                             class="w-full py-4 bg-primary hover:bg-green-400 text-black font-black uppercase tracking-widest rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
-                         >
-                             Salvar e Aplicar
-                             <i class="fa-solid fa-check text-xs"></i>
-                         </button>
-                     </div>
                  </div>
              </div>
          </Teleport>
@@ -1512,6 +1518,18 @@ export default {
             stopResult: { title: '', message: '', profit: 0, type: 'info' }, // Data for Stop Modal
             isLoadingAccounts: false,
             availableAccounts: [],
+            
+            // New UI State for Filter Modal
+            activeConfigTab: 'Veloz', 
+            filterStep: 1, 
+            configuringFilter: null,
+            modalContext: 'main', 
+            filterSearchQuery: '',
+            openAccordions: ['digits'],
+            activeFilterCategory: 'all',
+            activeEngineTab: 'main', 
+            activeTab: 'config',
+
             selectedToken: null,
             savedStrategies: [],
             selectedSavedStrategyId: '',
@@ -1528,14 +1546,7 @@ export default {
                 // Power & Speed (Tech related)
                 'fa-solid fa-bolt', 'fa-solid fa-rocket', 'fa-solid fa-jet-fighter'
             ],
-            modalContext: 'main', // 'main' or 'recovery'
-            filterStep: 1, // 1: Selection, 2: Configuration
-            activeTab: 'config',
-            activeEngineTab: 'main', // 'main' or 'recovery'
-            filterSearchQuery: '',
-            activeFilterCategory: 'all',
-            openAccordions: ['digits'],
-            configuringFilter: null,
+
             validator: {
                 aiStarted: false,
                 attackFilterCorrect: false,
@@ -1621,10 +1632,14 @@ export default {
                 attackFilters: []
             },
 
-            // --- UI State ---
-            activeConfigTab: 'Veloz', // 'Veloz', 'Moderado', 'Preciso'
-            // ----------------
-            
+            filterModes: {
+                Veloz: [],
+                Normal: [],
+                Preciso: []
+            },
+
+
+
             recoveryContracts: [],
             isFetchingContracts: false,
 
@@ -2081,9 +2096,6 @@ export default {
             }).filter(Boolean);
         },
         
-        activeFiltersForModal() {
-            return this.modalContext === 'main' ? this.filters : this.recoveryFilters;
-        },
 
         filteredLibraryFilters() {
             const filters = this.activeFiltersForModal;
@@ -2232,6 +2244,36 @@ export default {
         },
 
 
+
+        // New Computed Properties for Counters
+        mainAnalysisCount() {
+            // Count active filters for the currently selected mode
+            if (!this.filterModes[this.activeConfigTab]) return 0;
+            return this.filterModes[this.activeConfigTab].length;
+        },
+        
+        recoveryAnalysisCount() {
+             return this.recoveryFilters.filter(f => f.active).length;
+        },
+
+        totalConfiguredFiltersCount() {
+            // Sum of all active filters across all modes + recovery
+            let count = 0;
+            // Count from modes
+            Object.values(this.filterModes).forEach(modeFilters => {
+                count += modeFilters.length;
+            });
+            // Count from recovery
+            count += this.recoveryAnalysisCount;
+            return count;
+        },
+
+        activeFiltersForModal() {
+            // Updated to use the new structure
+            return this.modalContext === 'main' ? this.filters : this.recoveryFilters; 
+            // Note: 'this.filters' is now the Library source. 
+            // The active filters for the current mode are in this.filterModes[this.activeConfigTab]
+        },
     },
 
     mounted() {
@@ -2239,6 +2281,14 @@ export default {
         window.addEventListener('resize', this.handleResize);
         this.fetchMarkets();
         this.loadStrategiesFromStorage();
+        
+        // Initialize Filter Modes
+        this.filterModes = {
+            Veloz: [],
+            Normal: [],
+            Preciso: []
+        };
+        
         // Initialize recovery filters as a clone of main filters
         this.recoveryFilters = JSON.parse(JSON.stringify(this.filters));
         this.onMarketChange('main');
@@ -2405,6 +2455,9 @@ export default {
                 this.activeFiltersForModal.splice(index, 1);
             }
         },
+        isFilterActive(filter) {
+            return this.activeFiltersForModal.some(f => f.id === filter.id && f.active);
+        },
         toggleFilter(filter) {
             console.log(`[toggleFilter] Clicked: ${filter.name} (${filter.id}) | Current Active: ${filter.active}`);
             
@@ -2529,8 +2582,32 @@ export default {
         },
 
         applyFilters() {
-            // Alias for saveFilters or could have specific logic
-            this.saveFilters();
+            const filtersToApply = this.activeFiltersForModal.filter(f => f.active);
+            
+            if (this.modalContext === 'main') {
+                // Update specific mode list
+                this.filterModes[this.activeConfigTab] = JSON.parse(JSON.stringify(filtersToApply));
+                
+                // Sync to form for submission
+                this.form.attackFilters = this.filterModes[this.activeConfigTab].map(f => ({
+                    id: f.id,
+                    name: f.name,
+                    config: f.config
+                }));
+            } else {
+                this.recoveryConfig.attackFilters = filtersToApply.map(f => ({
+                    id: f.id,
+                    name: f.name,
+                    config: f.config
+                }));
+            }
+            
+            console.log(`[applyFilters] Applied ${filtersToApply.length} filters to ${this.activeConfigTab} mode.`);
+            
+            this.showFilterModal = false;
+            this.filterStep = 1;
+            this.configuringFilter = null;
+            this.$root.$toast.success('Filtros aplicados com sucesso!');
         },
         // ✅ Helper to sync filter edits to form/recoveryConfig before saving
         syncFiltersToConfig() {
@@ -4600,18 +4677,21 @@ export default {
 }
 
 /* Modal Styles Copied/Adapted from OperationChart */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  padding: 20px;
-  pointer-events: auto;
-}
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000000000 !important; /* User requested high z-index */
+        animation: fadeIn 0.3s ease;
+        pointer-events: auto;
+    }
 
 .modal-content {
   position: relative;
@@ -4867,6 +4947,14 @@ export default {
 
 .text-zenix-green {
     color: #22C55E;
+}
+
+.bg-zenix-green {
+    background-color: #22C55E !important;
+}
+
+.bg-zenix-green-dim {
+    background-color: rgba(34, 197, 94, 0.15) !important;
 }
 
 .stats-icon-wrapper.pulse {
