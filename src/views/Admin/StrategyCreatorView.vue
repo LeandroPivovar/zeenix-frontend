@@ -146,11 +146,11 @@
                                                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
                                                         <div v-for="m in markets" :key="m.symbol"
                                                             class="bg-[#181818] border border-[#333] rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-zenix-green/50 hover:bg-zenix-green/5 transition-all"
-                                                            :class="{ 'border-zenix-green bg-zenix-green/10': form.market === m.symbol }"
+                                                            :class="{ 'border-zenix-green bg-zenix-green/10': (modalContext === 'main' || !modalContext ? form.market : recoveryConfig.market) === m.symbol }"
                                                             @click="selectMarket(m.symbol)"
                                                         >
-                                                            <div class="custom-checkbox sm" :class="{ 'checked': form.market === m.symbol }">
-                                                                <i v-if="form.market === m.symbol" class="fa-solid fa-check"></i>
+                                                            <div class="custom-checkbox sm" :class="{ 'checked': (modalContext === 'main' || !modalContext ? form.market : recoveryConfig.market) === m.symbol }">
+                                                                <i v-if="(modalContext === 'main' || !modalContext ? form.market : recoveryConfig.market) === m.symbol" class="fa-solid fa-check"></i>
                                                             </div>
                                                             <span class="text-sm font-medium text-white">{{ m.displayName || m.label }}</span>
                                                         </div>
@@ -202,14 +202,14 @@
 
                                             <div v-if="expandedTradeTypeCategory === category.id" class="p-4 pt-0 border-t border-[#333]/50 mt-2">
                                                 <div class="flex flex-wrap gap-2 mt-4">
-                                                    <button 
-                                                        v-for="item in category.items" 
-                                                        :key="item.value"
-                                                        type="button"
-                                                        @click="selectTradeTypeItem(item)"
-                                                        class="px-4 py-2 rounded-full text-xs font-bold border transition-all"
-                                                        :class="form.selectedTradeTypeGroup === item.value ? 'bg-zenix-green/10 border-zenix-green text-zenix-green' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
-                                                    >
+                                                        <button 
+                                                            v-for="item in category.items" 
+                                                            :key="item.value"
+                                                            type="button"
+                                                            @click="selectTradeTypeItem(item)"
+                                                            class="px-4 py-2 rounded-full text-xs font-bold border transition-all"
+                                                            :class="isTradeTypeItemSelected(item) ? 'bg-zenix-green/10 border-zenix-green text-zenix-green' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
+                                                        >
                                                         {{ item.label }}
                                                     </button>
                                                 </div>
@@ -220,7 +220,7 @@
                             </div>
 
                             <!-- Direção e Payouts (Attack) -->
-                            <div v-if="form.selectedTradeTypeGroup" class="col-span-12 mt-2">
+                            <div v-if="form.selectedTradeTypeGroups && form.selectedTradeTypeGroups.length > 0" class="col-span-12 mt-2">
                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-[#181818] p-6 rounded-xl border border-[#333] shadow-inner">
                                     <div class="md:col-span-2">
                                         <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
@@ -1765,7 +1765,8 @@ export default {
                 expectedPayout: 1.20, // Default for DIGITUNDER 8 (bet $1, get $1.20 total)
                 directionMode: 'both', // 'both', 'up', 'down'
                 directionPayouts: {}, // { [contractType]: payout }
-                attackFilters: []
+                attackFilters: [],
+                selectedTradeTypeGroups: [] // Support multi-selection
             },
 
             // Strategy Execution State
@@ -1788,7 +1789,7 @@ export default {
             recoveryConfig: {
                 enabled: true,
                 market: '',
-                selectedTradeTypeGroup: '',
+                selectedTradeTypeGroups: [],
                 tradeType: '',
                 prediction: 0,
                 barrier: 0,
@@ -2304,13 +2305,16 @@ export default {
         
         // --- Label Helpers using Contracts Data directly ---
         selectedTradeTypeGroupLabel() {
-             if (!this.form.selectedTradeTypeGroup) return 'Selecionar Tipo';
-             // Check in static categories
-             for (const cat of this.tradeTypeCategories) {
-                 const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
-                 if (item) return item.label;
+             const groups = this.form.selectedTradeTypeGroups || [];
+             if (groups.length === 0) return 'Selecionar Tipo';
+             if (groups.length === 1) {
+                 for (const cat of this.tradeTypeCategories) {
+                     const item = cat.items.find(i => i.value === groups[0]);
+                     if (item) return item.label;
+                 }
+                 return groups[0];
              }
-             return this.form.selectedTradeTypeGroup;
+             return `${groups.length} Grupos Selecionados`;
         },
         selectedTradeTypeLabel() {
             if (!this.form.tradeType) return this.selectedTradeTypeGroupLabel !== 'Selecionar Tipo' ? this.selectedTradeTypeGroupLabel : 'Selecionar';
@@ -2318,23 +2322,35 @@ export default {
             return c ? `${c.contractDisplay}` : this.form.tradeType;
         },
         selectedTradeTypeIcon() {
-            if (!this.form.selectedTradeTypeGroup) return null;
+            const groups = this.form.selectedTradeTypeGroups || [];
+            if (groups.length === 0) return null;
              for (const cat of this.tradeTypeCategories) {
-                 const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
-                 // Use specific item icon if available, otherwise category icon could be used but item icon is preferred
+                 const item = cat.items.find(i => i.value === groups[0]);
                  if (item && item.icon) return `/deriv_icons/${item.icon}`;
              }
-            // Fallback to contract type check if needed
             return null;
         },
 
         selectedDirections() {
-            if (!this.form.selectedTradeTypeGroup) return [];
+            const groups = this.form.selectedTradeTypeGroups || [];
+            if (groups.length === 0) return [];
+            
+            const allDirs = [];
+            const seen = new Set();
+            
             for (const cat of this.tradeTypeCategories) {
-                const item = cat.items.find(i => i.value === this.form.selectedTradeTypeGroup);
-                if (item) return item.directions;
+                cat.items.forEach(item => {
+                    if (groups.includes(item.value)) {
+                        item.directions.forEach(dir => {
+                            if (!seen.has(dir.value)) {
+                                allDirs.push(dir);
+                                seen.add(dir.value);
+                            }
+                        });
+                    }
+                });
             }
-            return [];
+            return allDirs;
         },
         
         // Recovery Labels
@@ -2346,17 +2362,22 @@ export default {
             return marketByValue ? marketByValue.label : 'Mercado de Recuperação';
         },
         selectedRecoveryTradeTypeGroupLabel() {
-            if (!this.recoveryConfig.selectedTradeTypeGroup) return 'Selecionar Tipo';
-            for (const cat of this.tradeTypeCategories) {
-                 const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
-                 if (item) return item.label;
-             }
-             return this.recoveryConfig.selectedTradeTypeGroup;
+            const groups = this.recoveryConfig.selectedTradeTypeGroups || [];
+            if (groups.length === 0) return 'Selecionar Tipo';
+            if (groups.length === 1) {
+                for (const cat of this.tradeTypeCategories) {
+                    const item = cat.items.find(i => i.value === groups[0]);
+                    if (item) return item.label;
+                }
+                return groups[0];
+            }
+            return `${groups.length} Grupos Selecionados`;
         },
         selectedRecoveryTradeTypeGroupIcon() {
-            if (!this.recoveryConfig.selectedTradeTypeGroup) return null;
+            const groups = this.recoveryConfig.selectedTradeTypeGroups || [];
+            if (groups.length === 0) return null;
             for (const cat of this.tradeTypeCategories) {
-                 const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
+                 const item = cat.items.find(i => i.value === groups[0]);
                  if (item && item.icon) return `/deriv_icons/${item.icon}`;
              }
             return null;
@@ -2367,21 +2388,35 @@ export default {
             return c ? `${c.contractDisplay}` : this.recoveryConfig.tradeType;
         },
         selectedRecoveryTradeTypeIcon() {
-             if (!this.recoveryConfig.selectedTradeTypeGroup) return null;
+            const groups = this.recoveryConfig.selectedTradeTypeGroups || [];
+            if (groups.length === 0) return null;
             for (const cat of this.tradeTypeCategories) {
-                 const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
+                 const item = cat.items.find(i => i.value === groups[0]);
                  if (item && item.icon) return `/deriv_icons/${item.icon}`;
              }
             return null;
         },
 
         selectedRecoveryDirections() {
-            if (!this.recoveryConfig.selectedTradeTypeGroup) return [];
+            const groups = this.recoveryConfig.selectedTradeTypeGroups || [];
+            if (groups.length === 0) return [];
+            
+            const allDirs = [];
+            const seen = new Set();
+            
             for (const cat of this.tradeTypeCategories) {
-                const item = cat.items.find(i => i.value === this.recoveryConfig.selectedTradeTypeGroup);
-                if (item) return item.directions;
+                cat.items.forEach(item => {
+                    if (groups.includes(item.value)) {
+                        item.directions.forEach(dir => {
+                            if (!seen.has(dir.value)) {
+                                allDirs.push(dir);
+                                seen.add(dir.value);
+                            }
+                        });
+                    }
+                });
             }
-            return [];
+            return allDirs;
         },
         
         activeAttackFilterNames() {
@@ -2422,6 +2457,11 @@ export default {
             
             if (this.showMarketModal) this.closeMarketModal();
             this.onMarketChange(this.modalContext || 'main');
+            
+            // Auto-close category after selection if requested
+            setTimeout(() => {
+                this.expandedCategory = null;
+            }, 300);
         },
         openMarketModal(context = 'main') {
             this.modalContext = context;
@@ -2431,31 +2471,55 @@ export default {
             this.showMarketModal = false;
         },
         selectTradeTypeItem(item) {
-            // Toggle selection: if already selected group, we can either keep it or deselect. 
-            // Usually in these UIs, clicking the same pill deselects.
-            if (this.form.selectedTradeTypeGroup === item.value) {
-                this.form.selectedTradeTypeGroup = '';
-                this.form.tradeType = '';
-                return;
+            const config = this.modalContext === 'main' || !this.modalContext ? this.form : this.recoveryConfig;
+            
+            if (!config.selectedTradeTypeGroups) {
+                config.selectedTradeTypeGroups = [];
             }
 
-            this.form.selectedTradeTypeGroup = item.value;
-            // Set the first direction as default tradeType
-            if (item.directions && item.directions.length > 0) {
-                this.form.tradeType = item.directions[0].value;
+            const index = config.selectedTradeTypeGroups.indexOf(item.value);
+            if (index > -1) {
+                // Remove if already selected
+                config.selectedTradeTypeGroups.splice(index, 1);
+            } else {
+                // Add if not selected
+                config.selectedTradeTypeGroups.push(item.value);
+            }
+
+            // For compatibility with single tradeType logic elsewhere,
+            // we set form.tradeType to the first selected item's direction if needed.
+            // But with multi-selection, the execution logic should probably use selectedTradeTypeGroups array.
+            if (config.selectedTradeTypeGroups.length > 0) {
+                // Keep .tradeType for backwards compatibility or as a primary selection
+                config.tradeType = item.directions && item.directions.length > 0 ? item.directions[0].value : item.value;
+            } else {
+                config.tradeType = '';
             }
         },
-        isCategoryFullySelected() {
-            // For single selection, we use the dash (half-checked) style usually.
-            // But if there's only one item and it's selected, it could be "fully".
-            // However, the design seems to use the dash for "something is selected in here".
-            return false; 
+        isTradeTypeItemSelected(item) {
+            const config = this.modalContext === 'main' || !this.modalContext ? this.form : this.recoveryConfig;
+            return config.selectedTradeTypeGroups && config.selectedTradeTypeGroups.includes(item.value);
+        },
+        isCategoryFullySelected(category) {
+            if (!category.items || category.items.length === 0) return false;
+            const config = this.modalContext === 'main' || !this.modalContext ? this.form : this.recoveryConfig;
+            if (!config.selectedTradeTypeGroups) return false;
+            
+            return category.items.every(item => config.selectedTradeTypeGroups.includes(item.value));
         },
         isCategoryPartiallySelected(category) {
-            return category.items.some(item => this.form.selectedTradeTypeGroup === item.value);
+            const config = this.modalContext === 'main' || !this.modalContext ? this.form : this.recoveryConfig;
+            if (!config.selectedTradeTypeGroups) return false;
+            
+            const hasSome = category.items.some(item => config.selectedTradeTypeGroups.includes(item.value));
+            const hasAll = this.isCategoryFullySelected(category);
+            return hasSome && !hasAll;
         },
         getCategorySelectionCount(category) {
-            const selected = category.items.filter(item => this.form.selectedTradeTypeGroup === item.value).length;
+            const config = this.modalContext === 'main' || !this.modalContext ? this.form : this.recoveryConfig;
+            if (!config.selectedTradeTypeGroups) return `0/${category.items.length}`;
+            
+            const selected = category.items.filter(item => config.selectedTradeTypeGroups.includes(item.value)).length;
             return `${selected}/${category.items.length}`;
         },
         handleResize() {
@@ -2537,11 +2601,11 @@ export default {
             
             if (context === 'main') {
                 this.contracts = [];
-                this.form.selectedTradeTypeGroup = '';
+                this.form.selectedTradeTypeGroups = [];
                 this.form.tradeType = '';
             } else {
                 this.recoveryContracts = [];
-                this.recoveryConfig.selectedTradeTypeGroup = '';
+                this.recoveryConfig.selectedTradeTypeGroups = [];
                 this.recoveryConfig.tradeType = '';
             }
             
@@ -3866,18 +3930,26 @@ export default {
                                 dynamicContractType = baseType;
                             } else {
                                 // Dynamic group or EMPTY tradeType - map signal to contract type
-                                // If baseType is empty, we must infer the contract group from the signal or activeTradeTypeGroup
-                                const group = configModel.selectedTradeTypeGroup || '';
-                                const isDigitGroup = group.includes('digit') || ['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal);
-
+                                // If baseType is empty, we must infer the contract group from the signal or activeTradeTypeGroups
+                                const groups = configModel.selectedTradeTypeGroups || [];
+                                
+                                // Check if signal matches any of the selected groups
                                 if (['CALL', 'UP'].includes(signal)) {
-                                    dynamicContractType = isDigitGroup ? 'DIGITOVER' : 'CALL';
+                                    // Prioritize Digit group if selected, or fallback to Rise/Fall
+                                    const hasDigit = groups.some(g => g.includes('digit'));
+                                    dynamicContractType = hasDigit ? 'DIGITOVER' : 'CALL';
                                 } else if (['PUT', 'DOWN'].includes(signal)) {
-                                    dynamicContractType = isDigitGroup ? 'DIGITUNDER' : 'PUT';
+                                    const hasDigit = groups.some(g => g.includes('digit'));
+                                    dynamicContractType = hasDigit ? 'DIGITUNDER' : 'PUT';
                                 } else if (['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal)) {
-                                    dynamicContractType = signal;
-                                } else {
-                                    dynamicContractType = baseType || signal; // Fallback to signal if baseType is empty
+                                    // If signal is a specific digit type, check if it's in our allowed groups
+                                    const signalGroup = signal.startsWith('DIGIT') ? 'digits' : signal; 
+                                    const isAllowed = groups.some(g => g === signalGroup || g === signal);
+                                    if (isAllowed) dynamicContractType = signal;
+                                }
+
+                                if (!dynamicContractType) {
+                                    dynamicContractType = baseType || signal; // Fallback
                                 }
                             }
 
