@@ -131,11 +131,11 @@
                                                 :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedCategories.includes(category) }"
                                             >
                                                 <div 
-                                                    class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all rounded-xl"
+                                                    class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/10 transition-all rounded-xl"
                                                     @click="toggleMarketCategory(category)"
                                                 >
                                                     <div class="flex items-center gap-4">
-                                                        <div class="custom-checkbox" :class="{ 'checked': expandedCategories.includes(category) }">
+                                                        <div class="custom-checkbox" :class="{ 'checked': expandedCategories.includes(category) && (modalContext === 'main' ? form.market : recoveryConfig.market) === markets[0]?.symbol }">
                                                             <i v-if="expandedCategories.includes(category)" class="fa-solid fa-check"></i>
                                                         </div>
                                                         <span class="text-lg font-medium text-white">{{ category }}</span>
@@ -143,15 +143,15 @@
                                                     <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': !expandedCategories.includes(category) }"></i>
                                                 </div>
 
-                                                <div v-if="expandedCategories.includes(category)" class="p-4 pt-0 border-t border-[#333]/50 mt-2 category-assets-grid">
+                                                <div v-show="expandedCategories.includes(category)" class="p-4 pt-0 border-t border-[#333]/50 mt-2 category-assets-grid">
                                                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
                                                         <div v-for="m in markets" :key="m.symbol"
-                                                            class="bg-[#181818] border border-[#333] rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-zenix-green/50 hover:bg-zenix-green/5 transition-all"
-                                                            :class="{ 'border-zenix-green bg-zenix-green/10': m.symbol && form.market === m.symbol }"
+                                                            class="bg-[#181818] border border-[#333] rounded-xl p-3 flex items-center gap-3 cursor-pointer hover:border-zenix-green/50 hover:bg-zenix-green/5 transition-all select-none"
+                                                            :class="{ 'border-zenix-green bg-zenix-green/10': m.symbol && (modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol }"
                                                             @click.stop="selectMarket(m.symbol)"
                                                         >
-                                                            <div class="custom-checkbox sm" :class="{ 'checked': m.symbol && form.market === m.symbol }">
-                                                                <i v-if="m.symbol && form.market === m.symbol" class="fa-solid fa-check"></i>
+                                                            <div class="custom-checkbox sm" :class="{ 'checked': m.symbol && (modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol }">
+                                                                <i v-if="m.symbol && (modalContext === 'main' ? form.market : recoveryConfig.market) === m.symbol" class="fa-solid fa-check"></i>
                                                             </div>
                                                             <span class="text-sm font-medium text-white">{{ m.displayName || m.label }}</span>
                                                         </div>
@@ -177,18 +177,16 @@
                                             :class="{ 'border-zenix-green/30 bg-zenix-green/5': expandedTradeTypeCategories.includes(category.id) }"
                                         >
                                             <div 
-                                                class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all rounded-xl"
+                                                class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/10 transition-all rounded-xl"
                                                 @click="toggleTradeTypeCategory(category.id)"
                                             >
                                                 <div class="flex items-center gap-4">
                                                     <div class="custom-checkbox" 
                                                         :class="{ 
-                                                            'checked': isCategoryFullySelected(category, form),
-                                                            'half-checked': isCategoryPartiallySelected(category, form)
+                                                            'checked': isCategoryFullySelected(category, form)
                                                         }"
                                                     >
                                                         <i v-if="isCategoryFullySelected(category, form)" class="fa-solid fa-check"></i>
-                                                        <div v-else-if="isCategoryPartiallySelected(category, form)" class="w-2 h-0.5 bg-black rounded-full"></div>
                                                     </div>
                                                     <div class="flex items-center gap-2">
                                                         <i :class="category.icon" class="text-zenix-green text-sm"></i>
@@ -196,20 +194,19 @@
                                                     </div>
                                                 </div>
                                                 <div class="flex items-center gap-4">
-                                                    <span class="text-xs font-bold text-gray-500">{{ getCategorySelectionCount(category, form) }}</span>
                                                     <i class="fa-solid fa-chevron-up transition-transform text-gray-500" :class="{ 'rotate-180': !expandedTradeTypeCategories.includes(category.id) }"></i>
                                                 </div>
                                             </div>
 
-                                            <div v-if="expandedTradeTypeCategories.includes(category.id)" class="p-4 pt-0 border-t border-[#333]/50 mt-2">
+                                            <div v-show="expandedTradeTypeCategories.includes(category.id)" class="p-4 pt-0 border-t border-[#333]/50 mt-2">
                                                 <div class="flex flex-wrap gap-2 mt-4">
                                                         <button 
                                                             v-for="item in category.items" 
                                                             :key="item.value"
                                                             type="button"
                                                             @click.stop="selectTradeTypeItem(item)"
-                                                            class="px-4 py-2 rounded-full text-xs font-bold border transition-all"
-                                                            :class="isTradeTypeItemSelected(item) ? 'bg-zenix-green/10 border-zenix-green text-zenix-green' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
+                                                            class="px-4 py-2 rounded-full text-xs font-bold border transition-all select-none"
+                                                            :class="isTradeTypeItemSelected(item) ? 'bg-zenix-green text-black border-zenix-green shadow-[0_0_10px_rgba(34,197,94,0.3)]' : 'bg-[#181818] border-[#333] text-gray-400 hover:border-gray-500'"
                                                         >
                                                         {{ item.label }}
                                                     </button>
@@ -2454,41 +2451,35 @@ export default {
     methods: {
         selectMarket(symbol) {
             if (!symbol) return;
+            console.log('Selecionando mercado:', symbol);
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // 1. If clicking the same market that's already active:
-            // Just close the modal and do nothing (don't reset)
-            if (config.market === symbol) {
-                this.closeMarketModal();
-                return;
-            }
+            // Define direto
+            config.market = symbol;
 
-            // 2. Market Switch (Total Reset)
-            // Use direct assignment to ensure UI updates
+            // Limpa tipos anteriores para evitar conflito
             if (context === 'main') {
-                this.form.market = symbol;
                 this.form.selectedTradeTypeGroups = [];
                 this.form.tradeType = '';
-                this.contracts = []; // Clear visually before loading new ones
+                this.contracts = []; 
             } else {
-                this.recoveryConfig.market = symbol;
                 this.recoveryConfig.selectedTradeTypeGroups = [];
                 this.recoveryConfig.tradeType = '';
                 this.recoveryContracts = [];
             }
 
-            // Visual feedback
-            const market = this.markets.find(m => m.symbol === symbol);
-            this.$root.$toast.success(`Mercado alterado para: ${market ? (market.displayName || market.label) : symbol}`);
-            
+            // Feedback
+            this.$root.$toast.success('Mercado atualizado!');
+
             // 3. Close modal IMMEDIATELY
             this.closeMarketModal();
             
-            // 4. Fetch data (passing false for preserveSelection, as this is a manual switch)
-            this.$nextTick(() => {
+            // 4. Dispara busca (Assíncrono para não travar o clique visual)
+            setTimeout(() => {
                 this.onMarketChange(context, false);
-            });
+                this.$forceUpdate();
+            }, 10);
         },
         async onMarketChange(context = 'main', preserveSelection = false) {
             const config = context === 'main' ? this.form : this.recoveryConfig;
@@ -2561,6 +2552,7 @@ export default {
             } else {
                 this.expandedCategories.push(category);
             }
+            this.$forceUpdate();
         },
         toggleTradeTypeCategory(id) {
             const index = this.expandedTradeTypeCategories.indexOf(id);
@@ -2569,6 +2561,7 @@ export default {
             } else {
                 this.expandedTradeTypeCategories.push(id);
             }
+            this.$forceUpdate();
         },
         openMarketModal(context = 'main') {
             this.modalContext = context;
@@ -2587,36 +2580,29 @@ export default {
             this.modalContext = 'main';
         },
         selectTradeTypeItem(item) {
-            // 1. Identification of context (Main or Recovery)
+            if (!item) return;
+            console.log('Selecionando tipo:', item.value);
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
 
-            // 2. DIRECT ASSIGNMENT (Single Selection)
-            // Force the array to contain ONLY this item
+            // ARRAY DE 1 ITEM (Resolve o visual de múltiplos selecionados)
             config.selectedTradeTypeGroups = [item.value];
 
-            // 3. Update tradeType for API/backwards compatibility
+            // Define o tradeType string para a API
             if (item.directions && item.directions.length > 0) {
                 config.tradeType = item.directions[0].value;
             } else {
                 config.tradeType = item.value;
             }
-
-            // 4. Feedback
-            this.$root.$toast.success(`Tipo selecionado: ${item.label}`);
             
-            // Optional: Close modal automatically for smoother UX
-            // this.closeTradeTypeModal(); 
+            this.$root.$toast.success(`Tipo selecionado: ${item.label}`);
+            this.$forceUpdate();
         },
         isTradeTypeItemSelected(item) {
-            // Verify context
             const context = this.modalContext || 'main';
             const config = context === 'main' ? this.form : this.recoveryConfig;
-
-            // Null check
-            if (!config.selectedTradeTypeGroups) return false;
-
-            // Check if value is in array
+            
+            if (!config || !config.selectedTradeTypeGroups) return false;
             return config.selectedTradeTypeGroups.includes(item.value);
         },
         isCategoryFullySelected(category, customConfig = null) {
