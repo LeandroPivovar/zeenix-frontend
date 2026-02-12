@@ -1996,10 +1996,15 @@ export default {
                 // ✅ Use refactored logging helper
                 this.logStatusChanges(oldAnalysis, oldMode, trade);
                 
+                // ✅ FIX: Prioritize recovery profile when in recovery mode
+                const currentRiskProfile = (this.sessionState.analysisType === 'RECUPERACAO')
+                    ? (this.recoveryConfig.riskProfile || 'moderado')
+                    : (this.currentConfig.riskProfile || 'moderado');
+
                 RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType, {
                     ...this.currentConfig,
                     ...this.recoveryConfig,
-                    riskProfile: this.currentConfig.riskProfile || this.currentConfig.modoMartingale || 'moderado'
+                    riskProfile: currentRiskProfile
                 });
                 
                 // Update payout history
@@ -2236,17 +2241,23 @@ export default {
 
             // Mode Switching Logs
             if (this.sessionState.negotiationMode !== oldMode) {
-                this.addLog('🧭 Alteração de Sensibilidade', [`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`], 'warning');
+                // Ignore if switching to/from 'NORMAL' which is just a sensitivity adjustment
+                // Or log it differently
+                 this.addLog('🧭 Alteração de Sensibilidade', [`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`], 'warning');
             }
 
             if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
                 const lossSum = (this.sessionState.analysisType === 'RECUPERACAO' && this.sessionState.prejuizo_acumulado > 0) ? this.sessionState.prejuizo_acumulado : (this.sessionState.totalLossAccumulated || this.sessionState.lastStakePrincipal);
                 
                 if (isConservador) {
-                    this.addLog('Martingale Parcelado Ativo', [
-                        `⚠️ Modo CONSERVADOR ativado (4x)`,
-                        `Perda acumulada: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
-                        `Recuperação em parcelas de ${this.preferredCurrencyPrefix}${(lossSum / 4).toFixed(2)} iniciada`
+                    const parcels = this.sessionState.parcelas_total || 4;
+                    const parcelValue = this.sessionState.valor_parcela || (lossSum / parcels);
+                    
+                    this.addLog('Martingale Parcelado Iniciado', [
+                        `⚠️ Modo CONSERVADOR ativado`,
+                        `Perda Total: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
+                        `Qtd Parcelas: ${parcels}`,
+                        `Valor da Parcela: ${this.preferredCurrencyPrefix}${parcelValue.toFixed(2)}`
                     ], 'warning');
                 } else {
                     this.addLog('Ativação de Recuperação', [
@@ -2259,7 +2270,7 @@ export default {
                 
                 if (isConservador) {
                     this.addLog('Recuperação Conservadora Concluída', [
-                        `✅ Ciclo de parcelas finalizado`,
+                        `✅ Dívida totalmente quitada`,
                         `Lucro recuperado com sucesso`,
                         `Voltando ao modo PRINCIPAL`
                     ], 'success');
@@ -2273,10 +2284,12 @@ export default {
             } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST') {
                 
                 if (isConservador) {
-                    this.addLog('Re-parcelamento Ativo', [
-                        `📉 Loss no parcelamento (${this.sessionState.consecutiveLossesInRecovery}/4)`,
-                        `Perda total atual: ${this.preferredCurrencyPrefix}${this.sessionState.prejuizo_acumulado.toFixed(2)}`,
-                        `Dívida re-dividida em 4 parcelas de ${this.preferredCurrencyPrefix}${(this.sessionState.prejuizo_acumulado / 4).toFixed(2)}`
+                     // Check if it was a re-split (installments reset to 4)
+                    this.addLog('Re-parcelamento (Loss)', [
+                        `📉 Loss no parcelamento`,
+                        `Nova Perda Acumulada: ${this.preferredCurrencyPrefix}${this.sessionState.prejuizo_acumulado.toFixed(2)}`,
+                        `Reparcelado em 4x`,
+                        `Nova Parcela (1/4): ${this.preferredCurrencyPrefix}${this.sessionState.valor_parcela.toFixed(2)}`
                     ], 'warning');
                 } else {
                     this.addLog('Ajuste Martingale', [
