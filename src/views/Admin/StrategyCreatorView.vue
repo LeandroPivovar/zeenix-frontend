@@ -210,76 +210,88 @@
                                 </h3>
 
                                 <div class="space-y-6">
-                                    <!-- Centralized Analysis Payouts -->
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
-                                                Análise Principal (Payout)
-                                            </label>
-                                            <div class="relative group">
-                                                <input 
-                                                    type="number" 
-                                                    v-model.number="form.expectedPayout" 
-                                                    class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
-                                                    step="0.01"
-                                                    min="1"
-                                                />
-                                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                                    <span class="text-xs text-gray-500 font-black">X</span>
+                                    <!-- Split Layout Container -->
+                                    <div class="flex flex-col md:flex-row gap-8 relative">
+                                        <!-- Left Side: Payout Inputs -->
+                                        <div class="flex-1 space-y-6">
+                                            <div>
+                                                <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                                                    Análise Principal (Payout)
+                                                </label>
+                                                <div class="relative group">
+                                                    <input 
+                                                        type="number" 
+                                                        v-model.number="form.expectedPayout" 
+                                                        class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
+                                                        step="0.01"
+                                                        min="1"
+                                                    />
+                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                                        <span class="text-xs text-gray-500 font-black">X</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                                                    Análise Recuperação (Payout)
+                                                </label>
+                                                <div class="relative group">
+                                                    <input 
+                                                        type="number" 
+                                                        v-model.number="recoveryConfig.expectedPayout" 
+                                                        class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
+                                                        step="0.01"
+                                                        min="1"
+                                                    />
+                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                                        <span class="text-xs text-gray-500 font-black">X</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
-                                                Análise Recuperação (Payout)
-                                            </label>
-                                            <div class="relative group">
-                                                <input 
-                                                    type="number" 
-                                                    v-model.number="recoveryConfig.expectedPayout" 
-                                                    class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
-                                                    step="0.01"
-                                                    min="1"
-                                                />
-                                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                                    <span class="text-xs text-gray-500 font-black">X</span>
+
+                                        <!-- Vertical Divider -->
+                                        <div class="hidden md:block w-px bg-gradient-to-b from-transparent via-[#333] to-transparent"></div>
+
+                                        <!-- Right Side: Viability Trigger -->
+                                        <div class="flex-1 space-y-6">
+                                            <div>
+                                                <div class="flex justify-between items-center mb-3">
+                                                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                                        Gatilho de Viabilidade (Min Payout)
+                                                    </label>
+                                                    <span class="text-xs px-2 py-0.5 rounded" :class="sessionState.lastPayoutPrincipal >= form.minPayout || !sessionState.lastPayoutPrincipal ? 'bg-zenix-green/10 text-zenix-green' : 'bg-red-500/10 text-red-500'">
+                                                        {{ sessionState.lastPayoutPrincipal >= form.minPayout || !sessionState.lastPayoutPrincipal ? 'Operável' : 'Abaixo do Mínimo' }}
+                                                    </span>
                                                 </div>
+                                                
+                                                <div class="flex items-center gap-4 bg-[#111] p-4 rounded-xl border border-[#222]">
+                                                    <input 
+                                                        type="number" 
+                                                        v-model.number="form.minPayout"
+                                                        class="w-16 bg-transparent border-none text-zenix-green text-sm font-black focus:ring-0 p-0"
+                                                        step="0.01"
+                                                        min="0"
+                                                        max="2"
+                                                    >
+                                                    <div class="flex-1 h-3 bg-[#080808] rounded-full overflow-hidden border border-[#222]">
+                                                        <div class="h-full bg-zenix-green shadow-[0_0_10px_rgba(34,197,94,0.3)] transition-all ease-out duration-500" :style="{ width: (form.minPayout / 2 * 100) + '%' }"></div>
+                                                    </div>
+                                                    <span class="text-xs font-black text-gray-400 w-10 text-right">{{ form.minPayout.toFixed(2) }}x</span>
+                                                </div>
+                                                <p class="text-[10px] text-gray-500 mt-3 flex items-center gap-2">
+                                                    <i class="fa-solid fa-circle-info text-zenix-green"></i>
+                                                    Trades só serão executados se o payout do mercado for maior que o gatilho.
+                                                </p>
+                                            </div>
+
+                                            <div class="bg-zenix-green/5 p-4 rounded-xl border border-zenix-green/10">
+                                                <p class="text-[11px] text-gray-400 leading-relaxed">
+                                                    <strong class="text-zenix-green uppercase text-[9px] block mb-1 tracking-widest">Finalidade</strong>
+                                                    Esses valores garantem que a estratégia consiga recuperar perdas de forma matemática e segura, mantendo a integridade da banca através de cálculos de stake ajustados ao rendimento.
+                                                </p>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <hr class="border-[#222]" />
-
-                                    <div>
-                                        <div class="flex justify-between items-center mb-3">
-                                            <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                                                Gatilho de Viabilidade (Min Payout)
-                                            </label>
-                                            <span class="text-xs px-2 py-0.5 rounded" :class="sessionState.lastPayoutPrincipal >= form.minPayout || !sessionState.lastPayoutPrincipal ? 'bg-zenix-green/10 text-zenix-green' : 'bg-red-500/10 text-red-500'">
-                                                {{ sessionState.lastPayoutPrincipal >= form.minPayout || !sessionState.lastPayoutPrincipal ? 'Operável' : 'Abaixo do Mínimo' }}
-                                            </span>
-                                        </div>
-                                        <div class="flex items-center gap-4">
-                                            <input 
-                                                type="number" 
-                                                v-model.number="form.minPayout"
-                                                class="w-20 bg-[#111] border border-[#333] rounded-lg py-2 text-white text-center focus:border-zenix-green outline-none"
-                                                step="0.01"
-                                                min="0"
-                                                max="2"
-                                            >
-                                            <div class="flex-1 h-2 bg-[#111] rounded-full overflow-hidden border border-[#333]">
-                                                <div class="h-full bg-zenix-green transition-all" :style="{ width: (form.minPayout / 2 * 100) + '%' }"></div>
-                                            </div>
-                                            <span class="text-sm font-bold text-gray-400 w-10 text-right">{{ form.minPayout.toFixed(2) }}x</span>
-                                        </div>
-                                        <p class="text-[10px] text-gray-500 mt-2">Trades só serão executados se o payout or mercado for maior que o gatilho.</p>
-                                    </div>
-
-                                    <div class="bg-[#0b0b0b] p-3 rounded-lg border border-[#222]">
-                                        <p class="text-[11px] text-gray-500 leading-tight">
-                                            Esses valores garantem que a estratégia consiga recuperar perdas de forma matemática e segura.
-                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -492,31 +504,19 @@
                                     <div class="pl-4 border-l-2 border-zenix-green/30">
                                         <label class="block text-gray-400 font-bold mb-3 text-sm">Aplicar em</label>
                                         <div class="flex items-center gap-6">
-                                            <label class="flex items-center gap-2 cursor-pointer group">
-                                                <input 
-                                                    type="checkbox" 
-                                                    :checked="securityConfig.virtualLoss.mode === 'attack' || securityConfig.virtualLoss.mode === 'cyclic'"
-                                                    @change="toggleVirtualLossMode('attack')"
-                                                    class="hidden"
-                                                >
+                                            <div class="flex items-center gap-2 cursor-pointer group" @click="toggleVirtualLossMode('attack')">
                                                 <div class="w-5 h-5 rounded border border-[#444] flex items-center justify-center transition-all group-hover:border-zenix-green" :class="{ 'bg-zenix-green border-zenix-green': securityConfig.virtualLoss.mode === 'attack' || securityConfig.virtualLoss.mode === 'cyclic' }">
                                                     <i class="fa-solid fa-check text-[10px] text-white" v-if="securityConfig.virtualLoss.mode === 'attack' || securityConfig.virtualLoss.mode === 'cyclic'"></i>
                                                 </div>
                                                 <span class="text-sm font-bold transition-colors" :class="securityConfig.virtualLoss.mode === 'attack' || securityConfig.virtualLoss.mode === 'cyclic' ? 'text-white' : 'text-gray-500'">Principal</span>
-                                            </label>
+                                            </div>
 
-                                            <label class="flex items-center gap-2 cursor-pointer group">
-                                                <input 
-                                                    type="checkbox" 
-                                                    :checked="securityConfig.virtualLoss.mode === 'recovery' || securityConfig.virtualLoss.mode === 'cyclic'"
-                                                    @change="toggleVirtualLossMode('recovery')"
-                                                    class="hidden"
-                                                >
+                                            <div class="flex items-center gap-2 cursor-pointer group" @click="toggleVirtualLossMode('recovery')">
                                                 <div class="w-5 h-5 rounded border border-[#444] flex items-center justify-center transition-all group-hover:border-zenix-green" :class="{ 'bg-zenix-green border-zenix-green': securityConfig.virtualLoss.mode === 'recovery' || securityConfig.virtualLoss.mode === 'cyclic' }">
                                                     <i class="fa-solid fa-check text-[10px] text-white" v-if="securityConfig.virtualLoss.mode === 'recovery' || securityConfig.virtualLoss.mode === 'cyclic'"></i>
                                                 </div>
                                                 <span class="text-sm font-bold transition-colors" :class="securityConfig.virtualLoss.mode === 'recovery' || securityConfig.virtualLoss.mode === 'cyclic' ? 'text-white' : 'text-gray-500'">Recuperação</span>
-                                            </label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
