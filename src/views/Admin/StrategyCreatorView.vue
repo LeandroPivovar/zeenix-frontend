@@ -127,32 +127,49 @@
                                         <!-- Seletor de Ícone e Nome -->
                                         <div class="space-y-3">
                                             <label class="zenix-label">Ícone da Estratégia</label>
-                                            <div class="flex items-center gap-4">
-                                                <!-- Botão Seletor Principal -->
-                                                <button type="button" 
-                                                        @click="toggleIconSelector"
-                                                        class="w-12 h-12 rounded-xl bg-[#0F0F0F] border-2 border-dashed border-[#27272A] hover:border-zenix-green/50 flex items-center justify-center transition-all group overflow-hidden shrink-0">
-                                                    <div v-if="form.icon" class="flex items-center justify-center">
-                                                        <i :class="form.icon" class="text-xl text-zenix-green"></i>
-                                                    </div>
-                                                    <div v-else class="text-[#52525B] group-hover:text-zenix-green">
-                                                        <i class="fas fa-plus text-sm"></i>
-                                                    </div>
-                                                </button>
+                                            <div class="relative">
+                                                <div class="flex items-center gap-4">
+                                                    <!-- Botão Seletor Principal -->
+                                                    <button type="button" 
+                                                            @click="toggleIconSelector"
+                                                            class="w-12 h-12 rounded-xl bg-[#0F0F0F] border-2 border-[#27272A] hover:border-zenix-green/50 flex items-center justify-center transition-all group overflow-hidden shrink-0 shadow-lg"
+                                                            :class="{ 'border-zenix-green/50 ring-1 ring-zenix-green/20': showIconSelector }">
+                                                        <div v-if="form.icon" class="flex items-center justify-center">
+                                                            <i :class="form.icon" class="text-xl text-zenix-green"></i>
+                                                        </div>
+                                                        <div v-else class="text-[#52525B] group-hover:text-zenix-green">
+                                                            <i class="fas fa-plus text-sm"></i>
+                                                        </div>
+                                                    </button>
 
-                                                <!-- Horizontal Icon Grid Selector -->
-                                                <div class="flex-1 bg-[#0F0F0F]/50 border border-[#1A1A1A] rounded-xl p-2 overflow-x-auto scrollbar-hide">
-                                                    <div class="flex gap-2 min-w-max">
-                                                        <button v-for="iconClass in strategyIcons" 
-                                                                :key="iconClass"
-                                                                type="button"
-                                                                @click="selectIcon(iconClass)"
-                                                                class="w-10 h-10 rounded-lg hover:bg-zenix-green/10 border border-transparent hover:border-zenix-green/30 transition-all flex items-center justify-center shrink-0"
-                                                                :class="{ 'bg-zenix-green/10 border-zenix-green/30': form.icon === iconClass }">
-                                                            <i :class="[iconClass, 'text-lg', form.icon === iconClass ? 'text-zenix-green' : 'text-gray-500 hover:text-zenix-green']"></i>
-                                                        </button>
+                                                    <div class="flex-1">
+                                                        <p class="text-[11px] text-gray-500">Clique no botão ao lado para escolher um ícone representativo para sua estratégia.</p>
                                                     </div>
                                                 </div>
+
+                                                <!-- Retractable Icon Selector Card -->
+                                                <transition name="fade-slide">
+                                                    <div v-if="showIconSelector" 
+                                                         v-click-outside="() => showIconSelector = false"
+                                                         class="absolute top-14 left-0 w-full z-50 bg-[#0B0B0B] border border-[#1A1A1A] rounded-2xl p-4 shadow-2xl backdrop-blur-xl">
+                                                        <div class="flex items-center justify-between mb-3 px-1">
+                                                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Selecione um Ícone</span>
+                                                            <button @click="showIconSelector = false" class="text-gray-600 hover:text-white transition-colors">
+                                                                <i class="fas fa-times text-xs"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
+                                                            <button v-for="iconClass in strategyIcons" 
+                                                                    :key="iconClass"
+                                                                    type="button"
+                                                                    @click="selectIcon(iconClass)"
+                                                                    class="w-full aspect-square rounded-xl hover:bg-zenix-green/10 border border-transparent hover:border-zenix-green/30 transition-all flex items-center justify-center"
+                                                                    :class="{ 'bg-zenix-green/10 border-zenix-green/30': form.icon === iconClass }">
+                                                                <i :class="[iconClass, 'text-xl', form.icon === iconClass ? 'text-zenix-green' : 'text-gray-500 hover:text-zenix-green']"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </transition>
                                             </div>
                                         </div>
 
