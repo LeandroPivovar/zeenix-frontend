@@ -366,7 +366,7 @@ export const RiskManager = {
     },
 
     refineTradeResult(state, realProfit, stakeUsed, tradeMode = 'PRINCIPAL', config = {}) {
-        const estimatedProfit = (tradeMode === 'RECUPERACAO') ? state.lastProfitRecovery : state.lastProfitPrincipal;
+        // const estimatedProfit = (tradeMode === 'RECUPERACAO') ? state.lastProfitRecovery : state.lastProfitPrincipal;
         const win = realProfit > 0;
 
         // 1. Correct the general profit tracking in state
