@@ -1379,13 +1379,6 @@ export default {
                                     `Status: aguardar execução`
                                 ], 'warning');
 
-                                // Activate fast result calculation if it's 1-tick
-                                if (this.pendingFastResult.duration === 1 && this.pendingFastResult.durationUnit === 't') {
-                                    this.pendingFastResult.contractId = msg.buy.contract_id;
-                                    this.pendingFastResult.payout = payout; // Store real payout
-                                    // this.pendingFastResult.active = true; // ✅ DESATIVADO: Aguardar resultado oficial
-                                    console.log('[FastResult] Monitoramento rápido desativado por solicitação.');
-                                }
 
                                 this.subscribeToContract(msg.buy.contract_id);
                                 
@@ -1524,94 +1517,6 @@ export default {
                     this.series.update(tickObj);
                 }
 
-                // --- Fast Result Calculation ---
-                if (this.pendingFastResult && this.pendingFastResult.active) {
-                    // Check if already handled by handleContractUpdate (Smart Fast Result)
-                    const tradeId = this.pendingFastResult.contractId;
-                    const existingTrade = tradeId ? this.monitoringOperations.find(o => o.id === tradeId) : null;
-                    if (existingTrade && existingTrade.earlySettled) {
-                        console.log(`[FastResult] Skipping tick update for ${tradeId} - already early settled.`);
-                        this.pendingFastResult.active = false;
-                        return;
-                    }
-
-                    const lastDigit = parseInt(price.toString().slice(-1));
-                    const { contractId, barrier, contractType, stake } = this.pendingFastResult;
-                    
-                    let win = false;
-                    if (contractType === 'DIGITUNDER') win = lastDigit < barrier;
-                    else if (contractType === 'DIGITOVER') win = lastDigit > barrier;
-                    else if (contractType === 'DIGITMATCH') win = lastDigit === barrier;
-                    else if (contractType === 'DIGITDIFF') win = lastDigit !== barrier;
-                    else if (contractType === 'DIGITEVEN') win = lastDigit % 2 === 0;
-                    else if (contractType === 'DIGITODD') win = lastDigit % 2 !== 0;
-
-                    this.addLog('🏁 Resultado Rápido (1-Tick)', [
-                        `Status: ${win ? 'GANHOU' : 'PERDEU'}`,
-                        `Dígito: ${lastDigit}`,
-                        `Ação: Liberando trava para próxima análise`
-                    ], win ? 'success' : 'error');
-                    
-                    // Pre-update trade in activeContracts if present
-                    const trade = this.activeContracts.get(contractId);
-                    if (trade) {
-                        trade.result = win ? 'WON' : 'LOST';
-                        trade.fastResultApplied = true;
-                        trade.estimatedPnl = estimatedProfit; // ✅ Store for correction later
-                    }
-
-                    // Update stats immediately
-                    const realPayout = this.pendingFastResult.payout || (stake * (this.sessionState.analysisType === 'RECUPERACAO' ? this.sessionState.lastPayoutRecovery : this.sessionState.lastPayoutPrincipal));
-                    const estimatedProfit = win ? (realPayout - stake) : -stake;
-
-                    if (win) this.monitoringStats.wins++;
-                    else this.monitoringStats.losses++;
-
-                    RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, stake, this.pendingFastResult.analysisType, {
-                        ...this.currentConfig,
-                        ...this.recoveryConfig,
-                        riskProfile: this.currentConfig.riskProfile || this.currentConfig.modoMartingale || 'moderado'
-                    });
-                    
-                    // ✅ UPDATE BALANCE & PROFIT (Real-time sync)
-                    this.monitoringStats.profit += estimatedProfit;
-
-                    // ✅ UPDATE GLOBAL BALANCE VIA MIXIN EVENT
-                    // This ensures TopNavbar gets the update too
-                    const newTotalBalance = Number(this.balanceNumeric) + estimatedProfit;
-                    this.monitoringStats.balance = newTotalBalance;
-                    this.rawBalance = newTotalBalance; // Update local raw
-                    
-                    // Emit Global Event to update TopNavbar
-                    window.dispatchEvent(new CustomEvent('balanceUpdated', {
-                        detail: { balance: newTotalBalance, timestamp: Date.now() }
-                    }));
-                    
-                    const profitTick = { time: Math.floor(Date.now() / 1000), value: parseFloat(this.monitoringStats.profit.toFixed(2)) };
-                    if (this.profitChartData.length > 0 && profitTick.time <= this.profitChartData[this.profitChartData.length - 1].time) {
-                        profitTick.time = this.profitChartData[this.profitChartData.length - 1].time + 1;
-                    }
-                    this.profitChartData.push(profitTick);
-                    if (this.profitChartData.length > 5000) this.profitChartData.shift();
-                    
-                    // ✅ Update Markers for Fast Result
-                    const fastTrade = { id: contractId, result: win ? 'WON' : 'LOST', pnl: estimatedProfit };
-                    this.updateChartMarkers(fastTrade, 'tick');
-                    this.updateChartMarkers(fastTrade, 'profit');
-
-                    // ✅ Log trade to backend (Manual 1-Tick)
-                    if (trade) {
-                        trade.earlySettled = true; // Mark as settled to prevent handleContractUpdate logic
-                        trade.exitPrice = price;
-                        trade.lastDigit = lastDigit;
-                        this.logTradeToBackend(trade);
-                    }
-
-                    // Release locks
-                    this.pendingFastResult.active = false;
-                    this.isNegotiating = false; 
-                    this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
-                }
                 
                 const lastDigit = parseInt(price.toString().slice(-1));
                 this.digitHistory.unshift(lastDigit);
@@ -1622,7 +1527,6 @@ export default {
         runAIAnalysis() {
             // ✅ Sincronização: Aguardar resultado do contrato ou resultado rápido
             if (this.activeContracts.size > 0 || this.isNegotiating) return;
-            if (this.pendingFastResult && this.pendingFastResult.active) return;
             if (this.pendingVirtualTrade) return;
 
             // --- PAUSE CHECK ---
@@ -1913,7 +1817,6 @@ export default {
                 if (targetBarrier === undefined) targetBarrier = 8;
 
                 proposalParams.barrier = targetBarrier.toString();
-                this.pendingFastResult.barrier = parseInt(targetBarrier);
             }
             
             const mode = isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL';
