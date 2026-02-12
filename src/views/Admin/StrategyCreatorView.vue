@@ -1,4 +1,4 @@
-﻿<template>
+<template>
     <div class="dashboard-layout">
         <div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
         
@@ -123,41 +123,43 @@
                                         </h3>
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                                    <div class="flex flex-col items-center gap-8 max-w-2xl mx-auto">
                                         <!-- Seletor de Ícone -->
-                                        <div class="md:col-span-3 flex flex-col items-center">
+                                        <div class="w-full flex flex-col items-center">
                                             <label class="zenix-label mb-3">Ícone da Estratégia</label>
                                             <div class="relative">
                                                 <button type="button" 
                                                         @click="toggleIconSelector"
                                                         class="w-24 h-24 rounded-2xl bg-[#0F0F0F] border-2 border-dashed border-[#27272A] hover:border-zenix-green/50 flex items-center justify-center transition-all group overflow-hidden">
-                                                    <img v-if="form.icon" :src="form.icon" class="w-16 h-16 object-contain" />
+                                                    <div v-if="form.icon" class="flex items-center justify-center">
+                                                        <i :class="form.icon" class="text-4xl text-zenix-green"></i>
+                                                    </div>
                                                     <div v-else class="flex flex-col items-center gap-1 text-[#52525B] group-hover:text-zenix-green">
                                                         <i class="fas fa-plus text-xl"></i>
                                                         <span class="text-[10px] font-bold uppercase tracking-wider">Ícone</span>
                                                     </div>
                                                 </button>
 
-                                                <!-- Icon Grid Selector Dropdown -->
+                                                <!-- Icon Grid Selector Dropdown (Expanded) -->
                                                 <div v-if="showIconSelector" 
                                                      v-click-outside="() => showIconSelector = false"
-                                                     class="absolute top-full left-0 mt-4 p-4 bg-[#0B0B0B] border border-[#1A1A1A] rounded-2xl shadow-2xl z-[100] w-[280px]">
-                                                    <div class="grid grid-cols-4 gap-3">
-                                                        <button v-for="icon in strategyIcons" 
-                                                                :key="icon"
+                                                     class="absolute top-full left-1/2 -translate-x-1/2 mt-8 p-6 bg-[#0B0B0B] border border-[#1A1A1A] rounded-2xl shadow-2xl z-[100] w-full max-w-md">
+                                                    <div class="grid grid-cols-5 gap-4">
+                                                        <button v-for="iconClass in strategyIcons" 
+                                                                :key="iconClass"
                                                                 type="button"
-                                                                @click="selectIcon(icon)"
-                                                                class="p-2 rounded-xl hover:bg-zenix-green/10 border border-transparent hover:border-zenix-green/30 transition-all">
-                                                            <img :src="icon" class="w-10 h-10 object-contain" />
+                                                                @click="selectIcon(iconClass)"
+                                                                class="p-4 rounded-xl hover:bg-zenix-green/10 border border-transparent hover:border-zenix-green/30 transition-all flex items-center justify-center">
+                                                            <i :class="iconClass" class="text-2xl text-gray-400 hover:text-zenix-green"></i>
                                                         </button>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <p class="text-[10px] text-gray-500 mt-3 text-center">Clique para alterar o<br>ícone visual da IA</p>
+                                                <p class="text-[10px] text-gray-500 mt-3 absolute -bottom-6 w-full text-center">Clique para alterar o ícone visual da IA</p>
                                         </div>
 
                                         <!-- Campos de Texto -->
-                                        <div class="md:col-span-9 space-y-6">
+                                        <div class="w-full space-y-6 pt-4">
                                             <!-- Nome da Estratégia -->
                                             <div class="space-y-2">
                                                 <div class="flex justify-between items-center">
@@ -313,7 +315,7 @@
                                                 <div class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.5)]"></div>
                                                 <span class="text-sm font-bold text-white">Conservador</span>
                                             </div>
-                                            <p class="text-[10px] text-gray-500 mt-0.5">Baixo risco, proteção máxima</p>
+                                            <p class="text-[10px] text-gray-500 mt-0.5">Baixo risco, proteção máxima (recuperação parcelada)</p>
                                         </div>
                                     </div>
 
@@ -386,91 +388,57 @@
                                     Payout e Viabilidade
                                 </h3>
 
-                                <div class="space-y-6">
-                                    <!-- Split Layout Container -->
-                                    <div class="flex flex-col md:flex-row gap-8 relative">
-                                        <!-- Left Side: Payout Inputs -->
-                                        <div class="flex-1 space-y-6">
-                                            <div>
-                                                <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <!-- Análise Principal -->
+                                        <div class="space-y-4">
+                                            <div class="flex justify-between items-center">
+                                                <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest">
                                                     Análise Principal (Payout)
                                                 </label>
-                                                <div class="relative group">
-                                                    <input 
-                                                        type="number" 
-                                                        v-model.number="form.expectedPayout" 
-                                                        class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
-                                                        step="0.01"
-                                                        min="1"
-                                                    />
-                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                                        <span class="text-xs text-gray-500 font-black">X</span>
-                                                    </div>
-                                                </div>
+                                                <span class="text-xs font-black text-zenix-green">{{ form.expectedPayout.toFixed(2) }}x</span>
                                             </div>
-                                            <div>
-                                                <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
-                                                    Análise Recuperação (Payout)
-                                                </label>
-                                                <div class="relative group">
-                                                    <input 
-                                                        type="number" 
-                                                        v-model.number="recoveryConfig.expectedPayout" 
-                                                        class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
-                                                        step="0.01"
-                                                        min="1"
-                                                    />
-                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                                        <span class="text-xs text-gray-500 font-black">X</span>
-                                                    </div>
-                                                </div>
+                                            <div class="relative group">
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="form.expectedPayout" 
+                                                    class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
+                                                    step="0.01"
+                                                    min="1"
+                                                />
+                                            </div>
+                                            <div class="h-2 bg-[#080808] rounded-full overflow-hidden border border-[#222]">
+                                                <div class="h-full bg-zenix-green shadow-[0_0_10px_rgba(34,197,94,0.3)] transition-all ease-out duration-500" :style="{ width: Math.min(100, (form.expectedPayout / 3 * 100)) + '%' }"></div>
                                             </div>
                                         </div>
 
-                                        <!-- Vertical Divider -->
-                                        <div class="hidden md:block w-px bg-gradient-to-b from-transparent via-[#333] to-transparent"></div>
-
-                                        <!-- Right Side: Viability Trigger -->
-                                        <div class="flex-1 space-y-6">
-                                            <div>
-                                                <div class="flex justify-between items-center mb-3">
-                                                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                                                        Gatilho de Viabilidade (Min Payout)
-                                                    </label>
-                                                    <span class="text-xs px-2 py-0.5 rounded" :class="sessionState.lastPayoutPrincipal >= form.minPayout || !sessionState.lastPayoutPrincipal ? 'bg-zenix-green/10 text-zenix-green' : 'bg-red-500/10 text-red-500'">
-                                                        {{ sessionState.lastPayoutPrincipal >= form.minPayout || !sessionState.lastPayoutPrincipal ? 'Operável' : 'Abaixo do Mínimo' }}
-                                                    </span>
-                                                </div>
-                                                
-                                                <div class="flex items-center gap-4 bg-[#111] p-4 rounded-xl border border-[#222]">
-                                                    <input 
-                                                        type="number" 
-                                                        v-model.number="form.minPayout"
-                                                        class="w-16 bg-transparent border-none text-zenix-green text-sm font-black focus:ring-0 p-0"
-                                                        step="0.01"
-                                                        min="0"
-                                                        max="2"
-                                                    >
-                                                    <div class="flex-1 h-3 bg-[#080808] rounded-full overflow-hidden border border-[#222]">
-                                                        <div class="h-full bg-zenix-green shadow-[0_0_10px_rgba(34,197,94,0.3)] transition-all ease-out duration-500" :style="{ width: (form.minPayout / 2 * 100) + '%' }"></div>
-                                                    </div>
-                                                    <span class="text-xs font-black text-gray-400 w-10 text-right">{{ form.minPayout.toFixed(2) }}x</span>
-                                                </div>
-                                                <p class="text-[10px] text-gray-500 mt-3 flex items-center gap-2">
-                                                    <i class="fa-solid fa-circle-info text-zenix-green"></i>
-                                                    Trades só serão executados se o payout do mercado for maior que o gatilho.
-                                                </p>
+                                        <!-- Análise Recuperação -->
+                                        <div class="space-y-4">
+                                            <div class="flex justify-between items-center">
+                                                <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                                    Análise Recuperação (Payout)
+                                                </label>
+                                                <span class="text-xs font-black text-zenix-green">{{ recoveryConfig.expectedPayout.toFixed(2) }}x</span>
                                             </div>
-
-                                            <div class="bg-zenix-green/5 p-4 rounded-xl border border-zenix-green/10">
-                                                <p class="text-[11px] text-gray-400 leading-relaxed">
-                                                    <strong class="text-zenix-green uppercase text-[9px] block mb-1 tracking-widest">Finalidade</strong>
-                                                    Esses valores garantem que a estratégia consiga recuperar perdas de forma matemática e segura, mantendo a integridade da banca através de cálculos de stake ajustados ao rendimento.
-                                                </p>
+                                            <div class="relative group">
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="recoveryConfig.expectedPayout" 
+                                                    class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
+                                                    step="0.01"
+                                                    min="1"
+                                                />
+                                            </div>
+                                            <div class="h-2 bg-[#080808] rounded-full overflow-hidden border border-[#222]">
+                                                <div class="h-full bg-zenix-green shadow-[0_0_10px_rgba(34,197,94,0.3)] transition-all ease-out duration-500" :style="{ width: Math.min(100, (recoveryConfig.expectedPayout / 3 * 100)) + '%' }"></div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                    <div class="mt-4 p-4 bg-zenix-green/5 rounded-xl border border-zenix-green/10">
+                                        <p class="text-[11px] text-gray-400 leading-relaxed">
+                                            <strong class="text-zenix-green uppercase text-[9px] block mb-1 tracking-widest">Finalidade</strong>
+                                            Esses valores garantem que a estratégia consiga recuperar perdas de forma matemática e segura, mantendo a integridade da banca através de cálculos de stake ajustados ao rendimento.
+                                        </p>
+                                    </div>
                             </div>
                         </div>
 
@@ -1958,13 +1926,16 @@ export default {
 
             showIconSelector: false,
             strategyIcons: [
-                '/deriv_icons/TradeTypesRiseFallIcon.svg',
-                '/deriv_icons/TradeTypesEvenOddIcon.svg',
-                '/deriv_icons/TradeTypesOverUnderIcon.svg',
-                '/deriv_icons/TradeTypesMatchDiffIcon.svg',
-                '/deriv_icons/TradeTypesTouchNoTouchIcon.svg',
-                '/deriv_icons/TradeTypesRiseFallEqualIcon.svg'
-            ],
+            'fa-solid fa-robot',
+            'fa-solid fa-rocket',
+            'fa-solid fa-bolt',
+            'fa-solid fa-shield-halved',
+            'fa-solid fa-chart-line',
+            'fa-solid fa-brain',
+            'fa-solid fa-microchip',
+            'fa-solid fa-gauge-high',
+            'fa-solid fa-terminal'
+        ],
 
             markets: [],
             contracts: [],

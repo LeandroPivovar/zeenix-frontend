@@ -1,0 +1,10 @@
+﻿                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Parâmetros de Execução -->
+                        <div class="col-span-12">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <div>
+                                    <label class="block text-white font-bold mb-2">Duração</label>
