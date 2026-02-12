@@ -2209,6 +2209,16 @@ export default {
             window.URL.revokeObjectURL(url);
         },
         logStatusChanges(oldAnalysis, oldMode, trade) {
+            // Robust check for Conservador profile
+            const getRiskProfile = () => {
+                const profile = this.currentConfig?.riskProfile || 
+                                this.currentConfig?.modoMartingale || 
+                                this.recoveryConfig?.riskProfile || 
+                                '';
+                return profile.toString().toLowerCase();
+            };
+            const isConservador = getRiskProfile() === 'conservador';
+
             // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
             const totalConsecutiveLosses = (this.sessionState.consecutiveLosses || 0) + (this.sessionState.lossStreakRecovery || 0);
             const limit = this.recoveryConfig.pauseLosses || 6;
@@ -2227,10 +2237,8 @@ export default {
                 this.addLog('🧭 Alteração de Sensibilidade', [`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`], 'warning');
             }
 
-            // Recovery Logs
             if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
                 const lossSum = (this.sessionState.analysisType === 'RECUPERACAO' && this.sessionState.prejuizo_acumulado > 0) ? this.sessionState.prejuizo_acumulado : (this.sessionState.totalLossAccumulated || this.sessionState.lastStakePrincipal);
-                const isConservador = (this.currentConfig.riskProfile || this.currentConfig.modoMartingale || '').toString().toLowerCase() === 'conservador';
                 
                 if (isConservador) {
                     this.addLog('Martingale Parcelado Ativo', [
@@ -2246,7 +2254,6 @@ export default {
                     ], 'warning');
                 }
             } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
-                const isConservador = (this.currentConfig.riskProfile || this.currentConfig.modoMartingale || '').toString().toLowerCase() === 'conservador';
                 
                 if (isConservador) {
                     this.addLog('Recuperação Conservadora Concluída', [
@@ -2262,7 +2269,6 @@ export default {
                     ], 'success');
                 }
             } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST') {
-                const isConservador = (this.currentConfig.riskProfile || this.currentConfig.modoMartingale || '').toString().toLowerCase() === 'conservador';
                 
                 if (isConservador) {
                     this.addLog('Re-parcelamento Ativo', [
