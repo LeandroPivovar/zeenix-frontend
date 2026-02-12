@@ -878,16 +878,22 @@ export default {
         
 
         entryPercent() {
-            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
-            return ((this.entryValue / this.balanceNumeric) * 100).toFixed(2);
+            const val = Number(this.entryValue);
+            const bal = Number(this.balanceNumeric);
+            if (!bal || bal <= 0 || !val || val < 0) return '0.00';
+            return ((val / bal) * 100).toFixed(2);
         },
         profitPercent() {
-            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
-            return ((this.profitTarget / this.balanceNumeric) * 100).toFixed(2);
+            const val = Number(this.profitTarget);
+            const bal = Number(this.balanceNumeric);
+            if (!bal || bal <= 0 || !val || val < 0) return '0.00';
+            return ((val / bal) * 100).toFixed(2);
         },
         lossPercent() {
-            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
-            return ((this.lossLimit / this.balanceNumeric) * 100).toFixed(2);
+            const val = Number(this.lossLimit);
+            const bal = Number(this.balanceNumeric);
+            if (!bal || bal <= 0 || !val || val < 0) return '0.00';
+            return ((val / bal) * 100).toFixed(2);
         },
         
         riskLevelText() {
