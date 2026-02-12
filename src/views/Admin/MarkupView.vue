@@ -45,8 +45,9 @@
                                 </select>
                             </div>
                         </div>
-                        <button class="btn btn-search" @click="fetchData">
-                            <i class="fas fa-search"></i> Buscar
+                        <button class="btn btn-search" @click="fetchData" :disabled="isLoading">
+                            <i class="fas" :class="isLoading ? 'fa-spinner fa-spin' : 'fa-search'"></i> 
+                            {{ isLoading ? 'Buscando...' : 'Buscar' }}
                         </button>
                     </div>
 
@@ -408,11 +409,17 @@ export default {
         
         async fetchChartData(token, apiUrl) {
             try {
-                const today = new Date();
-                const endOfToday = today.toISOString().split('T')[0];
-                const startOfThirtyDays = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+                // Use selected filters or default to 30 days if not set
+                let start = this.filterStartDate;
+                let end = this.filterEndDate;
+
+                if (!start || !end) {
+                     const today = new Date();
+                     end = today.toISOString().split('T')[0];
+                     start = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+                }
                 
-                const response = await fetch(`${apiUrl}/trades/markup/daily?startDate=${startOfThirtyDays}&endDate=${endOfToday}`, {
+                const response = await fetch(`${apiUrl}/trades/markup/daily?startDate=${start}&endDate=${end}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
