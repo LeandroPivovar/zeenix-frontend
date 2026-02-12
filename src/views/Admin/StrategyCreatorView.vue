@@ -280,15 +280,16 @@
                                     </div>
 
                                     <!-- Limite de Níveis -->
-                                    <div class="mt-6 p-4 rounded-xl bg-[#0c0c0c] border border-[#222]">
-                                        <label class="block text-xs font-bold text-gray-400 mb-3">Limite máximo de Martingale (Conservador)</label>
+                                    <div class="mt-6 p-4 rounded-xl bg-[#0c0c0c] border border-[#222] opacity-60">
+                                        <label class="block text-xs font-bold text-gray-400 mb-3 flex items-center gap-2">
+                                            Limite de Recuperação (Fixo)
+                                            <i class="fa-solid fa-lock text-[9px]"></i>
+                                        </label>
                                         <div class="flex items-center gap-3">
-                                            <input 
-                                                type="number" 
-                                                v-model.number="form.maxMartingaleLevels"
-                                                class="w-16 bg-[#181818] border border-[#333] rounded-lg p-2 text-white text-sm text-center focus:border-zenix-green outline-none"
-                                            />
-                                            <span class="text-sm text-gray-500">níveis</span>
+                                            <div class="w-16 bg-[#111] border border-[#222] rounded-lg p-2 text-zenix-green text-sm text-center font-black">
+                                                4
+                                            </div>
+                                            <span class="text-sm text-gray-500 font-bold">níveis</span>
                                         </div>
                                     </div>
 
@@ -1898,8 +1899,7 @@ export default {
                 directionPayouts: {}, // { [contractType]: payout }
                 attackFilters: [],
                 minPayout: 1.2,
-                allowedRiskProfiles: ['conservador', 'moderado'], // New: Track compatible profiles
-                maxMartingaleLevels: 3 // New: Limit for Conservador mode
+                allowedRiskProfiles: ['conservador', 'moderado'] // New: Track compatible profiles
             },
 
             // Strategy Execution State
