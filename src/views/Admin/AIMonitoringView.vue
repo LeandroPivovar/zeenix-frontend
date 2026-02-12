@@ -2077,6 +2077,11 @@ export default {
                 
                 if (!trade.earlySettled && currentTickCount >= targetDuration && contract.status === 'open') {
                     const win = (contract.profit || 0) > 0;
+                    
+                    // Store old states for logging
+                    const oldAnalysis = this.sessionState.analysisType;
+                    const oldMode = this.sessionState.negotiationMode;
+
                     trade.earlySettled = true;
                     trade.fastResultApplied = true;
                     trade.result = win ? 'WON' : 'LOST';
@@ -2084,6 +2089,7 @@ export default {
                     // Use full stake as loss if early settled as loss
                     const estimatedProfit = win ? parseFloat(contract.profit || 0) : -trade.stake;
                     trade.pnl = estimatedProfit;
+                    trade.estimatedPnl = estimatedProfit; // ✅ FIX: Consistency
                     
                     if (!trade.exitPrice) trade.exitPrice = contract.current_spot_display_value || contract.current_spot;
                     if (trade.exitPrice) trade.lastDigit = trade.exitPrice.toString().slice(-1);
@@ -2108,6 +2114,10 @@ export default {
                         riskProfile: this.currentConfig.riskProfile || this.currentConfig.modoMartingale || 'moderado'
                     });
 
+                    // ✅ FIX: Consistent status/recovery logging
+                    this.logStatusChanges(oldAnalysis, oldMode, trade);
+                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake);
+
                     // ✅ SHOW IN HISTORY NOW
                     if (!this.monitoringOperations.includes(trade)) this.monitoringOperations.unshift(trade);
 
@@ -2116,6 +2126,10 @@ export default {
 
                     // ✅ Log trade to backend (Smart Early Settlement)
                     this.logTradeToBackend(trade);
+                    
+                    // ✅ Sync stats and check limits
+                    this.syncSessionStats();
+                    this.checkStrategyLimits();
                     
                     // ✅ Detailed Session Logs (Similar to is_sold)
                     if (win) {
@@ -2161,23 +2175,16 @@ export default {
                 // ✅ SHOW IN HISTORY NOW
                 if (!this.monitoringOperations.includes(trade)) this.monitoringOperations.unshift(trade);
                 
+                // Store old states for logging
+                const oldAnalysis = this.sessionState.analysisType;
+                const oldMode = this.sessionState.negotiationMode;
+
                 if (trade.fastResultApplied) {
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
                 } else {
                     trade.fastResultApplied = true;
                     if (trade.result === 'WON') this.monitoringStats.wins++;
                     else this.monitoringStats.losses++;
-                    
-                    // ✅ NO LONGER NEEDED HERE: Moved to bottom with correction logic
-                    // const previousPnl = trade.fastResultApplied ? trade.pnl : 0;
-                    
-                    // Store old states for logging
-                    const oldAnalysis = this.sessionState.analysisType;
-                    const oldMode = this.sessionState.negotiationMode;
-
-                    // ✅ Update Chart Markers
-                    this.updateChartMarkers(trade, 'tick');
-                    this.updateChartMarkers(trade, 'profit');
                     
                     RiskManager.processTradeResult(
                         this.sessionState, 
@@ -2193,86 +2200,17 @@ export default {
                     );
 
                     // ✅ Log trade to backend
-                    console.log('[AIMonitoring] 🔄 Trade finished, calling logTradeToBackend...');
                     this.logTradeToBackend(trade);
-
-                    // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
-                    const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
-                    
-                    if (trade.result !== 'WON') {
-                         this.addLog(`🔍 DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
-                    }
-
-                    const limit = this.recoveryConfig.pauseLosses || 6;
-                    if (trade.result !== 'WON' && totalConsecutiveLosses >= limit) {
-                        const pauseTime = this.recoveryConfig.pauseTime || 2;
-                        const pauseDuration = pauseTime * 60 * 1000;
-                        this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA ESTRATÉGICA: Limite de ${totalConsecutiveLosses} perdas sequenciais atingido. Pausando por ${pauseTime} min.`, 'warning');
-                        // No logic to stop ticks for Monitoring to keep chart alive
-                    }
-
-                    this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
-
-                    // Mode Switching Logs
-                    if (this.sessionState.negotiationMode !== oldMode) {
-                        this.addLog('🧭 Alteração de Sensibilidade', [`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`], 'warning');
-                    }
-
-                    // Recovery Logs
-                     if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
-                          const lossSum = this.sessionState.totalLossAccumulated || this.sessionState.lastStakePrincipal;
-                          const isConservador = (this.currentConfig.riskProfile || this.currentConfig.modoMartingale) === 'conservador';
-                          
-                          if (isConservador) {
-                              this.addLog('Martingale Parcelado Ativo', [
-                                  `⚠️ Modo CONSERVADOR ativado (4x)`,
-                                  `Perda acumulada: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
-                                  `Recuperação em 4 parcelas iniciada`
-                              ], 'warning');
-                          } else {
-                              this.addLog('Ativação de Recuperação', [
-                                  `⚠️ Modo MARTINGALE ativado`,
-                                  `Perda acumulada: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
-                                  `Próximo stake: Calculado automaticamente`
-                              ], 'warning');
-                          }
-                    } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
-                         const isConservador = (this.currentConfig.riskProfile || this.currentConfig.modoMartingale) === 'conservador';
-                         
-                         if (isConservador) {
-                             this.addLog('Recuperação Conservadora Concluída', [
-                                 `✅ Ciclo de parcelas finalizado`,
-                                 `Lucro recuperado com sucesso`,
-                                 `Voltando ao modo PRINCIPAL`
-                             ], 'success');
-                         } else {
-                             this.addLog('Recuperação Concluída', [
-                                 `✅ SUCESSO na recuperação`,
-                                 `Voltando ao modo PRINCIPAL`,
-                                 `Stake resetado para base`
-                             ], 'success');
-                         }
-                     } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST') {
-                          const isConservador = (this.currentConfig.riskProfile || this.currentConfig.modoMartingale) === 'conservador';
-                          
-                          if (isConservador) {
-                              this.addLog('Re-parcelamento Ativo', [
-                                  `📉 Loss no parcelamento (${this.sessionState.recoverySplitsUsed}/3)`,
-                                  `Recuperação dividida novamente em 4x`,
-                                  `Accum: ${this.preferredCurrencyPrefix}${this.sessionState.totalLossAccumulated.toFixed(2)}`
-                              ], 'warning');
-                          } else {
-                              this.addLog('Ajuste Martingale', [
-                                  `📉 Loss durante recuperação`,
-                                  `Ajustando stake automaticamente`,
-                                  `Total acumulado: ${this.preferredCurrencyPrefix}${this.sessionState.totalLossAccumulated.toFixed(2)}`
-                              ], 'warning');
-                          }
-                    }
-                    
-                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake);
                 }
+
+                // ✅ Update Chart Markers
+                this.updateChartMarkers(trade, 'tick');
+                this.updateChartMarkers(trade, 'profit');
+
+                // ✅ Use refactored logging helper
+                this.logStatusChanges(oldAnalysis, oldMode, trade);
+                
+                RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake);
                 
                 // Update payout history
                 if (trade.result === 'WON') {
@@ -2485,6 +2423,77 @@ export default {
             a.download = fileName;
             a.click();
             window.URL.revokeObjectURL(url);
+        },
+        logStatusChanges(oldAnalysis, oldMode, trade) {
+            // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
+            const totalConsecutiveLosses = (this.sessionState.consecutiveLosses || 0) + (this.sessionState.lossStreakRecovery || 0);
+            const limit = this.recoveryConfig.pauseLosses || 6;
+            
+            if (trade.result !== 'WON' && totalConsecutiveLosses >= limit) {
+                const pauseTime = this.recoveryConfig.pauseTime || 2;
+                const pauseDuration = pauseTime * 60 * 1000;
+                this.pauseUntil = Date.now() + pauseDuration;
+                this.addLog(`⏸️ PAUSA ESTRATÉGICA: Limite de ${totalConsecutiveLosses} perdas sequenciais atingido. Pausando por ${pauseTime} min.`, 'warning');
+            }
+
+            this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
+
+            // Mode Switching Logs
+            if (this.sessionState.negotiationMode !== oldMode) {
+                this.addLog('🧭 Alteração de Sensibilidade', [`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`], 'warning');
+            }
+
+            // Recovery Logs
+            if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
+                const lossSum = this.sessionState.totalLossAccumulated || this.sessionState.lastStakePrincipal;
+                const isConservador = (this.currentConfig.riskProfile || this.currentConfig.modoMartingale) === 'conservador';
+                
+                if (isConservador) {
+                    this.addLog('Martingale Parcelado Ativo', [
+                        `⚠️ Modo CONSERVADOR ativado (4x)`,
+                        `Perda acumulada: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
+                        `Recuperação em 4 parcelas iniciada`
+                    ], 'warning');
+                } else {
+                    this.addLog('Ativação de Recuperação', [
+                        `⚠️ Modo MARTINGALE ativado`,
+                        `Perda acumulada: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
+                        `Próximo stake: Calculado automaticamente`
+                    ], 'warning');
+                }
+            } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
+                const isConservador = (this.currentConfig.riskProfile || this.currentConfig.modoMartingale) === 'conservador';
+                
+                if (isConservador) {
+                    this.addLog('Recuperação Conservadora Concluída', [
+                        `✅ Ciclo de parcelas finalizado`,
+                        `Lucro recuperado com sucesso`,
+                        `Voltando ao modo PRINCIPAL`
+                    ], 'success');
+                } else {
+                    this.addLog('Recuperação Concluída', [
+                        `✅ SUCESSO na recuperação`,
+                        `Voltando ao modo PRINCIPAL`,
+                        `Stake resetado para base`
+                    ], 'success');
+                }
+            } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST') {
+                const isConservador = (this.currentConfig.riskProfile || this.currentConfig.modoMartingale) === 'conservador';
+                
+                if (isConservador) {
+                    this.addLog('Re-parcelamento Ativo', [
+                        `📉 Loss no parcelamento (${this.sessionState.recoverySplitsUsed}/3)`,
+                        `Recuperação dividida novamente em 4x`,
+                        `Accum: ${this.preferredCurrencyPrefix}${this.sessionState.totalLossAccumulated.toFixed(2)}`
+                    ], 'warning');
+                } else {
+                    this.addLog('Ajuste Martingale', [
+                        `📉 Loss durante recuperação`,
+                        `Ajustando stake automaticamente`,
+                        `Total acumulado: ${this.preferredCurrencyPrefix}${this.sessionState.totalLossAccumulated.toFixed(2)}`
+                    ], 'warning');
+                }
+            }
         },
         addLog(title, messages, type = 'info') {
             const time = new Date().toLocaleTimeString();
