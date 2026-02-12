@@ -282,6 +282,14 @@ export const RiskManager = {
                     console.log('--- Auditoria Conservadora (Loss) ---');
                     console.log(`Prejuízo Acumulado: $${state.prejuizo_acumulado.toFixed(2)}`);
                     console.log(`Nova Parcela Alvo: $${state.valor_parcela.toFixed(2)}`);
+
+                    // ✅ USER REQUEST: Limit of 3 additional losses in recovery (total 4 in streak)
+                    if (state.consecutiveLossesInRecovery >= 4) {
+                        console.log('%c[RiskManager] ⚠️ Limite de derrotas na recuperação atingido (3x). Voltando ao modo ataque.', 'background: #ff0000; color: #fff; font-weight: bold; padding: 4px;');
+                        this._finishRecovery(state);
+                        return;
+                    }
+
                     console.log('Ação: continuar recuperação progressiva');
                 }
 
