@@ -1973,6 +1973,12 @@ export default {
                 else this.monitoringStats.losses++;
                 
                 // Process result in RiskManager
+                // ✅ FIX: Prioritize recovery profile when in recovery mode for ProcessResult too
+                const processRiskProfile = (this.sessionState.analysisType === 'RECUPERACAO')
+                    ? (this.recoveryConfig.riskProfile || 'moderado')
+                    : (this.currentConfig.riskProfile || 'moderado');
+
+                // Process result in RiskManager
                 RiskManager.processTradeResult(
                     this.sessionState, 
                     trade.result === 'WON', 
@@ -1982,7 +1988,7 @@ export default {
                     {
                         ...this.currentConfig,
                         ...this.recoveryConfig,
-                        riskProfile: this.currentConfig.riskProfile || this.currentConfig.modoMartingale || 'moderado'
+                        riskProfile: processRiskProfile
                     }
                 );
 
@@ -2222,14 +2228,6 @@ export default {
                                 this.currentConfig?.modoMartingale || 
                                 this.recoveryConfig?.riskProfile || 
                                 '';
-                // DEBUG LOG (Temporary)
-                this.addLog('🔍 DEBUG PERFIL', [
-                    `Current: ${this.currentConfig?.riskProfile}`,
-                    `Current Martingale: ${this.currentConfig?.modoMartingale}`,
-                    `Recovery: ${this.recoveryConfig?.riskProfile}`,
-                    `Computed: ${profile}`
-                ], 'info');
-
                 return profile.toString().toLowerCase();
             };
             const isConservador = getRiskProfile() === 'conservador';
