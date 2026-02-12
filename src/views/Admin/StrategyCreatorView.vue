@@ -113,6 +113,86 @@
 
                     <form v-show="activeTab === 'config'" @submit.prevent="submitForm" class="space-y-8">
                         <div class="grid grid-cols-12 gap-6">
+                            <!-- Identidade da Estratégia -->
+                            <div class="col-span-12">
+                                <div class="zenix-card">
+                                    <div class="zenix-card-header mb-6">
+                                        <h3 class="zenix-card-title flex items-center gap-2">
+                                            <i class="fas fa-id-badge text-zenix-green"></i>
+                                            Identidade
+                                        </h3>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                                        <!-- Seletor de Ícone -->
+                                        <div class="md:col-span-3 flex flex-col items-center">
+                                            <label class="zenix-label mb-3">Ícone da Estratégia</label>
+                                            <div class="relative">
+                                                <button type="button" 
+                                                        @click="toggleIconSelector"
+                                                        class="w-24 h-24 rounded-2xl bg-[#0F0F0F] border-2 border-dashed border-[#27272A] hover:border-zenix-green/50 flex items-center justify-center transition-all group overflow-hidden">
+                                                    <img v-if="form.icon" :src="form.icon" class="w-16 h-16 object-contain" />
+                                                    <div v-else class="flex flex-col items-center gap-1 text-[#52525B] group-hover:text-zenix-green">
+                                                        <i class="fas fa-plus text-xl"></i>
+                                                        <span class="text-[10px] font-bold uppercase tracking-wider">Ícone</span>
+                                                    </div>
+                                                </button>
+
+                                                <!-- Icon Grid Selector Dropdown -->
+                                                <div v-if="showIconSelector" 
+                                                     v-click-outside="() => showIconSelector = false"
+                                                     class="absolute top-full left-0 mt-4 p-4 bg-[#0B0B0B] border border-[#1A1A1A] rounded-2xl shadow-2xl z-[100] w-[280px]">
+                                                    <div class="grid grid-cols-4 gap-3">
+                                                        <button v-for="icon in strategyIcons" 
+                                                                :key="icon"
+                                                                type="button"
+                                                                @click="selectIcon(icon)"
+                                                                class="p-2 rounded-xl hover:bg-zenix-green/10 border border-transparent hover:border-zenix-green/30 transition-all">
+                                                            <img :src="icon" class="w-10 h-10 object-contain" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p class="text-[10px] text-gray-500 mt-3 text-center">Clique para alterar o<br>ícone visual da IA</p>
+                                        </div>
+
+                                        <!-- Campos de Texto -->
+                                        <div class="md:col-span-9 space-y-6">
+                                            <!-- Nome da Estratégia -->
+                                            <div class="space-y-2">
+                                                <div class="flex justify-between items-center">
+                                                    <label class="zenix-label">Nome da Estratégia</label>
+                                                    <span class="text-[10px] text-gray-500">{{ form.strategyName?.length || 0 }}/32</span>
+                                                </div>
+                                                <input v-model="form.strategyName" 
+                                                       type="text" 
+                                                       maxlength="32"
+                                                       placeholder="Ex: Zeus Scaliper V1" 
+                                                       class="w-full bg-[#0F0F0F] border border-[#27272A] rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:border-zenix-green outline-none transition-all" />
+                                            </div>
+
+                                            <!-- Descrição -->
+                                            <div class="space-y-2">
+                                                <div class="flex justify-between items-center">
+                                                    <label class="zenix-label">Descrição Breve</label>
+                                                    <span class="text-[10px] text-gray-500">{{ form.description?.length || 0 }}/120</span>
+                                                </div>
+                                                <textarea v-model="form.description" 
+                                                          maxlength="120"
+                                                          rows="3"
+                                                          placeholder="Descreva o comportamento principal da estratégia..." 
+                                                          class="w-full bg-[#0F0F0F] border border-[#27272A] rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:border-zenix-green outline-none transition-all resize-none"></textarea>
+                                            </div>
+
+                                            <div class="flex items-center gap-2 p-3 bg-zenix-green/5 border border-zenix-green/10 rounded-xl">
+                                                <i class="fas fa-info-circle text-zenix-green text-sm"></i>
+                                                <p class="text-[11px] text-gray-400">Estas informações serão visíveis apenas para administradores e no resumo da estratégia.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Mercado e Tipo de Negociação -->
                             <div class="col-span-12 md:col-span-6">
                                 <div class="form-group">
@@ -1876,6 +1956,16 @@ export default {
                 martingale100: false
             },
 
+            showIconSelector: false,
+            strategyIcons: [
+                '/deriv_icons/TradeTypesRiseFallIcon.svg',
+                '/deriv_icons/TradeTypesEvenOddIcon.svg',
+                '/deriv_icons/TradeTypesOverUnderIcon.svg',
+                '/deriv_icons/TradeTypesMatchDiffIcon.svg',
+                '/deriv_icons/TradeTypesTouchNoTouchIcon.svg',
+                '/deriv_icons/TradeTypesRiseFallEqualIcon.svg'
+            ],
+
             markets: [],
             contracts: [],
             
@@ -1899,7 +1989,10 @@ export default {
                 directionPayouts: {}, // { [contractType]: payout }
                 attackFilters: [],
                 minPayout: 1.2,
-                allowedRiskProfiles: ['conservador', 'moderado'] // New: Track compatible profiles
+                allowedRiskProfiles: ['conservador', 'moderado'], // New: Track compatible profiles
+                icon: '',
+                strategyName: '',
+                description: '',
             },
 
             // Strategy Execution State
@@ -2538,6 +2631,13 @@ export default {
         window.removeEventListener('resize', this.handleResize);
     },
     methods: {
+        toggleIconSelector() {
+            this.showIconSelector = !this.showIconSelector;
+        },
+        selectIcon(icon) {
+            this.form.icon = icon;
+            this.showIconSelector = false;
+        },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
             if (this.isMobile) {
