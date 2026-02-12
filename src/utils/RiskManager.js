@@ -137,9 +137,9 @@ export const RiskManager = {
                 // Initial split is handled in processTradeResult
                 if (state.recoveryInstallmentsRemaining <= 0 || state.valor_parcela <= 0) {
                     state.prejuizo_acumulado = state.totalLossAccumulated;
-                    state.parcelas_total = 4;
+                    state.parcelas_total = config.maxMartingaleLevels || 4;
                     state.valor_parcela = state.prejuizo_acumulado / state.parcelas_total;
-                    state.recoveryInstallmentsRemaining = 4;
+                    state.recoveryInstallmentsRemaining = state.parcelas_total;
 
                     console.log('--- Martingale Parcelado Ativo ---');
                     console.log(`Prejuízo Acumulado: $${state.prejuizo_acumulado.toFixed(2)}`);
@@ -329,9 +329,9 @@ export const RiskManager = {
                 // Initialize Conservador Specifics on entry
                 if (riskProfile === 'conservador') {
                     state.prejuizo_acumulado = state.totalLossAccumulated;
-                    state.parcelas_total = 4;
+                    state.parcelas_total = config.maxMartingaleLevels || 4;
                     state.valor_parcela = state.prejuizo_acumulado / state.parcelas_total;
-                    state.recoveryInstallmentsRemaining = 4;
+                    state.recoveryInstallmentsRemaining = state.parcelas_total;
                     state.consecutiveLossesInRecovery = 1; // The loss that triggered recovery
                 }
             }

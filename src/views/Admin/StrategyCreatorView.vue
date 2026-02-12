@@ -202,6 +202,102 @@
                                 </div>
                             </div>
 
+                            <!-- NOVO CARD: Perfis de Risco Compatíveis -->
+                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                                        <i class="fa-solid fa-shield-halved text-zenix-green text-lg"></i>
+                                        Perfis de Risco Compatíveis
+                                    </h3>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" v-model="recoveryConfig.martingale" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-[#222] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zenix-green"></div>
+                                    </label>
+                                </div>
+
+                                <div :class="{ 'opacity-30 grayscale pointer-events-none select-none': !recoveryConfig.martingale }" class="space-y-3 transition-all duration-300">
+                                    <!-- Conservador -->
+                                    <div 
+                                        class="p-4 rounded-xl border transition-all cursor-pointer flex items-center gap-4 group"
+                                        :class="form.allowedRiskProfiles.includes('conservador') ? 'border-zenix-green/30 bg-zenix-green/5' : 'border-[#222] bg-[#0c0c0c] hover:border-[#333]'"
+                                        @click="toggleAllowedProfile('conservador')"
+                                    >
+                                        <div 
+                                            class="w-5 h-5 rounded border flex items-center justify-center transition-all"
+                                            :class="form.allowedRiskProfiles.includes('conservador') ? 'bg-zenix-green border-zenix-green text-black' : 'border-[#444]'"
+                                        >
+                                            <i v-if="form.allowedRiskProfiles.includes('conservador')" class="fa-solid fa-check text-[10px]"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_rgba(59,130,246,0.5)]"></div>
+                                                <span class="text-sm font-bold text-white">Conservador</span>
+                                            </div>
+                                            <p class="text-[10px] text-gray-500 mt-0.5">Baixo risco, proteção máxima</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Moderado -->
+                                    <div 
+                                        class="p-4 rounded-xl border transition-all cursor-pointer flex items-center gap-4 group"
+                                        :class="form.allowedRiskProfiles.includes('moderado') ? 'border-zenix-green/30 bg-zenix-green/5' : 'border-[#222] bg-[#0c0c0c] hover:border-[#333]'"
+                                        @click="toggleAllowedProfile('moderado')"
+                                    >
+                                        <div 
+                                            class="w-5 h-5 rounded border flex items-center justify-center transition-all"
+                                            :class="form.allowedRiskProfiles.includes('moderado') ? 'bg-zenix-green border-zenix-green text-black' : 'border-[#444]'"
+                                        >
+                                            <i v-if="form.allowedRiskProfiles.includes('moderado')" class="fa-solid fa-check text-[10px]"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-1.5 h-1.5 rounded-full bg-yellow-500 shadow-[0_0_5px_rgba(234,179,8,0.5)]"></div>
+                                                <span class="text-sm font-bold text-white">Moderado</span>
+                                            </div>
+                                            <p class="text-[10px] text-gray-500 mt-0.5">Equilíbrio entre risco e retorno</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Agressivo -->
+                                    <div 
+                                        class="p-4 rounded-xl border transition-all cursor-pointer flex items-center gap-4 group"
+                                        :class="form.allowedRiskProfiles.includes('agressivo') ? 'border-zenix-green/30 bg-zenix-green/5' : 'border-[#222] bg-[#0c0c0c] hover:border-[#333]'"
+                                        @click="toggleAllowedProfile('agressivo')"
+                                    >
+                                        <div 
+                                            class="w-5 h-5 rounded border flex items-center justify-center transition-all"
+                                            :class="form.allowedRiskProfiles.includes('agressivo') ? 'bg-zenix-green border-zenix-green text-black' : 'border-[#444]'"
+                                        >
+                                            <i v-if="form.allowedRiskProfiles.includes('agressivo')" class="fa-solid fa-check text-[10px]"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.5)]"></div>
+                                                <span class="text-sm font-bold text-white">Agressivo</span>
+                                            </div>
+                                            <p class="text-[10px] text-gray-500 mt-0.5">Alto risco, maior potencial</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Limite de Níveis -->
+                                    <div class="mt-6 p-4 rounded-xl bg-[#0c0c0c] border border-[#222]">
+                                        <label class="block text-xs font-bold text-gray-400 mb-3">Limite máximo de Martingale (Conservador)</label>
+                                        <div class="flex items-center gap-3">
+                                            <input 
+                                                type="number" 
+                                                v-model.number="form.maxMartingaleLevels"
+                                                class="w-16 bg-[#181818] border border-[#333] rounded-lg p-2 text-white text-sm text-center focus:border-zenix-green outline-none"
+                                            />
+                                            <span class="text-sm text-gray-500">níveis</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4 p-3 bg-[#0c0c0c] border border-[#222] rounded-lg">
+                                        <p class="text-[10px] text-gray-500 italic">O perfil de risco é escolhido pelo usuário ao ligar a IA.</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Card: Payout e Viabilidade -->
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
                                 <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
@@ -655,12 +751,9 @@
                                             </button>
                                         </div>
 
-                                        <div class="h-[46px] bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between px-3 self-end">
-                                            <span class="text-[10px] font-bold text-gray-400 uppercase">Martingale</span>
-                                            <label class="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" v-model="recoveryConfig.martingale" class="sr-only peer">
-                                                <div class="w-9 h-5 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zenix-green"></div>
-                                            </label>
+                                         <div class="h-[46px] bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between px-3 self-end opacity-40 grayscale pointer-events-none">
+                                            <span class="text-[10px] font-bold text-gray-400 uppercase">Martingale (Fixado)</span>
+                                            <i class="fa-solid fa-lock text-[10px] text-gray-500"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -769,26 +862,23 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block text-white font-bold mb-2">Perfil de Risco</label>
+                                 <div>
+                                    <label class="block text-white font-bold mb-2">Perfil Base</label>
                                     <div class="relative">
                                         <select 
                                             v-model="form.riskProfile" 
-                                            :disabled="!recoveryConfig.martingale"
-                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
                                         >
-                                            <option value="conservador">Conservador (Recupera Perda)</option>
-                                        <option value="moderado">Moderado (Recupera + Lucro)</option>
-                                        <option value="agressivo">Agressivo (Alavancagem)</option>
-                                        <option value="fixo">Fixo (Mão Fixa - Sem Martingale)</option>
+                                            <option v-for="profile in form.allowedRiskProfiles" :key="profile" :value="profile">
+                                                {{ profile.charAt(0).toUpperCase() + profile.slice(1) }}
+                                            </option>
                                         </select>
                                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
                                             <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
                                         </div>
                                     </div>
-                                    <p v-if="!recoveryConfig.martingale" class="mt-2 text-[10px] text-yellow-500 font-bold leading-tight">
-                                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>
-                                        Esta estratégia tem uma gestão de risco fixa (para a ativação envie o valor de conservador)
+                                    <p class="mt-2 text-[10px] text-gray-500 leading-tight">
+                                        Define qual perfil será pré-selecionado na inicialização.
                                     </p>
                                 </div>
                                 <div>
@@ -1807,7 +1897,9 @@ export default {
                 directionMode: 'both', // 'both', 'up', 'down'
                 directionPayouts: {}, // { [contractType]: payout }
                 attackFilters: [],
-                minPayout: 1.2
+                minPayout: 1.2,
+                allowedRiskProfiles: ['conservador', 'moderado'], // New: Track compatible profiles
+                maxMartingaleLevels: 3 // New: Limit for Conservador mode
             },
 
             // Strategy Execution State
@@ -2583,6 +2675,22 @@ export default {
             
             // Close Modal Immediately
             this.showFilterModal = false;
+        },
+
+        toggleAllowedProfile(profile) {
+            const index = this.form.allowedRiskProfiles.indexOf(profile);
+            if (index > -1) {
+                // Don't allow removing all profiles
+                if (this.form.allowedRiskProfiles.length > 1) {
+                    this.form.allowedRiskProfiles.splice(index, 1);
+                    // Reset current profile if it's no longer allowed
+                    if (this.form.riskProfile === profile) {
+                        this.form.riskProfile = this.form.allowedRiskProfiles[0];
+                    }
+                }
+            } else {
+                this.form.allowedRiskProfiles.push(profile);
+            }
         },
         
         removeFilter(filter, context) {
