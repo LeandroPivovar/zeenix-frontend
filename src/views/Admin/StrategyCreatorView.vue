@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div class="dashboard-layout">
         <div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
         
@@ -118,78 +118,69 @@
                                 <div class="zenix-card">
                                     <div class="zenix-card-header mb-6">
                                         <h3 class="zenix-card-title flex items-center gap-2">
-                                            <i class="fas fa-id-badge text-zenix-green"></i>
+                                            <i class="fas fa-sparkles text-zenix-green"></i>
                                             Identidade
                                         </h3>
                                     </div>
 
-                                    <div class="flex flex-col items-center gap-8 max-w-2xl mx-auto">
-                                        <!-- Seletor de Ícone -->
-                                        <div class="w-full flex flex-col items-center">
-                                            <label class="zenix-label mb-3">Ícone da Estratégia</label>
-                                            <div class="relative">
+                                    <div class="space-y-8">
+                                        <!-- Seletor de Ícone e Nome -->
+                                        <div class="space-y-3">
+                                            <label class="zenix-label">Ícone da Estratégia</label>
+                                            <div class="flex items-center gap-4">
+                                                <!-- Botão Seletor Principal -->
                                                 <button type="button" 
                                                         @click="toggleIconSelector"
-                                                        class="w-24 h-24 rounded-2xl bg-[#0F0F0F] border-2 border-dashed border-[#27272A] hover:border-zenix-green/50 flex items-center justify-center transition-all group overflow-hidden">
+                                                        class="w-12 h-12 rounded-xl bg-[#0F0F0F] border-2 border-dashed border-[#27272A] hover:border-zenix-green/50 flex items-center justify-center transition-all group overflow-hidden shrink-0">
                                                     <div v-if="form.icon" class="flex items-center justify-center">
-                                                        <i :class="form.icon" class="text-4xl text-zenix-green"></i>
+                                                        <i :class="form.icon" class="text-xl text-zenix-green"></i>
                                                     </div>
-                                                    <div v-else class="flex flex-col items-center gap-1 text-[#52525B] group-hover:text-zenix-green">
-                                                        <i class="fas fa-plus text-xl"></i>
-                                                        <span class="text-[10px] font-bold uppercase tracking-wider">Ícone</span>
+                                                    <div v-else class="text-[#52525B] group-hover:text-zenix-green">
+                                                        <i class="fas fa-plus text-sm"></i>
                                                     </div>
                                                 </button>
 
-                                                <!-- Icon Grid Selector Dropdown (Expanded) -->
-                                                <div v-if="showIconSelector" 
-                                                     v-click-outside="() => showIconSelector = false"
-                                                     class="absolute top-full left-1/2 -translate-x-1/2 mt-8 p-6 bg-[#0B0B0B] border border-[#1A1A1A] rounded-2xl shadow-2xl z-[100] w-full max-w-md">
-                                                    <div class="grid grid-cols-5 gap-4">
+                                                <!-- Horizontal Icon Grid Selector -->
+                                                <div class="flex-1 bg-[#0F0F0F]/50 border border-[#1A1A1A] rounded-xl p-2 overflow-x-auto scrollbar-hide">
+                                                    <div class="flex gap-2 min-w-max">
                                                         <button v-for="iconClass in strategyIcons" 
                                                                 :key="iconClass"
                                                                 type="button"
                                                                 @click="selectIcon(iconClass)"
-                                                                class="p-4 rounded-xl hover:bg-zenix-green/10 border border-transparent hover:border-zenix-green/30 transition-all flex items-center justify-center">
-                                                            <i :class="iconClass" class="text-2xl text-gray-400 hover:text-zenix-green"></i>
+                                                                class="w-10 h-10 rounded-lg hover:bg-zenix-green/10 border border-transparent hover:border-zenix-green/30 transition-all flex items-center justify-center shrink-0"
+                                                                :class="{ 'bg-zenix-green/10 border-zenix-green/30': form.icon === iconClass }">
+                                                            <i :class="[iconClass, 'text-lg', form.icon === iconClass ? 'text-zenix-green' : 'text-gray-500 hover:text-zenix-green']"></i>
                                                         </button>
                                                     </div>
                                                 </div>
                                             </div>
-                                                <p class="text-[10px] text-gray-500 mt-3 absolute -bottom-6 w-full text-center">Clique para alterar o ícone visual da IA</p>
                                         </div>
 
-                                        <!-- Campos de Texto -->
-                                        <div class="w-full space-y-6 pt-4">
-                                            <!-- Nome da Estratégia -->
-                                            <div class="space-y-2">
-                                                <div class="flex justify-between items-center">
-                                                    <label class="zenix-label">Nome da Estratégia</label>
-                                                    <span class="text-[10px] text-gray-500">{{ form.strategyName?.length || 0 }}/32</span>
-                                                </div>
-                                                <input v-model="form.strategyName" 
-                                                       type="text" 
-                                                       maxlength="32"
-                                                       placeholder="Ex: Zeus Scaliper V1" 
-                                                       class="w-full bg-[#0F0F0F] border border-[#27272A] rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:border-zenix-green outline-none transition-all" />
-                                            </div>
+                                        <!-- Nome da Estratégia -->
+                                        <div class="space-y-2">
+                                            <label class="zenix-label">Nome da Estratégia *</label>
+                                            <input v-model="form.strategyName" 
+                                                   type="text" 
+                                                   maxlength="50"
+                                                   placeholder="Ex: Scalper Pro V2" 
+                                                   class="w-full bg-[#0F0F0F] border border-[#27272A] rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:border-zenix-green outline-none transition-all" />
+                                            <p class="text-[10px] text-gray-500">{{ form.strategyName?.length || 0 }}/50 caracteres</p>
+                                        </div>
 
-                                            <!-- Descrição -->
-                                            <div class="space-y-2">
-                                                <div class="flex justify-between items-center">
-                                                    <label class="zenix-label">Descrição Breve</label>
-                                                    <span class="text-[10px] text-gray-500">{{ form.description?.length || 0 }}/120</span>
-                                                </div>
-                                                <textarea v-model="form.description" 
-                                                          maxlength="120"
-                                                          rows="3"
-                                                          placeholder="Descreva o comportamento principal da estratégia..." 
-                                                          class="w-full bg-[#0F0F0F] border border-[#27272A] rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:border-zenix-green outline-none transition-all resize-none"></textarea>
-                                            </div>
+                                        <!-- Descrição -->
+                                        <div class="space-y-2">
+                                            <label class="zenix-label">Descrição</label>
+                                            <textarea v-model="form.description" 
+                                                      maxlength="300"
+                                                      rows="3"
+                                                      placeholder="Descreva brevemente a lógica e objetivo da estratégia..." 
+                                                      class="w-full bg-[#0F0F0F] border border-[#27272A] rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:border-zenix-green outline-none transition-all resize-none"></textarea>
+                                            <p class="text-[10px] text-gray-500">{{ form.description?.length || 0 }}/300 caracteres</p>
+                                        </div>
 
-                                            <div class="flex items-center gap-2 p-3 bg-zenix-green/5 border border-zenix-green/10 rounded-xl">
-                                                <i class="fas fa-info-circle text-zenix-green text-sm"></i>
-                                                <p class="text-[11px] text-gray-400">Estas informações serão visíveis apenas para administradores e no resumo da estratégia.</p>
-                                            </div>
+                                        <!-- Footer Info -->
+                                        <div class="p-4 bg-[#080808] border border-[#1A1A1A] rounded-xl">
+                                            <p class="text-[11px] text-gray-500">Visível para administradores, logs e relatórios.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -297,7 +288,7 @@
                                     </label>
                                 </div>
 
-                                <div :class="{ 'opacity-30 grayscale pointer-events-none select-none': !recoveryConfig.martingale }" class="space-y-3 transition-all duration-300">
+                                <div :class="{ 'opacity-30 grayscale': !recoveryConfig.martingale }" class="space-y-3 transition-all duration-300">
                                     <!-- Conservador -->
                                     <div 
                                         class="p-4 rounded-xl border transition-all cursor-pointer flex items-center gap-4 group"
@@ -1924,18 +1915,7 @@ export default {
                 martingale100: false
             },
 
-            showIconSelector: false,
-            strategyIcons: [
-            'fa-solid fa-robot',
-            'fa-solid fa-rocket',
-            'fa-solid fa-bolt',
-            'fa-solid fa-shield-halved',
-            'fa-solid fa-chart-line',
-            'fa-solid fa-brain',
-            'fa-solid fa-microchip',
-            'fa-solid fa-gauge-high',
-            'fa-solid fa-terminal'
-        ],
+
 
             markets: [],
             contracts: [],
@@ -2364,7 +2344,13 @@ export default {
                     }
                   ]
                 }
-              ]
+              ],
+            showIconSelector: false,
+            strategyIcons: [
+                'fas fa-rocket', 'fas fa-bullseye', 'fas fa-bolt', 'fas fa-gem', 'fas fa-fire', 
+                'fas fa-star', 'fas fa-shield-halved', 'fas fa-crown', 'fas fa-trophy', 'fas fa-eye',
+                'fas fa-robot', 'fas fa-brain', 'fas fa-lightbulb', 'fas fa-chart-line', 'fas fa-user-shield'
+            ]
         }
     },
     computed: {
