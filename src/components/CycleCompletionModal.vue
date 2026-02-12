@@ -19,7 +19,7 @@
           <p class="modal-description">
             {{ isFinalCycle 
                 ? (result >= 0 
-                    ? 'O robô finalizou todos os ciclos com sucesso. Ganhos consolidados.' 
+                    ? 'O agente finalizou todos os ciclos com sucesso. Ganhos consolidados.' 
                     : 'A sessão foi encerrada no último ciclo devido ao limite de perda do ciclo.')
                 : 'O lucro foi consolidado e o próximo ciclo será iniciado.' 
             }}
