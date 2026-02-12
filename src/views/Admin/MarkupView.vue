@@ -60,7 +60,7 @@
                                 <span class="stat-label">Receita Total (Markup 3%)</span>
                                 <div class="stat-row">
                                     <span class="stat-value">{{ formatCurrency(summaryCards.totalCommission) }}</span>
-                                    <span class="stat-percentage">+12.5%</span>
+                                    <span class="stat-percentage" :class="getPctClass(summaryCards.totalCommissionPct)">{{ formatPct(summaryCards.totalCommissionPct) }}</span>
                                 </div>
                             </div>
                             <i class="fas fa-info-circle stat-info-icon" title="Soma total da comissão gerada no período. Representa 3% do payout de todas as operações realizadas. Use para entender quanto o marketing trouxe de receita real, não apenas leads"></i>
@@ -74,7 +74,7 @@
                                 <span class="stat-label">Volume Total Operado</span>
                                 <div class="stat-row">
                                     <span class="stat-value">{{ formatCurrency(summaryCards.totalVolume) }}</span>
-                                    <span class="stat-percentage">+8.3%</span>
+                                    <span class="stat-percentage" :class="getPctClass(summaryCards.totalVolumePct)">{{ formatPct(summaryCards.totalVolumePct) }}</span>
                                 </div>
                             </div>
                             <i class="fas fa-info-circle stat-info-icon" title="Valor total negociado pelos usuários na corretora. Quanto maior o volume, maior o potencial de geração de markup. Campanhas que atraem usuários com alto volume tendem a gerar mais lucro"></i>
@@ -88,7 +88,7 @@
                                 <span class="stat-label">Total em Saldo Real</span>
                                 <div class="stat-row">
                                     <span class="stat-value">{{ formatCurrency(summaryCards.totalRealAmount) }}</span>
-                                    <span class="stat-percentage">+15.2%</span>
+                                    <span class="stat-percentage" :class="getPctClass(summaryCards.totalRealAmountPct)">{{ formatPct(summaryCards.totalRealAmountPct) }}</span>
                                 </div>
                             </div>
                             <i class="fas fa-info-circle stat-info-icon" title="Soma de todos os depósitos realizados pelos usuários. Indica a qualidade financeira do tráfego. Leads com depósitos maiores geralmente geram mais volume e mais markup."></i>
@@ -102,7 +102,7 @@
                                 <span class="stat-label">Depósito Médio por Usuário</span>
                                 <div class="stat-row">
                                     <span class="stat-value">{{ formatCurrency(summaryCards.avgDeposit) }}</span>
-                                    <span class="stat-percentage">+3.1%</span>
+                                    <span class="stat-percentage" :class="getPctClass(summaryCards.avgDepositPct)">{{ formatPct(summaryCards.avgDepositPct) }}</span>
                                 </div>
                             </div>
                             <i class="fas fa-info-circle stat-info-icon" title="Valor médio depositado por usuário ativo. Use para comparar campanhas, países ou períodos. Quedas nessa métrica podem indicar tráfego menos qualificado."></i>
@@ -116,7 +116,7 @@
                                 <span class="stat-label">Receita Média por Usuário</span>
                                 <div class="stat-row">
                                     <span class="stat-value">{{ formatCurrency(summaryCards.avgRevenue) }}</span>
-                                    <span class="stat-percentage">+5.8%</span>
+                                    <span class="stat-percentage" :class="getPctClass(summaryCards.avgRevenuePct)">{{ formatPct(summaryCards.avgRevenuePct) }}</span>
                                 </div>
                             </div>
                             <i class="fas fa-info-circle stat-info-icon" title="Receita média de markup gerada por usuário. Mostra a eficiência do funil e da retenção. Ideal para avaliar qualidade além da aquisição."></i>
@@ -130,7 +130,7 @@
                                 <span class="stat-label">Usuários com Saldo</span>
                                 <div class="stat-row">
                                     <span class="stat-value">{{ summaryCards.usersWithBalance }}</span>
-                                    <span class="stat-percentage">+24</span>
+                                    <!-- Percentage removed as requested -->
                                 </div>
                             </div>
                             <i class="fas fa-info-circle stat-info-icon" title="Número de usuários com saldo ativo na corretora. Representa a base real de usuários monetizáveis. Crescimento saudável ocorre quando esse número sobe junto com depósito médio e ARPU."></i>
@@ -144,7 +144,7 @@
                                 <span class="stat-label">LTV Médio por Lead (Markup)</span>
                                 <div class="stat-row">
                                     <span class="stat-value">{{ formatCurrency(summaryCards.ltvAvg) }}</span>
-                                    <span class="stat-percentage">+18.2%</span>
+                                    <span class="stat-percentage" :class="getPctClass(summaryCards.ltvAvgPct)">{{ formatPct(summaryCards.ltvAvgPct) }}</span>
                                 </div>
                             </div>
                             <i class="fas fa-info-circle stat-info-icon" title="Receita média de markup gerada por cada lead desde a aquisição. Essa é a métrica mais importante para decisões de marketing. Ela mostra quanto dinheiro real cada lead traz, independentemente do custo por lead."></i>
@@ -173,11 +173,14 @@
 
                     <!-- Market Share Chart (Placeholder/Future) or just keep layout clean -->
 
-                    <!-- Projection Chart -->
-                    <ProjectionChart :daily-data="dailyMarkupData" />
+                    <!-- Charts Grid -->
+                    <div class="charts-grid">
+                        <!-- Projection Chart -->
+                        <ProjectionChart :daily-data="dailyMarkupData" />
 
-                    <!-- Daily Markup Chart -->
-                    <DailyMarkupChart :daily-data="dailyMarkupData" />
+                        <!-- Daily Markup Chart -->
+                        <DailyMarkupChart :daily-data="dailyMarkupData" />
+                    </div>
 
                     <!-- Table Section -->
                     <div class="table-section mt-8">
@@ -387,6 +390,19 @@
     color: #9ca3af;
     border: 1px solid rgba(107, 114, 128, 0.3);
 }
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .charts-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
 </style>
 
 <script>
@@ -432,6 +448,22 @@ export default {
             loadingProgress: 0,
             totalToLoad: 0,
             dailyMarkupData: [],
+            summaryCards: {
+                totalCommission: 0,
+                totalCommissionPct: 0,
+                totalVolume: 0,
+                totalVolumePct: 0,
+                totalRealAmount: 0,
+                totalRealAmountPct: 0,
+                avgDeposit: 0,
+                avgDepositPct: 0,
+                avgRevenue: 0,
+                avgRevenuePct: 0,
+                usersWithBalance: 0,
+                usersWithBalancePct: 0,
+                ltvAvg: 0,
+                ltvAvgPct: 0
+            },
         };
     },
     watch: {
@@ -507,6 +539,10 @@ export default {
 
                 const data = await response.json();
                 console.log('[MarkupView] Dados recebidos:', data);
+
+                if (data.summary) {
+                    this.summaryCards = data.summary;
+                }
 
                 // Processar dados recebidos
                 if (data.users && Array.isArray(data.users)) {
@@ -601,7 +637,21 @@ export default {
         },
 
         applyFilters() {
-            let filtered = [...this.allUsers];
+            // Calculate days in selected period
+            const start = this.filterStartDate ? new Date(this.filterStartDate) : new Date();
+            const end = this.filterEndDate ? new Date(this.filterEndDate) : new Date();
+            const diffTime = Math.abs(end.getTime() - start.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            const daysInRange = diffDays + 1; // Inclusive count (e.g. same day = 1 day)
+
+            let filtered = this.allUsers.map(user => {
+                const commission = Number(user.commission) || 0;
+                return {
+                    ...user,
+                    commission: commission,
+                    markupAvgPerDay: daysInRange > 0 ? (commission / daysInRange) : 0
+                };
+            });
             
             if (this.filterSelectedCountry) {
                 filtered = filtered.filter(user => user.country === this.filterSelectedCountry);
@@ -621,6 +671,18 @@ export default {
                 'Mozambique': '🇲🇿',
             };
             return flags[countryName] || '🏳️';
+        },
+        
+        getPctClass(pct) {
+            if (pct > 0) return 'text-green-500';
+            if (pct < 0) return 'text-red-500';
+            return 'text-gray-500';
+        },
+
+        formatPct(pct) {
+            if (pct === undefined || pct === null) return '0%';
+            const sign = pct > 0 ? '+' : '';
+            return `${sign}${pct}%`;
         },
         
         exportReportToPDF() {
@@ -682,22 +744,8 @@ export default {
             return this.displayedClients.reduce((sum, client) => sum + (Number(client.realAmount) || 0), 0);
         },
 
-        summaryCards() {
-            const totalRealAmount = this.displayedClients.reduce((sum, c) => sum + (c.realAmount || 0), 0);
-            const totalVolume = this.displayedClients.reduce((sum, c) => sum + (c.volumeOperado || 0), 0);
-            const totalCommission = this.totalCommissionDisplayed;
-            const userCount = this.displayedClients.length || 1;
-
-            return {
-                totalCommission,
-                totalVolume,
-                totalRealAmount,
-                avgDeposit: totalRealAmount / userCount,
-                avgRevenue: totalCommission / userCount,
-                usersWithBalance: this.displayedClients.length,
-                ltvAvg: totalCommission / userCount, 
-            };
-        },
+        // summaryCards computed property removed to avoid duplication with data property
+        // The summary is now fetched from the backend to include comparison and previous period data
 
         availableCountries() {
             const countries = this.allUsers.map(user => user.country);
