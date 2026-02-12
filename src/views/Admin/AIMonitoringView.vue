@@ -2232,7 +2232,7 @@ export default {
                     this.addLog('Martingale Parcelado Ativo', [
                         `⚠️ Modo CONSERVADOR ativado (4x)`,
                         `Perda acumulada: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
-                        `Recuperação em 4 parcelas iniciada`
+                        `Recuperação em parcelas de ${this.preferredCurrencyPrefix}${(lossSum / 4).toFixed(2)} iniciada`
                     ], 'warning');
                 } else {
                     this.addLog('Ativação de Recuperação', [
@@ -2262,9 +2262,9 @@ export default {
                 
                 if (isConservador) {
                     this.addLog('Re-parcelamento Ativo', [
-                        `📉 Loss no parcelamento (${this.sessionState.recoverySplitsUsed}/3)`,
-                        `Recuperação dividida novamente em 4x`,
-                        `Accum: ${this.preferredCurrencyPrefix}${this.sessionState.totalLossAccumulated.toFixed(2)}`
+                        `📉 Loss no parcelamento (${this.sessionState.consecutiveLossesInRecovery}/4)`,
+                        `Perda total atual: ${this.preferredCurrencyPrefix}${this.sessionState.prejuizo_acumulado.toFixed(2)}`,
+                        `Dívida re-dividida em 4 parcelas de ${this.preferredCurrencyPrefix}${(this.sessionState.prejuizo_acumulado / 4).toFixed(2)}`
                     ], 'warning');
                 } else {
                     this.addLog('Ajuste Martingale', [

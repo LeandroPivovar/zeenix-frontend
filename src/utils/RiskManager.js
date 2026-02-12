@@ -134,14 +134,14 @@ export const RiskManager = {
 
             // --- CONSERVADOR MODE (Martingale Parcelado) ---
             if (riskProfile === 'conservador') {
-                // Initial split is handled in processTradeResult
+                // If installments finished but still have debt, or just starting
                 if (state.recoveryInstallmentsRemaining <= 0 || state.valor_parcela <= 0) {
                     state.prejuizo_acumulado = state.totalLossAccumulated;
                     state.parcelas_total = 4;
                     state.valor_parcela = state.prejuizo_acumulado / state.parcelas_total;
                     state.recoveryInstallmentsRemaining = 4;
 
-                    console.log('--- Martingale Parcelado Ativo ---');
+                    console.log('--- Martingale Parcelado (Novo Ciclo) ---');
                     console.log(`Prejuízo Acumulado: $${state.prejuizo_acumulado.toFixed(2)}`);
                     console.log(`Parcela Alvo: $${state.valor_parcela.toFixed(2)}`);
                 }
@@ -236,13 +236,14 @@ export const RiskManager = {
                     console.log(`Lucro nesta operação: $${profit.toFixed(2)}`);
                     console.log(`Prejuízo Restante: $${Math.max(0, state.prejuizo_acumulado).toFixed(2)}`);
 
-                    if (state.prejuizo_acumulado <= 0) {
+                    if (state.prejuizo_acumulado <= 0.01) { // Floating point safety
                         console.log('Recuperação Conservadora Concluída');
                         console.log('Prejuízo Final: $0.00');
                         console.log('Ação: retornar ao modo principal');
                         this._finishRecovery(state);
                     } else {
-                        console.log('Ação: continuar recuperação progressiva');
+                        // If installments finished but still in debt, it will restart in calculateNextStake
+                        console.log(`Ação: continuar recuperação progressiva (Restante: $${state.prejuizo_acumulado.toFixed(2)})`);
                     }
                 } else {
                     // Standard Recovery: Stop on first win
@@ -274,14 +275,14 @@ export const RiskManager = {
                     state.prejuizo_acumulado += absoluteLoss;
                     state.consecutiveLossesInRecovery++;
 
-                    // Doc: valor_parcela = prejuizo_acumulado / parcelas_restantes
-                    // parcelas_restantes referenciadas como divisor de suavidade
-                    const divisor = Math.max(1, state.recoveryInstallmentsRemaining);
-                    state.valor_parcela = state.prejuizo_acumulado / divisor;
+                    // ✅ USER REQUEST: Always re-split accumulated loss by 4 on new loss
+                    state.parcelas_total = 4;
+                    state.recoveryInstallmentsRemaining = 4;
+                    state.valor_parcela = state.prejuizo_acumulado / 4;
 
-                    console.log('--- Auditoria Conservadora (Loss) ---');
+                    console.log('--- Auditoria Conservadora (Re-parcelamento por Loss) ---');
                     console.log(`Prejuízo Acumulado: $${state.prejuizo_acumulado.toFixed(2)}`);
-                    console.log(`Nova Parcela Alvo: $${state.valor_parcela.toFixed(2)}`);
+                    console.log(`Nova Parcela Alvo (1/4): $${state.valor_parcela.toFixed(2)}`);
 
                     // ✅ USER REQUEST: Limit of 3 additional losses in recovery (total 4 in streak)
                     if (state.consecutiveLossesInRecovery >= 4) {
@@ -380,7 +381,8 @@ export const RiskManager = {
             // ✅ SMART RECOVERY: Only exit if NOT conservador, or if conservador finished its installments
             if (win) {
                 if (riskProfile === 'conservador') {
-                    if (state.recoveryInstallmentsRemaining <= 0) {
+                    // Only exit if debt is cleared
+                    if (state.prejuizo_acumulado <= 0.01) {
                         this._finishRecovery(state);
                     }
                 } else {
