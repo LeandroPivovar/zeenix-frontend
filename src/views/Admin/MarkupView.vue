@@ -45,9 +45,8 @@
                                 </select>
                             </div>
                         </div>
-                        <button class="btn btn-search" @click="fetchData" :disabled="isLoading">
-                            <i class="fas" :class="isLoading ? 'fa-spinner fa-spin' : 'fa-search'"></i> 
-                            {{ isLoading ? 'Buscando...' : 'Buscar' }}
+                        <button class="btn btn-search" @click="fetchData">
+                            <i class="fas fa-search"></i> Buscar
                         </button>
                     </div>
 
@@ -152,6 +151,28 @@
                         </div>
                     </div>
 
+                    <!-- Top 10 Ranking Card -->
+                    <div class="ranking-section mt-8 mb-8">
+                        <div class="table-header mb-4">
+                            <h2 class="table-title"><i class="fas fa-trophy text-yellow-400 mr-2"></i> Top 10 Clientes (Markup)</h2>
+                            <p class="table-subtitle">Ranking dos maiores geradores de receita</p>
+                        </div>
+                        <div class="ranking-grid">
+                            <div v-for="(user, index) in top10Users" :key="user.userId" class="ranking-card">
+                                <div class="ranking-position" :class="'pos-' + (index + 1)">#{{ index + 1 }}</div>
+                                <div class="ranking-info">
+                                    <span class="ranking-name">
+                                        {{ user.name }}
+                                        <span v-if="user.userId.startsWith('unknown-')" class="status-pill warning ml-2" style="font-size: 0.6rem; padding: 2px 6px;">Não Cadastrado</span>
+                                    </span>
+                                    <span class="ranking-value">{{ formatCurrency(user.commission) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Share Chart (Placeholder/Future) or just keep layout clean -->
+
                     <!-- Projection Chart -->
                     <ProjectionChart :daily-data="dailyMarkupData" />
 
@@ -188,7 +209,10 @@
                                         <td colspan="9" class="text-center py-12">Nenhum dado encontrado</td>
                                     </tr>
                                     <tr v-else v-for="client in displayedClients" :key="client.userId">
-                                        <td class="client-name">{{ client.name }}</td>
+                                        <td class="client-name">
+                                            {{ client.name }}
+                                            <span v-if="client.userId.startsWith('unknown-')" class="status-pill warning ml-2" style="font-size: 0.6rem; padding: 2px 6px;">Não Cadastrado</span>
+                                        </td>
                                         <td>
                                             <div class="country-cell">
                                                 <span class="country-flag">{{ getCountryFlag(client.country) }}</span>
@@ -234,7 +258,108 @@
 
 
     </div>
+
+        <!-- Full Screen Loading Overlay -->
+        <div v-if="isLoading" class="loading-overlay">
+            <div class="loading-content">
+                <i class="fas fa-spinner fa-spin loading-icon"></i>
+                <p class="loading-text">Carregando dados...</p>
+            </div>
+        </div>
 </template>
+
+<style scoped>
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    text-align: center;
+    color: #4ade80; /* Zenix Green */
+}
+
+.loading-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.loading-text {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+/* Ranking Styles */
+.ranking-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.ranking-card {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ranking-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: #4ade80;
+}
+
+.ranking-position {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-right: 1rem;
+    color: #666;
+    width: 40px;
+    text-align: center;
+}
+
+.ranking-position.pos-1 { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, 0.3); } /* Gold */
+.ranking-position.pos-2 { color: #9ca3af; } /* Silver */
+.ranking-position.pos-3 { color: #b45309; } /* Bronze */
+
+.ranking-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ranking-name {
+    font-weight: 600;
+    color: #e5e7eb;
+    display: flex;
+    align-items: center;
+}
+
+.ranking-value {
+    color: #4ade80;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.status-pill.warning {
+    background-color: rgba(234, 179, 8, 0.15);
+    color: #eab308;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+}
+</style>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
@@ -292,6 +417,13 @@ export default {
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
+    },
+    computed: {
+        top10Users() {
+            return [...this.displayedClients]
+                .sort((a, b) => b.commission - a.commission)
+                .slice(0, 10);
+        }
     },
     methods: {
         handleResize() {
