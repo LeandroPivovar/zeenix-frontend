@@ -18,7 +18,7 @@
         <div class="flex items-center space-x-3">
           <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF] inline-flex items-center gap-2">
             <span>Saldo:</span>
-            <span v-if="isBalanceReady && !balanceHidden" class="inline-flex items-center gap-1.5 animate-fadeIn">
+            <span v-if="isBalanceReady && !balanceHidden" class="inline-flex items-center gap-0.5 animate-fadeIn">
               <span v-if="uiAccountType !== 'demo' || showDollarSign">
                 {{ isFictitiousBalanceActive ? '$' : currencyPrefix }}
               </span>
@@ -26,7 +26,7 @@
               {{ formattedBalance }}
             </span>
             <span v-else-if="balanceHidden">••••••</span>
-            <span v-else class="inline-flex items-center gap-1.5 text-[#DFDFDF]/40">
+            <span v-else class="inline-flex items-center gap-0.5 text-[#DFDFDF]/40">
               <span v-if="uiAccountType !== 'demo' || showDollarSign">
                 {{ isFictitiousBalanceActive ? '$' : currencyPrefix }}
               </span>
