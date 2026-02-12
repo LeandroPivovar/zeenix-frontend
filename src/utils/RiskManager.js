@@ -375,8 +375,13 @@ export const RiskManager = {
         if (tradeMode === 'RECUPERACAO') {
             const riskProfile = (config.riskProfile || 'moderado').toLowerCase();
             state.lastProfitRecovery = realProfit;
-            // Deduct the estimated profit and add the real one
+            // Deduct the estimated profit and add the real one to trackers
             state.recoveredAmount = state.recoveredAmount - (estimatedProfit || 0) + realProfit;
+
+            if (riskProfile === 'conservador') {
+                // Correct debt: debts are subtracted from, so we add back estimated and subtract real
+                state.prejuizo_acumulado = state.prejuizo_acumulado + (estimatedProfit || 0) - realProfit;
+            }
 
             // ✅ SMART RECOVERY: Only exit if NOT conservador, or if conservador finished its installments
             if (win) {
