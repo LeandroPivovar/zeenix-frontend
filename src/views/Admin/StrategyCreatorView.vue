@@ -131,6 +131,7 @@
                                                 <div class="flex items-center gap-4">
                                                     <!-- Botão Seletor Principal -->
                                                     <button type="button" 
+                                                            data-trigger="icon-selector"
                                                             @click="toggleIconSelector"
                                                             class="w-12 h-12 rounded-xl bg-[#0F0F0F] border-2 border-[#27272A] hover:border-zenix-green/50 flex items-center justify-center transition-all group overflow-hidden shrink-0 shadow-lg"
                                                             :class="{ 'border-zenix-green/50 ring-1 ring-zenix-green/20': showIconSelector }">
@@ -150,7 +151,7 @@
                                                 <!-- Retractable Icon Selector Card -->
                                                 <transition name="fade-slide">
                                                     <div v-if="showIconSelector" 
-                                                         v-click-outside="() => showIconSelector = false"
+                                                         ref="iconSelectorCard"
                                                          class="absolute top-14 left-0 w-full z-50 bg-[#0B0B0B] border border-[#1A1A1A] rounded-2xl p-4 shadow-2xl backdrop-blur-xl">
                                                         <div class="flex items-center justify-between mb-3 px-1">
                                                             <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Selecione um Ícone</span>
@@ -4873,9 +4874,25 @@ export default {
                 type
             });
             if (this.monitoringLogs.length > 5000) this.monitoringLogs.pop();
+        },
+        handleClickOutside(event) {
+            const card = this.$refs.iconSelectorCard;
+            const trigger = event.target.closest('[data-trigger="icon-selector"]');
+            
+            if ((card && card.contains(event.target)) || trigger) {
+                return;
+            }
+            this.showIconSelector = false;
         }
     },
     watch: {
+        showIconSelector(val) {
+             if (val) {
+                 setTimeout(() => document.addEventListener('click', this.handleClickOutside), 0);
+             } else {
+                 document.removeEventListener('click', this.handleClickOutside);
+             }
+        },
         'recoveryConfig.martingale': {
             handler(newVal) {
                 if (newVal === false) {
