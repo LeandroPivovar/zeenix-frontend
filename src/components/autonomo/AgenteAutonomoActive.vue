@@ -690,8 +690,8 @@
 								<th class="text-left py-2 text-[#A1A1AA] font-medium px-1">Tipo</th>
 								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Entrada</th>
 								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Saída</th>
-								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Inv.</th>
-								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Res.</th>
+								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Invest.</th>
+								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Retorno</th>
 							</tr>
 						</thead>
 						<tbody>
