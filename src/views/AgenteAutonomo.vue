@@ -1148,8 +1148,16 @@
         // 1. Log para debug
         const status = contract.status;
         const contractId = contract.contract_id;
-        const profit = parseFloat(contract.profit) || 0;
-        
+        const buyPrice = parseFloat(contract.buy_price) || 0;
+        const bidPrice = parseFloat(contract.bid_price) || 0;
+        let profit = parseFloat(contract.profit) || 0;
+
+        // ✅ [ZENIX v2.3] FIX: Se o profit retornado for igual ao bid_price (Payout Total),
+        // é porque está vindo Bruto. Ajustamos para (Payout - Stake) para ter o Lucro Líquido.
+        if (profit > 0 && Math.abs(profit - bidPrice) < 0.01) {
+          profit = bidPrice - buyPrice;
+        }
+
         console.log(`[AgenteAutonomo] 📝 Contrato Update: ID=${contractId}, Status=${status}, Profit=${profit}`);
 
         // 2. Normalizar contrato para o formato da lista TradeHistory
@@ -1197,7 +1205,7 @@
           if (!this.processedContractIds.includes(cid)) {
             // ✅ [ZENIX v2.3] Atualização Otimista: Atualiza prop sessionStats instantaneamente
             if (this.sessionStats) {
-                const p = parseFloat(contract.profit) || 0;
+                const p = profit; // ✅ Usar valor corrigido (Líquido)
                 const win = status === 'won';
                 
                 this.sessionStats.totalTrades += 1;

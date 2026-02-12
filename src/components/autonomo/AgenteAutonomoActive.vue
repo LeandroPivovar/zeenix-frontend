@@ -1470,6 +1470,9 @@
 					
 					const contract = trade.contract || trade.contract_type || trade.contractType || trade.type || 'Unknown';
 
+					// ✅ Get sessionId for grouping
+					const sessionId = trade.sessionId || trade.session_id || null;
+
 					return {
 						id: trade.id || Math.random().toString(36).substr(2, 9),
 						createdAt, // Date object or ISO string
@@ -1479,12 +1482,13 @@
 						exit: exit.toFixed(2),
 						stake: stake.toFixed(2),
 						profit: profit.toFixed(2),
+						sessionId,
 						// Keep original for referencing if needed
 						original: trade 
 					};
 				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Newest first
 
-				// 2. Group trades into sessions (gap of 30 min)
+				// 2. Group trades into sessions (using sessionId)
 				const sessions = [];
 				let currentSessionTrades = [];
 				
@@ -1492,13 +1496,24 @@
 					currentSessionTrades.push(normalizedTrades[0]);
 					
 					for (let i = 1; i < normalizedTrades.length; i++) {
-						const prevTradeTime = new Date(normalizedTrades[i-1].createdAt).getTime();
-						const currTradeTime = new Date(normalizedTrades[i].createdAt).getTime();
+						const prevSessionId = normalizedTrades[i-1].sessionId;
+						const currSessionId = normalizedTrades[i].sessionId;
 						
-						// Gap check
-						const diffMinutes = (prevTradeTime - currTradeTime) / (1000 * 60);
+						// Session boundary check: if sessionIds differ (and both exist)
+						// Fallback: If sessionId is missing, use the 30 min gap only as secondary measure 
+						// but primarily trust sessionId if available.
+						let isNewSession = false;
+						if (prevSessionId && currSessionId && prevSessionId !== currSessionId) {
+							isNewSession = true;
+						} else if (!prevSessionId || !currSessionId) {
+							// Secondary check: 30 min gap if sessionId is missing (legacy compat)
+							const prevTradeTime = new Date(normalizedTrades[i-1].createdAt).getTime();
+							const currTradeTime = new Date(normalizedTrades[i].createdAt).getTime();
+							const diffMinutes = (prevTradeTime - currTradeTime) / (1000 * 60);
+							if (diffMinutes > 30) isNewSession = true;
+						}
 						
-						if (diffMinutes > 30) {
+						if (isNewSession) {
 							sessions.push(currentSessionTrades);
 							currentSessionTrades = [];
 						}
