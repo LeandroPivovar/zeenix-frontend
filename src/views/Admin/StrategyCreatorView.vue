@@ -149,57 +149,173 @@
                                 </div>
                             </div>
 
-                            <!-- Direção e Payouts (Attack) -->
-                            <div v-if="form.selectedTradeTypeGroup" class="col-span-12 mt-2">
-                                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-[#181818] p-6 rounded-xl border border-[#333] shadow-inner">
-                                    <div class="md:col-span-2">
-                                        <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
-                                            <i class="fa-solid fa-compass text-zenix-green"></i>
-                                            Direção Permitida
-                                        </label>
-                                        <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
+                        <!-- NOVOS CARDS: Configurações Operacionais e Payout -->
+                        <div class="col-span-12 space-y-6">
+                            <!-- Card: Configurações Operacionais -->
+                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
+                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
+                                    <i class="fa-solid fa-gear text-zenix-green text-lg"></i>
+                                    Configurações Operacionais
+                                </h3>
+
+                                <div class="space-y-4">
+                                    <div class="flex items-start gap-3 p-3 rounded-lg bg-zenix-green/5 border border-zenix-green/20">
+                                        <i class="fa-solid fa-lock text-zenix-green mt-1 text-sm"></i>
+                                        <div>
+                                            <p class="text-sm font-bold text-white">Regra Imutável</p>
+                                            <p class="text-xs text-gray-400">O gatilho de troca é sempre <strong>2 perdas consecutivas</strong>. Este valor não pode ser alterado.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="p-4 rounded-lg bg-[#111] border border-[#333]">
+                                        <div class="flex items-center gap-2 mb-4">
+                                            <i class="fa-solid fa-right-left text-zenix-green text-sm"></i>
+                                            <span class="font-bold text-white text-sm">Tipo de Troca Após Perdas</span>
+                                        </div>
+
+                                        <div class="grid grid-cols-1 gap-2">
                                             <button 
                                                 type="button"
-                                                @click="updatePrincipalDirection('both')"
-                                                class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                :class="form.directionMode === 'both' ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
-                                                :style="form.directionMode === 'both' ? 'background-color: #22C55E !important;' : ''"
+                                                @click="recoveryConfig.lossesToActivate = 100" 
+                                                :class="recoveryConfig.lossesToActivate > 10 ? 'border-zenix-green bg-zenix-green/10' : 'border-[#222] bg-[#181818]'"
+                                                class="p-3 rounded-lg text-left transition-all border-2"
                                             >
-                                                Ambos
+                                                <span class="text-sm font-bold" :class="recoveryConfig.lossesToActivate > 10 ? 'text-zenix-green' : 'text-white'">Sem troca</span>
+                                                <p class="text-[10px] text-gray-500 mt-1">Mantém contrato e tipo de negociação fixos</p>
                                             </button>
+
                                             <button 
-                                                v-for="(dir, idx) in selectedDirections" 
-                                                :key="dir.value"
                                                 type="button"
-                                                @click="updatePrincipalDirection(idx === 0 ? 'up' : 'down', dir.value)"
-                                                class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
-                                                :style="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'background-color: #22C55E !important;' : ''"
+                                                @click="recoveryConfig.lossesToActivate = 2" 
+                                                :class="recoveryConfig.lossesToActivate === 2 ? 'border-zenix-green bg-zenix-green/10' : 'border-[#222] bg-[#181818]'"
+                                                class="p-3 rounded-lg text-left transition-all border-2"
                                             >
-                                                {{ dir.label }}
+                                                <span class="text-sm font-bold" :class="recoveryConfig.lossesToActivate === 2 ? 'text-zenix-green' : 'text-white'">Apenas contrato</span>
+                                                <p class="text-[10px] text-gray-500 mt-1">Troca apenas o contrato após 2 perdas</p>
                                             </button>
                                         </div>
                                     </div>
-                                    <div v-for="dir in selectedDirections" :key="'payout-' + dir.value">
-                                        <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
-                                            <i class="fa-solid fa-hand-holding-dollar text-zenix-green"></i>
-                                            Payout ({{ dir.label }})
-                                        </label>
-                                        <div class="relative group">
-                                            <input 
-                                                type="number" 
-                                                v-model.number="form.directionPayouts[dir.value]" 
-                                                class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
-                                                step="1"
-                                                min="1"
-                                            />
-                                            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                                <span class="text-xs text-gray-500 font-black">%</span>
+
+                                    <p class="text-[10px] text-gray-500 bg-[#111] p-3 rounded-lg border border-[#333]">
+                                        ⚠️ O modo inicial de execução é escolhido pelo usuário ao ligar a IA, não faz parte da estratégia.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Card: Payout e Viabilidade -->
+                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
+                                <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
+                                    <i class="fa-solid fa-dollar-sign text-zenix-green text-lg"></i>
+                                    Payout e Viabilidade
+                                </h3>
+
+                                <div class="space-y-6">
+                                    <!-- Centralized Analysis Payouts -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                                                Análise Principal (Payout)
+                                            </label>
+                                            <div class="relative group">
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="form.expectedPayout" 
+                                                    class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
+                                                    step="0.01"
+                                                    min="1"
+                                                />
+                                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                                    <span class="text-xs text-gray-500 font-black">X</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                                                Análise Recuperação (Payout)
+                                            </label>
+                                            <div class="relative group">
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="recoveryConfig.expectedPayout" 
+                                                    class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
+                                                    step="0.01"
+                                                    min="1"
+                                                />
+                                                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                                    <span class="text-xs text-gray-500 font-black">X</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    <hr class="border-[#222]" />
+
+                                    <div>
+                                        <div class="flex justify-between items-center mb-3">
+                                            <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                                Gatilho de Viabilidade (Min Payout)
+                                            </label>
+                                            <span class="text-xs px-2 py-0.5 rounded" :class="sessionState.lastPayoutPrincipal >= form.minPayout || !sessionState.lastPayoutPrincipal ? 'bg-zenix-green/10 text-zenix-green' : 'bg-red-500/10 text-red-500'">
+                                                {{ sessionState.lastPayoutPrincipal >= form.minPayout || !sessionState.lastPayoutPrincipal ? 'Operável' : 'Abaixo do Mínimo' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-4">
+                                            <input 
+                                                type="number" 
+                                                v-model.number="form.minPayout"
+                                                class="w-20 bg-[#111] border border-[#333] rounded-lg py-2 text-white text-center focus:border-zenix-green outline-none"
+                                                step="0.01"
+                                                min="0"
+                                                max="2"
+                                            >
+                                            <div class="flex-1 h-2 bg-[#111] rounded-full overflow-hidden border border-[#333]">
+                                                <div class="h-full bg-zenix-green transition-all" :style="{ width: (form.minPayout / 2 * 100) + '%' }"></div>
+                                            </div>
+                                            <span class="text-sm font-bold text-gray-400 w-10 text-right">{{ form.minPayout.toFixed(2) }}x</span>
+                                        </div>
+                                        <p class="text-[10px] text-gray-500 mt-2">Trades só serão executados se o payout or mercado for maior que o gatilho.</p>
+                                    </div>
+
+                                    <div class="bg-[#0b0b0b] p-3 rounded-lg border border-[#222]">
+                                        <p class="text-[11px] text-gray-500 leading-tight">
+                                            Esses valores garantem que a estratégia consiga recuperar perdas de forma matemática e segura.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Direção (Attack) -->
+                        <div v-if="form.selectedTradeTypeGroup" class="col-span-12 mt-2">
+                            <div class="bg-[#181818] p-6 rounded-xl border border-[#333] shadow-inner">
+                                <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-compass text-zenix-green"></i>
+                                    Direção Permitida
+                                </label>
+                                <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333] max-w-md">
+                                    <button 
+                                        type="button"
+                                        @click="updatePrincipalDirection('both')"
+                                        class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                        :class="form.directionMode === 'both' ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                        :style="form.directionMode === 'both' ? 'background-color: #22C55E !important;' : ''"
+                                    >
+                                        Ambos
+                                    </button>
+                                    <button 
+                                        v-for="(dir, idx) in selectedDirections" 
+                                        :key="dir.value"
+                                        type="button"
+                                        @click="updatePrincipalDirection(idx === 0 ? 'up' : 'down', dir.value)"
+                                        class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                        :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                        :style="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'background-color: #22C55E !important;' : ''"
+                                    >
+                                        {{ dir.label }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Parâmetros de Execução -->
                         <div class="col-span-12">
@@ -337,65 +453,71 @@
                         <!-- Filtros de Segurança (Loss Virtual) -->
                         <div class="col-span-12">
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
-                                <div class="absolute top-0 right-0 p-4 opacity-5">
-                                    <i class="fa-solid fa-user-secret text-6xl"></i>
+                                <!-- Ghost Icon & Title Row -->
+                                <div class="flex items-center justify-between mb-4 relative z-10">
+                                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                                        <i class="fa-solid fa-ghost text-[#22C55E] text-lg"></i>
+                                        Loss Virtual
+                                    </h3>
+                                    <span class="text-[10px] font-bold text-gray-500 bg-[#1A1A1A] px-2 py-1 rounded border border-[#222]">Opcional</span>
                                 </div>
-                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center justify-between gap-2">
-                                    <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-user-secret text-zenix-green"></i>
-                                        Filtros de Segurança (Loss Virtual)
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer scale-90">
-                                        <input type="checkbox" v-model="securityConfig.virtualLoss.enabled" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zenix-green"></div>
-                                        <span class="ms-3 text-xs font-bold text-gray-400 uppercase tracking-tighter">{{ securityConfig.virtualLoss.enabled ? 'Ativo' : 'Inativo' }}</span>
-                                    </label>
-                                </h3>
                                 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10" :class="{ 'opacity-40 grayscale pointer-events-none': !securityConfig.virtualLoss.enabled }">
+                                <hr class="border-[#222] mb-6" />
+
+                                <!-- Toggle Container -->
+                                <div class="bg-[#0D0D0D] border border-[#222] rounded-xl p-4 mb-6 flex items-center justify-between group transition-all" :class="{ 'border-zenix-green/30': securityConfig.virtualLoss.enabled }">
                                     <div>
-                                        <label class="block text-white font-bold mb-2 text-sm">Contagem de Loss Virtual</label>
-                                        <p class="text-xs text-gray-400 mb-2">Quantas simulações perdedoras consecutivas esperar antes da entrada real.</p>
-                                        <div class="relative">
+                                        <p class="text-sm font-bold text-white">Ativar Loss Virtual</p>
+                                        <p class="text-xs text-gray-500">Simula perdas antes de usar saldo real</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" v-model="securityConfig.virtualLoss.enabled" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-[#222] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zenix-green"></div>
+                                    </label>
+                                </div>
+                                
+                                <div v-if="securityConfig.virtualLoss.enabled" class="space-y-6 relative z-10 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div class="pl-4 border-l-2 border-zenix-green/30">
+                                        <label class="block text-gray-400 font-bold mb-3 text-sm">Máx. losses virtuais consecutivos</label>
+                                        <div class="relative w-24">
                                              <input 
                                                 type="number" 
                                                 v-model.number="securityConfig.virtualLoss.target" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                class="w-full bg-[#181818] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm text-center font-bold"
                                                 min="1"
-                                                placeholder="Ex: 2"
                                             />
-                                            <div class="absolute inset-y-0 right-0 px-3 flex items-center pointer-events-none">
-                                                <span class="text-gray-500 text-xs font-bold">LOSSES</span>
-                                            </div>
                                         </div>
                                     </div>
 
-                                    
-                                    <div>
-                                        <label class="block text-white font-bold mb-2 text-sm">Modo de Operação</label>
-                                        <p class="text-xs text-gray-400 mb-2">Quando aplicar o filtro de segurança.</p>
-                                        <div class="relative">
-                                            <select 
-                                                v-model="securityConfig.virtualLoss.mode"
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm appearance-none"
-                                            >
-                                                <option value="warmup">Aquecimento (Apenas no Início)</option>
-                                                <option value="attack">Antes do Ataque (Modo Principal)</option>
-                                                <option value="recovery">Antes da Recuperação (Modo Rec.)</option>
-                                                <option value="cyclic">Cíclico (Sempre - Ataque e Rec.)</option>
-                                            </select>
-                                            <div class="absolute inset-y-0 right-0 px-3 flex items-center pointer-events-none">
-                                                <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
-                                            </div>
+                                    <div class="pl-4 border-l-2 border-zenix-green/30">
+                                        <label class="block text-gray-400 font-bold mb-3 text-sm">Aplicar em</label>
+                                        <div class="flex items-center gap-6">
+                                            <label class="flex items-center gap-2 cursor-pointer group">
+                                                <input 
+                                                    type="checkbox" 
+                                                    :checked="securityConfig.virtualLoss.mode === 'attack' || securityConfig.virtualLoss.mode === 'cyclic'"
+                                                    @change="toggleVirtualLossMode('attack')"
+                                                    class="hidden"
+                                                >
+                                                <div class="w-5 h-5 rounded border border-[#444] flex items-center justify-center transition-all group-hover:border-zenix-green" :class="{ 'bg-zenix-green border-zenix-green': securityConfig.virtualLoss.mode === 'attack' || securityConfig.virtualLoss.mode === 'cyclic' }">
+                                                    <i class="fa-solid fa-check text-[10px] text-white" v-if="securityConfig.virtualLoss.mode === 'attack' || securityConfig.virtualLoss.mode === 'cyclic'"></i>
+                                                </div>
+                                                <span class="text-sm font-bold transition-colors" :class="securityConfig.virtualLoss.mode === 'attack' || securityConfig.virtualLoss.mode === 'cyclic' ? 'text-white' : 'text-gray-500'">Principal</span>
+                                            </label>
+
+                                            <label class="flex items-center gap-2 cursor-pointer group">
+                                                <input 
+                                                    type="checkbox" 
+                                                    :checked="securityConfig.virtualLoss.mode === 'recovery' || securityConfig.virtualLoss.mode === 'cyclic'"
+                                                    @change="toggleVirtualLossMode('recovery')"
+                                                    class="hidden"
+                                                >
+                                                <div class="w-5 h-5 rounded border border-[#444] flex items-center justify-center transition-all group-hover:border-zenix-green" :class="{ 'bg-zenix-green border-zenix-green': securityConfig.virtualLoss.mode === 'recovery' || securityConfig.virtualLoss.mode === 'cyclic' }">
+                                                    <i class="fa-solid fa-check text-[10px] text-white" v-if="securityConfig.virtualLoss.mode === 'recovery' || securityConfig.virtualLoss.mode === 'cyclic'"></i>
+                                                </div>
+                                                <span class="text-sm font-bold transition-colors" :class="securityConfig.virtualLoss.mode === 'recovery' || securityConfig.virtualLoss.mode === 'cyclic' ? 'text-white' : 'text-gray-500'">Recuperação</span>
+                                            </label>
                                         </div>
-                                    </div>
-
-                                    <div class="col-span-1 md:col-span-2 flex items-center justify-center p-4 bg-[#1E1E1E] border border-dashed border-[#333] rounded-lg mt-2">
-                                        <p class="text-xs text-center text-gray-400">
-                                            <i class="fa-solid fa-circle-info mb-1 block text-base text-zenix-green"></i>
-                                            O robô simulará operações silenciosamente. Só enviará a ordem real após <b>{{ securityConfig.virtualLoss.target }}</b> perdas virtuais consecutivas.
-
-                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -443,53 +565,36 @@
                                                 <img v-if="selectedRecoveryTradeTypeIcon" :src="selectedRecoveryTradeTypeIcon" class="w-4 h-4 contrast-[1.5] brightness-[1.5]" alt="" />
                                                 <span class="font-medium text-sm">{{ selectedRecoveryTradeTypeLabel }}</span>
                                             </div>
-                                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
                                         </button>
                                     </div>
 
-                                    <!-- Direção e Payouts (Recovery) -->
-                                    <div v-if="recoveryConfig.selectedTradeTypeGroup" class="md:col-span-2">
-                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[#181818] p-5 rounded-xl border border-[#333] mb-4">
-                                            <div class="md:col-span-2">
-                                                <label class="block text-white font-bold mb-2 text-[10px] uppercase tracking-[0.2em] opacity-70">Direção Permitida (REC)</label>
-                                                <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
-                                                    <button 
-                                                        type="button"
-                                                        @click="updateRecoveryDirection('both')"
-                                                        class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                        :class="recoveryConfig.directionMode === 'both' ? 'text-white' : 'text-gray-500 hover:text-white'"
-                                                        :style="recoveryConfig.directionMode === 'both' ? 'background-color: #22C55E !important;' : ''"
-                                                    >
-                                                        Ambos
-                                                    </button>
-                                                    <button 
-                                                        v-for="(dir, idx) in selectedRecoveryDirections" 
-                                                        :key="dir.value"
-                                                        type="button"
-                                                        @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
-                                                        class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                        :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'text-white' : 'text-gray-500 hover:text-white'"
-                                                        :style="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'background-color: #22C55E !important;' : ''"
-                                                    >
-                                                        {{ dir.label }}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div v-for="dir in selectedRecoveryDirections" :key="'payout-rec-' + dir.value">
-                                                <label class="block text-white font-bold mb-2 text-[10px] uppercase tracking-[0.2em] opacity-70">Payout ({{ dir.label }})</label>
-                                                <div class="relative group">
-                                                    <input 
-                                                        type="number" 
-                                                        v-model.number="recoveryConfig.directionPayouts[dir.value]" 
-                                                        class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-2.5 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
-                                                        step="1"
-                                                        min="1"
-                                                    />
-                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                        <span class="text-[10px] text-gray-500 font-bold">%</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    <!-- Direção (Recovery) -->
+                                    <div v-if="recoveryConfig.selectedTradeTypeGroup" class="col-span-12">
+                                         <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
+                                            <i class="fa-solid fa-compass text-zenix-green"></i>
+                                            Direção Permitida (Recuperação)
+                                        </label>
+                                        <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333] max-w-md">
+                                            <button 
+                                                type="button"
+                                                @click="updateRecoveryDirection('both')"
+                                                class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                                :class="recoveryConfig.directionMode === 'both' ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                                :style="recoveryConfig.directionMode === 'both' ? 'background-color: #22C55E !important;' : ''"
+                                            >
+                                                Ambos
+                                            </button>
+                                            <button 
+                                                v-for="(dir, idx) in recoverySelectedDirections" 
+                                                :key="dir.value"
+                                                type="button"
+                                                @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
+                                                class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                                :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                                :style="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'background-color: #22C55E !important;' : ''"
+                                            >
+                                                {{ dir.label }}
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -618,97 +723,6 @@
                             </div>
                         </div>
 
-                        <!-- NOVOS CARDS: Configurações Operacionais e Payout -->
-                        <div class="col-span-12 space-y-6 mt-4">
-                            <!-- Card: Configurações Operacionais -->
-                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
-                                <h3 class="text-xl font-bold text-white mb-4 relative z-10 flex items-center gap-2">
-                                    <i class="fa-solid fa-gear text-zenix-green text-lg"></i>
-                                    Configurações Operacionais
-                                </h3>
-
-                                <div class="space-y-4">
-                                    <div class="flex items-start gap-3 p-3 rounded-lg bg-zenix-green/5 border border-zenix-green/20">
-                                        <i class="fa-solid fa-lock text-zenix-green mt-1 text-sm"></i>
-                                        <div>
-                                            <p class="text-sm font-bold text-white">Regra Imutável</p>
-                                            <p class="text-xs text-gray-400">O gatilho de troca é sempre <strong>2 perdas consecutivas</strong>. Este valor não pode ser alterado.</p>
-                                        </div>
-                                    </div>
-
-                                    <div class="p-4 rounded-lg bg-[#111] border border-[#333]">
-                                        <div class="flex items-center gap-2 mb-4">
-                                            <i class="fa-solid fa-right-left text-zenix-green text-sm"></i>
-                                            <span class="font-bold text-white text-sm">Tipo de Troca Após Perdas</span>
-                                        </div>
-
-                                        <div class="grid grid-cols-1 gap-2">
-                                            <button 
-                                                type="button"
-                                                @click="recoveryConfig.lossesToActivate = 100" 
-                                                :class="recoveryConfig.lossesToActivate > 10 ? 'border-zenix-green bg-zenix-green/10' : 'border-[#222] bg-[#181818]'"
-                                                class="p-3 rounded-lg text-left transition-all border-2"
-                                            >
-                                                <span class="text-sm font-bold" :class="recoveryConfig.lossesToActivate > 10 ? 'text-zenix-green' : 'text-white'">Sem troca</span>
-                                                <p class="text-[10px] text-gray-500 mt-1">Mantém contrato e tipo de negociação fixos</p>
-                                            </button>
-
-                                            <button 
-                                                type="button"
-                                                @click="recoveryConfig.lossesToActivate = 2" 
-                                                :class="recoveryConfig.lossesToActivate === 2 ? 'border-zenix-green bg-zenix-green/10' : 'border-[#222] bg-[#181818]'"
-                                                class="p-3 rounded-lg text-left transition-all border-2"
-                                            >
-                                                <span class="text-sm font-bold" :class="recoveryConfig.lossesToActivate === 2 ? 'text-zenix-green' : 'text-white'">Apenas contrato</span>
-                                                <p class="text-[10px] text-gray-500 mt-1">Troca apenas o contrato após 2 perdas</p>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <p class="text-[10px] text-gray-500 bg-[#111] p-3 rounded-lg border border-[#333]">
-                                        ⚠️ O modo inicial de execução é escolhido pelo usuário ao ligar a IA, não faz parte da estratégia.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Card: Payout e Viabilidade -->
-                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
-                                <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
-                                    <i class="fa-solid fa-dollar-sign text-zenix-green text-lg"></i>
-                                    Payout e Viabilidade
-                                </h3>
-
-                                <div class="space-y-6">
-                                    <div>
-                                        <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">
-                                            Payout mínimo global (%)
-                                        </label>
-                                        <div class="flex items-center gap-4">
-                                            <input 
-                                                type="number" 
-                                                v-model.number="form.minPayout"
-                                                class="w-20 bg-[#111] border border-[#333] rounded-lg py-2 text-white text-center focus:border-zenix-green outline-none"
-                                            >
-                                            <div class="flex-1 h-2 bg-[#111] rounded-full overflow-hidden border border-[#333]">
-                                                <div class="h-full bg-zenix-green transition-all" :style="{ width: (form.minPayout || 80) + '%' }"></div>
-                                            </div>
-                                            <span class="text-sm font-bold text-gray-400 w-10 text-right">{{ form.minPayout || 80 }}%</span>
-                                        </div>
-                                    </div>
-
-                                    <button type="button" class="flex items-center gap-2 text-xs text-gray-500 hover:text-white transition-colors">
-                                        <i class="fa-solid fa-chevron-down"></i>
-                                        <span>Configurações avançadas por perfil</span>
-                                    </button>
-
-                                    <div class="bg-[#0b0b0b] p-3 rounded-lg border border-[#222]">
-                                        <p class="text-[11px] text-gray-500 leading-tight">
-                                            Esses valores garantem que a estratégia consiga recuperar perdas de forma matemática e segura.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Valores Monetários -->
                         <div class="col-span-12">
@@ -858,12 +872,9 @@
                                 <span>Iniciar Robô</span>
                             </button>
                         </div>
-                    </div>
-                </form>
-
-
-
-            </div>
+                        </div>
+                    </form>
+                </div>
             </main>
         </div>
 
@@ -1796,7 +1807,7 @@ export default {
                 directionMode: 'both', // 'both', 'up', 'down'
                 directionPayouts: {}, // { [contractType]: payout }
                 attackFilters: [],
-                minPayout: 80
+                minPayout: 1.2
             },
 
             // Strategy Execution State
@@ -2793,16 +2804,28 @@ export default {
         },
         
         // ✅ NEW: Auto-update tradeType when direction mode changes
-        updateRecoveryDirection(mode, specificType = null) {
+        updateRecoveryDirection(mode, value) {
             this.recoveryConfig.directionMode = mode;
-            
             if (mode === 'both') {
-                this.recoveryConfig.tradeType = ''; // Clear to allow dynamic direction
-                console.log(`[updateRecoveryDirection] Direction: both, TradeType cleared for dynamic signals`);
-            } else if (specificType) {
-                this.recoveryConfig.tradeType = specificType;
-                console.log(`[updateRecoveryDirection] Direction: ${mode}, TradeType updated to: ${specificType}`);
-                this.$root.$toast.success(`Tipo de contrato atualizado para: ${specificType}`);
+                this.recoveryConfig.tradeType = '';
+            } else {
+                this.recoveryConfig.tradeType = value;
+            }
+        },
+
+        toggleVirtualLossMode(type) {
+            const current = this.securityConfig.virtualLoss.mode;
+            
+            if (type === 'attack') {
+                if (current === 'cyclic') this.securityConfig.virtualLoss.mode = 'recovery';
+                else if (current === 'recovery') this.securityConfig.virtualLoss.mode = 'cyclic';
+                else if (current === 'attack') this.securityConfig.virtualLoss.mode = 'warmup';
+                else this.securityConfig.virtualLoss.mode = 'attack';
+            } else if (type === 'recovery') {
+                if (current === 'cyclic') this.securityConfig.virtualLoss.mode = 'attack';
+                else if (current === 'attack') this.securityConfig.virtualLoss.mode = 'cyclic';
+                else if (current === 'recovery') this.securityConfig.virtualLoss.mode = 'warmup';
+                else this.securityConfig.virtualLoss.mode = 'recovery';
             }
         },
         
@@ -3081,7 +3104,10 @@ export default {
             if (this.form.sorosLevel === undefined) this.form.sorosLevel = 1;
             if (!this.form.duration) this.form.duration = 1; // Default safety changed from 5 to 1
             if (!this.form.durationUnit) this.form.durationUnit = 't';
-            if (this.form.minPayout === undefined) this.form.minPayout = 80;
+            if (this.form.minPayout === undefined || this.form.minPayout > 10) {
+                // Legacy percentage fix: 80% -> 0.8 -> 1.8? No, let's just default to safe 1.2
+                this.form.minPayout = 1.2; 
+            }
 
             const savedRecovery = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
             this.recoveryConfig = { ...this.recoveryConfig, ...savedRecovery };
@@ -3093,7 +3119,9 @@ export default {
             }
 
             if (!this.recoveryConfig.expectedPayout) this.recoveryConfig.expectedPayout = 2.26;
-            if (this.recoveryConfig.lossesToActivate === undefined) this.recoveryConfig.lossesToActivate = 100;
+            if (this.recoveryConfig.lossesToActivate === undefined) {
+                this.recoveryConfig.lossesToActivate = 100; // Default: No swap
+            }
             
             if (strategy.config.validator) {
                 const savedValidator = JSON.parse(JSON.stringify(strategy.config.validator));
@@ -3564,6 +3592,15 @@ export default {
                             } else {
                                 this.sessionState.lastPayoutPrincipal = realPayoutRate;
                             }
+
+                            // ✅ REAL-TIME VIABILITY CHECK
+                            // We use form.minPayout as the global threshold
+                            if (realPayoutRate < this.form.minPayout) {
+                                console.warn(`[PayoutCheck] VIABILITY BLOCKED: ${realPayoutRate.toFixed(2)} < ${this.form.minPayout.toFixed(2)}`);
+                                this.sessionState.viabilityBlocked = true;
+                            } else {
+                                this.sessionState.viabilityBlocked = false;
+                            }
                             
                             // Normalize Key to match RiskManager
                             const cType = (msg.proposal.contract_type || '').toUpperCase();
@@ -3712,6 +3749,14 @@ export default {
                                     this.retryingProposal = false;
                                 }
                                 return; // BLOCK BUY
+                            }
+
+                            // 2.5 REAL-TIME VIABILITY CHECK (FINAL BLOCK)
+                            if (this.sessionState.viabilityBlocked) {
+                                this.addLog(`🛑 BLOQUEADO: Payout do mercado (${this.sessionState.lastPayoutPrincipal.toFixed(2)}x) abaixo do mínimo (${this.form.minPayout.toFixed(2)}x)`, 'warning');
+                                this.isNegotiating = false; // Release lock
+                                this.retryingProposal = false;
+                                return; // EXIT BEFORE BUY
                             }
 
                             // 3. Execute the Buy
