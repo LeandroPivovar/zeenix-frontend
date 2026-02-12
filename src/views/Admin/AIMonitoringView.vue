@@ -2222,6 +2222,14 @@ export default {
                                 this.currentConfig?.modoMartingale || 
                                 this.recoveryConfig?.riskProfile || 
                                 '';
+                // DEBUG LOG (Temporary)
+                this.addLog('🔍 DEBUG PERFIL', [
+                    `Current: ${this.currentConfig?.riskProfile}`,
+                    `Current Martingale: ${this.currentConfig?.modoMartingale}`,
+                    `Recovery: ${this.recoveryConfig?.riskProfile}`,
+                    `Computed: ${profile}`
+                ], 'info');
+
                 return profile.toString().toLowerCase();
             };
             const isConservador = getRiskProfile() === 'conservador';
