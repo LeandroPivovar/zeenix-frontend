@@ -342,6 +342,8 @@
 </template>
 
 <script>
+import DerivTradingService from '@/services/deriv-trading.service';
+
 // (Seu script Vue original mantido)
 export default {
     name: 'AppSidebar',
@@ -633,17 +635,30 @@ export default {
         },
         toggleUserMenu() { this.showUserMenu = !this.showUserMenu },
         logout() {
+            console.log('[Sidebar] Iniciando logout...');
+            
+            // 1. Desconectar da Deriv (WebSocket/SSE)
+            try {
+                DerivTradingService.disconnect();
+                console.log('[Sidebar] Desconectado da Deriv.');
+            } catch (error) {
+                console.error('[Sidebar] Erro ao desconectar da Deriv:', error);
+            }
+
+            // 2. Limpar dados locais
+            localStorage.removeItem('token');
+            localStorage.removeItem('deriv_connection');
+            localStorage.removeItem('deriv_token');
+            localStorage.removeItem('trade_currency');
+            
+            // 3. Redirecionar para login
             // Verificar se router está disponível
             if (!this.$router) {
                 console.warn('[Sidebar] Router não disponível, redirecionando via window.location');
-                localStorage.removeItem('token');
-                localStorage.removeItem('deriv_connection');
                 window.location.href = '/login';
                 return;
             }
             
-            localStorage.removeItem('token');
-            localStorage.removeItem('deriv_connection');
             this.$router.push('/login').catch(err => {
                 // Se falhar, tentar redirecionar via window.location
                 if (err.name !== 'NavigationDuplicated') {

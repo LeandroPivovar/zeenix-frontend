@@ -876,18 +876,7 @@ export default {
             return descriptions[this.selectedStrategy] || descriptions.atlas;
         },
         
-        entryValuePercent() {
-            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
-            return ((this.entryValue / this.balanceNumeric) * 100).toFixed(2);
-        },
-        profitTargetPercent() {
-            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
-            return ((this.profitTarget / this.balanceNumeric) * 100).toFixed(2);
-        },
-        lossLimitPercent() {
-            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
-            return ((this.lossLimit / this.balanceNumeric) * 100).toFixed(2);
-        },
+
         entryPercent() {
             if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
             return ((this.entryValue / this.balanceNumeric) * 100).toFixed(2);
