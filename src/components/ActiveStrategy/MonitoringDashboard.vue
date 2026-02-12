@@ -39,7 +39,7 @@
                 <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center md:border-l border-[rgba(255,255,255,0.05)] md:pl-4 lg:pl-6">
                     <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Capital</p>
                     <p class="text-xl lg:text-3xl font-bold text-white tracking-tight">
-                        $ {{ Math.floor(stats.balance).toLocaleString('en-US') }}<span class="text-base lg:text-xl text-gray-500 hidden md:inline">.{{ (stats.balance % 1).toFixed(2).split('.')[1] || '00' }}</span>
+                        $ {{ Math.floor(Number(stats.balance) || 0).toLocaleString('en-US') }}<span class="text-base lg:text-xl text-gray-500 hidden md:inline">.{{ ((Number(stats.balance) || 0) % 1).toFixed(2).split('.')[1] || '00' }}</span>
                     </p>
                 </div>
 
@@ -49,11 +49,11 @@
                     <div class="flex items-baseline justify-center gap-1 lg:gap-3">
                         <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_rgba(34,197,94,0.3)]"
                            :class="stats.profit >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]'">
-                            {{ stats.profit >= 0 ? '+' : '' }}${{ stats.profit.toFixed(2) }}
+                            {{ (Number(stats.profit) || 0) >= 0 ? '+' : '' }}${{ (Number(stats.profit) || 0).toFixed(2) }}
                         </p>
                         <span class="text-xs lg:text-lg font-semibold px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
                               :class="stats.profit >= 0 ? 'text-[#22C55E]/80 bg-[#22C55E]/10' : 'text-[#EF4444]/80 bg-[#EF4444]/10'">
-                            {{ (stats.profit >= 0 ? '+' : '') }}{{ ((stats.profit / (stats.balance - stats.profit || 1)) * 100).toFixed(1) }}%
+                            {{ (Number(stats.profit) || 0) >= 0 ? '+' : '' }}{{ ((Number(stats.profit) || 0) / (Number(stats.balance) - Number(stats.profit) || 1) * 100).toFixed(1) }}%
                         </span>
                     </div>
                 </div>
@@ -79,7 +79,7 @@
                         <span class="text-gray-500/30 text-lg lg:text-xl hidden md:inline">·</span>
                         <div class="text-center">
                             <span class="text-lg lg:text-xl font-semibold text-[#22C55E]/90">
-                                {{ stats.wins + stats.losses > 0 ? ((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(0) : 0 }}%
+                                {{ (stats.wins + stats.losses) > 0 ? (((Number(stats.wins) || 0) / (Number(stats.wins + stats.losses) || 1)) * 100).toFixed(0) : 0 }}%
                             </span>
                             <span class="text-[10px] lg:text-xs text-gray-500 block">WinRate</span>
                         </div>
@@ -140,11 +140,11 @@
                                             <td class="px-4 py-4 text-foreground font-medium">{{ op.entryPrice || '-' }}</td>
                                             <td class="px-4 py-4 text-foreground font-medium">{{ op.exitPrice || '-' }}</td>
                                             <td class="px-4 py-4 text-foreground font-medium font-mono text-center">{{ op.lastDigit || '-' }}</td>
-                                            <td class="px-4 py-4 text-foreground font-medium">$ {{ op.stake.toFixed(2) }}</td>
+                                            <td class="px-4 py-4 text-foreground font-medium">$ {{ (Number(op.stake) || 0).toFixed(2) }}</td>
                                             <td class="px-4 py-4 text-right">
                                                 <span v-if="op.result === 'OPEN' || op.result === 'PENDING'" class="text-yellow-500 font-bold uppercase tracking-tight">PENDENTE</span>
                                                 <span v-else class="font-bold whitespace-nowrap" :class="op.result === 'WON' || op.result === 'WIN' ? 'text-success' : 'text-red-500'">
-                                                    {{ op.result === 'WON' || op.result === 'WIN' ? '+' : '' }}${{ op.pnl.toFixed(2) }}
+                                                    {{ (op.result === 'WON' || op.result === 'WIN' ? '+' : '') }}${{ (Number(op.pnl) || 0).toFixed(2) }}
                                                 </span>
                                             </td>
                                         </tr>
@@ -314,15 +314,15 @@
                         <div class="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05] space-y-3">
                             <div class="flex justify-between items-center text-[11px]">
                                 <span class="text-gray-500 uppercase tracking-widest">Stake Inicial</span>
-                                <span class="font-bold text-gray-200">${{ (sessionState.stake || 0.00).toFixed(2) }}</span>
+                                <span class="font-bold text-gray-200">${{ (Number(sessionState.stake) || 0).toFixed(2) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-[11px]">
                                 <span class="text-gray-500 uppercase tracking-widest">Meta de Lucro</span>
-                                <span class="font-bold text-[#22C55E]">${{ (sessionState.profitTarget || 0.0).toFixed(2) }}</span>
+                                <span class="font-bold text-[#22C55E]">${{ (Number(sessionState.profitTarget) || 0).toFixed(2) }}</span>
                             </div>
                             <div class="flex justify-between items-center text-[11px]">
                                 <span class="text-gray-500 uppercase tracking-widest">Stop Loss</span>
-                                <span class="font-bold text-[#EF4444]">${{ (sessionState.lossLimit || 0.0).toFixed(2) }}</span>
+                                <span class="font-bold text-[#EF4444]">${{ (Number(sessionState.lossLimit) || 0).toFixed(2) }}</span>
                             </div>
                         </div>
 
