@@ -2,16 +2,16 @@
   <div class="projection-chart-container premium-card">
     <div class="chart-header">
       <div class="header-info">
-        <h3 class="chart-title">Projeção de Markup (30 Dias)</h3>
-        <p class="chart-subtitle">Baseado na média de performance dos últimos 30 dias</p>
+        <h3 class="chart-title">Projeção 12 Meses (Crescimento 5%)</h3>
+        <p class="chart-subtitle">Projeção de lucro mensal baseada na média atual com crescimento composto de 5% ao mês</p>
       </div>
       <div class="header-metrics">
         <div class="metric-item">
-          <span class="metric-label">Média Diária</span>
+          <span class="metric-label">Média Diária Atual</span>
           <span class="metric-value">{{ formatCurrency(dailyAverage) }}</span>
         </div>
         <div class="metric-item">
-          <span class="metric-label">Projeção Total</span>
+          <span class="metric-label">Projeção Total (12 Meses)</span>
           <span class="metric-value highlight">{{ formatCurrency(projectedTotal) }}</span>
         </div>
       </div>
@@ -43,7 +43,17 @@ export default {
       return sum / 30; // Sempre divide por 30 para média mensal real
     },
     projectedTotal() {
-      return this.dailyAverage * 30;
+      const monthlyBase = this.dailyAverage * 30;
+      let currentAmount = monthlyBase;
+      let total = 0;
+      
+      for (let i = 0; i < 12; i++) {
+        if (i > 0) {
+            currentAmount = currentAmount * 1.05;
+        }
+        total += currentAmount;
+      }
+      return total;
     }
   },
   watch: {
@@ -73,60 +83,60 @@ export default {
     renderChart() {
       const ctx = this.$refs.chartCanvas.getContext('2d');
       
-      const labels = Array.from({ length: 30 }, (_, i) => `Dia ${i + 1}`);
-      const projectionData = labels.map((_, i) => this.dailyAverage * (i + 1));
+      const currentMonth = new Date().getMonth();
+      const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+      
+      const labels = [];
+      const projectionData = [];
+      const monthlyBase = this.dailyAverage * 30; // Base monthly profit
+      let currentAmount = monthlyBase;
+
+      for (let i = 0; i < 12; i++) {
+        const monthIndex = (currentMonth + i) % 12;
+        labels.push(monthNames[monthIndex]);
+        
+        // Add 5% growth each month
+        if (i > 0) {
+            currentAmount = currentAmount * 1.05;
+        }
+        projectionData.push(currentAmount);
+      }
       
       this.chart = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
           labels: labels,
           datasets: [{
-            label: 'Projeção de Markup',
+            label: 'Lucro Projetado (Mês)',
             data: projectionData,
-            borderColor: '#00FF88',
-            backgroundColor: 'rgba(0, 255, 136, 0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 0,
-            pointHoverRadius: 5,
-            pointBackgroundColor: '#00FF88',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2
+            backgroundColor: '#00FF88',
+            borderRadius: 4,
+            barPercentage: 0.5,
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
           plugins: {
             legend: { display: false },
             tooltip: {
               backgroundColor: '#121212',
               titleColor: '#888',
               bodyColor: '#fff',
-              borderColor: '#1C1C1C',
-              borderWidth: 1,
-              padding: 12,
-              displayColors: false,
               callbacks: {
-                label: (context) => `Projeção: ${this.formatCurrency(context.parsed.y)}`
+                label: (context) => `Lucro Projetado: ${this.formatCurrency(context.parsed.y)}`
               }
             }
           },
           scales: {
             x: {
               grid: { display: false },
-              ticks: { color: '#666', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }
+              ticks: { color: '#666' }
             },
             y: {
               grid: { color: 'rgba(255, 255, 255, 0.05)' },
               ticks: {
                 color: '#666',
-                font: { size: 10 },
                 callback: (value) => this.formatCurrency(value)
               }
             }
@@ -136,7 +146,18 @@ export default {
     },
     updateChart() {
       if (!this.chart) return;
-      const projectionData = Array.from({ length: 30 }, (_, i) => this.dailyAverage * (i + 1));
+      
+      const monthlyBase = this.dailyAverage * 30;
+      let currentAmount = monthlyBase;
+      const projectionData = [];
+
+      for (let i = 0; i < 12; i++) {
+        if (i > 0) {
+            currentAmount = currentAmount * 1.05;
+        }
+        projectionData.push(currentAmount);
+      }
+
       this.chart.data.datasets[0].data = projectionData;
       this.chart.update();
     }

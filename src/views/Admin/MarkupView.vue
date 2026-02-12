@@ -197,7 +197,10 @@
                                         <th>Volume Operado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
                                         <th>Markup Gerado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
                                         <th>Markup Médio/Dia</th>
-                                        <th>Status</th>
+                                        <th>
+                                            Status 
+                                            <i class="fas fa-question-circle ml-1 text-xs opacity-70 cursor-help" title="0-500: Baixo Volume | 501-999: Médio Volume | 1000-1999: Alto Volume | 2000+: Cliente VIP"></i>
+                                        </th>
                                         <th style="text-align: right;">Contato</th>
                                     </tr>
                                 </thead>
@@ -225,8 +228,9 @@
                                         <td class="markup-value">{{ formatCurrency(client.commission) }}</td>
                                         <td class="font-medium text-white">{{ formatCurrency(client.markupAvgPerDay || 0) }}</td>
                                         <td>
-                                            <span class="status-pill premium">
-                                                <i class="fas fa-leaf mr-1 text-[10px]"></i> Alto Valor
+                                            <span class="status-pill" :class="getStatus(client.volumeOperado || 0).class">
+                                                <i class="fas mr-1 text-[10px]" :class="getStatus(client.volumeOperado || 0).icon"></i> 
+                                                {{ getStatus(client.volumeOperado || 0).label }}
                                             </span>
                                         </td>
                                         <td style="text-align: right;">
@@ -359,6 +363,30 @@
     color: #eab308;
     border: 1px solid rgba(234, 179, 8, 0.3);
 }
+
+.status-pill.vip {
+    background-color: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.status-pill.high {
+    background-color: rgba(74, 222, 128, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.status-pill.medium {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-pill.low {
+    background-color: rgba(107, 114, 128, 0.15);
+    color: #9ca3af;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+}
 </style>
 
 <script>
@@ -434,6 +462,13 @@ export default {
         },
         formatCurrency(value) {
             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+        },
+        getStatus(volume) {
+            const vol = Number(volume) || 0;
+            if (vol >= 2000) return { label: 'Cliente VIP', class: 'vip', icon: 'fa-crown' };
+            if (vol >= 1000) return { label: 'Alto Volume', class: 'high', icon: 'fa-chart-line' };
+            if (vol >= 501) return { label: 'Médio Volume', class: 'medium', icon: 'fa-chart-bar' };
+            return { label: 'Baixo Volume', class: 'low', icon: 'fa-user' };
         },
         
         async fetchData() {
