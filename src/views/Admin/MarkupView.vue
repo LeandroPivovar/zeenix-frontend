@@ -418,13 +418,7 @@ export default {
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
     },
-    computed: {
-        top10Users() {
-            return [...this.displayedClients]
-                .sort((a, b) => b.commission - a.commission)
-                .slice(0, 10);
-        }
-    },
+
     methods: {
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
@@ -639,6 +633,11 @@ export default {
         }
     },
     computed: {
+        top10Users() {
+            return [...this.displayedClients]
+                .sort((a, b) => b.commission - a.commission)
+                .slice(0, 10);
+        },
         
         totalCommissionDisplayed() {
             return this.displayedClients.reduce((sum, client) => sum + (Number(client.commission) || 0), 0);
