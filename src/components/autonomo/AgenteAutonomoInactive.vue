@@ -911,7 +911,10 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
 			return descriptions[this.selectedRisk] || descriptions.conservative;
 		},
 		capitalTotal() {
-			// Usa o accountBalance da prop, ou um valor padrão se não estiver disponível
+			// Usa o balanceNumeric do mixin (se disponível) ou accountBalance da prop
+			if (this.balanceNumeric !== undefined && this.balanceNumeric !== null) {
+				return Number(this.balanceNumeric);
+			}
 			return Number(this.accountBalance) || 2500.00;
 		},
 		valorOperacaoNumero() {

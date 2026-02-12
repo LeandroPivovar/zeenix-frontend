@@ -171,6 +171,7 @@
 
 <script>
 import { loadAvailableAccounts } from '../utils/accountsLoader';
+import DerivTradingService from '@/services/deriv-trading.service';
 
 export default {
   name: 'SettingsSidebar',
@@ -752,7 +753,6 @@ export default {
         window.location.reload();
       } catch (error) {
         console.error('[SettingsSidebar] Erro ao trocar conta:', error);
-        this.$emit('account-type-changed', type);
       }
     },
     openDepositFlow() {
@@ -765,12 +765,36 @@ export default {
       });
     },
     logout() {
-      localStorage.removeItem('deriv_token');
-      localStorage.removeItem('deriv_tokens_by_loginid');
+      console.log('[SettingsSidebar] Iniciando logout...');
+      
+      // 1. Desconectar da Deriv (WebSocket/SSE)
+      try {
+          DerivTradingService.disconnect();
+          console.log('[SettingsSidebar] Desconectado da Deriv.');
+      } catch (error) {
+          console.error('[SettingsSidebar] Erro ao desconectar da Deriv:', error);
+      }
+
+      // 2. Limpar dados locais
+      localStorage.removeItem('token'); // Logout do sistema
       localStorage.removeItem('deriv_connection');
+      localStorage.removeItem('deriv_token');
+      localStorage.removeItem('deriv_tokens_by_loginid'); // Limpar cache de tokens também
+      localStorage.removeItem('trade_currency');
+
       this.close();
-      this.$router.push('/dashboard');
-      window.location.reload();
+      
+      // 3. Redirecionar para login
+      if (!this.$router) {
+          window.location.href = '/login';
+          return;
+      }
+      
+      this.$router.push('/login').catch(err => {
+          if (err.name !== 'NavigationDuplicated') {
+              window.location.href = '/login';
+          }
+      });
     },
     formatBalance(balance, isDemo = false) {
       let value = parseFloat(balance) || 0;
