@@ -716,19 +716,10 @@ export default {
             monitoringOperations: [],
             profitHistory: [0], // Start with 0 profit
             activeContracts: new Map(),
-            
-            // Fast Result Support
-            pendingFastResult: {
-                active: false,
-                contractId: null,
-                barrier: null,
-                contractType: null,
-                stake: 0,
-                payout: 0,
-                analysisType: 'PRINCIPAL'
-            }
-        }
+            // Fast Result Support (Removed)
+        };
     },
+
     computed: {
         iaStatusDisplay() {
             if (this.activeContracts.size > 0) return 'Contrato aberto';
@@ -1894,18 +1885,8 @@ export default {
                 return;
             }
             
-            // Update Contract Type state for logging and Fast Result
+            // Update Contract Type state for logging
             this.sessionState.lastContractType = overrideContractType || config.tradeType;
-            this.pendingFastResult = {
-                active: false,
-                contractId: null,
-                barrier: 8, // Will be updated below
-                contractType: overrideContractType || config.tradeType,
-                stake: stake,
-                duration: config.duration || 1,
-                durationUnit: config.durationUnit || 't',
-                analysisType: this.sessionState.analysisType
-            };
             
             const proposalParams = {
                 proposal: 1,
@@ -2052,10 +2033,7 @@ export default {
                     entryPrice: contract.entry_tick_display_value,
                     exitPrice: contract.exit_tick_display_value,
                     lastDigit: contract.exit_tick_display_value ? contract.exit_tick_display_value.slice(-1) : null,
-                    fastResultApplied: false,
-                    earlySettled: false, // ✅ Track early settlement
-                    duration: contract.duration || (this.pendingFastResult ? this.pendingFastResult.duration : 1), // ✅ Store duration
-                    estimatedPnl: 0 // ✅ Reset/Initialize
+                    duration: contract.duration || 1 // ✅ Store duration
                 };
                 // this.monitoringOperations.unshift(trade); // ✅ REMOVED: Only show in history after result
                 this.activeContracts.set(id, trade);
@@ -2071,137 +2049,40 @@ export default {
                     trade.lastDigit = contract.exit_tick_display_value.slice(-1);
                 }
 
-                // ✅ SMART FAST RESULT: Early Settlement Logic
-                const currentTickCount = contract.tick_count || 0;
-                const targetDuration = trade.duration || 1;
-                
-                if (!trade.earlySettled && currentTickCount >= targetDuration && contract.status === 'open') {
-                    const win = (contract.profit || 0) > 0;
-                    
-                    // Store old states for logging
-                    const oldAnalysis = this.sessionState.analysisType;
-                    const oldMode = this.sessionState.negotiationMode;
-
-                    trade.earlySettled = true;
-                    trade.fastResultApplied = true;
-                    trade.result = win ? 'WON' : 'LOST';
-                    
-                    // Use full stake as loss if early settled as loss
-                    const estimatedProfit = win ? parseFloat(contract.profit || 0) : -trade.stake;
-                    trade.pnl = estimatedProfit;
-                    trade.estimatedPnl = estimatedProfit; // ✅ FIX: Consistency
-                    
-                    if (!trade.exitPrice) trade.exitPrice = contract.current_spot_display_value || contract.current_spot;
-                    if (trade.exitPrice) trade.lastDigit = trade.exitPrice.toString().slice(-1);
-
-                    this.addLog('🏁 Resultado Rápido (Smart)', [
-                        `Status: ${win ? 'GANHOU' : 'PERDEU'}`,
-                        `Dígito: ${trade.lastDigit}`,
-                        `Tempo: ${currentTickCount}/${targetDuration} ticks`,
-                        `Ação: Liberando trava antecipadamente`
-                    ], win ? 'success' : 'error');
-
-                    // Update stats immediately
-                    if (win) this.monitoringStats.wins++;
-                    else this.monitoringStats.losses++;
-
-                    this.monitoringStats.profit += estimatedProfit;
-                    this.monitoringStats.balance = Number(this.balanceNumeric) + estimatedProfit;
-
-                    RiskManager.processTradeResult(this.sessionState, win, estimatedProfit, trade.stake, trade.analysisType, {
-                        ...this.currentConfig,
-                        ...this.recoveryConfig,
-                        riskProfile: this.currentConfig.riskProfile || this.currentConfig.modoMartingale || 'moderado'
-                    });
-
-                    // ✅ FIX: Consistent status/recovery logging
-                    this.logStatusChanges(oldAnalysis, oldMode, trade);
-                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake);
-
-                    // ✅ SHOW IN HISTORY NOW
-                    if (!this.monitoringOperations.includes(trade)) this.monitoringOperations.unshift(trade);
-
-                    this.updateChartMarkers(trade, 'tick');
-                    this.updateChartMarkers(trade, 'profit');
-
-                    // ✅ Log trade to backend (Smart Early Settlement)
-                    this.logTradeToBackend(trade);
-                    
-                    // ✅ Sync stats and check limits
-                    this.syncSessionStats();
-                    this.checkStrategyLimits();
-                    
-                    // ✅ Detailed Session Logs (Similar to is_sold)
-                    if (win) {
-                        this.addLog('🏁 Resultado da Operação (Smart)', [
-                            `Status: WIN (Settle Antecipado)`,
-                            `Resultado Financeiro: +${this.preferredCurrencyPrefix}${estimatedProfit.toFixed(2)}`,
-                            `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
-                            `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
-                        ], 'success');
-                    } else {
-                        this.addLog('🏁 Resultado da Operação (Smart)', [
-                            `Status: LOSS (Settle Antecipado)`,
-                            `Resultado Financeiro: -${this.preferredCurrencyPrefix}${Math.abs(estimatedProfit).toFixed(2)}`,
-                            `Stake: ${this.preferredCurrencyPrefix}${trade.stake.toFixed(2)}`,
-                            `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
-                        ], 'error');
-                    }
-
-                    // Release locks and trigger next
-                    this.activeContracts.delete(id);
-                    this.isNegotiating = false;
-                    
-                    if (this.pendingFastResult) this.pendingFastResult.active = false;
-
-                    this.$nextTick(() => {
-                        this.runAIAnalysis();
-                    });
-                }
+                // (Early settlement logic removed as requested)
             }
             
             if (contract.is_sold) {
-                // ✅ Protection: If already early settled, update final and exit
-                if (trade.earlySettled) {
-                    trade.result = contract.status.toUpperCase();
-                    trade.pnl = parseFloat(contract.profit || 0);
-                    // Ensure it's in history if somehow missed (safety)
-                    if (!this.monitoringOperations.includes(trade)) this.monitoringOperations.unshift(trade);
-                    this.activeContracts.delete(id); // Ensure removed
-                    return;
-                }
-
                 trade.result = contract.status.toUpperCase(); // 'WON' or 'LOST'
-                // ✅ SHOW IN HISTORY NOW
+                trade.pnl = parseFloat(contract.profit || 0);
+
+                // ✅ SHOW IN HISTORY ONLY NOW
                 if (!this.monitoringOperations.includes(trade)) this.monitoringOperations.unshift(trade);
                 
                 // Store old states for logging
                 const oldAnalysis = this.sessionState.analysisType;
                 const oldMode = this.sessionState.negotiationMode;
 
-                if (trade.fastResultApplied) {
-                    RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
-                } else {
-                    trade.fastResultApplied = true;
-                    if (trade.result === 'WON') this.monitoringStats.wins++;
-                    else this.monitoringStats.losses++;
-                    
-                    RiskManager.processTradeResult(
-                        this.sessionState, 
-                        trade.result === 'WON', 
-                        trade.pnl, 
-                        trade.stake, 
-                        trade.analysisType, 
-                        {
-                            ...this.currentConfig,
-                            ...this.recoveryConfig,
-                            riskProfile: this.currentConfig.riskProfile || this.currentConfig.modoMartingale || 'moderado'
-                        }
-                    );
+                // Update wins/losses count
+                if (trade.result === 'WON') this.monitoringStats.wins++;
+                else this.monitoringStats.losses++;
+                
+                // Process result in RiskManager
+                RiskManager.processTradeResult(
+                    this.sessionState, 
+                    trade.result === 'WON', 
+                    trade.pnl, 
+                    trade.stake, 
+                    trade.analysisType, 
+                    {
+                        ...this.currentConfig,
+                        ...this.recoveryConfig,
+                        riskProfile: this.currentConfig.riskProfile || this.currentConfig.modoMartingale || 'moderado'
+                    }
+                );
 
-                    // ✅ Log trade to backend
-                    this.logTradeToBackend(trade);
-                }
+                // ✅ Log trade to backend
+                this.logTradeToBackend(trade);
 
                 // ✅ Update Chart Markers
                 this.updateChartMarkers(trade, 'tick');
@@ -2247,11 +2128,7 @@ export default {
                 }
                 
                 // Update stats
-                // ✅ FAST RESULT CORRECTION: If fast result was already applied, only add the difference
-                const pnlCorrection = trade.estimatedPnl || 0;
-                const actualChange = trade.pnl - pnlCorrection;
-                
-                this.monitoringStats.profit += actualChange;
+                this.monitoringStats.profit += trade.pnl;
                 this.profitHistory.push(parseFloat(this.monitoringStats.profit.toFixed(2)));
                 
                 // Keep history limited (old chart logic - can keep for legacy or remove)
@@ -2267,8 +2144,8 @@ export default {
                 if (this.profitChartData.length > 5000) this.profitChartData.shift();
                 
                 // Update balance locally (will be synced by mixin watcher later)
-                this.monitoringStats.balance = Number(this.monitoringStats.balance) + actualChange;
-                this.rawBalance = Number(this.rawBalance) + actualChange; // ✅ SYNC RAW BALANCE
+                this.monitoringStats.balance = Number(this.monitoringStats.balance) + trade.pnl;
+                this.rawBalance = Number(this.rawBalance) + trade.pnl; // ✅ SYNC RAW BALANCE
 
                 // ✅ UPDATE GLOBAL BALANCE VIA MIXIN EVENT
                 // This ensures TopNavbar gets the update too immediately
