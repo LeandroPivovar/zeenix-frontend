@@ -2261,7 +2261,7 @@ export default {
                     icon: identity.icon ? `fas fa-${identity.icon}` : this.getStrategyIcon(s.name),
                     icons: [],
                     description: identity.description || this.getStrategyDescription(s.name),
-                    status: identity.status || 'Ativo',
+                    status: identity.status || (hardcoded ? 'Ativo' : 'Rascunho'),
                     // Use identity precision and return if available
                     assertividade: identity.precision 
                         ? `${identity.precision.min}% a ${identity.precision.max}%` 
