@@ -112,6 +112,150 @@
                     </div>
 
                     <form v-show="activeTab === 'config'" @submit.prevent="submitForm" class="space-y-8">
+                        
+                        <!-- Strategy Identity Card -->
+                        <div class="col-span-12">
+                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
+                                <div class="absolute top-0 right-0 p-4 opacity-5">
+                                    <i class="fa-solid fa-fingerprint text-6xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+                                        <i class="fa-solid fa-fingerprint"></i>
+                                    </div>
+                                    Identidade da Estratégia
+                                    <span class="ml-auto px-3 py-1 bg-[#1E1E1E] border border-[#333] rounded-full text-xs text-gray-400 font-bold uppercase tracking-wider">
+                                        {{ strategyIdentity.status }}
+                                    </span>
+                                </h3>
+
+                                <div class="relative z-10 space-y-6">
+                                    <!-- Icon Selector -->
+                                    <div>
+                                        <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">Ícone da Estratégia</label>
+                                        <div class="flex flex-wrap gap-2">
+                                            <button 
+                                                v-for="icon in availableIcons" 
+                                                :key="icon"
+                                                type="button"
+                                                @click="strategyIdentity.icon = icon"
+                                                class="w-10 h-10 rounded-xl flex items-center justify-center transition-all border"
+                                                :class="strategyIdentity.icon === icon ? 'bg-zenix-green text-black border-zenix-green shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'bg-[#1E1E1E] text-gray-500 border-[#333] hover:text-white hover:border-gray-500'"
+                                            >
+                                                <i :class="['fa-solid', 'fa-' + icon]"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Name & Status -->
+                                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                                        <div class="md:col-span-8">
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Nome da Estratégia *</label>
+                                            <input 
+                                                type="text" 
+                                                v-model="strategyIdentity.name" 
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-xl p-4 focus:outline-none focus:border-zenix-green transition-colors text-sm placeholder-gray-600"
+                                                placeholder="Ex: Scalper RSI Pro"
+                                            />
+                                        </div>
+                                        <div class="md:col-span-4">
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Status</label>
+                                            <div class="relative">
+                                                <select 
+                                                    v-model="strategyIdentity.status" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-xl p-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                >
+                                                    <option value="Rascunho">Rascunho</option>
+                                                    <option value="Ativo">Ativo</option>
+                                                    <option value="Pausado">Pausado</option>
+                                                    <option value="Arquivado">Arquivado</option>
+                                                </select>
+                                                <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                                                    <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Description -->
+                                    <div>
+                                        <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Descrição</label>
+                                        <textarea 
+                                            v-model="strategyIdentity.description" 
+                                            rows="3"
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-xl p-4 focus:outline-none focus:border-zenix-green transition-colors text-sm placeholder-gray-600 resize-none"
+                                            placeholder="Descreva o objetivo e a lógica da estratégia..."
+                                        ></textarea>
+                                    </div>
+
+                                    <!-- Metrics -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- Precision -->
+                                        <div>
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Precisão (%)</label>
+                                            <div class="flex items-center gap-3">
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="strategyIdentity.precision.min" 
+                                                    class="flex-1 bg-[#1E1E1E] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm text-center"
+                                                    min="0" max="100"
+                                                />
+                                                <span class="text-gray-500 text-xs font-bold">a</span>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="strategyIdentity.precision.max" 
+                                                    class="flex-1 bg-[#1E1E1E] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm text-center"
+                                                    min="0" max="100"
+                                                />
+                                            </div>
+                                        </div>
+                                        <!-- Return -->
+                                        <div>
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Retorno (%)</label>
+                                            <div class="flex items-center gap-3">
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="strategyIdentity.return.min" 
+                                                    class="flex-1 bg-[#1E1E1E] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm text-center"
+                                                />
+                                                <span class="text-gray-500 text-xs font-bold">a</span>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="strategyIdentity.return.max" 
+                                                    class="flex-1 bg-[#1E1E1E] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm text-center"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Preview -->
+                                    <div>
+                                        <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Preview</label>
+                                        <div class="bg-[#111] border border-[#333] rounded-xl p-4 flex flex-col gap-4">
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-12 h-12 rounded-xl bg-zenix-green/10 flex items-center justify-center text-zenix-green text-xl border border-zenix-green/20">
+                                                    <i :class="['fa-solid', 'fa-' + strategyIdentity.icon]"></i>
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-white font-bold text-lg leading-tight">{{ strategyIdentity.name || 'Nome da Estratégia' }}</h4>
+                                                    <p class="text-gray-500 text-xs">{{ strategyIdentity.description || 'Descrição da estratégia' }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="h-px bg-[#333] w-full"></div>
+                                            <div class="flex items-center gap-6 text-xs text-gray-400 font-bold uppercase tracking-wider">
+                                                <div>
+                                                    Precisão: <span class="text-zenix-green">{{ strategyIdentity.precision.min }}% a {{ strategyIdentity.precision.max }}%</span>
+                                                </div>
+                                                <div>
+                                                    Retorno: <span class="text-zenix-green">{{ strategyIdentity.return.min }}% a {{ strategyIdentity.return.max }}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-12 gap-6">
                             <!-- Mercado e Tipo de Negociação -->
                             <div class="col-span-12 md:col-span-6">
@@ -1741,6 +1885,21 @@ export default {
                 riskProfile: 'moderado',
                 attackFilters: []
             },
+
+            // Strategy Identity
+            strategyIdentity: {
+                icon: 'bolt',
+                name: '',
+                description: '',
+                status: 'Rascunho',
+                precision: { min: 60, max: 70 },
+                return: { min: 19, max: 126 }
+            },
+            availableIcons: [
+                'bolt', 'bullseye', 'shield-alt', 'crosshairs', 'gem',
+                'fire', 'brain', 'eye', 'fingerprint', 'microchip',
+                'rocket', 'skull', 'star', 'tools', 'crown', 'cog'
+            ],
 
             // --- UI State ---
             activeConfigTab: 'Veloz', // 'Veloz', 'Moderado', 'Preciso'
