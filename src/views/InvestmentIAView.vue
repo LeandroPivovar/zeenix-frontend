@@ -671,7 +671,8 @@ export default {
                     icons: [], 
                     description: 'Híbrida: Dígitos + Price Action.',
                     assertividade: '92 a 96%',
-                    retorno: '95% / 99%'
+                    retorno: '95% / 99%',
+                    status: 'Ativo'
                 },
                 { 
                     id: 'apollo', 
@@ -681,7 +682,8 @@ export default {
                     icons: [],
                     description: 'Densidade de Dígitos e Microtendências',
                     assertividade: '60% a 70%',
-                    retorno: '19% a 126%'
+                    retorno: '19% a 126%',
+                    status: 'Ativo'
                 },
                 { 
                     id: 'nexus', 
@@ -691,7 +693,8 @@ export default {
                     icons: [],
                     description: 'Price Action com Barreira.',
                     assertividade: '91% a 95%',
-                    retorno: '91% / 95%'
+                    retorno: '91% / 95%',
+                    status: 'Ativo'
                 },
                 { 
                     id: 'orion', 
@@ -701,7 +704,8 @@ export default {
                     icons: [],
                     description: 'Estatística de Dígitos e Recuperação.',
                     assertividade: '94% a 97%',
-                    retorno: '95% / 99%'
+                    retorno: '95% / 99%',
+                    status: 'Ativo'
                 },
                 { 
                     id: 'titan', 
@@ -711,7 +715,8 @@ export default {
                     icons: [],
                     description: 'Dígitos Par/Ímpar Direcional.',
                     assertividade: '90% - 95%',
-                    retorno: '95%'
+                    retorno: '95%',
+                    status: 'Ativo'
                 }
             ],
             
@@ -808,21 +813,12 @@ export default {
         },
         
         availableStrategies() {
-            // Se não houver configurações de plano carregadas ainda, mostrar todas ou nenhuma?
-            // Melhor mostrar todas por padrão até carregar, ou filtrar se planFeatures existir
-            if (!this.planFeatures) return this.allStrategies;
+            // ✅ Only show ACTIVE strategies
+            const activeStrategies = this.allStrategies.filter(s => s.status === 'Ativo');
             
-            // const allowedIAs = this.planFeatures.ias || [];
+            if (!this.planFeatures) return activeStrategies;
             
-            // Mas geralmente no config do admin as IAs são selecionadas.
-            
-            return this.allStrategies;
-            /*
-            return this.allStrategies.filter(strategy => {
-                // Verificar se o ID da estratégia (em minúsculo) está na lista de IAs permitidas
-                return allowedIAs.some(allowed => allowed.toLowerCase() === strategy.id.toLowerCase());
-            });
-            */
+            return activeStrategies;
         },
         
         formattedLastUpdate() {
@@ -866,6 +862,16 @@ export default {
         },
         
         strategyDescription() {
+            const strategyId = this.selectedStrategy || 'atlas';
+            const strategyObject = this.allStrategies.find(s => s.id === strategyId);
+            
+            if (strategyObject) {
+                // Remove trailing period if exists to match style
+                const cleanDesc = strategyObject.description.replace(/\.$/, '');
+                return `<strong>Análise:</strong> ${cleanDesc} - <strong>Assertividade:</strong> ${strategyObject.assertividade} - <strong>Retorno:</strong> ${strategyObject.retorno}`;
+            }
+
+            // Fallback (should not happen if allStrategies is populated)
             const descriptions = {
                 'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%',
                 'apollo': '<strong>Análise:</strong> Densidade de Dígitos e Microtendências - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 19% a 126%',
@@ -873,7 +879,7 @@ export default {
                 'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%',
                 'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%'
             };
-            return descriptions[this.selectedStrategy] || descriptions.atlas;
+            return descriptions[strategyId] || descriptions.atlas;
         },
         
 
@@ -2246,21 +2252,28 @@ export default {
             this.allStrategies = strategies.map(s => {
                 const strategyId = s.id.replace('default_', '');
                 const hardcoded = this.allStrategies.find(h => h.id === strategyId);
+                const identity = s.config?.strategyIdentity || {};
                 
                 return {
                     id: strategyId,
-                    title: strategyId === 'apollo' ? 'IA APOLLO' : s.name,
+                    title: identity.name || (strategyId === 'apollo' ? 'IA APOLLO' : s.name),
                     marketType: s.config?.form?.market === 'R_10' ? 'Ups e Downs' : 'Digits',
-                    icon: this.getStrategyIcon(s.name),
+                    icon: identity.icon ? `fas fa-${identity.icon}` : this.getStrategyIcon(s.name),
                     icons: [],
-                    description: this.getStrategyDescription(s.name),
-                    // Se a API retornar N/A, usar o valor fixo (se existir)
-                    assertividade: (s.config?.metadata?.assertividade && s.config.metadata.assertividade !== 'N/A') 
-                        ? `${s.config.metadata.assertividade}%` 
-                        : (hardcoded?.assertividade || 'N/A'),
-                    retorno: (s.config?.metadata?.retorno && s.config.metadata.retorno !== 'N/A') 
-                        ? `${s.config.metadata.retorno}%` 
-                        : (hardcoded?.retorno || 'N/A')
+                    description: identity.description || this.getStrategyDescription(s.name),
+                    status: identity.status || 'Ativo',
+                    // Use identity precision and return if available
+                    assertividade: identity.precision 
+                        ? `${identity.precision.min}% a ${identity.precision.max}%` 
+                        : ((s.config?.metadata?.assertividade && s.config.metadata.assertividade !== 'N/A') 
+                            ? `${s.config.metadata.assertividade}%` 
+                            : (hardcoded?.assertividade || 'N/A')),
+                    retorno: identity.return 
+                        ? `${identity.return.min}% a ${identity.return.max}%` 
+                        : ((s.config?.metadata?.retorno && s.config.metadata.retorno !== 'N/A') 
+                            ? `${s.config.metadata.retorno}%` 
+                            : (hardcoded?.retorno || 'N/A')),
+                    version: s.version || '1.0'
                 };
             });
 
