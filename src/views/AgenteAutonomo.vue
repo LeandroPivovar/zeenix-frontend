@@ -1134,7 +1134,11 @@
         // 1. Log para debug
         const status = contract.status;
         const contractId = contract.contract_id;
-        const profit = parseFloat(contract.profit) || 0;
+        const buyPrice = parseFloat(contract.buy_price) || 0;
+        const sellPrice = parseFloat(contract.sell_price) || parseFloat(contract.bid_price) || 0;
+        // ✅ [ZENIX v2.4] Forçar lucro líquido real (Net Profit = Sell - Buy)
+        // ✅ [ZENIX v2.4] Forçar lucro líquido real (Net Profit = Sell - Buy)
+        const profit = sellPrice - buyPrice;
 
         console.log(`[AgenteAutonomo] 📝 Contrato Update: ID=${contractId}, Status=${status}, Profit=${profit}`);
 

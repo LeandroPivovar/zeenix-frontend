@@ -691,7 +691,7 @@
 								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Entrada</th>
 								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Saída</th>
 								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Invest.</th>
-								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Retorno</th>
+								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Resultado</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -718,7 +718,7 @@
                                     <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ preferredCurrencyPrefix }}{{item.data.exit}}</td>
                                     <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ preferredCurrencyPrefix }}{{parseFloat(item.data.stake).toFixed(2)}}</td>
                                     <td class="py-2 px-1 text-right tabular-nums font-semibold" :class="parseFloat(item.data.profit) >= 0 ? 'text-green-500' : 'text-red-500'">
-                                        {{ parseFloat(item.data.profit) >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ Math.abs(parseFloat(item.data.profit)).toFixed(2) }}
+                                        {{ parseFloat(item.data.profit) >= 0 ? '+' : '-' }}{{ preferredCurrencyPrefix }}{{ Math.abs(parseFloat(item.data.profit)).toFixed(2) }}
                                     </td>
                                 </tr>
 
@@ -1152,7 +1152,8 @@
 				return `${formatDate(startDate)} - ${formatDate(today)} ${today.getFullYear()}`;
 			},
 			initialCapital() {
-				return this.agentConfig?.initialStake || 0;
+				// ✅ [ZENIX v2.4] Prioritize initialBalance (starting capital of session)
+				return this.agentConfig?.initialBalance || this.agentConfig?.initialCapital || this.agentConfig?.initialStake || 0;
 			},
 			finalCapital() {
 				// ✅ Always use current balance from mixin (same pattern as TopNavbar)
@@ -1160,14 +1161,14 @@
 				// FIX: Prioritize balanceNumeric (summed) over info.balance (raw)
 				return this.balanceNumeric || this.currentBalance?.balance || this.info?.balance || 0;
 			},
-            realtimeStats() {
-                // ✅ [ZENIX v2.3] Prioridade absoluta para sessionStats (vido do pai via WS)
-                return {
-                    netProfit: this.sessionStats?.netProfit || 0,
-                    totalOps: this.sessionStats?.operationsToday || 0,
-                    avgProfit: (this.sessionStats?.totalTrades > 0) ? (this.sessionStats.netProfit / this.sessionStats.totalTrades) : 0
-                };
-            },
+			realtimeStats() {
+				// ✅ [ZENIX v2.3] Prioridade absoluta para sessionStats (vido do pai via WS)
+				return {
+					netProfit: this.sessionStats?.netProfit || 0,
+					totalOps: this.sessionStats?.operationsToday || 0,
+					avgProfit: (this.sessionStats?.totalTrades > 0) ? (this.sessionStats.netProfit / this.sessionStats.totalTrades) : 0
+				};
+			},
             dailyRealtimeStats() {
                 return {
                     netProfit: this.sessionStats?.netProfit || 0,
