@@ -254,71 +254,65 @@
                             </div>
                         </div>
 
-                        <!-- Configuração de Entrada -->
+                        <!-- Análise de Entrada (New Unified Card) -->
                         <div class="col-span-12">
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
                                 <div class="absolute top-0 right-0 p-4 opacity-5">
                                     <i class="fa-solid fa-sliders text-6xl"></i>
                                 </div>
-                                <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
-                                    <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                        <i class="fa-solid fa-sliders"></i>
-                                    </div>
-                                    Configuração de Entrada
+                                <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center justify-between gap-2">
+                                     <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+                                            <i class="fa-solid fa-sliders"></i>
+                                        </div>
+                                        Análise de Entrada
+                                     </div>
                                 </h3>
 
-                                <div class="relative z-10 grid grid-cols-12 gap-6">
-                                    <!-- Mercado e Tipo de Negociação -->
-                                    <div class="col-span-12 md:col-span-6">
-                                        <div class="form-group">
-                                            <label class="block text-white font-bold mb-2">Mercado</label>
+                                <div class="relative z-10 space-y-6">
+                                     <!-- Row 1: Market & Trade Type -->
+                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Mercado</label>
                                             <button
                                                 type="button"
                                                 @click="openMarketModal('main')"
-                                                class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
+                                                class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-3 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between group"
                                             >
-                                                <span class="font-medium text-lg">{{ selectedMarketLabel }}</span>
-                                                <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                                <span class="font-bold text-sm">{{ selectedMarketLabel }}</span>
+                                                <i class="fa-solid fa-chevron-down text-gray-400 text-xs group-hover:text-zenix-green transition-colors"></i>
                                             </button>
                                         </div>
-                                    </div>
-
-                                    <div class="col-span-12 md:col-span-6">
-                                        <div class="form-group">
-                                            <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
+                                        <div>
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Tipo de Negociação</label>
                                             <button
                                                 type="button"
                                                 @click="openTradeTypeModal('main')"
                                                 :disabled="!contracts.length && !form.market"
-                                                class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-4 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                                                class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-3 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed group"
                                             >
                                                 <div class="flex items-center gap-3">
-                                                    <div v-if="selectedTradeTypeIcon" class="w-6 h-6 flex items-center justify-center text-zenix-green">
-                                                        <i class="fa-solid fa-chart-line" v-if="form.tradeType === 'CALL' || form.tradeType === 'PUT'"></i>
-                                                        <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11L13.5 15.5L8.5 10.5L2 14"/><path d="M16 11H22V17"/></svg>
+                                                    <div v-if="selectedTradeTypeIcon" class="w-5 h-5 flex items-center justify-center text-zenix-green">
+                                                        <img :src="selectedTradeTypeIcon" class="w-full h-full object-contain filter brightness-0 invert" alt="">
                                                     </div>
-                                                    <span class="font-medium text-lg">{{ selectedTradeTypeLabel }}</span>
+                                                    <span class="font-bold text-sm">{{ selectedTradeTypeLabel }}</span>
                                                 </div>
-                                                <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                                <i class="fa-solid fa-chevron-down text-gray-400 text-xs group-hover:text-zenix-green transition-colors"></i>
                                             </button>
                                         </div>
                                     </div>
 
-                                    <!-- Direção e Payouts (Attack) -->
-                                    <div v-if="form.selectedTradeTypeGroup" class="col-span-12">
-                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-[#181818] p-6 rounded-xl border border-[#333] shadow-inner">
-                                            <div class="md:col-span-2">
-                                                <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
-                                                    <i class="fa-solid fa-compass text-zenix-green"></i>
-                                                    Direção Permitida
-                                                </label>
-                                                <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
+                                    <!-- Row 2: Direction & Payouts -->
+                                    <div v-if="form.selectedTradeTypeGroup" class="bg-[#111] p-4 rounded-xl border border-dashed border-[#333]">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Direção Permitida</label>
+                                                <div class="flex bg-[#1E1E1E] p-1 rounded-lg border border-[#333]">
                                                     <button 
                                                         type="button"
                                                         @click="updatePrincipalDirection('both')"
-                                                        class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                        :class="form.directionMode === 'both' ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
-                                                        :style="form.directionMode === 'both' ? 'background-color: #22C55E !important;' : ''"
+                                                        class="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all"
+                                                        :class="form.directionMode === 'both' ? 'bg-zenix-green text-black' : 'text-gray-500 hover:text-white'"
                                                     >
                                                         Ambos
                                                     </button>
@@ -327,238 +321,213 @@
                                                         :key="dir.value"
                                                         type="button"
                                                         @click="updatePrincipalDirection(idx === 0 ? 'up' : 'down', dir.value)"
-                                                        class="flex-1 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                        :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'text-white shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
-                                                        :style="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'background-color: #22C55E !important;' : ''"
+                                                        class="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all"
+                                                        :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'bg-zenix-green text-black' : 'text-gray-500 hover:text-white'"
                                                     >
                                                         {{ dir.label }}
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div v-for="dir in selectedDirections" :key="'payout-' + dir.value">
-                                                <label class="block text-white font-bold mb-3 text-sm flex items-center gap-2">
-                                                    <i class="fa-solid fa-hand-holding-dollar text-zenix-green"></i>
-                                                    Payout ({{ dir.label }})
-                                                </label>
-                                                <div class="relative group">
-                                                    <input 
-                                                        type="number" 
-                                                        v-model.number="form.directionPayouts[dir.value]" 
-                                                        class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-3 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
-                                                        step="1"
-                                                        min="1"
-                                                    />
-                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                                                        <span class="text-xs text-gray-500 font-black">%</span>
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div v-for="dir in selectedDirections" :key="'payout-' + dir.value">
+                                                    <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Payout ({{ dir.label }})</label>
+                                                    <div class="relative">
+                                                        <input 
+                                                            type="number" 
+                                                            v-model.number="form.directionPayouts[dir.value]" 
+                                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-2 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                            step="1"
+                                                            min="1"
+                                                        />
+                                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                            <span class="text-[10px] text-gray-500 font-bold">%</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Parâmetros de Execução -->
-                                    <div class="col-span-12">
-                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                            <div>
-                                                <label class="block text-white font-bold mb-2">Duração</label>
+                                    <!-- Row 3: Duration & Soros -->
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div>
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Duração</label>
+                                            <div class="flex gap-2">
                                                 <input 
                                                     type="number" 
                                                     v-model.number="form.duration" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                                                    class="w-2/3 bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
                                                     min="1"
                                                 />
-                                            </div>
-                                            <div>
-                                                <label class="block text-white font-bold mb-2">Unidade</label>
-                                                <div class="relative">
+                                                <div class="relative w-1/3">
                                                     <select 
                                                         v-model="form.durationUnit" 
-                                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                                        class="w-full h-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg px-2 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-xs font-bold text-center"
                                                     >
-                                                        <option value="t">Tique</option>
-                                                        <option value="s">Segundos</option>
-                                                        <option value="m">Minutos</option>
-                                                        <option value="h">Horas</option>
+                                                        <option value="t">t</option>
+                                                        <option value="s">s</option>
+                                                        <option value="m">m</option>
+                                                        <option value="h">h</option>
                                                     </select>
-                                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                                                    </div>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <label class="block text-white font-bold mb-2">Nível de Soros</label>
-                                                <input 
-                                                    type="number" 
-                                                    v-model.number="form.sorosLevel" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                                    min="0"
-                                                />
-                                            </div>
-                                            <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)">
-                                                <label class="block text-white font-bold mb-2">Dígito Alvo (Previsão)</label>
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Monitorar Soros</label>
+                                            <input 
+                                                type="number" 
+                                                v-model.number="form.sorosLevel" 
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                min="0"
+                                            />
+                                        </div>
+                                        <!-- Prediction/Barrier -->
+                                        <div>
+                                             <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)">
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Dígito (Previsão)</label>
                                                 <div class="relative">
                                                     <select 
                                                         v-model.number="form.prediction" 
-                                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
                                                     >
                                                         <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
                                                     </select>
-                                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                                        <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                                        <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div v-if="['HIGHER', 'LOWER', 'ONETOUCH', 'NOTOUCH', 'RANGE', 'UPORDOWN'].includes(form.tradeType)">
-                                                <label class="block text-white font-bold mb-2">Barreira (Offset)</label>
-                                                <div class="relative">
-                                                    <input 
-                                                        type="text" 
-                                                        v-model="form.barrier" 
-                                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                                        placeholder="+0.12 or -0.12"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div v-if="['RANGE', 'UPORDOWN', 'EXPIRYRANGE', 'EXPIRYMISS'].includes(form.tradeType)">
-                                                <label class="block text-white font-bold mb-2">Barreira Baixa</label>
-                                                <div class="relative">
-                                                    <input 
-                                                        type="text" 
-                                                        v-model="form.barrier2" 
-                                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
-                                                        placeholder="-0.12"
-                                                    />
-                                                </div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Barreira</label>
+                                                <input 
+                                                    type="text" 
+                                                    v-model="form.barrier" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    placeholder="+0.12"
+                                                />
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Filtros de Ataque (Primary Entry) -->
-                        <div class="col-span-12">
-                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
-                                <div class="absolute top-0 right-0 p-4 opacity-5">
-                                    <i class="fa-solid fa-bolt text-6xl"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
-                                    <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                        <i class="fa-solid fa-crosshairs"></i>
-                                    </div>
-                                    Filtros de Ataque (Sinal de Entrada)
-                                </h3>
-                                
-                                <div class="space-y-4 relative z-10">
-                                    <div v-if="activeAttackFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
-                                        <p class="text-gray-400 text-sm mb-3">Nenhum filtro de ataque configurado. O robô entrará em cada sinal disponível.</p>
-                                        <button 
-                                            type="button" 
-                                            @click="openFilterModal('main')"
-                                            class="bg-zenix-green/10 text-zenix-green border border-zenix-green/30 px-6 py-2 rounded-lg hover:bg-zenix-green/20 transition-all font-bold text-sm"
-                                        >
-                                            Adicionar Filtros
-                                        </button>
-                                    </div>
-                                    
-                                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div v-for="filter in activeAttackFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
-                                            <div class="flex items-center gap-3">
-                                                 <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                                    <i class="fa-solid fa-filter"></i>
-                                                 </div>
-                                                 <div>
-                                                    <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
-                                                    <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
-                                                 </div>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <button type="button" @click="openFilterConfigDirect(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
-                                                    <i class="fa-solid fa-gear text-xs"></i>
-                                                </button>
-                                                <button type="button" @click="removeFilter(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
-                                                    <i class="fa-solid fa-times text-xs"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <button 
-                                            type="button" 
-                                            @click="openFilterModal('main')"
-                                            class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
-                                        >
-                                            <i class="fa-solid fa-plus text-xs"></i>
-                                            <span class="text-sm">Adicionar Filtro</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Filtros de Segurança (Loss Virtual) -->
-                        <div class="col-span-12">
-                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
-                                <div class="absolute top-0 right-0 p-4 opacity-5">
-                                    <i class="fa-solid fa-user-secret text-6xl"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center justify-between gap-2">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                            <i class="fa-solid fa-user-secret"></i>
-                                        </div>
-                                        Filtros de Segurança (Loss Virtual)
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer scale-90">
-                                        <input type="checkbox" v-model="securityConfig.virtualLoss.enabled" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zenix-green"></div>
-                                        <span class="ms-3 text-xs font-bold text-gray-400 uppercase tracking-tighter">{{ securityConfig.virtualLoss.enabled ? 'Ativo' : 'Inativo' }}</span>
-                                    </label>
-                                </h3>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10" :class="{ 'opacity-40 grayscale pointer-events-none': !securityConfig.virtualLoss.enabled }">
-                                    <div>
-                                        <label class="block text-white font-bold mb-2 text-sm">Contagem de Loss Virtual</label>
-                                        <p class="text-xs text-gray-400 mb-2">Quantas simulações perdedoras consecutivas esperar antes da entrada real.</p>
-                                        <div class="relative">
-                                             <input 
+                                    <!-- Row 4: Detailed Params (Min Payout, Delay) -->
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div>
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                                Payout Min. (%) <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                            </label>
+                                            <input 
                                                 type="number" 
-                                                v-model.number="securityConfig.virtualLoss.target" 
+                                                v-model.number="form.minPayoutPercent" 
                                                 class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                min="1"
-                                                placeholder="Ex: 2"
+                                                min="1" max="100"
                                             />
-                                            <div class="absolute inset-y-0 right-0 px-3 flex items-center pointer-events-none">
-                                                <span class="text-gray-500 text-xs font-bold">LOSSES</span>
-                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                                Delay WIN (s) <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                            </label>
+                                            <input 
+                                                type="number" 
+                                                v-model.number="form.delayWin" 
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                min="0"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                                Delay LOSS (s) <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                            </label>
+                                            <input 
+                                                type="number" 
+                                                v-model.number="form.delayLoss" 
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                min="0"
+                                            />
                                         </div>
                                     </div>
 
-                                    
+                                    <div class="border-t border-[#333] my-6"></div>
+
+                                    <!-- Virtual Loss -->
                                     <div>
-                                        <label class="block text-white font-bold mb-2 text-sm">Modo de Operação</label>
-                                        <p class="text-xs text-gray-400 mb-2">Quando aplicar o filtro de segurança.</p>
-                                        <div class="relative">
-                                            <select 
-                                                v-model="securityConfig.virtualLoss.mode"
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm appearance-none"
-                                            >
-                                                <option value="warmup">Aquecimento (Apenas no Início)</option>
-                                                <option value="attack">Antes do Ataque (Modo Principal)</option>
-                                                <option value="recovery">Antes da Recuperação (Modo Rec.)</option>
-                                                <option value="cyclic">Cíclico (Sempre - Ataque e Rec.)</option>
-                                            </select>
-                                            <div class="absolute inset-y-0 right-0 px-3 flex items-center pointer-events-none">
-                                                <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                        <div class="flex items-center justify-between mb-4">
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest">LOSS VIRTUAL (Filtro de Segurança)</h4>
+                                            <label class="relative inline-flex items-center cursor-pointer scale-90">
+                                                <input type="checkbox" v-model="securityConfig.virtualLoss.enabled" class="sr-only peer">
+                                                <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zenix-green"></div>
+                                            </label>
+                                        </div>
+                                        
+                                        <div :class="{ 'opacity-50 grayscale pointer-events-none': !securityConfig.virtualLoss.enabled }">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="text-sm font-bold text-gray-400">Quantidade</span>
+                                                <span class="text-xl font-black text-zenix-green">{{ securityConfig.virtualLoss.target }}</span>
+                                            </div>
+                                            <div class="relative pt-1">
+                                                <input 
+                                                    type="range" 
+                                                    v-model.number="securityConfig.virtualLoss.target" 
+                                                    class="w-full h-2 bg-[#1E1E1E] rounded-lg appearance-none cursor-pointer accent-zenix-green"
+                                                    min="0" 
+                                                    max="10"
+                                                />
+                                                <div class="flex justify-between text-[10px] text-gray-500 font-bold mt-2">
+                                                    <span>0</span>
+                                                    <span>5</span>
+                                                    <span>10</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-span-1 md:col-span-2 flex items-center justify-center p-4 bg-[#1E1E1E] border border-dashed border-[#333] rounded-lg mt-2">
-                                        <p class="text-xs text-center text-gray-400">
-                                            <i class="fa-solid fa-circle-info mb-1 block text-base text-zenix-green"></i>
-                                            O robô simulará operações silenciosamente. Só enviará a ordem real após <b>{{ securityConfig.virtualLoss.target }}</b> perdas virtuais consecutivas.
-
-                                        </p>
+                                    <!-- Entry Filters -->
+                                    <div>
+                                        <h4 class="text-xs font-bold text-zenix-green uppercase tracking-widest mb-4">FILTROS DE ENTRADA (Sinais)</h4>
+                                        <div class="p-6 bg-[#111] border border-dashed border-[#333] rounded-xl">
+                                            <div v-if="activeAttackFilters.length === 0" class="text-center">
+                                                <p class="text-gray-400 text-xs font-bold mb-4">Nenhum filtro de entrada configurado</p>
+                                                <button 
+                                                    type="button" 
+                                                    @click="openFilterModal('main')"
+                                                    class="bg-zenix-green text-black font-bold text-xs uppercase tracking-wider py-2 px-6 rounded hover:bg-green-400 transition-colors"
+                                                >
+                                                    + Adicionar Filtros
+                                                </button>
+                                                <p class="text-right text-[10px] text-gray-600 mt-2">0 filtro(s) ativo(s)</p>
+                                            </div>
+                                            <div v-else class="space-y-3">
+                                                 <div v-for="filter in activeAttackFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
+                                                    <div class="flex items-center gap-3">
+                                                         <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+                                                            <i class="fa-solid fa-filter"></i>
+                                                         </div>
+                                                         <div>
+                                                            <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
+                                                            <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
+                                                         </div>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <button type="button" @click="openFilterConfigDirect(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
+                                                            <i class="fa-solid fa-gear text-xs"></i>
+                                                        </button>
+                                                        <button type="button" @click="removeFilter(filter, 'main')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
+                                                            <i class="fa-solid fa-times text-xs"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="flex justify-center mt-4">
+                                                    <button 
+                                                        type="button" 
+                                                        @click="openFilterModal('main')"
+                                                        class="text-zenix-green text-xs font-bold uppercase tracking-wider hover:underline"
+                                                    >
+                                                        + Adicionar Mais Filtros
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -854,7 +823,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
                         <!-- Configuração Financeira -->
                         <div class="col-span-12">
@@ -1943,6 +1911,9 @@ export default {
                 expectedPayout: 1.20, // Default for DIGITUNDER 8 (bet $1, get $1.20 total)
                 directionMode: 'both', // 'both', 'up', 'down'
                 directionPayouts: {}, // { [contractType]: payout }
+                minPayoutPercent: 80, // New: Payout Min (%)
+                delayWin: 0, // New: Delay WIN (s)
+                delayLoss: 0, // New: Delay LOSS (s)
                 attackFilters: []
             },
 
@@ -2836,7 +2807,7 @@ export default {
             this.showFilterModal = false;
             this.$root.$toast.success('Filtros configurados com sucesso!');
         },
-        // ✅ Helper to sync filter edits to form/recoveryConfig before saving
+        // ? Helper to sync filter edits to form/recoveryConfig before saving
         syncFiltersToConfig() {
             // Sync main filters
             this.form.attackFilters = this.filters
@@ -2912,7 +2883,7 @@ export default {
             if (this.modalContext === 'main') {
                 this.form.selectedTradeTypeGroup = item.value; // Store Item Value for UI
                 
-                // ✅ Respect Direction Mode: If AMBOS is selected, tradeType MUST be empty
+                // ? Respect Direction Mode: If AMBOS is selected, tradeType MUST be empty
                 if (this.form.directionMode === 'both') {
                     this.form.tradeType = '';
                     console.log(`[selectTradeType] Modal: AMBOS mode detected, clearing tradeType for dynamic signaling`);
@@ -2928,7 +2899,7 @@ export default {
             } else {
                 this.recoveryConfig.selectedTradeTypeGroup = item.value;
 
-                // ✅ Respect Direction Mode (Recovery)
+                // ? Respect Direction Mode (Recovery)
                 if (this.recoveryConfig.directionMode === 'both') {
                     this.recoveryConfig.tradeType = '';
                     console.log(`[selectTradeType] Modal (REC): AMBOS mode detected, clearing tradeType`);
@@ -2947,7 +2918,7 @@ export default {
             this.closeTradeTypeModal();
         },
         
-        // ✅ NEW: Auto-update tradeType when direction mode changes
+        // ? NEW: Auto-update tradeType when direction mode changes
         updateRecoveryDirection(mode, specificType = null) {
             this.recoveryConfig.directionMode = mode;
             
@@ -3069,7 +3040,7 @@ export default {
             this.balance = balanceValue;
             this.monitoringStats.balance = balanceValue;
 
-            // ✅ Sync with Global State for TopNavbar and Mixin
+            // ? Sync with Global State for TopNavbar and Mixin
             const connection = {
                 token: account.token,
                 loginid: account.loginid,
@@ -3097,14 +3068,14 @@ export default {
                 : 'Custom Strategy';
             this.sessionState.mode = this.sessionState.negotiationMode || 'VELOZ';
             this.sessionState.modoMartingale = this.form.riskProfile || 'Moderado';
-            // ✅ Explicitly save Martingale Boolean
+            // ? Explicitly save Martingale Boolean
             this.sessionState.martingale = this.recoveryConfig.martingale !== false; 
             this.recoveryConfig.riskProfile = this.form.riskProfile || 'moderado';
             this.sessionState.stake = this.form.initialStake;
             this.sessionState.profitTarget = this.form.profitTarget;
             this.sessionState.lossLimit = this.form.stopLoss;
             this.sessionState.stoplossBlindado = this.form.useBlindado || false;
-            // ✅ Pass Version
+            // ? Pass Version
             this.sessionState.version = this.currentVersion || '1.0';
 
             this.startSimulation();
@@ -3117,7 +3088,7 @@ export default {
                 const stored = localStorage.getItem('zeenix_saved_strategies');
                 let userStrategies = stored ? JSON.parse(stored) : [];
 
-                // ✅ Load default strategies from API (always fresh)
+                // ? Load default strategies from API (always fresh)
                 const defaultStrategyNames = ['apollo', 'atlas', 'nexus', 'orion', 'titan'];
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 const token = localStorage.getItem('token');
@@ -3173,7 +3144,7 @@ export default {
             const name = prompt('Nome da estratégia:', `Minha Estratégia ${new Date().toLocaleDateString()}`);
             if (!name) return;
 
-            // ✅ Sync filter edits before saving
+            // ? Sync filter edits before saving
             this.syncFiltersToConfig();
 
             const newStrategy = {
@@ -3188,7 +3159,7 @@ export default {
                 }
             };
 
-            // ✅ Save to server as JSON file
+            // ? Save to server as JSON file
             try {
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 const token = localStorage.getItem('token');
@@ -3225,7 +3196,7 @@ export default {
             const savedForm = JSON.parse(JSON.stringify(strategy.config.form));
             this.form = { ...this.form, ...savedForm };
 
-            // ✅ Load Validation: If directionMode is 'both', tradeType MUST be empty for dynamic signaling
+            // ? Load Validation: If directionMode is 'both', tradeType MUST be empty for dynamic signaling
             if (this.form.directionMode === 'both') {
                 this.form.tradeType = '';
                 console.log(`[loadSavedStrategy] Main: AMBOS detected, clearing tradeType`);
@@ -3240,7 +3211,7 @@ export default {
             const savedRecovery = JSON.parse(JSON.stringify(strategy.config.recoveryConfig));
             this.recoveryConfig = { ...this.recoveryConfig, ...savedRecovery };
 
-            // ✅ Load Validation (Recovery)
+            // ? Load Validation (Recovery)
             if (this.recoveryConfig.directionMode === 'both') {
                 this.recoveryConfig.tradeType = '';
                 console.log(`[loadSavedStrategy] Recovery: AMBOS detected, clearing tradeType`);
@@ -3286,7 +3257,7 @@ export default {
                 this.recoveryFilters.splice(index, 1, newFilter);
             });
 
-            // ✅ ENFORCE: If Martingale is disabled, force Conservador
+            // ? ENFORCE: If Martingale is disabled, force Conservador
             if (this.recoveryConfig.martingale === false) {
                  this.form.riskProfile = 'conservador';
                  // Optional: Debug log
@@ -3297,7 +3268,7 @@ export default {
             this.currentStrategyName = strategy.name;
             this.currentVersion = strategy.version || '1.0';
 
-            this.addLog(`📂 Estratégia carregada: ${strategy.name} (v${this.currentVersion})`, 'info');
+            this.addLog(`?? Estratégia carregada: ${strategy.name} (v${this.currentVersion})`, 'info');
             this.$root.$toast.success(`Estratégia "${strategy.name}" carregada!`);
         },
 
@@ -3310,7 +3281,7 @@ export default {
             
             const strategy = this.savedStrategies[strategyIndex];
 
-            // ✅ Sync filter edits before updating
+            // ? Sync filter edits before updating
             this.syncFiltersToConfig();
 
             // Calculate new version
@@ -3329,7 +3300,7 @@ export default {
                 }
             };
 
-            // ✅ If updating a default strategy, save to server JSON file
+            // ? If updating a default strategy, save to server JSON file
             const defaultStrategyNames = ['apollo', 'atlas', 'nexus', 'orion', 'titan'];
             const strategyName = strategy.name.toLowerCase().trim();
             
@@ -3379,7 +3350,7 @@ export default {
         },
 
         exportToJSON() {
-            // ✅ Sync filter edits before exporting
+            // ? Sync filter edits before exporting
             this.syncFiltersToConfig();
 
             const strategyData = {
@@ -3450,7 +3421,7 @@ export default {
                             if (active) f.config = { ...active.config };
                         });
 
-                        this.addLog('📁 Estratégia importada com sucesso de arquivo.', 'success');
+                        this.addLog('?? Estratégia importada com sucesso de arquivo.', 'success');
                         this.$root.$toast.success('Estratégia importada com sucesso!');
                     } else {
                         throw new Error('Formato de arquivo inválido.');
@@ -3467,17 +3438,17 @@ export default {
             const mode = this.sessionState.negotiationMode;
             const profile = this.form.riskProfile || 'MODERADO';
             
-            const configLog = `⚙️ CONFIGURAÇÃO INICIAL<br>` +
+            const configLog = `?? CONFIGURAÇÃO INICIAL<br>` +
                 `• Agente: ${this.sessionState.strategy?.toUpperCase() || 'CUSTOM'} (Strategy Creator)<br>` +
                 `• Modo: ${mode}<br>` +
                 `• Perfil: ${profile.toUpperCase()}<br>` +
                 `• Meta Lucro: $${this.form.profitTarget.toFixed(2)}<br>` +
                 `• Stop Loss: $${this.form.stopLoss.toFixed(2)}<br>` +
-                `• Stop Blindado: ${this.form.useBlindado ? 'ATIVO 🛡️' : 'INATIVO ❌'}`;
+                `• Stop Blindado: ${this.form.useBlindado ? 'ATIVO ???' : 'INATIVO ?'}`;
             
             this.addLog(configLog, 'info');
 
-            const sessionLog = `🚀 INICIANDO SESSÃO DE OPERAÇÕES<br>` +
+            const sessionLog = `?? INICIANDO SESSÃO DE OPERAÇÕES<br>` +
                 `• Banca Inicial: $${this.balance.toFixed(2)}<br>` +
                 `• Meta do Dia: +$${this.form.profitTarget.toFixed(2)}<br>` +
                 `• Stop Loss: -$${this.form.stopLoss.toFixed(2)}<br>` +
@@ -3488,7 +3459,7 @@ export default {
             // Iniciar Monitoramento de Ticks Real-time
             this.initTickConnection();
         },
-        // ⚡ FAST RESULT SYSTEM ⚡
+        // ? FAST RESULT SYSTEM ?
         checkLocalTicks(price, digit) {
             if (this.localPendingContracts.size === 0) return;
 
@@ -3537,14 +3508,14 @@ export default {
             const stake = contract.stake;
             const payoutRate = contract.payoutRate || 0.95;
             
-            // ✅ Net Profit: If payoutRate is a multiplier (e.g. 1.95), subtract 1 (0.95). 
+            // ? Net Profit: If payoutRate is a multiplier (e.g. 1.95), subtract 1 (0.95). 
             // If it's already a rate (e.g. 0.95), keep it.
             const netProfitRate = payoutRate > 1.0 ? (payoutRate - 1.0) : payoutRate;
             const profit = win ? (stake * netProfitRate) : -stake;
             
             // Log Result
             this.addLog(
-                `⚡ RESULTADO RÁPIDO: ${win ? 'WIN' : 'LOSS'} (Dígito: ${exitDigit})`, 
+                `? RESULTADO RÁPIDO: ${win ? 'WIN' : 'LOSS'} (Dígito: ${exitDigit})`, 
                 win ? 'success' : 'error'
             );
 
@@ -3576,24 +3547,24 @@ export default {
             
             if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
                 if (isConservador) {
-                    this.addLog('⚠️ <b>Martingale Parcelado Ativo</b><br>Modo CONSERVADOR: Perda será recuperada em 4 parcelas.', 'warning');
+                    this.addLog('?? <b>Martingale Parcelado Ativo</b><br>Modo CONSERVADOR: Perda será recuperada em 4 parcelas.', 'warning');
                 } else {
-                    this.addLog('⚠️ <b>Ativação de Recuperação</b><br>Modo Martingale iniciado.', 'warning');
+                    this.addLog('?? <b>Ativação de Recuperação</b><br>Modo Martingale iniciado.', 'warning');
                 }
             } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
                 if (isConservador) {
-                    this.addLog('✅ <b>Recuperação Conservadora Concluída</b><br>Ciclo de parcelas finalizado com sucesso.', 'success');
+                    this.addLog('? <b>Recuperação Conservadora Concluída</b><br>Ciclo de parcelas finalizado com sucesso.', 'success');
                 } else {
-                    this.addLog('✅ <b>Recuperação Concluída</b><br>Retornando ao modo principal.', 'success');
+                    this.addLog('? <b>Recuperação Concluída</b><br>Retornando ao modo principal.', 'success');
                 }
             } else if (this.sessionState.analysisType === 'RECUPERACAO' && !win) {
                 if (isConservador) {
-                    this.addLog(`📉 <b>Re-parcelamento Ativo</b><br>Loss no parcelamento (${this.sessionState.recoverySplitsUsed}/3). Novo desdobramento iniciado.`, 'warning');
+                    this.addLog(`?? <b>Re-parcelamento Ativo</b><br>Loss no parcelamento (${this.sessionState.recoverySplitsUsed}/3). Novo desdobramento iniciado.`, 'warning');
                 }
             }
 
             if (this.sessionState.negotiationMode !== oldMode) {
-                this.addLog(`🧭 <b>Alteração de Sensibilidade</b><br>MODO ${this.sessionState.negotiationMode} ATIVADO`, 'warning');
+                this.addLog(`?? <b>Alteração de Sensibilidade</b><br>MODO ${this.sessionState.negotiationMode} ATIVADO`, 'warning');
             }
 
             // Mark as processed in Main Contract List to prevent double counting
@@ -3611,7 +3582,7 @@ export default {
                     trade.profit = profit;
                     trade.fastResultApplied = true; // Flag for handleContractUpdate
                     trade.fastResultOutcome = win ? 'WON' : 'LOST'; // Store for comparison
-                    trade.fastResultProfit = profit; // ✅ Store for double-counting adjustment
+                    trade.fastResultProfit = profit; // ? Store for double-counting adjustment
                 } else {
                     // Create a placeholder so when API sends update, we know to ignore it
                     this.activeContracts.set(contract.contractId, {
@@ -3628,7 +3599,7 @@ export default {
             this.localPendingContracts.delete(contract.id);
             this.isNegotiating = false; // Unlock early!
             
-            // ✅ Disable fast result state to allow next analysis loop immediately
+            // ? Disable fast result state to allow next analysis loop immediately
             if (this.pendingFastResult) {
                 this.pendingFastResult.active = false;
             }
@@ -3638,17 +3609,18 @@ export default {
                 if (!this.isNegotiating) this.runAnalysis();
             });
             
-            // ✅ RECOVERY DELAY LOGIC (Local Trade)
-            if (contract.analysisType === 'RECUPERACAO') {
-                const delay = win 
-                    ? (this.recoveryConfig.delayWin || 0) 
-                    : (this.recoveryConfig.delayLoss || 0);
-                
-                if (delay > 0) {
-                    const delayMs = delay * 1000;
-                    this.pauseUntil = Math.max(this.pauseUntil || 0, Date.now() + delayMs);
-                    this.addLog(`⏳ Delay ${win ? 'WIN' : 'LOSS'}: Aguardando ${delay}s...`, 'info');
-                }
+            // ? DELAY LOGIC (Local Trade - Main & Recovery)
+            const analysisType = contract.analysisType || (this.sessionState.activeStrategy === 'RECUPERACAO' ? 'RECUPERACAO' : 'PRINCIPAL');
+            const config = analysisType === 'RECUPERACAO' ? this.recoveryConfig : this.form;
+            
+            const delay = win 
+                ? (config.delayWin || 0) 
+                : (config.delayLoss || 0);
+            
+            if (delay > 0) {
+                const delayMs = delay * 1000;
+                this.pauseUntil = Math.max(this.pauseUntil || 0, Date.now() + delayMs);
+                this.addLog(`? Delay ${win ? 'WIN' : 'LOSS'} (${analysisType === 'RECUPERACAO' ? 'Rec' : 'Main'}): Aguardando ${delay}s...`, 'info');
             }
 
             // Check Limits/Pause
@@ -3658,7 +3630,7 @@ export default {
         // WebSocket Tick Monitoring Methods
         async initTickConnection() {
             if (!this.form.market) {
-                this.addLog('⚠️ Nenhum mercado selecionado.', 'error');
+                this.addLog('?? Nenhum mercado selecionado.', 'error');
                 return;
             }
 
@@ -3671,7 +3643,7 @@ export default {
             this.ws = new WebSocket(endpoint);
 
             this.ws.onopen = () => {
-                this.addLog(`🔌 Conectado. Autorizando...`, 'info');
+                this.addLog(`?? Conectado. Autorizando...`, 'info');
                 const token = this.selectedToken || this.getDerivToken();
                 
                 if (token) {
@@ -3679,7 +3651,7 @@ export default {
                     this.ws.send(JSON.stringify({ authorize: token }));
                 } else {
                     console.warn('[WS] Token Deriv não encontrado!');
-                    this.addLog('⚠️ Token Deriv não encontrado. Operações reais desativadas.', 'warning');
+                    this.addLog('?? Token Deriv não encontrado. Operações reais desativadas.', 'warning');
                     this.subscribeTicks();
                 }
             };
@@ -3694,52 +3666,55 @@ export default {
                     if (msg.msg_type === 'authorize') {
                         if (msg.error) {
                             console.error('[WS] Erro na autorização:', msg.error);
-                            this.addLog(`❌ Falha na autorização: ${msg.error.message}`, 'error');
+                            this.addLog(`? Falha na autorização: ${msg.error.message}`, 'error');
                         } else {
                             this.isAuthorized = true;
                             const balanceValue = Number(msg.authorize.balance);
                             this.balance = balanceValue;
                             this.monitoringStats.balance = balanceValue;
                             console.log('[WS] Autorizado com sucesso! Dados:', msg.authorize);
-                            this.addLog(`✅ Autorizado! Saldo: $${balanceValue.toFixed(2)}`, 'success');
+                            this.addLog(`? Autorizado! Saldo: $${balanceValue.toFixed(2)}`, 'success');
                             this.subscribeTicks();
                         }
                     }
 
                     if (msg.msg_type === 'proposal') {
                         if (msg.error) {
-                            this.addLog(`❌ Erro na proposta: ${msg.error.message}`, 'error');
+                            this.addLog(`? Erro na proposta: ${msg.error.message}`, 'error');
                             this.isNegotiating = false; // Reset lock on error
-                            this.retryingProposal = false; // ✅ Reset deadlocked flag
+                            this.retryingProposal = false; // ? Reset deadlocked flag
                         } else {
                             const proposalId = msg.proposal.id;
                             const payout = msg.proposal.payout;
                             const stakeValue = msg.proposal.ask_price;
                             
-                            this.addLog(`🔍 Proposta recebida: Payout $${payout} (Stake: $${stakeValue})`, 'info');
+                            this.addLog(`?? Proposta recebida: Payout $${payout} (Stake: $${stakeValue})`, 'info');
                             
                             // 1. Update sessionState with the real PROFIT RATE for accuracy in next calculations
                             // Deriv Payout = Stake + Profit. 
                             const realPayoutRate = payout / stakeValue;
 
-                            // ✅ MIN PAYOUT CHECK (Recovery)
-                            if (this.sessionState.analysisType === 'RECUPERACAO') {
-                                const minPayout = this.recoveryConfig.minPayoutPercent || 0;
-                                if (minPayout > 0) {
-                                    // Calculate payout percentage (e.g., 1.95 -> 95%)
-                                    // Correct formula: ((Payout - Stake) / Stake) * 100
-                                    const currentPayoutPercent = ((payout - stakeValue) / stakeValue) * 100;
-                                    
-                                    if (currentPayoutPercent < minPayout) {
-                                         this.addLog(`⚠️ Payout Baixo (${currentPayoutPercent.toFixed(1)}%). Mínimo: ${minPayout}%. Ignorando entrada.`, 'warning');
-                                         this.isNegotiating = false;
-                                         this.retryingProposal = false;
-                                         return;
-                                    }
+                            // ? MIN PAYOUT CHECK (Main & Recovery)
+                            // If Recovery, use recovery minPayoutPercent. If Main, use form.minPayoutPercent.
+                            const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
+                            const minPayout = isRecovery 
+                                ? (this.recoveryConfig.minPayoutPercent || 0)
+                                : (this.form.minPayoutPercent || 0);
+
+                            if (minPayout > 0) {
+                                // Calculate payout percentage (e.g., 1.95 -> 95%)
+                                // Correct formula: ((Payout - Stake) / Stake) * 100
+                                const currentPayoutPercent = ((payout - stakeValue) / stakeValue) * 100;
+                                
+                                if (currentPayoutPercent < minPayout) {
+                                     this.addLog(`?? Payout Baixo (${currentPayoutPercent.toFixed(1)}%). Mínimo: ${minPayout}%. Ignorando entrada.`, 'warning');
+                                     this.isNegotiating = false;
+                                     this.retryingProposal = false;
+                                     return;
                                 }
                             }
                             
-                            // ✅ CRITICAL: Flag for buy logic to use the real rate in Fast Result
+                            // ? CRITICAL: Flag for buy logic to use the real rate in Fast Result
                             this.sessionState.tempExplicitPayout = realPayoutRate;
                             
                             if (this.sessionState.analysisType === 'RECUPERACAO') {
@@ -3785,7 +3760,7 @@ export default {
                                 // BETTER: We now pass it explicitly to ensure precision regardless of history state
                                 let exactStake = RiskManager.calculateNextStake(this.sessionState, config, realPayoutRate);
                                 
-                                // ✅ SURVIVAL MODE CHECK (AGAIN)
+                                // ? SURVIVAL MODE CHECK (AGAIN)
                                 // Prevent Martingale Calibration from creating an unsafe stake
                                 const currentProfit = this.monitoringStats.profit || 0; 
                                 const estimatedPayout = config.expectedPayout || 1.20;
@@ -3797,7 +3772,7 @@ export default {
                                 const { stake: survivalStake, reason: survivalReason } = RiskManager.applySurvivalMode(exactStake, currentProfit, config, estimatedPayout, blindadoState);
                                 
                                 if (survivalStake < exactStake) {
-                                    this.addLog('🛡️ Survival Mode (Calibração)', [
+                                    this.addLog('??? Survival Mode (Calibração)', [
                                         `Limitando ajuste de Martingale`,
                                         `Motivo: ${survivalReason}`,
                                         `Ideal: $${exactStake.toFixed(2)}`,
@@ -3806,9 +3781,9 @@ export default {
                                     exactStake = survivalStake;
                                 }
 
-                                // ✅ CRITICAL: Check Minimum Stake During Calibration
+                                // ? CRITICAL: Check Minimum Stake During Calibration
                                 if (exactStake < 0.35) {
-                                  this.addLog('🛑 STOP PROTEÇÃO (Calibração)', [
+                                  this.addLog('?? STOP PROTEÇÃO (Calibração)', [
                                       `Margem insuficiente após calibração`,
                                       `Stake: $${exactStake.toFixed(2)}`,
                                       `Mínimo: $0.35`
@@ -3819,7 +3794,7 @@ export default {
                                 
                                 // Tolerance check
                                 if (Math.abs(exactStake - stakeValue) > 0.02) {
-                                    this.addLog(`⚠️ Calibrando Martingale: Payout ${realPayoutRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
+                                    this.addLog(`?? Calibrando Martingale: Payout ${realPayoutRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
                                     
                                     // RE-REQUEST PROPOSAL with corrected stake
                                     // Track retries using a request ID based mechanism or simple session state flag (less robust but works for single thread)
@@ -3844,7 +3819,7 @@ export default {
                                         return; // ABORT BUY
                                     } else {
                                         this.retryingProposal = false; // Reset flag
-                                        this.addLog(`⚠️ Stake ajustado novamente. Aceitando $${stakeValue} para evitar loop.`, 'warning');
+                                        this.addLog(`?? Stake ajustado novamente. Aceitando $${stakeValue} para evitar loop.`, 'warning');
                                     }
                                 }
                             }
@@ -3852,10 +3827,10 @@ export default {
 
                             this.pendingFastResult.payout = payout;
                             
-                            // 🛑 FINAL SAFETY CHECK BEFORE BUY
+                            // ?? FINAL SAFETY CHECK BEFORE BUY
                             // Re-verify if the stake we are about to pay is safe
                             // Define needed variables locally to avoid reference errors
-                            // ✅ FIX: Start with Global Config (this.form) to ensure stopLoss/profitTarget are present
+                            // ? FIX: Start with Global Config (this.form) to ensure stopLoss/profitTarget are present
                             const localConfig = {
                                 ...this.form,
                                 ...(this.sessionState.analysisType === 'RECUPERACAO' ? this.recoveryConfig : {}),
@@ -3874,7 +3849,7 @@ export default {
                             // If the stake we are about to pay ($7.53) is significantly higher than the safe limit ($5.46)
                             // Allow small tolerance (e.g. 0.05) for rounding
                             if (stakeValue > (preBuyLimit.stake + 0.05)) {
-                                this.addLog('🛑 COMPRA BLOQUEADA (Safety Net)', [
+                                this.addLog('?? COMPRA BLOQUEADA (Safety Net)', [
                                     `Tentativa de compra acima do limite seguro`,
                                     `Stake Tentativa: $${stakeValue.toFixed(2)}`,
                                     `Limite Seguro: $${preBuyLimit.stake.toFixed(2)}`,
@@ -3890,7 +3865,7 @@ export default {
                                     this.ws.send(JSON.stringify(newParams));
                                 } else {
                                     // Deadlock Fix: If we already retried and it's STILL blocked, abort.
-                                    this.addLog('⚠️ Cancelando negociação: Ajuste de segurança falhou ou limite atingido.', 'warning');
+                                    this.addLog('?? Cancelando negociação: Ajuste de segurança falhou ou limite atingido.', 'warning');
                                     this.isNegotiating = false; // Release lock
                                     this.retryingProposal = false;
                                 }
@@ -3898,7 +3873,7 @@ export default {
                             }
 
                             // 3. Execute the Buy
-                            this.addLog(`💸 Comprando contrato via ID: ${proposalId}`, 'info');
+                            this.addLog(`?? Comprando contrato via ID: ${proposalId}`, 'info');
                             this.ws.send(JSON.stringify({
                                 buy: proposalId,
                                 price: stakeValue
@@ -3916,7 +3891,7 @@ export default {
                     if (msg.msg_type === 'buy') {
                         if (msg.error) {
                             console.error('[WS] Erro na compra:', msg.error);
-                            this.addLog(`❌ ERRO NA COMPRA: ${msg.error.message}`, 'error');
+                            this.addLog(`? ERRO NA COMPRA: ${msg.error.message}`, 'error');
                             this.isNegotiating = false; // Reset lock on buy error
                             this.retryingProposal = false; // Ensure flag is cleared
                         } else {
@@ -3932,7 +3907,7 @@ export default {
                                 barrierInfo = ` (${this.pendingFastResult.barrier})`;
                             }
 
-                            const purchaseLog = `🚀 COMPRA REALIZADA!<br>` +
+                            const purchaseLog = `?? COMPRA REALIZADA!<br>` +
                                 `• Contrato: ${this.sessionState.lastContractType || 'Desconhecido'}${barrierInfo}<br>` +
                                 `• Investimento: $${stake.toFixed(2)}<br>` +
                                 `• Payout Esperado: $${payout.toFixed(2)} (${profitPercent}%)<br>` +
@@ -3940,7 +3915,7 @@ export default {
                                 
                             this.addLog(purchaseLog, 'success');
                             
-                            // ⚡ REGISTER FOR LOCAL TICK RESULT
+                            // ? REGISTER FOR LOCAL TICK RESULT
                             if (this.pendingFastResult) {
                                   const trackingId = msg.buy.contract_id || msg.buy.buy_id || 'UNKNOWN';
                                   this.localPendingContracts.set(trackingId, {
@@ -3953,7 +3928,7 @@ export default {
                                     analysisType: this.pendingFastResult.analysisType,
                                     market: this.pendingFastResult.market || this.form.market,
                                     active: true,
-                                    // ✅ Use the captured entry point from context
+                                    // ? Use the captured entry point from context
                                     entryTick: this.pendingFastResult.entryTick,
                                     entryDigit: this.pendingFastResult.entryDigit,
                                     payoutRate: this.sessionState.tempExplicitPayout || 0.95
@@ -3978,12 +3953,12 @@ export default {
 
             this.ws.onerror = (e) => {
                 console.error('[WS] Erro:', e);
-                this.addLog('❌ Erro na conexão com o mercado.', 'error');
+                this.addLog('? Erro na conexão com o mercado.', 'error');
             };
 
             this.ws.onclose = () => {
                 if (this.isMonitoring) {
-                    this.addLog('📡 Conexão encerrada. Tentando reconectar...', 'info');
+                    this.addLog('?? Conexão encerrada. Tentando reconectar...', 'info');
                     setTimeout(() => {
                         if (this.isMonitoring) this.initTickConnection();
                     }, 3000);
@@ -4014,7 +3989,7 @@ export default {
 
         handleTickMessage(msg) {
             if (msg.error) {
-                this.addLog(`❌ Erro Deriv: ${msg.error.message}`, 'error');
+                this.addLog(`? Erro Deriv: ${msg.error.message}`, 'error');
                 return;
             }
 
@@ -4028,7 +4003,7 @@ export default {
                     this.tickSubscriptionId = msg.subscription.id;
                 }
 
-                this.addLog(`📈 Tick recebido: ${price} - Tick #${this.tickCount}`, 'info');
+                this.addLog(`?? Tick recebido: ${price} - Tick #${this.tickCount}`, 'info');
 
                 // --- Virtual Trade Processing ---
                 if (this.pendingVirtualTrade) {
@@ -4070,7 +4045,7 @@ export default {
                 } else {
                     // Pause Expired
                     this.pauseUntil = 0;
-                    this.addLog('▶️ Pausa de resfriamento finalizada. Retomando operações.', 'success');
+                    this.addLog('?? Pausa de resfriamento finalizada. Retomando operações.', 'success');
                 }
             }
 
@@ -4087,12 +4062,12 @@ export default {
             
             results.forEach(res => {
                 if (!res.pass) {
-                     this.addLog(`⏸️ ENTRADA BLOQUEADA: ${res.reason}`, 'warning');
+                     this.addLog(`?? ENTRADA BLOQUEADA: ${res.reason}`, 'warning');
                 }
             });
 
                 if (allPassed) {
-                    // ✅ DYNAMIC DIRECTION LOGIC (Simulation)
+                    // ? DYNAMIC DIRECTION LOGIC (Simulation)
                     const directions = results.map(r => r.direction).filter(d => d);
                     let dynamicContractType = null;
 
@@ -4104,10 +4079,10 @@ export default {
                             const configModel = isRec ? this.recoveryConfig : this.form;
                             const baseType = (configModel.tradeType || '').toUpperCase();
 
-                            // 🔍 DEBUG LOG for recovery vs principal config
+                            // ?? DEBUG LOG for recovery vs principal config
                             console.log(`[Direction Check] Mode: ${isRec ? 'RECUPERAÇÃO' : 'PRINCIPAL'}, Signal: ${signal}, Configured Type: ${baseType}`);
 
-                            // ✅ CRITICAL: Check if user configured a specific contract type (not a group)
+                            // ? CRITICAL: Check if user configured a specific contract type (not a group)
                          // If so, only allow dynamic direction if it matches the configured type
                          const isSpecificContract = ['DIGITOVER', 'DIGITUNDER', 'DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'CALL', 'PUT'].includes(baseType);
                          
@@ -4120,7 +4095,7 @@ export default {
                                 const signalIsDown = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
                                 
                                 if ((configuredIsUp && !signalIsUp) || (configuredIsDown && !signalIsDown)) {
-                                    this.addLog('🚫 Sinal Incompatível', [
+                                    this.addLog('?? Sinal Incompatível', [
                                         `Sinal ${signal} ignorado`,
                                         `Tipo configurado: ${baseType}`,
                                         `Motivo: Direção do sinal não corresponde ao tipo de contrato configurado`
@@ -4146,7 +4121,7 @@ export default {
                                 }
                             }
 
-                            // ✅ Direction Mode Restriction (applies to dynamic groups)
+                            // ? Direction Mode Restriction (applies to dynamic groups)
                             const directionMode = configModel.directionMode || 'both';
 
                             if (directionMode !== 'both' && !isSpecificContract) {
@@ -4154,22 +4129,22 @@ export default {
                                 const isDownSignal = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
                                 
                                 if ((directionMode === 'up' && !isUpSignal) || (directionMode === 'down' && !isDownSignal)) {
-                                    this.addLog(`🚫 Direção Restrita (Simulação): Sinal ${signal} ignorado.`, 'info');
+                                    this.addLog(`?? Direção Restrita (Simulação): Sinal ${signal} ignorado.`, 'info');
                                     return;
                                 }
                             }
 
-                            // ✅ Resolve Dynamic Payout
+                            // ? Resolve Dynamic Payout
                             const directionPayouts = configModel.directionPayouts || {};
                             const explicitPayout = directionPayouts[dynamicContractType] || null;
                             this.sessionState.tempExplicitPayout = explicitPayout;
 
-                            this.addLog('🧭 Direção Dinâmica (Simulação)', [
-                                `Sinal: ${signal} → ${dynamicContractType}`,
+                            this.addLog('?? Direção Dinâmica (Simulação)', [
+                                `Sinal: ${signal} ? ${dynamicContractType}`,
                                 explicitPayout ? `Payout: ${(explicitPayout * 100).toFixed(0)}%` : 'Payout: Padrão'
                             ], 'info');
                         } else {
-                            this.addLog('⚠️ Conflito de Direção (Simulação)', `Filtros divergentes: ${uniqueDirections.join(', ')}`, 'warning');
+                            this.addLog('?? Conflito de Direção (Simulação)', `Filtros divergentes: ${uniqueDirections.join(', ')}`, 'warning');
                             return;
                         }
                     }
@@ -4188,7 +4163,7 @@ export default {
 
                     if (shouldApplyVL) {
                         let target = vl.target;
-                        // ✅ Recovery Override: Use card slider if set
+                        // ? Recovery Override: Use card slider if set
                         if (isRecovery && this.recoveryConfig.virtualLossTarget > 0) {
                              target = this.recoveryConfig.virtualLossTarget;
                         }
@@ -4205,7 +4180,7 @@ export default {
                         if (vl && vl.enabled) {
                             if (vl.mode === 'cyclic') {
                                 vl.current = 0;
-                                this.addLog('🛡️ Segurança: Ciclo Reiniciado (Modo Cíclico).', 'info');
+                                this.addLog('??? Segurança: Ciclo Reiniciado (Modo Cíclico).', 'info');
                             } else if (vl.mode === 'attack' && !isRecovery) {
                                 vl.current = 0;
                             } else if (vl.mode === 'recovery' && isRecovery) {
@@ -4226,10 +4201,10 @@ export default {
 
             // 1. Profit Target
             if (target > 0 && lucroAtual >= target) {
-                this.addLog(`🎯 META ATINGIDA: +$${lucroAtual.toFixed(2)}`, 'success');
+                this.addLog(`?? META ATINGIDA: +$${lucroAtual.toFixed(2)}`, 'success');
                 this.stopMonitoring('Meta atingida');
                 this.stopResult = {
-                    title: 'Meta Batida! 🚀',
+                    title: 'Meta Batida! ??',
                     message: 'Parabéns! Você atingiu sua meta de lucro.',
                     profit: lucroAtual,
                     type: 'success'
@@ -4249,7 +4224,7 @@ export default {
                     if (!this.sessionState.stopBlindadoActive) {
                         this.sessionState.stopBlindadoActive = true;
                         this.sessionState.stopBlindadoFloor = protectedAmount;
-                        this.addLog(`🛡️ STOP BLINDADO ATIVADO! (Meta > 50%) - Protegendo: $${protectedAmount.toFixed(2)}`, 'info');
+                        this.addLog(`??? STOP BLINDADO ATIVADO! (Meta > 50%) - Protegendo: $${protectedAmount.toFixed(2)}`, 'info');
                     } else {
                         // Update floor if peak increases (Trailing)
                         if (protectedAmount > this.sessionState.stopBlindadoFloor) {
@@ -4258,10 +4233,10 @@ export default {
                     }
 
                     if (lucroAtual <= this.sessionState.stopBlindadoFloor) {
-                        this.addLog(`🛡️ STOP BLINDADO ATINGIDO: Protegendo $${lucroAtual.toFixed(2)}`, 'warning');
+                        this.addLog(`??? STOP BLINDADO ATINGIDO: Protegendo $${lucroAtual.toFixed(2)}`, 'warning');
                         this.stopMonitoring('Stop Blindado atingido');
                         this.stopResult = {
-                            title: 'Stop Blindado 🛡️',
+                            title: 'Stop Blindado ???',
                             message: `Parada de segurança acionada. Você garantiu $${lucroAtual.toFixed(2)} de lucro!`,
                             profit: lucroAtual,
                             type: 'warning'
@@ -4274,10 +4249,10 @@ export default {
 
             // 3. Stop Loss
             if (stopLoss > 0 && lucroAtual <= -stopLoss) {
-                this.addLog(`🛑 STOP LOSS ATINGIDO: -$${Math.abs(lucroAtual).toFixed(2)}`, 'error');
+                this.addLog(`?? STOP LOSS ATINGIDO: -$${Math.abs(lucroAtual).toFixed(2)}`, 'error');
                 this.stopMonitoring('Stop Loss atingido');
                 this.stopResult = {
-                    title: 'Stop Loss Atingido 🛑',
+                    title: 'Stop Loss Atingido ??',
                     message: 'Limite de perda alcançado. Respeite seu gerenciamento.',
                     profit: lucroAtual,
                     type: 'error'
@@ -4307,7 +4282,7 @@ export default {
 
             // Log Protected Amount if Active
             if (blindadoState.active) {
-                 this.addLog(`🛡️ VALIDAÇÃO DE ENTRADA: Protegendo $${blindadoState.floor.toFixed(2)} do lucro acumulado.`, 'info');
+                 this.addLog(`??? VALIDAÇÃO DE ENTRADA: Protegendo $${blindadoState.floor.toFixed(2)} do lucro acumulado.`, 'info');
             }
 
             const survivalResult = RiskManager.applySurvivalMode(stake, currentProfit, globalConfig, explicitPayout || payoutRate, blindadoState);
@@ -4315,13 +4290,13 @@ export default {
             const survivalReason = survivalResult.reason;
 
             if (survivalStake < stake) {
-                 this.addLog(`🛡️ Survival Mode: Stake ajustada para proteger limites. Motivo: ${survivalReason || 'Ajuste de Risco'} (${stake.toFixed(2)} -> ${survivalStake.toFixed(2)})`, 'warning');
+                 this.addLog(`??? Survival Mode: Stake ajustada para proteger limites. Motivo: ${survivalReason || 'Ajuste de Risco'} (${stake.toFixed(2)} -> ${survivalStake.toFixed(2)})`, 'warning');
                  stake = survivalStake;
             }
             
             // CRITICAL: Stop if stake is too low (Survival Mode Triggered Hard)
             if (stake < 0.35) {
-                this.addLog(`⚠️ VISÃO DE SOBREVIVÊNCIA: Ajuste de stake ($${stake.toFixed(2)}) menor que o mínimo ($0.35). Parando para proteger capital.`, 'warning');
+                this.addLog(`?? VISÃO DE SOBREVIVÊNCIA: Ajuste de stake ($${stake.toFixed(2)}) menor que o mínimo ($0.35). Parando para proteger capital.`, 'warning');
                 
                 let stopReason = 'Stop de Segurança (Stake Mínimo)';
                 if (blindadoState.active && (currentProfit - stake < blindadoState.floor)) {
@@ -4330,7 +4305,7 @@ export default {
                 
                 this.stopMonitoring(stopReason);
                 this.stopResult = {
-                    title: 'Proteção Ativada 🛡️',
+                    title: 'Proteção Ativada ???',
                     message: `O robô parou porque a próxima entrada arriscaria seu lucro protegido ou limite de perda.`,
                     profit: currentProfit,
                     type: 'warning'
@@ -4347,7 +4322,7 @@ export default {
                 this.sessionState.lastResultWin) {
                 
                 if (stake > config.initialStake) {
-                     this.addLog(`🚀 SOROS ATIVADO: Stake base + último lucro = $${stake.toFixed(2)}`, 'info');
+                     this.addLog(`?? SOROS ATIVADO: Stake base + último lucro = $${stake.toFixed(2)}`, 'info');
                 }
             }
 
@@ -4364,7 +4339,7 @@ export default {
             this.monitoringStats.statusDesc = stopReason;
             this.stopTickConnection();
             
-            // ✅ FULL SESSION RESET (User Request: "100% from zero")
+            // ? FULL SESSION RESET (User Request: "100% from zero")
             // 1. Reset RiskManager State
             RiskManager.reset();
             
@@ -4406,7 +4381,7 @@ export default {
         executeRealTrade(overrideContractType = null, explicitPayout = null) {
             try {
                 if (!this.isAuthorized) {
-                    this.addLog('⚠️ Entrada negada: Não autorizado (Token inválido ou ausente).', 'warning');
+                    this.addLog('?? Entrada negada: Não autorizado (Token inválido ou ausente).', 'warning');
                     return;
                 }
 
@@ -4425,7 +4400,7 @@ export default {
                 // So we override 'config' to recoveryConfig if isFinancialRecovery is true.
                 const config = (isFinancialRecovery || isRecoveryStrategy) ? this.recoveryConfig : this.form;
                 
-                // 🔍 DEBUG: Log which config is being used
+                // ?? DEBUG: Log which config is being used
                 console.log(`[executeRealTrade] Mode: ${isFinancialRecovery ? 'RECUPERAÇÃO' : 'PRINCIPAL'}, ` +
                     `Using Config: ${isFinancialRecovery || isRecoveryStrategy ? 'recoveryConfig' : 'form'}, ` +
                     `TradeType: ${config.tradeType}, ` +
@@ -4433,7 +4408,7 @@ export default {
                 
                 // Check for Contract Switch
                 if (this.sessionState.lastContractType && this.sessionState.lastContractType !== (overrideContractType || config.tradeType)) {
-                    this.addLog(`📊 CONTRATO ALTERADO: ${this.sessionState.lastContractType} ➔ ${overrideContractType || config.tradeType}`, 'info');
+                    this.addLog(`?? CONTRATO ALTERADO: ${this.sessionState.lastContractType} ? ${overrideContractType || config.tradeType}`, 'info');
                 }
                 this.sessionState.lastContractType = overrideContractType || config.tradeType;
                 
@@ -4447,16 +4422,16 @@ export default {
                 }
 
                 const durationDisplay = `${config.duration}${config.durationUnit === 't' ? 't' : config.durationUnit}`;
-                this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${overrideContractType || config.tradeType} $${stake} | Duração: ${durationDisplay}`, 'info');
+                this.addLog(`?? Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${overrideContractType || config.tradeType} $${stake} | Duração: ${durationDisplay}`, 'info');
                 
-                // ✅ DETAILED CONSERVADOR LOGS
+                // ? DETAILED CONSERVADOR LOGS
                 if (isFinancialRecovery && this.recoveryConfig.riskProfile === 'conservador') {
                     const totalPlan = 4;
                     const remaining = this.sessionState.recoveryInstallmentsRemaining || 0;
                     const currentParcel = remaining > 0 ? (totalPlan - remaining + 1) : 1;
                     const debt = Math.max(0, this.sessionState.totalLossAccumulated - this.sessionState.recoveredAmount);
                     
-                    const recoveryMsg = `🛡️ <b>RECUPERAÇÃO CONSERVADORA</b><br>` +
+                    const recoveryMsg = `??? <b>RECUPERAÇÃO CONSERVADORA</b><br>` +
                         `• Parcela: ${currentParcel}/${totalPlan}<br>` +
                         `• Dívida Restante: $${debt.toFixed(2)}<br>` +
                         `• Re-parcelamentos: ${this.sessionState.recoverySplitsUsed || 0}/3`;
@@ -4497,13 +4472,13 @@ export default {
                     contractId: null,
                     barrier: parseInt(proposalParams.barrier || config.prediction || 8), 
                     contractType: overrideContractType || config.tradeType,
-                    active: false, // ❌ DISABLED FAST RESULT
+                    active: false, // ? DISABLED FAST RESULT
                     stake: stake,
                     analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
                     payout: null,
                     duration: config.duration,
                     durationUnit: config.durationUnit,
-                    // ✅ Capture current tick as entry point
+                    // ? Capture current tick as entry point
                     entryTick: this.lastTickPrice,
                     entryDigit: parseInt(this.lastTickPrice.toString().slice(-1))
                 };
@@ -4513,13 +4488,13 @@ export default {
             } catch (error) {
                 console.error('[StrategyCreator] Erro em executeRealTrade:', error);
                 this.isNegotiating = false;
-                this.addLog('❌ Erro interno ao processar operação.', 'error');
+                this.addLog('? Erro interno ao processar operação.', 'error');
             }
         },
         executeVirtualTrade(overrideContractType = null) {
             // Check context
             const isRecoveryStrategy = this.sessionState.activeStrategy === 'RECUPERACAO';
-            // ✅ FIX: Correctly merge configs
+            // ? FIX: Correctly merge configs
             const config = {
                 ...this.form,
                 ...(isRecoveryStrategy ? this.recoveryConfig : {})
@@ -4529,7 +4504,7 @@ export default {
             const current = vl.current + 1; // Current attempt
             let target = vl.target;
             
-            // ✅ Recovery Override
+            // ? Recovery Override
             if (isRecoveryStrategy && this.recoveryConfig.virtualLossTarget > 0) {
                  target = this.recoveryConfig.virtualLossTarget;
             }
@@ -4575,16 +4550,16 @@ export default {
             if (win) {
                 // Win Virtual = Reset sequence
                 vl.current = 0;
-                this.addLog(`👻 SIMULAÇÃO WIN (Dígito ${lastDigit}) ➔ Sequência quebrada. Reiniciando contagem.`, 'success');
+                this.addLog(`?? SIMULAÇÃO WIN (Dígito ${lastDigit}) ? Sequência quebrada. Reiniciando contagem.`, 'success');
             } else {
                 // Loss Virtual = Increment sequence
                 vl.current++;
                 const faltam = vl.target - vl.current;
                 
                 if (faltam > 0) {
-                    this.addLog(`👻 SIMULAÇÃO LOSS (Dígito ${lastDigit}) ➔ Confirmado Loss Virtual #${vl.current}. Faltam ${faltam}.`, 'warning');
+                    this.addLog(`?? SIMULAÇÃO LOSS (Dígito ${lastDigit}) ? Confirmado Loss Virtual #${vl.current}. Faltam ${faltam}.`, 'warning');
                 } else {
-                    this.addLog(`👻 SIMULAÇÃO LOSS (Dígito ${lastDigit}) ➔ Alvo Atingido (${vl.current}/${vl.target})! PRÓXIMA ENTRADA SERÁ REAL.`, 'warning');
+                    this.addLog(`?? SIMULAÇÃO LOSS (Dígito ${lastDigit}) ? Alvo Atingido (${vl.current}/${vl.target})! PRÓXIMA ENTRADA SERÁ REAL.`, 'warning');
                 }
             }
         },
@@ -4634,7 +4609,7 @@ export default {
                     trade.lastDigit = contract.exit_tick_display_value.toString().slice(-1);
                 }
                 
-                // ✅ SMART FAST RESULT: Early Settlement Logic
+                // ? SMART FAST RESULT: Early Settlement Logic
                 const currentTickCount = contract.tick_count || 0;
                 const targetDuration = trade.duration || (this.pendingFastResult ? this.pendingFastResult.duration : this.form.duration);
                 
@@ -4646,18 +4621,18 @@ export default {
                     trade.earlySettled = true;
                     trade.result = win ? 'WON' : 'LOST';
                     
-                    // ✅ FIX: For early settlement, if it's a loss, the profit reported is just the spread (-0.04).
+                    // ? FIX: For early settlement, if it's a loss, the profit reported is just the spread (-0.04).
                     // We MUST use the full stake as loss for correct recovery/balance tracking.
                     trade.pnl = win ? parseFloat(contract.profit || 0) : -trade.stake;
                     if (!trade.exitPrice) trade.exitPrice = contract.current_spot_display_value || contract.current_spot;
                     if (trade.exitPrice) trade.lastDigit = trade.exitPrice.toString().slice(-1);
 
                     // Add Log
-                    const logPrefix = '⚡ <b>RESULTADO RÁPIDO</b>';
+                    const logPrefix = '? <b>RESULTADO RÁPIDO</b>';
                     if (win) {
-                        this.addLog(`${logPrefix}: 💰 WIN! +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
+                        this.addLog(`${logPrefix}: ?? WIN! +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
                     } else {
-                        this.addLog(`${logPrefix}: 🔴 LOSS! -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
+                        this.addLog(`${logPrefix}: ?? LOSS! -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
                     }
 
                     // Process Profit for sessions/stats
@@ -4678,13 +4653,13 @@ export default {
                         this.recoveryConfig
                     );
 
-                    // ✅ UNLOCK ANALYSIS EARLY
+                    // ? UNLOCK ANALYSIS EARLY
                     this.activeContracts.delete(id);
                     this.checkLimits();
                     
                     console.log(`[StrategyCreator] Smart Fast Result triggering for ${id}. Analysis released.`);
                     
-                    // ✅ IMMEDIATE NEXT CYCLE
+                    // ? IMMEDIATE NEXT CYCLE
                     this.$nextTick(() => {
                         this.runAnalysis();
                     });
@@ -4692,7 +4667,7 @@ export default {
             }
 
             if (contract.is_sold) {
-                // ✅ Protection: If already early settled, just update final pnl and exit.
+                // ? Protection: If already early settled, just update final pnl and exit.
                 if (trade.earlySettled) {
                     trade.result = contract.status.toUpperCase();
                     trade.pnl = parseFloat(contract.profit || 0);
@@ -4731,9 +4706,9 @@ export default {
                 trade.pnl = parseFloat(contract.profit || 0);
 
                 if (trade.result === 'WON') {
-                    this.addLog(`💰 WIN! Resultado: +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
+                    this.addLog(`?? WIN! Resultado: +$${trade.pnl.toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'success');
                 } else {
-                    this.addLog(`🔴 LOSS! Prejuízo: -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
+                    this.addLog(`?? LOSS! Prejuízo: -$${Math.abs(trade.pnl).toFixed(2)} (Stake: $${trade.stake.toFixed(2)})`, 'error');
                 }
 
                 // Refinar resultado se já processado pelo resultado rápido
@@ -4743,7 +4718,7 @@ export default {
                     const oldAnalysis = this.sessionState.analysisType;
                     const oldMode = this.sessionState.negotiationMode;
 
-                    // ✅ CORRECTED LOGIC: Process ALL results (WIN and LOSS) if not fast-processed
+                    // ? CORRECTED LOGIC: Process ALL results (WIN and LOSS) if not fast-processed
                     trade.fastResultApplied = true;
                     if (trade.result === 'WON') this.monitoringStats.wins++;
                     else this.monitoringStats.losses++;
@@ -4762,7 +4737,7 @@ export default {
                     const totalConsecutiveLosses = this.sessionState.consecutiveLosses + this.sessionState.lossStreakRecovery;
                     
                     if (trade.result !== 'WON') {
-                         this.addLog(`🔍 DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
+                         this.addLog(`?? DEBUG PAUSA: Main=${this.sessionState.consecutiveLosses} | Rec=${this.sessionState.lossStreakRecovery} | Total=${totalConsecutiveLosses} | Limit=6`, 'warning');
                     }
 
                     const limit = this.recoveryConfig.pauseLosses || 6;
@@ -4770,7 +4745,7 @@ export default {
                         const pauseTime = this.recoveryConfig.pauseTime || 2;
                         const pauseDuration = pauseTime * 60 * 1000;
                         this.pauseUntil = Date.now() + pauseDuration;
-                        this.addLog(`⏸️ PAUSA ESTRATÉGICA: Limite de ${totalConsecutiveLosses} perdas sequenciais atingido. Pausando por ${pauseTime} min.`, 'warning');
+                        this.addLog(`?? PAUSA ESTRATÉGICA: Limite de ${totalConsecutiveLosses} perdas sequenciais atingido. Pausando por ${pauseTime} min.`, 'warning');
                         // Do not stop ticks here as it might affect tracking
                     }
                     
@@ -4779,17 +4754,17 @@ export default {
 
                     // Mode Switching Logs
                     if (this.sessionState.negotiationMode !== oldMode) {
-                        this.addLog(`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`, 'warning');
+                        this.addLog(`?? MODO ${this.sessionState.negotiationMode} ATIVADO`, 'warning');
                     }
 
                     // Special Recovery Logs
                     if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
                          const lossSum = this.sessionState.totalLossAccumulated || this.sessionState.lastStakePrincipal;
-                         this.addLog(`📉 Loss acumulado ($${lossSum.toFixed(2)}). Ativando RECUPERAÇÃO.`, 'warning');
+                         this.addLog(`?? Loss acumulado ($${lossSum.toFixed(2)}). Ativando RECUPERAÇÃO.`, 'warning');
                     } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
-                         this.addLog('✅ RECUPERAÇÃO CONCLUÍDA!', 'success');
+                         this.addLog('? RECUPERAÇÃO CONCLUÍDA!', 'success');
                     } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST') {
-                         this.addLog(`📉 Loss na Recuperação. Ajustando Martingale...`, 'warning');
+                         this.addLog(`?? Loss na Recuperação. Ajustando Martingale...`, 'warning');
                     }
                     // Refine result from Fast Result logic with official data
                     RiskManager.refineTradeResult(this.sessionState, trade.pnl, trade.stake, trade.analysisType);
@@ -4821,17 +4796,17 @@ export default {
                 this.monitoringStats.profit += trade.pnl;
                 this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
                 
-                // ✅ RECOVERY DELAY LOGIC
-                if (trade.analysisType === 'RECUPERACAO') {
-                    const delay = trade.result === 'WON' 
-                        ? (this.recoveryConfig.delayWin || 0) 
-                        : (this.recoveryConfig.delayLoss || 0);
-                    
-                    if (delay > 0) {
-                        const delayMs = delay * 1000;
-                        this.pauseUntil = Math.max(this.pauseUntil || 0, Date.now() + delayMs);
-                        this.addLog(`⏳ Delay ${trade.result}: Aguardando ${delay}s...`, 'info');
-                    }
+                // ? DELAY LOGIC (Real Trade - Main & Recovery)
+                const config = trade.analysisType === 'RECUPERACAO' ? this.recoveryConfig : this.form;
+                
+                const delay = trade.result === 'WON' 
+                    ? (config.delayWin || 0) 
+                    : (config.delayLoss || 0);
+                
+                if (delay > 0) {
+                    const delayMs = delay * 1000;
+                    this.pauseUntil = Math.max(this.pauseUntil || 0, Date.now() + delayMs);
+                    this.addLog(`? Delay ${trade.result} (${trade.analysisType === 'RECUPERACAO' ? 'Rec' : 'Main'}): Aguardando ${delay}s...`, 'info');
                 }
 
                 this.activeContracts.delete(id);
@@ -4868,7 +4843,7 @@ export default {
                     this.form.riskProfile = 'conservador';
                     console.log('[StrategyCreator] Martingale Disabled -> Enforcing Risk Profile: Conservador');
                 } else {
-                    // ✅ Re-enable logic: If profile was Conservador (likely forced), switch to Moderado or keep current if valid
+                    // ? Re-enable logic: If profile was Conservador (likely forced), switch to Moderado or keep current if valid
                     // We default to 'Moderado' as a safe "Active" state if it was stuck on Conservador
                     if (this.form.riskProfile === 'conservador') {
                         this.form.riskProfile = 'moderado';
@@ -5304,3 +5279,4 @@ button[type="submit"].bg-zenix-green:hover {
     transform: translateY(-2px);
 }
 </style>
+
