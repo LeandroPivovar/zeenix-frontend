@@ -4659,7 +4659,10 @@ export default {
 
                     // ? DELAY LOGIC (Early Settlement)
                     const config = trade.analysisType === 'RECUPERACAO' ? this.recoveryConfig : this.form;
-                    const delay = win ? (config.delayWin || 0) : (config.delayLoss || 0);
+                    console.log(`[DEBUG DELAY] Type: ${trade.analysisType}, Result: ${win?'WIN':'LOSS'}, DelayWin: ${config.delayWin}, DelayLoss: ${config.delayLoss}`);
+                    
+                    const delay = win ? (Number(config.delayWin) || 0) : (Number(config.delayLoss) || 0);
+                    console.log(`[DEBUG DELAY] Calculated Delay: ${delay}`);
 
                     if (delay > 0) {
                         const delayMs = delay * 1000;
