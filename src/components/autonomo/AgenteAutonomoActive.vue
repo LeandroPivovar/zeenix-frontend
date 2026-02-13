@@ -1152,8 +1152,9 @@
 				return `${formatDate(startDate)} - ${formatDate(today)} ${today.getFullYear()}`;
 			},
 			initialCapital() {
-				// ✅ [ZENIX v2.4] Prioritize initialBalance (starting capital of session)
-				return this.agentConfig?.initialBalance || this.agentConfig?.initialCapital || this.agentConfig?.initialStake || 0;
+				// ✅ [ZENIX v2.4] Reverted to prioritize initialStake as per user request
+				// Fallback to balance only if stake is missing (but user wants stake)
+				return this.agentConfig?.initialStake || this.agentConfig?.initialCapital || this.agentConfig?.initialBalance || 0;
 			},
 			finalCapital() {
 				// ✅ Always use current balance from mixin (same pattern as TopNavbar)
@@ -1674,6 +1675,14 @@
                 } else if (newVal === '0 ops' && (this.renderedOperacoesHoje === '--' || this.selectedPeriod === 'session')) {
                     // Permitir 0 ops se for o estado inicial ou estiver na sessão (que reseta)
                     this.renderedOperacoesHoje = newVal;
+                }
+            },
+            // ✅ [ZENIX v2.5] Monitorar status da sessão para triggers de modal
+            'sessionStats.session_status': function(newStatus) {
+                if (newStatus === 'stopped_consecutive_loss') {
+					console.log('[AgenteAutonomo] 🛑 STOP POR PERDAS CONSECUTIVAS DETECTADO! Abrindo modal...');
+                    this.showConsecutiveLossModal = true;
+                    this.stopLossAcknowledged = true; // Evitar abrir outros modais
                 }
             },
 		},

@@ -1137,8 +1137,21 @@
         const buyPrice = parseFloat(contract.buy_price) || 0;
         const sellPrice = parseFloat(contract.sell_price) || parseFloat(contract.bid_price) || 0;
         // ✅ [ZENIX v2.4] Forçar lucro líquido real (Net Profit = Sell - Buy)
-        // ✅ [ZENIX v2.4] Forçar lucro líquido real (Net Profit = Sell - Buy)
-        const profit = sellPrice - buyPrice;
+        // 1.1 Tentar recuperar buyPrice do histórico se vier zerado (comum em updates finais de loss)
+        let finalBuyPrice = buyPrice;
+        const existingTrade = this.apiTradeHistory.find(t => t.id === contractId);
+        if (finalBuyPrice === 0 && existingTrade && existingTrade.entry) {
+            finalBuyPrice = parseFloat(existingTrade.entry);
+        }
+
+        // ✅ [ZENIX v2.5] Forçar lucro líquido real (Net Profit = Sell - Buy)
+        // Se sellPrice for 0 (loss) e buyPrice recuperado, profit será negativo corretamente.
+        // Se a API mandar profit explícito, usar como fallback se o cálculo der errado (ex: ambos 0)
+        let profit = sellPrice - finalBuyPrice;
+        
+        if (profit === 0 && contract.profit) {
+            profit = parseFloat(contract.profit);
+        }
 
         console.log(`[AgenteAutonomo] 📝 Contrato Update: ID=${contractId}, Status=${status}, Profit=${profit}`);
 
