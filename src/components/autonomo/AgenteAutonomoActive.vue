@@ -897,6 +897,7 @@
 					netProfit: 0,
 					totalCapital: 0,
 					operationsToday: 0,
+                    session_status: 'active', // ✅ [ZENIX v2.6] Status da sessão para modais
 				})
 			},
 			tradeHistory: {

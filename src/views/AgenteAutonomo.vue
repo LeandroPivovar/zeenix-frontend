@@ -809,28 +809,58 @@
           const result = await response.json();
           console.log('[AgenteAutonomo] 📊 Resposta completa do backend:', result);
           if (result.success && result.data) {
-            console.log('[AgenteAutonomo] ✅ Session stats recebidas:', result.data);
+            // console.log('[AgenteAutonomo] ✅ Session stats recebidas:', result.data);
             const operationsToday = parseInt(result.data.operationsToday) || 0;
             const netProfit = parseFloat(result.data.netProfit) || 0;
-            console.log('[AgenteAutonomo] 💰 netProfit recebido:', netProfit, 'tipo:', typeof netProfit);
-            this.sessionStats = {
-              totalTrades: parseInt(result.data.totalTrades) || 0,
-              wins: parseInt(result.data.wins) || 0,
-              losses: parseInt(result.data.losses) || 0,
-              winRate: parseFloat(result.data.winRate) || 0,
-              totalProfit: parseFloat(result.data.totalProfit) || 0,
-              totalLoss: parseFloat(result.data.totalLoss) || 0,
-              netProfit: netProfit,
-              totalCapital: parseFloat(result.data.totalCapital) || 0,
-              operationsToday: operationsToday,
-              evolution: result.data.evolution || [],
-            };
+            
+            // ✅ [ZENIX v2.6] Smart Merge para evitar flicker (piscar) na UI
+            // Só atualiza o objeto sessionStats se ele não existir
+            if (!this.sessionStats) {
+                this.sessionStats = {
+                  totalTrades: parseInt(result.data.totalTrades) || 0,
+                  wins: parseInt(result.data.wins) || 0,
+                  losses: parseInt(result.data.losses) || 0,
+                  winRate: parseFloat(result.data.winRate) || 0,
+                  totalProfit: parseFloat(result.data.totalProfit) || 0,
+                  totalLoss: parseFloat(result.data.totalLoss) || 0,
+                  netProfit: netProfit,
+                  totalCapital: parseFloat(result.data.totalCapital) || 0,
+                  operationsToday: operationsToday,
+                  evolution: result.data.evolution || [],
+                  session_status: result.data.session_status || 'active'
+                };
+            } else {
+                // Se já existe, atualiza propriedade por propriedade SE mudou
+                const newData = {
+                  totalTrades: parseInt(result.data.totalTrades) || 0,
+                  wins: parseInt(result.data.wins) || 0,
+                  losses: parseInt(result.data.losses) || 0,
+                  winRate: parseFloat(result.data.winRate) || 0,
+                  totalProfit: parseFloat(result.data.totalProfit) || 0,
+                  totalLoss: parseFloat(result.data.totalLoss) || 0,
+                  netProfit: netProfit,
+                  totalCapital: parseFloat(result.data.totalCapital) || 0,
+                  operationsToday: operationsToday,
+                  evolution: result.data.evolution || [],
+                  session_status: result.data.session_status || 'active'
+                };
+
+                // Atualizar apenas campos diferentes
+                Object.keys(newData).forEach(key => {
+                    if (JSON.stringify(this.sessionStats[key]) !== JSON.stringify(newData[key])) {
+                        // console.log(`[AgenteAutonomo] 🔄 Atualizando campo ${key}:`, newData[key]);
+                        this.sessionStats[key] = newData[key];
+                    }
+                });
+            }
+
             // Usar operationsToday que inclui ai_trades + autonomous_agent_trades
-            this.operacoesHoje = operationsToday;
-            this.dailyProfit = netProfit;
-            console.log('[AgenteAutonomo] ✅ Operações hoje definidas:', this.operacoesHoje, 'operationsToday do backend:', operationsToday);
-            console.log('[AgenteAutonomo] ✅ sessionStats atualizado:', this.sessionStats);
-            console.log('[AgenteAutonomo] ✅ dailyProfit atualizado:', this.dailyProfit);
+            if (this.operacoesHoje !== operationsToday) {
+                this.operacoesHoje = operationsToday;
+            }
+            if (this.dailyProfit !== netProfit) {
+                this.dailyProfit = netProfit;
+            }
           } else {
             console.warn('[AgenteAutonomo] ⚠️ Resposta inválida ou sem dados:', result);
           }
@@ -1003,13 +1033,19 @@
         this.initWebSocket();
 
         // Polling apenas para configuração e logs (menos frequentes ou sem stream dedicado)
+        // ✅ [ZENIX v2.6] Polling reativado com Smart Merge para garantir que status STOP do backend seja recebido
+        // Intervalo reduzido para 5s para feedback rápido
         this.pollingInterval = setInterval(() => {
           if (this.agenteEstaAtivo) {
             this.loadAgentConfig();
             this.loadAgentLogs(); // Logs ainda via polling ou SSE
-            // sessionStats e tradeHistory agora via WebSocket!
+            
+            // ✅ Reativado: Busca status do backend (ex: Stopped por perdas)
+            // Agora usa Smart Merge para não piscar a tela
+            this.loadSessionStats();
+            this.loadTradeHistory();
           }
-        }, 10000); // Aumentado para 10s já que o grosso é via WS
+        }, 5000); // 5s para detectar STOP rápido
         
         // Atualizar tempo ativo a cada segundo
         this.timeUpdateInterval = setInterval(() => {
