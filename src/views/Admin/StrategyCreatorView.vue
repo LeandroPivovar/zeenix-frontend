@@ -4656,6 +4656,16 @@ export default {
                     this.checkLimits();
                     
                     console.log(`[StrategyCreator] Smart Fast Result triggering for ${id}. Analysis released.`);
+
+                    // ? DELAY LOGIC (Early Settlement)
+                    const config = trade.analysisType === 'RECUPERACAO' ? this.recoveryConfig : this.form;
+                    const delay = win ? (config.delayWin || 0) : (config.delayLoss || 0);
+
+                    if (delay > 0) {
+                        const delayMs = delay * 1000;
+                        this.pauseUntil = Date.now() + delayMs;
+                        this.addLog(`? Delay ${win ? 'WIN' : 'LOSS'} (${trade.analysisType === 'RECUPERACAO' ? 'Rec' : 'Main'}): Aguardando ${delay}s...`, 'info');
+                    }
                     
                     // ? IMMEDIATE NEXT CYCLE
                     this.$nextTick(() => {
