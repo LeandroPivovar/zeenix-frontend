@@ -823,8 +823,7 @@
                                     </div>
                                 </div>
                             </div>
-
-                        <!-- Configuração Financeira -->
+                        </div>
                         <div class="col-span-12">
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
                                 <div class="absolute top-0 right-0 p-4 opacity-5">
@@ -5279,4 +5278,7 @@ button[type="submit"].bg-zenix-green:hover {
     transform: translateY(-2px);
 }
 </style>
+
+
+
 
