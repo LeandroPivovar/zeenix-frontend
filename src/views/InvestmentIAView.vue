@@ -2256,7 +2256,6 @@ export default {
             // Update component state
             this.allStrategies = strategies.map(s => {
                 const strategyId = s.id.replace('default_', '');
-                const hardcoded = this.allStrategies.find(h => h.id === strategyId);
                 const identity = s.config?.strategyIdentity || {};
                 
                 return {
