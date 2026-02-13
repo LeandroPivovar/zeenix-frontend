@@ -944,7 +944,6 @@
                                 <span>Iniciar Robô</span>
                             </button>
                         </div>
-                    </div>
                 </form>
 
 
