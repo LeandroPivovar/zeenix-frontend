@@ -718,12 +718,7 @@
                                     <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ preferredCurrencyPrefix }}{{item.data.exit}}</td>
                                     <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ preferredCurrencyPrefix }}{{parseFloat(item.data.stake).toFixed(2)}}</td>
                                     <td class="py-2 px-1 text-right tabular-nums font-semibold" :class="parseFloat(item.data.profit) >= 0 ? 'text-green-500' : 'text-red-500'">
-                                        <template v-if="parseFloat(item.data.profit) >= 0">
-                                            +{{ preferredCurrencyPrefix }}{{ (parseFloat(item.data.stake) + parseFloat(item.data.profit)).toFixed(2) }}
-                                        </template>
-                                        <template v-else>
-                                            {{ preferredCurrencyPrefix }}0.00
-                                        </template>
+                                        {{ parseFloat(item.data.profit) >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ Math.abs(parseFloat(item.data.profit)).toFixed(2) }}
                                     </td>
                                 </tr>
 
