@@ -2268,7 +2268,11 @@
             const subset = logsList.slice(0, 10);
             for (const log of subset) {
                 const text = log.message || '';
-                const moneyRegex = /(?:Lucro\/Prejuízo|Profit|Loss|Drawdown|Resultado).*?(?:\$|R\$)\s*([+-]?\d+(?:\.\d{2})?)/i;
+                // ✅ Regex aprimorado: 
+                // 1. Aceita 'Lucro' (sozinho) ou combinacoes
+                // 2. Ignora se tiver 'Capital' logo antes do valor
+                // 3. Busca valor monetário
+                const moneyRegex = /(?:Lucro(?:\/Prejuízo)?|Profit|Loss|Drawdown|Resultado)(?:(?!Capital).)*?(?:\$|R\$)\s*([+-]?\d+(?:\.\d{2})?)/i;
                 const match = text.match(moneyRegex);
                 if (match) {
                      const val = parseFloat(match[1]);
@@ -2308,6 +2312,11 @@
             stopDetected = true;
             stopReason = 'BLINDADO';
             stopCycle = findRecentCycle(recentLogs);
+            // ✅ FIX: Para Stop Blindado, confiar preferencialmente no sessionStats se disponível,
+            // pois o log pode conter valores de proteção (Capital) que confundem o regex.
+            if (this.sessionStats && typeof this.sessionStats.netProfit === 'number') {
+                stopProfit = this.sessionStats.netProfit;
+            }
         }
         
         // 2. STOP LOSS NORMAL / DRAWDOWN GLOBAL
@@ -2368,8 +2377,8 @@
             }
         }
 
-        // Tentar refinar o lucro se detectou stop
-        if (stopDetected) {
+        // Tentar refinar o lucro se detectou stop (exceto se já foi definido no Blindado)
+        if (stopDetected && stopReason !== 'BLINDADO') {
             const extractedProfit = findRecentProfit(recentLogs);
             if (extractedProfit !== null) {
                 stopProfit = extractedProfit;
