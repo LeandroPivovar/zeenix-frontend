@@ -834,6 +834,14 @@
         :currency="preferredCurrencyPrefix"
         @confirm="handleCloseTargetProfit"
     />
+
+    <!-- Consecutive Loss Modal (Zeus) -->
+    <ConsecutiveLossModal
+        :visible="showConsecutiveLossModal"
+        :result="sessionSummaryData.profit"
+        :currency="preferredCurrencyPrefix"
+        @confirm="handleCloseConsecutiveLoss"
+    />
 </template>
 
 <script>
@@ -850,6 +858,7 @@
             CycleCompletionModal: defineAsyncComponent(() => import('@/components/CycleCompletionModal.vue')),
 			SessionSummaryModal: defineAsyncComponent(() => import('@/components/modals/SessionSummaryModal.vue')),
             StopLossModal: defineAsyncComponent(() => import('@/components/StopLossModal.vue')),
+            ConsecutiveLossModal: defineAsyncComponent(() => import('@/components/ConsecutiveLossModal.vue')),
             StopBlindadoModal: defineAsyncComponent(() => import('@/components/StopBlindadoModal.vue')),
             TargetProfitModal: defineAsyncComponent(() => import('@/components/TargetProfitModal.vue')),
 		},
@@ -933,6 +942,7 @@
 				lastProcessedStatus: null, // Evitar abrir modal repetidamente para o mesmo status
 				showSessionSummaryModal: false,
                 showStopLossModal: false,
+                showConsecutiveLossModal: false,
                 showBlindadoModal: false,
                 showTargetProfitModal: false,
 				sessionSummaryData: {
@@ -2305,8 +2315,16 @@
             );
 
             if (stopLossLog) {
-                stopDetected = true;
-                stopReason = 'STOP_LOSS';
+                // ✅ Check if it is a Consecutive Loss specifically
+                const isConsecutive = recentLogs.find(l => l.message && l.message.toUpperCase().includes('PERDAS CONSECUTIVAS'));
+                
+                if (isConsecutive) {
+                    stopDetected = true;
+                    stopReason = 'CONSECUTIVE_LOSS';
+                } else {
+                    stopDetected = true;
+                    stopReason = 'STOP_LOSS';
+                }
                 stopCycle = findRecentCycle(recentLogs);
             }
         }
@@ -2377,6 +2395,8 @@
                      this.showCycleCompletionModal = true;
                 } else if (stopReason === 'STOP_LOSS') {
                      this.showStopLossModal = true;
+                } else if (stopReason === 'CONSECUTIVE_LOSS') {
+                     this.showConsecutiveLossModal = true;
                 } else if (stopReason === 'BLINDADO') {
                      this.showBlindadoModal = true;
                 } else if (stopReason === 'TARGET' || stopReason === 'META') {
@@ -2441,6 +2461,11 @@
 			},
             handleCloseStopLoss() {
                 this.showStopLossModal = false;
+                window.zenixStopModalActive = false;
+                this.sessionSummaryAcknowledged = true;
+            },
+            handleCloseConsecutiveLoss() {
+                this.showConsecutiveLossModal = false;
                 window.zenixStopModalActive = false;
                 this.sessionSummaryAcknowledged = true;
             },

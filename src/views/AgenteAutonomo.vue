@@ -165,22 +165,8 @@
         let tempoAtivo = "0h 0m 0s";
         
         if (this.agentConfig && this.agenteEstaAtivo) {
-          // SEMPRE usar sessionDate se tiver hora completa, senão usar createdAt
-          let startDate = this.agentConfig.sessionDate;
-          
-          // Verificar se sessionDate é meia-noite (00:00:00) - se for, usar createdAt
-          if (startDate) {
-            const sessionDateStr = String(startDate);
-            // Se contém T00:00:00, é meia-noite - usar createdAt
-            if (sessionDateStr.includes('T00:00:00')) {
-              startDate = this.agentConfig.createdAt;
-            }
-          }
-          
-          // Se ainda não tiver startDate, usar createdAt
-          if (!startDate && this.agentConfig.createdAt) {
-            startDate = this.agentConfig.createdAt;
-          }
+          // Utilizar sessionDate se disponível, senão usar createdAt
+          let startDate = this.agentConfig.sessionDate || this.agentConfig.createdAt;
           
           if (startDate) {
             try {
