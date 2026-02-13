@@ -2344,7 +2344,12 @@
 
             if (stopLossLog) {
                 // ✅ Check if it is a Consecutive Loss specifically
-                const isConsecutive = recentLogs.find(l => l.message && l.message.toUpperCase().includes('PERDAS CONSECUTIVAS'));
+                const isConsecutive = recentLogs.find(l => 
+                    l.message && (
+                        l.message.toUpperCase().includes('PERDAS CONSECUTIVAS') ||
+                        l.message.toUpperCase().includes('CONSECUTIVE LOSSES')
+                    )
+                );
                 
                 if (isConsecutive) {
                     stopDetected = true;
