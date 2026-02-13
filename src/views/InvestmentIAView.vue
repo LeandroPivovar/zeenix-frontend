@@ -670,8 +670,8 @@ export default {
                     icon: 'fas fa-shield-alt', 
                     icons: [], 
                     description: 'Híbrida: Dígitos + Price Action.',
-                    assertividade: '92 a 96%',
-                    retorno: '95% / 99%',
+                    assertividade: 'N/A',
+                    retorno: 'N/A',
                     status: 'Ativo'
                 },
                 { 
@@ -681,8 +681,8 @@ export default {
                     icon: 'fas fa-rocket', 
                     icons: [],
                     description: 'Densidade de Dígitos e Microtendências',
-                    assertividade: '60% a 70%',
-                    retorno: '19% a 126%',
+                    assertividade: 'N/A',
+                    retorno: 'N/A',
                     status: 'Ativo'
                 },
                 { 
@@ -692,8 +692,8 @@ export default {
                     icon: 'fas fa-chart-bar',
                     icons: [],
                     description: 'Price Action com Barreira.',
-                    assertividade: '91% a 95%',
-                    retorno: '91% / 95%',
+                    assertividade: 'N/A',
+                    retorno: 'N/A',
                     status: 'Ativo'
                 },
                 { 
@@ -703,8 +703,8 @@ export default {
                     icon: 'fas fa-star', 
                     icons: [],
                     description: 'Estatística de Dígitos e Recuperação.',
-                    assertividade: '94% a 97%',
-                    retorno: '95% / 99%',
+                    assertividade: 'N/A',
+                    retorno: 'N/A',
                     status: 'Ativo'
                 },
                 { 
@@ -2165,12 +2165,17 @@ export default {
                                         retorno: this.allStrategies[strategyIndex].retorno,
                                         version: this.allStrategies[strategyIndex].version
                                     });
-                                } else if (data && data.version) {
-                                     // Case where metadata might be missing but version exists
-                                     this.allStrategies[strategyIndex].version = data.version;
-                                     console.log(`[InvestmentIAView] ✅ ${strategyName} versão atualizada: v${data.version}`);
                                 } else {
-                                    console.log(`[InvestmentIAView] ⚠️ ${strategyName} sem metadata/versão, usando valores padrão`);
+                                    // Ensure stats are N/A if metadata is missing
+                                    this.allStrategies[strategyIndex].assertividade = 'N/A';
+                                    this.allStrategies[strategyIndex].retorno = 'N/A';
+                                    
+                                    if (data && data.version) {
+                                        this.allStrategies[strategyIndex].version = data.version;
+                                        console.log(`[InvestmentIAView] ✅ ${strategyName} versão atualizada: v${data.version}`);
+                                    } else {
+                                        console.log(`[InvestmentIAView] ⚠️ ${strategyName} sem metadata/versão, stats resetados para N/A`);
+                                    }
                                 }
                             }
                         } else {
@@ -2261,18 +2266,19 @@ export default {
                     icon: identity.icon ? `fas fa-${identity.icon}` : this.getStrategyIcon(s.name),
                     icons: [],
                     description: identity.description || this.getStrategyDescription(s.name),
-                    status: identity.status || (hardcoded ? 'Ativo' : 'Rascunho'),
-                    // Use identity precision and return if available
+                    // Strict status check: only 'Ativo' strategies allowed
+                    status: identity.status === 'Ativo' ? 'Ativo' : 'Rascunho',
+                    // Use identity precision and return if available, otherwise default to 'N/A'
                     assertividade: identity.precision 
                         ? `${identity.precision.min}% a ${identity.precision.max}%` 
                         : ((s.config?.metadata?.assertividade && s.config.metadata.assertividade !== 'N/A') 
                             ? `${s.config.metadata.assertividade}%` 
-                            : (hardcoded?.assertividade || 'N/A')),
+                            : 'N/A'),
                     retorno: identity.return 
                         ? `${identity.return.min}% a ${identity.return.max}%` 
                         : ((s.config?.metadata?.retorno && s.config.metadata.retorno !== 'N/A') 
                             ? `${s.config.metadata.retorno}%` 
-                            : (hardcoded?.retorno || 'N/A')),
+                            : 'N/A'),
                     version: s.version || '1.0'
                 };
             });
