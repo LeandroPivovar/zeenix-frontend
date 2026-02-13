@@ -117,11 +117,11 @@
                         <div class="col-span-12">
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
                                 <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-all duration-500">
-                                    <i :class="['fa-solid', 'fa-' + (strategyIdentity.icon || 'fingerprint'), 'text-6xl']"></i>
+                                    <i :key="strategyIdentity.icon" :class="`fa-solid fa-${strategyIdentity.icon || 'fingerprint'} text-6xl`"></i>
                                 </div>
                                 <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
                                     <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green transition-all duration-300">
-                                        <i :class="['fa-solid', 'fa-' + (strategyIdentity.icon || 'fingerprint')]"></i>
+                                        <i :key="strategyIdentity.icon" :class="`fa-solid fa-${strategyIdentity.icon || 'fingerprint'}`"></i>
                                     </div>
                                     Identidade da Estratégia
                                     <span class="ml-auto px-3 py-1 bg-[#1E1E1E] border border-[#333] rounded-full text-xs text-gray-400 font-bold uppercase tracking-wider">
@@ -142,7 +142,7 @@
                                                 class="w-10 h-10 rounded-xl flex items-center justify-center transition-all border"
                                                 :class="strategyIdentity.icon === icon ? 'bg-zenix-green text-black border-zenix-green shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'bg-[#1E1E1E] text-gray-500 border-[#333] hover:text-white hover:border-gray-500'"
                                             >
-                                                <i :class="['fa-solid', 'fa-' + icon]"></i>
+                                                <i :class="`fa-solid fa-${icon}`"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -232,7 +232,7 @@
                                         <div class="bg-[#111] border border-[#333] rounded-xl p-4 flex flex-col gap-4">
                                             <div class="flex items-center gap-4">
                                                 <div class="w-12 h-12 rounded-xl bg-zenix-green/10 flex items-center justify-center text-zenix-green text-xl border border-zenix-green/20">
-                                                    <i :class="['fa-solid', 'fa-' + strategyIdentity.icon]"></i>
+                                                    <i :key="strategyIdentity.icon" :class="`fa-solid fa-${strategyIdentity.icon}`"></i>
                                                 </div>
                                                 <div>
                                                     <h4 class="text-white font-bold text-lg leading-tight">{{ strategyIdentity.name || 'Nome da Estratégia' }}</h4>
