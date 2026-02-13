@@ -667,21 +667,9 @@
                                         </div>
 
                                         <!-- Row 4: Target & Prediction -->
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Dígito Alvo</label>
-                                                <div class="relative">
-                                                    <select 
-                                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm opacity-50 cursor-not-allowed"
-                                                        disabled
-                                                    >
-                                                        <option>N/A</option>
-                                                    </select>
-                                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                                                        <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
+
+                                        <!-- Row 4: Prediction -->
+                                        <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(recoveryConfig.tradeType)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div>
                                                 <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Previsão</label>
                                                 <div class="relative">
@@ -946,27 +934,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Target Digits (Conditional - Row 3 if visible) -->
-                                    <div v-if="['digits_over_under', 'digits_match_diff'].includes(form.selectedTradeTypeGroup)" class="col-span-1 md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#1E1E1E]/50 border border-[#333] rounded-lg p-4 mt-2">
-                                        <div>
-                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Dígito Alvo (CIMA/OVER)</label>
-                                            <input 
-                                                type="number" 
-                                                v-model.number="form.targetDigitUp" 
-                                                class="w-full bg-[#111] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green text-sm"
-                                                min="0" max="9"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Dígito Alvo (BAIXO/UNDER)</label>
-                                            <input 
-                                                type="number" 
-                                                v-model.number="form.targetDigitDown" 
-                                                class="w-full bg-[#111] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green text-sm"
-                                                min="0" max="9"
-                                            />
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -4470,19 +4437,8 @@ export default {
                 };
 
                 if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(proposalParams.contract_type)) {
-                    // Determine barrier based on direction
-                    let targetBarrier = config.prediction; // fallback
-
-                    if (config.targetDigitUp !== undefined && ['DIGITOVER', 'DIGITMATCH'].includes(proposalParams.contract_type)) {
-                        targetBarrier = config.targetDigitUp;
-                    } else if (config.targetDigitDown !== undefined && ['DIGITUNDER', 'DIGITDIFF'].includes(proposalParams.contract_type)) {
-                        targetBarrier = config.targetDigitDown;
-                    }
-                    
-                    // Fallback using default prediction or 8 if absolutely nothing set
-                    if (targetBarrier === undefined) targetBarrier = 8;
-                    
-                    proposalParams.barrier = targetBarrier.toString(); 
+                    // Always use standard prediction for digit contracts
+                    proposalParams.barrier = (config.prediction !== undefined ? config.prediction : 8).toString(); 
                 }
 
                 // Store current context for fast result (will be activated on buy response)
