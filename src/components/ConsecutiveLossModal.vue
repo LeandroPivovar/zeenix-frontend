@@ -54,9 +54,10 @@ export default {
   emits: ['confirm'],
   computed: {
     formattedResult() {
-      if (this.result === null || this.result === undefined) return `${this.currency}0.00`;
+      if (this.result === null || this.result === undefined) return `${this.currency}0,00`;
       const sign = this.result >= 0 ? '+' : '-';
-      return `${sign}${this.currency}${Math.abs(this.result).toFixed(2)}`;
+      const val = Math.abs(this.result).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return `${sign}${this.currency}${val}`;
     }
   },
   methods: {

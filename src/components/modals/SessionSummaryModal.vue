@@ -122,8 +122,8 @@ export default {
   },
   methods: {
     formatPrice(value) {
-      if (value === undefined || value === null) return '0.00';
-      return Math.abs(value).toFixed(2);
+      if (value === undefined || value === null) return '0,00';
+      return Math.abs(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
   }
 }

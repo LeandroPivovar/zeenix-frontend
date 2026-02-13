@@ -58,13 +58,14 @@ export default {
   emits: ['confirm'],
   computed: {
     formattedLossLimit() {
-      if (this.lossLimit === null || this.lossLimit === undefined) return '0.00';
-      return Math.abs(this.lossLimit).toFixed(2);
+      if (this.lossLimit === null || this.lossLimit === undefined) return '0,00';
+      return Math.abs(this.lossLimit).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
     formattedResult() {
-      if (this.result === null || this.result === undefined) return `${this.currency}0.00`;
+      if (this.result === null || this.result === undefined) return `${this.currency}0,00`;
       const sign = this.result >= 0 ? '+' : '-';
-      return `${sign}${this.currency}${Math.abs(this.result).toFixed(2)}`;
+      const val = Math.abs(this.result).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return `${sign}${this.currency}${val}`;
     }
   },
   methods: {
