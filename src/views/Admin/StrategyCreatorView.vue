@@ -3153,7 +3153,8 @@ export default {
                     form: JSON.parse(JSON.stringify(this.form)),
                     recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
                     validator: JSON.parse(JSON.stringify(this.validator)),
-                    securityConfig: JSON.parse(JSON.stringify(this.securityConfig))
+                    securityConfig: JSON.parse(JSON.stringify(this.securityConfig)),
+                    strategyIdentity: JSON.parse(JSON.stringify(this.strategyIdentity))
                 }
             };
 
@@ -3235,6 +3236,18 @@ export default {
                         current: 0
                     };
                 }
+            }
+
+            if (strategy.config.strategyIdentity) {
+                const savedIdentity = JSON.parse(JSON.stringify(strategy.config.strategyIdentity));
+                this.strategyIdentity = {
+                    ...this.strategyIdentity,
+                    ...savedIdentity
+                };
+                
+                // ? Sync local name/version if restored from identity
+                if (this.strategyIdentity.name) this.currentStrategyName = this.strategyIdentity.name;
+                if (strategy.version) this.currentVersion = strategy.version;
             }
 
             // Restore filters active state for main
