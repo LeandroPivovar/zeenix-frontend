@@ -1598,6 +1598,19 @@
                 this.syncRenderedValues();
 			},
 			'agenteData.sessionStatus'(newStatus) {
+				if (newStatus === 'active') {
+                    // ✅ [FIX] Reset flags when new session starts
+                    this.sessionSummaryAcknowledged = false;
+                    this.stopLossAcknowledged = false;
+                    window.zenixStopModalActive = false;
+                    this.showSessionSummaryModal = false;
+                    this.showStopLossModal = false;
+                    this.showConsecutiveLossModal = false;
+                    this.showBlindadoModal = false;
+                    this.showTargetProfitModal = false;
+                    this.lastProcessedLogId = null; // Force re-check of logs
+                    console.log('[AgenteAutonomo] Sessão ativa! Flags de modal resetadas.');
+                }
 				// Apenas logar, o modal agora é controlado exclusivamente pelos LOGS (checkLogsForStopEvents)
 				if (newStatus && newStatus !== 'active') {
 					console.log('[AgenteAutonomo] Session Status Inativo detectado:', newStatus);
@@ -2271,8 +2284,8 @@
                 // ✅ Regex aprimorado: 
                 // 1. Aceita 'Lucro' (sozinho) ou combinacoes
                 // 2. Ignora se tiver 'Capital' logo antes do valor
-                // 3. Busca valor monetário
-                const moneyRegex = /(?:Lucro(?:\/Prejuízo)?|Profit|Loss|Drawdown|Resultado)(?:(?!Capital).)*?(?:\$|R\$)\s*([+-]?\d+(?:\.\d{2})?)/i;
+                // 3. Busca valor monetário com suporte a D, $, R$, £, €
+                const moneyRegex = /(?:Lucro(?:\/Prejuízo)?|Profit|Loss|Drawdown|Resultado)(?:(?!Capital).)*?(?:[DÐ$€£]|R\$)\s*([+-]?\d+(?:\.\d{2})?)/i;
                 const match = text.match(moneyRegex);
                 if (match) {
                      const val = parseFloat(match[1]);
