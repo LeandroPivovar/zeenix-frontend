@@ -2285,7 +2285,7 @@
                 // 1. Aceita 'Lucro' (sozinho) ou combinacoes
                 // 2. Ignora se tiver 'Capital' logo antes do valor
                 // 3. Busca valor monetário com suporte a D, $, R$, £, €
-                const moneyRegex = /(?:Lucro(?:\/Prejuízo)?|Profit|Loss|Drawdown|Resultado)(?:(?!Capital).)*?(?:[DÐ$€£]|R\$)\s*([+-]?\d+(?:\.\d{2})?)/i;
+                const moneyRegex = /(?:Lucro(?:\/Prejuízo)?|Profit|Loss|Drawdown|Resultado)(?:(?!Capital).)*?(?:[DÐ$€£]|R\$)?\s*([+-]?\d+(?:\.\d{2})?)/i;
                 const match = text.match(moneyRegex);
                 if (match) {
                      const val = parseFloat(match[1]);
