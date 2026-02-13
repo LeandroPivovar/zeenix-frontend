@@ -563,222 +563,294 @@
                             </div>
                         </div>
 
-                        <!-- Configuração de Recuperação (New Section) -->
+                        <!-- Análise de Recuperação (New Unified Card) -->
                         <div class="col-span-12">
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
                                 <div class="absolute top-0 right-0 p-4 opacity-5">
-                                    <i class="fa-solid fa-shield-heart text-6xl"></i>
+                                    <i class="fa-solid fa-shield-halved text-6xl"></i>
                                 </div>
                                 <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center justify-between gap-2">
                                     <div class="flex items-center gap-2">
                                         <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                            <i class="fa-solid fa-shield-heart"></i>
+                                            <i class="fa-solid fa-shield-halved"></i>
                                         </div>
-                                        Configuração de Recuperação
+                                        Análise de Recuperação
                                     </div>
-                                    <label class="relative inline-flex items-center cursor-pointer scale-90">
-                                        <input type="checkbox" v-model="recoveryConfig.enabled" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zenix-green"></div>
-                                        <span class="ms-3 text-xs font-bold text-gray-400 uppercase tracking-tighter">{{ recoveryConfig.enabled ? 'Ativa' : 'Inativa' }}</span>
-                                    </label>
+                                    <span class="px-3 py-1 bg-zenix-green/10 border border-zenix-green/30 rounded-full text-xs text-zenix-green font-bold uppercase tracking-wider flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-zenix-green animate-pulse"></div>
+                                        {{ recoveryConfig.enabled ? 'Ativa' : 'Inativa' }}
+                                    </span>
                                 </h3>
                                 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10" :class="{ 'opacity-40 grayscale pointer-events-none': !recoveryConfig.enabled }">
-                                    <div>
-                                        <label class="block text-white font-bold mb-2">Mercado de Recuperação</label>
-                                        <button
-                                            type="button"
-                                            @click="openMarketModal('recovery')"
-                                            class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-3 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
-                                        >
-                                            <span class="font-medium text-sm">{{ selectedRecoveryMarketLabel }}</span>
-                                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
-                                        </button>
-                                    </div>
-                                    <div>
-                                        <label class="block text-white font-bold mb-2">Tipo de Negociação</label>
-                                        <button
-                                            type="button"
-                                            @click="openTradeTypeModal('recovery')"
-                                            :disabled="!recoveryContracts.length && !recoveryConfig.market"
-                                            class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-3 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <div class="flex items-center gap-2">
-                                                <img v-if="selectedRecoveryTradeTypeIcon" :src="selectedRecoveryTradeTypeIcon" class="w-4 h-4 contrast-[1.5] brightness-[1.5]" alt="" />
-                                                <span class="font-medium text-sm">{{ selectedRecoveryTradeTypeLabel }}</span>
-                                            </div>
-                                            <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
-                                        </button>
+                                <div class="relative z-10 space-y-6">
+                                    <!-- Toggle -->
+                                    <div class="flex items-center gap-3">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" v-model="recoveryConfig.enabled" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zenix-green"></div>
+                                        </label>
+                                        <span class="text-sm font-bold text-white">Ativar Análise de Recuperação</span>
                                     </div>
 
-                                    <!-- Direção e Payouts (Recovery) -->
-                                    <div v-if="recoveryConfig.selectedTradeTypeGroup" class="md:col-span-2">
-                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[#181818] p-5 rounded-xl border border-[#333] mb-4">
-                                            <div class="md:col-span-2">
-                                                <label class="block text-white font-bold mb-2 text-[10px] uppercase tracking-[0.2em] opacity-70">Direção Permitida (REC)</label>
-                                                <div class="flex bg-[#111] p-1.5 rounded-xl border border-[#333]">
-                                                    <button 
-                                                        type="button"
-                                                        @click="updateRecoveryDirection('both')"
-                                                        class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                        :class="recoveryConfig.directionMode === 'both' ? 'text-white' : 'text-gray-500 hover:text-white'"
-                                                        :style="recoveryConfig.directionMode === 'both' ? 'background-color: #22C55E !important;' : ''"
+                                    <div :class="{ 'opacity-50 grayscale pointer-events-none': !recoveryConfig.enabled }" class="space-y-6 transition-all duration-300">
+                                        <!-- Row 1: Market & Trade Type -->
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Mercado</label>
+                                                <button
+                                                    type="button"
+                                                    @click="openMarketModal('recovery')"
+                                                    class="w-full bg-[#1E1E1E] border border-[#333] rounded-lg py-3 px-4 text-white hover:border-zenix-green focus:border-zenix-green transition-all text-left flex items-center justify-between"
+                                                >
+                                                    <span class="font-medium text-sm">{{ selectedRecoveryMarketLabel }}</span>
+                                                    <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                                </button>
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Tipo de Negociação</label>
+                                                <button
+                                                    type="button"
+                                                    @click="openTradeTypeModal('recovery')"
+                                                    :disabled="!recoveryContracts.length && !recoveryConfig.market"
+                                                    class="w-full bg-[#1E1E1E] border border-zenix-green rounded-lg py-3 px-4 text-white hover:bg-zenix-green/5 transition-all text-left flex items-center justify-between shadow-[0_0_10px_rgba(34,197,94,0.1)]"
+                                                >
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="font-medium text-sm">{{ selectedRecoveryTradeTypeLabel }}</span>
+                                                    </div>
+                                                    <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="border-t border-[#333] my-6"></div>
+                                        
+                                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Configurações da Análise</h4>
+
+                                        <!-- Row 2: Direction -->
+                                        <div v-if="recoveryConfig.selectedTradeTypeGroup">
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Direção Permitida</label>
+                                            <div class="flex bg-[#111] p-1 rounded-lg border border-[#333] max-w-md">
+                                                 <button 
+                                                    v-for="(dir, idx) in selectedRecoveryDirections" 
+                                                    :key="dir.value"
+                                                    type="button"
+                                                    @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
+                                                    class="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all flex items-center justify-center gap-2"
+                                                    :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'text-white bg-[#2A2A2A]' : 'text-gray-500 hover:text-white'"
+                                                >
+                                                    <i class="fa-solid fa-arrow-up" v-if="idx===0"></i>
+                                                    <i class="fa-solid fa-arrow-down" v-else></i>
+                                                    {{ dir.label }}
+                                                </button>
+                                                <button 
+                                                    type="button"
+                                                    @click="updateRecoveryDirection('both')"
+                                                    class="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all flex items-center justify-center gap-2"
+                                                    :class="recoveryConfig.directionMode === 'both' ? 'text-white bg-zenix-green shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                                >
+                                                    <i class="fa-solid fa-arrows-up-down"></i>
+                                                    Ambos
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Row 3: Duration, Unit, Soros -->
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                                    Duração <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="recoveryConfig.duration" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    min="1"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Unidade</label>
+                                                <div class="relative">
+                                                    <select 
+                                                        v-model="recoveryConfig.durationUnit" 
+                                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
                                                     >
-                                                        Ambos
-                                                    </button>
-                                                    <button 
-                                                        v-for="(dir, idx) in selectedRecoveryDirections" 
-                                                        :key="dir.value"
-                                                        type="button"
-                                                        @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
-                                                        class="flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
-                                                        :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'text-white' : 'text-gray-500 hover:text-white'"
-                                                        :style="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'background-color: #22C55E !important;' : ''"
-                                                    >
-                                                        {{ dir.label }}
-                                                    </button>
+                                                        <option value="t">Tick</option>
+                                                        <option value="s">Segundos</option>
+                                                        <option value="m">Minutos</option>
+                                                        <option value="h">Horas</option>
+                                                    </select>
+                                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                                        <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div v-for="dir in selectedRecoveryDirections" :key="'payout-rec-' + dir.value">
-                                                <label class="block text-white font-bold mb-2 text-[10px] uppercase tracking-[0.2em] opacity-70">Payout ({{ dir.label }})</label>
-                                                <div class="relative group">
-                                                    <input 
-                                                        type="number" 
-                                                        v-model.number="recoveryConfig.directionPayouts[dir.value]" 
-                                                        class="w-full bg-[#111] text-white border border-[#333] rounded-xl p-2.5 focus:outline-none focus:border-zenix-green transition-all text-sm group-hover:border-[#444]"
-                                                        step="1"
-                                                        min="1"
-                                                    />
-                                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                        <span class="text-[10px] text-gray-500 font-bold">%</span>
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                                    Nível de Soros <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="recoveryConfig.sorosLevel" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    min="0"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <!-- Row 4: Target & Prediction -->
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Dígito Alvo</label>
+                                                <div class="relative">
+                                                    <select 
+                                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm opacity-50 cursor-not-allowed"
+                                                        disabled
+                                                    >
+                                                        <option>N/A</option>
+                                                    </select>
+                                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                                        <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Previsão</label>
+                                                <div class="relative">
+                                                    <select 
+                                                        v-model.number="recoveryConfig.prediction" 
+                                                        class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    >
+                                                        <option :value="null" disabled>Selecionar...</option>
+                                                        <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
+                                                    </select>
+                                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                                        <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-4 gap-4">
 
-                                        <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(recoveryConfig.tradeType)">
-                                            <label class="block text-white font-bold mb-2 text-sm">Dígito Alvo Rec.</label>
-                                            <div class="relative">
-                                                <select 
-                                                    v-model.number="recoveryConfig.prediction" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                >
-                                                    <option v-for="n in 10" :key="n-1" :value="n-1">{{ n-1 }}</option>
-                                                </select>
-                                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                                    <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                                        <!-- Row 5: Detailed Params -->
+                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                                    Payout Min. (%) <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="recoveryConfig.minPayoutPercent" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    min="1" max="100"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                                    Pausa Técnica (perdas) <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="recoveryConfig.pauseLosses" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    min="1"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                                    Delay WIN (s) <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="recoveryConfig.delayWin" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    min="0"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                                    Delay LOSS (s) <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="recoveryConfig.delayLoss" 
+                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    min="0"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div class="border-t border-[#333] my-6"></div>
+                                        
+                                        <!-- Virtual Loss -->
+                                        <div>
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">LOSS VIRTUAL</h4>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="text-sm font-bold text-gray-400">Quantidade</span>
+                                                <span class="text-xl font-black text-zenix-green">{{ recoveryConfig.virtualLossTarget }}</span>
+                                            </div>
+                                            <div class="relative pt-1">
+                                                <input 
+                                                    type="range" 
+                                                    v-model.number="recoveryConfig.virtualLossTarget" 
+                                                    class="w-full h-2 bg-[#1E1E1E] rounded-lg appearance-none cursor-pointer accent-zenix-green"
+                                                    min="0" 
+                                                    max="10"
+                                                />
+                                                <div class="flex justify-between text-[10px] text-gray-500 font-bold mt-2">
+                                                    <span>0</span>
+                                                    <span>5</span>
+                                                    <span>10</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div v-if="['HIGHER', 'LOWER', 'ONETOUCH', 'NOTOUCH', 'RANGE', 'UPORDOWN'].includes(recoveryConfig.tradeType)">
-                                            <label class="block text-white font-bold mb-2 text-sm">Barreira (Offset)</label>
-                                            <div class="relative">
-                                                <input 
-                                                    type="text" 
-                                                    v-model="recoveryConfig.barrier" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                    placeholder="+0.12"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div v-if="['RANGE', 'UPORDOWN', 'EXPIRYRANGE', 'EXPIRYMISS'].includes(recoveryConfig.tradeType)">
-                                            <label class="block text-white font-bold mb-2 text-sm">Barreira Baixa</label>
-                                            <div class="relative">
-                                                <input 
-                                                    type="text" 
-                                                    v-model="recoveryConfig.barrier2" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                    placeholder="-0.12"
-                                                />
-                                            </div>
-                                        </div>
+
+                                        <!-- Recovery Filters Section -->
                                         <div>
-                                            <label class="block text-white font-bold mb-2 text-sm">Perdas para Rec.</label>
-                                            <input 
-                                                type="number" 
-                                                v-model.number="recoveryConfig.lossesToActivate" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                min="1"
-                                            />
-                                        </div>
-
-                                        <div class="flex items-end gap-2">
-                                             <button 
-                                                type="button" 
-                                                @click="showPauseModal = true"
-                                                class="flex-1 bg-[#2A2A2A] hover:bg-[#333] text-white h-[46px] rounded-lg border border-[#444] font-medium transition-colors flex items-center justify-center gap-2 text-xs"
-                                            >
-                                                <i class="fa-solid fa-pause"></i> Pausa
-                                            </button>
-                                        </div>
-
-                                        <div class="h-[46px] bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between px-3 self-end">
-                                            <span class="text-[10px] font-bold text-gray-400 uppercase">Martingale</span>
-                                            <label class="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" v-model="recoveryConfig.martingale" class="sr-only peer">
-                                                <div class="w-9 h-5 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zenix-green"></div>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Filtros de Recuperação (Standalone Card) -->
-                        <div class="col-span-12">
-                            <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden" :class="{ 'opacity-50 grayscale pointer-events-none': !recoveryConfig.enabled }">
-                                <div class="absolute top-0 right-0 p-4 opacity-5">
-                                    <i class="fa-solid fa-rotate-left text-6xl"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
-                                    <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                        <i class="fa-solid fa-filter"></i>
-                                    </div>
-                                    Filtros de Recuperação
-                                </h3>
-                                
-                                <div class="space-y-4 relative z-10">
-                                    <div v-if="activeRecoveryFilters.length === 0" class="p-4 bg-[#1E1E1E] border border-dashed border-[#444] rounded-lg text-center">
-                                        <p class="text-gray-400 text-sm mb-3">Nenhum filtro de recuperação configurado.</p>
-                                        <button 
-                                            type="button" 
-                                            @click="openFilterModal('recovery')"
-                                            class="bg-zenix-green/10 text-zenix-green border border-zenix-green/30 px-6 py-2 rounded-lg hover:bg-zenix-green/20 transition-all font-bold text-sm"
-                                        >
-                                            Adicionar Filtros
-                                        </button>
-                                    </div>
-                                    
-                                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div v-for="filter in activeRecoveryFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
-                                            <div class="flex items-center gap-3">
-                                                 <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                                    <i class="fa-solid fa-filter"></i>
-                                                 </div>
-                                                 <div>
-                                                    <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
-                                                    <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
-                                                 </div>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <button type="button" @click="openFilterConfigDirect(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
-                                                    <i class="fa-solid fa-gear text-xs"></i>
-                                                </button>
-                                                <button type="button" @click="removeFilter(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
-                                                    <i class="fa-solid fa-times text-xs"></i>
-                                                </button>
+                                            <h4 class="text-xs font-bold text-zenix-green uppercase tracking-widest mb-4">FILTROS DE RECUPERAÇÃO</h4>
+                                            <div class="p-6 bg-[#111] border border-dashed border-[#333] rounded-xl">
+                                                <div v-if="activeRecoveryFilters.length === 0" class="text-center">
+                                                    <p class="text-gray-400 text-xs font-bold mb-4">Nenhum filtro de entrada configurado</p>
+                                                    <button 
+                                                        type="button" 
+                                                        @click="openFilterModal('recovery')"
+                                                        class="bg-zenix-green text-black font-bold text-xs uppercase tracking-wider py-2 px-6 rounded hover:bg-green-400 transition-colors"
+                                                    >
+                                                        + Adicionar Filtros
+                                                    </button>
+                                                    <p class="text-right text-[10px] text-gray-600 mt-2">0 filtro(s) ativo(s)</p>
+                                                </div>
+                                                <div v-else class="space-y-3">
+                                                    <div v-for="filter in activeRecoveryFilters" :key="filter.id" class="p-4 bg-[#1E1E1E] border border-[#333] rounded-lg flex items-center justify-between group hover:border-zenix-green transition-colors">
+                                                        <div class="flex items-center gap-3">
+                                                             <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+                                                                <i class="fa-solid fa-filter"></i>
+                                                             </div>
+                                                             <div>
+                                                                <span class="block text-white font-bold text-sm">{{ filter.name }}</span>
+                                                                <span class="text-[10px] text-gray-400">Ativo • Configurado</span>
+                                                             </div>
+                                                        </div>
+                                                        <div class="flex items-center gap-2">
+                                                            <button type="button" @click="openFilterConfigDirect(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-[#222] text-gray-400 hover:text-white transition-colors border border-[#333]">
+                                                                <i class="fa-solid fa-gear text-xs"></i>
+                                                            </button>
+                                                            <button type="button" @click="removeFilter(filter, 'recovery')" class="w-8 h-8 rounded bg-[#111] hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors border border-[#333] hover:border-red-500/30">
+                                                                <i class="fa-solid fa-times text-xs"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex justify-center mt-4">
+                                                        <button 
+                                                            type="button" 
+                                                            @click="openFilterModal('recovery')"
+                                                            class="text-zenix-green text-xs font-bold uppercase tracking-wider hover:underline"
+                                                        >
+                                                            + Adicionar Mais Filtros
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <button 
-                                            type="button" 
-                                            @click="openFilterModal('recovery')"
-                                            class="p-4 border border-dashed border-[#444] rounded-lg flex items-center justify-center gap-2 text-gray-500 hover:text-white hover:border-gray-500 transition-all"
-                                        >
-                                            <i class="fa-solid fa-plus text-xs"></i>
-                                            <span class="text-sm">Adicionar Filtro</span>
-                                        </button>
+
                                     </div>
                                 </div>
                             </div>
@@ -1905,10 +1977,17 @@ export default {
                 switchToNormal: false,
                 switchToPrecise: true,
                 maxPreciseLosses: 3,
-                pauseLosses: 6,
+                pauseLosses: 5, // Matches "Pausa Técnica (perdas)"
                 pauseVolatility: 50,
                 pauseTime: 5,
                 expectedPayout: 2.26, // Default for DIGITUNDER 4 (bet $1, get $2.26 total)
+                minPayoutPercent: 80, // New: Payout Min (%)
+                delayWin: 1, // New: Delay WIN (s)
+                delayLoss: 2, // New: Delay LOSS (s)
+                virtualLossTarget: 0, // New: Loss Virtual Slider
+                sorosLevel: 1, // New: Nível de Soros
+                duration: 5, // New: Duration
+                durationUnit: 't', // New: Duration Unit
                 directionMode: 'both', // 'both', 'up', 'down'
                 directionPayouts: {}, // { [contractType]: payout }
                 initialStake: 1.00,
@@ -3559,6 +3638,19 @@ export default {
                 if (!this.isNegotiating) this.runAnalysis();
             });
             
+            // ✅ RECOVERY DELAY LOGIC (Local Trade)
+            if (contract.analysisType === 'RECUPERACAO') {
+                const delay = win 
+                    ? (this.recoveryConfig.delayWin || 0) 
+                    : (this.recoveryConfig.delayLoss || 0);
+                
+                if (delay > 0) {
+                    const delayMs = delay * 1000;
+                    this.pauseUntil = Math.max(this.pauseUntil || 0, Date.now() + delayMs);
+                    this.addLog(`⏳ Delay ${win ? 'WIN' : 'LOSS'}: Aguardando ${delay}s...`, 'info');
+                }
+            }
+
             // Check Limits/Pause
             this.checkLimits();
         },
@@ -3629,6 +3721,23 @@ export default {
                             // 1. Update sessionState with the real PROFIT RATE for accuracy in next calculations
                             // Deriv Payout = Stake + Profit. 
                             const realPayoutRate = payout / stakeValue;
+
+                            // ✅ MIN PAYOUT CHECK (Recovery)
+                            if (this.sessionState.analysisType === 'RECUPERACAO') {
+                                const minPayout = this.recoveryConfig.minPayoutPercent || 0;
+                                if (minPayout > 0) {
+                                    // Calculate payout percentage (e.g., 1.95 -> 95%)
+                                    // Correct formula: ((Payout - Stake) / Stake) * 100
+                                    const currentPayoutPercent = ((payout - stakeValue) / stakeValue) * 100;
+                                    
+                                    if (currentPayoutPercent < minPayout) {
+                                         this.addLog(`⚠️ Payout Baixo (${currentPayoutPercent.toFixed(1)}%). Mínimo: ${minPayout}%. Ignorando entrada.`, 'warning');
+                                         this.isNegotiating = false;
+                                         this.retryingProposal = false;
+                                         return;
+                                    }
+                                }
+                            }
                             
                             // ✅ CRITICAL: Flag for buy logic to use the real rate in Fast Result
                             this.sessionState.tempExplicitPayout = realPayoutRate;
@@ -4077,8 +4186,20 @@ export default {
                         else if (vl.mode === 'recovery' && isRecovery) shouldApplyVL = true;
                     }
 
-                    if (shouldApplyVL && vl.current < vl.target) {
-                        this.executeVirtualTrade(dynamicContractType);
+                    if (shouldApplyVL) {
+                        let target = vl.target;
+                        // ✅ Recovery Override: Use card slider if set
+                        if (isRecovery && this.recoveryConfig.virtualLossTarget > 0) {
+                             target = this.recoveryConfig.virtualLossTarget;
+                        }
+                        
+                        if (vl.current < target) {
+                            this.executeVirtualTrade(dynamicContractType);
+                        } else {
+                            // Reset logic below...
+                            this.executeRealTrade(dynamicContractType, this.sessionState.tempExplicitPayout);
+                            this.sessionState.tempExplicitPayout = null; 
+                        }
                     } else {
                         // Reset Counter Logic based on Mode (Cyclic behavior for specific phases)
                         if (vl && vl.enabled) {
@@ -4325,7 +4446,7 @@ export default {
                     return;
                 }
 
-                const durationDisplay = `${this.form.duration}${this.form.durationUnit === 't' ? 't' : this.form.durationUnit}`;
+                const durationDisplay = `${config.duration}${config.durationUnit === 't' ? 't' : config.durationUnit}`;
                 this.addLog(`📡 Solicitando proposta (${isFinancialRecovery ? 'RECUPERAÇÃO/MARTINGALE' : 'PRINCIPAL'}): ${overrideContractType || config.tradeType} $${stake} | Duração: ${durationDisplay}`, 'info');
                 
                 // ✅ DETAILED CONSERVADOR LOGS
@@ -4350,8 +4471,8 @@ export default {
                     basis: 'stake',
                     contract_type: overrideContractType || config.tradeType,
                     currency: 'USD',
-                    duration: this.form.duration,
-                    duration_unit: this.form.durationUnit,
+                    duration: config.duration,
+                    duration_unit: config.durationUnit,
                     symbol: config.market || this.form.market
                 };
 
@@ -4380,8 +4501,8 @@ export default {
                     stake: stake,
                     analysisType: isFinancialRecovery ? 'RECUPERACAO' : 'PRINCIPAL',
                     payout: null,
-                    duration: this.form.duration,
-                    durationUnit: this.form.durationUnit,
+                    duration: config.duration,
+                    durationUnit: config.durationUnit,
                     // ✅ Capture current tick as entry point
                     entryTick: this.lastTickPrice,
                     entryDigit: parseInt(this.lastTickPrice.toString().slice(-1))
@@ -4406,7 +4527,12 @@ export default {
 
             const vl = this.securityConfig.virtualLoss;
             const current = vl.current + 1; // Current attempt
-            const target = vl.target;
+            let target = vl.target;
+            
+            // ✅ Recovery Override
+            if (isRecoveryStrategy && this.recoveryConfig.virtualLossTarget > 0) {
+                 target = this.recoveryConfig.virtualLossTarget;
+            }
 
             this.addLog('Filtro de Segurança (Loss Virtual)', [
                 `Status: Simulando Operação ${current}/${target}`,
@@ -4694,6 +4820,19 @@ export default {
                 // Update official profit and balance
                 this.monitoringStats.profit += trade.pnl;
                 this.monitoringStats.balance = parseFloat(this.balance) + this.monitoringStats.profit;
+                
+                // ✅ RECOVERY DELAY LOGIC
+                if (trade.analysisType === 'RECUPERACAO') {
+                    const delay = trade.result === 'WON' 
+                        ? (this.recoveryConfig.delayWin || 0) 
+                        : (this.recoveryConfig.delayLoss || 0);
+                    
+                    if (delay > 0) {
+                        const delayMs = delay * 1000;
+                        this.pauseUntil = Math.max(this.pauseUntil || 0, Date.now() + delayMs);
+                        this.addLog(`⏳ Delay ${trade.result}: Aguardando ${delay}s...`, 'info');
+                    }
+                }
 
                 this.activeContracts.delete(id);
                 this.checkLimits();
