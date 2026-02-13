@@ -3307,7 +3307,8 @@ export default {
                     form: JSON.parse(JSON.stringify(this.form)),
                     recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
                     securityConfig: JSON.parse(JSON.stringify(this.securityConfig)),
-                    validator: JSON.parse(JSON.stringify(this.validator))
+                    validator: JSON.parse(JSON.stringify(this.validator)),
+                    strategyIdentity: JSON.parse(JSON.stringify(this.strategyIdentity))
                 }
             };
 
@@ -3371,7 +3372,8 @@ export default {
                     form: this.form,
                     recoveryConfig: this.recoveryConfig,
                     validator: this.validator,
-                    securityConfig: this.securityConfig
+                    securityConfig: this.securityConfig,
+                    strategyIdentity: this.strategyIdentity
                 }
             };
 
@@ -3410,6 +3412,11 @@ export default {
                         const importedRecovery = JSON.parse(JSON.stringify(data.config.recoveryConfig));
                         this.recoveryConfig = { ...this.recoveryConfig, ...importedRecovery };
                         if (!this.recoveryConfig.expectedPayout) this.recoveryConfig.expectedPayout = 2.26;
+                        
+                        if (data.config.strategyIdentity) {
+                            const importedIdentity = JSON.parse(JSON.stringify(data.config.strategyIdentity));
+                            this.strategyIdentity = { ...this.strategyIdentity, ...importedIdentity };
+                        }
                         
                         if (data.config.validator) {
                             const importedValidator = JSON.parse(JSON.stringify(data.config.validator));
