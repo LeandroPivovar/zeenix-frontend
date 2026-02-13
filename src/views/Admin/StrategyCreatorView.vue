@@ -116,12 +116,12 @@
                         <!-- Strategy Identity Card -->
                         <div class="col-span-12">
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
-                                <div class="absolute top-0 right-0 p-4 opacity-5">
-                                    <i class="fa-solid fa-fingerprint text-6xl"></i>
+                                <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-all duration-500">
+                                    <i :class="['fa-solid', 'fa-' + (strategyIdentity.icon || 'fingerprint'), 'text-6xl']"></i>
                                 </div>
                                 <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
-                                    <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                        <i class="fa-solid fa-fingerprint"></i>
+                                    <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green transition-all duration-300">
+                                        <i :class="['fa-solid', 'fa-' + (strategyIdentity.icon || 'fingerprint')]"></i>
                                     </div>
                                     Identidade da Estratégia
                                     <span class="ml-auto px-3 py-1 bg-[#1E1E1E] border border-[#333] rounded-full text-xs text-gray-400 font-bold uppercase tracking-wider">
@@ -4659,10 +4659,7 @@ export default {
 
                     // ? DELAY LOGIC (Early Settlement)
                     const config = trade.analysisType === 'RECUPERACAO' ? this.recoveryConfig : this.form;
-                    console.log(`[DEBUG DELAY] Type: ${trade.analysisType}, Result: ${win?'WIN':'LOSS'}, DelayWin: ${config.delayWin}, DelayLoss: ${config.delayLoss}`);
-                    
-                    const delay = win ? (Number(config.delayWin) || 0) : (Number(config.delayLoss) || 0);
-                    console.log(`[DEBUG DELAY] Calculated Delay: ${delay}`);
+                    const delay = win ? (config.delayWin || 0) : (config.delayLoss || 0);
 
                     if (delay > 0) {
                         const delayMs = delay * 1000;
