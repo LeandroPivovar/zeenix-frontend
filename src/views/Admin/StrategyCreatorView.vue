@@ -823,52 +823,53 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        <!-- Parâmetros Operacionais (Financial) -->
                         <div class="col-span-12">
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
                                 <div class="absolute top-0 right-0 p-4 opacity-5">
-                                    <i class="fa-solid fa-sack-dollar text-6xl"></i>
+                                    <i class="fa-solid fa-sliders text-6xl"></i>
                                 </div>
-                                <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
+                                <h3 class="text-xl font-bold text-zenix-green mb-6 relative z-10 flex items-center gap-2">
                                     <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green">
-                                        <i class="fa-solid fa-wallet"></i>
+                                        <i class="fa-solid fa-sliders"></i>
                                     </div>
-                                    Gestão Financeira
+                                    Parâmetros Operacionais
                                 </h3>
 
-                                <div class="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <!-- Row 1 -->
                                     <div>
-                                        <label class="block text-white font-bold mb-2">Quantia inicial</label>
-                                        <div class="relative">
-                                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
-                                            <input 
-                                                type="number" 
-                                                v-model.number="form.initialStake" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-8 pr-4 focus:outline-none focus:border-zenix-green transition-colors"
-                                                step="0.01"
-                                            />
-                                        </div>
-                                        <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.initialStake) }}% do saldo</p>
+                                        <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                            Valor de Entrada ($) <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                        </label>
+                                        <input 
+                                            type="number" 
+                                            v-model.number="form.initialStake" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm font-medium"
+                                            step="0.01"
+                                        />
+                                        <p class="mt-1 text-gray-500 text-[10px] font-bold text-right">{{ calculatePercentage(form.initialStake) }}% do saldo</p>
                                     </div>
                                     <div>
-                                        <label class="block text-white font-bold mb-2">Lucro alvo</label>
-                                        <div class="relative">
-                                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
-                                            <input 
-                                                type="number" 
-                                                v-model.number="form.profitTarget" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-8 pr-4 focus:outline-none focus:border-zenix-green transition-colors"
-                                                step="0.01"
-                                            />
-                                        </div>
-                                        <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.profitTarget) }}% do saldo</p>
+                                        <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                            Alvo de Lucro ($) <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                        </label>
+                                        <input 
+                                            type="number" 
+                                            v-model.number="form.profitTarget" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm font-medium"
+                                            step="0.01"
+                                        />
+                                        <p class="mt-1 text-gray-500 text-[10px] font-bold text-right">{{ calculatePercentage(form.profitTarget) }}% do saldo</p>
                                     </div>
                                     <div>
-                                        <label class="block text-white font-bold mb-2">Modo Inicial</label>
+                                        <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                            Modo de Negociação <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                        </label>
                                         <div class="relative">
                                             <select 
                                                 v-model="sessionState.negotiationMode" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors"
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm font-medium"
                                             >
                                                 <option value="VELOZ">Veloz (Rápido)</option>
                                                 <option value="NORMAL">Moderado (Normal)</option>
@@ -879,13 +880,17 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- Row 2 -->
                                     <div>
-                                        <label class="block text-white font-bold mb-2">Perfil de Risco</label>
+                                        <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                            Perfil de Risco <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                        </label>
                                         <div class="relative">
                                             <select 
                                                 v-model="form.riskProfile" 
                                                 :disabled="!recoveryConfig.martingale"
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 px-4 appearance-none focus:outline-none focus:border-zenix-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 <option value="conservador">Conservador (Recupera Perda)</option>
                                                 <option value="moderado">Moderado (Recupera + Lucro)</option>
@@ -896,31 +901,28 @@
                                                 <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
                                             </div>
                                         </div>
-                                        <p v-if="!recoveryConfig.martingale" class="mt-2 text-[10px] text-yellow-500 font-bold leading-tight">
+                                        <p v-if="!recoveryConfig.martingale" class="mt-1 text-[10px] text-yellow-500 font-bold leading-tight">
                                             <i class="fa-solid fa-triangle-exclamation mr-1"></i>
-                                            Esta estratégia tem uma gestão de risco fixa (para a ativação envie o valor de conservador)
+                                            Gestão fixa ativa
                                         </p>
                                     </div>
                                     <div>
-                                        <div class="flex justify-between items-center mb-2">
-                                            <label class="block text-white font-bold">Limite de perda</label>
-                                        </div>
-                                        <div class="relative">
-                                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-white font-bold">Ð</span>
-                                            <input 
-                                                type="number" 
-                                                v-model.number="form.stopLoss" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg py-3 pl-8 pr-4 focus:outline-none focus:border-zenix-green transition-colors"
-                                                step="0.01"
-                                            />
-                                        </div>
-                                        <p class="mt-1 text-zenix-green text-xs font-bold">{{ calculatePercentage(form.stopLoss) }}% do saldo</p>
+                                        <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                            Limite de Perdas ($) <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                        </label>
+                                        <input 
+                                            type="number" 
+                                            v-model.number="form.stopLoss" 
+                                            class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm font-medium"
+                                            step="0.01"
+                                        />
+                                        <p class="mt-1 text-gray-500 text-[10px] font-bold text-right">{{ calculatePercentage(form.stopLoss) }}% do saldo</p>
                                     </div>
                                     <div>
-                                        <div class="flex justify-between items-center mb-2">
-                                            <label class="block text-white font-bold">Stop Blindado</label>
-                                        </div>
-                                        <div class="flex items-center gap-4 bg-[#1E1E1E] border border-[#333] rounded-lg p-2 h-[50px]">
+                                        <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                            Stoploss Blindado ($) <i class="fa-regular fa-circle-question text-[10px]"></i>
+                                        </label>
+                                        <div class="flex items-center gap-3 bg-[#1E1E1E] border border-[#333] rounded-lg p-2 h-[46px]">
                                             <div 
                                                 class="w-10 h-5 rounded-full relative cursor-pointer transition-colors duration-300"
                                                 :class="form.useBlindado ? 'bg-zenix-green' : 'bg-gray-600'"
@@ -932,42 +934,38 @@
                                                 ></div>
                                             </div>
                                             <div v-if="form.useBlindado" class="flex flex-1 items-center gap-2">
-                                                <select v-model.number="form.stopBlindadoPercent" class="bg-transparent text-zenix-green text-sm font-bold border-none p-0 focus:ring-0">
+                                                <select v-model.number="form.stopBlindadoPercent" class="bg-transparent text-zenix-green text-sm font-bold border-none p-0 focus:ring-0 outline-none w-full">
                                                     <option value="30">30%</option>
                                                     <option value="50">50%</option>
                                                     <option value="70">70%</option>
                                                 </select>
-                                                <span class="text-[10px] text-gray-500 uppercase">Piso</span>
+                                                <span class="text-[10px] text-gray-500 uppercase whitespace-nowrap">Piso</span>
                                             </div>
+                                            <span v-else class="text-gray-500 text-xs font-bold ml-2">Desativado</span>
                                         </div>
                                     </div>
 
-                                    <!-- Target Digits (Conditional) -->
-                                    <div v-if="['digits_over_under', 'digits_match_diff'].includes(form.selectedTradeTypeGroup)" class="col-span-1 md:col-span-2 grid grid-cols-2 gap-4 bg-[#1E1E1E] border border-[#333] rounded-lg p-3">
+                                    <!-- Target Digits (Conditional - Row 3 if visible) -->
+                                    <div v-if="['digits_over_under', 'digits_match_diff'].includes(form.selectedTradeTypeGroup)" class="col-span-1 md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#1E1E1E]/50 border border-[#333] rounded-lg p-4 mt-2">
                                         <div>
-                                            <label class="block text-white font-bold mb-1 text-xs">Dígito Alvo (CIMA/OVER)</label>
-                                            <div class="relative">
-                                                <input 
-                                                    type="number" 
-                                                    v-model.number="form.targetDigitUp" 
-                                                    class="w-full bg-[#111] text-white border border-[#333] rounded py-2 px-3 focus:outline-none focus:border-zenix-green text-sm"
-                                                    min="0" max="9"
-                                                />
-                                            </div>
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Dígito Alvo (CIMA/OVER)</label>
+                                            <input 
+                                                type="number" 
+                                                v-model.number="form.targetDigitUp" 
+                                                class="w-full bg-[#111] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green text-sm"
+                                                min="0" max="9"
+                                            />
                                         </div>
                                         <div>
-                                            <label class="block text-white font-bold mb-1 text-xs">Dígito Alvo (BAIXO/UNDER)</label>
-                                            <div class="relative">
-                                                <input 
-                                                    type="number" 
-                                                    v-model.number="form.targetDigitDown" 
-                                                    class="w-full bg-[#111] text-white border border-[#333] rounded py-2 px-3 focus:outline-none focus:border-zenix-green text-sm"
-                                                    min="0" max="9"
-                                                />
-                                            </div>
+                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Dígito Alvo (BAIXO/UNDER)</label>
+                                            <input 
+                                                type="number" 
+                                                v-model.number="form.targetDigitDown" 
+                                                class="w-full bg-[#111] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green text-sm"
+                                                min="0" max="9"
+                                            />
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
