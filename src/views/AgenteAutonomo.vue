@@ -1149,7 +1149,13 @@
 
         // 3. Atualização de Operações (Real-time)
         if (msg.msg_type === 'proposal_open_contract') {
-          this.handleContractUpdate(msg.proposal_open_contract);
+          // ✅ [ZENIX v3.0] Filtragem por Origem (Evitar mix com IA)
+          const origin = msg.echo_req?.passthrough?.origin;
+          if (origin === 'autonomous_agent') {
+            this.handleContractUpdate(msg.proposal_open_contract);
+          } else {
+            console.log(`[AgenteAutonomo] 🕊️ Ignorando trade de outra origem: ${origin || 'Desconhecida'}`);
+          }
         }
       },
 
@@ -1161,10 +1167,16 @@
 
       subscribeToTrades() {
         if (this.ws && this.isAuthorized) {
-          this.ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
-          console.log('[AgenteAutonomo] 📊 Inscrito em atualizações de contratos (Operações)');
+          // ✅ [ZENIX v3.0] Taggear a inscrição para permitir filtragem posterior
+          this.ws.send(JSON.stringify({ 
+            proposal_open_contract: 1, 
+            subscribe: 1,
+            passthrough: { origin: 'autonomous_agent' }
+          }));
+          console.log('[AgenteAutonomo] 📊 Inscrito em atualizações de contratos (Operações Agente)');
         }
       },
+
 
       handleContractUpdate(contract) {
         // 1. Log para debug
