@@ -1098,8 +1098,6 @@
 				],
 				hideValues: false,
 				pollingInterval: null,
-				currentTime: new Date(), // For real-time counter
-				sessionTimeInterval: null, // Interval for updating session time
                 
                 // Flags para evitar reabertura de modais já vistos na sessão
                 stopLossAcknowledged: false,
@@ -1166,11 +1164,6 @@
 			// 	this.isBalanceReady = true;
 			// 	this.tryUpdateRenderedCapitals();
 			// }, delayTime);
-			
-			// ✅ Start real-time session counter
-			this.sessionTimeInterval = setInterval(() => {
-				this.currentTime = new Date();
-			}, 1000); // Update every second
 		},
 		beforeUnmount() {
 			window.removeEventListener('click', this.closeDropdownsOnClickOutside);
@@ -1182,11 +1175,6 @@
 			}
 			// ✅ Parar polling de saldo ao desmontar
 			this.stopBalancePolling();
-			
-			// ✅ Stop session time interval
-			if (this.sessionTimeInterval) {
-				clearInterval(this.sessionTimeInterval);
-			}
 		},
 		computed: {
 			currentAgentId() {
@@ -1218,25 +1206,6 @@
 				};
 				
 				return `${formatDate(startDate)} - ${formatDate(today)} ${today.getFullYear()}`;
-			},
-		sessionElapsedTime() {
-			// Calculate elapsed time since session start
-			if (!this.tradeHistory || this.tradeHistory.length === 0) return '00:00:00';
-			
-			// Get the oldest trade (session start)
-			const sortedTrades = [...this.tradeHistory].sort((a, b) => 
-				new Date(a.createdAt || a.created_at || a.time) - new Date(b.createdAt || b.created_at || b.time)
-			);
-			
-			const sessionStart = new Date(sortedTrades[0].createdAt || sortedTrades[0].created_at || sortedTrades[0].time);
-			const now = this.currentTime; // Use reactive currentTime
-			
-			const diffMs = now - sessionStart;
-			const hours = Math.floor(diffMs / (1000 * 60 * 60));
-			const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-			const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-			
-			return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 		},
 			initialCapital() {
 				// ✅ [ZENIX v2.4] Reverted to prioritize initialStake as per user request
@@ -1703,8 +1672,7 @@
                         // Or just pass the time and a status label.
                         // Let's pass 'displayLabel'
                         displayLabel: isEnded ? 'FIM DA SESSÃO' : 'SESSÃO ATUAL',
-                        timeLabel: isEnded ? endTime : this.sessionElapsedTime,
-                        isRealTime: !isEnded, // Flag to indicate if time should update
+                        timeLabel: endTime,
                         endReason: endReason,
 						totalProfit: totalProfit,
                         totalOps: totalOps,
