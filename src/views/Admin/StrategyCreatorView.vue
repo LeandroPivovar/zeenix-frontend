@@ -232,7 +232,7 @@
                                         <div class="bg-[#111] border border-[#333] rounded-xl p-4 flex flex-col gap-4">
                                             <div class="flex items-center gap-4">
                                                 <div class="w-12 h-12 rounded-xl bg-zenix-green/10 flex items-center justify-center text-zenix-green text-xl border border-zenix-green/20">
-                                                    <i :class="`fa-solid fa-${strategyIdentity.icon || 'fingerprint'}`"></i>
+                                                    <i :key="strategyIdentity.icon" :class="`fa-solid fa-${strategyIdentity.icon || 'fingerprint'}`"></i>
                                                 </div>
                                                 <div>
                                                     <h4 class="text-white font-bold text-lg leading-tight">{{ strategyIdentity.name || 'Nome da Estratégia' }}</h4>
@@ -364,10 +364,10 @@
                                                         v-model="form.durationUnit" 
                                                         class="w-full h-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg px-2 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-xs font-bold text-center"
                                                     >
-                                                        <option value="t">t</option>
-                                                        <option value="s">s</option>
-                                                        <option value="m">m</option>
-                                                        <option value="h">h</option>
+                                                        <option value="t">Ticks</option>
+                                                        <option value="s">Segundos</option>
+                                                        <option value="m">Minutos</option>
+                                                        <option value="h">Horas</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -643,7 +643,7 @@
                                                         v-model="recoveryConfig.durationUnit" 
                                                         class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
                                                     >
-                                                        <option value="t">Tick</option>
+                                                        <option value="t">Ticks</option>
                                                         <option value="s">Segundos</option>
                                                         <option value="m">Minutos</option>
                                                         <option value="h">Horas</option>
