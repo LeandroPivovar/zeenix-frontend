@@ -1098,6 +1098,8 @@
 				],
 				hideValues: false,
 				pollingInterval: null,
+				currentTime: new Date(), // For real-time counter
+				sessionTimeInterval: null, // Interval for updating session time
                 
                 // Flags para evitar reabertura de modais já vistos na sessão
                 stopLossAcknowledged: false,
@@ -1164,6 +1166,11 @@
 			// 	this.isBalanceReady = true;
 			// 	this.tryUpdateRenderedCapitals();
 			// }, delayTime);
+			
+			// ✅ Start real-time session counter
+			this.sessionTimeInterval = setInterval(() => {
+				this.currentTime = new Date();
+			}, 1000); // Update every second
 		},
 		beforeUnmount() {
 			window.removeEventListener('click', this.closeDropdownsOnClickOutside);
@@ -1175,6 +1182,11 @@
 			}
 			// ✅ Parar polling de saldo ao desmontar
 			this.stopBalancePolling();
+			
+			// ✅ Stop session time interval
+			if (this.sessionTimeInterval) {
+				clearInterval(this.sessionTimeInterval);
+			}
 		},
 		computed: {
 			currentAgentId() {
@@ -1207,6 +1219,25 @@
 				
 				return `${formatDate(startDate)} - ${formatDate(today)} ${today.getFullYear()}`;
 			},
+		sessionElapsedTime() {
+			// Calculate elapsed time since session start
+			if (!this.tradeHistory || this.tradeHistory.length === 0) return '00:00:00';
+			
+			// Get the oldest trade (session start)
+			const sortedTrades = [...this.tradeHistory].sort((a, b) => 
+				new Date(a.createdAt || a.created_at || a.time) - new Date(b.createdAt || b.created_at || b.time)
+			);
+			
+			const sessionStart = new Date(sortedTrades[0].createdAt || sortedTrades[0].created_at || sortedTrades[0].time);
+			const now = this.currentTime; // Use reactive currentTime
+			
+			const diffMs = now - sessionStart;
+			const hours = Math.floor(diffMs / (1000 * 60 * 60));
+			const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+			const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+			
+			return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+		},
 			initialCapital() {
 				// ✅ [ZENIX v2.4] Reverted to prioritize initialStake as per user request
 				// Fallback to balance only if stake is missing (but user wants stake)
@@ -1511,22 +1542,12 @@
 				if (this.selectedPeriod === 'session') {
 					// Prioritize the reactive tradeHistory prop for real-time updates
 					sourceTrades = [...(this.tradeHistory || [])];
+					console.log('[formattedSessionItems] session mode - using tradeHistory:', sourceTrades.length, 'trades');
 				} else {
-					// Fallback to dailyTrades for historical views, but MERGE with current session history/active
-                    // This prevents "disappearing" operations if backend hasn't synced yet
-					const historical = this.dailyTrades || [];
-                    const active = this.tradeHistory || [];
-                    
-                    // Create a map to deduplicate by ID
-                    const tradeMap = new Map();
-                    
-                    // Add historical first
-                    historical.forEach(t => tradeMap.set(t.id, t));
-                    
-                    // Add/Overwrite with active (realtime is truth)
-                    active.forEach(t => tradeMap.set(t.id, t));
-                    
-                    sourceTrades = Array.from(tradeMap.values());
+					// ✅ FIX: For historical periods, use dailyTrades ONLY (already fetched by fetchTradesForPeriod)
+					// Don't merge with tradeHistory as it's only for current session
+					sourceTrades = [...(this.dailyTrades || [])];
+					console.log('[formattedSessionItems] historical mode - using dailyTrades:', sourceTrades.length, 'trades');
 				}
 
 				if (!sourceTrades || sourceTrades.length === 0) return [];
@@ -1682,7 +1703,8 @@
                         // Or just pass the time and a status label.
                         // Let's pass 'displayLabel'
                         displayLabel: isEnded ? 'FIM DA SESSÃO' : 'SESSÃO ATUAL',
-                        timeLabel: endTime,
+                        timeLabel: isEnded ? endTime : this.sessionElapsedTime,
+                        isRealTime: !isEnded, // Flag to indicate if time should update
                         endReason: endReason,
 						totalProfit: totalProfit,
                         totalOps: totalOps,
