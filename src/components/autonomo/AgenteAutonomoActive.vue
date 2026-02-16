@@ -2062,14 +2062,18 @@
 
             async openDayDetails(day) {
                 console.log('[AgenteAutonomo] openDayDetails:', day);
-				this.selectedDay = day;
                 
                 // Garantir que temos a configuração do agente para calcular metas
                 if (!this.agentConfig) {
                     await this.fetchAgentConfig();
                 }
                 
+                // ✅ FIX: Fetch data FIRST, then open modal
+                // This prevents showing stale/incorrect data while loading
                 await this.fetchDailyDetails(day);
+                
+                // Only set selectedDay AFTER data is loaded
+                // fetchDailyDetails already updates selectedDay with fresh data
 			},
 
             async fetchDailyDetails(day) {
@@ -2136,7 +2140,7 @@
                             }
 
                             this.selectedDay = {
-                                ...this.selectedDay,
+                                ...day,
                                 avgTime: avgTime,
                                 isMetaAtingida: target > 0 && cumulativeProfit >= target,
                                 activationTime: activationTime,
