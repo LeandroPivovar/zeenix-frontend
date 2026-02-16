@@ -56,6 +56,22 @@
                     {{ reasonText }}
                 </span>
             </div>
+
+            <!-- Win Rate -->
+            <div class="bg-[#18181b] rounded-lg p-3 border border-[#27272a] flex flex-col items-center justify-center">
+                <span class="text-[10px] text-[#A1A1AA] uppercase tracking-wider font-semibold mb-1">Assertividade</span>
+                <span class="text-xl font-bold tabular-nums" :class="getWinRateColor(winRate)">
+                    {{ winRate.toFixed(1) }}%
+                </span>
+            </div>
+
+            <!-- Total Operations -->
+            <div class="bg-[#18181b] rounded-lg p-3 border border-[#27272a] flex flex-col items-center justify-center">
+                <span class="text-[10px] text-[#A1A1AA] uppercase tracking-wider font-semibold mb-1">Total de Operações</span>
+                <span class="text-xl font-bold text-white tabular-nums">
+                    {{ totalTrades }}
+                </span>
+            </div>
         </div>
 
         <!-- Action Button -->
@@ -93,6 +109,14 @@ export default {
     currencySymbol: {
       type: String,
       default: '$'
+    },
+    winRate: {
+      type: Number,
+      default: 0
+    },
+    totalTrades: {
+      type: Number,
+      default: 0
     }
   },
   computed: {
@@ -124,6 +148,11 @@ export default {
     formatPrice(value) {
       if (value === undefined || value === null) return '0,00';
       return Math.abs(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
+    getWinRateColor(rate) {
+        if (rate >= 50) return 'text-green-500';
+        if (rate >= 40) return 'text-yellow-500';
+        return 'text-red-500';
     }
   }
 }

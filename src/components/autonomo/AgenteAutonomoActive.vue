@@ -796,10 +796,12 @@
 	<!-- Novo Modal Unificado de Resumo da Sessão -->
 	<SessionSummaryModal
 		:visible="showSessionSummaryModal"
-		:total-profit="sessionSummaryData.profit"
+		:total-profit="selectedPeriodMetrics.totalProfit"
 		:cycle="sessionSummaryData.cycle"
 		:reason="sessionSummaryData.reason"
 		:currency-symbol="preferredCurrencyPrefix"
+		:win-rate="selectedPeriodMetrics.winRate"
+		:total-trades="selectedPeriodMetrics.totalTrades"
 		@close="handleCloseSessionSummary"
 		@view-details="handleViewDetails"
 	/>
@@ -1519,13 +1521,8 @@
 						let isNewSession = false;
 						if (prevSessionId && currSessionId && prevSessionId !== currSessionId) {
 							isNewSession = true;
-						} else if (!prevSessionId || !currSessionId) {
-							// Secondary check: 30 min gap if sessionId is missing (legacy compat)
-							const prevTradeTime = new Date(normalizedTrades[i-1].createdAt).getTime();
-							const currTradeTime = new Date(normalizedTrades[i].createdAt).getTime();
-							const diffMinutes = (prevTradeTime - currTradeTime) / (1000 * 60);
-							if (diffMinutes > 30) isNewSession = true;
 						}
+						// REMOVED: Inactivity timer check (30 min) - Sessions now only split by ID/Restart
 						
 						if (isNewSession) {
 							sessions.push(currentSessionTrades);
@@ -1588,6 +1585,36 @@
 				});
 				
 				return items;
+			},
+			selectedPeriodMetrics() {
+				// Calculate metrics based on the selected period (filtering dailyData or using sessionStats)
+				let trades = 0;
+				let wins = 0;
+				let profit = 0;
+				
+				if (this.selectedPeriod === 'session') {
+					// Use realtime session stats
+					trades = this.sessionStats?.totalTrades || 0;
+					wins = this.sessionStats?.wins || 0;
+					profit = this.sessionStats?.netProfit || 0;
+				} else {
+					// Sum up from filteredDailyData
+					const data = this.filteredDailyData || [];
+					data.forEach(day => {
+						trades += (day.trades || 0);
+						wins += (day.wins || 0);
+						profit += (day.profit || 0);
+					});
+				}
+				
+				const winRate = trades > 0 ? (wins / trades) * 100 : 0;
+				
+				return {
+					totalTrades: trades,
+					winRate: winRate,
+					wins: wins,
+					totalProfit: profit
+				};
 			},
 		},
 		watch: {
