@@ -607,9 +607,9 @@
                         </div>
 
                         <div class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-semibold mr-8 sm:mr-10"
-                            :class="(selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'"
+                            :class="(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'"
                         >
-                            {{ (selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }}{{ Math.abs(selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit).toFixed(2) }}
+                            {{ (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }}{{ Math.abs(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit).toFixed(2) }}
                         </div>
                     </div>
 				</h2>
@@ -620,12 +620,12 @@
 				<!-- Lucro do Dia/Período -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3">
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">
-                        {{ selectedPeriod === 'session' || selectedPeriod === 'today' ? 'Lucro do Dia' : 'Lucro do Período' }}
+                        {{ selectedPeriod === 'session' ? 'Lucro da Sessão' : (selectedPeriod === 'today' ? 'Lucro do Dia' : 'Lucro do Período') }}
                     </div>
 					<div class="text-base sm:text-xl font-bold tabular-nums text-left" 
-                        :class="(selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'"
+                        :class="(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'"
                     >
-						{{ (selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }}{{ Math.abs(selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit).toFixed(2) }}
+						{{ (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }}{{ Math.abs(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit).toFixed(2) }}
 					</div>
 				</div>
 
@@ -634,7 +634,7 @@
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Capital</div>
 					<!-- Estimating start capital for display logic -->
 					<div class="text-[10px] sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
-						{{ preferredCurrencyPrefix }}{{ ((selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.capital : finalCapital) - (selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit)).toFixed(2) }} → {{ preferredCurrencyPrefix }}{{ (selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.capital : finalCapital).toFixed(2) }}
+						{{ preferredCurrencyPrefix }}{{ ((selectedPeriod === 'today' ? activeDayDetails.capital : finalCapital) - (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit)).toFixed(2) }} → {{ preferredCurrencyPrefix }}{{ (selectedPeriod === 'today' ? activeDayDetails.capital : finalCapital).toFixed(2) }}
 					</div>
 				</div>
 
@@ -1556,7 +1556,7 @@
 					const rawExit = trade.exit !== undefined ? parseFloat(trade.exit) : (trade.exit_price !== undefined ? parseFloat(trade.exit_price) : (trade.exitPrice !== undefined ? parseFloat(trade.exitPrice) : 0));
 					const exit = isNaN(rawExit) ? 0 : rawExit;
 					
-					const market = trade.market || trade.symbol || trade.asset || 'Unknown';
+					const market = trade.symbol || trade.market || trade.asset || 'Unknown';
 					
 					const contract = trade.contract || trade.contract_type || trade.contractType || trade.type || 'Unknown';
 
@@ -1629,18 +1629,40 @@
                         const validEndStatuses = ['stopped_loss', 'stopped_profit', 'stopped_blindado', 'paused', 'inactive', 'error', 'stopped_consecutive_loss'];
                         
                         if (validEndStatuses.includes(status)) {
-                            isEnded = true;
-                             const statusMap = {
-                                'paused': 'AGENTE PAUSADO',
-                                'stopped_loss': 'STOP LOSS ATINGIDO',
-                                'stopped_profit': 'META ATINGIDA',
-                                'stopped_blindado': 'STOP BLINDADO ATINGIDO',
-                                'error': 'ERRO NO SISTEMA',
-                                'inactive': 'SESSÃO ENCERRADA',
-                                'stopped_consecutive_loss': 'STOP POR PERDAS'
-                            };
-                            endReason = statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase();
-                            footerText += ` (${endReason})`;
+                            // Special Check for PAUSED status
+                            if (status === 'paused') {
+                                // Calculate consecutive losses from the latest trades
+                                let consecutiveLosses = 0;
+                                for (let i = 0; i < sessionTrades.length; i++) {
+                                    if (sessionTrades[i].profit < 0) {
+                                        consecutiveLosses++;
+                                    } else {
+                                        break;
+                                    }
+                                }
+
+                                if (consecutiveLosses >= 2) {
+                                    isEnded = true;
+                                    endReason = 'PAUSA SEGURANÇA (5 min)';
+                                    footerText += ` (${endReason})`;
+                                } else {
+                                    // Treat generic pause as active/idle (no visible status text)
+                                    isEnded = false;
+                                    footerText = `EM ANDAMENTO - ${endTime}`;
+                                }
+                            } else {
+                                isEnded = true;
+                                const statusMap = {
+                                    'stopped_loss': 'STOP LOSS ATINGIDO',
+                                    'stopped_profit': 'META ATINGIDA',
+                                    'stopped_blindado': 'STOP BLINDADO ATINGIDO',
+                                    'error': 'ERRO NO SISTEMA',
+                                    'inactive': 'SESSÃO ENCERRADA',
+                                    'stopped_consecutive_loss': 'STOP POR PERDAS'
+                                };
+                                endReason = statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase();
+                                footerText += ` (${endReason})`;
+                            }
                         } else {
                             // Session is active or idle, not ended
                             isEnded = false;
