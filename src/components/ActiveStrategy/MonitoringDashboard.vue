@@ -17,7 +17,7 @@
                         <div class="absolute inset-0 rounded-full bg-[#22C55E]/30 blur-2xl scale-[2]"></div>
                         <div class="absolute inset-0 rounded-full bg-[#22C55E]/15 blur-xl scale-[1.5]"></div>
                         <div class="relative w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-gradient-to-br from-[#22C55E]/20 to-[#22C55E]/5 border border-[#22C55E]/30 flex items-center justify-center backdrop-blur-sm shadow-[0_0_20px_rgba(34,197,94,0.15)]">
-                            <i class="fas fa-robot text-2xl lg:text-3xl text-[#22C55E] drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]"></i>
+                            <i :class="`fa-solid fa-${sessionState.icon || 'brain'} text-2xl lg:text-3xl text-[#22C55E] drop-shadow-[0_0_8px_rgba(34,197,94,0.5)] tracking-wide transition-all duration-500` "></i>
                             <div class="absolute inset-0 rounded-full border border-[#22C55E]/20 animate-ping" style="animation-duration: 3s;"></div>
                         </div>
                         <div class="absolute w-1.5 h-1.5 rounded-full bg-[#22C55E]/60 animate-pulse" style="top: -4px; right: 4px;"></div>
@@ -29,9 +29,13 @@
                                 IA {{ sessionState.strategy?.toUpperCase() || 'ATIVA' }}
                             </span>
                         </div>
-                        <p class="text-xs lg:text-sm text-gray-400 font-medium truncate uppercase tracking-wider">
-                            {{ stats.status || 'Em operação' }}
+                        <p class="text-[10px] lg:text-xs text-gray-400 font-medium truncate uppercase tracking-wider mb-0.5">
+                            {{ sessionState.description || 'Inteligência Artificial Ativa' }}
                         </p>
+                        <div class="flex items-center gap-1.5 overflow-hidden">
+                             <span class="text-[9px] px-1.5 py-0.5 bg-[#22C55E]/10 border border-[#22C55E]/20 rounded text-[#22C55E] font-bold">V{{ sessionState.version || '1.0' }}</span>
+                             <span class="text-[9px] px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-gray-400 font-bold uppercase tracking-tighter">{{ stats.status || 'Ativo' }}</span>
+                        </div>
                     </div>
                 </div>
 

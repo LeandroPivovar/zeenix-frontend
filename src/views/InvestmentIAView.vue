@@ -670,9 +670,10 @@ export default {
                     icon: 'fas fa-shield-alt', 
                     icons: [], 
                     description: 'Híbrida: Dígitos + Price Action.',
-                    assertividade: 'N/A',
-                    retorno: 'N/A',
-                    status: 'Ativo'
+                    assertividade: '92% a 96%',
+                    retorno: '95% a 99%',
+                    status: 'Ativo',
+                    version: '1.0'
                 },
                 { 
                     id: 'apollo', 
@@ -681,9 +682,10 @@ export default {
                     icon: 'fas fa-rocket', 
                     icons: [],
                     description: 'Densidade de Dígitos e Microtendências',
-                    assertividade: 'N/A',
-                    retorno: 'N/A',
-                    status: 'Ativo'
+                    assertividade: '60% a 70%',
+                    retorno: '19% a 126%',
+                    status: 'Ativo',
+                    version: '1.0'
                 },
                 { 
                     id: 'nexus', 
@@ -692,9 +694,10 @@ export default {
                     icon: 'fas fa-chart-bar',
                     icons: [],
                     description: 'Price Action com Barreira.',
-                    assertividade: 'N/A',
-                    retorno: 'N/A',
-                    status: 'Ativo'
+                    assertividade: '91% a 95%',
+                    retorno: '91% a 95%',
+                    status: 'Ativo',
+                    version: '1.0'
                 },
                 { 
                     id: 'orion', 
@@ -703,9 +706,10 @@ export default {
                     icon: 'fas fa-star', 
                     icons: [],
                     description: 'Estatística de Dígitos e Recuperação.',
-                    assertividade: 'N/A',
-                    retorno: 'N/A',
-                    status: 'Ativo'
+                    assertividade: '94% a 97%',
+                    retorno: '95% a 99%',
+                    status: 'Ativo',
+                    version: '1.0'
                 },
                 { 
                     id: 'titan', 
@@ -714,9 +718,10 @@ export default {
                     icon: 'fas fa-yin-yang', 
                     icons: [],
                     description: 'Dígitos Par/Ímpar Direcional.',
-                    assertividade: '90% - 95%',
+                    assertividade: '90% a 95%',
                     retorno: '95%',
-                    status: 'Ativo'
+                    status: 'Ativo',
+                    version: '1.0'
                 }
             ],
             
@@ -2166,15 +2171,23 @@ export default {
                                         version: this.allStrategies[strategyIndex].version
                                     });
                                 } else {
-                                    // Ensure stats are N/A if metadata is missing
-                                    this.allStrategies[strategyIndex].assertividade = 'N/A';
-                                    this.allStrategies[strategyIndex].retorno = 'N/A';
+                                    const defaultMetrics = {
+                                        atlas: { assertividade: '92% a 96%', retorno: '95% a 99%' },
+                                        apollo: { assertividade: '60% a 70%', retorno: '19% a 126%' },
+                                        nexus: { assertividade: '91% a 95%', retorno: '91% a 95%' },
+                                        orion: { assertividade: '94% a 97%', retorno: '95% a 99%' },
+                                        titan: { assertividade: '90% a 95%', retorno: '95%' }
+                                    }[strategyName] || { assertividade: 'N/A', retorno: 'N/A' };
+
+                                    // Ensure stats use fallbacks if metadata is missing
+                                    this.allStrategies[strategyIndex].assertividade = defaultMetrics.assertividade;
+                                    this.allStrategies[strategyIndex].retorno = defaultMetrics.retorno;
                                     
                                     if (data && data.version) {
                                         this.allStrategies[strategyIndex].version = data.version;
                                         console.log(`[InvestmentIAView] ✅ ${strategyName} versão atualizada: v${data.version}`);
                                     } else {
-                                        console.log(`[InvestmentIAView] ⚠️ ${strategyName} sem metadata/versão, stats resetados para N/A`);
+                                        console.log(`[InvestmentIAView] ⚠️ ${strategyName} sem metadata/versão, usando fallbacks`);
                                     }
                                 }
                             }
@@ -2257,7 +2270,14 @@ export default {
             this.allStrategies = strategies.map(s => {
                 const strategyId = s.id.replace('default_', '');
                 const identity = s.config?.strategyIdentity || {};
-                
+                const defaultMetrics = {
+                    atlas: { assertividade: '92% a 96%', retorno: '95% a 99%' },
+                    apollo: { assertividade: '60% a 70%', retorno: '19% a 126%' },
+                    nexus: { assertividade: '91% a 95%', retorno: '91% a 95%' },
+                    orion: { assertividade: '94% a 97%', retorno: '95% a 99%' },
+                    titan: { assertividade: '90% a 95%', retorno: '95%' }
+                }[strategyId] || { assertividade: 'N/A', retorno: 'N/A' };
+
                 return {
                     id: strategyId,
                     title: identity.name || (strategyId === 'apollo' ? 'IA APOLLO' : s.name),
@@ -2267,17 +2287,17 @@ export default {
                     description: identity.description || this.getStrategyDescription(s.name),
                     // Strict status check: only 'Ativo' strategies allowed
                     status: identity.status === 'Ativo' ? 'Ativo' : 'Rascunho',
-                    // Use identity precision and return if available, otherwise default to 'N/A'
+                    // Use identity precision and return if available, otherwise use defaults
                     assertividade: identity.precision 
                         ? `${identity.precision.min}% a ${identity.precision.max}%` 
                         : ((s.config?.metadata?.assertividade && s.config.metadata.assertividade !== 'N/A') 
                             ? `${s.config.metadata.assertividade}%` 
-                            : 'N/A'),
+                            : defaultMetrics.assertividade),
                     retorno: identity.return 
                         ? `${identity.return.min}% a ${identity.return.max}%` 
                         : ((s.config?.metadata?.retorno && s.config.metadata.retorno !== 'N/A') 
                             ? `${s.config.metadata.retorno}%` 
-                            : 'N/A'),
+                            : defaultMetrics.retorno),
                     version: s.version || '1.0'
                 };
             });

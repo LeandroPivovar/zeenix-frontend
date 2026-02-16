@@ -117,11 +117,11 @@
                         <div class="col-span-12">
                             <div class="bg-[#141414] border border-[#333] rounded-xl p-6 relative overflow-hidden">
                                 <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none transition-all duration-500">
-                                    <i :key="strategyIdentity.icon" :class="`fa-solid fa-${strategyIdentity.icon || 'fingerprint'} text-6xl`"></i>
+                                    <i :class="`fa-solid fa-${strategyIdentity.icon || 'fingerprint'} text-6xl`"></i>
                                 </div>
                                 <h3 class="text-xl font-bold text-white mb-6 relative z-10 flex items-center gap-2">
                                     <div class="w-8 h-8 rounded-lg bg-zenix-green/10 flex items-center justify-center text-zenix-green transition-all duration-300">
-                                        <i :key="strategyIdentity.icon" :class="`fa-solid fa-${strategyIdentity.icon || 'fingerprint'}`"></i>
+                                        <i :class="`fa-solid fa-${strategyIdentity.icon || 'fingerprint'}`"></i>
                                     </div>
                                     Identidade da Estratégia
                                     <span class="ml-auto px-3 py-1 bg-[#1E1E1E] border border-[#333] rounded-full text-xs text-gray-400 font-bold uppercase tracking-wider">
@@ -232,7 +232,7 @@
                                         <div class="bg-[#111] border border-[#333] rounded-xl p-4 flex flex-col gap-4">
                                             <div class="flex items-center gap-4">
                                                 <div class="w-12 h-12 rounded-xl bg-zenix-green/10 flex items-center justify-center text-zenix-green text-xl border border-zenix-green/20">
-                                                    <i :key="strategyIdentity.icon" :class="`fa-solid fa-${strategyIdentity.icon}`"></i>
+                                                    <i :class="`fa-solid fa-${strategyIdentity.icon || 'fingerprint'}`"></i>
                                                 </div>
                                                 <div>
                                                     <h4 class="text-white font-bold text-lg leading-tight">{{ strategyIdentity.name || 'Nome da Estratégia' }}</h4>
@@ -3042,6 +3042,10 @@ export default {
             this.sessionState.stoplossBlindado = this.form.useBlindado || false;
             // ? Pass Version
             this.sessionState.version = this.currentVersion || '1.0';
+            
+            // ? Pass Identity Details to Monitoring Dashboard
+            this.sessionState.icon = this.strategyIdentity.icon || 'bolt';
+            this.sessionState.description = this.strategyIdentity.description || '';
 
             this.startSimulation();
             this.$root.$toast.success('Estratégia iniciada com sucesso!');
@@ -3209,7 +3213,16 @@ export default {
                 const savedIdentity = JSON.parse(JSON.stringify(strategy.config.strategyIdentity));
                 this.strategyIdentity = {
                     ...this.strategyIdentity,
-                    ...savedIdentity
+                    ...savedIdentity,
+                    // Deeply merge nested objects if they exist
+                    precision: { 
+                        ...(this.strategyIdentity.precision || { min: 60, max: 70 }), 
+                        ...(savedIdentity.precision || {}) 
+                    },
+                    return: { 
+                        ...(this.strategyIdentity.return || { min: 19, max: 126 }), 
+                        ...(savedIdentity.return || {}) 
+                    }
                 };
                 
                 // ? Sync local name/version if restored from identity
@@ -3382,7 +3395,18 @@ export default {
                         
                         if (data.config.strategyIdentity) {
                             const importedIdentity = JSON.parse(JSON.stringify(data.config.strategyIdentity));
-                            this.strategyIdentity = { ...this.strategyIdentity, ...importedIdentity };
+                            this.strategyIdentity = { 
+                                ...this.strategyIdentity, 
+                                ...importedIdentity,
+                                precision: { 
+                                    ...(this.strategyIdentity.precision || { min: 60, max: 70 }), 
+                                    ...(importedIdentity.precision || {}) 
+                                },
+                                return: { 
+                                    ...(this.strategyIdentity.return || { min: 19, max: 126 }), 
+                                    ...(importedIdentity.return || {}) 
+                                }
+                            };
                         }
                         
                         if (data.config.validator) {
