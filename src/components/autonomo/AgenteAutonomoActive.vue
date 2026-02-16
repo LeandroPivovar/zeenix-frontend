@@ -1763,6 +1763,7 @@
 				// Atualizar dados quando o filtro mudar
 				this.fetchProfitEvolution();
                 this.fetchDailyStats();
+                this.fetchTradesForPeriod();
                 this.syncRenderedValues();
 			},
 			'agenteData.sessionStatus'(newStatus) {
@@ -2149,7 +2150,7 @@
 					console.error("[AgenteAutonomo] Erro ao buscar detalhes diários:", error);
 				}
 			},
-            async fetchDailyStats() {
+			async fetchDailyStats() {
 				const userId = this.getUserId();
 				console.log('[AgenteAutonomo] fetchDailyStats chamado para user:', userId);
 				if (!userId) return;
@@ -2225,6 +2226,98 @@
 					console.error("[AgenteAutonomo] Erro ao buscar estatísticas diárias:", error);
 				}
 			},
+
+            async fetchTradesForPeriod() {
+                const userId = this.getUserId();
+                if (!userId) return;
+                
+                // Se for 'session', não precisamos buscar histórico, usamos tradeHistory local
+                if (this.selectedPeriod === 'session') return;
+
+                console.log('[AgenteAutonomo] fetchTradesForPeriod iniciado para:', this.selectedPeriod);
+
+                // Calcular intervalo de datas
+                let startDate = new Date();
+                let endDate = new Date();
+                let isRange = false;
+                
+                // Reset hours
+                startDate.setHours(0, 0, 0, 0);
+                endDate.setHours(23, 59, 59, 999);
+
+                switch (this.selectedPeriod) {
+                    case 'today':
+                        // Datas já estão em hoje
+                        isRange = true;
+                        break;
+                    case 'yesterday':
+                        startDate.setDate(startDate.getDate() - 1);
+                        endDate = new Date(startDate);
+                        endDate.setHours(23, 59, 59, 999);
+                        isRange = true;
+						break;
+                    case '7d':
+                        startDate.setDate(startDate.getDate() - 7);
+                        isRange = true;
+                        break;
+                    case '30d':
+                        startDate.setDate(startDate.getDate() - 30);
+                        isRange = true;
+                        break;
+                    case 'thisMonth':
+                        startDate.setDate(1);
+                        isRange = true;
+                        break;
+                    case 'custom':
+                        if (this.customDateRange) {
+                            startDate = new Date(this.customDateRange.start);
+                            endDate = new Date(this.customDateRange.end);
+                            endDate.setHours(23, 59, 59, 999);
+                            isRange = true;
+                        }
+                        break;
+                    // 'all', '6m', '1y' - pode ser pesado, vamos limitar ou tratar no backend?
+                    // Por enquanto vamos deixar o backend decidir limite ou pegar 30 dias se 'all' for muito
+                     case 'all': // Try to get reasonable history
+                        startDate.setFullYear(startDate.getFullYear() - 1);
+                        isRange = true;
+                        break;
+                }
+                
+                try {
+                     const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
+                     const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
+                     
+                     let url = '';
+                     if (isRange) {
+                         const startStr = startDate.toISOString();
+                         const endStr = endDate.toISOString();
+                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${startStr}&endDate=${endStr}${agentFilter}&date=range`;
+                     } else {
+                         return; // Should not happen with valid period
+                     }
+                     
+                     console.log('[AgenteAutonomo] Buscando trades históricos:', url);
+                     
+                     const response = await fetch(url, {
+                        method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${localStorage.getItem("token")}`,
+						}
+                     });
+                     
+                     if (response.ok) {
+                         const result = await response.json();
+                         if (result.success) {
+                             console.log('[AgenteAutonomo] Trades históricos carregados:', result.data.length);
+                             this.dailyTrades = result.data;
+                         }
+                     }
+                } catch(e) {
+                    console.error("[AgenteAutonomo] Erro ao buscar trades históricos:", e);
+                }
+            },
 
 			async fetchAgentConfig() {
 				const userId = this.getUserId();
@@ -2704,6 +2797,7 @@
 				this.fetchAgentConfig(); 
 				this.fetchProfitEvolution();
 				this.fetchDailyStats();
+                this.fetchTradesForPeriod();
 				this.fetchSummaryStats();
 				// Se modal aberto, atualiza detalhes
 				if (this.selectedDay && this.selectedDay.fullDate === new Date().toISOString().split('T')[0]) {
