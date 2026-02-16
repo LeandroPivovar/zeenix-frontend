@@ -590,22 +590,42 @@
 			<!-- Header -->
 			<div class="flex flex-col space-y-1.5 text-left mb-2">
 				<h2 class="text-sm sm:text-lg font-semibold leading-none tracking-tight flex items-center justify-between gap-4">
-					<span class="text-[#FAFAFA]">Relatório Diário — {{ activeDayDetails.date }}/2026</span>
-					<div class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-semibold mr-8 sm:mr-10"
-						:class="activeDayDetails.profit >= 0 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'"
-					>
-						{{ activeDayDetails.profit < 0 ? '-' : (activeDayDetails.profit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(activeDayDetails.profit).toFixed(2) }}
-					</div>
+					<span class="text-[#FAFAFA]" v-if="selectedPeriod === 'session' || selectedPeriod === 'today'">Relatório Diário — {{ activeDayDetails.date }}/2026</span>
+                    <span class="text-[#FAFAFA]" v-else>Relatório do Período</span>
+
+                    <div class="flex items-center gap-2">
+                         <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a] mr-4">
+                            <button 
+                                v-for="type in [{id:'session', label:'SESSÃO'}, {id:'today', label:'HOJE'}, {id:'7d', label:'7D'}, {id:'30d', label:'30D'}]" 
+                                :key="type.id"
+                                @click="selectedPeriod = type.id"
+                                class="px-2 py-1 rounded-md text-[10px] font-bold uppercase transition-all"
+                                :class="selectedPeriod === type.id ? 'bg-[#FAFAFA] text-black shadow-lg shadow-white/5' : 'text-[#A1A1AA] hover:text-white hover:bg-white/5'"
+                            >
+                                {{ type.label }}
+                            </button>
+                        </div>
+
+                        <div class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-semibold mr-8 sm:mr-10"
+                            :class="(selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'"
+                        >
+                            {{ (selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }}{{ Math.abs(selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit).toFixed(2) }}
+                        </div>
+                    </div>
 				</h2>
 			</div>
 
 			<!-- KPI Grid -->
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mt-4 text-left">
-				<!-- Lucro do Dia -->
+				<!-- Lucro do Dia/Período -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3">
-					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Lucro do Dia</div>
-					<div class="text-base sm:text-xl font-bold tabular-nums text-left" :class="activeDayDetails.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ activeDayDetails.profit < 0 ? '-' : (activeDayDetails.profit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(activeDayDetails.profit).toFixed(2) }}
+					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">
+                        {{ selectedPeriod === 'session' || selectedPeriod === 'today' ? 'Lucro do Dia' : 'Lucro do Período' }}
+                    </div>
+					<div class="text-base sm:text-xl font-bold tabular-nums text-left" 
+                        :class="(selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'"
+                    >
+						{{ (selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }}{{ Math.abs(selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit).toFixed(2) }}
 					</div>
 				</div>
 
@@ -614,28 +634,39 @@
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Capital</div>
 					<!-- Estimating start capital for display logic -->
 					<div class="text-[10px] sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
-						{{ preferredCurrencyPrefix }}{{ (activeDayDetails.capital - activeDayDetails.profit).toFixed(2) }} → {{ preferredCurrencyPrefix }}{{ activeDayDetails.capital.toFixed(2) }}
+						{{ preferredCurrencyPrefix }}{{ ((selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.capital : finalCapital) - (selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit)).toFixed(2) }} → {{ preferredCurrencyPrefix }}{{ (selectedPeriod === 'session' || selectedPeriod === 'today' ? activeDayDetails.capital : finalCapital).toFixed(2) }}
 					</div>
 				</div>
 
-				<!-- Meta Diária -->
+				<!-- Meta Diária - Only shows meaningful data for Today/Session -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3 flex flex-col items-start">
-					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Meta Diária</div>
-					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors text-[10px] sm:text-xs text-left bg-green-500/10 text-green-500 border-green-500/20">
-						{{ preferredCurrencyPrefix }}{{ agenteData.goalValue ? agenteData.goalValue.toFixed(2) : '50.00' }}
+					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">
+                         {{ selectedPeriod === 'session' || selectedPeriod === 'today' ? 'Meta Diária' : 'Média/Dia' }}
+                    </div>
+					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors text-[10px] sm:text-xs text-left"
+                         :class="selectedPeriod === 'session' || selectedPeriod === 'today' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-white/5 text-white border-white/10'"
+                    >
+						{{ preferredCurrencyPrefix }}{{ selectedPeriod === 'session' || selectedPeriod === 'today' ? (agenteData.goalValue ? agenteData.goalValue.toFixed(2) : '50.00') : (selectedPeriodMetrics.totalProfit / (selectedPeriod === '7d' ? 7 : 30)).toFixed(2) }}
 					</div>
-					<div class="text-[#A1A1AA] text-[9px] sm:text-xs mt-0.5 sm:mt-1 text-left" v-if="activeDayDetails.activationTime">
+					<div class="text-[#A1A1AA] text-[9px] sm:text-xs mt-0.5 sm:mt-1 text-left" v-if="selectedPeriod === 'session' && activeDayDetails.activationTime">
 						Ativação: {{ activeDayDetails.activationTime }}
 					</div>
 				</div>
 
-				<!-- Stop Loss -->
+				<!-- Stop Loss / Total Ops -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3 flex flex-col items-start">
-					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Stop Loss</div>
+					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">
+                        {{ selectedPeriod === 'session' || selectedPeriod === 'today' ? 'Stop Loss' : 'Total Ops' }}
+                    </div>
 					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors text-[10px] sm:text-xs text-left"
-						:class="(agenteData.stopValue || 0) < 0 ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'">
-						{{ (agenteData.stopValue || 0) < 0 ? '' : '' }}{{ preferredCurrencyPrefix }}{{ (agenteData.stopValue || 25).toFixed(2) }}
+						:class="(agenteData.stopValue || 0) < 0 ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'"
+                        v-if="selectedPeriod === 'session' || selectedPeriod === 'today'"
+                    >
+						{{ (agenteData.stopValue || 0) < 0 ? '-' : '' }}{{ preferredCurrencyPrefix }}{{ (agenteData.stopValue || 25).toFixed(2) }}
 					</div>
+                    <div class="text-sm font-bold text-white tabular-nums" v-else>
+                        {{ selectedPeriodMetrics.totalTrades }}
+                    </div>
 				</div>
 			</div>
 
@@ -701,6 +732,16 @@
                                 <tr v-if="item.type === 'header'" class="bg-[#1a1a1a]">
                                     <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-yellow-500 uppercase tracking-wider border-y border-[#27272a] text-left">
                                          SESSÃO {{ item.sessionNumber }} - INÍCIO {{ item.startTime }}
+                                    </td>
+                                </tr>
+
+                                <!-- PAUSE ROW -->
+                                <tr v-else-if="item.type === 'pause'" class="bg-[#1a1a1a]/50 border-y border-[#27272a] border-dashed">
+                                    <td colspan="7" class="py-2 px-2 text-center">
+                                        <div class="inline-flex items-center gap-2 text-[#A1A1AA] text-[10px] uppercase font-bold tracking-wider">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause-circle"><circle cx="12" cy="12" r="10"/><line x1="10" x2="10" y1="15" y2="9"/><line x1="14" x2="14" y1="15" y2="9"/></svg>
+                                            AGENTE PAUSADO POR {{ item.duration }} MINUTOS
+                                        </div>
                                     </td>
                                 </tr>
 
@@ -1460,10 +1501,23 @@
 				let sourceTrades = [];
 				if (this.selectedPeriod === 'session') {
 					// Prioritize the reactive tradeHistory prop for real-time updates
-					sourceTrades = this.tradeHistory || [];
+					sourceTrades = [...(this.tradeHistory || [])];
 				} else {
-					// Fallback to dailyTrades for historical views
-					sourceTrades = this.dailyTrades || [];
+					// Fallback to dailyTrades for historical views, but MERGE with current session history/active
+                    // This prevents "disappearing" operations if backend hasn't synced yet
+					const historical = this.dailyTrades || [];
+                    const active = this.tradeHistory || [];
+                    
+                    // Create a map to deduplicate by ID
+                    const tradeMap = new Map();
+                    
+                    // Add historical first
+                    historical.forEach(t => tradeMap.set(t.id, t));
+                    
+                    // Add/Overwrite with active (realtime is truth)
+                    active.forEach(t => tradeMap.set(t.id, t));
+                    
+                    sourceTrades = Array.from(tradeMap.values());
 				}
 
 				if (!sourceTrades || sourceTrades.length === 0) return [];
@@ -1569,13 +1623,30 @@
 					});
 
 					// 2. Trades (Newest first)
-					sessionTrades.forEach(trade => {
+					for (let i = 0; i < sessionTrades.length; i++) {
+						const trade = sessionTrades[i];
 						items.push({
 							type: 'trade',
 							id: trade.id,
 							data: trade
 						});
-					});
+
+						// Check for pause logic (Gap > 5 minutes between this trade and the next one)
+						if (i < sessionTrades.length - 1) {
+							const nextTrade = sessionTrades[i+1];
+							const diffMs = new Date(trade.createdAt) - new Date(nextTrade.createdAt);
+							const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+							if (diffMinutes >= 5) {
+								items.push({
+									type: 'pause',
+									id: `pause-${trade.id}`,
+									duration: diffMinutes,
+									time: this.formatToSPTime(nextTrade.createdAt) // Pause started after the previous trade
+								});
+							}
+						}
+					}
 
 					// 3. Header: START (At BOTTOM of block)
 					items.push({
