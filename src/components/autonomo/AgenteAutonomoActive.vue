@@ -768,10 +768,16 @@
                                 <tr v-else-if="item.type === 'footer'" class="bg-[#0c0c0c]">
                                     <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider border-b border-[#27272a] text-left">
                                         <div class="flex items-center justify-between">
-                                            <span>FIM DA SESSÃO - {{ item.endTime }}</span>
-                                            <span :class="item.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'">
-                                                RESULTADO: {{ item.totalProfit < 0 ? '-' : (item.totalProfit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(item.totalProfit).toFixed(2) }}
-                                            </span>
+                                            <div class="flex items-center gap-2">
+                                                <span :class="item.isEnded ? 'text-[#A1A1AA]' : 'text-emerald-500'">{{ item.displayLabel }} - {{ item.timeLabel }}</span>
+                                                <span v-if="item.endReason" class="text-xs text-red-400">({{ item.endReason }})</span>
+                                            </div>
+                                            <div class="flex items-center gap-4">
+                                                <span class="text-[#FAFAFA] opacity-70">{{ item.totalOps }} OPERAÇÕES</span>
+                                                <span :class="item.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'">
+                                                    RESULTADO: {{ item.totalProfit < 0 ? '-' : (item.totalProfit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(item.totalProfit).toFixed(2) }}
+                                                </span>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -1098,6 +1104,9 @@
                 targetProfitAcknowledged: false,
                 stopBlindadoAcknowledged: false,
 
+                // Session Reporting
+                // selectedPeriod removed (duplicate)
+                
                 // Cycle Modal State
                 showCycleCompletionModal: false,
                 currentCycleNumber: 1,
@@ -1522,9 +1531,18 @@
 
 				if (!sourceTrades || sourceTrades.length === 0) return [];
 				
-				// 1. Normalize and Sort Trades
-				const normalizedTrades = sourceTrades.map(trade => {
-					// Handle potential snake_case from backend vs camelCase from frontend mapping
+					// 1. Normalize and Sort Trades
+				const normalizedTrades = sourceTrades.filter(t => {
+                    // Safety Filter: Exclude AI trades if tagged
+                    // Backend sends 'origin' in passthrough, but usually not persisted in same table?
+                    // Check if 'strategy' implies AI (e.g., 'TITAN', 'ATLAS' vs Agent 'FALCON', 'ZEUS')
+                    // Assuming 'agentActions' or specific fields identify them. 
+                    // For now, trust the source, but if we can filter by ID pattern or 'origin', do it.
+                    if (t.origin === 'ai') return false;
+                    return true;
+                }).map(trade => {
+					// ... (keep existing mapping logic)
+                    // Handle potential snake_case from backend vs camelCase from frontend mapping
 					const createdAt = trade.createdAt || trade.created_at || trade.time;
 					const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.result !== undefined ? parseFloat(trade.result) : 0));
 					const profit = isNaN(rawProfit) ? 0 : rawProfit;
@@ -1598,28 +1616,55 @@
 					const startTime = this.formatToSPTime(sessionTrades[sessionTrades.length - 1].createdAt);
 					const endTime = this.formatToSPTime(sessionTrades[0].createdAt);
 					const totalProfit = sessionTrades.reduce((acc, t) => acc + parseFloat(t.profit), 0);
+                    const totalOps = sessionTrades.length;
 					
 					// 1. Footer: END (At TOP of block because trades are DESC)
-					let footerText = `FIM DA SESSÃO - ${endTime}`;
-					
-					if (idx === 0 && this.agenteData.sessionStatus !== 'active' && this.agenteData.sessionStatus) {
-						const statusMap = {
-							'paused': 'AGENTE PAUSADO',
-							'stopped_loss': 'STOP LOSS ATINGIDO',
-							'stopped_profit': 'META ATINGIDA',
-							'stopped_blindado': 'STOP BLINDADO ATINGIDO',
-							'error': 'ERRO NO SISTEMA',
-							'inactive': 'SESSÃO ENCERRADA'
-						};
-						const reason = statusMap[this.agenteData.sessionStatus] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || this.agenteData.sessionStatus.toUpperCase();
-						footerText += ` (${reason})`;
-					}
+					let footerText = `${endTime}`; 
+                    let isEnded = true; // Default to true for past sessions
+                    let endReason = '';
+
+					if (idx === 0) {
+                        // For the current (latest) session, check if it's actually ended
+                        const status = this.agenteData.sessionStatus;
+                        const validEndStatuses = ['stopped_loss', 'stopped_profit', 'stopped_blindado', 'paused', 'inactive', 'error', 'stopped_consecutive_loss'];
+                        
+                        if (validEndStatuses.includes(status)) {
+                            isEnded = true;
+                             const statusMap = {
+                                'paused': 'AGENTE PAUSADO',
+                                'stopped_loss': 'STOP LOSS ATINGIDO',
+                                'stopped_profit': 'META ATINGIDA',
+                                'stopped_blindado': 'STOP BLINDADO ATINGIDO',
+                                'error': 'ERRO NO SISTEMA',
+                                'inactive': 'SESSÃO ENCERRADA',
+                                'stopped_consecutive_loss': 'STOP POR PERDAS'
+                            };
+                            endReason = statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase();
+                            footerText += ` (${endReason})`;
+                        } else {
+                            // Session is active or idle, not ended
+                            isEnded = false;
+                            footerText = `EM ANDAMENTO - ${endTime}`;
+                        }
+					} else {
+                        // Past sessions are always considered ended
+                         footerText = `FIM DA SESSÃO - ${endTime}`;
+                    }
 
 					items.push({
 						type: 'footer',
 						id: `footer-${idx}`,
-						endTime: footerText,
-						totalProfit: totalProfit
+						endTime: footerText, // Now contains full text or time depending on logic, but template handles prefix?
+                        // FIX: Template adds "FIM DA SESSÃO - ". We should control it here or there.
+                        // Let's make template generic and pass the full label here? 
+                        // Or just pass the time and a status label.
+                        // Let's pass 'displayLabel'
+                        displayLabel: isEnded ? 'FIM DA SESSÃO' : 'SESSÃO ATUAL',
+                        timeLabel: endTime,
+                        endReason: endReason,
+						totalProfit: totalProfit,
+                        totalOps: totalOps,
+                        isEnded: isEnded
 					});
 
 					// 2. Trades (Newest first)

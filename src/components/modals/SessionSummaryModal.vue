@@ -32,13 +32,13 @@
 
         <!-- Period Filter -->
         <div class="flex justify-center mb-6">
-            <div class="bg-[#18181b] p-1 rounded-lg flex gap-1 border border-[#27272a]">
+            <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a]">
                 <button 
                     v-for="period in periods" 
                     :key="period.value"
                     @click="$emit('update:period', period.value)"
-                    class="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
-                    :class="currentPeriod === period.value ? 'bg-[#27272a] text-white shadow-sm' : 'text-[#A1A1AA] hover:text-white'"
+                    class="px-2 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all"
+                    :class="currentPeriod === period.value ? 'bg-[#FAFAFA] text-black shadow-lg shadow-white/5' : 'text-[#A1A1AA] hover:text-white hover:bg-white/5'"
                 >
                     {{ period.label }}
                 </button>
@@ -141,10 +141,10 @@ export default {
   data() {
     return {
         periods: [
-            { label: 'Sessão', value: 'session' },
-            { label: 'Hoje', value: 'today' },
-            { label: '7 Dias', value: '7d' },
-            { label: '30 Dias', value: '30d' }
+            { label: 'SESSÃO', value: 'session' },
+            { label: 'HOJE', value: 'today' },
+            { label: '7D', value: '7d' },
+            { label: '30D', value: '30d' }
         ]
     }
   },

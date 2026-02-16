@@ -887,9 +887,22 @@
 
           const result = await response.json();
           if (result.success && result.data && Array.isArray(result.data)) {
+            // ✅ [ZENIX v3.0] Filtrar operações de IA para não poluir o histórico do Agente Autônomo
+            const filteredData = result.data.filter(t => {
+                const strat = (t.strategy || '').toLowerCase();
+                const origin = (t.origin || '').toLowerCase();
+                // Excluir estratégias de IA conhecidas
+                if (['titan', 'atlas', 'kronos', 'lynx'].includes(strat)) return false;
+                // Excluir origem 'ai' se explícito
+                if (origin === 'ai') return false;
+                // Opcional: Exigir origin 'autonomous_agent' se o backend garantir que envia
+                // if (origin && origin !== 'autonomous_agent') return false; 
+                return true;
+            });
+
             // Armazenar histórico completo da API
             // Garantir que cada item tenha o contractId acessível para o ID check
-            this.apiTradeHistory = result.data.map(t => ({
+            this.apiTradeHistory = filteredData.map(t => ({
               ...t,
               id: t.contractId || t.contract_id || t.id // Normalizar ID principal
             }));
