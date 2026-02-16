@@ -34,7 +34,7 @@
                         </p>
                         <div class="flex items-center gap-1.5 overflow-hidden">
                              <span class="text-[9px] px-1.5 py-0.5 bg-[#22C55E]/10 border border-[#22C55E]/20 rounded text-[#22C55E] font-bold">V{{ sessionState.version || '1.0' }}</span>
-                             <span class="text-[9px] px-1.5 py-0.5 bg-[#22C55E]/10 border border-[#22C55E]/20 rounded text-[#22C55E] font-bold uppercase tracking-tighter">{{ stats.status || 'Ativo' }}</span>
+                             <span class="text-[9px] px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-gray-400 font-bold uppercase tracking-tighter">{{ stats.status || 'Ativo' }}</span>
                         </div>
                     </div>
                 </div>
