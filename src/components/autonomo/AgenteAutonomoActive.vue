@@ -802,6 +802,8 @@
 		:currency-symbol="preferredCurrencyPrefix"
 		:win-rate="selectedPeriodMetrics.winRate"
 		:total-trades="selectedPeriodMetrics.totalTrades"
+		:current-period="selectedPeriod"
+		@update:period="selectedPeriod = $event"
 		@close="handleCloseSessionSummary"
 		@view-details="handleViewDetails"
 	/>

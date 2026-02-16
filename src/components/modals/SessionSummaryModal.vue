@@ -26,9 +26,24 @@
         <h2 class="text-2xl font-bold text-center text-white mb-2">
             {{ isWin ? 'Meta Batida!' : 'Sessão Finalizada' }}
         </h2>
-        <p class="text-center text-[#A1A1AA] text-sm mb-8 px-4">
+        <p class="text-center text-[#A1A1AA] text-sm mb-6 px-4">
             {{ message }}
         </p>
+
+        <!-- Period Filter -->
+        <div class="flex justify-center mb-6">
+            <div class="bg-[#18181b] p-1 rounded-lg flex gap-1 border border-[#27272a]">
+                <button 
+                    v-for="period in periods" 
+                    :key="period.value"
+                    @click="$emit('update:period', period.value)"
+                    class="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+                    :class="currentPeriod === period.value ? 'bg-[#27272a] text-white shadow-sm' : 'text-[#A1A1AA] hover:text-white'"
+                >
+                    {{ period.label }}
+                </button>
+            </div>
+        </div>
 
         <!-- Stats Grid -->
         <div class="grid grid-cols-2 gap-3 mb-8">
@@ -117,6 +132,20 @@ export default {
     totalTrades: {
       type: Number,
       default: 0
+    },
+    currentPeriod: {
+      type: String,
+      default: 'session'
+    }
+  },
+  data() {
+    return {
+        periods: [
+            { label: 'Sessão', value: 'session' },
+            { label: 'Hoje', value: 'today' },
+            { label: '7 Dias', value: '7d' },
+            { label: '30 Dias', value: '30d' }
+        ]
     }
   },
   computed: {
