@@ -892,42 +892,7 @@ export default {
             return descriptions[this.modoMartingale] || descriptions.conservador;
         },
 
-        isAdmin() {
-            try {
-                const token = localStorage.getItem('token');
-                console.log('[InvestmentIAView] Verificando token para admin:', token ? 'Token presente' : 'Sem token');
-                
-                if (!token) return false;
-                
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                console.log('[InvestmentIAView] Payload do token:', payload);
-                
-                // Verificar várias propriedades comuns para roles e flags de admin
-                const role = payload.role || payload.roles || payload.userRole || payload.user_role;
-                const isAdminFlag = payload.isAdmin || payload.is_admin;
-                
-                console.log('[InvestmentIAView] Role:', role, 'IsAdminFlag:', isAdminFlag);
 
-                // Prioridade para flag booleana
-                if (isAdminFlag === true || isAdminFlag === 'true') {
-                    console.log('[InvestmentIAView] É admin via flag');
-                    return true;
-                }
-                
-                // Verificar string de role(s)
-                if (role) {
-                    const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
-                    const isAdm = roleStr.includes('admin') || roleStr === 'admin' || roleStr.includes('master');
-                    console.log('[InvestmentIAView] É admin via role:', isAdm);
-                    return isAdm;
-                }
-                
-                return false;
-            } catch (error) {
-                console.error('[InvestmentIAView] Erro ao verificar admin:', error);
-                return false;
-            }
-        }
     },
     methods: {
         getStrategyIcon(name) {
@@ -1573,109 +1538,7 @@ export default {
 
 
         
-        async fetchStrategies() {
-            try {
-                // 1. Load Defaults (Hardcoded or from API if available)
-                const defaultStrategies = [
-                    { 
-                        id: 'atlas', 
-                        title: 'IA Atlas', 
-                        marketType: 'Digits', 
-                        icon: 'fas fa-shield-alt',
-                        description: 'Híbrida: Dígitos + Price Action.',
-                        assertividade: '92% a 96%',
-                        retorno: '95% a 99%',
-                        status: 'Ativo',
-                        version: '1.0'
-                    },
-                    { 
-                        id: 'apollo', 
-                        title: 'IA Apollo', 
-                        marketType: 'Ups e Downs', 
-                        icon: 'fas fa-rocket',
-                        description: 'Densidade de Dígitos e Microtendências',
-                        assertividade: '60% a 70%',
-                        retorno: '19% a 126%',
-                        status: 'Ativo',
-                        version: '1.0'
-                    },
-                    { 
-                        id: 'nexus', 
-                        title: 'IA Nexus', 
-                        marketType: 'Ups e Downs', 
-                        icon: 'fas fa-chart-bar',
-                        description: 'Price Action com Barreira.',
-                        assertividade: '91% a 95%',
-                        retorno: '91% a 95%',
-                        status: 'Ativo',
-                        version: '1.0'
-                    },
-                    { 
-                        id: 'orion', 
-                        title: 'IA Orion', 
-                        marketType: 'Digits', 
-                        icon: 'fas fa-star',
-                        description: 'Estatística de Dígitos e Recuperação.',
-                        assertividade: '94% a 97%',
-                        retorno: '95% a 99%',
-                        status: 'Ativo',
-                        version: '1.0'
-                    },
-                    { 
-                        id: 'titan', 
-                        title: 'IA Titan', 
-                        marketType: 'Digits', 
-                        icon: 'fas fa-yin-yang', 
-                        description: 'Dígitos Par/Ímpar Direcional.',
-                        assertividade: '90% a 95%',
-                        retorno: '95%',
-                        status: 'Ativo',
-                        version: '1.0'
-                    }
-                ];
 
-                // 2. Load User Strategies from LocalStorage (Sync with Creator)
-                const stored = localStorage.getItem('zeenix_saved_strategies');
-                let userStrategies = stored ? JSON.parse(stored) : [];
-
-                // Map user strategies to matches the UI expectations
-                const mappedUserStrategies = userStrategies.map(s => ({
-                    id: s.id,
-                    title: s.name,
-                    marketType: s.config.form.market || 'Custom',
-                    icon: s.config.strategyIdentity?.icon ? `fas fa-${s.config.strategyIdentity.icon}` : 'fas fa-robot',
-                    description: s.config.strategyIdentity?.description || 'Estratégia personalizada',
-                    assertividade: 'Variável',
-                    retorno: 'Variável',
-                    status: s.status || 'Ativo', // Default to Active if not set
-                    version: s.version || '1.0',
-                    // Keep the full config for later usage
-                    fullConfig: s.config 
-                }));
-
-                // 3. Merge and Filter
-                const all = [...defaultStrategies, ...mappedUserStrategies];
-                
-                // 4. Filter based on permissions
-                // - Active: Visible to everyone
-                // - Draft (Rascunho): Visible ONLY to Admins
-                this.allStrategies = all.filter(s => {
-                    const isActive = s.status === 'Ativo';
-                    const isDraft = s.status === 'Rascunho';
-                    
-                    if (isActive) return true;
-                    if (isDraft && this.isAdmin) return true;
-                    
-                    return false; // Hidden otherwise
-                });
-
-                console.log('[InvestmentIAView] Estratégias carregadas (Filtradas):', this.allStrategies.length);
-
-            } catch (error) {
-                console.error('[InvestmentIAView] Erro ao carregar estratégias:', error);
-                this.$root.$toast.error('Erro ao carregar lista de estratégias.');
-            }
-        },
         async fetchDailyStats() {
             // ✅ Se a IA estiver rodando localmente, não sobrescrever com dados do backend
             if (this.isMonitoring) return;
