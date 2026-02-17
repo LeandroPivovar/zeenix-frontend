@@ -1028,8 +1028,7 @@ body {
 
 .dashboard-content-wrapper {
     flex-grow: 1;
-    margin-left: 280px;
-    width: calc(100% - 280px);
+    width: 100%;
     transition: margin-left 0.3s ease;
     min-height: 100vh;
     display: flex;
@@ -1037,7 +1036,7 @@ body {
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 80px;
+    margin-left: 0;
 }
 
 .layout-content {
@@ -1170,8 +1169,8 @@ body {
 
 @media (min-width: 1025px) {
     .form-support-item {
-        margin-left: 280px;
-        width: calc(100% - 280px);
+        margin-left: 0;
+        width: 100%;
     }
 }
 
@@ -1390,6 +1389,7 @@ body {
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     color: #aaa;
     font-size: 0.85rem;
@@ -1607,7 +1607,8 @@ body {
         margin-bottom: 0.75rem;
         overflow: hidden;
         display: -webkit-box;
-        -webkit-line-clamp: 3;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
     }
 

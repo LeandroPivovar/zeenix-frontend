@@ -942,8 +942,7 @@ body {
 
 .dashboard-content-wrapper {
     flex-grow: 1;
-    margin-left: 280px;
-    width: calc(100% - 280px);
+    width: 100%;
     transition: margin-left 0.3s ease;
     min-height: 100vh;
     display: flex;
@@ -951,7 +950,7 @@ body {
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 80px;
+    margin-left: 0;
 }
 
 .layout-content {
@@ -1078,8 +1077,8 @@ body {
 
 @media (min-width: 1025px) {
     .form-plan {
-        margin-left: 280px;
-        width: calc(100% - 280px);
+        margin-left: 0;
+        width: 100%;
     }
 }
 
