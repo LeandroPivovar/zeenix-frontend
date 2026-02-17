@@ -260,9 +260,12 @@ router.beforeEach((to, from, next) => {
     if (!token) return next({ path: '/login' })
 
     // Verificação de plano - Usuários sem plano acessam apenas Dashboard e Planos
-    const user = JSON.parse(localStorage.getItem('user') || '{}')
-    const role = user.role || ''
-    const isAdmin = role.toLowerCase().includes('admin') || user.isAdmin
+    const userJson = localStorage.getItem('user') || '{}'
+    const user = JSON.parse(userJson)
+    const roleStr = (user.role || '').toLowerCase()
+
+    // Identificar Admin de forma robusta
+    const isAdmin = roleStr.includes('admin') || user.isAdmin === true || user.isAdmin === 'true'
 
     if (!isAdmin && !user.planId) {
       const allowedRoutes = ['Dashboard', 'Plans']
@@ -273,7 +276,8 @@ router.beforeEach((to, from, next) => {
     }
 
     // Se a rota requer conexão com a Deriv, verifica se o usuário está conectado
-    if (to.meta.requiresDeriv) {
+    // Exception: Admins têm acesso a tudo (bypass requiresDeriv)
+    if (to.meta.requiresDeriv && !isAdmin) {
       const derivConnection = localStorage.getItem('deriv_connection')
       if (!derivConnection) {
         console.warn(`[Router] Redirecionando para dashboard: ${to.path} requer conexão com a Deriv`)
@@ -315,5 +319,27 @@ router.beforeEach((to, from, next) => {
   }
   next()
 })
+
+router.onError((error) => {
+  // Capturar erros de carregamento de chunks (comum após deploy) ou erros de sintaxe (geralmente JS retornando HTML)
+  const isChunkError = error.name === 'ChunkLoadError' ||
+    error.message.includes('Loading chunk') ||
+    error.message.includes('SyntaxError');
+
+  if (isChunkError) {
+    console.error('[Router] Erro de carregamento detectado, recarregando para obter versão mais recente:', error);
+
+    // Evitar loop infinito de recarregamento
+    const lastReload = sessionStorage.getItem('last_chunk_reload');
+    const now = Date.now();
+
+    if (!lastReload || now - parseInt(lastReload) > 10000) {
+      sessionStorage.setItem('last_chunk_reload', now.toString());
+      window.location.reload();
+    } else {
+      console.warn('[Router] Recarregamento ignorado para evitar loop.');
+    }
+  }
+});
 
 export default router
