@@ -109,6 +109,21 @@
         "metadata": {
             "assertividade": 75,
             "retorno": 85
+        },
+        "strategyIdentity": {
+            "id": "titan",
+            "name": "IA Titan",
+            "description": "Análise: Dígitos Par/Ímpar com persistência direcional",
+            "icon": "shuttle-space",
+            "status": "Ativo",
+            "precision": {
+                "min": 90,
+                "max": 95
+            },
+            "return": {
+                "min": 95,
+                "max": 95
+            }
         }
     }
 }

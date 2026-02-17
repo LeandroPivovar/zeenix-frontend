@@ -100,6 +100,21 @@
         "metadata": {
             "assertividade": 80,
             "retorno": 82.5
+        },
+        "strategyIdentity": {
+            "id": "orion",
+            "name": "IA Orion",
+            "description": "Análise: Estatística de Dígitos (Over 2) com Price Action na Recuperação",
+            "icon": "star",
+            "status": "Ativo",
+            "precision": {
+                "min": 94,
+                "max": 97
+            },
+            "return": {
+                "min": 95,
+                "max": 99
+            }
         }
     }
 }

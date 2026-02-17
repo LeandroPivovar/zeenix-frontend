@@ -186,7 +186,17 @@ export default {
             this.sessionState = RiskManager.initSession(this.form.mode || 'VELOZ', this.form);
             
             // Populate extra fields for MonitoringDashboard UI
+            const identity = fullConfig.strategyIdentity || {};
             this.sessionState.strategy = this.form.strategy;
+            this.sessionState.precision = identity.precision 
+                ? `${identity.precision.min}% a ${identity.precision.max}%` 
+                : 'N/A';
+            this.sessionState.return = identity.return 
+                ? `${identity.return.min}% a ${identity.return.max}%` 
+                : 'N/A';
+            this.sessionState.icon = identity.icon || 'brain';
+            this.sessionState.description = identity.description || 'Inteligência Artificial Ativa';
+            this.sessionState.version = identity.version || '1.0';
             this.sessionState.mode = this.sessionState.negotiationMode || 'VELOZ';
             this.sessionState.modoMartingale = config.form?.riskProfile || 'Moderado';
             this.sessionState.stake = this.form.initialStake;
@@ -678,7 +688,7 @@ export default {
             this.monitoringLogs.unshift({
                 id: Date.now() + Math.random(),
                 time: new Date().toLocaleTimeString(),
-                message,
+                message: message,
                 type
             });
             if (this.monitoringLogs.length > 5000) this.monitoringLogs = this.monitoringLogs.slice(0, 5000);
