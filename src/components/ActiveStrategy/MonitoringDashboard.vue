@@ -1,111 +1,114 @@
 <template>
     <div class="monitoring-dashboard-wrapper h-full animate-fadeIn w-full" :class="{ 'px-4': isMobile }">
         <!-- Header Stats Card -->
-        <div class="w-full bg-gradient-to-br from-[#161616]/60 via-[#161616]/40 to-[#161616]/20 rounded-2xl border border-[rgba(255,255,255,0.05)] p-4 md:p-6 lg:p-8 relative overflow-hidden shadow-2xl shadow-black/40 mb-6">
-            <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
-                <div class="absolute w-1 h-1 rounded-full bg-[#22C55E]/30" style="top: 20%; left: 15%; animation: float-particle 8s ease-in-out 0s infinite;"></div>
-                <div class="absolute w-0.5 h-0.5 rounded-full bg-[#22C55E]/20" style="top: 60%; left: 40%; animation: float-particle 10s ease-in-out 2s infinite;"></div>
-                <div class="absolute w-1 h-1 rounded-full bg-[#22C55E]/25" style="top: 40%; right: 20%; animation: float-particle 9s ease-in-out 1s infinite;"></div>
-            </div>
-            
-            <div class="absolute top-0 left-4 right-4 md:left-8 md:right-8 h-px bg-gradient-to-r from-transparent via-[#22C55E]/30 to-transparent"></div>
-            
-            <div class="relative grid grid-cols-2 md:grid-cols-6 lg:grid-cols-12 gap-4 md:gap-5 lg:gap-6 items-center">
-                <!-- Strategy Info -->
-                <div class="col-span-2 md:col-span-3 lg:col-span-3 flex items-center gap-3 lg:gap-4">
-                    <div class="relative flex-shrink-0">
-                        <div class="absolute inset-0 rounded-full bg-[#22C55E]/30 blur-2xl scale-[2]"></div>
-                        <div class="absolute inset-0 rounded-full bg-[#22C55E]/15 blur-xl scale-[1.5]"></div>
-                        <div class="relative w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-gradient-to-br from-[#22C55E]/20 to-[#22C55E]/5 border border-[#22C55E]/30 flex items-center justify-center backdrop-blur-sm shadow-[0_0_20px_rgba(34,197,94,0.15)]">
-                            <i :class="`fa-solid fa-${sessionState.icon || 'brain'} text-2xl lg:text-3xl text-[#22C55E] drop-shadow-[0_0_8px_rgba(34,197,94,0.5)] tracking-wide transition-all duration-500` "></i>
-                            <div class="absolute inset-0 rounded-full border border-[#22C55E]/20 animate-ping" style="animation-duration: 3s;"></div>
-                        </div>
-                        <div class="absolute w-1.5 h-1.5 rounded-full bg-[#22C55E]/60 animate-pulse" style="top: -4px; right: 4px;"></div>
-                    </div>
-                    <div class="flex flex-col min-w-0">
-                        <div class="flex items-center gap-2 lg:gap-2.5 mb-1">
-                            <span class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-[#22C55E] animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
-                            <span class="text-lg lg:text-2xl font-bold text-[#22C55E] tracking-wide drop-shadow-[0_0_12px_rgba(34,197,94,0.4)] truncate">
-                                IA {{ sessionState.strategy?.toUpperCase() || 'ATIVA' }}
-                            </span>
-                        </div>
-                        <p class="text-[10px] lg:text-xs text-gray-400 font-medium truncate uppercase tracking-wider mb-0.5">
-                            {{ sessionState.description || 'Inteligência Artificial Ativa' }}
-                        </p>
-                        <div class="flex items-center gap-1.5 overflow-hidden">
-                             <span class="text-[9px] px-1.5 py-0.5 bg-[#22C55E]/10 border border-[#22C55E]/20 rounded text-[#22C55E] font-bold">V{{ sessionState.version || '1.0' }}</span>
-                             <span class="text-[9px] px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-gray-400 font-bold uppercase tracking-tighter">{{ stats.status || 'Ativo' }}</span>
-                        </div>
-                    </div>
+        <div class="w-full bg-[#050505] rounded-2xl border border-[#222] p-6 relative overflow-visible shadow-2xl mb-6">
+            <!-- Green Glow Effect on Left -->
+            <div class="absolute left-0 top-0 bottom-0 w-32 bg-green-500/5 blur-[50px] pointer-events-none"></div>
+
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10 text-center lg:text-left">
+                
+                <!-- Identity -->
+                <div class="flex items-center gap-5 w-full lg:w-auto justify-center lg:justify-start">
+                     <div class="w-16 h-16 rounded-full border border-green-500/20 bg-green-500/5 flex items-center justify-center relative shrink-0">
+                        <i :class="`fa-solid fa-${sessionState.icon || 'brain'} text-2xl text-green-500 drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]`"></i>
+                        <!-- Pulse Dot -->
+                        <div class="absolute top-0 right-0 w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e] border-2 border-[#050505]"></div>
+                     </div>
+                     <div class="flex flex-col items-start">
+                         <h2 class="text-3xl font-black text-green-500 tracking-tighter uppercase drop-shadow-[0_0_15px_rgba(34,197,94,0.3)] leading-none mb-1">
+                             IA {{ sessionState.strategy?.toUpperCase() || 'ATIVA' }}
+                         </h2>
+                         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                             {{ stats.status || 'Ativo' }}
+                         </span>
+                     </div>
                 </div>
+
+                <!-- Vertical Separator -->
+                <div class="hidden lg:block w-px h-12 bg-[#222]"></div>
 
                 <!-- Capital -->
-                <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center md:border-l border-[rgba(255,255,255,0.05)] md:pl-4 lg:pl-6">
-                    <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Capital</p>
-                    <p class="text-xl lg:text-3xl font-bold text-white tracking-tight">
-                        $ {{ Math.floor(Number(stats.balance) || 0).toLocaleString('en-US') }}<span class="text-base lg:text-xl text-gray-500 hidden md:inline">.{{ ((Number(stats.balance) || 0) % 1).toFixed(2).split('.')[1] || '00' }}</span>
+                <div class="flex flex-col items-center">
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Capital</p>
+                    <p class="text-3xl font-bold text-white tracking-tight leading-none">
+                        $ {{ Math.floor(Number(stats.balance) || 0).toLocaleString('en-US') }}<span class="text-lg text-gray-500 font-medium">.{{ ((Number(stats.balance) || 0) % 1).toFixed(2).split('.')[1] || '00' }}</span>
                     </p>
                 </div>
 
-                <!-- Resultado -->
-                <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6 flex flex-col items-center">
-                    <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Resultado</p>
-                    <div class="flex items-baseline justify-center gap-1 lg:gap-3">
-                        <p class="text-xl lg:text-3xl font-bold tracking-tight drop-shadow-[0_0_20px_rgba(34,197,94,0.3)]"
-                           :class="stats.profit >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]'">
-                            {{ (Number(stats.profit) || 0) >= 0 ? '+' : '' }}${{ (Number(stats.profit) || 0).toFixed(2) }}
-                        </p>
+                <!-- Result -->
+                <div class="flex flex-col items-center">
+                   <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Resultado</p>
+                   <div class="flex items-center gap-3">
+                       <p class="text-4xl font-bold tracking-tight leading-none" :class="(Number(stats.profit) || 0) >= 0 ? 'text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.2)]'">
+                           {{ (Number(stats.profit) || 0) >= 0 ? '+' : '' }}${{ Math.abs(Number(stats.profit) || 0).toFixed(2).replace('.', ',') }}
+                       </p>
+                       <span class="px-2 py-0.5 rounded text-xs font-bold tracking-wide"
+                             :class="(Number(stats.profit) || 0) >= 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'">
+                           {{ (Number(stats.profit) || 0) >= 0 ? '+' : '' }}0.00%
+                       </span>
+                   </div>
+                   <!-- Progress Line -->
+                   <div class="h-1 w-24 bg-[#222] mt-2 rounded-full overflow-hidden">
+                       <div class="h-full transition-all duration-500"
+                            :class="(Number(stats.profit) || 0) >= 0 ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'"
+                            :style="{ width: '100%' }"></div>
+                   </div>
+                </div>
+
+                <!-- Vertical Separator -->
+                <div class="hidden lg:block w-px h-12 bg-[#222]"></div>
+
+                <!-- Operations -->
+                <div class="flex flex-col items-center">
+                     <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-2">Operações</p>
+                     <div class="flex items-center gap-6">
+                         <div class="text-center group cursor-help relative">
+                             <span class="block text-xl font-bold text-white leading-none">{{ (stats.wins || 0) + (stats.losses || 0) }}</span>
+                             <span class="text-[9px] text-gray-500 font-bold uppercase mt-1">Total</span>
+                         </div>
+                         <div class="w-px h-6 bg-[#222]"></div>
+                         <div class="text-center">
+                             <span class="block text-xl font-bold text-green-500 leading-none">{{ stats.wins || 0 }}</span>
+                             <span class="text-[9px] text-gray-500 font-bold uppercase mt-1">Win</span>
+                         </div>
+                         <div class="w-px h-6 bg-[#222]"></div>
+                         <div class="text-center">
+                             <span class="block text-xl font-bold text-red-500 leading-none">{{ stats.losses || 0 }}</span>
+                             <span class="text-[9px] text-gray-500 font-bold uppercase mt-1">Loss</span>
+                         </div>
+                         <div class="w-px h-6 bg-[#222]"></div>
+                         <div class="text-center">
+                             <span class="block text-xl font-bold text-green-500 leading-none">
+                                 {{ ((stats.wins || 0) + (stats.losses || 0)) > 0 ? (((Number(stats.wins) || 0) / ((Number(stats.wins) || 0) + (Number(stats.losses) || 0))) * 100).toFixed(0) : 0 }}%
+                             </span>
+                             <span class="text-[9px] text-gray-500 font-bold uppercase mt-1">Winrate</span>
+                         </div>
+                     </div>
+                </div>
+
+                <!-- Vertical Separator -->
+                <div class="hidden lg:block w-px h-12 bg-[#222]"></div>
+
+                <!-- Execution Time -->
+                <div class="flex flex-col items-center">
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Tempo de Execução</p>
+                    <div class="flex items-center gap-2">
+                         <i class="far fa-clock text-white/50 text-sm"></i>
+                         <p class="text-2xl font-bold text-white tracking-tight tabular-nums leading-none">
+                             {{ stats.uptime || '00:00:00' }}
+                         </p>
                     </div>
                 </div>
 
-                <!-- Precisão -->
-                <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6">
-                    <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Precisão</p>
-                    <p class="text-lg lg:text-xl font-bold text-[#22C55E] tracking-tight">
-                        {{ sessionState.precision || 'N/A' }}
-                    </p>
-                </div>
-
-                <!-- Retorno -->
-                <div class="col-span-1 md:col-span-3 lg:col-span-1 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6">
-                    <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Retorno</p>
-                    <p class="text-lg lg:text-xl font-bold text-white tracking-tight">
-                        {{ sessionState.return || 'N/A' }}
-                    </p>
-                </div>
-
-                <!-- Operations Stats -->
-                <div class="col-span-2 md:col-span-3 lg:col-span-2 border-t md:border-t-0 md:border-l border-[rgba(255,255,255,0.05)] pt-4 md:pt-0 md:pl-4 lg:pl-6 mt-2 md:mt-0">
-                    <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-2 lg:mb-3">Operações</p>
-                    <div class="flex items-center justify-between md:justify-start gap-3 lg:gap-4 text-sm">
-                        <div class="text-center">
-                            <span class="text-lg lg:text-xl font-semibold text-white/90">{{ stats.wins + stats.losses }}</span>
-                            <span class="text-[10px] lg:text-xs text-gray-500 block">Total</span>
-                        </div>
-                        <span class="text-gray-500/30 text-lg lg:text-xl hidden md:inline">·</span>
-                        <div class="text-center">
-                            <span class="text-lg lg:text-xl font-semibold text-[#22C55E]/90">{{ stats.wins }}</span>
-                            <span class="text-[10px] lg:text-xs text-gray-500 block">Wins</span>
-                        </div>
-                        <span class="text-gray-500/30 text-lg lg:text-xl hidden md:inline">·</span>
-                        <div class="text-center">
-                            <span class="text-lg lg:text-xl font-semibold text-[#EF4444]/70">{{ stats.losses }}</span>
-                            <span class="text-[10px] lg:text-xs text-gray-500 block">Losses</span>
-                        </div>
-                        <span class="text-gray-500/30 text-lg lg:text-xl hidden md:inline">·</span>
-                        <div class="text-center">
-                            <span class="text-lg lg:text-xl font-semibold text-[#22C55E]/90">
-                                {{ (stats.wins + stats.losses) > 0 ? (((Number(stats.wins) || 0) / (Number(stats.wins + stats.losses) || 1)) * 100).toFixed(0) : 0 }}%
-                            </span>
-                            <span class="text-[10px] lg:text-xs text-gray-500 block">WinRate</span>
-                        </div>
-                    </div>
-                    <!-- Stop Button Mobile Only -->
-                    <button @click="$emit('stop')" class="w-full mt-4 bg-[#EF4444]/10 hover:bg-[#EF4444]/20 text-[#EF4444] font-bold py-3 text-xs rounded-xl border border-[#EF4444]/20 transition-all uppercase tracking-widest lg:hidden">
-                        <i class="fas fa-stop mr-2"></i> Parar Robô
-                    </button>
-                </div>
             </div>
+            
+            <!-- Mobile Pause Button (Inside Card) -->
+            <div v-if="isMobile" class="mt-6 border-t border-[#222] pt-4">
+                 <button @click="$emit('stop')" class="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 active:scale-[0.98] shadow-[0_0_15px_rgba(239,68,68,0.3)]">
+                    Parar Robô
+                </button>
+            </div>
+
         </div>
 
         <!-- Main Content Split Layout -->

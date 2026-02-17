@@ -1151,6 +1151,10 @@ export default {
                     modoMartingale: this.modoMartingale,
                     stoplossBlindado: this.stoplossBlindado,
                     market: this.selectedMarket,
+                    // ✅ Pass Full Configuration for Monitoring Logic
+                    attackFilters: strategyPreset.config?.form?.attackFilters || [],
+                    recoveryConfig: strategyPreset.config?.recoveryConfig || {},
+                    strategyIdentity: strategyPreset.config?.strategyIdentity || {},
                     // ✅ Pass Version
                     version: this.allStrategies.find(s => s.id === this.selectedStrategy)?.version || '1.0'
                 };
