@@ -36,12 +36,13 @@
 import LoginComponent from '../components/LoginComponent.vue';
 import RegisterComponent from '../components/RegisterComponent.vue';
 import ForgotPasswordComponent from '../components/ForgotPasswordComponent.vue';
+import RegisterSuccessComponent from '../components/RegisterSuccessComponent.vue';
 
 export default {
   components: {
-    LoginComponent,
     RegisterComponent,
     ForgotPasswordComponent,
+    RegisterSuccessComponent,
   },
   data() {
     return {
@@ -68,6 +69,8 @@ export default {
         this.componenteAtivo = 'LoginComponent';
       } else if (path === '/forgot-password') {
         this.componenteAtivo = 'ForgotPasswordComponent';
+      } else if (path === '/register-success') {
+        this.componenteAtivo = 'RegisterSuccessComponent';
       }
     },
   },
