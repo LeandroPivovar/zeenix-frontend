@@ -1626,8 +1626,8 @@
 			const uniqueTrades = [];
 			const seenIds = new Set();
 			for (const trade of normalizedTrades) {
-				if (!seenIds.has(trade.id)) {
-					seenIds.add(trade.id);
+				if (!seenIds.has(`${trade.createdAt}-${trade.profit}-${trade.stake}-${trade.market}`)) {
+					seenIds.add(`${trade.createdAt}-${trade.profit}-${trade.stake}-${trade.market}`);
 					uniqueTrades.push(trade);
 				}
 			}
