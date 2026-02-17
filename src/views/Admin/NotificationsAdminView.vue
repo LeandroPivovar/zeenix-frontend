@@ -423,6 +423,7 @@ export default {
     min-height: calc(100vh - 60px);
     display: flex;
     flex-direction: column;
+    justify-content: flex-start !important; /* Força início no topo */
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
@@ -441,6 +442,9 @@ export default {
 
 .layout-content {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start !important; /* Força início no topo */
     padding: 10px;
     overflow-y: auto;
     overflow-x: hidden;
