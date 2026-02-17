@@ -404,12 +404,12 @@ export default {
 .dashboard-content-wrapper {
     flex: 1;
     overflow-y: auto;
-    padding: 0 !important; /* Fixo em 0 - não muda */
-    margin-left: 280px !important; /* Fixo em 280px - não muda */
+    padding: 0 !important;
+    margin-left: 0 !important; /* Sidebar aberta: 0px */
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 280px !important; /* Fixo em 280px - não muda */
+    margin-left: 280px !important; /* Sidebar fechada: 280px */
 }
 
 @media (max-width: 1024px) {
