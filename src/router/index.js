@@ -259,6 +259,19 @@ router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token')
     if (!token) return next({ path: '/login' })
 
+    // Verificação de plano - Usuários sem plano acessam apenas Dashboard e Planos
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    const role = user.role || ''
+    const isAdmin = role.toLowerCase().includes('admin') || user.isAdmin
+
+    if (!isAdmin && !user.planId) {
+      const allowedRoutes = ['Dashboard', 'Plans']
+      if (!allowedRoutes.includes(to.name)) {
+        console.warn(`[Router] Acesso restrito para usuário sem plano: redirecionando para Planos`)
+        return next({ name: 'Plans' })
+      }
+    }
+
     // Se a rota requer conexão com a Deriv, verifica se o usuário está conectado
     if (to.meta.requiresDeriv) {
       const derivConnection = localStorage.getItem('deriv_connection')
