@@ -1,27 +1,36 @@
 {
     "id": "default_apollo",
     "name": "Apollo",
+    "version": "1.12",
     "config": {
         "form": {
             "initialStake": 1,
             "profitTarget": 100,
             "stopLoss": 100,
-            "riskProfile": "moderado",
-            "useBlindado": false,
+            "riskProfile": "conservador",
+            "useBlindado": true,
             "stopBlindadoPercent": 50,
             "duration": 1,
             "durationUnit": "t",
-            "market": "R_10",
-            "directionMode": "both",
-            "tradeType": "",
+            "market": "R_100",
+            "tradeType": "DIGITUNDER",
             "prediction": 8,
+            "barrier": 0,
+            "barrier2": 0,
             "sorosLevel": 1,
             "expectedPayout": 0.19,
+            "directionMode": "down",
+            "directionPayouts": {
+                "DIGITOVER": 0.19,
+                "DIGITUNDER": 0.19
+            },
+            "minPayoutPercent": 0,
+            "delayWin": 10,
+            "delayLoss": 10,
             "attackFilters": [
                 {
                     "id": "digit_density",
                     "name": "Densidade de Dígitos (Apollo)",
-                    "active": true,
                     "config": {
                         "veloz": {
                             "window": 15,
@@ -44,34 +53,47 @@
                     }
                 }
             ],
-            "selectedTradeTypeGroup": ""
+            "selectedTradeTypeGroup": "digits_over_under"
         },
         "recoveryConfig": {
             "enabled": true,
-            "market": "R_10",
-            "selectedTradeTypeGroup": "",
-            "directionMode": "both",
-            "tradeType": "",
-            "prediction": 4,
+            "market": "R_100",
+            "selectedTradeTypeGroup": "digits_over_under",
+            "tradeType": "DIGITUNDER",
+            "prediction": 7,
+            "barrier": 0,
+            "barrier2": 0,
             "lossesToActivate": 1,
+            "martingale": true,
             "contractSwitch": true,
             "switchToNormal": false,
             "switchToPrecise": true,
             "maxPreciseLosses": 3,
-            "pauseLosses": 6,
+            "pauseLosses": 2,
             "pauseVolatility": 50,
-            "pauseTime": 5,
+            "pauseTime": 1,
             "expectedPayout": 1.26,
+            "minPayoutPercent": 0,
+            "delayWin": 10,
+            "delayLoss": 10,
+            "virtualLossTarget": 0,
+            "sorosLevel": 1,
+            "duration": 5,
+            "durationUnit": "t",
+            "directionMode": "down",
+            "directionPayouts": {
+                "DIGITOVER": 0.19,
+                "DIGITUNDER": 0.19
+            },
             "initialStake": 1,
             "profitTarget": 10,
             "stopLoss": 50,
             "active": false,
-            "riskProfile": "moderado",
+            "riskProfile": "conservador",
             "attackFilters": [
                 {
                     "id": "digit_density",
-                    "name": "Densidade Inversa (Apollo)",
-                    "active": true,
+                    "name": "Densidade de Dígitos (Apollo)",
                     "config": {
                         "veloz": {
                             "window": 20,
@@ -94,6 +116,14 @@
                     }
                 }
             ]
+        },
+        "securityConfig": {
+            "virtualLoss": {
+                "enabled": true,
+                "target": 1,
+                "current": 0,
+                "mode": "recovery"
+            }
         },
         "validator": {
             "aiStarted": false,

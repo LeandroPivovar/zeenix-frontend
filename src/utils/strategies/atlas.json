@@ -7,7 +7,7 @@
             "initialStake": 1,
             "profitTarget": 100,
             "stopLoss": 100,
-            "riskProfile": "moderado",
+            "riskProfile": "conservador",
             "useBlindado": true,
             "stopBlindadoPercent": 50,
             "duration": 1,
@@ -16,17 +16,21 @@
             "directionMode": "up",
             "tradeType": "DIGITOVER",
             "prediction": 2,
+            "barrier": 0,
+            "barrier2": 0,
             "sorosLevel": 1,
             "expectedPayout": 0.35,
             "directionPayouts": {
                 "DIGITOVER": 0.35,
                 "DIGITUNDER": 0.35
             },
+            "minPayoutPercent": 0,
+            "delayWin": 10,
+            "delayLoss": 10,
             "attackFilters": [
                 {
                     "id": "digit_density",
                     "name": "Densidade de Dígitos (Apollo)",
-                    "active": true,
                     "config": {
                         "veloz": {
                             "window": 40,
@@ -58,25 +62,38 @@
             "directionMode": "up",
             "tradeType": "DIGITOVER",
             "prediction": 4,
+            "barrier": 0,
+            "barrier2": 0,
             "lossesToActivate": 1,
+            "martingale": true,
             "contractSwitch": true,
             "switchToNormal": false,
             "switchToPrecise": true,
             "maxPreciseLosses": 3,
-            "pauseLosses": 6,
+            "pauseLosses": 2,
             "pauseVolatility": 50,
-            "pauseTime": 5,
+            "pauseTime": 1,
             "expectedPayout": 0.85,
+            "minPayoutPercent": 0,
+            "delayWin": 10,
+            "delayLoss": 10,
+            "virtualLossTarget": 0,
+            "sorosLevel": 1,
+            "duration": 5,
+            "durationUnit": "t",
+            "directionPayouts": {
+                "DIGITOVER": 0.35,
+                "DIGITUNDER": 0.35
+            },
             "initialStake": 1,
             "profitTarget": 10,
             "stopLoss": 50,
             "active": false,
-            "riskProfile": "moderado",
+            "riskProfile": "conservador",
             "attackFilters": [
                 {
                     "id": "price_momentum",
-                    "name": "Momentum (Atlas)",
-                    "active": true,
+                    "name": "Momentum de Preço (Nexus)",
                     "config": {
                         "veloz": {
                             "window": 3,
@@ -96,6 +113,14 @@
                     }
                 }
             ]
+        },
+        "securityConfig": {
+            "virtualLoss": {
+                "enabled": false,
+                "target": 2,
+                "current": 0,
+                "mode": "warmup"
+            }
         },
         "validator": {
             "aiStarted": false,
