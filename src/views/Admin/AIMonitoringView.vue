@@ -27,120 +27,117 @@
             <main class="flex-1 overflow-auto flex flex-col justify-start w-full" 
                   :style="{ padding: isMobile ? '5rem 1rem 8rem 1rem' : '5rem 2rem' }">
                 <!-- Header Stats Card -->
-                <div class="w-full bg-[hsla(0,0%,8%,.4)] rounded-2xl border border-[#222] p-6 relative overflow-visible shadow-2xl">
-                    <!-- Green Glow Effect on Left -->
-                    <div class="absolute left-0 top-0 bottom-0 w-32 bg-green-500/5 blur-[50px] pointer-events-none"></div>
-
-                    <div class="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10 text-center lg:text-left">
-                        
-                        <!-- Identity -->
-                        <div class="flex items-center gap-5 w-full lg:w-auto justify-center lg:justify-start">
-                             <div class="w-16 h-16 rounded-full border border-green-500/20 bg-green-500/5 flex items-center justify-center relative shrink-0">
-                                <i class="fas fa-chart-line text-2xl text-green-500 drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]"></i>
-                                <!-- Pulse Dot -->
-                                <div class="absolute top-0 right-0 w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e] border-2 border-[#050505]"></div>
-                             </div>
-                             <div class="flex flex-col items-start">
-                                 <h2 class="text-3xl font-black text-green-500 tracking-tighter uppercase drop-shadow-[0_0_15px_rgba(34,197,94,0.3)] leading-none mb-1">
-                                     {{ (currentConfig.strategyIdentity?.name || currentConfig.strategy || 'ATIVA').toUpperCase().startsWith('IA') ? (currentConfig.strategyIdentity?.name || currentConfig.strategy || 'ATIVA').toUpperCase() : 'IA ' + (currentConfig.strategyIdentity?.name || currentConfig.strategy || 'ATIVA').toUpperCase() }}
-                                 </h2>
-                                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-                                     {{ iaStatusDisplay }}
-                                 </span>
-                             </div>
+                <div class="w-full bg-gradient-to-br from-secondary/60 via-secondary/40 to-secondary/20 rounded-2xl border border-border/30 p-4 md:p-6 lg:p-8 relative overflow-hidden fade-in shadow-2xl shadow-black/40">
+                    <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
+                        <div class="absolute w-1 h-1 rounded-full bg-success/30" style="top: 20%; left: 15%; animation: float-particle 8s ease-in-out 0s infinite;"></div>
+                        <div class="absolute w-0.5 h-0.5 rounded-full bg-success/20" style="top: 60%; left: 40%; animation: float-particle 10s ease-in-out 2s infinite;"></div>
+                        <div class="absolute w-1 h-1 rounded-full bg-success/25" style="top: 40%; right: 20%; animation: float-particle 9s ease-in-out 1s infinite;"></div>
+                    </div>
+                    
+                    <div class="absolute top-0 left-4 right-4 md:left-8 md:right-8 h-px bg-gradient-to-r from-transparent via-success/30 to-transparent"></div>
+                    
+                    <div class="relative grid grid-cols-2 md:grid-cols-6 lg:grid-cols-12 gap-4 md:gap-5 lg:gap-6 items-center">
+                        <!-- Strategy Info -->
+                        <div class="col-span-2 md:col-span-3 lg:col-span-3 flex items-center gap-3 lg:gap-4">
+                            <div class="relative flex-shrink-0">
+                                <div class="absolute inset-0 rounded-full bg-success/30 blur-2xl scale-[2]"></div>
+                                <div class="absolute inset-0 rounded-full bg-success/15 blur-xl scale-[1.5]"></div>
+                                <div class="relative w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-gradient-to-br from-success/20 to-success/5 border border-success/30 flex items-center justify-center backdrop-blur-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity w-6 h-6 lg:w-8 lg:h-8 text-success drop-shadow-[0_0_8px_hsl(142,76%,45%,0.5)]"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
+                                    <div class="absolute inset-0 rounded-full border border-success/20 animate-ping" style="animation-duration: 3s;"></div>
+                                </div>
+                                <div class="absolute w-1.5 h-1.5 rounded-full bg-success/60 animate-pulse" style="top: -4px; right: 4px;"></div>
+                                <div class="absolute w-1 h-1 rounded-full bg-success/40 animate-pulse" style="bottom: 4px; left: -2px; animation-delay: 1s;"></div>
+                            </div>
+                            <div class="flex flex-col min-w-0">
+                                <div class="flex items-center gap-2 lg:gap-2.5 mb-1">
+                                    <span class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_hsl(142,76%,45%,0.6)]"></span>
+                                    <span class="text-lg lg:text-3xl font-black text-success tracking-tighter drop-shadow-[0_0_12px_hsl(142,76%,45%,0.4)] uppercase">
+                                        IA {{ currentConfig.strategy }}
+                                    </span>
+                                </div>
+                                <div class="h-5 overflow-hidden">
+                                    <p class="text-[10px] lg:text-xs text-foreground/90 font-medium transition-all duration-300 opacity-100 translate-y-0 uppercase tracking-widest">
+                                        {{ iaStatusDisplay }}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Vertical Separator -->
-                        <div class="hidden lg:block w-px h-12 bg-[#222]"></div>
-
-                        <!-- Capital -->
-                        <div class="flex flex-col items-center">
-                            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Capital</p>
-                            <p v-if="isBalanceReady" class="text-3xl font-bold text-white tracking-tight leading-none">
+                        <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center md:border-l border-border/50 md:pl-4 lg:pl-6">
+                            <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Capital</p>
+                            <p v-if="isBalanceReady" class="text-xl lg:text-3xl font-bold text-foreground tracking-tight">
                                 {{ preferredCurrencyPrefix }} {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }},{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}
                             </p>
-                            <p v-else class="text-3xl font-bold text-white/20 tracking-tight leading-none">
+                            <p v-else class="text-xl lg:text-3xl font-bold text-foreground/40 tracking-tight">
                                 {{ preferredCurrencyPrefix }} 0,00
                             </p>
                         </div>
 
-                        <!-- Vertical Separator -->
-                        <div class="hidden lg:block w-px h-12 bg-[#222]"></div>
-
-                        <!-- Result -->
-                        <div class="flex flex-col items-center">
-                           <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Resultado</p>
-                           <div class="flex items-center gap-3">
-                               <p class="text-4xl font-bold tracking-tight leading-none" :class="monitoringStats.profit >= 0 ? 'text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.2)]'">
-                                   {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ Math.floor(Math.abs(monitoringStats.profit)).toLocaleString('pt-BR') }},{{ (Math.abs(monitoringStats.profit) % 1).toFixed(2).split('.')[1] || '00' }}
-                               </p>
-                               <span class="px-2 py-0.5 rounded text-xs font-bold tracking-wide"
-                                     :class="monitoringStats.profit >= 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'">
-                                   {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ Math.min(999, ((monitoringStats.profit / Math.max(monitoringStats.initialBalance, monitoringStats.balance * 0.5, 1)) * 100)).toFixed(2) }}%
-                               </span>
-                           </div>
-                           <!-- Progress Line -->
-                           <div class="h-1 w-24 bg-[#222] mt-2 rounded-full overflow-hidden">
-                               <div class="h-full transition-all duration-500"
-                                    :class="monitoringStats.profit >= 0 ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'"
-                                    :style="{ width: '100%' }"></div>
-                           </div>
+                        <!-- Resultado -->
+                        <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center border-l border-border/50 pl-3 lg:pl-6 flex flex-col items-center">
+                            <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Resultado</p>
+                            <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)]"
+                               :class="monitoringStats.profit >= 0 ? 'text-success' : 'text-red-500'">
+                                {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ monitoringStats.profit.toFixed(2).replace('.', ',') }}
+                               <span class="ml-2 px-2 py-0.5 rounded text-xs lg:text-sm font-bold tracking-wide"
+                                      :style="monitoringStats.profit >= 0 ? 'background-color: rgba(34, 197, 94, 0.2); color: #22C55E;' : ''"
+                                      :class="monitoringStats.profit >= 0 ? '' : 'bg-red-500/20 text-red-400'">
+                                    {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ Math.min(999, ((monitoringStats.profit / Math.max(monitoringStats.initialBalance, monitoringStats.balance * 0.5, 1)) * 100)).toFixed(2) }}%
+                                </span>
+                            </p>
+                            <div class="mt-2 lg:mt-3 h-1 w-[100px] mx-auto bg-gradient-to-r rounded-full line-grow hidden md:block"
+                                 :style="monitoringStats.profit >= 0 ? 'background: linear-gradient(to right, rgba(34, 197, 94, 0.7), rgba(34, 197, 94, 0.4), transparent);' : ''"
+                                 :class="monitoringStats.profit >= 0 ? '' : 'from-red-500/70 via-red-500/40 to-transparent'"></div>
                         </div>
 
-                        <!-- Vertical Separator -->
-                        <div class="hidden lg:block w-px h-12 bg-[#222]"></div>
-
-                        <!-- Operations -->
-                        <div class="flex flex-col items-center">
-                             <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-2">Operações</p>
-                             <div class="flex items-center gap-6">
-                                 <div class="text-center group cursor-help relative">
-                                     <span class="block text-xl font-bold text-white leading-none">{{ monitoringStats.wins + monitoringStats.losses }}</span>
-                                     <span class="text-[9px] text-gray-500 font-bold uppercase mt-1">Total</span>
-                                 </div>
-                                 <div class="w-px h-6 bg-[#222]"></div>
-                                 <div class="text-center">
-                                     <span class="block text-xl font-bold text-green-500 leading-none">{{ monitoringStats.wins }}</span>
-                                     <span class="text-[9px] text-gray-500 font-bold uppercase mt-1">Win</span>
-                                 </div>
-                                 <div class="w-px h-6 bg-[#222]"></div>
-                                 <div class="text-center">
-                                     <span class="block text-xl font-bold text-red-500 leading-none">{{ monitoringStats.losses }}</span>
-                                     <span class="text-[9px] text-gray-500 font-bold uppercase mt-1">Loss</span>
-                                 </div>
-                                 <div class="w-px h-6 bg-[#222]"></div>
-                                 <div class="text-center">
-                                     <span class="block text-xl font-bold text-green-500 leading-none">
-                                         {{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%
-                                     </span>
-                                     <span class="text-[9px] text-gray-500 font-bold uppercase mt-1">Winrate</span>
-                                 </div>
-                             </div>
-                        </div>
-
-                        <!-- Vertical Separator -->
-                        <div class="hidden lg:block w-px h-12 bg-[#222]"></div>
-
-                        <!-- Execution Time -->
-                        <div class="flex flex-col items-center">
-                            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Tempo de Execução</p>
-                            <div class="flex items-center gap-2">
-                                 <i class="far fa-clock text-white/50 text-sm"></i>
-                                 <p class="text-2xl font-bold text-white tracking-tight tabular-nums leading-none">
-                                     {{ executionTime }}
-                                 </p>
+                        <!-- Operations Stats -->
+                        <div class="col-span-2 md:col-span-3 lg:col-span-3 border-t md:border-t-0 md:border-l border-border/50 pt-4 md:pt-0 md:pl-4 lg:pl-6 mt-2 md:mt-0">
+                            <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-2 lg:mb-3">Operações</p>
+                            <div class="flex items-center justify-between md:justify-start gap-3 lg:gap-4 text-sm">
+                                <div class="text-center">
+                                    <span class="text-lg lg:text-xl font-semibold text-foreground/90">{{ monitoringStats.wins + monitoringStats.losses }}</span>
+                                    <span class="text-[10px] lg:text-xs text-muted-foreground block">Total</span>
+                                </div>
+                                <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
+                                <div class="text-center">
+                                    <span class="text-lg lg:text-xl font-semibold text-success/90">{{ monitoringStats.wins }}</span>
+                                    <span class="text-[10px] lg:text-xs text-muted-foreground block">Win</span>
+                                </div>
+                                <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
+                                <div class="text-center">
+                                    <span class="text-lg lg:text-xl font-semibold text-red-500/60">{{ monitoringStats.losses }}</span>
+                                    <span class="text-[10px] lg:text-xs text-muted-foreground block">Loss</span>
+                                </div>
+                                <span class="text-muted-foreground/30 text-lg lg:text-xl hidden md:inline">·</span>
+                                <div class="text-center">
+                                    <span class="text-lg lg:text-xl font-semibold text-success/90">
+                                        {{ monitoringStats.wins + monitoringStats.losses > 0 ? ((monitoringStats.wins / (monitoringStats.wins + monitoringStats.losses)) * 100).toFixed(0) : 0 }}%
+                                    </span>
+                                    <span class="text-[10px] lg:text-xs text-muted-foreground block">Winrate</span>
+                                </div>
                             </div>
                         </div>
 
-                    </div>
-                    
-                    <!-- Mobile Pause Button (Inside Card) -->
-                    <div v-if="isMobile" class="mt-6 border-t border-[#222] pt-4">
-                        <button @click="isSessionFinished ? restartIA() : stopIA()" :disabled="isStopping && !isSessionFinished" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50 shadow-[0_0_15px_rgba(252,211,77,0.2)]">
-                            {{ isSessionFinished ? 'Reiniciar IA' : (isStopping ? 'Parando...' : 'Pausar IA') }}
-                        </button>
-                    </div>
+                        <!-- Execution Time -->
+                        <div class="col-span-2 md:col-span-3 lg:col-span-2 border-t md:border-t-0 md:border-l border-border/50 pt-4 md:pt-0 md:pl-4 lg:pl-6 mt-2 md:mt-0 flex flex-col items-center justify-center">
+                            <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Tempo de Execução</p>
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                <p class="text-xl lg:text-2xl font-bold text-white tracking-tight tabular-nums">
+                                    {{ executionTime }}
+                                </p>
+                            </div>
+                        </div>
 
+                        <!-- Mobile Pause Button (Inside Card) -->
+                        <div v-if="isMobile" class="col-span-2 mt-4">
+                            <button @click="isSessionFinished ? restartIA() : stopIA()" :disabled="isStopping && !isSessionFinished" class="w-full py-4 bg-[#FCD34D] hover:bg-[#FBBF24] text-black font-black uppercase tracking-widest text-[11px] rounded-2xl transition-all duration-300 active:scale-[0.98] disabled:opacity-50">
+                                {{ isSessionFinished ? 'Reiniciar IA' : (isStopping ? 'Parando...' : 'Pausar IA') }}
+                            </button>
+                        </div>
+
+                    </div>
                 </div>
 
 
@@ -660,7 +657,7 @@ export default {
             pendingVirtualTrade: null,
             pauseUntil: 0, // Timeout timestamp
 
-            retryAttempts: 0, // Counter for calibration loop
+            retryingProposal: false, // Flag for calibration loop
             sessionId: null, // Track session ID for backend logging
 
            // ✅ RiskManager State (initialized with RiskManager.initSession)
@@ -931,8 +928,7 @@ export default {
                         sorosLevel: parsed.sorosLevel !== undefined ? parsed.sorosLevel : (baseConfig.form.sorosLevel || 1),
                         attackFilters: (parsed.attackFilters && parsed.attackFilters.length > 0) ? parsed.attackFilters : baseConfig.form.attackFilters, // ✅ Fix: Respect saved filters
                         // ✅ FIX: Map 'stoplossBlindado' (from UI) to 'useBlindado' (internal logic)
-                        useBlindado: parsed.stoplossBlindado !== undefined ? parsed.stoplossBlindado : (parsed.useBlindado || baseConfig.form.useBlindado || false),
-                        strategyIdentity: parsed.strategyIdentity || baseConfig.form.strategyIdentity || { name: parsed.strategy || 'Apollo', icon: 'zap' }
+                        useBlindado: parsed.stoplossBlindado !== undefined ? parsed.stoplossBlindado : (parsed.useBlindado || baseConfig.form.useBlindado || false)
                     };
 
                     // 2.5. Carregar Filtros de Segurança (Loss Virtual)
@@ -1332,10 +1328,8 @@ export default {
                                 if (Math.abs(exactStake - stakeValue) > 0.02) {
                                     this.addLog(`⚖️ Calibrando Martingale: Payout ${realPayoutRate.toFixed(2)}x pede $${exactStake.toFixed(2)} (Era $${stakeValue})`, 'warning');
                                     
-                                    // ✅ RETRY LOGIC: Allow up to 3 attempts to stabilize stake
-                                    if (this.retryAttempts < 3) {
-                                        this.retryAttempts++;
-                                        this.addLog(`🔄 Ajustando Stake (Tentativa ${this.retryAttempts}/3)`, `Nova: ${this.currencySymbol}${exactStake.toFixed(2)}`, 'info');
+                                    if (!this.retryingProposal) {
+                                        this.retryingProposal = true; // Set flag
                                         
                                         // Retry with corrected stake
                                         const newParams = { ...msg.echo_req, amount: exactStake };
@@ -1345,16 +1339,16 @@ export default {
                                         this.ws.send(JSON.stringify(newParams));
                                         return; // ABORT BUY to wait for new proposal
                                     } else {
-                                        // ✅ DEADLOCK FIX: If we exceeded retries, abort.
+                                        // ✅ DEADLOCK FIX: If we already retried and it's STILL blocked/unsafe, abort.
                                         this.addLog('❌ Cancelando negociação: Ajuste de segurança falhou ou limite atingido.', 'error');
                                         this.isNegotiating = false; // Release lock
-                                        this.retryAttempts = 0;
+                                        this.retryingProposal = false;
                                         return; // BLOCK BUY
                                     }
                                 }
                             }
 
-                            this.retryAttempts = 0; // Success, reset counter
+                            this.retryingProposal = false; // Success, reset flag
                             
                             // Debug Info
                             this.addLog('📜 Proposta Recebida', [
@@ -2314,17 +2308,7 @@ export default {
         },
         addLog(title, messages, type = 'info') {
             const time = new Date().toLocaleTimeString();
-            const sanitizedTitle = title;
-            const sanitizedMessages = Array.isArray(messages) 
-                ? messages 
-                : [messages];
-            
-            this.monitoringLogs.unshift({ 
-                title: sanitizedTitle, 
-                details: sanitizedMessages, 
-                type, 
-                time 
-            });
+            this.monitoringLogs.unshift({ title, details: Array.isArray(messages) ? messages : [messages], type, time });
             if (this.monitoringLogs.length > 50000) this.monitoringLogs = this.monitoringLogs.slice(0, 50000);
         },
         getLogIcon(type) {

@@ -1609,35 +1609,39 @@
 						// Keep original for referencing if needed
 						original: trade 
 					};
-				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 200); // Newest 200 first
+				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 20000); // Increased limit to 20k as per user request
 
 				// 2. Group trades into sessions (using sessionId)
 				const sessions = [];
 				let currentSessionTrades = [];
 				
 				if (normalizedTrades.length > 0) {
-					currentSessionTrades.push(normalizedTrades[0]);
-					
-					for (let i = 1; i < normalizedTrades.length; i++) {
-						const prevSessionId = normalizedTrades[i-1].sessionId;
-						const currSessionId = normalizedTrades[i].sessionId;
+					// ✅ [ZENIX v3.2] SIMPLIFICATION: If not in 'session' mode (live), 
+					// we treat everything as one single list to ensure all trades are shown without complex grouping.
+					// This matches user request: "puxar todas as trades"
+					if (this.selectedPeriod !== 'session') {
+						sessions.push(normalizedTrades);
+					} else {
+						// Keep session grouping ONLY for the live 'session' view
+						currentSessionTrades.push(normalizedTrades[0]);
 						
-						// Session boundary check: if sessionIds differ (and both exist)
-						// Fallback: If sessionId is missing, use the 30 min gap only as secondary measure 
-						// but primarily trust sessionId if available.
-						let isNewSession = false;
-						if (prevSessionId && currSessionId && prevSessionId !== currSessionId) {
-							isNewSession = true;
+						for (let i = 1; i < normalizedTrades.length; i++) {
+							const prevSessionId = normalizedTrades[i-1].sessionId;
+							const currSessionId = normalizedTrades[i].sessionId;
+							
+							let isNewSession = false;
+							if (prevSessionId && currSessionId && prevSessionId !== currSessionId) {
+								isNewSession = true;
+							}
+							
+							if (isNewSession) {
+								sessions.push(currentSessionTrades);
+								currentSessionTrades = [];
+							}
+							currentSessionTrades.push(normalizedTrades[i]);
 						}
-						// REMOVED: Inactivity timer check (30 min) - Sessions now only split by ID/Restart
-						
-						if (isNewSession) {
-							sessions.push(currentSessionTrades);
-							currentSessionTrades = [];
-						}
-						currentSessionTrades.push(normalizedTrades[i]);
+						sessions.push(currentSessionTrades);
 					}
-					sessions.push(currentSessionTrades);
 				}
 				
 				const items = [];
@@ -1655,23 +1659,21 @@
 					let footerText = `${endTime}`; 
                     let isEnded = true; // Default to true for past sessions
                     let endReason = '';
+                    let displayLabel = 'FIM DA SESSÃO';
 
-					if (idx === 0) {
-                        // For the current (latest) session, check if it's actually ended
-                        const status = this.agenteData.sessionStatus;
-                        const validEndStatuses = ['stopped_loss', 'stopped_profit', 'stopped_blindado', 'paused', 'inactive', 'error', 'stopped_consecutive_loss'];
+					if (this.selectedPeriod === 'session' && idx === 0) {
+                        // ... logic for live session status ...
+                        // (Reusing existing logic for live session only)
+                         const status = this.agenteData.sessionStatus;
+                         const validEndStatuses = ['stopped_loss', 'stopped_profit', 'stopped_blindado', 'paused', 'inactive', 'error', 'stopped_consecutive_loss'];
                         
                         if (validEndStatuses.includes(status)) {
-                            // Special Check for PAUSED status
-                            if (status === 'paused') {
-                                // Calculate consecutive losses from the latest trades
+                             if (status === 'paused') {
+                                // ... pause check ...
                                 let consecutiveLosses = 0;
                                 for (let i = 0; i < sessionTrades.length; i++) {
-                                    if (sessionTrades[i].profit < 0) {
-                                        consecutiveLosses++;
-                                    } else {
-                                        break;
-                                    }
+                                    if (sessionTrades[i].profit < 0) consecutiveLosses++;
+                                    else break;
                                 }
 
                                 if (consecutiveLosses >= 2) {
@@ -1679,9 +1681,9 @@
                                     endReason = 'PAUSA SEGURANÇA (5 min)';
                                     footerText += ` (${endReason})`;
                                 } else {
-                                    // Treat generic pause as active/idle (no visible status text)
                                     isEnded = false;
                                     footerText = `EM ANDAMENTO - ${endTime}`;
+                                    displayLabel = 'SESSÃO ATUAL';
                                 }
                             } else {
                                 isEnded = true;
@@ -1697,24 +1699,25 @@
                                 footerText += ` (${endReason})`;
                             }
                         } else {
-                            // Session is active or idle, not ended
                             isEnded = false;
                             footerText = `EM ANDAMENTO - ${endTime}`;
+                            displayLabel = 'SESSÃO ATUAL';
                         }
 					} else {
-                        // Past sessions are always considered ended
-                         footerText = `FIM DA SESSÃO - ${endTime}`;
+                        // Historical or past sessions
+                         if (this.selectedPeriod !== 'session') {
+                             displayLabel = 'HISTÓRICO'; // Generic label for historical list
+                             footerText = `FIM - ${endTime}`;
+                         } else {
+                             footerText = `FIM DA SESSÃO - ${endTime}`;
+                         }
                     }
 
 					items.push({
 						type: 'footer',
 						id: `footer-${idx}`,
-						endTime: footerText, // Now contains full text or time depending on logic, but template handles prefix?
-                        // FIX: Template adds "FIM DA SESSÃO - ". We should control it here or there.
-                        // Let's make template generic and pass the full label here? 
-                        // Or just pass the time and a status label.
-                        // Let's pass 'displayLabel'
-                        displayLabel: isEnded ? 'FIM DA SESSÃO' : 'SESSÃO ATUAL',
+						endTime: footerText, 
+                        displayLabel: displayLabel,
                         timeLabel: endTime,
                         endReason: endReason,
 						totalProfit: totalProfit,
@@ -1752,7 +1755,7 @@
 					items.push({
 						type: 'header',
 						id: `header-${idx}`,
-						sessionNumber: sessionNum,
+						sessionNumber: this.selectedPeriod !== 'session' ? '' : sessionNum, // Hide number for history
 						startTime: startTime
 					});
 				});
