@@ -404,13 +404,13 @@ export default {
 .dashboard-content-wrapper {
     flex: 1;
     overflow-y: auto;
-    padding: 20px 30px;
+    padding: 0;
     transition: margin-left 0.3s ease;
-    margin-left: 280px; /* Expanded sidebar: 280px margin to avoid overlap */
+    margin-left: 0;
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 80px; /* Collapsed sidebar: smaller margin */
+    margin-left: 0;
 }
 
 @media (max-width: 1024px) {
@@ -424,9 +424,10 @@ export default {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start !important; /* Tirei o center */
-    align-items: stretch !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
     width: 100%;
+    padding: 20px;
 }
 
 .notification-list {
