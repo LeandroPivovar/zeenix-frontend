@@ -243,6 +243,11 @@ export default {
     box-sizing: border-box;
 }
 
+.admin-markets-view {
+    margin-top: 10px;
+    width: 100%;
+}
+
 @media (max-width: 1024px) {
     .dashboard-content-wrapper {
         margin-left: 0;
