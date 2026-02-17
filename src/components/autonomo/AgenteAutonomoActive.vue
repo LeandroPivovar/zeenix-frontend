@@ -1537,19 +1537,27 @@
 				const historicalToday = this.dailyTrades || [];
 				const liveSession = this.tradeHistory || [];
 				
-				// Combine and deduplicate by ID
+				// ✅ Improved deduplication: Create unique key from multiple fields
+				const getTradeKey = (t) => {
+					const id = t.id || t.contractId || t.contract_id;
+					const time = t.createdAt || t.created_at || t.time || '';
+					const profit = t.profit !== undefined ? t.profit : (t.profit_loss || t.result || 0);
+					// Create composite key from id, timestamp, and profit to uniquely identify trades
+					return `${id}-${time}-${profit}`;
+				};
+				
 				const combined = [...liveSession];
-				const seenIds = new Set(liveSession.map(t => String(t.id || t.contractId)));
+				const seenKeys = new Set(liveSession.map(t => getTradeKey(t)));
 				
 				historicalToday.forEach(t => {
-					const id = String(t.id || t.contractId);
-					if (!seenIds.has(id)) {
+					const key = getTradeKey(t);
+					if (!seenKeys.has(key)) {
 						combined.push(t);
-						seenIds.add(id);
+						seenKeys.add(key);
 					}
 				});
 				
-				console.log('[sessionTrades] Merged Trades:', combined.length);
+				console.log('[sessionTrades] Live:', liveSession.length, 'Historical:', historicalToday.length, 'Combined:', combined.length);
 				return combined;
 			},
 			formattedSessionItems() {
