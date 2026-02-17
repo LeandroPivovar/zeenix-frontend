@@ -4814,7 +4814,7 @@ export default {
                 if (delay > 0) {
                     const delayMs = delay * 1000;
                     this.pauseUntil = Math.max(this.pauseUntil || 0, Date.now() + delayMs);
-                    this.addLog(`? Delay ${trade.result} (${trade.analysisType === 'RECUPERACAO' ? 'Rec' : 'Main'}): Aguardando ${delay}s...`, 'info');
+                    this.addLog(`🛡️ Delay ${trade.result} (${trade.analysisType === 'RECUPERACAO' ? 'Rec' : 'Main'}): Aguardando ${delay}s...`, 'info');
                 }
 
                 this.activeContracts.delete(id);

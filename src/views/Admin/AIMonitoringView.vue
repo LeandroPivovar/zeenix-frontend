@@ -53,7 +53,7 @@
                                 <div class="flex items-center gap-2 lg:gap-2.5 mb-1">
                                     <span class="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full bg-success animate-pulse shadow-[0_0_8px_hsl(142,76%,45%,0.6)]"></span>
                                     <span class="text-lg lg:text-3xl font-black text-success tracking-tighter drop-shadow-[0_0_12px_hsl(142,76%,45%,0.4)] uppercase">
-                                        IA {{ currentConfig.strategy }}
+                                        IA {{ currentConfig.strategyIdentity?.name || currentConfig.strategy }}
                                     </span>
                                 </div>
                                 <div class="h-5 overflow-hidden">
@@ -928,7 +928,8 @@ export default {
                         sorosLevel: parsed.sorosLevel !== undefined ? parsed.sorosLevel : (baseConfig.form.sorosLevel || 1),
                         attackFilters: (parsed.attackFilters && parsed.attackFilters.length > 0) ? parsed.attackFilters : baseConfig.form.attackFilters, // ✅ Fix: Respect saved filters
                         // ✅ FIX: Map 'stoplossBlindado' (from UI) to 'useBlindado' (internal logic)
-                        useBlindado: parsed.stoplossBlindado !== undefined ? parsed.stoplossBlindado : (parsed.useBlindado || baseConfig.form.useBlindado || false)
+                        useBlindado: parsed.stoplossBlindado !== undefined ? parsed.stoplossBlindado : (parsed.useBlindado || baseConfig.form.useBlindado || false),
+                        strategyIdentity: parsed.strategyIdentity || baseConfig.form.strategyIdentity || { name: parsed.strategy || 'Apollo', icon: 'zap' }
                     };
 
                     // 2.5. Carregar Filtros de Segurança (Loss Virtual)
