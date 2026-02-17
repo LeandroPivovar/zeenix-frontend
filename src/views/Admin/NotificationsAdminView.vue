@@ -368,25 +368,41 @@ export default {
 .dashboard-layout {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    background-color: #0B0B0B;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #0b0b0b;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .admin-dashboard {
     width: 100%;
-    max-width: 100%; /* Garante que ocupe todo o espaço disponível */
+    max-width: 100%;
+    margin: 60px auto;
+    padding: 10px;
+    padding-bottom: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .admin-sticky-header {
     height: 60px;
-    background-color: #0B0B0B;
-    border-bottom: 1px solid #1C1C1C;
+    background-color: rgba(11, 11, 11, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
-    padding: 0 20px;
-    position: sticky;
+    justify-content: space-between;
+    padding: 0 10px;
+    position: fixed;
     top: 0;
-    z-index: 100;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+    width: 100%;
 }
 
 .header-left {
@@ -403,14 +419,18 @@ export default {
 
 .dashboard-content-wrapper {
     flex: 1;
-    overflow-y: auto;
+    transition: all 0.3s ease;
+    min-height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
     padding: 0 !important;
-    margin-left: 0 !important; /* Sidebar aberta: 0px */
 }
 
-.dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 280px !important; /* Sidebar fechada: 280px */
-}
+/* Removido overrides manuais de margin-left pois o global.css já trata isso via padding-left */
+
 
 @media (max-width: 1024px) {
     .dashboard-content-wrapper {
@@ -420,13 +440,13 @@ export default {
 }
 
 .layout-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start !important;
-    align-items: flex-start !important;
+    flex-grow: 1;
+    padding: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: transparent !important;
+    box-sizing: border-box;
     width: 100%;
-    padding: 20px;
 }
 
 .notification-list {
