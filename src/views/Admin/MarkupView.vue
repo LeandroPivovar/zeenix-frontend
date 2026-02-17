@@ -63,7 +63,14 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.totalCommissionPct)">{{ formatPct(summaryCards.totalCommissionPct) }}</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon" title="Soma total da comissão gerada no período. Representa 3% do payout de todas as operações realizadas. Use para entender quanto o marketing trouxe de receita real, não apenas leads"></i>
+                            <ZenixTooltip>
+                                <template #trigger>
+                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                </template>
+                                <p><b>Receita Total:</b> Soma total da comissão gerada no período.</p>
+                                <p>Representa 3% do payout de todas as operações realizadas.</p>
+                                <p>Use para entender quanto o marketing trouxe de receita real, não apenas leads.</p>
+                            </ZenixTooltip>
                         </div>
 
                         <div class="stat-card">
@@ -77,7 +84,14 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.totalVolumePct)">{{ formatPct(summaryCards.totalVolumePct) }}</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon" title="Valor total negociado pelos usuários na corretora. Quanto maior o volume, maior o potencial de geração de markup. Campanhas que atraem usuários com alto volume tendem a gerar mais lucro"></i>
+                            <ZenixTooltip>
+                                <template #trigger>
+                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                </template>
+                                <p><b>Volume Total:</b> Valor total negociado pelos usuários na corretora.</p>
+                                <p>Quanto maior o volume, maior o potencial de geração de markup.</p>
+                                <p>Campanhas que atraem usuários com alto volume tendem a gerar mais lucro.</p>
+                            </ZenixTooltip>
                         </div>
 
                         <div class="stat-card">
@@ -91,7 +105,14 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.totalRealAmountPct)">{{ formatPct(summaryCards.totalRealAmountPct) }}</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon" title="Soma de todos os depósitos realizados pelos usuários. Indica a qualidade financeira do tráfego. Leads com depósitos maiores geralmente geram mais volume e mais markup."></i>
+                            <ZenixTooltip>
+                                <template #trigger>
+                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                </template>
+                                <p><b>Saldo Real:</b> Soma de todos os depósitos realizados pelos usuários.</p>
+                                <p>Indica a qualidade financeira do tráfego.</p>
+                                <p>Leads com depósitos maiores geralmente geram mais volume e mais markup.</p>
+                            </ZenixTooltip>
                         </div>
 
                         <div class="stat-card">
@@ -105,7 +126,14 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.avgDepositPct)">{{ formatPct(summaryCards.avgDepositPct) }}</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon" title="Valor médio depositado por usuário ativo. Use para comparar campanhas, países ou períodos. Quedas nessa métrica podem indicar tráfego menos qualificado."></i>
+                            <ZenixTooltip>
+                                <template #trigger>
+                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                </template>
+                                <p><b>Depósito Médio:</b> Valor médio depositado por usuário ativo.</p>
+                                <p>Use para comparar campanhas, países ou períodos.</p>
+                                <p>Quedas nessa métrica podem indicar tráfego menos qualificado.</p>
+                            </ZenixTooltip>
                         </div>
 
                         <div class="stat-card">
@@ -119,7 +147,14 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.avgRevenuePct)">{{ formatPct(summaryCards.avgRevenuePct) }}</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon" title="Receita média de markup gerada por usuário. Mostra a eficiência do funil e da retenção. Ideal para avaliar qualidade além da aquisição."></i>
+                            <ZenixTooltip>
+                                <template #trigger>
+                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                </template>
+                                <p><b>Receita Média:</b> Receita média de markup gerada por usuário.</p>
+                                <p>Mostra a eficiência do funil e da retenção.</p>
+                                <p>Ideal para avaliar qualidade além da aquisição.</p>
+                            </ZenixTooltip>
                         </div>
 
                         <div class="stat-card">
@@ -133,7 +168,14 @@
                                     <!-- Percentage removed as requested -->
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon" title="Número de usuários com saldo ativo na corretora. Representa a base real de usuários monetizáveis. Crescimento saudável ocorre quando esse número sobe junto com depósito médio e ARPU."></i>
+                            <ZenixTooltip>
+                                <template #trigger>
+                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                </template>
+                                <p><b>Usuários com Saldo:</b> Número de usuários com saldo ativo na corretora.</p>
+                                <p>Representa a base real de usuários monetizáveis.</p>
+                                <p>Crescimento saudável ocorre quando esse número sobe junto com depósito médio e ARPU.</p>
+                            </ZenixTooltip>
                         </div>
 
                         <div class="stat-card">
@@ -147,7 +189,14 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.ltvAvgPct)">{{ formatPct(summaryCards.ltvAvgPct) }}</span>
                                 </div>
                             </div>
-                            <i class="fas fa-info-circle stat-info-icon" title="Receita média de markup gerada por cada lead desde a aquisição. Essa é a métrica mais importante para decisões de marketing. Ela mostra quanto dinheiro real cada lead traz, independentemente do custo por lead."></i>
+                            <ZenixTooltip>
+                                <template #trigger>
+                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                </template>
+                                <p><b>LTV Médio (Markup):</b> Receita média de markup gerada por cada lead desde a aquisição.</p>
+                                <p>Essa é a métrica mais importante para decisões de marketing.</p>
+                                <p>Ela mostra quanto dinheiro real cada lead traz, independentemente do custo por lead.</p>
+                            </ZenixTooltip>
                         </div>
                     </div>
 
@@ -158,12 +207,12 @@
                             <p class="table-subtitle">Ranking dos maiores geradores de receita</p>
                         </div>
                         <div class="ranking-grid">
-                            <div v-for="(user, index) in top10Users" :key="user.userId" class="ranking-card">
+                            <div v-for="(user, index) in top10Users" :key="user.userId" class="ranking-card relative mt-4">
+                                <span v-if="user.userId.startsWith('unknown-')" class="status-pill warning absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] px-2 py-0.5 rounded-sm shadow-sm border border-yellow-500/30 bg-[#1e1e1e] z-10">Não Cadastrado</span>
                                 <div class="ranking-position" :class="'pos-' + (index + 1)">#{{ index + 1 }}</div>
                                 <div class="ranking-info">
                                     <span class="ranking-name">
                                         {{ user.name }}
-                                        <span v-if="user.userId.startsWith('unknown-')" class="status-pill warning ml-2" style="font-size: 0.6rem; padding: 2px 6px;">Não Cadastrado</span>
                                     </span>
                                     <span class="ranking-value">{{ formatCurrency(user.commission) }}</span>
                                 </div>
@@ -411,6 +460,7 @@ import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import ProjectionChart from '../../components/Admin/ProjectionChart.vue';
 import DailyMarkupChart from '../../components/Admin/DailyMarkupChart.vue';
+import ZenixTooltip from '../../components/ZenixTooltip.vue';
 
 // NOTA: DESCOMENTE AS LINHAS ABAIXO APÓS INSTALAR AS DEPENDÊNCIAS (npm install jspdf html2canvas)
 // import jsPDF from 'jspdf';
@@ -424,6 +474,7 @@ export default {
         SettingsSidebar,
         ProjectionChart,
         DailyMarkupChart,
+        ZenixTooltip,
     },
     data() {
         const currentDate = new Date().toISOString().split('T')[0];
