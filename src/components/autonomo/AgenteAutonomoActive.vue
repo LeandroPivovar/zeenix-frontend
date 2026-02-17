@@ -1651,8 +1651,14 @@
 							const prevSessionId = dedupedTrades[i-1].sessionId;
 					const currSessionId = dedupedTrades[i].sessionId;
 							
+							// ✅ Check for 1-hour gap between trades
+							const prevTime = new Date(dedupedTrades[i-1].createdAt);
+							const currTime = new Date(dedupedTrades[i].createdAt);
+							const hourDiff = Math.abs(prevTime - currTime) / (1000 * 60 * 60);
+							
 							let isNewSession = false;
-							if (prevSessionId && currSessionId && prevSessionId !== currSessionId) {
+							// Session change if sessionId changed OR 1+ hour gap
+							if ((prevSessionId && currSessionId && prevSessionId !== currSessionId) || hourDiff >= 1) {
 								isNewSession = true;
 							}
 							
