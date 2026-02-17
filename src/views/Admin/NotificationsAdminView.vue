@@ -427,17 +427,17 @@ export default {
     overflow-x: hidden;
     box-sizing: border-box;
     padding: 0 !important;
+    padding-left: 280px !important; /* Mantém 280px fixo no desktop, mesmo colapsado */
 }
-
-/* Removido overrides manuais de margin-left pois o global.css já trata isso via padding-left */
-
 
 @media (max-width: 1024px) {
     .dashboard-content-wrapper {
+        padding-left: 0 !important;
         margin-left: 0 !important;
-        padding: 15px;
+        padding: 15px !important;
     }
 }
+
 
 .layout-content {
     flex-grow: 1;
