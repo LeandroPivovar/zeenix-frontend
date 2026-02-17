@@ -145,6 +145,8 @@
         chartInterval: null,
         profitInterval: null,
         timeAndMetricsInterval: null,
+        unknownTradeTimeout: null,
+        syncTimeout: null,
   
         // Dados de Header/Saldo - REMOVE: handled by accountBalanceMixin
         isSettingsOpen: false,
@@ -892,9 +894,9 @@
                 const strat = (t.strategy || '').toLowerCase();
                 const origin = (t.origin || '').toLowerCase();
                 // Excluir estratégias de IA conhecidas
-                if (['titan', 'atlas', 'kronos', 'lynx'].includes(strat)) return false;
+                if (['titan', 'atlas', 'kronos', 'lynx', 'nexus', 'gemini'].includes(strat)) return false;
                 // Excluir origem 'ai' se explícito
-                if (origin === 'ai') return false;
+                if (origin === 'ai' || origin === 'nexus' || origin === 'sem' || origin === 'gemini') return false;
                 // Opcional: Exigir origin 'autonomous_agent' se o backend garantir que envia
                 // if (origin && origin !== 'autonomous_agent') return false; 
                 return true;
@@ -1162,13 +1164,9 @@
 
         // 3. Atualização de Operações (Real-time)
         if (msg.msg_type === 'proposal_open_contract') {
-          // ✅ [ZENIX v3.0] Filtragem por Origem (Evitar mix com IA)
-          const origin = msg.echo_req?.passthrough?.origin;
-          if (origin === 'autonomous_agent') {
-            this.handleContractUpdate(msg.proposal_open_contract);
-          } else {
-            console.log(`[AgenteAutonomo] 🕊️ Ignorando trade de outra origem: ${origin || 'Desconhecida'}`);
-          }
+          // ✅ [ZENIX v3.0] Passar todos os contratos para handleContractUpdate
+          // A filtragem será feita verificando se o contrato existe no DB (apiTradeHistory)
+          this.handleContractUpdate(msg.proposal_open_contract);
         }
       },
 
@@ -1180,13 +1178,13 @@
 
       subscribeToTrades() {
         if (this.ws && this.isAuthorized) {
-          // ✅ [ZENIX v3.0] Taggear a inscrição para permitir filtragem posterior
+          // ✅ [ZENIX v3.0] Alterado: Remover passthrough da subscrição para evitar que todos os trades
+          // recebam a tag 'origin: autonomous_agent' no echo_req.
           this.ws.send(JSON.stringify({ 
             proposal_open_contract: 1, 
-            subscribe: 1,
-            passthrough: { origin: 'autonomous_agent' }
+            subscribe: 1
           }));
-          console.log('[AgenteAutonomo] 📊 Inscrito em atualizações de contratos (Operações Agente)');
+          console.log('[AgenteAutonomo] 📊 Inscrito em atualizações de contratos (Todos - filtragem será local)');
         }
       },
 
@@ -1242,60 +1240,70 @@
           String(t.contractId) === String(contractId) ||
           String(t.contract_id) === String(contractId)
         );
+
         if (existingIdx !== -1) {
-          // Usar Vue.set ou similar se necessário, mas aqui estamos em AgenteAutonomoView que usa data() comum
-          // Substituir item existente
+          // ✅ Contrato EXISTE na lista (vindo do Banco de Dados) -> É um trade válido do Agente Autônomo
+          
+          // Substituir item existente com dados atualizados
           const newHistory = [...this.apiTradeHistory];
           newHistory[existingIdx] = normalizedTrade;
           this.apiTradeHistory = newHistory;
-        } else {
-          // Adicionar novo contrato no topo
-          this.apiTradeHistory = [normalizedTrade, ...this.apiTradeHistory].slice(0, 100);
-        }
 
-        // 4. Se o contrato terminou, atualizar estatísticas locais IMEDIATAMENTE (Otimista)
-        if (contract.is_sold || status !== 'open') {
-          console.log('[AgenteAutonomo] 🏁 Operação finalizada. Atualizando stats locais...');
-          
-          const cid = String(contractId);
-          if (!this.processedContractIds.includes(cid)) {
-            // ✅ [ZENIX v2.3] Atualização Otimista: Atualiza prop sessionStats instantaneamente
-            if (this.sessionStats) {
-                const p = profit; // ✅ Usar valor corrigido (Líquido)
-                const win = status === 'won';
-                
-                this.sessionStats.totalTrades += 1;
-                this.sessionStats.operationsToday += 1;
-                this.sessionStats.netProfit += p;
-                
-                if (win) {
-                    this.sessionStats.wins += 1;
-                    this.sessionStats.totalProfit += p;
-                } else {
-                    this.sessionStats.losses += 1;
-                    this.sessionStats.totalLoss += Math.abs(p);
-                }
-                
-                // Recalcular winRate
-                if (this.sessionStats.totalTrades > 0) {
-                    this.sessionStats.winRate = (this.sessionStats.wins / this.sessionStats.totalTrades) * 100;
-                }
-                
-                this.processedContractIds.push(cid);
-                if (this.processedContractIds.length > 200) this.processedContractIds.shift();
-
-                console.log('[AgenteAutonomo] ⚡ Stats atualizados otimisticamente:', this.sessionStats.netProfit);
+          // 4. Se o contrato terminou, atualizar estatísticas locais IMEDIATAMENTE (Otimista)
+          if (contract.is_sold || status !== 'open') {
+            console.log('[AgenteAutonomo] 🏁 Operação finalizada. Atualizando stats locais...');
+            
+            const cid = String(contractId);
+            if (!this.processedContractIds.includes(cid)) {
+              // ✅ [ZENIX v2.3] Atualização Otimista: Atualiza prop sessionStats instantaneamente
+              if (this.sessionStats) {
+                  const p = profit; // ✅ Usar valor corrigido (Líquido)
+                  const win = status === 'won';
+                  
+                  this.sessionStats.totalTrades += 1;
+                  this.sessionStats.operationsToday += 1;
+                  this.sessionStats.netProfit += p;
+                  
+                  if (win) {
+                      this.sessionStats.wins += 1;
+                      this.sessionStats.totalProfit += p;
+                  } else {
+                      this.sessionStats.losses += 1;
+                      this.sessionStats.totalLoss += Math.abs(p);
+                  }
+                  
+                  // Recalcular winRate
+                  if (this.sessionStats.totalTrades > 0) {
+                      this.sessionStats.winRate = (this.sessionStats.wins / this.sessionStats.totalTrades) * 100;
+                  }
+                  
+                  this.processedContractIds.push(cid);
+                  if (this.processedContractIds.length > 200) this.processedContractIds.shift();
+  
+                  console.log('[AgenteAutonomo] ⚡ Stats atualizados otimisticamente:', this.sessionStats.netProfit);
+              }
             }
+  
+            // Sincronizar com o backend após um delay maior (10s) para garantir consistência final
+            if (this.syncTimeout) clearTimeout(this.syncTimeout);
+            this.syncTimeout = setTimeout(() => {
+              this.loadSessionStats();
+              this.loadTradeHistory();
+              this.loadAgentLogs(); 
+            }, 10000); 
           }
-
-          // Sincronizar com o backend após um delay maior (10s) para garantir consistência final
-          // mas sem pressa já que o UI já atualizou otimisticamente
-          if (this.syncTimeout) clearTimeout(this.syncTimeout);
-          this.syncTimeout = setTimeout(() => {
-            this.loadSessionStats();
-            this.loadTradeHistory();
-            this.loadAgentLogs(); 
-          }, 10000); 
+        } else {
+          // ❌ Contrato NÃO está na lista local -> Pode ser um novo trade do Agente OU um trade de IA/Outro
+          // Não adicionamos cegamente. Forçamos uma atualização do histórico para verificar se o backend conhece esse trade.
+          
+          // Debounce para não spammar requests se recebermos muitos ticks de um trade desconhecido
+          if (this.unknownTradeTimeout) clearTimeout(this.unknownTradeTimeout);
+          this.unknownTradeTimeout = setTimeout(() => {
+             console.log('[AgenteAutonomo] ❓ Contrato desconhecido detectado, sincronizando histórico...');
+             this.loadTradeHistory();
+             // Também atualizamos stats para pegar contadores oficiais
+             this.loadSessionStats();
+          }, 2000); // 2 segundos de delay para dar tempo do backend salvar
         }
       },
       

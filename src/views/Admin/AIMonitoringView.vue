@@ -57,7 +57,7 @@
                         <div class="flex flex-col items-center">
                             <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Capital</p>
                             <p v-if="isBalanceReady" class="text-3xl font-bold text-white tracking-tight leading-none">
-                                {{ preferredCurrencyPrefix }} {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }}<span class="text-lg text-gray-500 font-medium">,{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}</span>
+                                {{ preferredCurrencyPrefix }} {{ Math.floor(monitoringStats.balance).toLocaleString('pt-BR') }},{{ (monitoringStats.balance % 1).toFixed(2).split('.')[1] || '00' }}
                             </p>
                             <p v-else class="text-3xl font-bold text-white/20 tracking-tight leading-none">
                                 {{ preferredCurrencyPrefix }} 0,00
@@ -72,7 +72,7 @@
                            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Resultado</p>
                            <div class="flex items-center gap-3">
                                <p class="text-4xl font-bold tracking-tight leading-none" :class="monitoringStats.profit >= 0 ? 'text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.2)]'">
-                                   {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ Math.floor(Math.abs(monitoringStats.profit)).toLocaleString('pt-BR') }}<span class="text-lg text-gray-500 font-medium">,{{ (Math.abs(monitoringStats.profit) % 1).toFixed(2).split('.')[1] || '00' }}</span>
+                                   {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ Math.floor(Math.abs(monitoringStats.profit)).toLocaleString('pt-BR') }},{{ (Math.abs(monitoringStats.profit) % 1).toFixed(2).split('.')[1] || '00' }}
                                </p>
                                <span class="px-2 py-0.5 rounded text-xs font-bold tracking-wide"
                                      :class="monitoringStats.profit >= 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'">
