@@ -863,9 +863,14 @@ export default {
                 'falcon': 'Falcon',
                 'apollo': 'Apollo',
                 'atlas': 'Atlas',
+                'nexus': 'Nexus',
+                'titan': 'Titan',
                 'default_atlas': 'Atlas',
                 'default_apollo': 'Apollo',
-                'default_zeus': 'Zeus'
+                'default_zeus': 'Zeus',
+                'default_orion': 'Orion',
+                'default_nexus': 'Nexus',
+                'default_titan': 'Titan'
             };
             return map[id?.toLowerCase()] || id?.toUpperCase();
         },
