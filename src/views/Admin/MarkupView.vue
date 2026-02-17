@@ -50,6 +50,30 @@
                         </button>
                     </div>
 
+                    <!-- Period Aggregate Cards (5 Cards) -->
+                    <div class="aggregate-cards-grid mb-8">
+                        <div class="aggregate-card today">
+                            <span class="aggregate-label">HOJE</span>
+                            <span class="aggregate-value">{{ formatCurrency(aggregateData.today) }}</span>
+                        </div>
+                        <div class="aggregate-card current-month">
+                            <span class="aggregate-label">MÊS ATUAL</span>
+                            <span class="aggregate-value">{{ formatCurrency(aggregateData.currentMonth) }}</span>
+                        </div>
+                        <div class="aggregate-card last-month">
+                            <span class="aggregate-label">MÊS ANTERIOR</span>
+                            <span class="aggregate-value">{{ formatCurrency(aggregateData.lastMonth) }}</span>
+                        </div>
+                        <div class="aggregate-card current-year">
+                            <span class="aggregate-label">ANO ATUAL</span>
+                            <span class="aggregate-value">{{ formatCurrency(aggregateData.currentYear) }}</span>
+                        </div>
+                        <div class="aggregate-card total">
+                            <span class="aggregate-label">TOTAL</span>
+                            <span class="aggregate-value">{{ formatCurrency(aggregateData.total) }}</span>
+                        </div>
+                    </div>
+
                     <!-- 7 Summary Cards -->
                     <div class="summary-cards-grid">
                         <div class="stat-card">
@@ -368,6 +392,78 @@
     color: #ffffff;
 }
 
+/* Aggregate Cards Styles */
+.aggregate-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 1200px) {
+    .aggregate-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .aggregate-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .aggregate-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aggregate-card {
+    background: linear-gradient(145deg, #161616, #0d0d0d);
+    border: 1px solid #ff0000; /* Red border as in screenshot */
+    border-radius: 4px;
+    padding: 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    min-height: 90px;
+}
+
+.aggregate-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent, rgba(255, 0, 0, 0.03), transparent);
+    pointer-events: none;
+}
+
+.aggregate-label {
+    color: #ff0000;
+    font-size: 0.85rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.aggregate-value {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Specific card accents if needed */
+.aggregate-card.today { border-left-width: 4px; }
+.aggregate-card.current-month { border-left-width: 4px; }
+.aggregate-card.last-month { border-left-width: 4px; }
+.aggregate-card.current-year { border-left-width: 4px; }
+.aggregate-card.total { border-left-width: 4px; }
+
 /* Ranking Styles */
 .ranking-grid {
     display: grid;
@@ -529,6 +625,13 @@ export default {
                 ltvAvg: 0,
                 ltvAvgPct: 0
             },
+            aggregateData: {
+                today: 0,
+                currentMonth: 0,
+                lastMonth: 0,
+                currentYear: 0,
+                total: 0
+            }
         };
     },
     watch: {
@@ -618,10 +721,13 @@ export default {
                     console.warn('[MarkupView] Nenhum usuário encontrado na resposta');
                 }
 
-                // 2. Buscar dados de HOJE separadamente para o card "Comissão Hoje"
+                // 2. Buscar dados agregados para os 5 cards do topo
+                this.fetchAggregates(token, apiUrl);
+
+                // 3. Buscar dados de HOJE separadamente para o card "Comissão Hoje" (redundante agora, mas mantido por segurança)
                 this.fetchTodayData(token, apiUrl);
 
-                // 3. Buscar dados do gráfico de projeção
+                // 4. Buscar dados do gráfico de projeção
                 this.fetchChartData(token, apiUrl);
 
                 this.isLoading = false;
@@ -631,6 +737,20 @@ export default {
                 console.error('[MarkupView] Erro ao buscar dados:', error);
                 this.error = 'Erro ao carregar dados de markup: ' + error.message;
                 this.isLoading = false;
+            }
+        },
+
+        async fetchAggregates(token, apiUrl) {
+            try {
+                const response = await fetch(`${apiUrl}/trades/markup/aggregates`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    this.aggregateData = await response.json();
+                    console.log('[MarkupView] Agregados recebidos:', this.aggregateData);
+                }
+            } catch (error) {
+                console.warn('[MarkupView] Erro ao buscar agregados:', error);
             }
         },
 
