@@ -406,11 +406,11 @@ export default {
     overflow-y: auto;
     padding: 0;
     transition: margin-left 0.3s ease;
-    margin-left: 0;
+    margin-left: 0; /* Sidebar aberta: sem margin */
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 0;
+    margin-left: 280px; /* Sidebar recolhida: 280px de margin */
 }
 
 @media (max-width: 1024px) {
