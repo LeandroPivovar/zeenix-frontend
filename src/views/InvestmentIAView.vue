@@ -608,6 +608,7 @@ import { StrategyAnalysis } from '@/utils/StrategyAnalysis';
 import SessionHistoryModal from '@/components/SessionHistoryModal.vue';
 
 import ImplementationModal from '@/components/modals/ImplementationModal.vue';
+import { StrategiesService } from '@/services/StrategiesService';
 
 let strategiesPresets = [];
 
@@ -1435,100 +1436,73 @@ export default {
 
         async fetchStrategies() {
             try {
-                // 1. Load Defaults (Hardcoded)
-                const defaultStrategies = [
-                    { 
-                        id: 'atlas', 
-                        title: 'IA Atlas', 
-                        marketType: 'Digits', 
-                        icon: 'fas fa-shield-alt',
-                        description: 'Híbrida: Dígitos + Price Action.',
-                        assertividade: '92% a 96%',
-                        retorno: '95% a 99%',
-                        status: 'Ativo',
-                        version: '1.0'
-                    },
-                    { 
-                        id: 'apollo', 
-                        title: 'IA Apollo', 
-                        marketType: 'Ups e Downs', 
-                        icon: 'fas fa-rocket',
-                        description: 'Densidade de Dígitos e Microtendências',
-                        assertividade: '60% a 70%',
-                        retorno: '19% a 126%',
-                        status: 'Ativo',
-                        version: '1.0'
-                    },
-                    { 
-                        id: 'nexus', 
-                        title: 'IA Nexus', 
-                        marketType: 'Ups e Downs', 
-                        icon: 'fas fa-chart-bar',
-                        description: 'Price Action com Barreira.',
-                        assertividade: '91% a 95%',
-                        retorno: '91% a 95%',
-                        status: 'Ativo',
-                        version: '1.0'
-                    },
-                    { 
-                        id: 'orion', 
-                        title: 'IA Orion', 
-                        marketType: 'Digits', 
-                        icon: 'fas fa-star',
-                        description: 'Estatística de Dígitos e Recuperação.',
-                        assertividade: '94% a 97%',
-                        retorno: '95% a 99%',
-                        status: 'Ativo',
-                        version: '1.0'
-                    },
-                    { 
-                        id: 'titan', 
-                        title: 'IA Titan', 
-                        marketType: 'Digits', 
-                        icon: 'fas fa-yin-yang', 
-                        description: 'Dígitos Par/Ímpar Direcional.',
-                        assertividade: '90% a 95%',
-                        retorno: '95%',
-                        status: 'Ativo',
-                        version: '1.0'
-                    }
-                ];
+                // 1. Load Defaults (Full Config from Service)
+                let defaultStrategies = [];
+                try {
+                    defaultStrategies = await StrategiesService.getAllStrategies();
+                } catch (e) {
+                    console.error('[InvestmentIAView] Falha ao carregar defaults do Service:', e);
+                    // Fallback visual
+                    defaultStrategies = [
+                        { id: 'atlas', title: 'IA Atlas', icon: 'fas fa-shield-alt', status: 'Ativo' },
+                        { id: 'apollo', title: 'IA Apollo', icon: 'fas fa-rocket', status: 'Ativo' },
+                        { id: 'nexus', title: 'IA Nexus', icon: 'fas fa-chart-bar', status: 'Ativo' },
+                        { id: 'orion', title: 'IA Orion', icon: 'fas fa-star', status: 'Ativo' },
+                        { id: 'titan', title: 'IA Titan', icon: 'fas fa-yin-yang', status: 'Ativo' }
+                    ];
+                }
 
                 // 2. Load User Strategies from LocalStorage
                 const stored = localStorage.getItem('zeenix_saved_strategies');
                 let userStrategies = stored ? JSON.parse(stored) : [];
 
-                // Map user strategies
-                const mappedUserStrategies = userStrategies.map(s => ({
-                    id: s.id,
-                    title: s.name,
-                    marketType: s.config.form.market || 'Custom',
-                    icon: s.config.strategyIdentity?.icon ? `fas fa-${s.config.strategyIdentity.icon}` : 'fas fa-robot',
-                    description: s.config.strategyIdentity?.description || 'Estratégia personalizada',
-                    assertividade: 'Variável',
-                    retorno: 'Variável',
-                    status: s.status || 'Ativo',
-                    version: s.version || '1.0',
-                    fullConfig: s.config 
-                }));
-
-                // 3. Merge
-                const all = [...defaultStrategies, ...mappedUserStrategies];
+                // 3. Merge Lists
+                const fullStrategyList = [
+                    ...defaultStrategies,
+                    ...userStrategies
+                ];
                 
-                // 4. Filter based on permissions
-                // - Active: Visible to everyone
-                // - Draft (Rascunho): Visible ONLY to Admins
-                this.allStrategies = all.filter(s => {
+                // Update the shared variable used by execution logic
+                strategiesPresets = fullStrategyList;
+                console.log('[InvestmentIAView] strategiesPresets updated:', strategiesPresets.length);
+
+                // 4. Map to UI
+                this.allStrategies = fullStrategyList.map(s => {
+                    // Extract Identity Config if available
+                    const identity = s.config?.strategyIdentity;
+                    
+                    // Formatting Helper
+                    const formatRange = (min, max) => (min !== undefined && max !== undefined) ? `${min}% a ${max}%` : null;
+
+                    return {
+                        id: s.id,
+                        title: identity?.name || s.title || s.name,
+                        marketType: s.config?.form?.market || s.marketType || 'Custom',
+                        icon: (identity?.icon ? `fas fa-${identity.icon}` : '') || s.icon || 'fas fa-robot',
+                        description: identity?.description || s.description || 'Estratégia personalizada',
+                        
+                        // Fix: Load Return/Assertiveness from Identity Config
+                        assertividade: formatRange(identity?.precision?.min, identity?.precision?.max) || s.metadata?.assertividade || s.assertividade || 'Variável',
+                        retorno: formatRange(identity?.return?.min, identity?.return?.max) || s.metadata?.retorno || s.retorno || 'Variável',
+                            
+                        status: identity?.status || s.status || 'Ativo',
+                        version: s.version || '1.0',
+                        fullConfig: s.config // Keep ref just in case
+                    };
+                });
+                
+                // 5. Filter Permissions
+                this.allStrategies = this.allStrategies.filter(s => {
                     const isActive = s.status === 'Ativo';
                     const isDraft = s.status === 'Rascunho';
                     
                     if (isActive) return true;
                     if (isDraft && this.isAdmin) return true;
                     
-                    return false; // Hidden otherwise
+                    return false; 
                 });
 
-                console.log('[InvestmentIAView] Estratégias carregadas (Filtradas):', this.allStrategies.length);
+                console.log('[InvestmentIAView] UI Estratégias carregadas:', this.allStrategies.length);
 
             } catch (error) {
                 console.error('[InvestmentIAView] Erro ao carregar estratégias:', error);
