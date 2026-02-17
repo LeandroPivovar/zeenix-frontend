@@ -1537,27 +1537,27 @@
 				const historicalToday = this.dailyTrades || [];
 				const liveSession = this.tradeHistory || [];
 				
-				// ✅ Improved deduplication: Create unique key from multiple fields
-				const getTradeKey = (t) => {
-					const id = t.id || t.contractId || t.contract_id;
-					const time = t.createdAt || t.created_at || t.time || '';
-					const profit = t.profit !== undefined ? t.profit : (t.profit_loss || t.result || 0);
-					// Create composite key from id, timestamp, and profit to uniquely identify trades
-					return `${id}-${time}-${profit}`;
+				// ✅ Simplified: Use only trade ID for deduplication
+				const getTradeId = (t) => {
+					return String(t.id || t.contractId || t.contract_id || '');
 				};
 				
 				const combined = [...liveSession];
-				const seenKeys = new Set(liveSession.map(t => getTradeKey(t)));
+				const seenIds = new Set(liveSession.map(t => getTradeId(t)));
+				
+				console.log('[sessionTrades] Live IDs:', Array.from(seenIds).slice(0, 5));
 				
 				historicalToday.forEach(t => {
-					const key = getTradeKey(t);
-					if (!seenKeys.has(key)) {
+					const id = getTradeId(t);
+					if (id && !seenIds.has(id)) {
 						combined.push(t);
-						seenKeys.add(key);
+						seenIds.add(id);
+					} else if (id) {
+						console.log('[sessionTrades] SKIPPED duplicate from historical:', id);
 					}
 				});
 				
-				console.log('[sessionTrades] Live:', liveSession.length, 'Historical:', historicalToday.length, 'Combined:', combined.length);
+				console.log('[sessionTrades] Live:', liveSession.length, 'Historical:', historicalToday.length, 'Combined:', combined.length, 'Unique IDs:', seenIds.size);
 				return combined;
 			},
 			formattedSessionItems() {
