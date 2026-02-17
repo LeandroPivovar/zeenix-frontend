@@ -100,21 +100,6 @@
         "metadata": {
             "assertividade": 72,
             "retorno": 56
-        },
-        "strategyIdentity": {
-            "id": "nexus",
-            "name": "IA Nexus",
-            "description": "Análise: Price Action (Barreira de Segurança) com Troca de Contrato",
-            "icon": "network-wired",
-            "status": "Ativo",
-            "precision": {
-                "min": 91,
-                "max": 95
-            },
-            "return": {
-                "min": 91,
-                "max": 95
-            }
         }
     }
 }

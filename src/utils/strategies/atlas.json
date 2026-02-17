@@ -111,21 +111,6 @@
         "metadata": {
             "assertividade": 70,
             "retorno": 35
-        },
-        "strategyIdentity": {
-            "id": "atlas",
-            "name": "IA Atlas",
-            "description": "Análise: Híbrida (Fluxo de Dígitos + Price Action)",
-            "icon": "globe",
-            "status": "Ativo",
-            "precision": {
-                "min": 92,
-                "max": 96
-            },
-            "return": {
-                "min": 95,
-                "max": 99
-            }
         }
     }
 }

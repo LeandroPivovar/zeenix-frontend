@@ -2309,17 +2309,7 @@ export default {
         },
         addLog(title, messages, type = 'info') {
             const time = new Date().toLocaleTimeString();
-            const sanitizedTitle = title;
-            const sanitizedMessages = Array.isArray(messages) 
-                ? messages 
-                : [messages];
-            
-            this.monitoringLogs.unshift({ 
-                title: sanitizedTitle, 
-                details: sanitizedMessages, 
-                type, 
-                time 
-            });
+            this.monitoringLogs.unshift({ title, details: Array.isArray(messages) ? messages : [messages], type, time });
             if (this.monitoringLogs.length > 50000) this.monitoringLogs = this.monitoringLogs.slice(0, 50000);
         },
         getLogIcon(type) {

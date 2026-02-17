@@ -109,21 +109,6 @@
         "metadata": {
             "assertividade": 65,
             "retorno": 19
-        },
-        "strategyIdentity": {
-            "id": "apollo",
-            "name": "IA Apollo",
-            "description": "Análise: Densidade de Dígitos e Microtendências",
-            "icon": "bolt",
-            "status": "Ativo",
-            "precision": {
-                "min": 60,
-                "max": 70
-            },
-            "return": {
-                "min": 19,
-                "max": 126
-            }
         }
     }
 }

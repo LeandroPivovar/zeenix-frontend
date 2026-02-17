@@ -134,7 +134,7 @@
                                         <i class="fas fa-chart-line text-[#22C55E] text-lg"></i>
                                         <p class="text-[10px] text-[#22C55E] uppercase font-bold status-label">DESEMPENHO</p>
                                     </div>
-                                    <p class="text-xs text-white status-value">{{ performanceDisplay }}</p>
+                                    <p class="text-xs text-white status-value">60% a 75%</p>
                                     <p v-if="!isMobile" class="text-xs text-zenix-label mt-1 status-description">Varia por estratégia e modo</p>
                                 </div>
                                 <!-- Card 3: CONTROLE -->
@@ -826,13 +826,6 @@ export default {
             return activeStrategies;
         },
         
-        performanceDisplay() {
-            if (this.selectedStrategyObject) {
-                return this.selectedStrategyObject.assertividade;
-            }
-            return '60% a 75%';
-        },
-        
         formattedLastUpdate() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -883,7 +876,15 @@ export default {
                 return `<strong>Análise:</strong> ${cleanDesc} - <strong>Assertividade:</strong> ${strategyObject.assertividade} - <strong>Retorno:</strong> ${strategyObject.retorno}`;
             }
 
-            return 'Estratégia de IA avançada.';
+            // Fallback (should not happen if allStrategies is populated)
+            const descriptions = {
+                'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 92 a 96% - <strong>Retorno:</strong> 95% / 99%',
+                'apollo': '<strong>Análise:</strong> Densidade de Dígitos e Microtendências - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 19% a 126%',
+                'nexus': '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 91% a 95% - <strong>Retorno:</strong> 91% / 95%',
+                'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 2) com Price Action na Recuperação - <strong>Assertividade:</strong> 94% a 97% - <strong>Retorno:</strong> 95% / 99%',
+                'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 90-95% - <strong>Retorno:</strong> 95%'
+            };
+            return descriptions[strategyId] || descriptions.atlas;
         },
         
 
@@ -2297,7 +2298,7 @@ export default {
                         : ((s.config?.metadata?.retorno && s.config.metadata.retorno !== 'N/A') 
                             ? `${s.config.metadata.retorno}%` 
                             : defaultMetrics.retorno),
-                    version: identity.version || s.version || '1.0' // Use identity.version if available, then s.version, then default
+                    version: s.version || '1.0'
                 };
             });
 
