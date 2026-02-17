@@ -405,17 +405,11 @@ export default {
     flex: 1;
     overflow-y: auto;
     padding: 0;
-    transition: margin-left 0.3s ease;
-    margin-left: 280px; /* Padrão: 280px de margin */
+    margin-left: 280px !important; /* Fixo em 280px - não muda */
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 280px; /* Sidebar recolhida: mantém 280px */
-}
-
-/* Remove margin quando sidebar NÃO está collapsed (aberta/hover) */
-.dashboard-content-wrapper:not(.sidebar-collapsed) {
-    margin-left: 0;
+    margin-left: 280px !important; /* Fixo em 280px - não muda */
 }
 
 @media (max-width: 1024px) {
