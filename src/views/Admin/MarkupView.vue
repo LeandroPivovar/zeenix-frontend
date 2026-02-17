@@ -63,9 +63,9 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.totalCommissionPct)">{{ formatPct(summaryCards.totalCommissionPct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip>
+                            <ZenixTooltip class="absolute top-6 right-6 z-20">
                                 <template #trigger>
-                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                    <i class="fas fa-info-circle stat-info-icon text-lg text-[#333]"></i>
                                 </template>
                                 <p><b>Receita Total:</b> Soma total da comissão gerada no período.</p>
                                 <p>Representa 3% do payout de todas as operações realizadas.</p>
@@ -84,9 +84,9 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.totalVolumePct)">{{ formatPct(summaryCards.totalVolumePct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip>
+                            <ZenixTooltip class="absolute top-6 right-6 z-20">
                                 <template #trigger>
-                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                    <i class="fas fa-info-circle stat-info-icon text-lg text-[#333]"></i>
                                 </template>
                                 <p><b>Volume Total:</b> Valor total negociado pelos usuários na corretora.</p>
                                 <p>Quanto maior o volume, maior o potencial de geração de markup.</p>
@@ -105,9 +105,9 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.totalRealAmountPct)">{{ formatPct(summaryCards.totalRealAmountPct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip>
+                            <ZenixTooltip class="absolute top-6 right-6 z-20">
                                 <template #trigger>
-                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                    <i class="fas fa-info-circle stat-info-icon text-lg text-[#333]"></i>
                                 </template>
                                 <p><b>Saldo Real:</b> Soma de todos os depósitos realizados pelos usuários.</p>
                                 <p>Indica a qualidade financeira do tráfego.</p>
@@ -126,9 +126,9 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.avgDepositPct)">{{ formatPct(summaryCards.avgDepositPct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip>
+                            <ZenixTooltip class="absolute top-6 right-6 z-20">
                                 <template #trigger>
-                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                    <i class="fas fa-info-circle stat-info-icon text-lg text-[#333]"></i>
                                 </template>
                                 <p><b>Depósito Médio:</b> Valor médio depositado por usuário ativo.</p>
                                 <p>Use para comparar campanhas, países ou períodos.</p>
@@ -147,9 +147,9 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.avgRevenuePct)">{{ formatPct(summaryCards.avgRevenuePct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip>
+                            <ZenixTooltip class="absolute top-6 right-6 z-20">
                                 <template #trigger>
-                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                    <i class="fas fa-info-circle stat-info-icon text-lg text-[#333]"></i>
                                 </template>
                                 <p><b>Receita Média:</b> Receita média de markup gerada por usuário.</p>
                                 <p>Mostra a eficiência do funil e da retenção.</p>
@@ -168,9 +168,9 @@
                                     <!-- Percentage removed as requested -->
                                 </div>
                             </div>
-                            <ZenixTooltip>
+                            <ZenixTooltip class="absolute top-6 right-6 z-20">
                                 <template #trigger>
-                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                    <i class="fas fa-info-circle stat-info-icon text-lg text-[#333]"></i>
                                 </template>
                                 <p><b>Usuários com Saldo:</b> Número de usuários com saldo ativo na corretora.</p>
                                 <p>Representa a base real de usuários monetizáveis.</p>
@@ -189,9 +189,9 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.ltvAvgPct)">{{ formatPct(summaryCards.ltvAvgPct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip>
+                            <ZenixTooltip class="absolute top-6 right-6 z-20">
                                 <template #trigger>
-                                    <i class="fas fa-info-circle stat-info-icon"></i>
+                                    <i class="fas fa-info-circle stat-info-icon text-lg text-[#333]"></i>
                                 </template>
                                 <p><b>LTV Médio (Markup):</b> Receita média de markup gerada por cada lead desde a aquisição.</p>
                                 <p>Essa é a métrica mais importante para decisões de marketing.</p>
@@ -208,7 +208,7 @@
                         </div>
                         <div class="ranking-grid">
                             <div v-for="(user, index) in top10Users" :key="user.userId" class="ranking-card relative mt-4">
-                                <span v-if="user.userId.startsWith('unknown-')" class="status-pill warning absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] px-2 py-0.5 rounded-sm shadow-sm border border-yellow-500/30 bg-[#1e1e1e] z-10">Não Cadastrado</span>
+                                <span v-if="user.userId.startsWith('unknown-')" class="status-pill warning absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] px-2 py-0.5 rounded-sm shadow-sm border border-yellow-500/30 bg-[#161616] z-10 font-bold tracking-wide">Não Cadastrado</span>
                                 <div class="ranking-position" :class="'pos-' + (index + 1)">#{{ index + 1 }}</div>
                                 <div class="ranking-info">
                                     <span class="ranking-name">

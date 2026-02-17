@@ -3113,6 +3113,10 @@ export default {
             const name = prompt('Nome da estratégia:', `Minha Estratégia ${new Date().toLocaleDateString()}`);
             if (!name) return;
 
+            // ? Ask for status (Active vs Draft)
+            const isActive = confirm('Deseja ativar esta estratégia imediatamente para todos os usuários?\n\nOK = Sim (Status: Ativo)\nCancelar = Não (Status: Rascunho - Visível apenas para Admins)');
+            const status = isActive ? 'Ativo' : 'Rascunho';
+
             // ? Sync filter edits before saving
             this.syncFiltersToConfig();
 
@@ -3120,6 +3124,7 @@ export default {
                 id: Date.now().toString(),
                 name: name,
                 version: '1.0', // Start at version 1.0
+                status: status, // Selected status
                 config: {
                     form: JSON.parse(JSON.stringify(this.form)),
                     recoveryConfig: JSON.parse(JSON.stringify(this.recoveryConfig)),
