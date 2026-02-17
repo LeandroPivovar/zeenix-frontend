@@ -1633,43 +1633,47 @@
 			}
 			const dedupedTrades = uniqueTrades;
 
-				// 2. Group trades into sessions (using sessionId)
+				// 2. Group trades into sessions (using sessionId, time gap, or date change)
 				const sessions = [];
 				let currentSessionTrades = [];
 				
 				if (dedupedTrades.length > 0) {
-					// ✅ [ZENIX v3.2] SIMPLIFICATION: If not in 'session' mode (live), 
-					// we treat everything as one single list to ensure all trades are shown without complex grouping.
-					// This matches user request: "puxar todas as trades"
-					if (this.selectedPeriod !== 'session') {
-						sessions.push(dedupedTrades);
-					} else {
-						// Keep session grouping ONLY for the live 'session' view
-						currentSessionTrades.push(dedupedTrades[0]);
+					// ✅ [ZENIX v3.3] Session Splitting: Split by Session ID, 1h gap, or Midnight
+					// We apply grouping for all periods to satisfy requested splitting at 00:00
+					currentSessionTrades.push(dedupedTrades[0]);
+					
+					for (let i = 1; i < dedupedTrades.length; i++) {
+						const prevTrade = dedupedTrades[i-1];
+						const currTrade = dedupedTrades[i];
 						
-						for (let i = 1; i < dedupedTrades.length; i++) {
-							const prevSessionId = dedupedTrades[i-1].sessionId;
-					const currSessionId = dedupedTrades[i].sessionId;
-							
-							// ✅ Check for 1-hour gap between trades
-							const prevTime = new Date(dedupedTrades[i-1].createdAt);
-							const currTime = new Date(dedupedTrades[i].createdAt);
-							const hourDiff = Math.abs(prevTime - currTime) / (1000 * 60 * 60);
-							
-							let isNewSession = false;
-							// Session change if sessionId changed OR 1+ hour gap
-							if ((prevSessionId && currSessionId && prevSessionId !== currSessionId) || hourDiff >= 1) {
-								isNewSession = true;
+						const prevSessionId = prevTrade.sessionId;
+						const currSessionId = currTrade.sessionId;
+						
+						const prevTime = new Date(prevTrade.createdAt);
+						const currTime = new Date(currTrade.createdAt);
+						
+						// 1. Midnight Transition Check (Date change)
+						// Trades are DESC (Newest at i-1, Older at i)
+						const isMidnightSplit = prevTime.toLocaleDateString() !== currTime.toLocaleDateString();
+						
+						// 2. Session ID change
+						const isSessionChange = prevSessionId && currSessionId && prevSessionId !== currSessionId;
+						
+						// 3. 1-hour gap
+						const hourDiff = Math.abs(prevTime - currTime) / (1000 * 60 * 60);
+						const isGapSplit = hourDiff >= 1;
+
+						if (isMidnightSplit || isSessionChange || isGapSplit) {
+							// Tag if the session ended due to midnight
+							if (isMidnightSplit) {
+								currentSessionTrades.isMidnightEnd = true;
 							}
-							
-							if (isNewSession) {
-								sessions.push(currentSessionTrades);
-								currentSessionTrades = [];
-							}
-							currentSessionTrades.push(dedupedTrades[i]);
+							sessions.push(currentSessionTrades);
+							currentSessionTrades = [];
 						}
-						sessions.push(currentSessionTrades);
+						currentSessionTrades.push(currTrade);
 					}
+					sessions.push(currentSessionTrades);
 				}
 				
 				const items = [];
@@ -1689,50 +1693,56 @@
                     let endReason = '';
                     let displayLabel = 'FIM DA SESSÃO';
 
-					if (this.selectedPeriod === 'session' && idx === 0) {
-                        // ... logic for live session status ...
-                        // (Reusing existing logic for live session only)
-                         const status = this.agenteData.sessionStatus;
-                         const validEndStatuses = ['stopped_loss', 'stopped_profit', 'stopped_blindado', 'paused', 'inactive', 'error', 'stopped_consecutive_loss'];
-                        
-                        if (validEndStatuses.includes(status)) {
-                             if (status === 'paused') {
-                                // ... pause check ...
-                                let consecutiveLosses = 0;
-                                for (let i = 0; i < sessionTrades.length; i++) {
-                                    if (sessionTrades[i].profit < 0) consecutiveLosses++;
-                                    else break;
-                                }
+					// ✅ [ZENIX v3.3] Midnight Split Handling
+					if (sessionTrades.isMidnightEnd) {
+						endReason = 'FECHAMENTO DIÁRIO';
+						footerText = `00:00 (${endReason})`;
+						displayLabel = `SESSÃO ${sessionNum} FINALIZADA`;
+					}
 
-                                if (consecutiveLosses >= 2) {
-                                    isEnded = true;
-                                    endReason = 'PAUSA SEGURANÇA (5 min)';
-                                    footerText += ` (${endReason})`;
-                                } else {
-                                    isEnded = false;
-                                    footerText = `EM ANDAMENTO - ${endTime}`;
-                                    displayLabel = 'SESSÃO ATUAL';
-                                }
-                            } else {
-                                isEnded = true;
-                                const statusMap = {
-                                    'stopped_loss': 'STOP LOSS ATINGIDO',
-                                    'stopped_profit': 'META ATINGIDA',
-                                    'stopped_blindado': 'STOP BLINDADO ATINGIDO',
-                                    'error': 'ERRO NO SISTEMA',
-                                    'inactive': 'SESSÃO ENCERRADA',
-                                    'stopped_consecutive_loss': 'STOP POR PERDAS'
-                                };
-                                endReason = statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase();
-                                footerText += ` (${endReason})`;
-                            }
-                        } else {
-                            isEnded = false;
-                            footerText = `EM ANDAMENTO - ${endTime}`;
-                            displayLabel = 'SESSÃO ATUAL';
-                        }
-					} else {
-                        // Historical or past sessions
+					if (this.selectedPeriod === 'session' && idx === 0 && !sessionTrades.isMidnightEnd) {
+						// ... logic for live session status ...
+						const status = this.agenteData.sessionStatus;
+						const validEndStatuses = ['stopped_loss', 'stopped_profit', 'stopped_blindado', 'paused', 'inactive', 'error', 'stopped_consecutive_loss'];
+						
+						if (validEndStatuses.includes(status)) {
+							if (status === 'paused') {
+								// ... pause check ...
+								let consecutiveLosses = 0;
+								for (let i = 0; i < sessionTrades.length; i++) {
+									if (sessionTrades[i].profit < 0) consecutiveLosses++;
+									else break;
+								}
+
+								if (consecutiveLosses >= 2) {
+									isEnded = true;
+									endReason = 'PAUSA SEGURANÇA (5 min)';
+									footerText += ` (${endReason})`;
+								} else {
+									isEnded = false;
+									footerText = `EM ANDAMENTO - ${endTime}`;
+									displayLabel = 'SESSÃO ATUAL';
+								}
+							} else {
+								isEnded = true;
+								const statusMap = {
+									'stopped_loss': 'STOP LOSS ATINGIDO',
+									'stopped_profit': 'META ATINGIDA',
+									'stopped_blindado': 'STOP BLINDADO ATINGIDO',
+									'error': 'ERRO NO SISTEMA',
+									'inactive': 'SESSÃO ENCERRADA',
+									'stopped_consecutive_loss': 'STOP POR PERDAS'
+								};
+								endReason = statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase();
+								footerText += ` (${endReason})`;
+							}
+						} else {
+							isEnded = false;
+							footerText = `EM ANDAMENTO - ${endTime}`;
+							displayLabel = 'SESSÃO ATUAL';
+						}
+					} else if (!sessionTrades.isMidnightEnd) {
+                        // Historical or past sessions (non-midnight)
                          if (this.selectedPeriod !== 'session') {
                              displayLabel = 'HISTÓRICO'; // Generic label for historical list
                              footerText = `FIM - ${endTime}`;
