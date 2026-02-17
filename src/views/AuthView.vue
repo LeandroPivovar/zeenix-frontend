@@ -40,6 +40,7 @@ import RegisterSuccessComponent from '../components/RegisterSuccessComponent.vue
 
 export default {
   components: {
+    LoginComponent,
     RegisterComponent,
     ForgotPasswordComponent,
     RegisterSuccessComponent,
