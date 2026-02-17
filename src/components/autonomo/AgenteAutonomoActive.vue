@@ -1604,30 +1604,41 @@
 						entry: entry.toFixed(2),
 						exit: exit.toFixed(2),
 						stake: stake.toFixed(2),
-						profit: profit.toFixed(2),
+				profit: profit.toFixed(2),
 						sessionId,
 						// Keep original for referencing if needed
 						original: trade 
 					};
 				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 20000); // Increased limit to 20k as per user request
 
+			// ✅ Remove duplicates based on trade ID
+			const uniqueTrades = [];
+			const seenIds = new Set();
+			for (const trade of normalizedTrades) {
+				if (!seenIds.has(trade.id)) {
+					seenIds.add(trade.id);
+					uniqueTrades.push(trade);
+				}
+			}
+			const dedupedTrades = uniqueTrades;
+
 				// 2. Group trades into sessions (using sessionId)
 				const sessions = [];
 				let currentSessionTrades = [];
 				
-				if (normalizedTrades.length > 0) {
+				if (dedupedTrades.length > 0) {
 					// ✅ [ZENIX v3.2] SIMPLIFICATION: If not in 'session' mode (live), 
 					// we treat everything as one single list to ensure all trades are shown without complex grouping.
 					// This matches user request: "puxar todas as trades"
 					if (this.selectedPeriod !== 'session') {
-						sessions.push(normalizedTrades);
+						sessions.push(dedupedTrades);
 					} else {
 						// Keep session grouping ONLY for the live 'session' view
-						currentSessionTrades.push(normalizedTrades[0]);
+						currentSessionTrades.push(dedupedTrades[0]);
 						
-						for (let i = 1; i < normalizedTrades.length; i++) {
-							const prevSessionId = normalizedTrades[i-1].sessionId;
-							const currSessionId = normalizedTrades[i].sessionId;
+						for (let i = 1; i < dedupedTrades.length; i++) {
+							const prevSessionId = dedupedTrades[i-1].sessionId;
+					const currSessionId = dedupedTrades[i].sessionId;
 							
 							let isNewSession = false;
 							if (prevSessionId && currSessionId && prevSessionId !== currSessionId) {
@@ -1638,7 +1649,7 @@
 								sessions.push(currentSessionTrades);
 								currentSessionTrades = [];
 							}
-							currentSessionTrades.push(normalizedTrades[i]);
+							currentSessionTrades.push(dedupedTrades[i]);
 						}
 						sessions.push(currentSessionTrades);
 					}
