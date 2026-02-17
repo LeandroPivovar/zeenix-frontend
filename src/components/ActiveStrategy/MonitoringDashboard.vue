@@ -1,7 +1,7 @@
 <template>
     <div class="monitoring-dashboard-wrapper h-full animate-fadeIn w-full" :class="{ 'px-4': isMobile }">
         <!-- Header Stats Card -->
-        <div class="w-full bg-[#050505] rounded-2xl border border-[#222] p-6 relative overflow-visible shadow-2xl mb-6">
+        <div class="w-full bg-[hsla(0,0%,8%,.4)] rounded-2xl border border-[#222] p-6 relative overflow-visible shadow-2xl mb-6">
             <!-- Green Glow Effect on Left -->
             <div class="absolute left-0 top-0 bottom-0 w-32 bg-green-500/5 blur-[50px] pointer-events-none"></div>
 
@@ -16,7 +16,7 @@
                      </div>
                      <div class="flex flex-col items-start">
                          <h2 class="text-3xl font-black text-green-500 tracking-tighter uppercase drop-shadow-[0_0_15px_rgba(34,197,94,0.3)] leading-none mb-1">
-                             IA {{ sessionState.strategy?.toUpperCase() || 'ATIVA' }}
+                             {{ (sessionState.strategy?.toUpperCase() || 'ATIVA').startsWith('IA') ? sessionState.strategy.toUpperCase() : 'IA ' + (sessionState.strategy?.toUpperCase() || 'ATIVA') }}
                          </h2>
                          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                              {{ stats.status || 'Ativo' }}
@@ -31,16 +31,19 @@
                 <div class="flex flex-col items-center">
                     <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Capital</p>
                     <p class="text-3xl font-bold text-white tracking-tight leading-none">
-                        $ {{ Math.floor(Number(stats.balance) || 0).toLocaleString('en-US') }}<span class="text-lg text-gray-500 font-medium">.{{ ((Number(stats.balance) || 0) % 1).toFixed(2).split('.')[1] || '00' }}</span>
+                        $ {{ Math.floor(Number(stats.balance) || 0).toLocaleString('en-US') }}<span class="text-lg text-gray-500 font-medium">,{{ ((Number(stats.balance) || 0) % 1).toFixed(2).split('.')[1] || '00' }}</span>
                     </p>
                 </div>
+
+                <!-- Vertical Separator -->
+                <div class="hidden lg:block w-px h-12 bg-[#222]"></div>
 
                 <!-- Result -->
                 <div class="flex flex-col items-center">
                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Resultado</p>
                    <div class="flex items-center gap-3">
                        <p class="text-4xl font-bold tracking-tight leading-none" :class="(Number(stats.profit) || 0) >= 0 ? 'text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.2)]'">
-                           {{ (Number(stats.profit) || 0) >= 0 ? '+' : '' }}${{ Math.abs(Number(stats.profit) || 0).toFixed(2).replace('.', ',') }}
+                           {{ (Number(stats.profit) || 0) >= 0 ? '+' : '' }}${{ Math.floor(Math.abs(Number(stats.profit) || 0)).toLocaleString('en-US') }}<span class="text-lg text-gray-500 font-medium">,{{ (Math.abs(Number(stats.profit) || 0) % 1).toFixed(2).split('.')[1] || '00' }}</span>
                        </p>
                        <span class="px-2 py-0.5 rounded text-xs font-bold tracking-wide"
                              :class="(Number(stats.profit) || 0) >= 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'">

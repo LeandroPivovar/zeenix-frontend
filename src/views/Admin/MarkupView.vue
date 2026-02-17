@@ -63,14 +63,16 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.totalCommissionPct)">{{ formatPct(summaryCards.totalCommissionPct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip class="absolute top-6 right-6 z-20">
-                                <template #trigger>
-                                    <i class="fas fa-info-circle text-lg text-[#333]"></i>
-                                </template>
-                                <p><b>Receita Total:</b> Soma total da comissão gerada no período.</p>
-                                <p>Representa 3% do payout de todas as operações realizadas.</p>
-                                <p>Use para entender quanto o marketing trouxe de receita real, não apenas leads.</p>
-                            </ZenixTooltip>
+                            <div class="absolute top-5 right-5 z-20">
+                                <ZenixTooltip>
+                                    <template #trigger>
+                                        <i class="fas fa-info-circle text-lg text-[#333]"></i>
+                                    </template>
+                                    <p><b>Receita Total:</b> Soma total da comissão gerada no período.</p>
+                                    <p>Representa 3% do payout de todas as operações realizadas.</p>
+                                    <p>Use para entender quanto o marketing trouxe de receita real, não apenas leads.</p>
+                                </ZenixTooltip>
+                            </div>
                         </div>
 
                         <div class="stat-card">
@@ -84,14 +86,16 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.totalVolumePct)">{{ formatPct(summaryCards.totalVolumePct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip class="absolute top-6 right-6 z-20">
-                                <template #trigger>
-                                    <i class="fas fa-info-circle text-lg text-[#333]"></i>
-                                </template>
-                                <p><b>Volume Total:</b> Valor total negociado pelos usuários na corretora.</p>
-                                <p>Quanto maior o volume, maior o potencial de geração de markup.</p>
-                                <p>Campanhas que atraem usuários com alto volume tendem a gerar mais lucro.</p>
-                            </ZenixTooltip>
+                            <div class="absolute top-5 right-5 z-20">
+                                <ZenixTooltip>
+                                    <template #trigger>
+                                        <i class="fas fa-info-circle text-lg text-[#333]"></i>
+                                    </template>
+                                    <p><b>Volume Total:</b> Valor total negociado pelos usuários na corretora.</p>
+                                    <p>Quanto maior o volume, maior o potencial de geração de markup.</p>
+                                    <p>Campanhas que atraem usuários com alto volume tendem a gerar mais lucro.</p>
+                                </ZenixTooltip>
+                            </div>
                         </div>
 
                         <div class="stat-card">
@@ -105,14 +109,16 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.totalRealAmountPct)">{{ formatPct(summaryCards.totalRealAmountPct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip class="absolute top-6 right-6 z-20">
-                                <template #trigger>
-                                    <i class="fas fa-info-circle text-lg text-[#333]"></i>
-                                </template>
-                                <p><b>Saldo Real:</b> Soma de todos os depósitos realizados pelos usuários.</p>
-                                <p>Indica a qualidade financeira do tráfego.</p>
-                                <p>Leads com depósitos maiores geralmente geram mais volume e mais markup.</p>
-                            </ZenixTooltip>
+                            <div class="absolute top-5 right-5 z-20">
+                                <ZenixTooltip>
+                                    <template #trigger>
+                                        <i class="fas fa-info-circle text-lg text-[#333]"></i>
+                                    </template>
+                                    <p><b>Saldo Real:</b> Soma de todos os depósitos realizados pelos usuários.</p>
+                                    <p>Indica a qualidade financeira do tráfego.</p>
+                                    <p>Leads com depósitos maiores geralmente geram mais volume e mais markup.</p>
+                                </ZenixTooltip>
+                            </div>
                         </div>
 
                         <div class="stat-card">
@@ -126,14 +132,16 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.avgDepositPct)">{{ formatPct(summaryCards.avgDepositPct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip class="absolute top-6 right-6 z-20">
-                                <template #trigger>
-                                    <i class="fas fa-info-circle text-lg text-[#333]"></i>
-                                </template>
-                                <p><b>Depósito Médio:</b> Valor médio depositado por usuário ativo.</p>
-                                <p>Use para comparar campanhas, países ou períodos.</p>
-                                <p>Quedas nessa métrica podem indicar tráfego menos qualificado.</p>
-                            </ZenixTooltip>
+                            <div class="absolute top-5 right-5 z-20">
+                                <ZenixTooltip>
+                                    <template #trigger>
+                                        <i class="fas fa-info-circle text-lg text-[#333]"></i>
+                                    </template>
+                                    <p><b>Depósito Médio:</b> Valor médio depositado por usuário ativo.</p>
+                                    <p>Use para comparar campanhas, países ou períodos.</p>
+                                    <p>Quedas nessa métrica podem indicar tráfego menos qualificado.</p>
+                                </ZenixTooltip>
+                            </div>
                         </div>
 
                         <div class="stat-card">
@@ -147,14 +155,16 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.avgRevenuePct)">{{ formatPct(summaryCards.avgRevenuePct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip class="absolute top-6 right-6 z-20">
-                                <template #trigger>
-                                    <i class="fas fa-info-circle text-lg text-[#333]"></i>
-                                </template>
-                                <p><b>Receita Média:</b> Receita média de markup gerada por usuário.</p>
-                                <p>Mostra a eficiência do funil e da retenção.</p>
-                                <p>Ideal para avaliar qualidade além da aquisição.</p>
-                            </ZenixTooltip>
+                            <div class="absolute top-5 right-5 z-20">
+                                <ZenixTooltip>
+                                    <template #trigger>
+                                        <i class="fas fa-info-circle text-lg text-[#333]"></i>
+                                    </template>
+                                    <p><b>Receita Média:</b> Receita média de markup gerada por usuário.</p>
+                                    <p>Mostra a eficiência do funil e da retenção.</p>
+                                    <p>Ideal para avaliar qualidade além da aquisição.</p>
+                                </ZenixTooltip>
+                            </div>
                         </div>
 
                         <div class="stat-card">
@@ -168,14 +178,16 @@
                                     <!-- Percentage removed as requested -->
                                 </div>
                             </div>
-                            <ZenixTooltip class="absolute top-6 right-6 z-20">
-                                <template #trigger>
-                                    <i class="fas fa-info-circle text-lg text-[#333]"></i>
-                                </template>
-                                <p><b>Usuários com Saldo:</b> Número de usuários com saldo ativo na corretora.</p>
-                                <p>Representa a base real de usuários monetizáveis.</p>
-                                <p>Crescimento saudável ocorre quando esse número sobe junto com depósito médio e ARPU.</p>
-                            </ZenixTooltip>
+                            <div class="absolute top-5 right-5 z-20">
+                                <ZenixTooltip>
+                                    <template #trigger>
+                                        <i class="fas fa-info-circle text-lg text-[#333]"></i>
+                                    </template>
+                                    <p><b>Usuários com Saldo:</b> Número de usuários com saldo ativo na corretora.</p>
+                                    <p>Representa a base real de usuários monetizáveis.</p>
+                                    <p>Crescimento saudável ocorre quando esse número sobe junto com depósito médio e ARPU.</p>
+                                </ZenixTooltip>
+                            </div>
                         </div>
 
                         <div class="stat-card">
@@ -189,14 +201,16 @@
                                     <span class="stat-percentage" :class="getPctClass(summaryCards.ltvAvgPct)">{{ formatPct(summaryCards.ltvAvgPct) }}</span>
                                 </div>
                             </div>
-                            <ZenixTooltip class="absolute top-6 right-6 z-20">
-                                <template #trigger>
-                                    <i class="fas fa-info-circle text-lg text-[#333]"></i>
-                                </template>
-                                <p><b>LTV Médio (Markup):</b> Receita média de markup gerada por cada lead desde a aquisição.</p>
-                                <p>Essa é a métrica mais importante para decisões de marketing.</p>
-                                <p>Ela mostra quanto dinheiro real cada lead traz, independentemente do custo por lead.</p>
-                            </ZenixTooltip>
+                            <div class="absolute top-5 right-5 z-20">
+                                <ZenixTooltip>
+                                    <template #trigger>
+                                        <i class="fas fa-info-circle text-lg text-[#333]"></i>
+                                    </template>
+                                    <p><b>LTV Médio (Markup):</b> Receita média de markup gerada por cada lead desde a aquisição.</p>
+                                    <p>Essa é a métrica mais importante para decisões de marketing.</p>
+                                    <p>Ela mostra quanto dinheiro real cada lead traz, independentemente do custo por lead.</p>
+                                </ZenixTooltip>
+                            </div>
                         </div>
                     </div>
 

@@ -124,7 +124,8 @@
                                         <i :class="`fa-solid fa-${strategyIdentity.icon || 'fingerprint'}`"></i>
                                     </div>
                                     Identidade da Estratégia
-                                    <span class="ml-auto px-3 py-1 bg-[#1E1E1E] border border-[#333] rounded-full text-xs text-gray-400 font-bold uppercase tracking-wider">
+                                    <span class="ml-auto px-3 py-1 border rounded-full text-xs font-bold uppercase tracking-wider transition-all"
+                                          :class="strategyIdentity.status === 'Ativo' ? 'bg-zenix-green/10 border-zenix-green/30 text-zenix-green' : 'bg-[#1E1E1E] border-[#333] text-gray-400'">
                                         {{ strategyIdentity.status }}
                                     </span>
                                 </h3>
@@ -364,10 +365,10 @@
                                                         v-model="form.durationUnit" 
                                                         class="w-full h-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg px-2 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-xs font-bold text-center"
                                                     >
-                                                        <option value="t">t</option>
-                                                        <option value="s">s</option>
-                                                        <option value="m">m</option>
-                                                        <option value="h">h</option>
+                                                        <option value="t">Ticks</option>
+                                                        <option value="s">Seconds</option>
+                                                        <option value="m">Minutes</option>
+                                                        <option value="h">Hours</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -2525,6 +2526,8 @@ export default {
             return this.form.attackFilters.map(f => f.name).join(', ');
         }
     },
+
+
 
     mounted() {
         this.handleResize();
@@ -4850,6 +4853,14 @@ export default {
         }
     },
     watch: {
+        'strategyIdentity.icon': {
+            handler(newIcon) {
+                if (this.sessionState) {
+                    this.sessionState.icon = newIcon || 'bolt';
+                }
+            },
+            immediate: true
+        },
         'recoveryConfig.martingale': {
             handler(newVal) {
                 if (newVal === false) {

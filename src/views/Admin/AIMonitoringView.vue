@@ -27,7 +27,7 @@
             <main class="flex-1 overflow-auto flex flex-col justify-start w-full" 
                   :style="{ padding: isMobile ? '5rem 1rem 8rem 1rem' : '5rem 2rem' }">
                 <!-- Header Stats Card -->
-                <div class="w-full bg-[#050505] rounded-2xl border border-[#222] p-6 relative overflow-visible shadow-2xl">
+                <div class="w-full bg-[hsla(0,0%,8%,.4)] rounded-2xl border border-[#222] p-6 relative overflow-visible shadow-2xl">
                     <!-- Green Glow Effect on Left -->
                     <div class="absolute left-0 top-0 bottom-0 w-32 bg-green-500/5 blur-[50px] pointer-events-none"></div>
 
@@ -42,7 +42,7 @@
                              </div>
                              <div class="flex flex-col items-start">
                                  <h2 class="text-3xl font-black text-green-500 tracking-tighter uppercase drop-shadow-[0_0_15px_rgba(34,197,94,0.3)] leading-none mb-1">
-                                     IA {{ currentConfig.strategyIdentity?.name || currentConfig.strategy }}
+                                     {{ (currentConfig.strategyIdentity?.name || currentConfig.strategy || 'ATIVA').toUpperCase().startsWith('IA') ? (currentConfig.strategyIdentity?.name || currentConfig.strategy || 'ATIVA').toUpperCase() : 'IA ' + (currentConfig.strategyIdentity?.name || currentConfig.strategy || 'ATIVA').toUpperCase() }}
                                  </h2>
                                  <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
                                      {{ iaStatusDisplay }}
@@ -64,12 +64,15 @@
                             </p>
                         </div>
 
+                        <!-- Vertical Separator -->
+                        <div class="hidden lg:block w-px h-12 bg-[#222]"></div>
+
                         <!-- Result -->
                         <div class="flex flex-col items-center">
                            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-1">Resultado</p>
                            <div class="flex items-center gap-3">
                                <p class="text-4xl font-bold tracking-tight leading-none" :class="monitoringStats.profit >= 0 ? 'text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.2)]'">
-                                   {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ Math.abs(monitoringStats.profit).toFixed(2).replace('.', ',') }}
+                                   {{ monitoringStats.profit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ Math.floor(Math.abs(monitoringStats.profit)).toLocaleString('pt-BR') }}<span class="text-lg text-gray-500 font-medium">,{{ (Math.abs(monitoringStats.profit) % 1).toFixed(2).split('.')[1] || '00' }}</span>
                                </p>
                                <span class="px-2 py-0.5 rounded text-xs font-bold tracking-wide"
                                      :class="monitoringStats.profit >= 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'">

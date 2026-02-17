@@ -1460,11 +1460,14 @@ export default {
                 const stored = localStorage.getItem('zeenix_saved_strategies');
                 let userStrategies = stored ? JSON.parse(stored) : [];
 
-                // 3. Merge Lists
-                const fullStrategyList = [
-                    ...defaultStrategies,
-                    ...userStrategies
-                ];
+                // 3. Merge Lists & Deduplicate by ID
+                const unified = [...defaultStrategies, ...userStrategies];
+                const seen = new Set();
+                const fullStrategyList = unified.filter(s => {
+                    if (seen.has(s.id)) return false;
+                    seen.add(s.id);
+                    return true;
+                });
                 
                 // Update the shared variable used by execution logic
                 strategiesPresets = fullStrategyList;
