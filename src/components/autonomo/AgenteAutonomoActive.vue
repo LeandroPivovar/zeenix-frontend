@@ -1604,8 +1604,11 @@
 					// ✅ Get sessionId for grouping
 					const sessionId = trade.sessionId || trade.session_id || null;
 
+					// ✅ Create consistent ID from trade data if ID is missing
+					const tradeId = trade.id || trade.contractId || trade.contract_id || `${createdAt}-${profit}-${stake}-${market}`;
+
 					return {
-						id: trade.id || Math.random().toString(36).substr(2, 9),
+						id: tradeId,
 						createdAt, // Date object or ISO string
 						market,
 						contract,

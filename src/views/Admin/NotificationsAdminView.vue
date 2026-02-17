@@ -404,7 +404,7 @@ export default {
 .dashboard-content-wrapper {
     flex: 1;
     overflow-y: auto;
-    padding: 0;
+    padding: 0 !important; /* Fixo em 0 - não muda */
     margin-left: 280px !important; /* Fixo em 280px - não muda */
 }
 
