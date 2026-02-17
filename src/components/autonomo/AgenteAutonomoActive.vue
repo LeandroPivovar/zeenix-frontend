@@ -1456,8 +1456,9 @@
 						const currentYear = new Date().getFullYear();
 						const [startDay, startMonth] = startStr.trim().split('/');
 						const [endDay, endMonth] = endStr.trim().split('/');
-						const startDate = new Date(currentYear, parseInt(startMonth) - 1, parseInt(startDay));
-						const endDate = new Date(currentYear, parseInt(endMonth) - 1, parseInt(endDay));
+						// Create dates at noon to avoid timezone rollover
+						const startDate = new Date(currentYear, parseInt(startMonth) - 1, parseInt(startDay), 12, 0, 0);
+						const endDate = new Date(currentYear, parseInt(endMonth) - 1, parseInt(endDay), 12, 0, 0);
 						endDate.setHours(23, 59, 59, 999);
 						
 						return this.dailyData.filter(day => {
@@ -1488,15 +1489,30 @@
 					}
 					
 					case '7d': {
+						// ✅ FIX: Timezone-safe comparison (Compare YYYY-MM-DD strings or Midnight timestamps)
+                        // Use 7 days ago at 00:00:00
 						const weekAgo = new Date(now);
 						weekAgo.setDate(now.getDate() - 7);
-						return this.dailyData.filter(d => new Date(d.fullDate) >= weekAgo);
+                        weekAgo.setHours(0, 0, 0, 0);
+                        
+						return this.dailyData.filter(d => {
+                            // Backend sends YYYY-MM-DD. Append T00:00:00 to force local time parsing or consistent comparison
+                            const dateParts = d.fullDate.split('-');
+                            const dayDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+                            return dayDate >= weekAgo;
+                        });
 					}
 
 					case '30d': {
 						const monthAgo = new Date(now);
 						monthAgo.setDate(now.getDate() - 30);
-						return this.dailyData.filter(d => new Date(d.fullDate) >= monthAgo);
+                        monthAgo.setHours(0, 0, 0, 0);
+                        
+						return this.dailyData.filter(d => {
+                             const dateParts = d.fullDate.split('-');
+                             const dayDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+                             return dayDate >= monthAgo;
+                        });
 					}
 
 					case 'session':
@@ -1512,29 +1528,35 @@
                 // Retorna 'Semanal', 'Mensal' etc baseado na range geral se quiser, por padrão 'Semanal' baseada na tabela
 				return 'Semanal';
 			},
+			sessionTrades() {
+				// ✅ [ZENIX v3.1] Centralized Session Logic
+				// Merge historical dailyTrades (for today) with live tradeHistory
+				// This ensures we show all trades from today, even if they exceed the session limit
+				if (this.selectedPeriod !== 'session') return [];
+
+				const historicalToday = this.dailyTrades || [];
+				const liveSession = this.tradeHistory || [];
+				
+				// Combine and deduplicate by ID
+				const combined = [...liveSession];
+				const seenIds = new Set(liveSession.map(t => String(t.id || t.contractId)));
+				
+				historicalToday.forEach(t => {
+					const id = String(t.id || t.contractId);
+					if (!seenIds.has(id)) {
+						combined.push(t);
+						seenIds.add(id);
+					}
+				});
+				
+				console.log('[sessionTrades] Merged Trades:', combined.length);
+				return combined;
+			},
 			formattedSessionItems() {
 				// Decide source array based on selectedPeriod
 				let sourceTrades = [];
 				if (this.selectedPeriod === 'session') {
-					// ✅ [ZENIX v3.1] Merge historical dailyTrades (for today) with live tradeHistory
-					// This ensures we show all trades from today, even if they exceed the session limit
-					const historicalToday = this.dailyTrades || [];
-					const liveSession = this.tradeHistory || [];
-					
-					// Combine and deduplicate by ID
-					const combined = [...liveSession];
-					const seenIds = new Set(liveSession.map(t => String(t.id || t.contractId)));
-					
-					historicalToday.forEach(t => {
-						const id = String(t.id || t.contractId);
-						if (!seenIds.has(id)) {
-							combined.push(t);
-							seenIds.add(id);
-						}
-					});
-					
-					sourceTrades = combined;
-					console.log('[formattedSessionItems] session mode - merged trades:', sourceTrades.length);
+					sourceTrades = this.sessionTrades;
 				} else {
 					// ✅ FIX: For historical periods, use dailyTrades ONLY
 					sourceTrades = [...(this.dailyTrades || [])];
@@ -1744,10 +1766,25 @@
 				let profit = 0;
 				
 				if (this.selectedPeriod === 'session') {
-					// Use realtime session stats
-					trades = this.sessionStats?.totalTrades || 0;
-					wins = this.sessionStats?.wins || 0;
-					profit = this.sessionStats?.netProfit || 0;
+					// ✅ [ZENIX v3.1] Use LOCAL calculated stats from sessionTrades
+                    // This fixes the issue where sessionStats (from backend) reports 0 profit but trades exist
+                    const sessionTrades = this.sessionTrades;
+                    
+                    trades = sessionTrades.length;
+                    
+                    if (trades > 0) {
+                         sessionTrades.forEach(t => {
+                             const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                             profit += p;
+                             if (p > 0) wins++;
+                         });
+                    } else {
+                        // Fallback to prop if array is empty (maybe initially)
+                        trades = this.sessionStats?.totalTrades || 0;
+                        wins = this.sessionStats?.wins || 0;
+                        profit = this.sessionStats?.netProfit || 0;
+                    }
+
 				} else if (this.dailyTradesSummary && (this.selectedPeriod === 'today' || this.selectedPeriod === '7d' || this.selectedPeriod === '30d')) {
                     // Use backend summary if available and period matches roughly (or is custom)
                     trades = this.dailyTradesSummary.totalTrades;
