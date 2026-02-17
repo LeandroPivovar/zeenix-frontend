@@ -673,25 +673,24 @@
 			<!-- Statistics Grid -->
 			<div class="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mt-4">
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ activeDayDetails.ops }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.ops : selectedPeriodMetrics.totalTrades }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Operações</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<!-- Approximating wins based on winrate -->
-					<div class="text-base sm:text-lg font-bold tabular-nums text-green-500">{{ Math.round(activeDayDetails.ops * (activeDayDetails.winRate / 100)) }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-green-500">{{ selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.wins : selectedPeriodMetrics.wins }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Positivas</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-red-500">{{ activeDayDetails.ops - Math.round(activeDayDetails.ops * (activeDayDetails.winRate / 100)) }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-red-500">{{ selectedPeriod === 'today' || selectedPeriod === 'session' ? (activeDayDetails.ops - activeDayDetails.wins) : (selectedPeriodMetrics.totalTrades - selectedPeriodMetrics.wins) }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Negativas</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ activeDayDetails.winRate.toFixed(1) }}%</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ (selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.winRate : selectedPeriodMetrics.winRate).toFixed(1) }}%</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Win Rate</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums" :class="activeDayDetails.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ activeDayDetails.profit < 0 ? '-' : (activeDayDetails.profit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(activeDayDetails.profit / (activeDayDetails.ops || 1)).toFixed(2) }}
+					<div class="text-base sm:text-lg font-bold tabular-nums" :class="(selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'">
+						{{ (selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : ((selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(selectedPeriod === 'today' || selectedPeriod === 'session' ? (activeDayDetails.profit / (activeDayDetails.ops || 1)) : selectedPeriodMetrics.avgProfit).toFixed(2) }}
 					</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
 				</div>
@@ -757,7 +756,7 @@
                                     </td>
                                     <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ preferredCurrencyPrefix }}{{item.data.entry}}</td>
                                     <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ preferredCurrencyPrefix }}{{item.data.exit}}</td>
-                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ preferredCurrencyPrefix }}{{parseFloat(item.data.stake).toFixed(2)}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ parseFloat(item.data.stake).toFixed(2) }}</td>
                                     <td class="py-2 px-1 text-right tabular-nums font-semibold" 
                                         :class="parseFloat(item.data.profit) > 0 ? 'text-green-500' : (parseFloat(item.data.profit) < 0 ? 'text-red-500' : 'text-[#FAFAFA]')">
                                         {{ parseFloat(item.data.profit) > 0 ? '+' : (parseFloat(item.data.profit) < 0 ? '-' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(parseFloat(item.data.profit)).toFixed(2) }}
@@ -1061,8 +1060,9 @@
 				],
 				weeklyData: [],
                 
-				dailyData: [],
+                dailyData: [],
                 dailyTrades: [],
+                dailyTradesSummary: { totalTrades: 0, totalWins: 0, totalProfit: 0, winRate: 0 },
                 agentConfig: null,
                 
 				selectedPeriodFilter: null, // Novo estado para filtro
@@ -1439,7 +1439,14 @@
 				}
 				
 				// Se não for hoje, retorna dados estáticos
-				return this.selectedDay;
+                // Merge with summary stats from detailed fetch if available
+				return {
+                    ...(this.selectedDay || {}),
+                    profit: this.dailyTradesSummary?.totalProfit ?? this.selectedDay?.profit ?? 0,
+                    ops: this.dailyTradesSummary?.totalTrades ?? this.selectedDay?.ops ?? 0,
+                    wins: this.dailyTradesSummary?.totalWins ?? this.selectedDay?.wins ?? 0,
+                    winRate: this.dailyTradesSummary?.winRate ?? this.selectedDay?.winRate ?? 0
+                };
 			},
 			filteredDailyData() {
 				// 1. Se houver um filtro de período selecionado na tabela (range customizado)
@@ -1526,7 +1533,6 @@
                     // Safety Filter: Exclude AI trades if tagged
                     // Backend sends 'origin' in passthrough, but usually not persisted in same table?
                     // Check if 'strategy' implies AI (e.g., 'TITAN', 'ATLAS' vs Agent 'FALCON', 'ZEUS')
-                    // Assuming 'agentActions' or specific fields identify them. 
                     // For now, trust the source, but if we can filter by ID pattern or 'origin', do it.
                     if (t.origin === 'ai') return false;
                     return true;
@@ -1727,23 +1733,30 @@
 					trades = this.sessionStats?.totalTrades || 0;
 					wins = this.sessionStats?.wins || 0;
 					profit = this.sessionStats?.netProfit || 0;
-				} else {
+				} else if (this.dailyTradesSummary && (this.selectedPeriod === 'today' || this.selectedPeriod === '7d' || this.selectedPeriod === '30d')) {
+                    // Use backend summary if available and period matches roughly (or is custom)
+                    trades = this.dailyTradesSummary.totalTrades;
+                    wins = this.dailyTradesSummary.totalWins;
+                    profit = this.dailyTradesSummary.totalProfit;
+                } else {
 					// Sum up from filteredDailyData
 					const data = this.filteredDailyData || [];
 					data.forEach(day => {
-						trades += (day.trades || 0);
+						trades += (day.ops || 0);
 						wins += (day.wins || 0);
 						profit += (day.profit || 0);
 					});
 				}
 				
 				const winRate = trades > 0 ? (wins / trades) * 100 : 0;
+                const avgProfit = trades > 0 ? profit / trades : 0;
 				
 				return {
 					totalTrades: trades,
 					winRate: winRate,
 					wins: wins,
-					totalProfit: profit
+					totalProfit: profit,
+                    avgProfit: avgProfit
 				};
 			},
 		},
@@ -2098,7 +2111,11 @@
 						const result = await response.json();
                         console.log('[AgenteAutonomo] daily-trades resultado:', result);
 						if (result.success) {
-                            this.dailyTrades = result.data;
+                            const trades = Array.isArray(result.data) ? result.data : (result.data.trades || []);
+                            const summary = !Array.isArray(result.data) ? result.data.summary : null;
+                            
+                            this.dailyTrades = trades;
+                            if (summary) this.dailyTradesSummary = summary;
                             
                             // Calcular se a meta foi atingida e quando
                             const target = this.agentConfig?.dailyProfitTarget || 0;
@@ -2106,7 +2123,7 @@
                             let activationTime = null;
 
                             // Ordenar do mais antigo para o mais novo para calcular acumulado corretamente
-                            const sortedTrades = [...result.data].sort((a, b) => 
+                            const sortedTrades = [...trades].sort((a, b) => 
                                 new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
                             );
 
@@ -2301,13 +2318,17 @@
 						}
                      });
                      
-                     if (response.ok) {
-                         const result = await response.json();
-                         if (result.success) {
-                             console.log('[AgenteAutonomo] Trades históricos carregados:', result.data.length);
-                             this.dailyTrades = result.data;
+                         if (response.ok) {
+                             const result = await response.json();
+                             if (result.success) {
+                                 const trades = Array.isArray(result.data) ? result.data : (result.data.trades || []);
+                                 const summary = !Array.isArray(result.data) ? result.data.summary : null;
+                                 
+                                 console.log('[AgenteAutonomo] Trades históricos carregados:', trades.length);
+                                 this.dailyTrades = trades;
+                                 if (summary) this.dailyTradesSummary = summary;
+                             }
                          }
-                     }
                 } catch(e) {
                     console.error("[AgenteAutonomo] Erro ao buscar trades históricos:", e);
                 }

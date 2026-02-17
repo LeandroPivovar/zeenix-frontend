@@ -48,22 +48,34 @@
                 </div>
 
                 <!-- Resultado -->
-                <div class="col-span-1 md:col-span-3 lg:col-span-3 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6 flex flex-col items-center">
+                <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6 flex flex-col items-center">
                     <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Resultado</p>
                     <div class="flex items-baseline justify-center gap-1 lg:gap-3">
-                        <p class="text-2xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+                        <p class="text-xl lg:text-3xl font-bold tracking-tight drop-shadow-[0_0_20px_rgba(34,197,94,0.3)]"
                            :class="stats.profit >= 0 ? 'text-[#22C55E]' : 'text-[#EF4444]'">
                             {{ (Number(stats.profit) || 0) >= 0 ? '+' : '' }}${{ (Number(stats.profit) || 0).toFixed(2) }}
                         </p>
-                        <span class="text-xs lg:text-lg font-semibold px-1.5 lg:px-2 py-0.5 rounded hidden md:inline"
-                              :class="stats.profit >= 0 ? 'text-[#22C55E]/80 bg-[#22C55E]/10' : 'text-[#EF4444]/80 bg-[#EF4444]/10'">
-                            {{ (Number(stats.profit) || 0) >= 0 ? '+' : '' }}{{ ((Number(stats.profit) || 0) / (Number(stats.balance) - Number(stats.profit) || 1) * 100).toFixed(1) }}%
-                        </span>
                     </div>
                 </div>
 
+                <!-- Precisão -->
+                <div class="col-span-1 md:col-span-3 lg:col-span-2 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6">
+                    <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Precisão</p>
+                    <p class="text-lg lg:text-xl font-bold text-[#22C55E] tracking-tight">
+                        {{ sessionState.precision || 'N/A' }}
+                    </p>
+                </div>
+
+                <!-- Retorno -->
+                <div class="col-span-1 md:col-span-3 lg:col-span-1 text-center border-l border-[rgba(255,255,255,0.05)] pl-3 lg:pl-6">
+                    <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-1">Retorno</p>
+                    <p class="text-lg lg:text-xl font-bold text-white tracking-tight">
+                        {{ sessionState.return || 'N/A' }}
+                    </p>
+                </div>
+
                 <!-- Operations Stats -->
-                <div class="col-span-2 md:col-span-3 lg:col-span-4 border-t md:border-t-0 md:border-l border-[rgba(255,255,255,0.05)] pt-4 md:pt-0 md:pl-4 lg:pl-6 mt-2 md:mt-0">
+                <div class="col-span-2 md:col-span-3 lg:col-span-2 border-t md:border-t-0 md:border-l border-[rgba(255,255,255,0.05)] pt-4 md:pt-0 md:pl-4 lg:pl-6 mt-2 md:mt-0">
                     <p class="text-[9px] lg:text-[10px] text-gray-500 uppercase tracking-widest mb-2 lg:mb-3">Operações</p>
                     <div class="flex items-center justify-between md:justify-start gap-3 lg:gap-4 text-sm">
                         <div class="text-center">
