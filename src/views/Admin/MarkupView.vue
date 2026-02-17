@@ -419,8 +419,8 @@
 
 .aggregate-card {
     background: linear-gradient(145deg, #161616, #0d0d0d);
-    border: 1px solid #ff0000; /* Red border as in screenshot */
-    border-radius: 4px;
+    border: 1px solid #4ade80; /* Zenix Green */
+    border-radius: 8px;
     padding: 1.25rem 1rem;
     display: flex;
     flex-direction: column;
@@ -437,12 +437,12 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(45deg, transparent, rgba(255, 0, 0, 0.03), transparent);
+    background: linear-gradient(45deg, transparent, rgba(74, 222, 128, 0.03), transparent);
     pointer-events: none;
 }
 
 .aggregate-label {
-    color: #ff0000;
+    color: #ffffff;
     font-size: 0.85rem;
     font-weight: 800;
     margin-bottom: 0.5rem;
