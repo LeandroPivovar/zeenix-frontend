@@ -74,7 +74,7 @@
             </div>
 
             <!-- Page Header -->
-            <div class="page-header-support" v-if="!isFormVisible" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; margin-top: 2rem; width: 100%;">
+            <div class="page-header-support" v-if="!isFormVisible" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; margin-top: 2rem; width: 100%; box-sizing: border-box;">
                 <div class="header-text" style="text-align: left;">
                     <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #ffffff;">Itens de Suporte</h1>
                     <p style="font-size: 14px; color: #a0a0a0; margin: 0;">Tutoriais e materiais de ajuda para os usuários da plataforma</p>
@@ -143,7 +143,7 @@
             </div>
 
             <!-- Configuração do Botão Grupo de Alunos -->
-             <div class="config-section" style="margin-top: 40px; border-top: 1px solid #2e2e2e; padding-top: 30px;">
+             <div class="config-section" style="margin-top: 40px; border-top: 1px solid #2e2e2e; padding-top: 30px; width: 100%; box-sizing: border-box;">
                 <div class="header-text" style="text-align: left; margin-bottom: 20px;">
                     <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #ffffff;">Configuração do Botão "Grupo de Alunos"</h1>
                     <p style="font-size: 14px; color: #a0a0a0; margin: 0;">Personalize o botão que aparece no topo da plataforma para os alunos.</p>
@@ -1046,9 +1046,11 @@ body {
     background-color: #0B0B0B;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
     width: 100% !important;
     max-width: none !important;
+    box-sizing: border-box;
 }
 
 /* Mobile Header */

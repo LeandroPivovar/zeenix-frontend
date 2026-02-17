@@ -1516,12 +1516,27 @@
 				// Decide source array based on selectedPeriod
 				let sourceTrades = [];
 				if (this.selectedPeriod === 'session') {
-					// Prioritize the reactive tradeHistory prop for real-time updates
-					sourceTrades = [...(this.tradeHistory || [])];
-					console.log('[formattedSessionItems] session mode - using tradeHistory:', sourceTrades.length, 'trades');
+					// ✅ [ZENIX v3.1] Merge historical dailyTrades (for today) with live tradeHistory
+					// This ensures we show all trades from today, even if they exceed the session limit
+					const historicalToday = this.dailyTrades || [];
+					const liveSession = this.tradeHistory || [];
+					
+					// Combine and deduplicate by ID
+					const combined = [...liveSession];
+					const seenIds = new Set(liveSession.map(t => String(t.id || t.contractId)));
+					
+					historicalToday.forEach(t => {
+						const id = String(t.id || t.contractId);
+						if (!seenIds.has(id)) {
+							combined.push(t);
+							seenIds.add(id);
+						}
+					});
+					
+					sourceTrades = combined;
+					console.log('[formattedSessionItems] session mode - merged trades:', sourceTrades.length);
 				} else {
-					// ✅ FIX: For historical periods, use dailyTrades ONLY (already fetched by fetchTradesForPeriod)
-					// Don't merge with tradeHistory as it's only for current session
+					// ✅ FIX: For historical periods, use dailyTrades ONLY
 					sourceTrades = [...(this.dailyTrades || [])];
 					console.log('[formattedSessionItems] historical mode - using dailyTrades:', sourceTrades.length, 'trades');
 				}
@@ -1863,12 +1878,33 @@
                     this.renderedOperacoesHoje = newVal;
                 }
             },
-            // ✅ [ZENIX v2.5] Monitorar status da sessão para triggers de modal
-            'sessionStats.session_status': function(newStatus) {
-                if (newStatus === 'stopped_consecutive_loss') {
-					console.log('[AgenteAutonomo] 🛑 STOP POR PERDAS CONSECUTIVAS DETECTADO! Abrindo modal...');
-                    this.showConsecutiveLossModal = true;
-                    this.stopLossAcknowledged = true; // Evitar abrir outros modais
+            // ✅ [ZENIX v3.1] Watch for live trades and update dailyTrades if modal is open for today
+            tradeHistory: {
+                deep: true,
+                handler(newTrades) {
+                    if (!newTrades || newTrades.length === 0) return;
+                    
+                    // If the detailed modal is open for today, we need to inject live trades
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    if (this.selectedDay && this.selectedDay.fullDate === todayStr) {
+                        const existingIds = new Set(this.dailyTrades.map(t => String(t.id || t.contractId)));
+                        let added = false;
+                        
+                        newTrades.forEach(trade => {
+                            const tid = String(trade.id || trade.contractId);
+                            if (!existingIds.has(tid)) {
+                                this.dailyTrades.unshift(trade);
+                                existingIds.add(tid);
+                                added = true;
+                            }
+                        });
+                        
+                        if (added) {
+                            console.log('[AgenteAutonomoActive] Live trades synced to dailyTrades for modal');
+                            // Re-sort and slice to maintain consistency if needed
+                            this.dailyTrades.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                        }
+                    }
                 }
             },
 		},
@@ -2242,10 +2278,10 @@
                 const userId = this.getUserId();
                 if (!userId) return;
                 
-                // Se for 'session', não precisamos buscar histórico, usamos tradeHistory local
-                if (this.selectedPeriod === 'session') return;
-
                 console.log('[AgenteAutonomo] fetchTradesForPeriod iniciado para:', this.selectedPeriod);
+
+                // ✅ [ZENIX v3.1] Even for 'session', we want to fetch today's historical trades 
+                // to show the full history on the dashboard.
 
                 // Calcular intervalo de datas
                 let startDate = new Date();
@@ -2257,6 +2293,7 @@
                 endDate.setHours(23, 59, 59, 999);
 
                 switch (this.selectedPeriod) {
+                    case 'session':
                     case 'today':
                         // Datas já estão em hoje
                         isRange = true;
@@ -2289,7 +2326,7 @@
                         break;
                     // 'all', '6m', '1y' - pode ser pesado, vamos limitar ou tratar no backend?
                     // Por enquanto vamos deixar o backend decidir limite ou pegar 30 dias se 'all' for muito
-                     case 'all': // Try to get reasonable history
+                    case 'all': // Try to get reasonable history
                         startDate.setFullYear(startDate.getFullYear() - 1);
                         isRange = true;
                         break;
@@ -2488,6 +2525,7 @@
 			selectDateRange(option) {
 				this.selectedPeriod = option.value;
 				this.showDatePicker = false;
+				this.fetchAllStats(); // Recarregar tudo para o novo período
 			},
 			toggleAgentSwitcher() {
 				this.showAgentSwitcher = !this.showAgentSwitcher;

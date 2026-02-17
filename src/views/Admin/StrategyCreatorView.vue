@@ -141,7 +141,8 @@
                                                 type="button"
                                                 @click="strategyIdentity.icon = icon"
                                                 class="w-10 h-10 rounded-xl flex items-center justify-center transition-all border"
-                                                :class="strategyIdentity.icon === icon ? 'bg-zenix-green text-black border-zenix-green shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'bg-[#1E1E1E] text-gray-500 border-[#333] hover:text-white hover:border-gray-500'"
+                                                :style="strategyIdentity.icon === icon ? 'background-color: #22C55E !important; color: black !important; border-color: #22C55E !important;' : ''"
+                                                :class="strategyIdentity.icon === icon ? 'shadow-[0_0_15px_rgba(34,197,94,0.3)]' : 'bg-[#1E1E1E] text-gray-500 border-[#333] hover:text-white hover:border-gray-500'"
                                             >
                                                 <i :class="`fa-solid fa-${icon}`"></i>
                                             </button>
@@ -313,7 +314,8 @@
                                                         type="button"
                                                         @click="updatePrincipalDirection('both')"
                                                         class="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all"
-                                                        :class="form.directionMode === 'both' ? 'bg-zenix-green text-black' : 'text-gray-500 hover:text-white'"
+                                                        :style="form.directionMode === 'both' ? 'background-color: #22C55E !important; color: black !important;' : ''"
+                                                        :class="form.directionMode === 'both' ? '' : 'text-gray-500 hover:text-white'"
                                                     >
                                                         Ambos
                                                     </button>
@@ -323,7 +325,8 @@
                                                         type="button"
                                                         @click="updatePrincipalDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                         class="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all"
-                                                        :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'bg-zenix-green text-black' : 'text-gray-500 hover:text-white'"
+                                                        :style="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? 'background-color: #22C55E !important; color: black !important;' : ''"
+                                                        :class="(idx === 0 && form.directionMode === 'up') || (idx === 1 && form.directionMode === 'down') ? '' : 'text-gray-500 hover:text-white'"
                                                     >
                                                         {{ dir.label }}
                                                     </button>
@@ -366,9 +369,9 @@
                                                         class="w-full h-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg px-2 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-xs font-bold text-center"
                                                     >
                                                         <option value="t">Ticks</option>
-                                                        <option value="s">Seconds</option>
-                                                        <option value="m">Minutes</option>
-                                                        <option value="h">Hours</option>
+                                                        <option value="s">Segundos</option>
+                                                        <option value="m">Minutos</option>
+                                                        <option value="h">Horas</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -490,7 +493,8 @@
                                                 <button 
                                                     type="button" 
                                                     @click="openFilterModal('main')"
-                                                    class="bg-zenix-green text-black font-bold text-xs uppercase tracking-wider py-2 px-6 rounded hover:bg-green-400 transition-colors"
+                                                    style="background-color: #22C55E !important; color: black !important;"
+                                                    class="font-bold text-xs uppercase tracking-wider py-2 px-6 rounded hover:bg-green-400 transition-colors"
                                                 >
                                                     + Adicionar Filtros
                                                 </button>
@@ -606,7 +610,8 @@
                                                     type="button"
                                                     @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
                                                     class="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all flex items-center justify-center gap-2"
-                                                    :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'text-white bg-[#2A2A2A]' : 'text-gray-500 hover:text-white'"
+                                                    :style="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'background-color: #22C55E !important; color: black !important;' : ''"
+                                                    :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? '' : 'text-gray-500 hover:text-white'"
                                                 >
                                                     <i class="fa-solid fa-arrow-up" v-if="idx===0"></i>
                                                     <i class="fa-solid fa-arrow-down" v-else></i>
@@ -616,7 +621,8 @@
                                                     type="button"
                                                     @click="updateRecoveryDirection('both')"
                                                     class="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all flex items-center justify-center gap-2"
-                                                    :class="recoveryConfig.directionMode === 'both' ? 'text-white bg-zenix-green shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
+                                                    :style="recoveryConfig.directionMode === 'both' ? 'background-color: #22C55E !important; color: black !important;' : ''"
+                                                    :class="recoveryConfig.directionMode === 'both' ? 'shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
                                                 >
                                                     <i class="fa-solid fa-arrows-up-down"></i>
                                                     Ambos
@@ -644,7 +650,7 @@
                                                         v-model="recoveryConfig.durationUnit" 
                                                         class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 appearance-none focus:outline-none focus:border-zenix-green transition-colors text-sm"
                                                     >
-                                                        <option value="t">Tick</option>
+                                                        <option value="t">Ticks</option>
                                                         <option value="s">Segundos</option>
                                                         <option value="m">Minutos</option>
                                                         <option value="h">Horas</option>
