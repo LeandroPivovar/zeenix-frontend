@@ -1572,7 +1572,7 @@
 						// Keep original for referencing if needed
 						original: trade 
 					};
-				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Newest first
+				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 200); // Newest 200 first
 
 				// 2. Group trades into sessions (using sessionId)
 				const sessions = [];
