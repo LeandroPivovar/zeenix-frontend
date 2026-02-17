@@ -404,13 +404,13 @@ export default {
 .dashboard-content-wrapper {
     flex: 1;
     overflow-y: auto;
-    padding: 10px 20px;
+    padding: 20px 30px;
     transition: margin-left 0.3s ease;
-    margin-left: 0; /* Expanded sidebar: no extra margin */
+    margin-left: 280px; /* Expanded sidebar: 280px margin to avoid overlap */
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 280px; /* Collapsed sidebar: 280px margin */
+    margin-left: 80px; /* Collapsed sidebar: smaller margin */
 }
 
 @media (max-width: 1024px) {
