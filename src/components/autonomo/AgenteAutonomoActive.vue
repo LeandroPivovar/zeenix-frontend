@@ -1734,21 +1734,6 @@
 							data: trade
 						});
 
-						// Check for pause logic (Gap > 5 minutes between this trade and the next one)
-						if (i < sessionTrades.length - 1) {
-							const nextTrade = sessionTrades[i+1];
-							const diffMs = new Date(trade.createdAt) - new Date(nextTrade.createdAt);
-							const diffMinutes = Math.floor(diffMs / (1000 * 60));
-
-							if (diffMinutes >= 5) {
-								items.push({
-									type: 'pause',
-									id: `pause-${trade.id}`,
-									duration: diffMinutes,
-									time: this.formatToSPTime(nextTrade.createdAt) // Pause started after the previous trade
-								});
-							}
-						}
 					}
 
 					// 3. Header: START (At BOTTOM of block)
