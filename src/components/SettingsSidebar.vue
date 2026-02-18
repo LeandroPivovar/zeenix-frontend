@@ -875,6 +875,26 @@ export default {
           this.demoAmount = data.demoAmount;
           this.idDemoAccount = data.idDemoAccount;
           this.planName = data.planName;
+
+          // ✅ [ZENIX] Sincronizar localStorage com dados atualizados do banco (Plano, etc)
+          const userInfo = localStorage.getItem('user');
+          if (userInfo) {
+            try {
+              const user = JSON.parse(userInfo);
+              // Atualizar campos relevantes recebidos do /settings
+              user.name = data.name || user.name;
+              user.email = data.email || user.email;
+              user.phone = data.phone || user.phone;
+              user.traderMestre = data.traderMestre;
+              user.planName = data.planName;
+              user.profilePictureUrl = data.profilePictureUrl || user.profilePictureUrl;
+              
+              localStorage.setItem('user', JSON.stringify(user));
+              console.log('[SettingsSidebar] localStorage sincronizado com sucesso (planName:', data.planName, ')');
+            } catch (e) {
+              console.error('[SettingsSidebar] Erro ao sincronizar localStorage:', e);
+            }
+          }
         }
       } catch (error) {
         console.error('[SettingsSidebar] Erro ao carregar configurações:', error);
