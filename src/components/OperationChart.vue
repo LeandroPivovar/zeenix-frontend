@@ -10,7 +10,66 @@
           :class="[{ 'overflow-hidden': activeTab === 'chart' }, activeTab === 'chart' ? 'h-full' : 'h-fit']"
         >
           <!-- Card Header for Chart Controls -->
-          <div v-if="activeTab === 'chart'" class="flex items-center justify-end px-6 py-4 flex-shrink-0 border-b border-white/5">
+          <div v-if="activeTab === 'chart'" class="flex items-center justify-between px-6 py-4 flex-shrink-0 border-b border-white/5 relative">
+            
+            <!-- Empty left side for balance (if needed) or just spacing -->
+            <div class="w-1/3"></div>
+
+            <!-- TRADE STATUS CARD (CENTERED) -->
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                <Transition
+                    enter-active-class="transition ease-out duration-200"
+                    enter-from-class="opacity-0 translate-y-[-10px]"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition ease-in duration-150"
+                    leave-from-class="opacity-100 translate-y-0"
+                    leave-to-class="opacity-0 translate-y-[-10px]"
+                >
+                    <div v-if="activeContract" 
+                         class="flex items-center gap-4 px-5 py-2 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 min-w-[200px] justify-center"
+                         :class="[
+                            isContractOpen 
+                                ? 'bg-yellow-500/10 border-yellow-500/20 shadow-yellow-500/5' 
+                                : (isContractWin ? 'bg-green-500/10 border-green-500/20 shadow-green-500/5' : 'bg-red-500/10 border-red-500/20 shadow-red-500/5')
+                         ]"
+                    >
+                        <!-- IN PROGRESS STATE -->
+                        <template v-if="isContractOpen">
+                            <div class="relative flex h-2.5 w-2.5">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-500 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
+                            </div>
+                            <div class="flex flex-col items-start min-w-[100px]">
+                                <span class="text-[10px] font-bold text-yellow-500 uppercase tracking-widest leading-none mb-1">Em Andamento</span>
+                                <span class="text-sm font-mono font-bold text-white tabular-nums leading-none">
+                                    {{ realTimeProfit >= 0 ? '+' : '' }}{{ formatCurrency(realTimeProfit || 0) }}
+                                </span>
+                            </div>
+                        </template>
+
+                        <!-- RESULT STATE -->
+                        <template v-else>
+                            <div class="flex items-center justify-center w-8 h-8 rounded-full border border-current"
+                                 :class="isContractWin ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'"
+                            >
+                                <i :class="isContractWin ? 'fas fa-trophy' : 'fas fa-times'" class="text-xs"></i>
+                            </div>
+                            <div class="flex flex-col items-start">
+                                <span class="text-[10px] font-bold uppercase tracking-widest leading-none mb-1"
+                                      :class="isContractWin ? 'text-green-500' : 'text-red-500'"
+                                >
+                                    {{ isContractWin ? 'Vitória' : 'Derrota' }}
+                                </span>
+                                <span class="text-lg font-black tabular-nums leading-none"
+                                      :class="isContractWin ? 'text-green-500' : 'text-red-500'"
+                                >
+                                    {{ isContractWin ? '+' : '' }}{{ formatCurrency(finalTradeProfit || 0) }}
+                                </span>
+                            </div>
+                        </template>
+                    </div>
+                </Transition>
+            </div>
             <div class="flex items-center gap-2">
               <!-- Botões de Zoom -->
               <div class="flex items-center gap-1 border border-zenix-border rounded-lg overflow-hidden">
@@ -1297,6 +1356,16 @@ export default {
     canExecuteAIOrder() {
       return this.aiRecommendation && this.canExecuteOrder;
     },
+    isContractOpen() {
+        if (!this.activeContract) return false;
+        return !['won', 'lost', 'sold', 'closed'].includes(this.activeContract.status);
+    },
+    isContractWin() {
+            if (!this.activeContract) return false;
+            // Se tiver profit definido no contrato, usa ele. Se não, usa finalTradeProfit
+            const profit = this.activeContract.profit !== undefined ? Number(this.activeContract.profit) : Number(this.finalTradeProfit);
+            return profit >= 0;
+    },
   },
   async mounted() {
     this.checkMobile();
@@ -1354,6 +1423,13 @@ export default {
     }
   },
   methods: {
+    formatCurrency(value) {
+        const val = Number(value);
+        if (isNaN(val)) return '$0.00';
+        const prefix = this.currency === 'BRL' ? 'R$' : '$';
+        return prefix + Math.abs(val).toFixed(2);
+    },
+
 
     setTab(tabName) {
       if (tabName === 'chart' || tabName === 'digits') {
