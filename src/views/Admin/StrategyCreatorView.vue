@@ -918,7 +918,7 @@
                                         <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
                                             Stoploss Blindado ($) <i class="fa-regular fa-circle-question text-[10px]"></i>
                                         </label>
-                                        <div class="flex items-center gap-3 bg-[#1E1E1E] border border-[#333] rounded-lg p-2 h-[46px]">
+                                        <div class="flex items-center gap-3 bg-transparent border border-[#333] rounded-lg p-2 h-[46px]">
                                             <div 
                                                 class="w-10 h-5 rounded-full relative cursor-pointer transition-colors duration-300"
                                                 :class="form.useBlindado ? 'bg-zenix-green' : 'bg-gray-600'"
@@ -930,7 +930,7 @@
                                                 ></div>
                                             </div>
                                             <div v-if="form.useBlindado" class="flex flex-1 items-center gap-2">
-                                                <select v-model.number="form.stopBlindadoPercent" class="bg-transparent text-zenix-green text-sm font-bold border-none p-0 focus:ring-0 outline-none w-full">
+                                                <select v-model.number="form.stopBlindadoPercent" class="bg-transparent text-zenix-green text-sm font-bold border-none p-0 focus:ring-0 outline-none w-full" style="background: transparent !important;">
                                                     <option value="30">30%</option>
                                                     <option value="50">50%</option>
                                                     <option value="70">70%</option>

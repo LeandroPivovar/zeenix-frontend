@@ -254,21 +254,47 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth) {
     const token = localStorage.getItem('token')
     if (!token) return next({ path: '/login' })
 
     // Verificação de plano - Usuários sem plano acessam apenas Dashboard e Planos
-    const userJson = localStorage.getItem('user') || '{}'
-    const user = JSON.parse(userJson)
+    let userJson = localStorage.getItem('user') || '{}'
+    let user = JSON.parse(userJson)
+
+    // ✅ [ZENIX] Se o usuário não tem plano no localStorage, tentar sincronizar com o servidor
+    // antes de bloquear o acesso. Isso resolve o problema de usuários que acabaram de comprar 
+    // e ainda estão com o localStorage antigo.
+    const allowedRoutes = ['Dashboard', 'Plans']
+    if (!user.planId && !allowedRoutes.includes(to.name)) {
+      try {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+        const res = await fetch(`${apiBase}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) {
+          const freshData = await res.json()
+          // Atualizar o objeto user com os dados mais recentes do servidor
+          // /auth/me já retorna planId, role, etc.
+          user = {
+            ...user,
+            ...freshData
+          }
+          localStorage.setItem('user', JSON.stringify(user))
+          console.log('[Router] localStorage sincronizado proativamente via /auth/me')
+        }
+      } catch (e) {
+        console.warn('[Router] Falha na sincronização proativa do usuário:', e)
+      }
+    }
+
     const roleStr = (user.role || '').toLowerCase()
 
     // Identificar Admin de forma robusta
     const isAdmin = roleStr.includes('admin') || user.isAdmin === true || user.isAdmin === 'true'
 
     if (!isAdmin && !user.planId) {
-      const allowedRoutes = ['Dashboard', 'Plans']
       if (!allowedRoutes.includes(to.name)) {
         console.warn(`[Router] Acesso restrito para usuário sem plano: redirecionando para Planos`)
         return next({ name: 'Plans' })
