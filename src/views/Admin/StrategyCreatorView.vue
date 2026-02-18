@@ -930,7 +930,7 @@
                                                 ></div>
                                             </div>
                                             <div v-if="form.useBlindado" class="flex flex-1 items-center gap-2">
-                                                <select v-model.number="form.stopBlindadoPercent" class="bg-transparent text-zenix-green text-sm font-bold border-none p-0 focus:ring-0 outline-none w-full" style="background: transparent !important; border: none !important;">
+                                                <select v-model.number="form.stopBlindadoPercent" class="bg-transparent text-zenix-green text-sm font-bold border-none p-0 focus:ring-0 outline-none w-full" style="background: transparent !important; border: none !important; box-shadow: none !important; outline: none !important; cursor: pointer !important;">
                                                     <option value="30" class="bg-[#0B0B0B] text-white">30%</option>
                                                     <option value="50" class="bg-[#0B0B0B] text-white">50%</option>
                                                     <option value="70" class="bg-[#0B0B0B] text-white">70%</option>
