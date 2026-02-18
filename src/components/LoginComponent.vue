@@ -355,6 +355,22 @@ export default {
         }
         const data = await res.json();
         localStorage.setItem('token', data.token);
+
+        // ✅ [ZENIX] Sincronizar dados do usuário (Plano, Nome, etc) imediatamente após login
+        // Isso evita que o localStorage fique com dados antigos (ex: plano básico quando já é VIP)
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        try {
+          const userRes = await fetch(`${apiBase}/auth/me`, {
+            headers: { 'Authorization': `Bearer ${data.token}` }
+          });
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            localStorage.setItem('user', JSON.stringify(userData));
+            console.log('[Login] Dados do usuário sincronizados com sucesso');
+          }
+        } catch (syncError) {
+          console.warn('[Login] Erro ao sincronizar dados do usuário:', syncError);
+        }
         localStorage.removeItem('deriv_token');
         localStorage.removeItem('deriv_connection');
         localStorage.removeItem('deriv_app_id');
