@@ -2170,7 +2170,8 @@
 					if (entries.length === 0 || !entries[0].target) return;
 					if (this.indexChart) {
 						this.indexChart.resize(entries[0].contentRect.width, 300);
-                        this.indexChart.timeScale().fitContent();
+                        // Remover fitContent aqui para não forçar centralização excessiva
+                        // this.indexChart.timeScale().fitContent(); 
 					}
 				});
 				resizeObserver.observe(this.$refs.performanceChartContainer);
@@ -2184,8 +2185,33 @@
                 console.log('[AgenteAutonomo] updateIndexChart chamado com', data ? data.length : 0, 'pontos');
 				if (this.indexChartSeries && data) {
 					this.indexChartSeries.setData(data);
+                    
                     if(data.length > 0) {
-                        this.indexChart.timeScale().fitContent();
+                        // Configurar para começar da esquerda mas manter espaço à direita para "respirar"
+                        const timeScale = this.indexChart.timeScale();
+                        
+                        // Opção 1: Fit Content (Padrão - Centraliza tudo)
+                        // timeScale.fitContent();
+                        
+                        // Opção 2: Definir range visível manualmente ou scrollar para o fim
+                        // Para "começar do lado esquerdo" geralmente significa que queremos ver o início ou que o gráfico preencha a tela.
+                        // Se temos poucos pontos, o fitContent estica eles.
+                        // Se o usuário quer que os pontos fiquem "compactados" à esquerda, precisamos de barSpacing fixo.
+                        
+                        // Ajuste para garantir que o gráfico não fique "no meio" quando tem poucos pontos
+                        timeScale.applyOptions({
+                            rightOffset: 20,
+                            barSpacing: 10, // Define uma largura fixa para as barras/pontos, evitando que estiquem
+                            fixLeftEdge: true, // Fixa a borda esquerda (não deixa scrollar antes do inicio)
+                        });
+                        
+                        // Se tiver muitos dados, scrolla para o fim
+                        if (data.length > 50) {
+                             timeScale.scrollToRealTime();
+                        } else {
+                             // Se tiver poucos, reseta a posição (mas com barSpacing fixo, eles ficam à esquerda)
+                             timeScale.resetTimeScale(); 
+                        }
                     }
 				}
 			},
