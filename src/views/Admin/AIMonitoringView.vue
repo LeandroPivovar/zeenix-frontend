@@ -2700,35 +2700,9 @@ export default {
 	}
 }
 
-.custom-scrollbar::-webkit-scrollbar { width: 4px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
 
-.custom-scrollbar-zenix::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-}
 
-.custom-scrollbar-zenix::-webkit-scrollbar-track {
-    background: rgba(0, 255, 128, 0.02);
-    border-radius: 10px;
-}
 
-.custom-scrollbar-zenix::-webkit-scrollbar-thumb {
-    background: rgba(0, 255, 128, 0.2);
-    border-radius: 10px;
-    border: 1px solid rgba(0, 255, 128, 0.05);
-}
-
-.custom-scrollbar-zenix::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 255, 128, 0.4);
-}
-
-.custom-scrollbar-zenix {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 255, 128, 0.2) rgba(0, 255, 128, 0.02);
-}
 
 .box-shadow-green {
     box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);

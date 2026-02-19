@@ -5292,19 +5292,7 @@ export default {
   .bar-rank-lowest { background-color: #EF4444 !important; }
   .bar-rank-normal { background-color: rgba(255, 255, 255, 0.1) !important; }
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
+
 
   .digits-tab-container {
     height: auto !important;

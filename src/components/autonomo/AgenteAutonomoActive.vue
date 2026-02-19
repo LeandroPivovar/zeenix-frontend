@@ -2969,6 +2969,22 @@
     border: 1px solid #333;
 }
 
+/* FORÇAR BARRA DE ROLAGEM ULTRA GROSSA */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 24px !important;
+    height: 24px !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #0E0E0E !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #22c55e !important;
+    border-radius: 12px !important;
+    border: none !important;
+}
+
 .agent-video-avatar {
     width: 100%;
     height: 100%;

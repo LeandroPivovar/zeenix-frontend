@@ -329,22 +329,5 @@ export default {
     animation: fadeIn 0.2s ease-out;
 }
 
-.custom-scrollbar-zenix::-webkit-scrollbar {
-    width: 4px;
-}
 
-.custom-scrollbar-zenix::-webkit-scrollbar-track {
-    background: rgba(0, 255, 128, 0.02);
-    border-radius: 10px;
-}
-
-.custom-scrollbar-zenix::-webkit-scrollbar-thumb {
-    background: rgba(0, 255, 128, 0.2);
-    border-radius: 10px;
-    border: 1px solid rgba(0, 255, 128, 0.05);
-}
-
-.custom-scrollbar-zenix::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 255, 128, 0.4);
-}
 </style>

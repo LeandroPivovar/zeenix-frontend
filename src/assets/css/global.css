@@ -46,30 +46,40 @@ body,
 }
 
 /* Global Custom Scrollbar Class */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #22c55e #0E0E0E;
-  scrollbar-gutter: stable;
+.custom-scrollbar,
+.custom-scrollbar-zenix,
+.custom-scrollbar-deriv {
+  scrollbar-width: auto !important;
+  scrollbar-color: #22c55e #0E0E0E !important;
+  scrollbar-gutter: stable !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 16px;
-  height: 16px;
+.custom-scrollbar::-webkit-scrollbar,
+.custom-scrollbar-zenix::-webkit-scrollbar,
+.custom-scrollbar-deriv::-webkit-scrollbar {
+  width: 24px !important;
+  height: 24px !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #0E0E0E;
-  border-radius: 10px;
+.custom-scrollbar::-webkit-scrollbar-track,
+.custom-scrollbar-zenix::-webkit-scrollbar-track,
+.custom-scrollbar-deriv::-webkit-scrollbar-track {
+  background: #0E0E0E !important;
+  border-radius: 10px !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.custom-scrollbar-zenix::-webkit-scrollbar-thumb,
+.custom-scrollbar-deriv::-webkit-scrollbar-thumb {
   background: #22c55e !important;
-  border-radius: 10px;
-  border: 2px solid #000;
+  border-radius: 12px !important;
+  border: 1px solid #000 !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #1eb054 !important;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar-zenix::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar-deriv::-webkit-scrollbar-thumb:hover {
+  background: #22c55e !important;
 }
 
 /* Base Scrollbars */
