@@ -776,6 +776,14 @@ export default {
         // Sincronizar tradeCurrency e accountType do mixin
         await this.loadTradeCurrency();
         
+        // ✅ INITIAL CHART TRIGGER
+        // O watcher do activeChartMode não dispara no mount se já for 'tick'
+        this.$nextTick(() => {
+            if (this.activeChartMode === 'tick') {
+                this.initLightweightChart();
+            }
+        });
+
         // ✅ Balance will be initialized via tryUpdateRenderedCapital after loading delay
         // Ensure info is at least minimally populated if possible
         if (!this.info) {
