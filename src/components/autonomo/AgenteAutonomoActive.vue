@@ -1969,6 +1969,15 @@
                     }
                 }
             },
+            // ✅ [ZENIX v3.2] Watch dailyTrades to update Intraday Chart
+            dailyTrades: {
+                deep: true,
+                handler(newTrades) {
+                    if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
+                        this.generateChartFromTrades(newTrades);
+                    }
+                }
+            },
 		},
 
 		methods: {
@@ -2506,16 +2515,30 @@
 				}
 			},
 
-            async fetchProfitEvolution() {
+            			async fetchProfitEvolution() {
 				const userId = this.getUserId();
                 console.log('[AgenteAutonomo] fetchProfitEvolution chamado para user:', userId);
 				if (!userId) return;
+
+                // ✅ [ZENIX v3.2] For Session/Today, we calculate chart from TRADES (Intraday)
+                // instead of fetching daily aggregates from API.
+                if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
+                    console.log('[AgenteAutonomo] Period is Session/Today - Skipping profit-evolution API, using local trades.');
+                    // If dailyTrades already has data, render it now.
+                    // Otherwise, the 'dailyTrades' watcher will handle it when fetchTradesForPeriod completes.
+                    if (this.dailyTrades && this.dailyTrades.length > 0) {
+                        this.generateChartFromTrades(this.dailyTrades);
+                    } else {
+                         // Clear chart temporarily or wait
+                         this.updateIndexChart([]);
+                    }
+                    return;
+                }
 
 				// Determinar dias baseado no filtro selecionado
 				let days = 30;
                 let url = '';
 				if (this.selectedPeriod === '7d') days = 7;
-				if (this.selectedPeriod === 'today') days = 1;
 				if (this.selectedPeriod === 'yesterday') days = 2;
 				if (this.selectedPeriod === '30d') days = 30; // Garante 30 dias explicitamente
 				if (this.selectedPeriod === '6m') days = 180;
@@ -2534,10 +2557,7 @@
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
                     const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
                     
-                    if (this.selectedPeriod === 'session') {
-                        // Sempre agrupado por dia, até na sessão
-                        url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=1${agentFilter}&aggregateBy=day`;
-                    } else if (this.selectedPeriod === 'custom' && this.customDateRange) {
+                    if (this.selectedPeriod === 'custom' && this.customDateRange) {
                          url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?startDate=${this.customDateRange.start}&endDate=${this.customDateRange.end}${agentFilter}&aggregateBy=day`;
                     } else {
                         url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}${agentFilter}&aggregateBy=day`;
@@ -2572,6 +2592,54 @@
 					console.error("[AgenteAutonomo] Erro ao buscar evolução do lucro:", error);
 				}
 			},
+
+            // ✅ [ZENIX v3.2] Helper to generate Intraday Chart Data from Trades List
+            generateChartFromTrades(trades) {
+                if (!trades || trades.length === 0) {
+                    this.updateIndexChart([]);
+                    return;
+                }
+
+                // 1. Sort trades by time ascending
+                const sorted = [...trades].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+                let cumulative = 0;
+                const chartData = [];
+                const distinctTimes = new Set();
+
+                // 2. Add starting point (?) - Optional, maybe (time: firstTrade - 1min, value: 0)
+                // But generally cleaner to simply start at the first trade result.
+
+                sorted.forEach(trade => {
+                    const profit = parseFloat(trade.profit);
+                    if (!isNaN(profit)) {
+                        cumulative += profit;
+                        
+                        // Lightweight charts expects UNIX timestamp in seconds
+                        const ts = Math.floor(new Date(trade.createdAt).getTime() / 1000);
+                        
+                        // Handle duplicate timestamps (same second) -> overwrite with latest cumulative for that second
+                        // OR: if we want to show all steps, we can't share X. Simple approach: overwrite.
+                         const existingIdx = chartData.findIndex(p => p.time === ts);
+                         if (existingIdx !== -1) {
+                             chartData[existingIdx].value = cumulative;
+                         } else {
+                             chartData.push({ time: ts, value: cumulative });
+                         }
+                    }
+                });
+                
+                // If chartData is empty or just 1 point, add a pseudo point for better line rendering?
+                if (chartData.length === 1) {
+                     // Add a point 1 minute before with 0 value?
+                     // Or just let it be a dot.
+                     const single = chartData[0];
+                     chartData.unshift({ time: single.time - 60, value: 0 }); // Start at 0
+                }
+
+                console.log(`[AgenteAutonomo] Generated ${chartData.length} intraday points from ${trades.length} trades.`);
+                this.updateIndexChart(chartData);
+            },
 			toggleDatePicker() {
 				this.showDatePicker = !this.showDatePicker;
 				if (this.showDatePicker) this.showAgentSwitcher = false;
