@@ -2119,6 +2119,7 @@ export default {
   display: flex;
   min-height: 100vh;
   min-height: 100dvh; /* Dynamic viewport height for better support */
+  flex: 1;
   position: relative;
   background-color: #0b0b0b;
   width: 100%;
@@ -2168,6 +2169,7 @@ export default {
   min-height: 100dvh;
   box-sizing: border-box;
   display: flex;
+  flex: 1;
   flex-direction: column;
   overflow-x: hidden;
 }
@@ -2956,6 +2958,20 @@ aside.sidebar,
   }
 }
 
+/* Mobile Background and Fill Fixes */
+@media (max-width: 1024px) {
+  body:has(.dashboard-layout),
+  html:has(.dashboard-layout),
+  .layout-home {
+    background: #0B0B0B !important;
+  }
+  
+  .dashboard-layout {
+    background: #0B0B0B !important;
+    min-height: 100dvh !important;
+  }
+}
+
 @media (max-width: 1024px) {
   #hero-section {
     height: auto;
@@ -2973,9 +2989,9 @@ aside.sidebar,
 }
 
 @media (max-width: 768px) {
-  /* Padding de 1rem no dashboard layout mobile */
+  /* Remover padding que pode causar gaps dependendo do fundo do pai */
   .dashboard-layout {
-    padding: 1rem !important;
+    padding: 0 !important;
   }
 
   /* Isolar DashboardConnected dos estilos do layout-home no mobile */

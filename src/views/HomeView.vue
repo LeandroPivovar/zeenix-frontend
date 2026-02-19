@@ -132,8 +132,6 @@
       :user-name="userFullName"
       @finish="handleOnboardingFinish"
     />
-
-    />
   </div>
 </template>
 

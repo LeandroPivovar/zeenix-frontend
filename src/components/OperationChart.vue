@@ -286,7 +286,7 @@
                      <span class="text-[10px] font-bold text-white/60">Últimos 22</span>
                    </div>
                  </div>
-                    <div v-if="recentDigits.length > 0" class="recent-digits-grid pb-2">
+                    <div v-if="recentDigits.length > 0" class="recent-digits-grid pb-2" :class="{ 'sidebar-open': !isSidebarCollapsed }">
                      <div 
                       v-for="(digit, idx) in recentDigits" 
                       :key="'recent-'+idx"
@@ -723,6 +723,12 @@ const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
 
 export default {
   name: 'OperationChart',
+  props: {
+    isSidebarCollapsed: {
+      type: Boolean,
+      default: true
+    }
+  },
   components: {
   },
   data() {
@@ -3584,6 +3590,14 @@ export default {
   gap: 8px;
   justify-content: flex-start;
   overflow-x: auto;
+}
+
+.recent-digits-grid.sidebar-open {
+  display: grid !important;
+  grid-template-columns: repeat(11, 1fr) !important;
+  flex-wrap: wrap !important;
+  overflow-x: visible !important;
+  width: fit-content !important;
 }
 
 @media (max-width: 1400px) {

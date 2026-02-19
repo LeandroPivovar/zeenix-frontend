@@ -89,6 +89,7 @@
             :account-loginid="accountLoginId"
             :order-config="orderConfig"
             :trade-results="lastOrdersFormatted"
+            :is-sidebar-collapsed="isSidebarCollapsed"
             @trade-result="handleTradeResult"
             @tab-changed="activeSubTab = $event"
           ></component>
