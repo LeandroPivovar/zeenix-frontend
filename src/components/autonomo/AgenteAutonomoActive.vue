@@ -609,7 +609,7 @@
                         <div class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-semibold mr-8 sm:mr-10"
                             :class="(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'"
                         >
-                            {{ (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }}{{ Math.abs(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit).toFixed(2) }}
+                            {{ (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit)) }}
                         </div>
                     </div>
 				</h2>
@@ -625,16 +625,15 @@
 					<div class="text-base sm:text-xl font-bold tabular-nums text-left" 
                         :class="(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'"
                     >
-						{{ (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }}{{ Math.abs(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit).toFixed(2) }}
+						{{ (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit)) }}
 					</div>
 				</div>
 
 				<!-- Capital -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3">
-					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Capital</div>
-					<!-- Estimating start capital for display logic -->
+					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Capital Atual</div>
 					<div class="text-[10px] sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
-						{{ preferredCurrencyPrefix }}{{ ((selectedPeriod === 'today' ? activeDayDetails.capital : finalCapital) - (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit)).toFixed(2) }} → {{ preferredCurrencyPrefix }}{{ (selectedPeriod === 'today' ? activeDayDetails.capital : finalCapital).toFixed(2) }}
+						{{ preferredCurrencyPrefix }} {{ formatPrice(selectedPeriod === 'today' ? activeDayDetails.capital : (selectedDay ? activeDayDetails.capital : finalCapital)) }}
 					</div>
 				</div>
 
@@ -646,7 +645,7 @@
 					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors text-[10px] sm:text-xs text-left"
                          :class="selectedPeriod === 'session' || selectedPeriod === 'today' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-white/5 text-white border-white/10'"
                     >
-						{{ preferredCurrencyPrefix }}{{ selectedPeriod === 'session' || selectedPeriod === 'today' ? (agenteData.goalValue ? agenteData.goalValue.toFixed(2) : '50.00') : (selectedPeriodMetrics.totalProfit / (selectedPeriod === '7d' ? 7 : 30)).toFixed(2) }}
+						{{ preferredCurrencyPrefix }} {{ formatPrice(selectedPeriod === 'session' || selectedPeriod === 'today' ? (agenteData.goalValue ? agenteData.goalValue : 50.00) : (selectedPeriodMetrics.totalProfit / (selectedPeriod === '7d' ? 7 : 30))) }}
 					</div>
 					<div class="text-[#A1A1AA] text-[9px] sm:text-xs mt-0.5 sm:mt-1 text-left" v-if="selectedPeriod === 'session' && activeDayDetails.activationTime">
 						Ativação: {{ activeDayDetails.activationTime }}
@@ -662,7 +661,7 @@
 						:class="(agenteData.stopValue || 0) < 0 ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'"
                         v-if="selectedPeriod === 'session' || selectedPeriod === 'today'"
                     >
-						{{ (agenteData.stopValue || 0) < 0 ? '-' : '' }}{{ preferredCurrencyPrefix }}{{ (agenteData.stopValue || 25).toFixed(2) }}
+						{{ (agenteData.stopValue || 0) < 0 ? '-' : '' }}{{ preferredCurrencyPrefix }} {{ formatPrice(agenteData.stopValue || 25) }}
 					</div>
                     <div class="text-sm font-bold text-white tabular-nums" v-else>
                         {{ selectedPeriodMetrics.totalTrades }}
@@ -690,7 +689,7 @@
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
 					<div class="text-base sm:text-lg font-bold tabular-nums" :class="(selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ (selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : ((selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(selectedPeriod === 'today' || selectedPeriod === 'session' ? (activeDayDetails.profit / (activeDayDetails.ops || 1)) : selectedPeriodMetrics.avgProfit).toFixed(2) }}
+						{{ (selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : ((selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriod === 'today' || selectedPeriod === 'session' ? (activeDayDetails.profit / (activeDayDetails.ops || 1)) : selectedPeriodMetrics.avgProfit)) }}
 					</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
 				</div>
@@ -759,7 +758,7 @@
                                     <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA] text-[10px]">{{ parseFloat(item.data.stake).toFixed(2) }}</td>
                                     <td class="py-2 px-1 text-right tabular-nums font-semibold" 
                                         :class="parseFloat(item.data.profit) > 0 ? 'text-green-500' : (parseFloat(item.data.profit) < 0 ? 'text-red-500' : 'text-[#FAFAFA]')">
-                                        {{ parseFloat(item.data.profit) > 0 ? '+' : (parseFloat(item.data.profit) < 0 ? '-' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(parseFloat(item.data.profit)).toFixed(2) }}
+                                        {{ parseFloat(item.data.profit) > 0 ? '+' : (parseFloat(item.data.profit) < 0 ? '-' : '') }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(parseFloat(item.data.profit))) }}
                                     </td>
                                 </tr>
 
@@ -774,7 +773,7 @@
                                             <div class="flex items-center gap-4">
                                                 <span class="text-[#FAFAFA] opacity-70">{{ item.totalOps }} OPERAÇÕES</span>
                                                 <span :class="item.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'">
-                                                    RESULTADO: {{ item.totalProfit < 0 ? '-' : (item.totalProfit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }}{{ Math.abs(item.totalProfit).toFixed(2) }}
+                                                    RESULTADO: {{ item.totalProfit < 0 ? '-' : (item.totalProfit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(item.totalProfit)) }}
                                                 </span>
                                             </div>
                                         </div>
