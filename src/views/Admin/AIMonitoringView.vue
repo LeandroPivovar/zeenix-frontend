@@ -235,24 +235,15 @@
                                     <div class="flex items-center justify-between">
                                         <div>
                                             <h3 style="font-size: 18px; color: #FFFFFF;" class="font-bold tracking-tight">
-                                                {{ activeChartMode === 'profit' ? `Evolução do Resultado da IA ${currentConfig.strategy.toUpperCase()}` : 'Movimentação do Mercado (Ticks)' }}
+                                                Movimentação do Mercado (Ticks)
                                             </h3>
                                             <p style="font-size: 14px; color: #a6a6a6;" class="mt-1">
-                                                {{ activeChartMode === 'profit' ? 'Desempenho financeiro em tempo real' : `Monitorando ${currentConfig.market || 'R_100'} em tempo real` }}
+                                                Monitorando {{ currentConfig.market || 'R_100' }} em tempo real
                                             </p>
                                         </div>
                                         <div class="flex items-center gap-2 bg-secondary/20 p-1 rounded-lg border border-border/20">
                                             <button 
-                                                @click="activeChartMode = 'profit'"
-                                                :class="activeChartMode === 'profit' ? 'bg-success/20 text-success border-success/30' : 'text-muted-foreground hover:text-white border-transparent'"
-                                                class="px-3 py-1 text-xs font-bold rounded-md border transition-all"
-                                            >
-                                                Resultado ({{ currencySymbol }})
-                                            </button>
-                                            <button 
-                                                @click="activeChartMode = 'tick'"
-                                                :class="activeChartMode === 'tick' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'text-muted-foreground hover:text-white border-transparent'"
-                                                class="px-3 py-1 text-xs font-bold rounded-md border transition-all"
+                                                class="px-3 py-1 text-xs font-bold rounded-md border transition-all bg-blue-500/20 text-blue-400 border-blue-500/30"
                                             >
                                                 Ticks (Preço)
                                             </button>
@@ -260,24 +251,13 @@
                                     </div>
                                     <div class="flex-1 min-h-80 w-full bg-secondary/10 rounded-xl border border-border/20 px-0 py-4 relative overflow-hidden">
                                         <div class="relative w-full h-[320px]">
-                                    <div v-show="activeChartMode === 'profit'" class="w-full h-full relative" ref="profitChartContainer">
-                                        <LightweightLineChart
-                                            ref="profitChart"
-                                            :data="profitChartData"
-                                            :markers="profitChartMarkers"
-                                            :color="monitoringStats.profit >= 0 ? '#22C55E' : '#EF4444'"
-                                            :height="320" 
-                                            :currencySymbol="preferredCurrencyPrefix"
-                                        />
-                                    </div>
-                                    <div v-show="activeChartMode === 'tick'"
-                                         ref="chartContainer"
+                                    <div ref="chartContainer"
                                          class="w-full h-[320px] rounded-lg overflow-hidden relative"
                                     ></div>
                                     
                                 </div>        
                                 
-                                <div v-if="(activeChartMode === 'profit' && profitChartData.length <= 1) || (activeChartMode === 'tick' && tickHistory.length === 0)" 
+                                <div v-if="tickHistory.length === 0" 
                                      class="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[2px] z-10 transition-opacity duration-500 pointer-events-none">
                                     <div class="text-center pointer-events-auto">
                                        <i class="fas fa-chart-line text-5xl text-muted-foreground/20 mb-4 block animate-bounce"></i>
@@ -592,7 +572,6 @@ import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
-import LightweightLineChart from '@/components/LightweightLineChart.vue';
 import { StrategyAnalysis } from '../../utils/StrategyAnalysis';
 import { RiskManager } from '../../utils/RiskManager';
 import { StrategiesService } from '@/services/StrategiesService';
@@ -611,7 +590,6 @@ export default {
         TopNavbar,
         DesktopBottomNav,
         SettingsSidebar,
-        LightweightLineChart,
         SessionHistoryModal,
         StopLossModal,
         TargetProfitModal,
@@ -620,7 +598,7 @@ export default {
     data() {
         return {
             // Chart State
-            activeChartMode: 'profit', 
+            activeChartMode: 'tick', 
             chart: null,
             series: null,
             tickChartData: [],
@@ -806,27 +784,37 @@ export default {
         
         this.initTickConnection();
         
-        // Ensure Profit Chart Tooltip is set on initial load
-        if (this.activeChartMode === 'profit') {
-            setTimeout(() => this.setupProfitChartTooltip(), 1000);
-        }
 
-        // ✅ Balance Loading State: Wait for authorization + stabilization
-        // This prevents the $2000 fictitious jump before real balance arrives
-        const checkBalanceInterval = setInterval(() => {
-            if (this.isAuthorized && this.info && this.info.balance !== undefined) {
-                setTimeout(() => {
+        // ✅ [ZENIX v2.4] CONDITIONAL BALANCE GUARD
+        // Se o modo fictício estiver ativo, esperamos autorização para evitar pulos visuais.
+        // Se estiver no modo normal, liberamos instantaneamente para melhor UX.
+        if (this.isFictitiousBalanceActive) {
+            const checkBalanceInterval = setInterval(() => {
+                if (this.isAuthorized && this.info && this.info.balance !== undefined) {
                     this.isBalanceReady = true;
                     if (this.balanceNumeric > 0) {
                         this.tryUpdateRenderedCapital(this.balanceNumeric);
                     }
-                }, 300);
-                clearInterval(checkBalanceInterval);
-            }
-        }, 100);
+                    clearInterval(checkBalanceInterval);
+                }
+            }, 100);
 
-        // Safety timeout (max 5s)
-        setTimeout(() => clearInterval(checkBalanceInterval), 5000);
+            // Trava de segurança: se o WebSocket demorar mais de 4s, libera o saldo de qualquer forma
+            setTimeout(() => {
+                if (!this.isBalanceReady) {
+                    console.log('[AIMonitoringView] 🛡️ Segurança: Forçando liberação do saldo (Timeout)');
+                    this.isBalanceReady = true;
+                    if (this.balanceNumeric > 0) this.tryUpdateRenderedCapital(this.balanceNumeric);
+                    clearInterval(checkBalanceInterval);
+                }
+            }, 4000);
+        } else {
+            // Modo normal: Liberar instantaneamente
+            this.isBalanceReady = true;
+            if (this.balanceNumeric > 0) {
+                this.tryUpdateRenderedCapital(this.balanceNumeric);
+            }
+        }
 
         // ✅ Listen for global balance updates for real-time sync
         window.addEventListener('balanceUpdated', this.handleBalanceUpdate);
