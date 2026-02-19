@@ -2135,7 +2135,7 @@ export default {
   width: 100% !important;
   max-width: 100% !important;
   background: transparent !important;
-  min-height: 100vh !important;
+  min-height: 100dvh !important;
   position: relative !important;
   overflow-x: hidden !important;
 }
