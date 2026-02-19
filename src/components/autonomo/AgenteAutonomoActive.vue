@@ -2628,15 +2628,14 @@
             generateChartFromTrades(trades) {
                 let tradeList = trades || [];
 
-                // SE FOR SESSION: Usa sessionTrades (que agora tem filtro de gap > 60min)
-                if (this.selectedPeriod === 'session' && this.sessionTrades && this.sessionTrades.length > 0) {
-                     console.log('[AgenteAutonomo] Generating chart from SESSION (Gap Filtered):', this.sessionTrades.length);
+                // SE FOR SESSION OU TODAY: Usa sessionTrades
+                // 'sessionTrades' computed property JÁ possui a lógica interna para diferenciar:
+                // - Se 'session': Aplica Gap Filter (mostra só o atual)
+                // - Se 'today': Retorna tudo (combined)
+                // Importante usar sessionTrades em 'today' para incluir trades LIVE (tradeHistory) que não estão no dailyTrades ainda.
+                if ((this.selectedPeriod === 'session' || this.selectedPeriod === 'today') && this.sessionTrades && this.sessionTrades.length > 0) {
+                     console.log(`[AgenteAutonomo] Generating chart from ${this.selectedPeriod.toUpperCase()} (Merged Live+History):`, this.sessionTrades.length);
                      tradeList = this.sessionTrades;
-                }
-                // SE FOR TODAY: Usa tradeList que vem do dailyTrades (argumento padrão), contendo TUDO de hoje
-                else if (this.selectedPeriod === 'today') {
-                     // Mantém tradeList original (argumento)
-                     console.log('[AgenteAutonomo] Generating chart from TODAY (All Daily Trades):', tradeList.length);
                 }
 
                 if (!tradeList || tradeList.length === 0) {
