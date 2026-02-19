@@ -154,13 +154,15 @@ export default {
       if (!status) return 'PENDING';
       const statusLower = status.toLowerCase();
       if (statusLower === 'expired') return 'CLOSED';
+      if (statusLower === 'won' || statusLower === 'win') return 'WIN';
+      if (statusLower === 'lost' || statusLower === 'loss') return 'LOSS';
       return status.toUpperCase();
     },
     getStatusClass(status) {
       if (!status) return 'pending';
       const statusLower = status.toLowerCase();
-      if (statusLower === 'won' || statusLower === 'closed' || statusLower === 'expired') return 'won closed';
-      if (statusLower === 'lost') return 'lost';
+      if (statusLower === 'won' || statusLower === 'win' || statusLower === 'closed' || statusLower === 'expired') return 'win closed';
+      if (statusLower === 'lost' || statusLower === 'loss') return 'loss';
       return 'pending';
     }
   }
@@ -365,13 +367,13 @@ export default {
   display: inline-block;
 }
 
-.order-status.won,
+.order-status.win,
 .order-status.closed {
   background: rgba(34, 197, 94, 0.2);
   color: #22C55E;
 }
 
-.order-status.lost {
+.order-status.loss {
   background: rgba(239, 68, 68, 0.2);
   color: #ef4444;
 }
