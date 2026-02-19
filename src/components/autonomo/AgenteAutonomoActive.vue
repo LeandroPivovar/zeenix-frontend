@@ -2515,7 +2515,7 @@
 				}
 			},
 
-            			async fetchProfitEvolution() {
+			async fetchProfitEvolution() {
 				const userId = this.getUserId();
                 console.log('[AgenteAutonomo] fetchProfitEvolution chamado para user:', userId);
 				if (!userId) return;
