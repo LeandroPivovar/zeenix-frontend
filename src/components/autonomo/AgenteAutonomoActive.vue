@@ -2619,8 +2619,31 @@
                     return;
                 }
 
+                // Helper to safely get timestamp
+                const getSafeTimestamp = (dateStr) => {
+                    if (!dateStr) return null;
+                    let d = new Date(dateStr);
+                    if (isNaN(d.getTime())) {
+                         // Try manual parsing if it's just time "HH:MM:SS" (assuming today)
+                         if (String(dateStr).match(/^\d{1,2}:\d{2}:\d{2}$/)) {
+                             const now = new Date();
+                             const parts = dateStr.split(':');
+                             d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
+                         }
+                    }
+                    return isNaN(d.getTime()) ? null : Math.floor(d.getTime() / 1000);
+                };
+
                 // 1. Sort trades by time ascending
-                const sorted = [...tradeList].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+                const sorted = [...tradeList].sort((a, b) => {
+                    const tA = getSafeTimestamp(a.createdAt) || 0;
+                    const tB = getSafeTimestamp(b.createdAt) || 0;
+                    return tA - tB;
+                });
+
+                if (sorted.length > 0) {
+                     console.log('[AgenteAutonomo] First trade date:', sorted[0].createdAt, 'Parsed TS:', getSafeTimestamp(sorted[0].createdAt));
+                }
 
                 let cumulative = 0;
                 const chartData = [];
@@ -2628,8 +2651,10 @@
                 // 2. Add starting point to make the chart look complete from 0
                 // We'll use the time of the first trade minus 1 minute (or session start if available)
                 if (sorted.length > 0) {
-                     const firstTradeTime = Math.floor(new Date(sorted[0].createdAt).getTime() / 1000);
-                     chartData.push({ time: firstTradeTime - 60, value: 0 });
+                     const firstTs = getSafeTimestamp(sorted[0].createdAt);
+                     if (firstTs) {
+                        chartData.push({ time: firstTs - 60, value: 0 });
+                     }
                 }
 
                 sorted.forEach(trade => {
@@ -2637,8 +2662,13 @@
                     if (!isNaN(profit)) {
                         cumulative += profit;
                         
-                        // Lightweight charts expects UNIX timestamp in seconds
-                        const ts = Math.floor(new Date(trade.createdAt).getTime() / 1000);
+                        const ts = getSafeTimestamp(trade.createdAt);
+                        
+                        // Skip if invalid date
+                        if (!ts) {
+                            console.warn('[AgenteAutonomo] Trade with invalid date skipped:', trade);
+                            return; 
+                        }
                         
                         const existingIdx = chartData.findIndex(p => p.time === ts);
                         
@@ -2647,10 +2677,9 @@
                             chartData[existingIdx].value = cumulative;
                         } else {
                             // Ensure time is monotonic (greater than last point)
-                            // In rare cases (fast trades), ts might be same as previous even if different ms
                             const lastPoint = chartData[chartData.length - 1];
                             if (lastPoint && ts <= lastPoint.time) {
-                                // If same second, update previous
+                                // If same second or back in time (shouldn't happen with sort), update previous
                                 lastPoint.value = cumulative;
                             } else {
                                 chartData.push({ time: ts, value: cumulative });
