@@ -2606,8 +2606,12 @@
                 let cumulative = 0;
                 const chartData = [];
 
-                // 2. Add starting point (?) - Optional, maybe (time: firstTrade - 1min, value: 0)
-                // But generally cleaner to simply start at the first trade result.
+                // 2. Add starting point to make the chart look complete from 0
+                // We'll use the time of the first trade minus 1 minute (or session start if available)
+                if (sorted.length > 0) {
+                     const firstTradeTime = Math.floor(new Date(sorted[0].createdAt).getTime() / 1000);
+                     chartData.push({ time: firstTradeTime - 60, value: 0 });
+                }
 
                 sorted.forEach(trade => {
                     const profit = parseFloat(trade.profit);
@@ -2617,24 +2621,24 @@
                         // Lightweight charts expects UNIX timestamp in seconds
                         const ts = Math.floor(new Date(trade.createdAt).getTime() / 1000);
                         
-                        // Handle duplicate timestamps (same second) -> overwrite with latest cumulative for that second
-                        // OR: if we want to show all steps, we can't share X. Simple approach: overwrite.
-                         const existingIdx = chartData.findIndex(p => p.time === ts);
-                         if (existingIdx !== -1) {
-                             chartData[existingIdx].value = cumulative;
-                         } else {
-                             chartData.push({ time: ts, value: cumulative });
-                         }
+                        const existingIdx = chartData.findIndex(p => p.time === ts);
+                        
+                        // If multiple trades in same second, just update the last one to the final cumulative
+                        if (existingIdx !== -1) {
+                            chartData[existingIdx].value = cumulative;
+                        } else {
+                            // Ensure time is monotonic (greater than last point)
+                            // In rare cases (fast trades), ts might be same as previous even if different ms
+                            const lastPoint = chartData[chartData.length - 1];
+                            if (lastPoint && ts <= lastPoint.time) {
+                                // If same second, update previous
+                                lastPoint.value = cumulative;
+                            } else {
+                                chartData.push({ time: ts, value: cumulative });
+                            }
+                        }
                     }
                 });
-                
-                // If chartData is empty or just 1 point, add a pseudo point for better line rendering?
-                if (chartData.length === 1) {
-                     // Add a point 1 minute before with 0 value?
-                     // Or just let it be a dot.
-                     const single = chartData[0];
-                     chartData.unshift({ time: single.time - 60, value: 0 }); // Start at 0
-                }
 
                 console.log(`[AgenteAutonomo] Generated ${chartData.length} intraday points from ${trades.length} trades.`);
                 this.updateIndexChart(chartData);
