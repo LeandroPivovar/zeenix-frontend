@@ -687,12 +687,16 @@ export default {
                 console.log('[MarkupView] Iniciando busca de dados de markup...');
                 console.log('[MarkupView] Período:', this.filterStartDate, 'até', this.filterEndDate);
                 
+                // 1. Iniciar buscas em paralelo para maior velocidade
+                this.fetchAggregates(token, apiUrl);
+                this.fetchChartData(token, apiUrl);
+
                 const params = new URLSearchParams({
                     startDate: this.filterStartDate,
                     endDate: this.filterEndDate,
                 });
 
-                // Usar endpoint /trades/markup (GET simples) em vez de SSE stream
+                // 2. Buscar lista principal de usuários
                 const response = await fetch(`${apiUrl}/trades/markup?${params}`, {
                     method: 'GET',
                     headers: {
@@ -720,15 +724,6 @@ export default {
                 } else {
                     console.warn('[MarkupView] Nenhum usuário encontrado na resposta');
                 }
-
-                // 2. Buscar dados agregados para os 5 cards do topo
-                this.fetchAggregates(token, apiUrl);
-
-                // 3. Buscar dados de HOJE separadamente para o card "Comissão Hoje" (redundante agora, mas mantido por segurança)
-                this.fetchTodayData(token, apiUrl);
-
-                // 4. Buscar dados do gráfico de projeção
-                this.fetchChartData(token, apiUrl);
 
                 this.isLoading = false;
                 this.loadingProgress = 100;
