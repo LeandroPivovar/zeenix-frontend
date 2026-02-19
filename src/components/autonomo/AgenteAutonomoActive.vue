@@ -2408,7 +2408,13 @@
                      const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
                      
                      let url = '';
-                     if (isRange) {
+
+                     // ✅ [ZENIX v3.2] For 'session' and 'today', use the specific DATE endpoint (like daily modal)
+                     // instead of generic range query, to ensure consistency.
+                     if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
+                         const dateParam = 'today';
+                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateParam}${agentFilter}`;
+                     } else if (isRange) {
                          const startStr = startDate.toISOString();
                          const endStr = endDate.toISOString();
                          url = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${startStr}&endDate=${endStr}${agentFilter}&date=range`;
