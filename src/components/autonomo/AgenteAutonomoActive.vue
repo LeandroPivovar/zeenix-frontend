@@ -390,15 +390,6 @@
 					<span class="text-xs text-[#FAFAFA] tabular-nums" v-else>•••• ({{ worstDay?.date || '--' }})</span>
 				</div>
 			</div>
-            
-            <!-- DEBUG INFO TEMPORARIUM -->
-            <div v-if="!hideValues && (selectedPeriod === 'session' || selectedPeriod === 'today')" class="mt-4 p-2 bg-red-900/20 border border-red-500/30 rounded text-[10px] font-mono text-red-200 overflow-x-auto">
-                <p><strong>DEBUG CHART DATA:</strong></p>
-                <p>Period: {{ selectedPeriod }}</p>
-                <p>DailyTrades Count: {{ dailyTrades ? dailyTrades.length : 0 }}</p>
-                <p>SessionTrades Count: {{ sessionTrades ? sessionTrades.length : 0 }}</p>
-                <p>First Trade Raw: {{ dailyTrades && dailyTrades.length > 0 ? JSON.stringify(dailyTrades[0]) : 'None' }}</p>
-            </div>
 		</div>
 
 		<!-- Distribution Tables -->
@@ -2607,10 +2598,16 @@
             generateChartFromTrades(trades) {
                 let tradeList = trades || [];
 
-                // If in active session view, PRIORITIZE live session trades if available
-                if (this.selectedPeriod === 'session' && this.sessionTrades && this.sessionTrades.length > 0) {
-                     console.log('[AgenteAutonomo] Generating chart from LIVE SESSION TRADES:', this.sessionTrades.length);
+                // Se estiver vendo HOJE, PRIORIZA tradeSession (que tem realtime + historico)
+                // O usuário pediu para INVERTER (antes era session).
+                if (this.selectedPeriod === 'today' && this.sessionTrades && this.sessionTrades.length > 0) {
+                     console.log('[AgenteAutonomo] Generating chart from TODAY (SessionTrades):', this.sessionTrades.length);
                      tradeList = this.sessionTrades;
+                }
+                // Se for session, usa a lista padrão (trades vindo do banco/API)
+                else if (this.selectedPeriod === 'session') {
+                     // Mantém tradeList original (argumento)
+                     console.log('[AgenteAutonomo] Generating chart from SESSION (DailyTrades/Arg):', tradeList.length);
                 }
 
                 if (!tradeList || tradeList.length === 0) {
