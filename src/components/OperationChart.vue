@@ -286,7 +286,7 @@
                      <span class="text-[10px] font-bold text-white/60">Últimos 22</span>
                    </div>
                  </div>
-                    <div v-if="recentDigits.length > 0" class="flex flex-wrap gap-2 justify-start max-h-[120px] overflow-y-auto custom-scrollbar pr-2">
+                    <div v-if="recentDigits.length > 0" class="flex flex-nowrap gap-2 justify-start overflow-x-auto custom-scrollbar pb-2">
                      <div 
                       v-for="(digit, idx) in recentDigits" 
                       :key="'recent-'+idx"

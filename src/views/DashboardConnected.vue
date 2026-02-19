@@ -2119,6 +2119,7 @@ export default {
   display: flex;
   min-height: 100vh;
   position: relative;
+  background-color: #0b0b0b;
 }
 
 /* Isolar DashboardConnected dos estilos do layout-home */
@@ -2317,6 +2318,9 @@ export default {
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 1024px) {
