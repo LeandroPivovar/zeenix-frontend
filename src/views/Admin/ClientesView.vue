@@ -778,8 +778,7 @@ export default {
 	flex-direction: column;
 }
 
-.dashboard-content-wrapper.sidebar-collapsed {
-}
+
 
 .layout-content {
 	flex-grow: 1;
@@ -890,12 +889,20 @@ p {
 	cursor: pointer;
 	font-weight: bold;
 	width: fit-content;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	white-space: nowrap;
 }
 
 .filter-btn, .export-btn {
 	background-color: #1e1e1e;
 	color: #e0e0e0;
 	border: 1px solid #555;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	white-space: nowrap;
 }
 
 .update-btn {
