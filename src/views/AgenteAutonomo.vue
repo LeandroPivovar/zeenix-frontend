@@ -1223,7 +1223,7 @@
           exit: parseFloat(contract.sell_price) || 0,
           stake: parseFloat(contract.buy_price) || 0,
           profit: profit,
-          result: status === 'won' ? 'WON' : (status === 'lost' ? 'LOST' : 'PENDING'),
+          result: status === 'won' ? 'WIN' : (status === 'lost' ? 'LOSS' : 'PENDING'),
           createdAt: new Date(contract.purchase_time * 1000).toISOString(),
           data: {
             stake: parseFloat(contract.buy_price) || 0,

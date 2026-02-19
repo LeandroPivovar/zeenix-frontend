@@ -50,7 +50,7 @@
                                 <span class="text-[10px] font-bold uppercase tracking-widest leading-none mb-1"
                                       :class="isContractWin ? 'text-green-500' : 'text-red-500'"
                                 >
-                                    {{ isContractWin ? 'Vitória' : 'Derrota' }}
+                                    {{ isContractWin ? 'WIN' : 'LOSS' }}
                                 </span>
                                 <span class="text-lg font-black tabular-nums leading-none"
                                       :class="isContractWin ? 'text-green-500' : 'text-red-500'"

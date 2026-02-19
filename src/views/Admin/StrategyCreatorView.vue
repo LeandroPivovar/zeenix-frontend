@@ -1797,6 +1797,71 @@
                 @confirm="showStopModal = false"
             />
         </Teleport>
+
+        <!-- Save Strategy Modal -->
+        <Teleport to="body">
+            <div v-if="showSaveStrategyModal" class="modal-overlay" @click.self="showSaveStrategyModal = false">
+                <div class="modal-content" style="max-width: 500px">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Salvar Estratégia</h3>
+                        <button @click="showSaveStrategyModal = false" class="modal-close-btn">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body space-y-6">
+                        <!-- Strategy Name -->
+                        <div>
+                            <label class="block text-xs text-gray-500 uppercase font-bold mb-2">Nome da Estratégia</label>
+                            <input 
+                                type="text" 
+                                v-model="tempStrategyName"
+                                placeholder="Minha Estratégia" 
+                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors"
+                            />
+                        </div>
+
+                        <!-- Status Toggle/Selection -->
+                        <div>
+                            <label class="block text-xs text-gray-500 uppercase font-bold mb-2">Status Inicial</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <button 
+                                    @click="tempStrategyStatus = 'Rascunho'"
+                                    class="p-3 rounded-lg border transition-all flex flex-col items-center gap-2"
+                                    :class="tempStrategyStatus === 'Rascunho' ? 'bg-orange-500/10 border-orange-500 text-orange-500' : 'bg-[#1E1E1E] border-[#333] text-gray-400 hover:border-gray-500'"
+                                >
+                                    <i class="fa-solid fa-file-pen text-xl"></i>
+                                    <span class="font-bold text-sm">Rascunho</span>
+                                </button>
+                                <button 
+                                    @click="tempStrategyStatus = 'Ativo'"
+                                    class="p-3 rounded-lg border transition-all flex flex-col items-center gap-2"
+                                    :class="tempStrategyStatus === 'Ativo' ? 'bg-zenix-green/10 border-zenix-green text-zenix-green' : 'bg-[#1E1E1E] border-[#333] text-gray-400 hover:border-gray-500'"
+                                >
+                                    <i class="fa-solid fa-rocket text-xl"></i>
+                                    <span class="font-bold text-sm">Ativo</span>
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-2">
+                                <template v-if="tempStrategyStatus === 'Rascunho'">
+                                    Visível apenas para administradores. Ideal para testes.
+                                </template>
+                                <template v-else>
+                                    Disponível para todos os usuários imediatamente.
+                                </template>
+                            </p>
+                        </div>
+
+                        <!-- Save Button -->
+                        <div class="pt-4">
+                            <button @click="confirmSaveStrategy" class="w-full bg-zenix-green hover:bg-green-500 text-black font-bold py-3.5 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-green-900/20">
+                                <i class="fa-solid fa-save"></i>
+                                Salvar Estratégia
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
@@ -1839,6 +1904,9 @@ export default {
             showAccountModal: false,
             showStopModal: false, // New Stop Result Modal
             stopResult: { title: '', message: '', profit: 0, type: 'info' }, // Data for Stop Modal
+            showSaveStrategyModal: false, // Custom Save Strategy Modal
+            tempStrategyName: '',
+            tempStrategyStatus: 'Rascunho',
             isLoadingAccounts: false,
             availableAccounts: [],
             selectedToken: null,
@@ -3119,12 +3187,22 @@ export default {
         },
 
         async saveCurrentStrategy() {
-            const name = prompt('Nome da estratégia:', `Minha Estratégia ${new Date().toLocaleDateString()}`);
-            if (!name) return;
+            // Initialize modal data
+            this.tempStrategyName = this.form.name || `Minha Estratégia ${new Date().toLocaleDateString()}`;
+            this.tempStrategyStatus = 'Rascunho'; // Default to Draft for safety
+            
+            // Open Modal
+            this.showSaveStrategyModal = true;
+        },
 
-            // ? Ask for status (Active vs Draft)
-            const isActive = confirm('Deseja ativar esta estratégia imediatamente para todos os usuários?\n\nOK = Sim (Status: Ativo)\nCancelar = Não (Status: Rascunho - Visível apenas para Admins)');
-            const status = isActive ? 'Ativo' : 'Rascunho';
+        async confirmSaveStrategy() {
+            const name = this.tempStrategyName;
+            if (!name) {
+                this.$root.$toast.error('Por favor, insira um nome para a estratégia.');
+                return;
+            }
+
+            const status = this.tempStrategyStatus;
 
             // ? Sync filter edits before saving
             this.syncFiltersToConfig();
@@ -3168,6 +3246,8 @@ export default {
             this.selectedSavedStrategyId = newStrategy.id;
             this.currentStrategyName = newStrategy.name;
             this.currentVersion = newStrategy.version;
+            
+            this.showSaveStrategyModal = false;
             this.$root.$toast.success('Estratégia salva com sucesso!');
         },
 
