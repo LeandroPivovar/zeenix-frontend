@@ -15,27 +15,19 @@
             <!-- Empty left side for balance (if needed) or just spacing -->
             <div class="w-1/3"></div>
 
-            <!-- TRADE STATUS CARD (CENTERED) -->
-            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                <Transition
-                    enter-active-class="transition ease-out duration-200"
-                    enter-from-class="opacity-0 translate-y-[-10px]"
-                    enter-to-class="opacity-100 translate-y-0"
-                    leave-active-class="transition ease-in duration-150"
-                    leave-from-class="opacity-100 translate-y-0"
-                    leave-to-class="opacity-0 translate-y-[-10px]"
-                >
-                    <div v-if="activeContract" 
-                         class="flex items-center gap-4 px-5 py-2 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 min-w-[200px] justify-center"
+            <div class="flex items-center gap-4 justify-end w-2/3">
+                <!-- TRADE STATUS CARD -->
+                <div class="relative z-10">
+                   <div class="flex items-center gap-4 px-4 py-2 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 min-w-[180px] justify-center ml-auto"
                          :class="[
                             isContractOpen 
                                 ? 'bg-yellow-500/10 border-yellow-500/20 shadow-yellow-500/5' 
-                                : (isContractWin ? 'bg-green-500/10 border-green-500/20 shadow-green-500/5' : 'bg-red-500/10 border-red-500/20 shadow-red-500/5')
+                                : (activeContract ? (isContractWin ? 'bg-green-500/10 border-green-500/20 shadow-green-500/5' : 'bg-red-500/10 border-red-500/20 shadow-red-500/5') : 'bg-white/5 border-white/10')
                          ]"
                     >
                         <!-- IN PROGRESS STATE -->
                         <template v-if="isContractOpen">
-                            <div class="relative flex h-2.5 w-2.5">
+                            <div class="relative flex h-2.5 w-2.5 mr-3">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-500 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
                             </div>
@@ -47,9 +39,9 @@
                             </div>
                         </template>
 
-                        <!-- RESULT STATE -->
-                        <template v-else>
-                            <div class="flex items-center justify-center w-8 h-8 rounded-full border border-current"
+                        <!-- RESULT STATE (Only if activeContract is not null but closed OR we have a recent result stored) -->
+                        <template v-else-if="finalTradeProfit !== null && !isContractOpen && activeContract">
+                             <div class="flex items-center justify-center w-8 h-8 rounded-full border border-current mr-3"
                                  :class="isContractWin ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'"
                             >
                                 <i :class="isContractWin ? 'fas fa-trophy' : 'fas fa-times'" class="text-xs"></i>
@@ -67,10 +59,25 @@
                                 </span>
                             </div>
                         </template>
+
+                        <!-- WAITING STATE -->
+                        <template v-else>
+                             <div class="flex items-center justify-center w-8 h-8 rounded-full border border-white/10 bg-white/5 text-white/40 mr-3">
+                                <i class="fas fa-hourglass-start text-xs"></i>
+                            </div>
+                            <div class="flex flex-col items-start">
+                                <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-none mb-1">
+                                    Aguardando
+                                </span>
+                                <span class="text-xs font-bold text-white/60 leading-none">
+                                    Pronto para operar
+                                </span>
+                            </div>
+                        </template>
                     </div>
-                </Transition>
-            </div>
-            <div class="flex items-center gap-2">
+                </div>
+
+                <div class="flex items-center gap-2">
               <!-- Botões de Zoom -->
               <div class="flex items-center gap-1 border border-zenix-border rounded-lg overflow-hidden">
                 <button
@@ -121,6 +128,7 @@
               </button>
             </div>
           </div>
+        </div>
 
           <!-- Gráfico -->
           <div v-if="activeTab === 'chart'" id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%; margin: 0; padding: 0;">
@@ -3103,13 +3111,14 @@ export default {
       // this.showTradeResultModal = true;
       
       // Limpar contrato após um curto delay para o usuário ver o resultado final no painel
-      setTimeout(() => {
-        this.activeContract = null;
-        this.purchasePrice = null;
-        this.realTimeProfit = null;
-        this.tradeMessage = '';
-        this.aiRecommendation = null; // Reset signal to allow new generation
-      }, 5000);
+      // Não limpar contrato aqui. Ele será substituído quando uma nova operação começar.
+      // setTimeout(() => {
+      //   this.activeContract = null;
+      //   this.purchasePrice = null;
+      //   this.realTimeProfit = null;
+      //   this.tradeMessage = '';
+      //   this.aiRecommendation = null; // Reset signal to allow new generation
+      // }, 5000);
     },
     checkMobile() {
       this.isMobile = window.innerWidth <= 768;
