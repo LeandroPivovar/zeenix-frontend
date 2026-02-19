@@ -2605,7 +2605,6 @@
 
                 let cumulative = 0;
                 const chartData = [];
-                const distinctTimes = new Set();
 
                 // 2. Add starting point (?) - Optional, maybe (time: firstTrade - 1min, value: 0)
                 // But generally cleaner to simply start at the first trade result.
