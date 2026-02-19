@@ -198,27 +198,25 @@
                                     </div>
                                 </div>
 
-                                <div class="border-l border-white/5 pl-6 flex flex-col justify-center">
-                                    <div class="mb-4">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <span class="text-sm font-black text-white">{{ mostFrequentDigit ? mostFrequentDigit.digit : '-' }}</span>
-                                            <span class="text-[10px] font-black text-white/20">{{ mostFrequentDigit ? mostFrequentDigit.percentage : '0' }}%</span>
+                                <div class="border-l border-white/5 pl-6 flex flex-col justify-center space-y-4">
+                                    <div class="high-low-meta-item">
+                                        <div class="flex justify-between items-center mb-1.5">
+                                            <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Baixos (0-4)</span>
+                                            <span class="text-xs font-black text-white/60">{{ lowPercentage }}%</span>
                                         </div>
-                                        <div class="h-3 bg-white/5 rounded-full overflow-hidden mb-1.5">
-                                            <div class="h-full bg-zenix-green w-[15%] transition-all duration-1000" :style="{ width: mostFrequentDigit ? mostFrequentDigit.percentage + '%' : '0%' }"></div>
+                                        <div class="h-3 bg-white/5 rounded-full overflow-hidden">
+                                            <div class="h-full bg-zenix-green transition-all duration-1000" :style="{ width: lowPercentage + '%' }"></div>
                                         </div>
-                                        <span class="text-[9px] font-bold text-white/20 uppercase tracking-wider">Mais Frequente</span>
                                     </div>
                                     
-                                    <div>
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="text-sm font-black text-white/40">{{ leastFrequentDigit ? leastFrequentDigit.digit : '-' }}</span>
-                                            <span class="text-[10px] font-black text-white/20">{{ leastFrequentDigit ? leastFrequentDigit.percentage : '0' }}%</span>
+                                    <div class="high-low-meta-item">
+                                        <div class="flex justify-between items-center mb-1.5">
+                                            <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Altos (5-9)</span>
+                                            <span class="text-xs font-black text-white/60">{{ highPercentage }}%</span>
                                         </div>
-                                        <div class="h-3 bg-white/5 rounded-full overflow-hidden mb-1.5">
-                                           <div class="h-full bg-red-500 w-[15%] transition-all duration-1000" :style="{ width: leastFrequentDigit ? leastFrequentDigit.percentage + '%' : '0%' }"></div>
+                                        <div class="h-3 bg-white/5 rounded-full overflow-hidden">
+                                            <div class="h-full bg-zenix-green transition-all duration-1000" :style="{ width: highPercentage + '%' }"></div>
                                         </div>
-                                        <span class="text-[9px] font-bold text-white/20 uppercase tracking-wider">Menos Frequente</span>
                                     </div>
                                 </div>
                             </div>
@@ -231,11 +229,11 @@
                         <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Histórico Recente</h3>
                         <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
                             <i class="far fa-clock text-[10px] text-white/40"></i>
-                            <span class="text-[10px] font-bold text-white/60">Últimos 14</span>
+                            <span class="text-[10px] font-bold text-white/60">Últimos 40</span>
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-7 md:flex md:flex-nowrap gap-2 justify-start">
+                    <div class="flex flex-wrap gap-2 justify-start max-h-[120px] overflow-y-auto custom-scrollbar pr-2">
                         <div 
                             v-for="(digit, index) in recentDigits" 
                             :key="'recent-'+index"
@@ -986,7 +984,24 @@ export default {
       return parseInt(this.lastDigit) % 2 === 0 ? 'PAR' : 'ÍMPAR';
     },
     recentDigits() {
-        return this.digitFrequency.digits.slice(-14);
+        if (!this.digitFrequency || !this.digitFrequency.digits) return [];
+        return this.digitFrequency.digits.slice(-40).reverse();
+    },
+    lowCount() {
+      if (!this.digitFrequency || !this.digitFrequency.digits) return 0;
+      return this.digitFrequency.digits.filter(d => d >= 0 && d <= 4).length;
+    },
+    highCount() {
+      if (!this.digitFrequency || !this.digitFrequency.digits) return 0;
+      return this.digitFrequency.digits.filter(d => d >= 5 && d <= 9).length;
+    },
+    lowPercentage() {
+      const total = this.digitFrequency?.digits?.length || 0;
+      return total > 0 ? Math.round((this.lowCount / total) * 100 * 10) / 10 : 0;
+    },
+    highPercentage() {
+      const total = this.digitFrequency?.digits?.length || 0;
+      return total > 0 ? Math.round((this.highCount / total) * 100 * 10) / 10 : 0;
     },
     mostFrequentDigit() {
         if (!this.digitFrequencies || this.digitFrequencies.length === 0) return null;
