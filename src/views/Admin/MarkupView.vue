@@ -14,30 +14,6 @@
 
             <main class="layout-content">
                 <div class="main-content">
-                    <!-- Single Consolidated Aggregate Card (Above Filters) -->
-                    <div class="consolidated-stats-card mb-6">
-                        <div class="stat-segment">
-                            <span class="segment-label">HOJE</span>
-                            <span class="segment-value">{{ formatCurrency(aggregateData.today) }}</span>
-                        </div>
-                        <div class="stat-segment">
-                            <span class="segment-label">MÊS ATUAL</span>
-                            <span class="segment-value">{{ formatCurrency(aggregateData.currentMonth) }}</span>
-                        </div>
-                        <div class="stat-segment">
-                            <span class="segment-label">MÊS ANTERIOR</span>
-                            <span class="segment-value">{{ formatCurrency(aggregateData.lastMonth) }}</span>
-                        </div>
-                        <div class="stat-segment">
-                            <span class="segment-label">ANO ATUAL</span>
-                            <span class="segment-value">{{ formatCurrency(aggregateData.currentYear) }}</span>
-                        </div>
-                        <div class="stat-segment">
-                            <span class="segment-label">TOTAL</span>
-                            <span class="segment-value">{{ formatCurrency(aggregateData.total) }}</span>
-                        </div>
-                    </div>
-
                     <!-- Expanded Filters -->
                     <div class="filter-controls">
                         <div class="filter-group">
@@ -72,6 +48,30 @@
                         <button class="btn btn-search" @click="fetchData">
                             <i class="fas fa-search"></i> Buscar
                         </button>
+                    </div>
+
+                    <!-- Period Aggregate Cards (5 Cards) -->
+                    <div class="aggregate-cards-grid mb-8">
+                        <div class="aggregate-card today">
+                            <span class="aggregate-label">HOJE</span>
+                            <span class="aggregate-value">{{ formatCurrency(aggregateData.today) }}</span>
+                        </div>
+                        <div class="aggregate-card current-month">
+                            <span class="aggregate-label">MÊS ATUAL</span>
+                            <span class="aggregate-value">{{ formatCurrency(aggregateData.currentMonth) }}</span>
+                        </div>
+                        <div class="aggregate-card last-month">
+                            <span class="aggregate-label">MÊS ANTERIOR</span>
+                            <span class="aggregate-value">{{ formatCurrency(aggregateData.lastMonth) }}</span>
+                        </div>
+                        <div class="aggregate-card current-year">
+                            <span class="aggregate-label">ANO ATUAL</span>
+                            <span class="aggregate-value">{{ formatCurrency(aggregateData.currentYear) }}</span>
+                        </div>
+                        <div class="aggregate-card total">
+                            <span class="aggregate-label">TOTAL</span>
+                            <span class="aggregate-value">{{ formatCurrency(aggregateData.total) }}</span>
+                        </div>
                     </div>
 
                     <!-- 7 Summary Cards -->
@@ -392,77 +392,77 @@
     color: #ffffff;
 }
 
-/* Consolidated Stats Card Styles */
-.consolidated-stats-card {
-    background: #0a0a0a;
-    border: 1px solid #1a1a1a;
-    border-radius: 12px;
-    display: flex;
-    overflow: hidden;
-    padding: 0;
+/* Aggregate Cards Styles */
+.aggregate-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
 }
 
-.stat-segment {
-    flex: 1;
-    padding: 1.25rem 1.5rem;
+@media (max-width: 1200px) {
+    .aggregate-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .aggregate-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .aggregate-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aggregate-card {
+    background: linear-gradient(145deg, #161616, #0d0d0d);
+    border: 1px solid #4ade80; /* Zenix Green */
+    border-radius: 8px;
+    padding: 1.25rem 1rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    border-right: 1px solid #1a1a1a;
-    transition: background-color 0.2s;
+    position: relative;
+    overflow: hidden;
+    min-height: 90px;
 }
 
-.stat-segment:last-child {
-    border-right: none;
+.aggregate-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent, rgba(74, 222, 128, 0.03), transparent);
+    pointer-events: none;
 }
 
-.stat-segment:hover {
-    background-color: rgba(255, 255, 255, 0.02);
-}
-
-.segment-label {
-    color: #666;
-    font-size: 0.75rem;
-    font-weight: 500;
+.aggregate-label {
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 800;
     margin-bottom: 0.5rem;
-    text-transform: capitalize;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
-.segment-value {
+.aggregate-value {
     color: #ffffff;
     font-size: 1.5rem;
     font-weight: 700;
     font-family: 'Inter', sans-serif;
 }
 
-@media (max-width: 1024px) {
-    .consolidated-stats-card {
-        flex-wrap: wrap;
-    }
-    .stat-segment {
-        flex: 1 1 33.33%;
-        border-bottom: 1px solid #1a1a1a;
-    }
-    .stat-segment:nth-child(3n) {
-        border-right: none;
-    }
-}
-
-@media (max-width: 768px) {
-    .stat-segment {
-        flex: 1 1 50%;
-    }
-    .stat-segment:nth-child(2n) {
-        border-right: none;
-    }
-}
-
-@media (max-width: 480px) {
-    .stat-segment {
-        flex: 1 1 100%;
-        border-right: none;
-    }
-}
+/* Specific card accents if needed */
+.aggregate-card.today { border-left-width: 4px; }
+.aggregate-card.current-month { border-left-width: 4px; }
+.aggregate-card.last-month { border-left-width: 4px; }
+.aggregate-card.current-year { border-left-width: 4px; }
+.aggregate-card.total { border-left-width: 4px; }
 
 /* Ranking Styles */
 .ranking-grid {
