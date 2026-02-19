@@ -283,7 +283,7 @@
                    <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Histórico Recente</h3>
                    <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
                      <i class="far fa-clock text-[10px] text-white/40"></i>
-                     <span class="text-[10px] font-bold text-white/60">Últimos 40</span>
+                     <span class="text-[10px] font-bold text-white/60">Últimos 22</span>
                    </div>
                  </div>
                     <div v-if="recentDigits.length > 0" class="flex flex-wrap gap-2 justify-start max-h-[120px] overflow-y-auto custom-scrollbar pr-2">
@@ -1127,7 +1127,7 @@ export default {
     // Histórico Recente de Dígitos
     recentDigits() {
         if (!this.digitFrequency || !this.digitFrequency.digits) return [];
-        return this.digitFrequency.digits.slice(-40).reverse();
+        return this.digitFrequency.digits.slice(-22).reverse();
     },
     dvxGreenOffset() {
       const len = 90.2;
