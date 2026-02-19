@@ -365,17 +365,7 @@
 				</h3>
                 
                 <div class="flex items-center gap-4 ml-auto">
-                    <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a]">
-                        <button 
-                            v-for="type in [{id:'session', label:'HOJE'}, {id:'7d', label:'SEMANA'}, {id:'30d', label:'MÊS'}, {id:'6m', label:'SEMESTRE'}, {id:'1y', label:'ANO'}]" 
-                            :key="type.id"
-                            @click="selectDateRange({value: type.id})"
-                            class="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all"
-                            :class="selectedPeriod === type.id ? 'bg-[#FAFAFA] text-black shadow-lg shadow-white/5' : 'text-[#A1A1AA] hover:text-white hover:bg-white/5'"
-                        >
-                            {{ type.label }}
-                        </button>
-                    </div>
+                    <!-- ✅ Buttons removed to unify control with top date picker -->
                     <span v-if="!isMobile" class="text-[#A1A1AA] text-xs font-medium uppercase tracking-tight">{{ dateRangeText }}</span>
                 </div>
 			</div>
@@ -2620,8 +2610,11 @@
                 }
 
                 // Helper to safely get timestamp
-                const getSafeTimestamp = (dateStr) => {
+                const getSafeTimestamp = (trade) => {
+                    // Try different property names
+                    const dateStr = trade.createdAt || trade.created_at || trade.time;
                     if (!dateStr) return null;
+                    
                     let d = new Date(dateStr);
                     if (isNaN(d.getTime())) {
                          // Try manual parsing if it's just time "HH:MM:SS" (assuming today)
@@ -2636,37 +2629,36 @@
 
                 // 1. Sort trades by time ascending
                 const sorted = [...tradeList].sort((a, b) => {
-                    const tA = getSafeTimestamp(a.createdAt) || 0;
-                    const tB = getSafeTimestamp(b.createdAt) || 0;
+                    const tA = getSafeTimestamp(a) || 0;
+                    const tB = getSafeTimestamp(b) || 0;
                     return tA - tB;
                 });
 
                 if (sorted.length > 0) {
-                     console.log('[AgenteAutonomo] First trade date:', sorted[0].createdAt, 'Parsed TS:', getSafeTimestamp(sorted[0].createdAt));
+                     console.log('[AgenteAutonomo] First trade date details:', sorted[0], 'Parsed TS:', getSafeTimestamp(sorted[0]));
                 }
 
                 let cumulative = 0;
                 const chartData = [];
 
                 // 2. Add starting point to make the chart look complete from 0
-                // We'll use the time of the first trade minus 1 minute (or session start if available)
                 if (sorted.length > 0) {
-                     const firstTs = getSafeTimestamp(sorted[0].createdAt);
+                     const firstTs = getSafeTimestamp(sorted[0]);
                      if (firstTs) {
                         chartData.push({ time: firstTs - 60, value: 0 });
                      }
                 }
 
                 sorted.forEach(trade => {
-                    const profit = parseFloat(trade.profit);
+                    const profit = parseFloat(trade.profit !== undefined ? trade.profit : (trade.profit_loss !== undefined ? trade.profit_loss : 0));
                     if (!isNaN(profit)) {
                         cumulative += profit;
                         
-                        const ts = getSafeTimestamp(trade.createdAt);
+                        const ts = getSafeTimestamp(trade);
                         
                         // Skip if invalid date
                         if (!ts) {
-                            console.warn('[AgenteAutonomo] Trade with invalid date skipped:', trade);
+                            console.warn('[AgenteAutonomo] Trade with invalid date skipped in chart:', trade);
                             return; 
                         }
                         
@@ -2676,10 +2668,9 @@
                         if (existingIdx !== -1) {
                             chartData[existingIdx].value = cumulative;
                         } else {
-                            // Ensure time is monotonic (greater than last point)
+                            // Ensure time is monotonic
                             const lastPoint = chartData[chartData.length - 1];
                             if (lastPoint && ts <= lastPoint.time) {
-                                // If same second or back in time (shouldn't happen with sort), update previous
                                 lastPoint.value = cumulative;
                             } else {
                                 chartData.push({ time: ts, value: cumulative });
