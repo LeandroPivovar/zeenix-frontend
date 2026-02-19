@@ -2187,30 +2187,26 @@
 					this.indexChartSeries.setData(data);
                     
                     if(data.length > 0) {
-                        // Configurar para começar da esquerda mas manter espaço à direita para "respirar"
                         const timeScale = this.indexChart.timeScale();
                         
-                        // Opção 1: Fit Content (Padrão - Centraliza tudo)
-                        // timeScale.fitContent();
+                        // ✅ [ZENIX v3.5] Adaptive Zoom Logic
+                        // Se tiver poucos pontos (< 20), fixa na esquerda com espaçamento razoável para evitar "flutuar no meio".
+                        // Se tiver muitos pontos, usa fitContent() para mostrar o histórico todo sem zoom excessivo.
                         
-                        // Opção 2: Definir range visível manualmente ou scrollar para o fim
-                        // Para "começar do lado esquerdo" geralmente significa que queremos ver o início ou que o gráfico preencha a tela.
-                        // Se temos poucos pontos, o fitContent estica eles.
-                        // Se o usuário quer que os pontos fiquem "compactados" à esquerda, precisamos de barSpacing fixo.
-                        
-                        // Ajuste para garantir que o gráfico não fique "no meio" quando tem poucos pontos
-                        timeScale.applyOptions({
-                            rightOffset: 20,
-                            barSpacing: 10, // Define uma largura fixa para as barras/pontos, evitando que estiquem
-                            fixLeftEdge: true, // Fixa a borda esquerda (não deixa scrollar antes do inicio)
-                        });
-                        
-                        // Se tiver muitos dados, scrolla para o fim
-                        if (data.length > 50) {
-                             timeScale.scrollToRealTime();
+                        if (data.length < 20) {
+                            timeScale.applyOptions({
+                                rightOffset: 10,
+                                barSpacing: 50, // Espaçamento confortável, nem muito zoom, nem muito longe
+                                fixLeftEdge: true,
+                            });
+                            timeScale.scrollToPosition(0, false); // Garante que comece do início (esquerda)
                         } else {
-                             // Se tiver poucos, reseta a posição (mas com barSpacing fixo, eles ficam à esquerda)
-                             timeScale.resetTimeScale(); 
+                            // Muitos dados: Behavior padrão "Fit All"
+                            timeScale.applyOptions({
+                                fixLeftEdge: false, // Libera borda
+                                rightOffset: 5,
+                            });
+                            timeScale.fitContent();
                         }
                     }
 				}
