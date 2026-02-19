@@ -2118,8 +2118,10 @@ export default {
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for better support */
   position: relative;
   background-color: #0b0b0b;
+  width: 100%;
 }
 
 /* Isolar DashboardConnected dos estilos do layout-home */
@@ -2163,6 +2165,7 @@ export default {
 
 .dashboard-content-wrapper {
   min-height: 100vh;
+  min-height: 100dvh;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

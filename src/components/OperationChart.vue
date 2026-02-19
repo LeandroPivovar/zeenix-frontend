@@ -286,7 +286,7 @@
                      <span class="text-[10px] font-bold text-white/60">Últimos 22</span>
                    </div>
                  </div>
-                    <div v-if="recentDigits.length > 0" class="flex flex-nowrap gap-2 justify-start overflow-x-auto custom-scrollbar pb-2">
+                    <div v-if="recentDigits.length > 0" class="recent-digits-grid pb-2">
                      <div 
                       v-for="(digit, idx) in recentDigits" 
                       :key="'recent-'+idx"
@@ -3578,6 +3578,31 @@ export default {
 </script>
 
 <style scoped>
+.recent-digits-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  justify-content: flex-start;
+  overflow-x: auto;
+}
+
+@media (max-width: 1400px) {
+  .recent-digits-grid {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    flex-wrap: wrap;
+    overflow-x: visible;
+    width: fit-content;
+  }
+}
+
+@media (max-width: 640px) {
+  .recent-digits-grid {
+    grid-template-columns: repeat(11, 1fr);
+    gap: 4px;
+  }
+}
+
 /* Copiando todos os estilos do arquivo original */
 /* Operation Chart Wrapper */
 .operation-chart-wrapper {
