@@ -2954,22 +2954,7 @@
     filter: brightness(0) invert(1);
 }
 
-/* Custom sidebar styles for specific internal scrollbars if tailwind classes aren't enough */
-.custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: #0E0E0E;
-    border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #22c55e;
-    border-radius: 10px;
-    border: 1px solid #000;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #1eb054;
-}
+/* Custom sidebar styles for specific internal scrollbars are now handled globally in global.css */
 
 .agent-avatar-mask-small {
     width: 24px;
