@@ -229,7 +229,7 @@
                         <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Histórico Recente</h3>
                         <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
                             <i class="far fa-clock text-[10px] text-white/40"></i>
-                            <span class="text-[10px] font-bold text-white/60">Últimos 22</span>
+                            <span class="text-[10px] font-bold text-white/60">Últimos 14</span>
                         </div>
                     </div>
                     
@@ -985,7 +985,7 @@ export default {
     },
     recentDigits() {
         if (!this.digitFrequency || !this.digitFrequency.digits) return [];
-        return this.digitFrequency.digits.slice(-22).reverse();
+        return this.digitFrequency.digits.slice(-14).reverse();
     },
     lowCount() {
       if (!this.digitFrequency || !this.digitFrequency.digits) return 0;
