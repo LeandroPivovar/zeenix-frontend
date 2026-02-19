@@ -17,23 +17,23 @@
                     <!-- Consolidated Aggregate Stats -->
                     <div class="consolidated-stats-card">
                         <div class="stat-segment">
-                            <span class="segment-label">HOJE</span>
+                            <span class="segment-label">Hoje</span>
                             <span class="segment-value">{{ formatCurrency(aggregateData.today) }}</span>
                         </div>
                         <div class="stat-segment">
-                            <span class="segment-label">MÊS ATUAL</span>
+                            <span class="segment-label">Mês atual</span>
                             <span class="segment-value">{{ formatCurrency(aggregateData.currentMonth) }}</span>
                         </div>
                         <div class="stat-segment">
-                            <span class="segment-label">MÊS ANTERIOR</span>
+                            <span class="segment-label">Mês anterior</span>
                             <span class="segment-value">{{ formatCurrency(aggregateData.lastMonth) }}</span>
                         </div>
                         <div class="stat-segment">
-                            <span class="segment-label">ANO ATUAL</span>
+                            <span class="segment-label">Ano</span>
                             <span class="segment-value">{{ formatCurrency(aggregateData.currentYear) }}</span>
                         </div>
                         <div class="stat-segment">
-                            <span class="segment-label">TOTAL</span>
+                            <span class="segment-label">Total</span>
                             <span class="segment-value">{{ formatCurrency(aggregateData.total) }}</span>
                         </div>
                     </div>
@@ -393,55 +393,56 @@
 }
 
 /* Consolidated Aggregate Card Styles */
+/* Consolidated Aggregate Card Styles */
 .consolidated-stats-card {
-    background: linear-gradient(145deg, #161616, #0d0d0d);
-    border: 1px solid #333;
+    background: #09090b;
+    border: 1px solid #27272a;
     border-radius: 12px;
     padding: 24px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: none;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .consolidated-stats-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: #4ade80;
+    display: none;
 }
 
 .stat-segment {
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 0 15px;
-    border-right: 1px solid #333;
+    align-items: flex-start;
+    padding: 0 24px;
+    border-right: 1px solid #27272a;
+}
+
+.stat-segment:first-child {
+    padding-left: 0;
 }
 
 .stat-segment:last-child {
     border-right: none;
+    padding-right: 0;
 }
 
 .segment-label {
-    color: #666;
+    color: #a1a1aa;
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 500;
     margin-bottom: 8px;
-    letter-spacing: 1px;
+    letter-spacing: normal;
+    text-transform: none;
 }
 
 .segment-value {
     color: #ffffff;
     font-size: 1.5rem;
-    font-weight: 800;
+    font-weight: 700;
     font-family: 'Outfit', sans-serif;
 }
 
