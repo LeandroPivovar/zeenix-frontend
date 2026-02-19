@@ -390,6 +390,15 @@
 					<span class="text-xs text-[#FAFAFA] tabular-nums" v-else>•••• ({{ worstDay?.date || '--' }})</span>
 				</div>
 			</div>
+            
+            <!-- DEBUG INFO TEMPORARIUM -->
+            <div v-if="!hideValues && (selectedPeriod === 'session' || selectedPeriod === 'today')" class="mt-4 p-2 bg-red-900/20 border border-red-500/30 rounded text-[10px] font-mono text-red-200 overflow-x-auto">
+                <p><strong>DEBUG CHART DATA:</strong></p>
+                <p>Period: {{ selectedPeriod }}</p>
+                <p>DailyTrades Count: {{ dailyTrades ? dailyTrades.length : 0 }}</p>
+                <p>SessionTrades Count: {{ sessionTrades ? sessionTrades.length : 0 }}</p>
+                <p>First Trade Raw: {{ dailyTrades && dailyTrades.length > 0 ? JSON.stringify(dailyTrades[0]) : 'None' }}</p>
+            </div>
 		</div>
 
 		<!-- Distribution Tables -->
