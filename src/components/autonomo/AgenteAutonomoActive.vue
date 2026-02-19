@@ -1518,36 +1518,66 @@
 				return 'Semanal';
 			},
 			sessionTrades() {
-				// ✅ [ZENIX v3.1] Centralized Session Logic
-				// Merge historical dailyTrades (for today) with live tradeHistory
-				// This ensures we show all trades from today, even if they exceed the session limit
-				if (this.selectedPeriod !== 'session') return [];
+				// ✅ [ZENIX v3.4] Smart Session Logic (Gap Detection)
+				// 'Session' should represent the CURRENT continuous run, distinct from 'Today' (all runs).
+				
+				if (this.selectedPeriod !== 'session' && this.selectedPeriod !== 'today') return [];
 
 				const historicalToday = this.dailyTrades || [];
 				const liveSession = this.tradeHistory || [];
 				
-				// ✅ Simplified: Use only trade ID for deduplication
-				const getTradeId = (t) => {
-					return String(t.id || t.contractId || t.contract_id || '');
-				};
+				const getTradeId = (t) => String(t.id || t.contractId || t.contract_id || '');
+				const getTimestamp = (t) => {
+					const d = t.createdAt || t.created_at || t.time;
+					return d ? new Date(d).getTime() : 0;
+				}
 				
 				const combined = [...liveSession];
 				const seenIds = new Set(liveSession.map(t => getTradeId(t)));
-				
-				console.log('[sessionTrades] Live IDs:', Array.from(seenIds).slice(0, 5));
 				
 				historicalToday.forEach(t => {
 					const id = getTradeId(t);
 					if (id && !seenIds.has(id)) {
 						combined.push(t);
 						seenIds.add(id);
-					} else if (id) {
-						console.log('[sessionTrades] SKIPPED duplicate from historical:', id);
 					}
 				});
+
+				// Sort by time ascending
+				combined.sort((a, b) => getTimestamp(a) - getTimestamp(b));
+
+				// If period is TODAY, return everything (All runs)
+				if (this.selectedPeriod === 'today') {
+					return combined;
+				}
+
+				// If period is SESSION, apply "Gap Filter"
+				// We look from the END (most recent) backwards.
+				// If we find a gap > 60 minutes, we assume the session started after that gap.
+				const GAP_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
 				
-				console.log('[sessionTrades] Live:', liveSession.length, 'Historical:', historicalToday.length, 'Combined:', combined.length, 'Unique IDs:', seenIds.size);
-				return combined;
+				if (combined.length === 0) return [];
+				
+				const currentSessionTrades = [];
+				// Start with the last trade
+				currentSessionTrades.push(combined[combined.length - 1]);
+				
+				for (let i = combined.length - 2; i >= 0; i--) {
+					const curr = combined[i];
+					const next = combined[i+1]; // (which is technically chronologically later)
+					
+					const diff = getTimestamp(next) - getTimestamp(curr);
+					
+					if (diff > GAP_THRESHOLD_MS) {
+						// Gap detected! Stop collecting, this is the start of the current session.
+						console.log(`[sessionTrades] Gap of ${Math.round(diff/60000)}min detected at ${curr.createdAt}. Session start cut-off.`);
+						break; 
+					}
+					currentSessionTrades.unshift(curr);
+				}
+				
+				console.log('[sessionTrades] Filtered Session Trades:', currentSessionTrades.length, 'Total Today:', combined.length);
+				return currentSessionTrades;
 			},
 			formattedSessionItems() {
 				// Decide source array based on selectedPeriod
@@ -2598,16 +2628,15 @@
             generateChartFromTrades(trades) {
                 let tradeList = trades || [];
 
-                // Se estiver vendo HOJE, PRIORIZA tradeSession (que tem realtime + historico)
-                // O usuário pediu para INVERTER (antes era session).
-                if (this.selectedPeriod === 'today' && this.sessionTrades && this.sessionTrades.length > 0) {
-                     console.log('[AgenteAutonomo] Generating chart from TODAY (SessionTrades):', this.sessionTrades.length);
+                // SE FOR SESSION: Usa sessionTrades (que agora tem filtro de gap > 60min)
+                if (this.selectedPeriod === 'session' && this.sessionTrades && this.sessionTrades.length > 0) {
+                     console.log('[AgenteAutonomo] Generating chart from SESSION (Gap Filtered):', this.sessionTrades.length);
                      tradeList = this.sessionTrades;
                 }
-                // Se for session, usa a lista padrão (trades vindo do banco/API)
-                else if (this.selectedPeriod === 'session') {
+                // SE FOR TODAY: Usa tradeList que vem do dailyTrades (argumento padrão), contendo TUDO de hoje
+                else if (this.selectedPeriod === 'today') {
                      // Mantém tradeList original (argumento)
-                     console.log('[AgenteAutonomo] Generating chart from SESSION (DailyTrades/Arg):', tradeList.length);
+                     console.log('[AgenteAutonomo] Generating chart from TODAY (All Daily Trades):', tradeList.length);
                 }
 
                 if (!tradeList || tradeList.length === 0) {
