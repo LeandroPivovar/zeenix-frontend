@@ -23,72 +23,73 @@
                             </div>
                         </div>
 
-                            <Teleport to="#trade-result-target">
-                                <div class="relative z-50">
-                                    <div class="flex items-center gap-4 px-4 py-2 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 min-w-[180px] justify-center animate-slide-in-right"
-                                         :class="[
-                                            isContractOpen 
-                                                ? 'bg-yellow-500/10 border-yellow-500/20 shadow-yellow-500/5' 
-                                                : (activeContract ? (isContractWin ? 'bg-green-500/10 border-green-500/20 shadow-green-500/5' : 'bg-red-500/10 border-red-500/20 shadow-red-500/5') : 'bg-white/5 border-white/10')
-                                         ]"
-                                    >
-                                        <!-- IN PROGRESS STATE -->
-                                        <template v-if="isContractOpen">
-                                            <div class="relative flex h-2.5 w-2.5 mr-3">
-                                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-500 opacity-75"></span>
-                                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
-                                            </div>
-                                            <div class="flex flex-col items-start min-w-[100px]">
-                                                <span class="text-[10px] font-bold text-yellow-500 uppercase tracking-widest leading-none mb-1">Em Andamento</span>
-                                                <span class="text-sm font-mono font-bold text-white tabular-nums leading-none">
-                                                    {{ realTimeProfit >= 0 ? '+' : '' }}{{ formatCurrency(realTimeProfit || 0) }}
-                                                </span>
-                                            </div>
-                                        </template>
-    
-                                        <!-- RESULT STATE -->
-                                        <template v-else-if="finalTradeProfit !== null && !isContractOpen && activeContract">
-                                            <div class="flex items-center justify-center w-8 h-8 rounded-full border border-current mr-3"
-                                                 :class="isContractWin ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'"
+                        <div class="flex items-center gap-6">
+                            <!-- TRADE STATUS CARD -->
+                            <div class="relative z-10">
+                                <div class="flex items-center gap-4 px-4 py-2 rounded-xl border shadow-xl backdrop-blur-md transition-all duration-300 min-w-[180px] justify-center"
+                                     :class="[
+                                        isContractOpen 
+                                            ? 'bg-yellow-500/10 border-yellow-500/20 shadow-yellow-500/5' 
+                                            : (activeContract ? (isContractWin ? 'bg-green-500/10 border-green-500/20 shadow-green-500/5' : 'bg-red-500/10 border-red-500/20 shadow-red-500/5') : 'bg-white/5 border-white/10')
+                                     ]"
+                                >
+                                    <!-- IN PROGRESS STATE -->
+                                    <template v-if="isContractOpen">
+                                        <div class="relative flex h-2.5 w-2.5 mr-3">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-500 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
+                                        </div>
+                                        <div class="flex flex-col items-start min-w-[100px]">
+                                            <span class="text-[10px] font-bold text-yellow-500 uppercase tracking-widest leading-none mb-1">Em Andamento</span>
+                                            <span class="text-sm font-mono font-bold text-white tabular-nums leading-none">
+                                                {{ realTimeProfit >= 0 ? '+' : '' }}{{ formatCurrency(realTimeProfit || 0) }}
+                                            </span>
+                                        </div>
+                                    </template>
+
+                                    <!-- RESULT STATE -->
+                                    <template v-else-if="finalTradeProfit !== null && !isContractOpen && activeContract">
+                                        <div class="flex items-center justify-center w-8 h-8 rounded-full border border-current mr-3"
+                                             :class="isContractWin ? 'text-green-500 bg-green-500/10' : 'text-red-500 bg-red-500/10'"
+                                        >
+                                            <i :class="isContractWin ? 'fas fa-trophy' : 'fas fa-times'" class="text-xs"></i>
+                                        </div>
+                                        <div class="flex flex-col items-start">
+                                            <span class="text-[10px] font-bold uppercase tracking-widest leading-none mb-1"
+                                                  :class="isContractWin ? 'text-green-500' : 'text-red-500'"
                                             >
-                                                <i :class="isContractWin ? 'fas fa-trophy' : 'fas fa-times'" class="text-xs"></i>
-                                            </div>
-                                            <div class="flex flex-col items-start">
-                                                <span class="text-[10px] font-bold uppercase tracking-widest leading-none mb-1"
-                                                      :class="isContractWin ? 'text-green-500' : 'text-red-500'"
-                                                >
-                                                    {{ isContractWin ? 'Vitória' : 'Derrota' }}
-                                                </span>
-                                                <span class="text-lg font-black tabular-nums leading-none"
-                                                      :class="isContractWin ? 'text-green-500' : 'text-red-500'"
-                                                >
-                                                    {{ isContractWin ? '+' : '' }}{{ formatCurrency(finalTradeProfit || 0) }}
-                                                </span>
-                                            </div>
-                                        </template>
-    
-                                        <!-- WAITING STATE -->
-                                        <template v-else>
-                                             <div class="flex items-center justify-center w-8 h-8 rounded-full border border-white/10 bg-white/5 text-white/40 mr-3">
-                                                <i class="fas fa-coins text-xs"></i>
-                                            </div>
-                                            <div class="flex flex-col items-start">
-                                                <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-none mb-1">
-                                                    Aguardando
-                                                </span>
-                                                <span class="text-xs font-bold text-white/60 leading-none">
-                                                    Pronto para operar
-                                                </span>
-                                            </div>
-                                        </template>
-                                    </div>
+                                                {{ isContractWin ? 'Vitória' : 'Derrota' }}
+                                            </span>
+                                            <span class="text-lg font-black tabular-nums leading-none"
+                                                  :class="isContractWin ? 'text-green-500' : 'text-red-500'"
+                                            >
+                                                {{ isContractWin ? '+' : '' }}{{ formatCurrency(finalTradeProfit || 0) }}
+                                            </span>
+                                        </div>
+                                    </template>
+
+                                    <!-- WAITING STATE -->
+                                    <template v-else>
+                                         <div class="flex items-center justify-center w-8 h-8 rounded-full border border-white/10 bg-white/5 text-white/40 mr-3">
+                                            <i class="fas fa-hourglass-start text-xs"></i>
+                                        </div>
+                                        <div class="flex flex-col items-start">
+                                            <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-none mb-1">
+                                                Aguardando
+                                            </span>
+                                            <span class="text-xs font-bold text-white/60 leading-none">
+                                                Pronto para operar
+                                            </span>
+                                        </div>
+                                    </template>
                                 </div>
-                            </Teleport>
+                            </div>
 
                             <div class="live-status-badge">
                                 <span class="pulse-dot"></span>
                                 <span class="text-[10px] font-black uppercase tracking-[0.2em]">LIVE</span>
                             </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1591,18 +1592,4 @@ export default {
     }
 }
 
-@keyframes slide-in-right {
-    0% {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.animate-slide-in-right {
-    animation: slide-in-right 0.5s ease-out forwards;
-}
 </style>

@@ -46,8 +46,6 @@
               <span class="mobile-text">Registros</span>
             </button>
           </div>
-          <!-- Target for Trade Result Card Teleport -->
-          <div id="trade-result-target" class="flex-1 flex justify-end items-center mr-4"></div>
         </div>
 
         <div class="operation-content">
