@@ -2433,8 +2433,13 @@
                                  const summary = !Array.isArray(result.data) ? result.data.summary : null;
                                  
                                  console.log('[AgenteAutonomo] Trades históricos carregados:', trades.length);
-                                 this.dailyTrades = trades;
+                                 this.dailyTrades = trades || []; // Ensure array
                                  if (summary) this.dailyTradesSummary = summary;
+                                 
+                                 // ✅ [ZENIX v3.2] Force chart update immediately if in session/today
+                                 if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
+                                     this.generateChartFromTrades(this.dailyTrades);
+                                 }
                              }
                          }
                 } catch(e) {
@@ -2595,13 +2600,21 @@
 
             // ✅ [ZENIX v3.2] Helper to generate Intraday Chart Data from Trades List
             generateChartFromTrades(trades) {
-                if (!trades || trades.length === 0) {
+                let tradeList = trades || [];
+
+                // If in active session view, PRIORITIZE live session trades if available
+                if (this.selectedPeriod === 'session' && this.sessionTrades && this.sessionTrades.length > 0) {
+                     console.log('[AgenteAutonomo] Generating chart from LIVE SESSION TRADES:', this.sessionTrades.length);
+                     tradeList = this.sessionTrades;
+                }
+
+                if (!tradeList || tradeList.length === 0) {
                     this.updateIndexChart([]);
                     return;
                 }
 
                 // 1. Sort trades by time ascending
-                const sorted = [...trades].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+                const sorted = [...tradeList].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
                 let cumulative = 0;
                 const chartData = [];
