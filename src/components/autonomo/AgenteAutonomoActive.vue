@@ -536,7 +536,7 @@
 
 
 		<!-- Strategy Logs Section -->
-		<div class="mt-8 rounded-lg border text-card-foreground shadow-sm bg-[#0c0c0c] border-[#27272a] overflow-hidden">
+		<div class="mt-8 rounded-lg border text-card-foreground shadow-sm bg-[#0c0c0c] border-[#27272a]">
 			<button 
 				@click="showLogs = !showLogs"
 				class="w-full p-4 flex items-center justify-between hover:bg-[#1a1a1a] transition-colors"
