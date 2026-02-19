@@ -233,7 +233,7 @@
                         </div>
                     </div>
                     
-                    <div class="flex flex-wrap gap-2 justify-start max-h-[120px] overflow-y-auto custom-scrollbar pr-2">
+                    <div class="recent-digits-grid flex flex-wrap gap-2 justify-start max-h-[120px] overflow-y-auto custom-scrollbar pr-2" :class="{ 'sidebar-open': !isSidebarCollapsed }">
                         <div 
                             v-for="(digit, index) in recentDigits" 
                             :key="'recent-'+index"
@@ -586,7 +586,8 @@ export default {
     accountBalance: { type: String, required: true },
     accountCurrency: { type: String, default: 'USD' },
     preferredCurrency: { type: String, default: 'USD' },
-    accountLoginid: { type: String, default: null }
+    accountLoginid: { type: String, default: null },
+    isSidebarCollapsed: { type: Boolean, default: true }
   },
   data() {
     return {
@@ -1607,4 +1608,40 @@ export default {
     }
 }
 
+</style>
+
+<style scoped>
+.recent-digits-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+  overflow-x: visible;
+  width: 100%;
+}
+
+.recent-digits-grid.sidebar-open {
+  display: grid !important;
+  grid-template-columns: repeat(11, 1fr) !important;
+  gap: 8px !important;
+  overflow-x: visible !important;
+  width: 100% !important;
+}
+
+@media (max-width: 1400px) {
+  .recent-digits-grid {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: 8px;
+    overflow-x: visible;
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .recent-digits-grid {
+    grid-template-columns: repeat(11, 1fr);
+    gap: 4px;
+  }
+}
 </style>

@@ -3586,18 +3586,19 @@ export default {
 <style scoped>
 .recent-digits-grid {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-start;
-  overflow-x: auto;
+  overflow-x: visible;
+  width: 100%;
 }
 
 .recent-digits-grid.sidebar-open {
   display: grid !important;
   grid-template-columns: repeat(11, 1fr) !important;
-  flex-wrap: wrap !important;
+  gap: 8px !important;
   overflow-x: visible !important;
-  width: fit-content !important;
+  width: 100% !important;
 }
 
 @media (max-width: 1400px) {
