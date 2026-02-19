@@ -633,7 +633,7 @@
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3">
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Capital Atual</div>
 					<div class="text-[10px] sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
-						{{ preferredCurrencyPrefix }} {{ formatPrice(selectedPeriod === 'today' ? activeDayDetails.capital : (selectedDay ? activeDayDetails.capital : finalCapital)) }}
+						{{ preferredCurrencyPrefix }} {{ formatPrice(finalCapital) }}
 					</div>
 				</div>
 
@@ -710,7 +710,7 @@
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity w-4 h-4 text-green-500"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
 					OPERAÇÕES DIÁRIAS
 				</h4>
-				<div class="overflow-x-auto max-h-[300px] overflow-y-auto custom-scrollbar">
+				<div class="overflow-x-auto max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
 					<table class="w-full text-[10px] sm:text-xs">
 						<thead class="sticky top-0 bg-[#09090b] shadow-sm z-10">
 							<tr class="border-b border-[#27272a]">
