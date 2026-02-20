@@ -35,15 +35,15 @@
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
-        <div class="header-text-container px-6 mt-8 text-left">
-          <h1 class="text-3xl text-[#FAFAFA] font-black tracking-tighter uppercase drop-shadow-[0_0_12px_rgba(34,197,94,0.3)]">Operação Manual</h1>
-          <p class="text-xs text-[#A1A1AA] mt-1 max-w-2xl uppercase tracking-widest font-medium opacity-70">
-            Painel de controle avançado para execução estratégica em tempo real
+        <div class="header-text-container px-6 mt-6 text-left w-full">
+          <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
+          <p class="text-sm text-[#A1A1AA] mt-1 max-w-2xl opacity-80">
+            Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
           </p>
         </div>
 
-        <div class="manual-premium-bar-wrapper mt-4">
-          <div class="manual-premium-bar">
+        <div class="manual-premium-bar-wrapper mt-6 w-full px-0">
+          <div class="manual-premium-bar w-full">
             <!-- Floating Particles for Premium Feel -->
             <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
               <div class="absolute w-1 h-1 rounded-full bg-zenix-green/30" style="top: 20%; left: 15%; animation: float-particle 8s ease-in-out 0s infinite;"></div>
@@ -63,13 +63,13 @@
                   </div>
                 </div>
                 <div class="flex flex-col">
-                  <span class="bar-value text-zenix-green uppercase font-black text-xs">
+                  <span class="bar-value text-zenix-green uppercase font-semibold text-xs">
                     {{ activeOperation.isOpen ? 'Em Operação' : 'Pronto' }}
                   </span>
-                  <span v-if="activeOperation.isOpen" class="text-[10px] tabular-nums font-bold text-white/50">
-                    Est: {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
+                  <span v-if="activeOperation.isOpen" class="text-[10px] tabular-nums text-white/50">
+                    Estimativa: {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
                   </span>
-                  <span v-else class="text-[10px] text-white/30 uppercase font-bold tracking-tighter">Aguardando...</span>
+                  <span v-else class="text-[10px] text-white/30 uppercase tracking-tighter">Aguardando...</span>
                 </div>
               </div>
             </div>
@@ -79,8 +79,8 @@
               <span class="bar-label">Capital</span>
               <div class="flex items-center gap-2">
                 <div class="flex flex-col">
-                  <span class="bar-value text-lg leading-none">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
-                  <span class="text-[9px] text-white/30 uppercase font-black mt-1 tracking-widest">{{ activeAccountType }} Account</span>
+                  <span class="bar-value text-lg leading-none font-medium">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
+                  <span class="text-[9px] text-white/30 uppercase mt-1 tracking-widest">{{ activeAccountType }} Account</span>
                 </div>
                 <button @click="balanceVisible = !balanceVisible" class="opacity-20 hover:opacity-100 transition-opacity">
                   <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
@@ -93,10 +93,10 @@
               <span class="bar-label">Resultado</span>
               <div class="flex items-center gap-2">
                 <div class="flex flex-col">
-                  <span :class="['bar-value text-lg leading-none', lastTradeProfitClass]">
+                  <span :class="['bar-value text-lg leading-none font-medium', lastTradeProfitClass]">
                     {{ profitVisible ? formattedLastTradeResult : '••••••' }}
                   </span>
-                  <span class="text-[9px] text-white/30 uppercase font-black mt-1 tracking-widest">Último Resultado</span>
+                  <span class="text-[9px] text-white/30 uppercase mt-1 tracking-widest">Último Resultado</span>
                 </div>
                 <button @click="profitVisible = !profitVisible" class="opacity-20 hover:opacity-100 transition-opacity">
                   <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
@@ -110,18 +110,18 @@
               <div class="flex items-center gap-5">
                 <!-- Stacked WINS -->
                 <div class="flex flex-col items-center">
-                  <span class="text-lg font-black text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
-                  <span class="text-[9px] text-white/40 uppercase font-black tracking-tighter mt-1">WIN</span>
+                  <span class="text-lg font-semibold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
+                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-1">WIN</span>
                 </div>
                 <!-- Stacked LOSSES -->
                 <div class="flex flex-col items-center">
-                  <span class="text-lg font-black text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
-                  <span class="text-[9px] text-white/40 uppercase font-black tracking-tighter mt-1">LOSS</span>
+                  <span class="text-lg font-semibold text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
+                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-1">LOSS</span>
                 </div>
                 <!-- Stacked Winrate -->
                 <div class="flex flex-col items-center px-2 py-1 bg-white/5 rounded-lg border border-white/5">
-                  <span class="text-sm font-black text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
-                  <span class="text-[8px] text-white/30 uppercase font-black tracking-tighter mt-0.5">RATE</span>
+                  <span class="text-sm font-semibold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
+                  <span class="text-[8px] text-white/30 uppercase tracking-tighter mt-0.5">RATE</span>
                 </div>
                 <button @click="tradesVisible = !tradesVisible" class="opacity-20 hover:opacity-100 transition-opacity ml-1">
                   <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
@@ -134,10 +134,10 @@
               <span class="bar-label">Tempo Restante</span>
               <div class="flex items-center gap-3">
                 <div class="flex flex-col">
-                  <span :class="['bar-value text-lg tabular-nums leading-none', getTimerClass]">
+                  <span :class="['bar-value text-lg tabular-nums leading-none font-medium', getTimerClass]">
                     {{ formattedTimeRemaining }}
                   </span>
-                  <span class="text-[9px] text-white/30 uppercase font-black mt-1 tracking-widest">Tempo de Operação</span>
+                  <span class="text-[9px] text-white/30 uppercase mt-1 tracking-widest">Tempo de Operação</span>
                 </div>
               </div>
             </div>
@@ -484,10 +484,15 @@ export default {
       }
     },
     formatDynamicCurrency(value) {
+      const numValue = Number(value) || 0;
+      const isNegative = numValue < 0;
+      const absValue = Math.abs(numValue);
+      const formatted = absValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      
       if (this.tradeCurrency === 'DEMO') {
-        return `Ɖ ${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `${isNegative ? '-' : ''}Ɖ ${formatted}`;
       }
-      return this.formatCurrency(value, this.accountCurrency);
+      return this.formatCurrency(numValue, this.accountCurrency);
     },
     getCurrencyPrefix(currency) {
       switch ((currency || '').toUpperCase()) {
