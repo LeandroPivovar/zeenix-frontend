@@ -4,13 +4,13 @@
     <div class="operation-layout flex w-full overflow-hidden" :class="activeTab === 'chart' ? 'h-full' : 'h-fit'">
       <!-- Chart Column -->
       <div class="col-chart flex-1 min-w-0 flex flex-col gap-5" :class="activeTab === 'chart' ? 'h-full' : 'h-fit'">
-        <!-- Chart Container -->
+        <!-- Main Container -->
         <div 
-          class="flex flex-col chart-container w-full chart-card"
+          class="flex flex-col chart-card"
           :class="[
             activeTab === 'chart' 
-              ? 'bg-zenix-card border border-zenix-border rounded-xl shadow-[0_0_8px_rgba(0,0,0,0.25)] h-full overflow-hidden' 
-              : 'border-none bg-transparent shadow-none h-fit min-h-[820px]'
+              ? 'chart-container bg-zenix-card border border-zenix-border rounded-xl shadow-[0_0_8px_rgba(0,0,0,0.25)] h-full overflow-hidden' 
+              : 'digits-analysis-container border-none bg-transparent shadow-none h-fit min-h-[820px]'
           ]"
         >
           <!-- Card Header for Chart Controls -->
@@ -5352,6 +5352,17 @@ export default {
 
   .digits-tab-container {
     height: auto !important;
+    overflow: visible !important;
+  }
+
+  .digits-analysis-container {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: auto !important;
+    min-height: 820px;
     overflow: visible !important;
   }
 
