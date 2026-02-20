@@ -49,91 +49,96 @@
               <div class="operation-tabs">
                 <button
                   class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-                  :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationChart', 'border-b-2 border-transparent': currentView !== 'OperationChart' }"
+                  :class="{ 'border-b-2 border-zenix-green text-zenix-text active-tab': currentView === 'OperationChart', 'border-b-2 border-transparent': currentView !== 'OperationChart' }"
                   @click="changeView('OperationChart')"
                 >
-                  <span class="desktop-text">Gráfico e Análise</span>
-                  <span class="mobile-text">Gráfico</span>
+                  Gráfico
                 </button>
                 <button
                   class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-                  :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLogs', 'border-b-2 border-transparent': currentView !== 'OperationLogs' }"
+                  :class="{ 'border-b-2 border-zenix-green text-zenix-text active-tab': currentView === 'OperationLogs', 'border-b-2 border-transparent': currentView !== 'OperationLogs' }"
                   @click="changeView('OperationLogs')"
                 >
-                  <span class="desktop-text">Registro</span>
-                  <span class="mobile-text">Histórico</span>
+                  Registro
                 </button>
                 <button
                   class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-                  :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLastOrders', 'border-b-2 border-transparent': currentView !== 'OperationLastOrders' }"
+                  :class="{ 'border-b-2 border-zenix-green text-zenix-text active-tab': currentView === 'OperationLastOrders', 'border-b-2 border-transparent': currentView !== 'OperationLastOrders' }"
                   @click="changeView('OperationLastOrders')"
                 >
-                  <span class="desktop-text">Últimas Ordens</span>
-                  <span class="mobile-text">Registros</span>
+                  Últimas Ordens
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- New Results Card (Mimicking IA APOLLO) -->
-          <div v-if="!isMobile" class="manual-results-card-desktop">
-            <div class="grid grid-cols-3 gap-3">
-              <!-- Card 1 - Capital Total -->
-              <div class="manual-stat-card">
-                <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
-                <div class="relative z-10 h-full flex flex-col justify-between">
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-[9px] text-[#7A7A7A] font-medium uppercase tracking-wide">Capital Total</span>
-                    <button class="eye-btn" @click="balanceVisible = !balanceVisible">
-                      <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[10px]"></i>
-                    </button>
-                  </div>
-                  <div class="text-lg font-bold text-white">
-                    {{ balanceVisible ? accountBalanceFormatted : '••••••' }}
-                  </div>
+          <!-- New Results Card (Mimicking IA APOLLO from AIMonitoringView) -->
+          <div v-if="!isMobile" class="manual-results-card-premium">
+            <div class="flex items-center gap-6 lg:gap-8 divide-x divide-border/50">
+              <!-- Capital -->
+              <div class="text-center pl-0 flex flex-col items-center">
+                <div class="flex items-center gap-1.5 mb-1">
+                  <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest">Capital</p>
+                  <button @click="balanceVisible = !balanceVisible" class="opacity-40 hover:opacity-100 transition-opacity">
+                    <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[8px] text-muted-foreground"></i>
+                  </button>
+                </div>
+                <p class="text-xl lg:text-3xl font-bold text-foreground tracking-tight tabular-nums">
+                  {{ balanceVisible ? accountBalanceFormatted : '••••••' }}
+                </p>
+              </div>
+
+              <!-- Resultado -->
+              <div class="text-center pl-6 lg:pl-8 flex flex-col items-center">
+                <div class="flex items-center gap-1.5 mb-1">
+                  <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest">Resultado</p>
+                  <button @click="profitVisible = !profitVisible" class="opacity-40 hover:opacity-100 transition-opacity">
+                    <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[8px] text-muted-foreground"></i>
+                  </button>
+                </div>
+                <div class="flex items-center">
+                  <p class="text-xl lg:text-3xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)] tabular-nums"
+                     :class="sessionStats.profit >= 0 ? 'text-success' : 'text-red-500'">
+                    {{ profitVisible ? (sessionStats.profit >= 0 ? '+' : '') + formatCurrency(sessionStats.profit, accountCurrency) : '••••••' }}
+                  </p>
+                  <span v-if="profitVisible" class="ml-2 px-2 py-0.5 rounded text-[10px] lg:text-xs font-bold tracking-wide"
+                        :style="sessionStats.profit >= 0 ? 'background-color: rgba(34, 197, 94, 0.2); color: #22C55E;' : 'background-color: rgba(239, 68, 68, 0.2); color: #EF4444;'">
+                    {{ profitPercentage }}
+                  </span>
                 </div>
               </div>
 
-              <!-- Card 2 - Lucro Sessão -->
-              <div class="manual-stat-card">
-                <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
-                <div class="relative z-10 h-full flex flex-col justify-between">
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-[9px] text-[#7A7A7A] font-medium uppercase tracking-wide">Lucro Sessão</span>
-                    <button class="eye-btn" @click="profitVisible = !profitVisible">
-                      <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[10px]"></i>
-                    </button>
-                  </div>
-                  <div class="flex items-baseline gap-1.5">
-                    <div :class="['text-lg font-bold', sessionProfitLossClass]">
-                      {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
-                    </div>
-                    <span v-if="profitVisible" :class="['text-[10px] px-1 blue-round-badge', isProfitPositive ? 'bg-zenix-green/10 text-zenix-green' : 'bg-red-500/10 text-red-500']">
-                      {{ profitPercentage }}
-                    </span>
-                  </div>
+              <!-- Operações Stats -->
+              <div class="pl-6 lg:pl-8 flex flex-col items-center">
+                <div class="flex items-center gap-1.5 mb-1">
+                  <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest">Desempenho</p>
+                  <button @click="tradesVisible = !tradesVisible" class="opacity-40 hover:opacity-100 transition-opacity">
+                    <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[8px] text-muted-foreground"></i>
+                  </button>
                 </div>
-              </div>
-
-              <!-- Card 3 - Trades & Winrate -->
-              <div class="manual-stat-card">
-                <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
-                <div class="relative z-10 h-full flex flex-col justify-between">
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-[9px] text-[#7A7A7A] font-medium uppercase tracking-wide">Desempenho</span>
-                    <button class="eye-btn" @click="tradesVisible = !tradesVisible">
-                      <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[10px]"></i>
-                    </button>
+                <div class="flex items-center gap-2 lg:gap-3 text-sm">
+                  <div class="text-center">
+                    <span class="text-lg lg:text-xl font-semibold text-foreground/90 tabular-nums">{{ tradesVisible ? sessionStats.total : '•' }}</span>
+                    <span class="text-[10px] text-muted-foreground block">Total</span>
                   </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-1">
-                      <span class="text-xs font-bold text-zenix-green">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
-                      <span class="text-[10px] text-[#7A7A7A]">/</span>
-                      <span class="text-xs font-bold text-red-400">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
-                    </div>
-                    <div class="text-xs font-bold text-white">
+                  <span class="text-muted-foreground/30 text-lg hidden lg:inline">·</span>
+                  <div class="text-center">
+                    <span class="text-lg lg:text-xl font-semibold text-success/90 tabular-nums">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
+                    <span class="text-[10px] text-muted-foreground block">Win</span>
+                  </div>
+                  <span class="text-muted-foreground/30 text-lg hidden lg:inline">·</span>
+                  <div class="text-center">
+                    <span class="text-lg lg:text-xl font-semibold text-red-500/60 tabular-nums">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
+                    <span class="text-[10px] text-muted-foreground block">Loss</span>
+                  </div>
+                  <span class="text-muted-foreground/30 text-lg hidden lg:inline">·</span>
+                  <div class="text-center">
+                   <div class="flex flex-col items-center">
+                    <span class="text-lg lg:text-xl font-semibold text-success/90 tabular-nums">
                       {{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}
-                    </div>
+                    </span>
+                    <span class="text-[10px] text-muted-foreground block">Winrate</span>
+                   </div>
                   </div>
                 </div>
               </div>
@@ -1718,47 +1723,99 @@ export default {
   display: flex;
   flex-direction: column;
   flex: 1;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
 .header-text-container {
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
 }
 
-.manual-results-card-desktop {
-  width: 480px;
-  flex-shrink: 0;
-  margin-bottom: 0px;
-}
-
-.manual-stat-card {
-  background: rgba(11, 11, 11, 0.8);
-  border: 2px solid #1C1C1C;
-  border-radius: 12px;
-  padding: 12px;
-  height: 80px;
+/* Premium Results Card (Mimicking IA APOLLO from AIMonitoringView) */
+.manual-results-card-premium {
+  background: linear-gradient(to bottom right, rgba(22, 22, 22, 0.4), rgba(22, 22, 22, 0.2));
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.25rem 2rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
 }
 
-.manual-stat-card:hover {
-  border-color: rgba(34, 197, 94, 0.3);
-  transform: translateY(-2px);
+.manual-results-card-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(34, 197, 94, 0.3), transparent);
 }
 
+/* Status Indicator Bar */
 .status-indicator-bar-manual {
-  margin-top: 8px;
-  background: rgba(15, 15, 15, 0.9);
-  border: 1px solid #1C1C1C;
-  border-radius: 8px;
-  padding: 6px 12px;
-  color: #FAFAFA;
+  margin-top: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
 
-.blue-round-badge {
-  border-radius: 4px;
-  font-weight: 700;
+.status-indicator-bar-manual span {
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+/* Updated Tab Styles */
+.operation-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1.5rem;
+  padding: 0;
+}
+
+.operation-tabs button {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  color: rgba(122, 122, 122, 0.8) !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  padding: 1rem 1.5rem !important;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.operation-tabs button:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.operation-tabs button.active-tab {
+  color: #22C55E !important;
+  border-bottom: 2px solid #22C55E !important;
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+}
+
+.operation-tabs button.active-tab::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: linear-gradient(to top, rgba(34, 197, 94, 0.1), transparent);
+  pointer-events: none;
 }
 
 @media (max-width: 1024px) {
