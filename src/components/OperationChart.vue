@@ -1,13 +1,17 @@
 <template>
-  <div class="operation-chart-wrapper h-fit">
+  <div class="operation-chart-wrapper" :class="activeTab === 'chart' ? 'h-full' : 'h-fit'">
     <!-- Main Layout -->
-    <div class="operation-layout flex w-full h-fit overflow-hidden">
+    <div class="operation-layout flex w-full overflow-hidden" :class="activeTab === 'chart' ? 'h-full' : 'h-fit'">
       <!-- Chart Column -->
-      <div class="col-chart flex-1 min-w-0 flex flex-col gap-5 h-fit">
+      <div class="col-chart flex-1 min-w-0 flex flex-col gap-5" :class="activeTab === 'chart' ? 'h-full' : 'h-fit'">
         <!-- Chart Container -->
         <div 
-          class="bg-zenix-card border border-zenix-border rounded-xl flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card h-fit min-h-[400px]"
-          :class="{ 'overflow-hidden': activeTab === 'chart' }"
+          class="flex flex-col chart-container w-full chart-card"
+          :class="[
+            activeTab === 'chart' 
+              ? 'bg-zenix-card border border-zenix-border rounded-xl shadow-[0_0_8px_rgba(0,0,0,0.25)] h-full overflow-hidden' 
+              : 'border-none bg-transparent shadow-none h-fit min-h-[820px]'
+          ]"
         >
           <!-- Card Header for Chart Controls -->
           <div v-if="activeTab === 'chart'" class="flex items-center justify-between px-6 py-4 flex-shrink-0 border-b border-white/5 relative">
