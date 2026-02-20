@@ -283,7 +283,7 @@
                                         <th>Nome</th>
                                         <th>País</th>
                                         <th>Login ID</th>
-                                        <th>Saldo Real <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
+                                        <th>Total Depositado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
                                         <th>Volume Operado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
                                         <th>Markup Gerado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
                                         <th>Markup Médio/Dia</th>
@@ -314,7 +314,15 @@
                                         </td>
                                         <td class="login-id">{{ client.email }}</td>
                                         <td class="font-medium text-white">{{ formatCurrency(client.realAmount || 0) }}</td>
-                                        <td class="font-medium text-white">{{ formatCurrency(client.volumeOperado || 0) }}</td>
+                                        <td class="font-medium text-white">
+                                            <span 
+                                                class="volume-clickable" 
+                                                @click="openTransactionsModal(client)"
+                                                title="Ver detalhes das operações"
+                                            >
+                                                {{ formatCurrency(client.volumeOperado || 0) }}
+                                            </span>
+                                        </td>
                                         <td class="markup-value">{{ formatCurrency(client.commission) }}</td>
                                         <td class="font-medium text-white">{{ formatCurrency(client.markupAvgPerDay || 0) }}</td>
                                         <td>
@@ -349,8 +357,70 @@
             @close="showSettingsModal = false"
         />
 
+        <!-- Transactions Detail Modal -->
+        <div v-if="showTransactionsModal" class="modal-overlay" @click.self="showTransactionsModal = false">
+            <div class="transaction-modal">
+                <div class="modal-header">
+                    <div class="header-left">
+                        <h3 class="modal-title">
+                            <i class="fas fa-history mr-2 text-green-400"></i>
+                            Últimas 100 Operações - {{ selectedUser?.name }}
+                        </h3>
+                        <p class="modal-subtitle">Histórico consolidado de IA, Agente e Manual</p>
+                    </div>
+                    <div class="header-right">
+                        <button class="btn-csv" @click="exportTransactionsCSV" :disabled="isTransactionsLoading || !userTransactions.length">
+                            <i class="fas fa-file-csv mr-2"></i> Exportar CSV
+                        </button>
+                        <button class="close-btn" @click="showTransactionsModal = false">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
 
-
+                <div class="modal-body">
+                    <div v-if="isTransactionsLoading" class="modal-loading">
+                        <i class="fas fa-spinner fa-spin mr-2"></i> Buscando histórico...
+                    </div>
+                    <div v-else-if="!userTransactions.length" class="modal-empty text-center py-20">
+                        <i class="fas fa-folder-open text-4xl text-gray-700 mb-4 block"></i>
+                        <p class="text-gray-500">Nenhuma operação encontrada para este usuário.</p>
+                    </div>
+                    <div v-else class="transactions-table-container">
+                        <table class="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Origem</th>
+                                    <th>Mercado</th>
+                                    <th>Tipo</th>
+                                    <th>Valor</th>
+                                    <th>Lucro</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="tx in userTransactions" :key="tx.id">
+                                    <td class="text-gray-400">{{ new Date(tx.date).toLocaleString() }}</td>
+                                    <td>
+                                        <span class="origin-tag" :class="tx.origin.toLowerCase()">{{ tx.origin }}</span>
+                                    </td>
+                                    <td class="font-medium">{{ tx.symbol }}</td>
+                                    <td>{{ tx.type }}</td>
+                                    <td class="font-medium text-white">{{ formatCurrency(tx.amount) }}</td>
+                                    <td :class="tx.profit > 0 ? 'text-green-400' : tx.profit < 0 ? 'text-red-400' : 'text-gray-400'">
+                                        {{ formatCurrency(tx.profit) }}
+                                    </td>
+                                    <td>
+                                        <span class="status-pill" :class="tx.status.toLowerCase()">{{ tx.status }}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
         <!-- Full Screen Loading Overlay -->
@@ -565,6 +635,173 @@
     margin-bottom: 2rem;
 }
 
+.modal-loading {
+    padding: 100px 0;
+    text-align: center;
+    color: #4ade80;
+}
+
+.modal-empty {
+    padding: 100px 0;
+    text-align: center;
+}
+
+/* Modal and Transactions Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.transaction-modal {
+    background: #09090b;
+    border: 1px solid #27272a;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 1000px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #27272a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.modal-subtitle {
+    font-size: 0.85rem;
+    color: #a1a1aa;
+    margin: 4px 0 0 0;
+}
+
+.header-right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-csv {
+    background: #00FF88;
+    color: #000;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.btn-csv:hover:not(:disabled) {
+    background: #00e077;
+    transform: translateY(-1px);
+}
+
+.btn-csv:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: #a1a1aa;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: #fff;
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.transactions-table-container {
+    width: 100%;
+}
+
+.transactions-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.transactions-table th {
+    position: sticky;
+    top: 0;
+    background: #18181b;
+    z-index: 10;
+    text-align: left;
+    padding: 12px 24px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #71717a;
+    border-bottom: 1px solid #27272a;
+}
+
+.transactions-table td {
+    padding: 16px 24px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #18181b;
+    color: #e4e4e7;
+}
+
+.transactions-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.origin-tag {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.origin-tag.ia { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.origin-tag.agente { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+.origin-tag.manual { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+.volume-clickable {
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: rgba(0, 255, 136, 0.3);
+    transition: all 0.2s;
+}
+
+.volume-clickable:hover {
+    color: #00FF88;
+    text-decoration-color: #00FF88;
+}
+
 @media (min-width: 1024px) {
     .charts-grid {
         grid-template-columns: 1fr 1fr;
@@ -609,6 +846,13 @@ export default {
             filterUserOrigin: '',
             filterDepositRange: '',
             showSettingsModal: false,
+            
+            // Transaction Details Modal
+            showTransactionsModal: false,
+            selectedUser: null,
+            userTransactions: [],
+            isTransactionsLoading: false,
+            
             displayedClients: [],
             allUsers: [],
             isLoading: false,
@@ -730,20 +974,20 @@ export default {
                 }
 
                 // 2. Buscar dados agregados para os 5 cards do topo
-                this.fetchAggregates(token, apiUrl);
+                await this.fetchAggregates(token, apiUrl);
 
                 // 3. Buscar dados de HOJE separadamente para o card "Comissão Hoje" (redundante agora, mas mantido por segurança)
-                this.fetchTodayData(token, apiUrl);
+                await this.fetchTodayData(token, apiUrl);
 
                 // 4. Buscar dados do gráfico de projeção
-                this.fetchChartData(token, apiUrl);
+                await this.fetchChartData(token, apiUrl);
 
-                this.isLoading = false;
                 this.loadingProgress = 100;
 
             } catch (error) {
                 console.error('[MarkupView] Erro ao buscar dados:', error);
                 this.error = 'Erro ao carregar dados de markup: ' + error.message;
+            } finally {
                 this.isLoading = false;
             }
         },
@@ -920,6 +1164,64 @@ export default {
             
             // SIMULAÇÃO (Remova a linha abaixo após descomentar o bloco acima)
             this.$root.$toast.success(`Download do PDF iniciado! (Arquivo: Relatorio_Comissoes_${this.filterStartDate}_a_${this.filterEndDate}.pdf)`);
+        },
+
+        async openTransactionsModal(user) {
+            this.selectedUser = user;
+            this.showTransactionsModal = true;
+            this.userTransactions = [];
+            this.isTransactionsLoading = true;
+
+            try {
+                const token = localStorage.getItem('zenix_token');
+                const apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api';
+                
+                const response = await fetch(`${apiUrl}/trades/user-transactions/${user.userId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    this.userTransactions = await response.json();
+                } else {
+                    this.$root.$toast.error('Erro ao buscar transações do usuário.');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar transações:', error);
+                this.$root.$toast.error('Erro de conexão ao buscar transações.');
+            } finally {
+                this.isTransactionsLoading = false;
+            }
+        },
+
+        exportTransactionsCSV() {
+            if (!this.userTransactions.length) return;
+
+            const headers = ['Data', 'Origem', 'Mercado', 'Tipo', 'Valor', 'Lucro', 'Status'];
+            const rows = this.userTransactions.map(tx => [
+                new Date(tx.date).toLocaleString(),
+                tx.origin,
+                tx.symbol,
+                tx.type,
+                tx.amount,
+                tx.profit,
+                tx.status
+            ]);
+
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `transacoes_${this.selectedUser.name.replace(/\s+/g, '_')}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     },
     computed: {
