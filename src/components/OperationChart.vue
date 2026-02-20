@@ -1,9 +1,9 @@
 <template>
-  <div class="operation-chart-wrapper">
+  <div class="operation-chart-wrapper h-full">
     <!-- Main Layout -->
-    <div class="operation-layout flex w-full overflow-hidden">
+    <div class="operation-layout flex w-full h-full overflow-hidden">
       <!-- Chart Column -->
-      <div class="col-chart flex-1 min-w-0 flex flex-col gap-5">
+      <div class="col-chart flex-1 min-w-0 flex flex-col gap-5 h-full">
         <!-- Chart Container -->
         <div 
           class="bg-zenix-card border border-zenix-border rounded-xl flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card h-full"
@@ -5347,10 +5347,8 @@ export default {
 
 
   .digits-tab-container {
-    height: auto !important;
-    max-height: none !important;
-    min-height: auto !important; /* fit-content behavior */
-    overflow: visible !important;
+    height: 100% !important;
+    overflow-y: auto !important;
   }
 
   .dvx-status-green-text { color: #22C55E; }
