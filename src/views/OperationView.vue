@@ -53,20 +53,19 @@
 
             <!-- STATUS -->
             <div class="bar-section">
-              <span class="bar-label">Status</span>
               <div class="flex items-center gap-3">
                 <div class="relative flex-shrink-0">
                   <div class="absolute inset-0 rounded-full bg-zenix-green/30 blur-md scale-[1.5]"></div>
-                  <div class="relative w-8 h-8 rounded-full bg-gradient-to-br from-zenix-green/20 to-zenix-green/5 border border-zenix-green/30 flex items-center justify-center backdrop-blur-sm">
-                    <i class="fas fa-bolt text-xs text-zenix-green drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]"></i>
+                  <div class="relative w-12 h-12 rounded-full bg-gradient-to-br from-zenix-green/20 to-zenix-green/5 border border-zenix-green/40 flex items-center justify-center backdrop-blur-md shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+                    <i class="fas fa-bolt text-xl text-zenix-green drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]"></i>
                     <div v-if="activeOperation.isOpen" class="absolute inset-0 rounded-full border border-zenix-green/20 animate-ping"></div>
                   </div>
                 </div>
-                <div class="flex flex-col">
-                  <span class="bar-value text-zenix-green uppercase font-semibold text-xs">
+                <div class="flex flex-col justify-center">
+                  <span class="bar-value text-zenix-green uppercase font-semibold text-xs leading-tight">
                     {{ activeOperation.isOpen ? 'Em Operação' : 'Pronto' }}
                   </span>
-                  <span v-if="activeOperation.isOpen" class="text-[10px] tabular-nums text-white/50">
+                  <span v-if="activeOperation.isOpen" :class="['text-[11px] tabular-nums font-medium', estimativaClass]">
                     Estimativa: {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
                   </span>
                   <span v-else class="text-[10px] text-white/30 uppercase tracking-tighter">Aguardando...</span>
@@ -80,7 +79,6 @@
               <div class="flex items-center gap-2">
                 <div class="flex flex-col">
                   <span class="bar-value text-lg leading-none font-medium">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
-                  <span class="text-[9px] text-white/30 uppercase mt-1 tracking-widest">{{ activeAccountType }} Account</span>
                 </div>
                 <button @click="balanceVisible = !balanceVisible" class="opacity-20 hover:opacity-100 transition-opacity">
                   <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
@@ -121,7 +119,7 @@
                 <!-- Stacked Winrate -->
                 <div class="flex flex-col items-center px-2 py-1 bg-white/5 rounded-lg border border-white/5">
                   <span class="text-sm font-semibold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
-                  <span class="text-[8px] text-white/30 uppercase tracking-tighter mt-0.5">RATE</span>
+                  <span class="text-[8px] text-white/30 uppercase tracking-tighter mt-0.5">WIN RATE</span>
                 </div>
                 <button @click="tradesVisible = !tradesVisible" class="opacity-20 hover:opacity-100 transition-opacity ml-1">
                   <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
@@ -137,7 +135,6 @@
                   <span :class="['bar-value text-lg tabular-nums leading-none font-medium', getTimerClass]">
                     {{ formattedTimeRemaining }}
                   </span>
-                  <span class="text-[9px] text-white/30 uppercase mt-1 tracking-widest">Tempo de Operação</span>
                 </div>
               </div>
             </div>
@@ -265,6 +262,12 @@ export default {
     activeAccountType() {
       return this.tradeCurrency === 'DEMO' ? 'Demo' : 'Real';
     },
+    estimativaClass() {
+      const profit = this.activeOperation.realTimeProfit || 0;
+      if (profit > 0) return 'text-zenix-green';
+      if (profit < 0) return 'text-red-500';
+      return 'text-white/50';
+    },
     formattedLastTradeResult() {
       if (this.activeOperation.isOpen) return this.formatDynamicCurrency(0);
       if (this.lastOrders.length === 0) return this.formatDynamicCurrency(0);
@@ -273,13 +276,13 @@ export default {
       return `${prefix}${this.formatDynamicCurrency(lastProfit)}`;
     },
     lastTradeProfitClass() {
-      if (this.activeOperation.isOpen) return 'text-white/50';
-      if (this.lastOrders.length === 0) return 'text-white/50';
+      if (this.activeOperation.isOpen) return 'text-white/50 font-medium';
+      if (this.lastOrders.length === 0) return 'text-white/50 font-medium';
       const lastProfit = Number(this.lastOrders[0].profit || 0);
-      return lastProfit >= 0 ? 'text-zenix-green' : 'text-red-500';
+      return lastProfit >= 0 ? 'text-zenix-green font-medium' : 'text-red-500 font-medium';
     },
     formattedTimeRemaining() {
-      if (!this.activeOperation.isOpen) return '--:--';
+      if (!this.activeOperation.isOpen) return '00:00';
       
       if (this.activeOperation.time !== null) {
         const totalSeconds = Math.floor(Number(this.activeOperation.time));
@@ -292,7 +295,7 @@ export default {
         return `${Math.floor(this.activeOperation.ticks)} Ticks`;
       }
       
-      return 'Em Processo';
+      return '00:00';
     },
     formattedSessionProfitLoss() {
       const profit = this.sessionStats.profit || 0;
