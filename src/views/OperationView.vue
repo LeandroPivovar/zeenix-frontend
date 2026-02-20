@@ -35,115 +35,82 @@
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
-        <div class="header-and-stats-wrapper">
-          <div class="title-and-tabs">
-            <div class="desktop-only header-text-container">
-              <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
-              <p class="text-sm text-[#A1A1AA] mt-0 max-w-2xl">
-                Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
-              </p>
-            </div>
-
-            <!-- Operation Tabs -->
-            <div class="operation-tabs-wrapper custom-scrollbar">
-              <div class="operation-tabs">
-                <button
-                  class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-                  :class="{ 'border-b-2 border-zenix-green text-zenix-text active-tab': currentView === 'OperationChart', 'border-b-2 border-transparent': currentView !== 'OperationChart' }"
-                  @click="changeView('OperationChart')"
-                >
-                  Gráfico
-                </button>
-                <button
-                  class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-                  :class="{ 'border-b-2 border-zenix-green text-zenix-text active-tab': currentView === 'OperationLogs', 'border-b-2 border-transparent': currentView !== 'OperationLogs' }"
-                  @click="changeView('OperationLogs')"
-                >
-                  Registro
-                </button>
-                <button
-                  class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-                  :class="{ 'border-b-2 border-zenix-green text-zenix-text active-tab': currentView === 'OperationLastOrders', 'border-b-2 border-transparent': currentView !== 'OperationLastOrders' }"
-                  @click="changeView('OperationLastOrders')"
-                >
-                  Últimas Ordens
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- New Results Card (Mimicking IA APOLLO from AIMonitoringView) -->
-          <div v-if="!isMobile" class="manual-results-card-premium">
-            <div class="flex items-center gap-6 lg:gap-8 divide-x divide-border/50">
-              <!-- Capital -->
-              <div class="text-center pl-0 flex flex-col items-center">
-                <div class="flex items-center gap-1.5 mb-1">
-                  <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest">Capital</p>
-                  <button @click="balanceVisible = !balanceVisible" class="opacity-40 hover:opacity-100 transition-opacity">
-                    <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[8px] text-muted-foreground"></i>
-                  </button>
-                </div>
-                <p class="text-xl lg:text-3xl font-bold text-foreground tracking-tight tabular-nums">
-                  {{ balanceVisible ? accountBalanceFormatted : '••••••' }}
-                </p>
-              </div>
-
-              <!-- Resultado -->
-              <div class="text-center pl-6 lg:pl-8 flex flex-col items-center">
-                <div class="flex items-center gap-1.5 mb-1">
-                  <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest">Resultado</p>
-                  <button @click="profitVisible = !profitVisible" class="opacity-40 hover:opacity-100 transition-opacity">
-                    <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[8px] text-muted-foreground"></i>
-                  </button>
-                </div>
-                <div class="flex items-center">
-                  <p class="text-xl lg:text-3xl font-bold tracking-tight drop-shadow-[0_0_20px_hsl(142,76%,45%,0.3)] tabular-nums"
-                     :class="sessionStats.profit >= 0 ? 'text-success' : 'text-red-500'">
-                    {{ profitVisible ? (sessionStats.profit >= 0 ? '+' : '') + formatCurrency(sessionStats.profit, accountCurrency) : '••••••' }}
-                  </p>
-                  <span v-if="profitVisible" class="ml-2 px-2 py-0.5 rounded text-[10px] lg:text-xs font-bold tracking-wide"
-                        :style="sessionStats.profit >= 0 ? 'background-color: rgba(34, 197, 94, 0.2); color: #22C55E;' : 'background-color: rgba(239, 68, 68, 0.2); color: #EF4444;'">
-                    {{ profitPercentage }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Operações Stats -->
-              <div class="pl-6 lg:pl-8 flex flex-col items-center">
-                <div class="flex items-center gap-1.5 mb-1">
-                  <p class="text-[9px] lg:text-[10px] text-muted-foreground uppercase tracking-widest">Desempenho</p>
-                  <button @click="tradesVisible = !tradesVisible" class="opacity-40 hover:opacity-100 transition-opacity">
-                    <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[8px] text-muted-foreground"></i>
-                  </button>
-                </div>
-                <div class="flex items-center gap-2 lg:gap-3 text-sm">
-                  <div class="text-center">
-                    <span class="text-lg lg:text-xl font-semibold text-foreground/90 tabular-nums">{{ tradesVisible ? sessionStats.total : '•' }}</span>
-                    <span class="text-[10px] text-muted-foreground block">Total</span>
-                  </div>
-                  <span class="text-muted-foreground/30 text-lg hidden lg:inline">·</span>
-                  <div class="text-center">
-                    <span class="text-lg lg:text-xl font-semibold text-success/90 tabular-nums">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
-                    <span class="text-[10px] text-muted-foreground block">Win</span>
-                  </div>
-                  <span class="text-muted-foreground/30 text-lg hidden lg:inline">·</span>
-                  <div class="text-center">
-                    <span class="text-lg lg:text-xl font-semibold text-red-500/60 tabular-nums">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
-                    <span class="text-[10px] text-muted-foreground block">Loss</span>
-                  </div>
-                  <span class="text-muted-foreground/30 text-lg hidden lg:inline">·</span>
-                  <div class="text-center">
-                   <div class="flex flex-col items-center">
-                    <span class="text-lg lg:text-xl font-semibold text-success/90 tabular-nums">
-                      {{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}
-                    </span>
-                    <span class="text-[10px] text-muted-foreground block">Winrate</span>
-                   </div>
-                  </div>
-                </div>
+        <div class="manual-premium-bar-wrapper">
+          <div class="manual-premium-bar">
+            <!-- STATUS -->
+            <div class="bar-section">
+              <span class="bar-label">Status</span>
+              <div class="flex items-center gap-1.5">
+                <div class="w-1.5 h-1.5 rounded-full animate-pulse" :class="activeOperation.isOpen ? 'bg-yellow-400' : 'bg-zenix-green'"></div>
+                <span class="bar-value text-zenix-green truncate max-w-[120px]">
+                  {{ activeOperation.isOpen ? 'Em Operação' : 'Pronto' }}
+                  <span v-if="activeOperation.isOpen" class="text-[10px] text-white/60 ml-1">({{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }})</span>
+                </span>
               </div>
             </div>
 
+            <!-- CAPITAL -->
+            <div class="bar-section">
+              <span class="bar-label">Capital</span>
+              <div class="flex items-center gap-2">
+                <span class="bar-value">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
+                <button @click="balanceVisible = !balanceVisible" class="opacity-40 hover:opacity-100">
+                  <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- RESULTADO -->
+            <div class="bar-section">
+              <span class="bar-label">Resultado</span>
+              <div class="flex items-center gap-2">
+                <span :class="['bar-value', sessionProfitLossClass]">
+                  {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
+                </span>
+                <button @click="profitVisible = !profitVisible" class="opacity-40 hover:opacity-100">
+                  <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- DESEMPENHO -->
+            <div class="bar-section">
+              <span class="bar-label">Desempenho</span>
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1">
+                  <span class="text-xs font-bold text-success">{{ tradesVisible ? sessionStats.wins + 'W' : '•' }}</span>
+                  <span class="text-[10px] text-white/20">|</span>
+                  <span class="text-xs font-bold text-red-500">{{ tradesVisible ? sessionStats.losses + 'L' : '•' }}</span>
+                </div>
+                <div class="px-1.5 py-0.5 rounded bg-white/5 border border-white/5">
+                  <span class="text-[10px] font-bold text-white/80">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
+                </div>
+                <button @click="tradesVisible = !tradesVisible" class="opacity-40 hover:opacity-100">
+                  <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- TEMPO RESTANTE -->
+            <div class="bar-section">
+              <span class="bar-label">Tempo Restante</span>
+              <span :class="['bar-value tabular-nums', getTimerClass]">
+                {{ formattedTimeRemaining }}
+              </span>
+            </div>
+
+            <!-- TABS (Far Right) -->
+            <div class="bar-tabs-container">
+              <button
+                v-for="(label, view) in { 'OperationChart': 'Gráfico', 'OperationLogs': 'Registro', 'OperationLastOrders': 'Últimas Ordens' }"
+                :key="view"
+                class="bar-tab-btn"
+                :class="{ 'active': currentView === view }"
+                @click="changeView(view)"
+              >
+                {{ label }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -250,12 +217,27 @@ export default {
   computed: {
     accountBalanceFormatted() {
       if (this.accountBalanceValue == null) return '---';
-      const formatted = this.formatCurrency(this.accountBalanceValue, this.accountCurrency);
-      if (this.tradeCurrency === 'DEMO') {
-        // Remove current currency symbol from formatCurrency and prepend Ɖ
-        return `Ɖ ${this.accountBalanceValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      return this.formatDynamicCurrency(this.accountBalanceValue);
+    },
+    formattedTimeRemaining() {
+      if (!this.activeOperation.isOpen) return '--:--';
+      
+      if (this.activeOperation.time !== null) {
+        const mins = Math.floor(this.activeOperation.time / 60);
+        const secs = this.activeOperation.time % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
       }
-      return formatted;
+      
+      if (this.activeOperation.ticks !== null) {
+        return `${this.activeOperation.ticks} Ticks`;
+      }
+      
+      return 'Em Processo';
+    },
+    formattedSessionProfitLoss() {
+      const profit = this.sessionStats.profit || 0;
+      const prefix = profit >= 0 ? '+' : '';
+      return `${prefix}${this.formatDynamicCurrency(profit)}`;
     },
     preferredCurrencyPrefix() {
       if (this.preferredCurrency === 'DEMO') {
@@ -312,11 +294,6 @@ export default {
         if (this.activeOperation.ticks <= 10) return 'text-yellow-400';
       }
       return 'text-white';
-    },
-    formattedSessionProfitLoss() {
-      const profit = this.sessionStats.profit || 0;
-      const prefix = profit >= 0 ? '+' : '';
-      return `${prefix}${this.formatCurrency(profit, this.accountCurrency)}`;
     },
     isProfitPositive() {
       return (this.sessionStats.profit || 0) >= 0;
@@ -445,6 +422,12 @@ export default {
       } catch (error) {
         return `${currency || 'USD'} ${Number(value).toFixed(2)}`;
       }
+    },
+    formatDynamicCurrency(value) {
+      if (this.tradeCurrency === 'DEMO') {
+        return `Ɖ ${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+      return this.formatCurrency(value, this.accountCurrency);
     },
     getCurrencyPrefix(currency) {
       switch ((currency || '').toUpperCase()) {
@@ -1135,34 +1118,44 @@ export default {
     initializeStatsFromOrders(orders) {
       if (!orders || orders.length === 0) return;
       
-      // Filtrar apenas ordens de hoje para o "Lucro do Dia"
       const today = new Date().toLocaleDateString('pt-BR');
-      const todayOrders = orders.filter(order => order.rawDate === today);
-
+      
       let wins = 0;
       let losses = 0;
-      let profit = 0;
+      let dailyProfit = 0;
 
-      todayOrders.forEach(order => {
+      orders.forEach(order => {
         if (order.profit != null) {
           const p = Number(order.profit);
-          profit += p;
+          
+          // Performance (All history)
           if (p > 0) wins++;
           else if (p < 0) losses++;
+
+          // Daily Profit (Resultado)
+          if (order.rawDate === today) {
+            dailyProfit += p;
+          }
         }
       });
 
       this.sessionStats.wins = wins;
       this.sessionStats.losses = losses;
       this.sessionStats.total = wins + losses;
-      this.sessionStats.profit = profit;
+      this.sessionStats.profit = dailyProfit; // Showing daily profit in "Resultado"
+      
       if (this.sessionStats.total > 0) {
         this.sessionStats.winRate = Math.round((wins / this.sessionStats.total) * 100);
       } else {
         this.sessionStats.winRate = 0;
       }
       
-      console.log('[OperationView] Estatísticas inicializadas:', this.sessionStats);
+      console.log('[OperationView] Estatísticas baseadas em todo o histórico:', {
+        total: this.sessionStats.total,
+        wins: this.sessionStats.wins,
+        losses: this.sessionStats.losses,
+        dailyProfit: this.sessionStats.profit
+      });
     },
     mapStatus(status) {
       if (!status) return 'PENDING';
@@ -1716,193 +1709,141 @@ export default {
   min-width: 0;
 }
 
-.header-text-container {
+/* Manual Premium Bar */
+.manual-premium-bar-wrapper {
+  padding: 0 1rem;
   margin-bottom: 1.5rem;
 }
 
-/* Premium Results Card (Mimicking IA APOLLO from AIMonitoringView) */
-.manual-results-card-premium {
-  background: linear-gradient(to bottom right, rgba(22, 22, 22, 0.4), rgba(22, 22, 22, 0.2));
-  backdrop-filter: blur(12px);
-  border-radius: 1rem;
+.manual-premium-bar {
+  background: linear-gradient(to bottom right, rgba(22, 22, 22, 0.6), rgba(22, 22, 22, 0.3));
+  backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 1.25rem 2rem;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  gap: 2.5rem;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.7);
   position: relative;
   overflow: hidden;
 }
 
-.manual-results-card-premium::before {
+.manual-premium-bar::after {
   content: '';
   position: absolute;
   top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(34, 197, 94, 0.3), transparent);
-}
-
-/* Status Indicator Bar */
-.status-indicator-bar-manual {
-  margin-top: 0.75rem;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.status-indicator-bar-manual span {
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: 0.05em;
-  text-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
-}
-
-/* Updated Tab Styles */
-.operation-tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 1.5rem;
-  padding: 0;
-}
-
-.operation-tabs button {
-  background: transparent !important;
-  border: none !important;
-  border-bottom: 2px solid transparent !important;
-  border-radius: 0 !important;
-  color: rgba(122, 122, 122, 0.8) !important;
-  font-size: 0.875rem !important;
-  font-weight: 500 !important;
-  padding: 1rem 1.5rem !important;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.operation-tabs button:hover {
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
-.operation-tabs button.active-tab {
-  color: #22C55E !important;
-  border-bottom: 2px solid #22C55E !important;
-  text-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
-}
-
-.operation-tabs button.active-tab::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
   left: 0;
   right: 0;
-  height: 10px;
-  background: linear-gradient(to top, rgba(34, 197, 94, 0.1), transparent);
-  pointer-events: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(34, 197, 94, 0.2), transparent);
 }
 
-@media (max-width: 1024px) {
-  .header-and-stats-wrapper {
-    flex-direction: column;
-    padding: 10px 15px;
-    align-items: stretch;
-  }
-}
-
-.operation-stats-bar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 32px;
-  background: #0F0F0F;
-  border: 1px solid #1A1A1A;
-  border-radius: 12px;
-  padding: 16px 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.stat-item {
+.bar-section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  position: relative;
+  min-width: fit-content;
 }
 
-.stat-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #7A7A7A;
-  letter-spacing: 0.05em;
+.bar-section:not(:last-child):not(:has(+ .bar-tabs-container))::after {
+  content: '';
+  position: absolute;
+  right: -1.25rem;
+  top: 15%;
+  bottom: 15%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.bar-label {
+  font-size: 9px;
   text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.12em;
+  font-weight: 800;
 }
 
-.stat-value-row {
+.bar-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #FAFAFA;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+/* Tabs inside bar */
+.bar-tabs-container {
+  margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.35rem;
+  padding-left: 1.5rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.stat-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #FAFAFA;
+.bar-tab-btn {
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
 }
 
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.bar-tab-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-.status-dot.online {
-  background-color: #22C55E;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+.bar-tab-btn.active {
+  color: #22C55E;
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(34, 197, 94, 0.05);
 }
 
-.stat-separator {
-  color: #333;
-  margin: 0 2px;
-}
-
-.operation-timer.active .countdown {
-  font-family: 'Monaco', 'Consolas', monospace;
-  font-size: 16px;
+@media (max-width: 1280px) {
+  .manual-premium-bar {
+    gap: 1.5rem;
+    padding: 0.75rem 1rem;
+  }
 }
 
 @media (max-width: 1024px) {
-  .operation-stats-bar-wrapper {
-    padding: 0 16px;
+  .manual-premium-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1rem;
   }
-  
-  .operation-stats-bar {
-    gap: 16px;
-    padding: 12px 16px;
-    flex-wrap: wrap;
+
+  .bar-section:not(:last-child)::after {
+    display: none;
   }
-  
-  .stat-item {
-    flex: 1 1 auto;
-    min-width: 80px;
+
+  .bar-tabs-container {
+    grid-column: span 3;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.75rem;
+    justify-content: center;
   }
 }
 
 @media (max-width: 640px) {
-  .operation-stats-bar {
-    display: grid;
+  .manual-premium-bar {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
   }
-  
-  .status-indicator {
-    grid-column: span 1;
-  }
-  
-  .stats-group {
-    grid-column: span 1;
+
+  .bar-tabs-container {
+    grid-column: span 2;
   }
 }
 </style>
