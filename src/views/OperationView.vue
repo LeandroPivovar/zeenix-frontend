@@ -35,24 +35,42 @@
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
-        <div class="header-text-container px-4 mt-6">
-          <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
-          <p class="text-sm text-[#A1A1AA] mt-1 max-w-2xl">
-            Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
+        <div class="header-text-container px-6 mt-8 text-left">
+          <h1 class="text-3xl text-[#FAFAFA] font-black tracking-tighter uppercase drop-shadow-[0_0_12px_rgba(34,197,94,0.3)]">Operação Manual</h1>
+          <p class="text-xs text-[#A1A1AA] mt-1 max-w-2xl uppercase tracking-widest font-medium opacity-70">
+            Painel de controle avançado para execução estratégica em tempo real
           </p>
         </div>
 
-        <div class="manual-premium-bar-wrapper">
+        <div class="manual-premium-bar-wrapper mt-4">
           <div class="manual-premium-bar">
+            <!-- Floating Particles for Premium Feel -->
+            <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+              <div class="absolute w-1 h-1 rounded-full bg-zenix-green/30" style="top: 20%; left: 15%; animation: float-particle 8s ease-in-out 0s infinite;"></div>
+              <div class="absolute w-0.5 h-0.5 rounded-full bg-zenix-green/20" style="top: 60%; left: 40%; animation: float-particle 10s ease-in-out 2s infinite;"></div>
+              <div class="absolute w-1 h-1 rounded-full bg-zenix-green/25" style="top: 40%; right: 20%; animation: float-particle 9s ease-in-out 1s infinite;"></div>
+            </div>
+
             <!-- STATUS -->
             <div class="bar-section">
               <span class="bar-label">Status</span>
-              <div class="flex items-center gap-1.5">
-                <div class="w-1.5 h-1.5 rounded-full animate-pulse" :class="activeOperation.isOpen ? 'bg-yellow-400' : 'bg-zenix-green'"></div>
-                <span class="bar-value text-zenix-green truncate max-w-[120px]">
-                  {{ activeOperation.isOpen ? 'Em Operação' : 'Pronto' }}
-                  <span v-if="activeOperation.isOpen" class="text-[10px] text-white/60 ml-1">({{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }})</span>
-                </span>
+              <div class="flex items-center gap-3">
+                <div class="relative flex-shrink-0">
+                  <div class="absolute inset-0 rounded-full bg-zenix-green/30 blur-md scale-[1.5]"></div>
+                  <div class="relative w-8 h-8 rounded-full bg-gradient-to-br from-zenix-green/20 to-zenix-green/5 border border-zenix-green/30 flex items-center justify-center backdrop-blur-sm">
+                    <i class="fas fa-bolt text-xs text-zenix-green drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]"></i>
+                    <div v-if="activeOperation.isOpen" class="absolute inset-0 rounded-full border border-zenix-green/20 animate-ping"></div>
+                  </div>
+                </div>
+                <div class="flex flex-col">
+                  <span class="bar-value text-zenix-green uppercase font-black text-xs">
+                    {{ activeOperation.isOpen ? 'Em Operação' : 'Pronto' }}
+                  </span>
+                  <span v-if="activeOperation.isOpen" class="text-[10px] tabular-nums font-bold text-white/50">
+                    Est: {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
+                  </span>
+                  <span v-else class="text-[10px] text-white/30 uppercase font-bold tracking-tighter">Aguardando...</span>
+                </div>
               </div>
             </div>
 
@@ -60,8 +78,11 @@
             <div class="bar-section">
               <span class="bar-label">Capital</span>
               <div class="flex items-center gap-2">
-                <span class="bar-value">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
-                <button @click="balanceVisible = !balanceVisible" class="opacity-40 hover:opacity-100">
+                <div class="flex flex-col">
+                  <span class="bar-value text-lg leading-none">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
+                  <span class="text-[9px] text-white/30 uppercase font-black mt-1 tracking-widest">{{ activeAccountType }} Account</span>
+                </div>
+                <button @click="balanceVisible = !balanceVisible" class="opacity-20 hover:opacity-100 transition-opacity">
                   <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
                 </button>
               </div>
@@ -71,10 +92,13 @@
             <div class="bar-section">
               <span class="bar-label">Resultado</span>
               <div class="flex items-center gap-2">
-                <span :class="['bar-value', sessionProfitLossClass]">
-                  {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
-                </span>
-                <button @click="profitVisible = !profitVisible" class="opacity-40 hover:opacity-100">
+                <div class="flex flex-col">
+                  <span :class="['bar-value text-lg leading-none', lastTradeProfitClass]">
+                    {{ profitVisible ? formattedLastTradeResult : '••••••' }}
+                  </span>
+                  <span class="text-[9px] text-white/30 uppercase font-black mt-1 tracking-widest">Último Resultado</span>
+                </div>
+                <button @click="profitVisible = !profitVisible" class="opacity-20 hover:opacity-100 transition-opacity">
                   <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
                 </button>
               </div>
@@ -83,16 +107,23 @@
             <!-- DESEMPENHO -->
             <div class="bar-section">
               <span class="bar-label">Desempenho</span>
-              <div class="flex items-center gap-3">
-                <div class="flex items-center gap-1">
-                  <span class="text-xs font-bold text-success">{{ tradesVisible ? sessionStats.wins + 'W' : '•' }}</span>
-                  <span class="text-[10px] text-white/20">|</span>
-                  <span class="text-xs font-bold text-red-500">{{ tradesVisible ? sessionStats.losses + 'L' : '•' }}</span>
+              <div class="flex items-center gap-5">
+                <!-- Stacked WINS -->
+                <div class="flex flex-col items-center">
+                  <span class="text-lg font-black text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
+                  <span class="text-[9px] text-white/40 uppercase font-black tracking-tighter mt-1">WIN</span>
                 </div>
-                <div class="px-1.5 py-0.5 rounded bg-white/5 border border-white/5">
-                  <span class="text-[10px] font-bold text-white/80">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
+                <!-- Stacked LOSSES -->
+                <div class="flex flex-col items-center">
+                  <span class="text-lg font-black text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
+                  <span class="text-[9px] text-white/40 uppercase font-black tracking-tighter mt-1">LOSS</span>
                 </div>
-                <button @click="tradesVisible = !tradesVisible" class="opacity-40 hover:opacity-100">
+                <!-- Stacked Winrate -->
+                <div class="flex flex-col items-center px-2 py-1 bg-white/5 rounded-lg border border-white/5">
+                  <span class="text-sm font-black text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
+                  <span class="text-[8px] text-white/30 uppercase font-black tracking-tighter mt-0.5">RATE</span>
+                </div>
+                <button @click="tradesVisible = !tradesVisible" class="opacity-20 hover:opacity-100 transition-opacity ml-1">
                   <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
                 </button>
               </div>
@@ -101,9 +132,14 @@
             <!-- TEMPO RESTANTE -->
             <div class="bar-section">
               <span class="bar-label">Tempo Restante</span>
-              <span :class="['bar-value tabular-nums', getTimerClass]">
-                {{ formattedTimeRemaining }}
-              </span>
+              <div class="flex items-center gap-3">
+                <div class="flex flex-col">
+                  <span :class="['bar-value text-lg tabular-nums leading-none', getTimerClass]">
+                    {{ formattedTimeRemaining }}
+                  </span>
+                  <span class="text-[9px] text-white/30 uppercase font-black mt-1 tracking-widest">Tempo de Operação</span>
+                </div>
+              </div>
             </div>
 
             <!-- TABS (Far Right) -->
@@ -225,6 +261,22 @@ export default {
     accountBalanceFormatted() {
       if (this.accountBalanceValue == null) return '---';
       return this.formatDynamicCurrency(this.accountBalanceValue);
+    },
+    activeAccountType() {
+      return this.tradeCurrency === 'DEMO' ? 'Demo' : 'Real';
+    },
+    formattedLastTradeResult() {
+      if (this.activeOperation.isOpen) return this.formatDynamicCurrency(0);
+      if (this.lastOrders.length === 0) return this.formatDynamicCurrency(0);
+      const lastProfit = Number(this.lastOrders[0].profit || 0);
+      const prefix = lastProfit >= 0 ? '+' : '';
+      return `${prefix}${this.formatDynamicCurrency(lastProfit)}`;
+    },
+    lastTradeProfitClass() {
+      if (this.activeOperation.isOpen) return 'text-white/50';
+      if (this.lastOrders.length === 0) return 'text-white/50';
+      const lastProfit = Number(this.lastOrders[0].profit || 0);
+      return lastProfit >= 0 ? 'text-zenix-green' : 'text-red-500';
     },
     formattedTimeRemaining() {
       if (!this.activeOperation.isOpen) return '--:--';
@@ -1720,23 +1772,32 @@ export default {
 /* Manual Premium Bar */
 .manual-premium-bar-wrapper {
   padding: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   width: 100%;
 }
 
 .manual-premium-bar {
-  background: linear-gradient(to bottom right, rgba(22, 22, 22, 0.6), rgba(22, 22, 22, 0.3));
-  backdrop-filter: blur(20px);
+  background: linear-gradient(to bottom right, rgba(22, 22, 22, 0.7), rgba(15, 15, 15, 0.4));
+  backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(34, 197, 94, 0.1);
   border-radius: 0;
-  padding: 0.75rem 1.5rem;
+  padding: 1.5rem 2rem;
   display: flex;
   align-items: center;
-  gap: 2.5rem;
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.7);
+  gap: 3.5rem;
+  box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.8);
   position: relative;
   overflow: hidden;
   width: 100%;
+  min-height: 110px;
+}
+
+@keyframes float-particle {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.2; }
+  25% { transform: translateY(-30px) translateX(15px); opacity: 0.4; }
+  50% { transform: translateY(-15px) translateX(-30px); opacity: 0.2; }
+  75% { transform: translateY(10px) translateX(20px); opacity: 0.5; }
 }
 
 .manual-premium-bar::after {
@@ -1746,13 +1807,13 @@ export default {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(34, 197, 94, 0.2), transparent);
+  background: linear-gradient(to right, transparent, rgba(34, 197, 94, 0.15), transparent);
 }
 
 .bar-section {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
   position: relative;
   min-width: fit-content;
 }
@@ -1760,11 +1821,11 @@ export default {
 .bar-section:not(:last-child):not(:has(+ .bar-tabs-container))::after {
   content: '';
   position: absolute;
-  right: -1.25rem;
-  top: 15%;
-  bottom: 15%;
+  right: -1.75rem;
+  top: 10%;
+  bottom: 10%;
   width: 1px;
-  background: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05), transparent);
 }
 
 .bar-label {
