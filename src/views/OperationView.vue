@@ -114,7 +114,7 @@
                     <span class="bar-label">LOSS</span>
                   </div>
                   <div class="flex items-center gap-2 h-7">
-                    <span class="bar-value text-lg font-bold text-[#EF4444] tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
+                    <span class="bar-value text-lg font-bold tabular-nums leading-none" style="color: #FF4D4D !important;">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
                   </div>
                 </div>
 
@@ -122,12 +122,12 @@
                 <div class="flex flex-col items-center">
                   <div class="flex items-center gap-2 h-4">
                     <span class="bar-label">WIN RATE</span>
-                  </div>
-                  <div class="flex items-center gap-2 h-7 bg-white/5 rounded-lg border border-white/5 px-2">
-                    <span class="bar-value text-lg font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
-                    <button @click="tradesVisible = !tradesVisible" class="ml-2 opacity-20 hover:opacity-100 transition-opacity">
+                    <button @click="tradesVisible = !tradesVisible" class="opacity-20 hover:opacity-100 transition-opacity flex items-center">
                       <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
                     </button>
+                  </div>
+                  <div class="flex items-center gap-2 h-7">
+                    <span class="bar-value text-lg font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
                   </div>
                 </div>
               </div>
