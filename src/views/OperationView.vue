@@ -42,7 +42,7 @@
           </p>
         </div>
 
-        <div class="manual-premium-bar-wrapper mt-6 w-full px-0">
+        <div class="manual-premium-bar-wrapper w-full px-0">
           <div class="manual-premium-bar w-full">
             <!-- Floating Particles for Premium Feel -->
             <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
@@ -75,36 +75,44 @@
 
             <!-- CAPITAL -->
             <div class="bar-section">
-              <span class="bar-label">Capital</span>
+              <div class="flex items-center gap-2">
+                <span class="bar-label">Capital</span>
+                <button @click="balanceVisible = !balanceVisible" class="opacity-20 hover:opacity-100 transition-opacity">
+                  <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
+                </button>
+              </div>
               <div class="flex items-center gap-2">
                 <div class="flex flex-col">
                   <span class="bar-value text-lg leading-none font-medium">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
                 </div>
-                <button @click="balanceVisible = !balanceVisible" class="opacity-20 hover:opacity-100 transition-opacity">
-                  <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
-                </button>
               </div>
             </div>
 
             <!-- RESULTADO -->
             <div class="bar-section">
-              <span class="bar-label">Resultado</span>
+              <div class="flex items-center gap-2">
+                <span class="bar-label">Resultado</span>
+                <button @click="profitVisible = !profitVisible" class="opacity-20 hover:opacity-100 transition-opacity">
+                  <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
+                </button>
+              </div>
               <div class="flex items-center gap-2">
                 <div class="flex flex-col">
                   <span :class="['bar-value text-lg leading-none font-medium', lastTradeProfitClass]">
                     {{ profitVisible ? formattedLastTradeResult : '••••••' }}
                   </span>
-                  <span class="text-[9px] text-white/30 uppercase mt-1 tracking-widest">Último Resultado</span>
                 </div>
-                <button @click="profitVisible = !profitVisible" class="opacity-20 hover:opacity-100 transition-opacity">
-                  <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
-                </button>
               </div>
             </div>
 
             <!-- DESEMPENHO -->
             <div class="bar-section">
-              <span class="bar-label">Desempenho</span>
+              <div class="flex items-center gap-2">
+                <span class="bar-label">Desempenho</span>
+                <button @click="tradesVisible = !tradesVisible" class="opacity-20 hover:opacity-100 transition-opacity">
+                  <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
+                </button>
+              </div>
               <div class="flex items-center gap-5">
                 <!-- Stacked WINS -->
                 <div class="flex flex-col items-center">
@@ -118,12 +126,9 @@
                 </div>
                 <!-- Stacked Winrate -->
                 <div class="flex flex-col items-center px-2 py-1 bg-white/5 rounded-lg border border-white/5">
-                  <span class="text-sm font-semibold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
+                  <span class="text-lg font-semibold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
                   <span class="text-[8px] text-white/30 uppercase tracking-tighter mt-0.5">WIN RATE</span>
                 </div>
-                <button @click="tradesVisible = !tradesVisible" class="opacity-20 hover:opacity-100 transition-opacity ml-1">
-                  <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
-                </button>
               </div>
             </div>
 
@@ -269,8 +274,10 @@ export default {
       return 'text-white/50';
     },
     formattedLastTradeResult() {
+      // Se estiver em operação, mostra 0 formatado ou se não tem ordens, mostra placeholder -.--
       if (this.activeOperation.isOpen) return this.formatDynamicCurrency(0);
-      if (this.lastOrders.length === 0) return this.formatDynamicCurrency(0);
+      if (this.lastOrders.length === 0) return '-.--'; 
+      
       const lastProfit = Number(this.lastOrders[0].profit || 0);
       const prefix = lastProfit >= 0 ? '+' : '';
       return `${prefix}${this.formatDynamicCurrency(lastProfit)}`;
@@ -282,7 +289,7 @@ export default {
       return lastProfit >= 0 ? 'text-zenix-green font-medium' : 'text-red-500 font-medium';
     },
     formattedTimeRemaining() {
-      if (!this.activeOperation.isOpen) return '00:00';
+      if (!this.activeOperation.isOpen) return '--:--';
       
       if (this.activeOperation.time !== null) {
         const totalSeconds = Math.floor(Number(this.activeOperation.time));
@@ -1780,7 +1787,7 @@ export default {
 /* Manual Premium Bar */
 .manual-premium-bar-wrapper {
   padding: 0;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   width: 100%;
 }
 

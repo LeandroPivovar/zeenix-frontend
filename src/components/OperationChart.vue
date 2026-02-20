@@ -274,79 +274,53 @@
           </div>
         </div>
         
-        <div class="space-y-6 px-1">
-          <!-- Mercado -->
-          <div>
-            <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Mercado</label>
-            <button
-              @click="openMarketModal"
-              class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
-            >
+        <div class="panel-content px-1">
+          <!-- Row 1: Mercado -->
+          <div class="panel-row">
+            <label class="panel-label">Mercado</label>
+            <button @click="openMarketModal" class="panel-input-btn">
               <span class="font-medium">{{ selectedMarketLabel }}</span>
-              <i class="fas fa-chevron-down text-xs opacity-40"></i>
+              <i class="fas fa-chevron-down text-[10px] opacity-40"></i>
             </button>
           </div>
           
-          <!-- Tipo de Negociação -->
-          <div>
-            <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Tipo de Negociação</label>
-            <button
-              @click="openTradeTypeModal"
-              class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
-            >
-              <div class="flex items-center gap-3">
-                <img v-if="selectedTradeTypeGroupIcon" :src="selectedTradeTypeGroupIcon" class="w-6 h-6 contrast-[1.5] brightness-[1.5]" alt="" />
+          <!-- Row 2: Tipo de Negociação -->
+          <div class="panel-row">
+            <label class="panel-label">Tipo de Negociação</label>
+            <button @click="openTradeTypeModal" class="panel-input-btn">
+              <div class="flex items-center gap-2">
+                <img v-if="selectedTradeTypeGroupIcon" :src="selectedTradeTypeGroupIcon" class="w-5 h-5 contrast-[1.2] brightness-[1.2]" alt="" />
                 <span class="font-medium">{{ selectedTradeTypeGroupLabel }}</span>
               </div>
-              <i class="fas fa-chevron-down text-xs opacity-40"></i>
+              <i class="fas fa-chevron-down text-[10px] opacity-40"></i>
             </button>
           </div>
-
-
           
-          <!-- Duração -->
-          <div>
-            <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Duração</label>
-            <div class="flex gap-4">
+          <!-- Row 3: Duração -->
+          <div class="panel-row">
+            <label class="panel-label">Duração</label>
+            <div class="flex gap-2">
               <div class="relative flex-1">
-                <select 
-                  v-model="durationUnit"
-                  class="w-full appearance-none bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all cursor-pointer font-medium"
-                >
+                <select v-model="durationUnit" class="panel-select">
                   <option value="m">Minutos</option>
                   <option value="t">Ticks</option>
                 </select>
-                <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-xs opacity-40 pointer-events-none"></i>
+                <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] opacity-40 pointer-events-none"></i>
               </div>
-              <input 
-                type="number" 
-                v-model.number="duration"
-                class="w-24 bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white text-center focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
-              />
+              <input type="number" v-model.number="duration" class="panel-input-small" />
             </div>
           </div>
-
-
           
-          <!-- Valor de Entrada -->
-          <div>
-            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Valor de Entrada</label>
-            <input 
-              type="number" 
-              v-model.number="amount"
-              class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
-            />
-          </div>
-
-          <!-- Multiplicador -->
-          <div>
-            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Multiplicador</label>
-            <input 
-              type="number" 
-              v-model.number="multiplier"
-              placeholder="Ex: 50, 100, 150..."
-              class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
-            />
+          <!-- Row 4: Valor & Multiplicador -->
+          <div class="grid grid-cols-2 gap-2">
+            <div class="panel-row">
+              <label class="panel-label">Valor</label>
+              <input type="number" v-model.number="amount" class="panel-input" />
+            </div>
+            <div class="panel-row">
+              <label class="panel-label">Multiplicador</label>
+              <input type="number" v-model.number="multiplier" class="panel-input" />
+            </div>
           </div>
           
           <!-- Card de Dígitos de Previsão (apenas para certos contratos de dígitos) -->
@@ -439,7 +413,7 @@
           <div class="pt-3">
             <template v-if="!activeContract">
               <!-- Manual Mode Buttons -->
-              <div v-if="tradingMode === 'manual'" class="grid grid-cols-1 gap-3">
+              <div v-if="tradingMode === 'manual'" class="grid grid-cols-2 gap-2">
                 <button 
                   v-for="dir in availableDirections"
                   :key="dir.value"
@@ -447,7 +421,7 @@
                   :disabled="!canExecuteOrder"
                   :class="[
                     getDirectionButtonClass(dir.value),
-                    'font-bold py-4 rounded-xl transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
+                    'flex-1 font-bold py-3 rounded-xl transition-all text-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
                   ]"
                 >
                   <i :class="getDirectionIcon(dir.value)"></i>
@@ -3580,6 +3554,77 @@ export default {
 
 /* Copiando todos os estilos do arquivo original */
 /* Operation Chart Wrapper */
+  /* New Compact Negotiation Panel Styles */
+  .panel-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .panel-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .panel-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-left: 0.25rem;
+  }
+
+  .panel-input-btn, .panel-input, .panel-select, .panel-input-small {
+    width: 100%;
+    background: rgba(8, 8, 8, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px;
+    padding: 0.85rem 1.25rem !important;
+    font-size: 0.875rem;
+    color: #FFFFFF;
+    transition: all 0.2s ease;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 48px;
+  }
+
+  .panel-select {
+    appearance: none;
+    cursor: pointer;
+    background-image: none !important;
+  }
+
+  .panel-input-small {
+    width: 80px;
+    text-align: center;
+    padding: 0.85rem 0.5rem !important;
+    font-weight: 700;
+  }
+
+  .panel-input-btn:hover, .panel-input:focus, .panel-select:focus {
+    border-color: rgba(34, 197, 94, 0.4) !important;
+    background: rgba(12, 12, 12, 0.9) !important;
+  }
+
+  .panel-row input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  .panel-row input[type="number"]::-webkit-outer-spin-button,
+  .panel-row input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  @media (max-width: 1280px) {
+    .sidebar-panel {
+      width: 340px !important;
+      padding: 1.5rem !important;
+    }
+  }
 .operation-chart-wrapper {
   width: 100%;
   height: 100%;
