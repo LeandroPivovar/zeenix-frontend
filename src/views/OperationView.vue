@@ -35,119 +35,127 @@
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
-        <div class="desktop-only" style="text-align: left; padding: 10px 38px 0px 38px; width: 100%;">
-          <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
-          <p class="text-sm text-[#A1A1AA] mt-0 max-w-2xl">
-            Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
-          </p>
-        </div>
-        <!-- Results Card (Barra de Resultados) -->
-        <div class="operation-stats-bar-wrapper">
-          <div class="operation-stats-bar">
-            <!-- STATUS -->
-            <div class="stat-item status-indicator">
-              <span class="stat-label">STATUS</span>
-              <div class="stat-value-row">
-                <template v-if="activeOperation.finalResult">
-                  <span class="stat-value" :class="activeOperation.finalResult.status === 'won' ? 'text-zenix-green' : 'text-red-400'">
-                    {{ activeOperation.finalResult.status === 'won' ? 'VITÓRIA' : 'DERROTA' }}: 
-                    {{ formatCurrency(activeOperation.finalResult.profit, accountCurrency) }}
-                  </span>
-                </template>
-                <template v-else-if="activeOperation.isOpen">
-                  <span class="stat-value text-yellow-400">
-                    Estimativa: {{ sessionStats.profit >= 0 ? '+' : '' }}{{ formatCurrency(activeOperation.realTimeProfit || 0, accountCurrency) }}
-                  </span>
-                </template>
-                <template v-else>
-                  <span class="stat-value text-[#7A7A7A]">Pronto para operar</span>
-                </template>
-              </div>
+        <div class="header-and-stats-wrapper">
+          <div class="title-and-tabs">
+            <div class="desktop-only header-text-container">
+              <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
+              <p class="text-sm text-[#A1A1AA] mt-0 max-w-2xl">
+                Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
+              </p>
             </div>
 
-            <!-- CAPITAL -->
-            <div class="stat-item">
-              <span class="stat-label">CAPITAL</span>
-              <div class="stat-value-row">
-                <span class="stat-value">{{ accountBalanceFormatted }}</span>
-              </div>
-            </div>
-
-            <!-- RESULTADO -->
-            <div class="stat-item">
-              <span class="stat-label">RESULTADO</span>
-              <div class="stat-value-row">
-                <span class="stat-value" :class="sessionStats.profit >= 0 ? 'text-zenix-green' : 'text-red-400'">
-                  {{ formatCurrency(sessionStats.profit, accountCurrency) }}
-                </span>
-              </div>
-            </div>
-
-            <!-- W/L/WR/T -->
-            <div class="stat-item stats-group">
-              <span class="stat-label">W/L/WR/T</span>
-              <div class="stat-value-row">
-                <span class="stat-value text-zenix-green">{{ sessionStats.wins }}</span>
-                <span class="stat-separator">/</span>
-                <span class="stat-value text-red-400">{{ sessionStats.losses }}</span>
-                <span class="stat-separator">/</span>
-                <span class="stat-value">{{ sessionStats.winRate }}%</span>
-                <span class="stat-separator">/</span>
-                <span class="stat-value">{{ sessionStats.total }}</span>
-              </div>
-            </div>
-
-            <!-- OPERAÇÃO (Timer) -->
-            <div class="stat-item operation-timer" :class="{ 'active': activeOperation.isOpen }">
-              <span class="stat-label">OPERAÇÃO</span>
-              <div class="stat-value-row">
-                <template v-if="activeOperation.isOpen">
-                  <span class="stat-value countdown" :class="getTimerClass">
-                    {{ activeOperation.time !== null ? activeOperation.time + 's' : (activeOperation.ticks !== null ? activeOperation.ticks + 't' : '--') }}
-                  </span>
-                </template>
-                <template v-else>
-                  <span class="stat-value text-[#7A7A7A]">--</span>
-                </template>
+            <!-- Operation Tabs -->
+            <div class="operation-tabs-wrapper custom-scrollbar">
+              <div class="operation-tabs">
+                <button
+                  class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+                  :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationChart', 'border-b-2 border-transparent': currentView !== 'OperationChart' }"
+                  @click="changeView('OperationChart')"
+                >
+                  <span class="desktop-text">Gráfico e Análise</span>
+                  <span class="mobile-text">Gráfico</span>
+                </button>
+                <button
+                  class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+                  :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLogs', 'border-b-2 border-transparent': currentView !== 'OperationLogs' }"
+                  @click="changeView('OperationLogs')"
+                >
+                  <span class="desktop-text">Registro</span>
+                  <span class="mobile-text">Histórico</span>
+                </button>
+                <button
+                  class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+                  :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLastOrders', 'border-b-2 border-transparent': currentView !== 'OperationLastOrders' }"
+                  @click="changeView('OperationLastOrders')"
+                >
+                  <span class="desktop-text">Últimas Ordens</span>
+                  <span class="mobile-text">Registros</span>
+                </button>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="view-toggle-bar-wrapper">
-          <div class="view-toggle-bar">
-            <button
-              class="px-6 py-3 bg-zenix-card text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300 desktop-only"
-              :class="{ 'border-b-2 border-zenix-green text-zenix-text font-semibold shadow-[0_0_8px_rgba(0,0,0,0.25)]': currentView === 'OperationChart' && activeSubTab === 'chart', 'border-b-2 border-transparent text-[#7A7A7A]': currentView !== 'OperationChart' || activeSubTab !== 'chart' }"
-              @click="changeView('OperationChart')"
-            >
-              <span class="desktop-text">Análise gráfica</span>
-              <span class="mobile-text">Gráfico</span>
-            </button>
-            <button
-              class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-              :class="{ 'border-b-2 border-zenix-green text-zenix-text': (currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits', 'border-b-2 border-transparent': !((currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits') }"
-              @click="changeView('OperationDigits')"
-            >
-              <span class="desktop-text">Análise de dígitos</span>
-              <span class="mobile-text">Dígitos</span>
-            </button>
-            <button
-              class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-              :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLogs', 'border-b-2 border-transparent': currentView !== 'OperationLogs' }"
-              @click="changeView('OperationLogs')"
-            >
-              <span class="desktop-text">Registro</span>
-              <span class="mobile-text">Histórico</span>
-            </button>
-            <button
-              class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-              :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLastOrders', 'border-b-2 border-transparent': currentView !== 'OperationLastOrders' }"
-              @click="changeView('OperationLastOrders')"
-            >
-              <span class="desktop-text">Últimas Ordens</span>
-              <span class="mobile-text">Registros</span>
-            </button>
+          <!-- New Results Card (Mimicking IA APOLLO) -->
+          <div v-if="!isMobile" class="manual-results-card-desktop">
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Card 1 - Capital Total -->
+              <div class="manual-stat-card">
+                <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
+                <div class="relative z-10 h-full flex flex-col justify-between">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[9px] text-[#7A7A7A] font-medium uppercase tracking-wide">Capital Total</span>
+                    <button class="eye-btn" @click="balanceVisible = !balanceVisible">
+                      <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[10px]"></i>
+                    </button>
+                  </div>
+                  <div class="text-lg font-bold text-white">
+                    {{ balanceVisible ? accountBalanceFormatted : '••••••' }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 2 - Lucro Sessão -->
+              <div class="manual-stat-card">
+                <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
+                <div class="relative z-10 h-full flex flex-col justify-between">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[9px] text-[#7A7A7A] font-medium uppercase tracking-wide">Lucro Sessão</span>
+                    <button class="eye-btn" @click="profitVisible = !profitVisible">
+                      <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[10px]"></i>
+                    </button>
+                  </div>
+                  <div class="flex items-baseline gap-1.5">
+                    <div :class="['text-lg font-bold', sessionProfitLossClass]">
+                      {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
+                    </div>
+                    <span v-if="profitVisible" :class="['text-[10px] px-1 blue-round-badge', isProfitPositive ? 'bg-zenix-green/10 text-zenix-green' : 'bg-red-500/10 text-red-500']">
+                      {{ profitPercentage }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 3 - Trades & Winrate -->
+              <div class="manual-stat-card">
+                <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
+                <div class="relative z-10 h-full flex flex-col justify-between">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-[9px] text-[#7A7A7A] font-medium uppercase tracking-wide">Desempenho</span>
+                    <button class="eye-btn" @click="tradesVisible = !tradesVisible">
+                      <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[10px]"></i>
+                    </button>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1">
+                      <span class="text-xs font-bold text-zenix-green">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
+                      <span class="text-[10px] text-[#7A7A7A]">/</span>
+                      <span class="text-xs font-bold text-red-400">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
+                    </div>
+                    <div class="text-xs font-bold text-white">
+                      {{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Indicator (Redesigned) -->
+            <div class="status-indicator-bar-manual">
+               <div class="flex items-center gap-2">
+                 <div class="w-2 h-2 rounded-full animate-pulse" :class="activeOperation.isOpen ? 'bg-yellow-400' : 'bg-zenix-green'"></div>
+                 <span class="text-[11px] font-bold uppercase tracking-wider">
+                   <template v-if="activeOperation.finalResult">
+                     {{ activeOperation.finalResult.status === 'won' ? 'Vitória' : 'Derrota' }}: {{ formatCurrency(activeOperation.finalResult.profit, accountCurrency) }}
+                   </template>
+                   <template v-else-if="activeOperation.isOpen">
+                     {{ activeOperation.time ? `Tempo: ${activeOperation.time}s` : `Ticks: ${activeOperation.ticks}` }} | Estimativa: {{ formatCurrency(activeOperation.realTimeProfit || 0, accountCurrency) }}
+                   </template>
+                   <template v-else>
+                     Cabo de Operações Pronto
+                   </template>
+                 </span>
+               </div>
+            </div>
           </div>
         </div>
 
@@ -232,10 +240,13 @@ export default {
       availableAccounts: [],
       loadingAccounts: false,
       activeSubTab: 'chart', // 'chart' ou 'digits'
+      balanceVisible: true,
+      profitVisible: true,
+      tradesVisible: true,
       sessionStats: {
         wins: 0,
         losses: 0,
-        winRate: 100,
+        winRate: 0,
         total: 0,
         profit: 0
       },
@@ -309,6 +320,23 @@ export default {
       }
       return 'text-white';
     },
+    formattedSessionProfitLoss() {
+      const profit = this.sessionStats.profit || 0;
+      const prefix = profit >= 0 ? '+' : '';
+      return `${prefix}${this.formatCurrency(profit, this.accountCurrency)}`;
+    },
+    isProfitPositive() {
+      return (this.sessionStats.profit || 0) >= 0;
+    },
+    sessionProfitLossClass() {
+      return this.isProfitPositive ? 'text-zenix-green' : 'text-red-400';
+    },
+    profitPercentage() {
+      if (!this.accountBalanceValue || this.accountBalanceValue === 0) return '0%';
+      const percent = (this.sessionStats.profit / this.accountBalanceValue) * 100;
+      const prefix = percent >= 0 ? '+' : '';
+      return `${prefix}${percent.toFixed(2)}%`;
+    }
   },
   methods: {
     toggleSidebarCollapse() {
@@ -1084,6 +1112,7 @@ export default {
             minute: '2-digit',
             second: '2-digit',
           }),
+          rawDate: new Date(order.createdAt).toLocaleDateString('pt-BR'),
           type: order.contractType || 'CALL',
           direction: order.contractType || 'CALL',
           buyPrice: order.entryValue || null, // Valor investido (stake)
@@ -1100,25 +1129,47 @@ export default {
         // Usar safeUpdate para atualizar lastOrders de forma segura
         this.safeUpdate(() => {
           this.lastOrders = formattedOrders;
+          this.initializeStatsFromOrders(formattedOrders);
         });
 
         console.log('[OperationView] Últimas ordens formatadas:', this.lastOrders);
         console.log('[OperationView] Total de ordens formatadas:', this.lastOrders.length);
-        if (this.lastOrders && this.lastOrders.length > 0) {
-          console.log('[OperationView] Primeira ordem formatada exemplo:', {
-            time: this.lastOrders[0].time,
-            buyPrice: this.lastOrders[0].buyPrice,
-            entryPrice: this.lastOrders[0].entryPrice,
-            exitPrice: this.lastOrders[0].exitPrice,
-            sellPrice: this.lastOrders[0].sellPrice,
-            market: this.lastOrders[0].market,
-            status: this.lastOrders[0].status
-          });
-        }
       } catch (error) {
         console.error('[OperationView] Erro ao carregar últimas ordens:', error);
         this.lastOrders = [];
       }
+    },
+    initializeStatsFromOrders(orders) {
+      if (!orders || orders.length === 0) return;
+      
+      // Filtrar apenas ordens de hoje para o "Lucro do Dia"
+      const today = new Date().toLocaleDateString('pt-BR');
+      const todayOrders = orders.filter(order => order.rawDate === today);
+
+      let wins = 0;
+      let losses = 0;
+      let profit = 0;
+
+      todayOrders.forEach(order => {
+        if (order.profit != null) {
+          const p = Number(order.profit);
+          profit += p;
+          if (p > 0) wins++;
+          else if (p < 0) losses++;
+        }
+      });
+
+      this.sessionStats.wins = wins;
+      this.sessionStats.losses = losses;
+      this.sessionStats.total = wins + losses;
+      this.sessionStats.profit = profit;
+      if (this.sessionStats.total > 0) {
+        this.sessionStats.winRate = Math.round((wins / this.sessionStats.total) * 100);
+      } else {
+        this.sessionStats.winRate = 0;
+      }
+      
+      console.log('[OperationView] Estatísticas inicializadas:', this.sessionStats);
     },
     mapStatus(status) {
       if (!status) return 'PENDING';
@@ -1651,6 +1702,71 @@ export default {
   padding: 0 38px;
   margin-bottom: 20px;
   width: 100%;
+}
+
+.header-and-stats-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 10px 38px 0px 38px;
+  width: 100%;
+  gap: 20px;
+  flex-wrap: nowrap;
+}
+
+.title-and-tabs {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.header-text-container {
+  margin-bottom: 20px;
+}
+
+.manual-results-card-desktop {
+  width: 480px;
+  flex-shrink: 0;
+  margin-bottom: 0px;
+}
+
+.manual-stat-card {
+  background: rgba(11, 11, 11, 0.8);
+  border: 2px solid #1C1C1C;
+  border-radius: 12px;
+  padding: 12px;
+  height: 80px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.manual-stat-card:hover {
+  border-color: rgba(34, 197, 94, 0.3);
+  transform: translateY(-2px);
+}
+
+.status-indicator-bar-manual {
+  margin-top: 8px;
+  background: rgba(15, 15, 15, 0.9);
+  border: 1px solid #1C1C1C;
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: #FAFAFA;
+}
+
+.blue-round-badge {
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+@media (max-width: 1024px) {
+  .header-and-stats-wrapper {
+    flex-direction: column;
+    padding: 10px 15px;
+    align-items: stretch;
+  }
 }
 
 .operation-stats-bar {
