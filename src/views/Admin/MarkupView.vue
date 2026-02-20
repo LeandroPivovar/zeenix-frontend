@@ -1173,8 +1173,8 @@ export default {
             this.isTransactionsLoading = true;
 
             try {
-                const token = localStorage.getItem('zenix_token');
-                const apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api';
+                const token = localStorage.getItem('token');
+                const apiUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 
                 const response = await fetch(`${apiUrl}/trades/user-transactions/${user.userId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
