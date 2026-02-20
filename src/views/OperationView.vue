@@ -74,7 +74,7 @@
             </div>
 
             <!-- CAPITAL -->
-            <div class="bar-section">
+            <div class="bar-section items-center text-center">
               <div class="flex items-center gap-2">
                 <span class="bar-label">Capital</span>
                 <button @click="balanceVisible = !balanceVisible" class="opacity-20 hover:opacity-100 transition-opacity">
@@ -83,64 +83,61 @@
               </div>
               <div class="flex items-center gap-2">
                 <div class="flex flex-col">
-                  <span class="bar-value text-2xl leading-none font-bold">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
+                  <span class="bar-value text-lg leading-none font-bold">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
                 </div>
               </div>
             </div>
 
-            <!-- RESULTADO -->
-            <div class="bar-section">
+            <!-- ÚLTIMO RESULTADO -->
+            <div class="bar-section items-center text-center">
               <div class="flex items-center gap-2">
-                <span class="bar-label">Resultado</span>
+                <span class="bar-label">Último Resultado</span>
                 <button @click="profitVisible = !profitVisible" class="opacity-20 hover:opacity-100 transition-opacity">
                   <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
                 </button>
               </div>
               <div class="flex items-center gap-2">
                 <div class="flex flex-col">
-                  <span :class="['bar-value text-2xl leading-none font-bold', lastTradeProfitClass]">
+                  <span :class="['bar-value text-lg leading-none font-bold', lastTradeProfitClass]">
                     {{ profitVisible ? formattedLastTradeResult : '••••••' }}
                   </span>
-                  <span class="text-[9px] text-white/30 uppercase mt-2 tracking-widest">Último Resultado</span>
                 </div>
               </div>
             </div>
 
-            <!-- DESEMPENHO -->
-            <div class="bar-section">
-              <div class="flex items-center gap-2">
-                <span class="bar-label">Desempenho</span>
-                <button @click="tradesVisible = !tradesVisible" class="opacity-20 hover:opacity-100 transition-opacity">
-                  <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
-                </button>
-              </div>
+            <!-- DESEMPENHO (Stats Only) -->
+            <div class="bar-section items-center text-center">
               <div class="flex items-center gap-5">
                 <!-- Stacked WINS -->
                 <div class="flex flex-col items-center">
-                  <span class="text-2xl font-bold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
-                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-2">WIN</span>
+                  <span class="text-lg font-bold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
+                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-1">WIN</span>
                 </div>
                 <!-- Stacked LOSSES -->
                 <div class="flex flex-col items-center">
-                  <span class="text-2xl font-bold text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
-                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-2">LOSS</span>
+                  <span class="text-lg font-bold text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
+                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-1">LOSS</span>
                 </div>
                 <!-- Stacked Winrate -->
-                <div class="flex flex-col items-center px-3 py-2 bg-white/5 rounded-lg border border-white/5">
-                  <span class="text-2xl font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
-                  <span class="text-[8px] text-white/30 uppercase tracking-tighter mt-1">WIN RATE</span>
+                <div class="flex flex-col items-center px-2 py-1 bg-white/5 rounded-lg border border-white/5">
+                  <span class="text-lg font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
+                  <span class="text-[8px] text-white/30 uppercase tracking-tighter mt-0.5">WIN RATE</span>
                 </div>
+                <!-- Hidden Toggle to keep functionality -->
+                <button @click="tradesVisible = !tradesVisible" class="opacity-0 hover:opacity-20 transition-opacity absolute -top-4 right-0">
+                  <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
+                </button>
               </div>
             </div>
 
             <!-- TEMPO RESTANTE -->
-            <div class="bar-section">
+            <div class="bar-section items-center text-center">
               <div class="flex items-center gap-2">
                 <span class="bar-label">Tempo Restante</span>
               </div>
               <div class="flex items-center gap-3">
                 <div class="flex flex-col">
-                  <span :class="['bar-value text-2xl tabular-nums leading-none font-bold', getTimerClass]">
+                  <span :class="['bar-value text-lg tabular-nums leading-none font-bold', getTimerClass]">
                     {{ formattedTimeRemaining }}
                   </span>
                 </div>
@@ -1802,13 +1799,13 @@ export default {
   border-radius: 0;
   padding: 1.5rem 2rem;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 3.5rem;
   box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.8);
   position: relative;
   overflow: hidden;
   width: 100%;
-  min-height: 120px;
+  min-height: 110px;
 }
 
 @keyframes float-particle {
@@ -1831,10 +1828,11 @@ export default {
 .bar-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   position: relative;
   min-width: fit-content;
-  justify-content: flex-start;
+  justify-content: center;
+  align-items: center;
 }
 
 .bar-section:not(:last-child):not(:has(+ .bar-tabs-container))::after {
