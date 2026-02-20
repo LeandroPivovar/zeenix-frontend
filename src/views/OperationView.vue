@@ -95,36 +95,41 @@
               </div>
             </div>
 
-            <!-- DESEMPENHO WINS -->
+            <!-- DESEMPENHO (WIN, LOSS, WIN RATE) -->
             <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2 h-4">
-                <span class="bar-label">WIN</span>
-              </div>
-              <div class="flex items-center gap-2 h-7">
-                <span class="bar-value text-lg font-bold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
-              </div>
-            </div>
+              <div class="flex items-center gap-8">
+                <!-- WIN -->
+                <div class="flex flex-col items-center">
+                  <div class="flex items-center gap-2 h-4">
+                    <span class="bar-label">WIN</span>
+                  </div>
+                  <div class="flex items-center gap-2 h-7">
+                    <span class="bar-value text-lg font-bold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
+                  </div>
+                </div>
 
-            <!-- DESEMPENHO LOSSES -->
-            <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2 h-4">
-                <span class="bar-label">LOSS</span>
-              </div>
-              <div class="flex items-center gap-2 h-7">
-                <span class="bar-value text-lg font-bold text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
-              </div>
-            </div>
+                <!-- LOSS -->
+                <div class="flex flex-col items-center">
+                  <div class="flex items-center gap-2 h-4">
+                    <span class="bar-label">LOSS</span>
+                  </div>
+                  <div class="flex items-center gap-2 h-7">
+                    <span class="bar-value text-lg font-bold text-[#EF4444] tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
+                  </div>
+                </div>
 
-            <!-- DESEMPENHO WIN RATE -->
-            <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2 h-4">
-                <span class="bar-label">WIN RATE</span>
-              </div>
-              <div class="flex items-center gap-2 h-7 bg-white/5 rounded-lg border border-white/5 px-2">
-                <span class="bar-value text-lg font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
-                <button @click="tradesVisible = !tradesVisible" class="ml-2 opacity-0 hover:opacity-20 transition-opacity">
-                  <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
-                </button>
+                <!-- WIN RATE -->
+                <div class="flex flex-col items-center">
+                  <div class="flex items-center gap-2 h-4">
+                    <span class="bar-label">WIN RATE</span>
+                  </div>
+                  <div class="flex items-center gap-2 h-7 bg-white/5 rounded-lg border border-white/5 px-2">
+                    <span class="bar-value text-lg font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
+                    <button @click="tradesVisible = !tradesVisible" class="ml-2 opacity-20 hover:opacity-100 transition-opacity">
+                      <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1845,12 +1850,13 @@ export default {
   min-width: fit-content;
   justify-content: center;
   align-items: center;
+  padding-left: 1.5rem;
 }
 
 .bar-section:not(:last-child):not(:has(+ .bar-tabs-container))::after {
   content: '';
   position: absolute;
-  right: -1.75rem;
+  right: -0.5rem;
   top: 10%;
   bottom: 10%;
   width: 1px;
