@@ -35,6 +35,13 @@
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
+        <div class="header-text-container px-4 mt-6">
+          <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
+          <p class="text-sm text-[#A1A1AA] mt-1 max-w-2xl">
+            Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
+          </p>
+        </div>
+
         <div class="manual-premium-bar-wrapper">
           <div class="manual-premium-bar">
             <!-- STATUS -->
@@ -102,7 +109,7 @@
             <!-- TABS (Far Right) -->
             <div class="bar-tabs-container">
               <button
-                v-for="(label, view) in { 'OperationChart': 'Gráfico', 'OperationLogs': 'Registro', 'OperationLastOrders': 'Últimas Ordens' }"
+                v-for="(label, view) in { 'OperationChart': 'Gráfico', 'OperationDigits': 'Dígitos', 'OperationLogs': 'Registro', 'OperationLastOrders': 'Últimas Ordens' }"
                 :key="view"
                 class="bar-tab-btn"
                 :class="{ 'active': currentView === view }"
@@ -223,13 +230,14 @@ export default {
       if (!this.activeOperation.isOpen) return '--:--';
       
       if (this.activeOperation.time !== null) {
-        const mins = Math.floor(this.activeOperation.time / 60);
-        const secs = this.activeOperation.time % 60;
+        const totalSeconds = Math.floor(Number(this.activeOperation.time));
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
         return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
       }
       
       if (this.activeOperation.ticks !== null) {
-        return `${this.activeOperation.ticks} Ticks`;
+        return `${Math.floor(this.activeOperation.ticks)} Ticks`;
       }
       
       return 'Em Processo';
@@ -1711,15 +1719,16 @@ export default {
 
 /* Manual Premium Bar */
 .manual-premium-bar-wrapper {
-  padding: 0 1rem;
+  padding: 0;
   margin-bottom: 1.5rem;
+  width: 100%;
 }
 
 .manual-premium-bar {
   background: linear-gradient(to bottom right, rgba(22, 22, 22, 0.6), rgba(22, 22, 22, 0.3));
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
@@ -1727,6 +1736,7 @@ export default {
   box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.7);
   position: relative;
   overflow: hidden;
+  width: 100%;
 }
 
 .manual-premium-bar::after {
