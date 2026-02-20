@@ -1,12 +1,12 @@
 <template>
-  <div class="operation-chart-wrapper h-full">
+  <div class="operation-chart-wrapper h-fit">
     <!-- Main Layout -->
-    <div class="operation-layout flex w-full h-full overflow-hidden">
+    <div class="operation-layout flex w-full h-fit overflow-hidden">
       <!-- Chart Column -->
-      <div class="col-chart flex-1 min-w-0 flex flex-col gap-5 h-full">
+      <div class="col-chart flex-1 min-w-0 flex flex-col gap-5 h-fit">
         <!-- Chart Container -->
         <div 
-          class="bg-zenix-card border border-zenix-border rounded-xl flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card h-full"
+          class="bg-zenix-card border border-zenix-border rounded-xl flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card h-fit min-h-[400px]"
           :class="{ 'overflow-hidden': activeTab === 'chart' }"
         >
           <!-- Card Header for Chart Controls -->
@@ -86,7 +86,7 @@
           </div>
 
           <!-- Digit Analysis Tab -->
-          <div v-if="activeTab === 'digits'" class="flex-1 overflow-y-auto bg-[#0B0B0B] custom-scrollbar digits-tab-container">
+          <div v-if="activeTab === 'digits'" class="bg-[#0B0B0B] custom-scrollbar digits-tab-container">
             <div class="p-6 space-y-6">
               <!-- 1. FREQUÊNCIA GERAL (Meta Design) -->
               <div class="frequency-meta-card border border-white/5 rounded-xl p-6 h-fit">
@@ -221,8 +221,8 @@
                    <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Histórico Recente</h3>
                    <div class="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10">
                      <i class="far fa-clock text-[10px] text-white/40"></i>
-                     <span class="text-[10px] font-bold text-white/60">Últimos 22</span>
-                   </div>
+                    <span class="text-[10px] font-bold text-white/60">Últimos 20</span>
+                  </div>
                  </div>
                     <div v-if="recentDigits.length > 0" class="recent-digits-grid pb-2" :class="{ 'sidebar-open': !isSidebarCollapsed }">
                      <div 
@@ -1045,7 +1045,7 @@ export default {
     // Histórico Recente de Dígitos
     recentDigits() {
         if (!this.digitFrequency || !this.digitFrequency.digits) return [];
-        return this.digitFrequency.digits.slice(-22).reverse();
+        return this.digitFrequency.digits.slice(-20).reverse();
     },
     dvxGreenOffset() {
       const len = 90.2;
@@ -5347,8 +5347,8 @@ export default {
 
 
   .digits-tab-container {
-    height: 100% !important;
-    overflow-y: auto !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   .dvx-status-green-text { color: #22C55E; }
