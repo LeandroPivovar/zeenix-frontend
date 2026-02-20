@@ -103,18 +103,18 @@
             <div class="bar-section items-center text-center">
               <div class="flex items-center gap-5">
                 <!-- Stacked WINS -->
-                <div class="flex flex-col items-center">
-                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mb-1">WIN</span>
+                <div class="flex flex-col items-center gap-2">
+                  <span class="text-[9px] text-white/40 uppercase tracking-tighter">WIN</span>
                   <span class="text-lg font-bold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
                 </div>
                 <!-- Stacked LOSSES -->
-                <div class="flex flex-col items-center">
-                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mb-1">LOSS</span>
+                <div class="flex flex-col items-center gap-2">
+                  <span class="text-[9px] text-white/40 uppercase tracking-tighter">LOSS</span>
                   <span class="text-lg font-bold text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
                 </div>
                 <!-- Stacked Winrate -->
-                <div class="flex flex-col items-center px-2 py-1 bg-white/5 rounded-lg border border-white/5">
-                  <span class="text-[8px] text-white/30 uppercase tracking-tighter mb-0.5">WIN RATE</span>
+                <div class="flex flex-col items-center gap-2 px-2 py-1 bg-white/5 rounded-lg border border-white/5">
+                  <span class="text-[8px] text-white/30 uppercase tracking-tighter">WIN RATE</span>
                   <span class="text-lg font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
                 </div>
                 <!-- Hidden Toggle to keep functionality -->
@@ -572,23 +572,7 @@ export default {
       // Se o usuário quer análise de dígitos
       if (componentName === 'OperationDigits') {
         this.activeSubTab = 'digits';
-        
-        if (this.isMobile) {
-            // Mobile: Usar componente dedicado OperationDigits
-            this.currentView = 'OperationDigits';
-        } else {
-            // Desktop: Usar aba interna do OperationChart
-            if (this.currentView !== 'OperationChart') {
-              this.currentView = 'OperationChart';
-              this.$nextTick(() => {
-                if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
-                  this.$refs.operationComponent.setTab('digits');
-                }
-              });
-            } else if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
-              this.$refs.operationComponent.setTab('digits');
-            }
-        }
+        this.currentView = 'OperationDigits';
         return;
       }
 
@@ -597,14 +581,12 @@ export default {
         this.activeSubTab = 'chart';
         if (this.currentView !== 'OperationChart') {
           this.currentView = 'OperationChart';
-          this.$nextTick(() => {
-            if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
-              this.$refs.operationComponent.setTab('chart');
-            }
-          });
-        } else if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
-          this.$refs.operationComponent.setTab('chart');
         }
+        this.$nextTick(() => {
+          if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
+            this.$refs.operationComponent.setTab('chart');
+          }
+        });
         return;
       }
 
