@@ -268,6 +268,11 @@
                         <!-- Daily Markup Chart -->
                         <DailyMarkupChart :daily-data="dailyMarkupData" />
                     </div>
+                    <!-- Error Message -->
+                    <div v-if="error" class="error-banner mt-4">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        {{ error }}
+                    </div>
 
                     <!-- Table Section -->
                     <div class="table-section mt-8">
@@ -433,6 +438,17 @@
 </template>
 
 <style scoped>
+.error-banner {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -967,10 +983,13 @@ export default {
                 // Processar dados recebidos
                 if (data.users && Array.isArray(data.users)) {
                     this.allUsers = data.users;
+                    console.log('[MarkupView] Usuários recebidos:', this.allUsers);
                     this.applyFilters();
-                    console.log('[MarkupView] Total de usuários processados:', this.allUsers.length);
+                    console.log('[MarkupView] Total de usuários após filtro:', this.displayedClients.length);
                 } else {
-                    console.warn('[MarkupView] Nenhum usuário encontrado na resposta');
+                    console.warn('[MarkupView] Nenhum usuário encontrado na resposta ou formato inválido:', data);
+                    this.allUsers = [];
+                    this.displayedClients = [];
                 }
 
                 // 2. Buscar dados agregados para os 5 cards do topo
