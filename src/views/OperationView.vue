@@ -62,7 +62,7 @@
                   </div>
                 </div>
                 <div class="flex flex-col justify-center">
-                  <span class="bar-value text-zenix-green uppercase font-semibold text-xs leading-tight">
+                  <span class="bar-value text-zenix-green uppercase font-bold text-sm leading-tight">
                     {{ activeOperation.isOpen ? 'Em Operação' : 'Pronto' }}
                   </span>
                   <span v-if="activeOperation.isOpen" :class="['text-[11px] tabular-nums font-medium', estimativaClass]">
@@ -83,7 +83,7 @@
               </div>
               <div class="flex items-center gap-2">
                 <div class="flex flex-col">
-                  <span class="bar-value text-lg leading-none font-medium">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
+                  <span class="bar-value text-2xl leading-none font-bold">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
                 </div>
               </div>
             </div>
@@ -98,9 +98,10 @@
               </div>
               <div class="flex items-center gap-2">
                 <div class="flex flex-col">
-                  <span :class="['bar-value text-lg leading-none font-medium', lastTradeProfitClass]">
+                  <span :class="['bar-value text-2xl leading-none font-bold', lastTradeProfitClass]">
                     {{ profitVisible ? formattedLastTradeResult : '••••••' }}
                   </span>
+                  <span class="text-[9px] text-white/30 uppercase mt-2 tracking-widest">Último Resultado</span>
                 </div>
               </div>
             </div>
@@ -116,28 +117,30 @@
               <div class="flex items-center gap-5">
                 <!-- Stacked WINS -->
                 <div class="flex flex-col items-center">
-                  <span class="text-lg font-semibold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
-                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-1">WIN</span>
+                  <span class="text-2xl font-bold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
+                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-2">WIN</span>
                 </div>
                 <!-- Stacked LOSSES -->
                 <div class="flex flex-col items-center">
-                  <span class="text-lg font-semibold text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
-                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-1">LOSS</span>
+                  <span class="text-2xl font-bold text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
+                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-2">LOSS</span>
                 </div>
                 <!-- Stacked Winrate -->
-                <div class="flex flex-col items-center px-2 py-1 bg-white/5 rounded-lg border border-white/5">
-                  <span class="text-lg font-semibold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
-                  <span class="text-[8px] text-white/30 uppercase tracking-tighter mt-0.5">WIN RATE</span>
+                <div class="flex flex-col items-center px-3 py-2 bg-white/5 rounded-lg border border-white/5">
+                  <span class="text-2xl font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
+                  <span class="text-[8px] text-white/30 uppercase tracking-tighter mt-1">WIN RATE</span>
                 </div>
               </div>
             </div>
 
             <!-- TEMPO RESTANTE -->
             <div class="bar-section">
-              <span class="bar-label">Tempo Restante</span>
+              <div class="flex items-center gap-2">
+                <span class="bar-label">Tempo Restante</span>
+              </div>
               <div class="flex items-center gap-3">
                 <div class="flex flex-col">
-                  <span :class="['bar-value text-lg tabular-nums leading-none font-medium', getTimerClass]">
+                  <span :class="['bar-value text-2xl tabular-nums leading-none font-bold', getTimerClass]">
                     {{ formattedTimeRemaining }}
                   </span>
                 </div>
@@ -150,7 +153,7 @@
                 v-for="(label, view) in { 'OperationChart': 'Gráfico', 'OperationDigits': 'Dígitos', 'OperationLogs': 'Registro', 'OperationLastOrders': 'Últimas Ordens' }"
                 :key="view"
                 class="bar-tab-btn"
-                :class="{ 'active': currentView === view }"
+                :class="{ 'active': currentView === view || (view === 'OperationChart' && activeSubTab === 'chart') || (view === 'OperationDigits' && activeSubTab === 'digits') }"
                 @click="changeView(view)"
               >
                 {{ label }}
@@ -1799,13 +1802,13 @@ export default {
   border-radius: 0;
   padding: 1.5rem 2rem;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 3.5rem;
   box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.8);
   position: relative;
   overflow: hidden;
   width: 100%;
-  min-height: 110px;
+  min-height: 120px;
 }
 
 @keyframes float-particle {
@@ -1828,9 +1831,10 @@ export default {
 .bar-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   position: relative;
   min-width: fit-content;
+  justify-content: flex-start;
 }
 
 .bar-section:not(:last-child):not(:has(+ .bar-tabs-container))::after {
