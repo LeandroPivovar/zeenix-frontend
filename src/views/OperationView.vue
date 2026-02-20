@@ -35,12 +35,6 @@
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
-        <div class="header-text-container px-6 mt-6 text-left w-full">
-          <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
-          <p class="text-sm text-[#A1A1AA] mt-1 max-w-2xl opacity-80">
-            Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
-          </p>
-        </div>
 
         <div class="manual-premium-bar-wrapper w-full px-0">
           <div class="manual-premium-bar w-full">
@@ -63,7 +57,7 @@
                 </div>
                 <div class="flex flex-col justify-center">
                   <span class="bar-value text-zenix-green uppercase font-bold text-sm leading-tight">
-                    {{ activeOperation.isOpen ? 'Em Operação' : 'Pronto' }}
+                    {{ activeOperation.isOpen ? 'Em Operação' : 'Operação Manual' }}
                   </span>
                   <span v-if="activeOperation.isOpen" :class="['text-[11px] tabular-nums font-medium', estimativaClass]">
                     Estimativa: {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
@@ -110,18 +104,18 @@
               <div class="flex items-center gap-5">
                 <!-- Stacked WINS -->
                 <div class="flex flex-col items-center">
+                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mb-1">WIN</span>
                   <span class="text-lg font-bold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
-                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-1">WIN</span>
                 </div>
                 <!-- Stacked LOSSES -->
                 <div class="flex flex-col items-center">
+                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mb-1">LOSS</span>
                   <span class="text-lg font-bold text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
-                  <span class="text-[9px] text-white/40 uppercase tracking-tighter mt-1">LOSS</span>
                 </div>
                 <!-- Stacked Winrate -->
                 <div class="flex flex-col items-center px-2 py-1 bg-white/5 rounded-lg border border-white/5">
+                  <span class="text-[8px] text-white/30 uppercase tracking-tighter mb-0.5">WIN RATE</span>
                   <span class="text-lg font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
-                  <span class="text-[8px] text-white/30 uppercase tracking-tighter mt-0.5">WIN RATE</span>
                 </div>
                 <!-- Hidden Toggle to keep functionality -->
                 <button @click="tradesVisible = !tradesVisible" class="opacity-0 hover:opacity-20 transition-opacity absolute -top-4 right-0">
@@ -150,7 +144,11 @@
                 v-for="(label, view) in { 'OperationChart': 'Gráfico', 'OperationDigits': 'Dígitos', 'OperationLogs': 'Registro', 'OperationLastOrders': 'Últimas Ordens' }"
                 :key="view"
                 class="bar-tab-btn"
-                :class="{ 'active': currentView === view || (view === 'OperationChart' && activeSubTab === 'chart') || (view === 'OperationDigits' && activeSubTab === 'digits') }"
+                :class="{ 
+                  'active': (view === 'OperationChart' && activeSubTab === 'chart' && currentView === 'OperationChart') || 
+                            (view === 'OperationDigits' && (currentView === 'OperationDigits' || (currentView === 'OperationChart' && activeSubTab === 'digits'))) ||
+                            (view !== 'OperationChart' && view !== 'OperationDigits' && currentView === view)
+                }"
                 @click="changeView(view)"
               >
                 {{ label }}
