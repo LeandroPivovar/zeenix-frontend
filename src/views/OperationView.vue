@@ -69,56 +69,60 @@
 
             <!-- CAPITAL -->
             <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 h-4">
                 <span class="bar-label">Capital</span>
                 <button @click="balanceVisible = !balanceVisible" class="opacity-20 hover:opacity-100 transition-opacity">
                   <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
                 </button>
               </div>
-              <div class="flex items-center gap-2">
-                <div class="flex flex-col">
-                  <span class="bar-value text-lg leading-none font-bold">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
-                </div>
+              <div class="flex items-center gap-2 h-7">
+                <span class="bar-value text-lg leading-none font-bold">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
               </div>
             </div>
 
             <!-- ÚLTIMO RESULTADO -->
             <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 h-4">
                 <span class="bar-label">Último Resultado</span>
                 <button @click="profitVisible = !profitVisible" class="opacity-20 hover:opacity-100 transition-opacity">
                   <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
                 </button>
               </div>
-              <div class="flex items-center gap-2">
-                <div class="flex flex-col">
-                  <span :class="['bar-value text-lg leading-none font-bold', lastTradeProfitClass]">
-                    {{ profitVisible ? formattedLastTradeResult : '••••••' }}
-                  </span>
-                </div>
+              <div class="flex items-center gap-2 h-7">
+                <span :class="['bar-value text-lg leading-none font-bold', lastTradeProfitClass]">
+                  {{ profitVisible ? formattedLastTradeResult : '••••••' }}
+                </span>
               </div>
             </div>
 
-            <!-- DESEMPENHO (Stats Only) -->
+            <!-- DESEMPENHO WINS -->
             <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-5">
-                <!-- Stacked WINS -->
-                <div class="flex flex-col items-center gap-2">
-                  <span class="text-[9px] text-white/40 uppercase tracking-tighter">WIN</span>
-                  <span class="text-lg font-bold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
-                </div>
-                <!-- Stacked LOSSES -->
-                <div class="flex flex-col items-center gap-2">
-                  <span class="text-[9px] text-white/40 uppercase tracking-tighter">LOSS</span>
-                  <span class="text-lg font-bold text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
-                </div>
-                <!-- Stacked Winrate -->
-                <div class="flex flex-col items-center gap-2 px-2 py-1 bg-white/5 rounded-lg border border-white/5">
-                  <span class="text-[8px] text-white/30 uppercase tracking-tighter">WIN RATE</span>
-                  <span class="text-lg font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
-                </div>
-                <!-- Hidden Toggle to keep functionality -->
-                <button @click="tradesVisible = !tradesVisible" class="opacity-0 hover:opacity-20 transition-opacity absolute -top-4 right-0">
+              <div class="flex items-center gap-2 h-4">
+                <span class="bar-label">WIN</span>
+              </div>
+              <div class="flex items-center gap-2 h-7">
+                <span class="bar-value text-lg font-bold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
+              </div>
+            </div>
+
+            <!-- DESEMPENHO LOSSES -->
+            <div class="bar-section items-center text-center">
+              <div class="flex items-center gap-2 h-4">
+                <span class="bar-label">LOSS</span>
+              </div>
+              <div class="flex items-center gap-2 h-7">
+                <span class="bar-value text-lg font-bold text-red-500 tabular-nums leading-none">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
+              </div>
+            </div>
+
+            <!-- DESEMPENHO WIN RATE -->
+            <div class="bar-section items-center text-center">
+              <div class="flex items-center gap-2 h-4">
+                <span class="bar-label">WIN RATE</span>
+              </div>
+              <div class="flex items-center gap-2 h-7 bg-white/5 rounded-lg border border-white/5 px-2">
+                <span class="bar-value text-lg font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
+                <button @click="tradesVisible = !tradesVisible" class="ml-2 opacity-0 hover:opacity-20 transition-opacity">
                   <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
                 </button>
               </div>
@@ -126,15 +130,13 @@
 
             <!-- TEMPO RESTANTE -->
             <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 h-4">
                 <span class="bar-label">Tempo Restante</span>
               </div>
-              <div class="flex items-center gap-3">
-                <div class="flex flex-col">
-                  <span :class="['bar-value text-lg tabular-nums leading-none font-bold', getTimerClass]">
-                    {{ formattedTimeRemaining }}
-                  </span>
-                </div>
+              <div class="flex items-center gap-2 h-7">
+                <span :class="['bar-value text-lg tabular-nums leading-none font-bold', getTimerClass]">
+                  {{ formattedTimeRemaining }}
+                </span>
               </div>
             </div>
 
@@ -379,9 +381,25 @@ export default {
   methods: {
     toggleSidebarCollapse() {
       this.isSidebarCollapsed = !this.isSidebarCollapsed;
+      
+      // Forçar redimensionamento do gráfico após a transição da sidebar
+      // A transição dura 0.4s, então enviamos eventos durante e após
+      const resizeInterval = setInterval(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 50);
+      
+      setTimeout(() => {
+        clearInterval(resizeInterval);
+        window.dispatchEvent(new Event('resize'));
+      }, 450);
     },
     toggleMobileSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen;
+      if (this.isSidebarOpen) {
+          this.$nextTick(() => {
+            window.dispatchEvent(new Event('resize'));
+          });
+      }
     },
     closeSidebar() {
       this.isSidebarOpen = false;
@@ -569,7 +587,19 @@ export default {
         return;
       }
 
-      // Se o usuário quer análise de dígitos
+      // Se for desktop e o usuário quer análise de dígitos, usar a aba interna do Chart
+      if (!this.isMobile && componentName === 'OperationDigits') {
+        this.activeSubTab = 'digits';
+        this.currentView = 'OperationChart';
+        this.$nextTick(() => {
+          if (this.$refs.operationComponent && typeof this.$refs.operationComponent.setTab === 'function') {
+            this.$refs.operationComponent.setTab('digits');
+          }
+        });
+        return;
+      }
+
+      // Se o usuário quer análise de dígitos (mobile ou fallback)
       if (componentName === 'OperationDigits') {
         this.activeSubTab = 'digits';
         this.currentView = 'OperationDigits';
@@ -1345,6 +1375,7 @@ export default {
   width: 100%;
   box-sizing: border-box;
   transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 0;
 }
 
 /* Top Header */
@@ -1550,6 +1581,7 @@ export default {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  min-width: 0;
 }
 
 .operation-content > * {
@@ -1780,7 +1812,7 @@ export default {
   padding: 1.5rem 2rem;
   display: flex;
   align-items: center;
-  gap: 3.5rem;
+  gap: 2rem;
   box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.8);
   position: relative;
   overflow: hidden;

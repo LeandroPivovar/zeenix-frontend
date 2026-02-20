@@ -1736,8 +1736,13 @@ export default {
       // Resize observer
       const resizeObserver = new ResizeObserver(() => {
         if (this.chart && container) {
-          const { width, height } = container.getBoundingClientRect();
-          this.chart.applyOptions({ width, height });
+          // Usar clientWidth/Height para obter a área de conteúdo real
+          const width = container.clientWidth;
+          const height = container.clientHeight;
+          
+          if (width > 0 && height > 0) {
+            this.chart.applyOptions({ width, height });
+          }
         }
       });
       resizeObserver.observe(container);
@@ -3653,6 +3658,8 @@ export default {
   display: flex;
   flex-direction: column;
   align-self: stretch;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .sidebar-panel {
@@ -3676,11 +3683,13 @@ export default {
   height: 100%;
   flex: 1 1 0;
   min-height: 0;
+  min-width: 0;
   width: 100%;
   display: flex;
   flex-direction: column;
   padding: 0;
   margin: 0;
+  overflow: hidden;
 }
 
 .chart-wrapper {
