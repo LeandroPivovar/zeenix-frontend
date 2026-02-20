@@ -60,20 +60,6 @@
                             </div>
                         </template>
 
-                        <!-- WAITING STATE -->
-                        <template v-else>
-                             <div class="flex items-center justify-center w-8 h-8 rounded-full border border-white/10 bg-white/5 text-white/40 mr-3">
-                                <i class="fas fa-hourglass-start text-xs"></i>
-                            </div>
-                            <div class="flex flex-col items-start">
-                                <span class="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-none mb-1">
-                                    Aguardando
-                                </span>
-                                <span class="text-xs font-bold text-white/60 leading-none">
-                                    Pronto para operar
-                                </span>
-                            </div>
-                        </template>
                     </div>
                 </div>
 

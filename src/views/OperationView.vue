@@ -144,23 +144,6 @@
               </div>
             </div>
 
-            <!-- Status Indicator (Redesigned) -->
-            <div class="status-indicator-bar-manual">
-               <div class="flex items-center gap-2">
-                 <div class="w-2 h-2 rounded-full animate-pulse" :class="activeOperation.isOpen ? 'bg-yellow-400' : 'bg-zenix-green'"></div>
-                 <span class="text-[11px] font-bold uppercase tracking-wider">
-                   <template v-if="activeOperation.finalResult">
-                     {{ activeOperation.finalResult.status === 'won' ? 'Vitória' : 'Derrota' }}: {{ formatCurrency(activeOperation.finalResult.profit, accountCurrency) }}
-                   </template>
-                   <template v-else-if="activeOperation.isOpen">
-                     {{ activeOperation.time ? `Tempo: ${activeOperation.time}s` : `Ticks: ${activeOperation.ticks}` }} | Estimativa: {{ formatCurrency(activeOperation.realTimeProfit || 0, accountCurrency) }}
-                   </template>
-                   <template v-else>
-                     Cabo de Operações Pronto
-                   </template>
-                 </span>
-               </div>
-            </div>
           </div>
         </div>
 
@@ -267,7 +250,12 @@ export default {
   computed: {
     accountBalanceFormatted() {
       if (this.accountBalanceValue == null) return '---';
-      return this.formatCurrency(this.accountBalanceValue, this.accountCurrency);
+      const formatted = this.formatCurrency(this.accountBalanceValue, this.accountCurrency);
+      if (this.tradeCurrency === 'DEMO') {
+        // Remove current currency symbol from formatCurrency and prepend Ɖ
+        return `Ɖ ${this.accountBalanceValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+      return formatted;
     },
     preferredCurrencyPrefix() {
       if (this.preferredCurrency === 'DEMO') {
@@ -467,7 +455,7 @@ export default {
         case 'BTC':
           return '₿';
         case 'DEMO':
-          return 'D$';
+          return 'Ɖ';
         default:
           return currency ? `${currency} ` : '$';
       }
