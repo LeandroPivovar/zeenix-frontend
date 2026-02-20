@@ -2977,6 +2977,7 @@ export default {
       // Se o backend já enviou o profit (via contract_update), priorizar ele
       if (this.activeContract.profit !== null && this.activeContract.profit !== undefined && this.activeContract.status === 'open') {
         this.realTimeProfit = Number(this.activeContract.profit);
+        this.$emit('profit-update', this.realTimeProfit);
       } else {
         // Calcular P&L baseado no tipo de contrato (fallback/estimativa)
         let profit = 0;
@@ -3004,6 +3005,7 @@ export default {
         }
         
         this.realTimeProfit = profit;
+        this.$emit('profit-update', this.realTimeProfit);
       }
       
       // Atualizar classes CSS baseado no P&L
@@ -3102,6 +3104,12 @@ export default {
             entrySpot: this.activeContract.entry_spot ? Number(this.activeContract.entry_spot) : null,
             symbol: this.activeContract.symbol,
          };
+         
+         this.$emit('contract-finish', {
+            profit: profit,
+            status: this.activeContract.status
+          });
+
          derivTradingService.notifyEnd(resultData);
       }
       
@@ -3580,6 +3588,20 @@ export default {
       ];
     },
   },
+  watch: {
+    contractTimeRemaining(newVal) {
+      this.$emit('timer-update', { time: newVal, ticks: this.contractTicksRemaining });
+    },
+    contractTicksRemaining(newVal) {
+      this.$emit('timer-update', { time: this.contractTimeRemaining, ticks: newVal });
+    },
+    activeContract(newVal) {
+      this.$emit('contract-update', newVal);
+    },
+    isContractOpen(newVal) {
+      this.$emit('contract-status', newVal);
+    }
+  }
 };
 </script>
 

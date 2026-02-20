@@ -41,6 +41,79 @@
             Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
           </p>
         </div>
+        <!-- Results Card (Barra de Resultados) -->
+        <div class="operation-stats-bar-wrapper">
+          <div class="operation-stats-bar">
+            <!-- STATUS -->
+            <div class="stat-item status-indicator">
+              <span class="stat-label">STATUS</span>
+              <div class="stat-value-row">
+                <template v-if="activeOperation.finalResult">
+                  <span class="stat-value" :class="activeOperation.finalResult.status === 'won' ? 'text-zenix-green' : 'text-red-400'">
+                    {{ activeOperation.finalResult.status === 'won' ? 'VITÓRIA' : 'DERROTA' }}: 
+                    {{ formatCurrency(activeOperation.finalResult.profit, accountCurrency) }}
+                  </span>
+                </template>
+                <template v-else-if="activeOperation.isOpen">
+                  <span class="stat-value text-yellow-400">
+                    Estimativa: {{ sessionStats.profit >= 0 ? '+' : '' }}{{ formatCurrency(activeOperation.realTimeProfit || 0, accountCurrency) }}
+                  </span>
+                </template>
+                <template v-else>
+                  <span class="stat-value text-[#7A7A7A]">Pronto para operar</span>
+                </template>
+              </div>
+            </div>
+
+            <!-- CAPITAL -->
+            <div class="stat-item">
+              <span class="stat-label">CAPITAL</span>
+              <div class="stat-value-row">
+                <span class="stat-value">{{ accountBalanceFormatted }}</span>
+              </div>
+            </div>
+
+            <!-- RESULTADO -->
+            <div class="stat-item">
+              <span class="stat-label">RESULTADO</span>
+              <div class="stat-value-row">
+                <span class="stat-value" :class="sessionStats.profit >= 0 ? 'text-zenix-green' : 'text-red-400'">
+                  {{ formatCurrency(sessionStats.profit, accountCurrency) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- W/L/WR/T -->
+            <div class="stat-item stats-group">
+              <span class="stat-label">W/L/WR/T</span>
+              <div class="stat-value-row">
+                <span class="stat-value text-zenix-green">{{ sessionStats.wins }}</span>
+                <span class="stat-separator">/</span>
+                <span class="stat-value text-red-400">{{ sessionStats.losses }}</span>
+                <span class="stat-separator">/</span>
+                <span class="stat-value">{{ sessionStats.winRate }}%</span>
+                <span class="stat-separator">/</span>
+                <span class="stat-value">{{ sessionStats.total }}</span>
+              </div>
+            </div>
+
+            <!-- OPERAÇÃO (Timer) -->
+            <div class="stat-item operation-timer" :class="{ 'active': activeOperation.isOpen }">
+              <span class="stat-label">OPERAÇÃO</span>
+              <div class="stat-value-row">
+                <template v-if="activeOperation.isOpen">
+                  <span class="stat-value countdown" :class="getTimerClass">
+                    {{ activeOperation.time !== null ? activeOperation.time + 's' : (activeOperation.ticks !== null ? activeOperation.ticks + 't' : '--') }}
+                  </span>
+                </template>
+                <template v-else>
+                  <span class="stat-value text-[#7A7A7A]">--</span>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="view-toggle-bar-wrapper">
           <div class="view-toggle-bar">
             <button
@@ -92,6 +165,11 @@
             :is-sidebar-collapsed="isSidebarCollapsed"
             @trade-result="handleTradeResult"
             @tab-changed="activeSubTab = $event"
+            @timer-update="handleTimerUpdate"
+            @contract-update="handleContractUpdate"
+            @contract-status="handleContractStatus"
+            @profit-update="handleProfitUpdate"
+            @contract-finish="handleContractFinish"
           ></component>
         </div>
       </main>
@@ -154,6 +232,20 @@ export default {
       availableAccounts: [],
       loadingAccounts: false,
       activeSubTab: 'chart', // 'chart' ou 'digits'
+      sessionStats: {
+        wins: 0,
+        losses: 0,
+        winRate: 100,
+        total: 0,
+        profit: 0
+      },
+      activeOperation: {
+        time: null,
+        ticks: null,
+        isOpen: false,
+        realTimeProfit: 0,
+        finalResult: null
+      }
     };
   },
   computed: {
@@ -206,6 +298,16 @@ export default {
         'OperationLastOrders': 'Últimos eventos do sistema e do usuário'
       };
       return subtitles[this.currentView] || 'Análise gráfica e execução de operações manuais em tempo real.';
+    },
+    getTimerClass() {
+      if (this.activeOperation.time !== null) {
+        if (this.activeOperation.time <= 10) return 'text-red-400';
+        if (this.activeOperation.time <= 30) return 'text-yellow-400';
+      } else if (this.activeOperation.ticks !== null) {
+        if (this.activeOperation.ticks <= 5) return 'text-red-400';
+        if (this.activeOperation.ticks <= 10) return 'text-yellow-400';
+      }
+      return 'text-white';
     },
   },
   methods: {
@@ -810,6 +912,52 @@ export default {
       this.lastOrders = this.lastOrders.slice(0, 10);
       console.log('[OperationView] Total de ordens no histórico:', this.lastOrders.length);
       console.log('[OperationView] ========== RESULTADO PROCESSADO ==========');
+      this.updateSessionStats(result);
+    },
+    updateSessionStats(result) {
+      if (result && result.profit != null) {
+        const profit = Number(result.profit);
+        this.sessionStats.total++;
+        if (profit > 0) {
+          this.sessionStats.wins++;
+        } else if (profit < 0) {
+          this.sessionStats.losses++;
+        }
+        this.sessionStats.profit += profit;
+        
+        if (this.sessionStats.total > 0) {
+          this.sessionStats.winRate = Math.round((this.sessionStats.wins / this.sessionStats.total) * 100);
+        }
+      }
+    },
+    handleTimerUpdate(data) {
+      this.activeOperation.time = data.time;
+      this.activeOperation.ticks = data.ticks;
+    },
+    handleContractUpdate() {
+      // console.log('[OperationView] Contract update');
+    },
+    handleContractStatus(isOpen) {
+      this.activeOperation.isOpen = isOpen;
+      if (!isOpen) {
+        this.activeOperation.time = null;
+        this.activeOperation.ticks = null;
+      } else {
+        // Reset final result when starting a new operation
+        this.activeOperation.finalResult = null;
+      }
+    },
+    handleProfitUpdate(profit) {
+      this.activeOperation.realTimeProfit = profit;
+    },
+    handleContractFinish(data) {
+      this.activeOperation.finalResult = data;
+      // Clear final result after 5 seconds
+      setTimeout(() => {
+        if (this.activeOperation.finalResult === data) {
+          this.activeOperation.finalResult = null;
+        }
+      }, 5000);
     },
     async loadTradeCurrency() {
       // Carrega o tradeCurrency do settings
@@ -1496,6 +1644,104 @@ export default {
 
   .dashboard-content-wrapper.sidebar-collapsed #top-navbar {
     padding-left: 80px !important;
+  }
+}
+
+.operation-stats-bar-wrapper {
+  padding: 0 38px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.operation-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 32px;
+  background: #0F0F0F;
+  border: 1px solid #1A1A1A;
+  border-radius: 12px;
+  padding: 16px 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #7A7A7A;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stat-value-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FAFAFA;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.online {
+  background-color: #22C55E;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+.stat-separator {
+  color: #333;
+  margin: 0 2px;
+}
+
+.operation-timer.active .countdown {
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 16px;
+}
+
+@media (max-width: 1024px) {
+  .operation-stats-bar-wrapper {
+    padding: 0 16px;
+  }
+  
+  .operation-stats-bar {
+    gap: 16px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  
+  .stat-item {
+    flex: 1 1 auto;
+    min-width: 80px;
+  }
+}
+
+@media (max-width: 640px) {
+  .operation-stats-bar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .status-indicator {
+    grid-column: span 1;
+  }
+  
+  .stats-group {
+    grid-column: span 1;
   }
 }
 </style>
