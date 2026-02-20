@@ -275,7 +275,7 @@
         </div>
         
         <div class="panel-content px-1">
-          <!-- Row 1: Mercado -->
+          <!-- Mercado -->
           <div class="panel-row">
             <label class="panel-label">Mercado</label>
             <button @click="openMarketModal" class="panel-input-btn">
@@ -284,7 +284,7 @@
             </button>
           </div>
           
-          <!-- Row 2: Tipo de Negociação -->
+          <!-- Tipo de Negociação -->
           <div class="panel-row">
             <label class="panel-label">Tipo de Negociação</label>
             <button @click="openTradeTypeModal" class="panel-input-btn">
@@ -296,7 +296,7 @@
             </button>
           </div>
           
-          <!-- Row 3: Duração -->
+          <!-- Duração -->
           <div class="panel-row">
             <label class="panel-label">Duração</label>
             <div class="flex gap-2">
@@ -307,20 +307,20 @@
                 </select>
                 <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] opacity-40 pointer-events-none"></i>
               </div>
-              <input type="number" v-model.number="duration" class="panel-input-small" />
+              <input type="number" v-model.number="duration" class="panel-input-small text-center font-bold" />
             </div>
           </div>
           
-          <!-- Row 4: Valor & Multiplicador -->
-          <div class="grid grid-cols-2 gap-2">
-            <div class="panel-row">
-              <label class="panel-label">Valor</label>
-              <input type="number" v-model.number="amount" class="panel-input" />
-            </div>
-            <div class="panel-row">
-              <label class="panel-label">Multiplicador</label>
-              <input type="number" v-model.number="multiplier" class="panel-input" />
-            </div>
+          <!-- Valor -->
+          <div class="panel-row">
+            <label class="panel-label">Valor</label>
+            <input type="number" v-model.number="amount" class="panel-input font-bold" />
+          </div>
+
+          <!-- Multiplicador -->
+          <div class="panel-row">
+            <label class="panel-label">Multiplicador</label>
+            <input type="number" v-model.number="multiplier" class="panel-input font-bold" />
           </div>
           
           <!-- Card de Dígitos de Previsão (apenas para certos contratos de dígitos) -->

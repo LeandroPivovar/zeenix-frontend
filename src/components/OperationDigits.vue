@@ -277,13 +277,13 @@
                     </div>
                 </div>
                 
-                <div class="space-y-6 px-1">
+                <div class="panel-content px-1">
                     <!-- Mercado -->
-                    <div>
-                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Mercado</label>
+                    <div class="panel-row">
+                        <label class="panel-label">Mercado</label>
                         <button
                             @click="openMarketModal"
-                            class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
+                            class="panel-input-btn"
                         >
                             <span class="font-medium">{{ selectedMarketLabel }}</span>
                             <i class="fas fa-chevron-down text-xs opacity-40"></i>
@@ -291,11 +291,11 @@
                     </div>
                     
                     <!-- Tipo de Negociação -->
-                    <div>
-                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Tipo de Negociação</label>
+                    <div class="panel-row">
+                        <label class="panel-label">Tipo de Negociação</label>
                         <button
                             @click="openTradeTypeModal"
-                            class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
+                            class="panel-input-btn"
                         >
                             <div class="flex items-center gap-3">
                                 <i :class="selectedTradeTypeIcon + ' text-[#22C55E] text-xl'"></i>
@@ -306,21 +306,21 @@
                     </div>
 
                     <!-- Previsão (Dígito) -->
-                    <div v-if="['digits_match_diff', 'digits_over_under'].includes(selectedTradeTypeGroup)">
-                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Barreira (Dígito)</label>
-                        <select v-model="digitMatchValue" class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-medium appearance-none cursor-pointer">
+                    <div v-if="['digits_match_diff', 'digits_over_under'].includes(selectedTradeTypeGroup)" class="panel-row">
+                        <label class="panel-label">Previsão (Dígito)</label>
+                        <select v-model="digitMatchValue" class="panel-select">
                             <option v-for="d in 10" :key="d-1" :value="d-1">{{ d-1 }}</option>
                         </select>
                     </div>
                     
                     <!-- Duração -->
-                    <div>
-                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Duração</label>
+                    <div class="panel-row">
+                        <label class="panel-label">Duração</label>
                         <div class="flex gap-4">
                             <div class="relative flex-1">
                                 <select 
                                     v-model="durationUnit"
-                                    class="w-full appearance-none bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all cursor-pointer font-medium"
+                                    class="panel-select"
                                 >
                                     <option value="m">Minutos</option>
                                     <option value="t">Ticks</option>
@@ -330,19 +330,19 @@
                             <input 
                                 type="number" 
                                 v-model.number="duration"
-                                class="w-24 bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white text-center focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
+                                class="panel-input-small text-center font-bold"
                             />
                         </div>
                     </div>
 
                     <!-- Valor de Entrada -->
-                    <div>
-                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Valor de Entrada</label>
+                    <div class="panel-row">
+                        <label class="panel-label">Valor de Entrada</label>
                         <input 
                             type="number" 
                             step="0.01"
                             v-model.number="amount"
-                            class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
+                            class="panel-input font-bold"
                         />
                     </div>
 
@@ -1452,6 +1452,93 @@ export default {
 
 <style src="../assets/css/components/OperationDigits.css"></style>
 <style scoped>
+  /* New Compact Negotiation Panel Styles */
+  .panel-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .panel-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .panel-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-left: 0.25rem;
+  }
+
+  .panel-input-btn, .panel-input, .panel-select, .panel-input-small {
+    width: 100%;
+    background: rgba(8, 8, 8, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px;
+    padding: 0.85rem 1.25rem !important;
+    font-size: 0.875rem;
+    color: #FFFFFF;
+    transition: all 0.2s ease;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 48px;
+  }
+
+  .panel-select {
+    appearance: none;
+    cursor: pointer;
+    background-image: none !important;
+  }
+
+  .panel-input-small {
+    width: 80px;
+    text-align: center;
+    padding: 0.85rem 0.5rem !important;
+    font-weight: 700;
+  }
+
+  .panel-input-btn:hover, .panel-input:focus, .panel-select:focus {
+    border-color: rgba(34, 197, 94, 0.4) !important;
+    background: rgba(12, 12, 12, 0.9) !important;
+  }
+
+  .panel-row input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  .panel-row input[type="number"]::-webkit-outer-spin-button,
+  .panel-row input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Pulse animation */
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  /* Countdown classes if missing */
+  .countdown-warning {
+    color: #EF4444;
+    animation: pulse 0.5s ease-in-out infinite;
+  }
+  .countdown-alert {
+    color: #FBBF24;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  .countdown-normal {
+    color: #DFDFDF;
+  }
 .connection-loading {
     position: fixed;
     top: 0;
