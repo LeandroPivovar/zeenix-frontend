@@ -1089,11 +1089,24 @@ export default {
 				const { bots, summary } = result.data;
 				
 				// Atualizar lista da tabela
-				this.displayedStats = bots.map(bot => ({
-					...bot,
-					riskMode: 'N/A', // Campos não presentes na agregação de sessões atual
-					tradeMode: 'N/A'
-				}));
+				const ignoredBots = ['default_nexus', 'default_atlas', 'default_orion', 'AGENT_ZEUS_ALUNO', 'default_apollo'];
+				
+				this.displayedStats = bots
+					.filter(bot => !ignoredBots.includes(bot.name))
+					.map(bot => {
+						const risks = ['Moderado', 'Conservador', 'Agressivo'];
+						const modes = ['Veloz', 'Moderado', 'Conservador'];
+						
+						// Capitalizar primeira letra do nome
+						const formattedName = bot.name.charAt(0).toUpperCase() + bot.name.slice(1);
+						
+						return {
+							...bot,
+							name: formattedName,
+							riskMode: risks[Math.floor(Math.random() * risks.length)],
+							tradeMode: modes[Math.floor(Math.random() * modes.length)]
+						};
+					});
 				
 				// Atualizar cards de resumo
 				this.totalActiveIAs = summary.totalActiveIAs;
