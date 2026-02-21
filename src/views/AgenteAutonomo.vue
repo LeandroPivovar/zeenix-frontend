@@ -1199,13 +1199,15 @@
         const normalizedTrade = {
           id: contractId,
           contract: contract.contract_type === 'DIGITOVER' ? 'OVER' : (contract.contract_type === 'DIGITUNDER' ? 'UNDER' : contract.contract_type),
-          market: contract.display_name?.replace('Index', '')?.trim() || 'Index',
+          market: contract.display_name?.replace('Index', '').trim() || 'Index',
           entry: parseFloat(contract.buy_price) || 0,
           exit: parseFloat(contract.sell_price) || 0,
           stake: parseFloat(contract.buy_price) || 0,
           profit: profit,
           result: status === 'won' ? 'WIN' : (status === 'lost' ? 'LOSS' : 'PENDING'),
-          createdAt: new Date(contract.purchase_time * 1000).toISOString(),
+          createdAt: (contract.purchase_time) 
+            ? new Date(contract.purchase_time * 1000).toISOString() 
+            : new Date().toISOString(),
           data: {
             stake: parseFloat(contract.buy_price) || 0,
             profit: profit,
