@@ -36,132 +36,106 @@
         </div>
 
 
-        <div class="manual-premium-bar-wrapper w-full px-0">
-          <div class="manual-premium-bar w-full">
-            <!-- Floating Particles for Premium Feel -->
-            <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-              <div class="absolute w-1 h-1 rounded-full bg-zenix-green/30" style="top: 20%; left: 15%; animation: float-particle 8s ease-in-out 0s infinite;"></div>
-              <div class="absolute w-0.5 h-0.5 rounded-full bg-zenix-green/20" style="top: 60%; left: 40%; animation: float-particle 10s ease-in-out 2s infinite;"></div>
-              <div class="absolute w-1 h-1 rounded-full bg-zenix-green/25" style="top: 40%; right: 20%; animation: float-particle 9s ease-in-out 1s infinite;"></div>
-            </div>
+        <div class="header-container desktop-only">
+          <div class="header-left">
+            <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
+            <p class="text-sm text-[#A1A1AA] mt-0 max-w-2xl">
+              Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
+            </p>
+          </div>
+          
+          <div class="header-right">
+            <!-- RESULTS CARD -->
+            <div class="results-card">
+              <!-- STATUS -->
+              <div class="card-section">
+                <span class="card-label">STATUS</span>
+                <template v-if="activeOperation.isOpen">
+                  <span :class="['card-value text-xs font-semibold leading-tight', getTimerClass]">
+                    <template v-if="activeOperation.ticksRemaining !== null">
+                      {{ activeOperation.ticksRemaining }} ticks
+                    </template>
+                    <template v-else-if="formattedTimeRemaining && formattedTimeRemaining !== '--:--' && formattedTimeRemaining !== '00:00'">
+                      {{ formattedTimeRemaining }}
+                    </template>
+                    <template v-else>
+                      PROCESSANDO
+                    </template>
+                  </span>
+                  <span :class="['card-value text-[10px] leading-tight', estimativaClass]">
+                    {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
+                  </span>
+                </template>
+                <span v-else class="card-value text-[10px] text-white/30">AGUARDANDO...</span>
+              </div>
 
-            <!-- STATUS -->
-            <div class="bar-section">
-              <div class="flex items-center gap-3">
-                <div class="relative flex-shrink-0">
-                  <div class="absolute inset-0 rounded-full bg-zenix-green/30 blur-md scale-[1.5]"></div>
-                  <div class="relative w-12 h-12 rounded-full bg-gradient-to-br from-zenix-green/20 to-zenix-green/5 border border-zenix-green/40 flex items-center justify-center backdrop-blur-md shadow-[0_0_20px_rgba(34,197,94,0.2)]">
-                    <i class="fas fa-bolt text-xl text-zenix-green drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]"></i>
-                    <div v-if="activeOperation.isOpen" class="absolute inset-0 rounded-full border border-zenix-green/20 animate-ping"></div>
-                  </div>
-                </div>
-                <div class="flex flex-col justify-center gap-0.5">
-                  <span class="bar-value text-zenix-green uppercase font-bold text-sm leading-tight">Operação Manual</span>
-                  <!-- Em operação: mostra tempo restante + estimativa -->
-                  <template v-if="activeOperation.isOpen">
-                    <span :class="['text-[11px] tabular-nums font-semibold leading-tight', getTimerClass]">
-                      <template v-if="activeOperation.ticksRemaining !== null">
-                        Faltam {{ activeOperation.ticksRemaining }} ticks
-                      </template>
-                      <template v-else-if="formattedTimeRemaining && formattedTimeRemaining !== '--:--' && formattedTimeRemaining !== '00:00'">
-                        Faltam {{ formattedTimeRemaining }}
-                      </template>
-                      <template v-else>
-                        Em andamento...
-                      </template>
-                    </span>
-                    <span :class="['text-[11px] tabular-nums font-medium leading-tight', estimativaClass]">
-                      Estimativa {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
-                    </span>
-                  </template>
-                  <span v-else class="text-[10px] text-white/30 uppercase tracking-tighter">Aguardando...</span>
-                </div>
+              <!-- CAPITAL -->
+              <div class="card-section">
+                <span class="card-label">CAPITAL</span>
+                <span class="card-value text-white">{{ accountBalanceFormatted }}</span>
               </div>
-            </div>
 
-            <!-- CAPITAL -->
-            <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2 h-4">
-                <span class="bar-label">Capital</span>
-                <button @click="balanceVisible = !balanceVisible" class="opacity-20 hover:opacity-100 transition-opacity">
-                  <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
-                </button>
-              </div>
-              <div class="flex items-center gap-2 h-7">
-                <span class="bar-value text-lg leading-none font-bold">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
-              </div>
-            </div>
-
-            <!-- ÚLTIMO RESULTADO -->
-            <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2 h-4">
-                <span class="bar-label">Último Resultado</span>
-                <button @click="profitVisible = !profitVisible" class="opacity-20 hover:opacity-100 transition-opacity">
-                  <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
-                </button>
-              </div>
-              <div class="flex items-center gap-2 h-7">
-                <span :class="['bar-value text-lg leading-none font-bold', lastTradeProfitClass]">
-                  {{ profitVisible ? formattedLastTradeResult : '••••••' }}
+              <!-- ÚLTIMO RESULTADO -->
+              <div class="card-section">
+                <span class="card-label uppercase">Último Resultado</span>
+                <span :class="['card-value font-bold', lastTradeProfitClass]">
+                  {{ formattedLastTradeResult }}
                 </span>
               </div>
-            </div>
 
-            <!-- DESEMPENHO (WIN, LOSS, WIN RATE) -->
-            <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-8">
-                <!-- WIN -->
-                <div class="flex flex-col items-center">
-                  <div class="flex items-center gap-2 h-4">
-                    <span class="bar-label">WIN</span>
-                  </div>
-                  <div class="flex items-center gap-2 h-7">
-                    <span class="bar-value text-lg font-bold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
-                  </div>
+              <!-- WIN / LOSS / WIN RATE -->
+              <div class="card-section card-summary">
+                <div class="summary-item">
+                  <span class="summary-label">WIN</span>
+                  <span class="summary-value text-zenix-green">{{ sessionStats.wins }}</span>
                 </div>
-
-                <!-- LOSS -->
-                <div class="flex flex-col items-center">
-                  <div class="flex items-center gap-2 h-4">
-                    <span class="bar-label">LOSS</span>
-                  </div>
-                  <div class="flex items-center gap-2 h-7">
-                    <span class="bar-value text-lg font-bold tabular-nums leading-none" style="color: #FF4D4D !important;">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
-                  </div>
+                <div class="summary-item">
+                  <span class="summary-label">LOSS</span>
+                  <span class="summary-value text-red-500">{{ sessionStats.losses }}</span>
                 </div>
-
-                <!-- WIN RATE -->
-                <div class="flex flex-col items-center">
-                  <div class="flex items-center gap-2 h-4">
-                    <span class="bar-label">WIN RATE</span>
-                    <button @click="tradesVisible = !tradesVisible" class="opacity-20 hover:opacity-100 transition-opacity flex items-center">
-                      <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
-                    </button>
-                  </div>
-                  <div class="flex items-center gap-2 h-7">
-                    <span class="bar-value text-lg font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
-                  </div>
+                <div class="summary-item">
+                  <span class="summary-label">WIN RATE</span>
+                  <span class="summary-value text-white">{{ sessionStats.winRate || 0 }}%</span>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-
-            <!-- TABS (Far Right) -->
-            <div class="bar-tabs-container">
-              <button
-                v-for="(label, view) in { 'OperationChart': 'Gráfico', 'OperationDigits': 'Dígitos', 'OperationLogs': 'Registro', 'OperationLastOrders': 'Últimas Ordens' }"
-                :key="view"
-                class="bar-tab-btn"
-                :class="{ 
-                  'active': (view === 'OperationChart' && activeSubTab === 'chart' && currentView === 'OperationChart') || 
-                            (view === 'OperationDigits' && (currentView === 'OperationDigits' || (currentView === 'OperationChart' && activeSubTab === 'digits'))) ||
-                            (view !== 'OperationChart' && view !== 'OperationDigits' && currentView === view)
-                }"
-                @click="changeView(view)"
-              >
-                {{ label }}
-              </button>
-            </div>
+        <div class="view-toggle-bar-wrapper">
+          <div class="view-toggle-bar">
+            <button
+              class="px-6 py-3 bg-zenix-card text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300 desktop-only"
+              :class="{ 'border-b-2 border-zenix-green text-zenix-text font-semibold shadow-[0_0_8px_rgba(0,0,0,0.25)]': currentView === 'OperationChart' && activeSubTab === 'chart', 'border-b-2 border-transparent text-[#7A7A7A]': currentView !== 'OperationChart' || activeSubTab !== 'chart' }"
+              @click="changeView('OperationChart')"
+            >
+              <span class="desktop-text">Análise gráfica</span>
+              <span class="mobile-text">Gráfico</span>
+            </button>
+            <button
+              class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+              :class="{ 'border-b-2 border-zenix-green text-zenix-text': (currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits', 'border-b-2 border-transparent': !((currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits') }"
+              @click="changeView('OperationDigits')"
+            >
+              <span class="desktop-text">Análise de dígitos</span>
+              <span class="mobile-text">Dígitos</span>
+            </button>
+            <button
+              class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+              :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLogs', 'border-b-2 border-transparent': currentView !== 'OperationLogs' }"
+              @click="changeView('OperationLogs')"
+            >
+              <span class="desktop-text">Registro</span>
+              <span class="mobile-text">Histórico</span>
+            </button>
+            <button
+              class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+              :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLastOrders', 'border-b-2 border-transparent': currentView !== 'OperationLastOrders' }"
+              @click="changeView('OperationLastOrders')"
+            >
+              <span class="desktop-text">Últimas Ordens</span>
+              <span class="mobile-text">Registros</span>
+            </button>
           </div>
         </div>
 
@@ -1195,7 +1169,7 @@ export default {
           exitPrice: order.exitSpot || null, // Preço de saída (spot)
           profit: order.profit != null ? Number(order.profit) : null,
           currency: 'USD',
-          status: this.mapStatus(order.status),
+          status: this.mapStatus(order.status, order.profit),
           contractId: order.derivTransactionId || null,
           market: getMarketName(order.symbol),
         }));
@@ -1255,16 +1229,23 @@ export default {
         dailyProfit: this.sessionStats.profit
       });
     },
-    mapStatus(status) {
+    mapStatus(status, profit) {
       if (!status) return 'PENDING';
       const statusLower = status.toLowerCase();
-      // Mapear status do banco para exibição
-      if (statusLower === 'won') return 'WON';
-      if (statusLower === 'lost') return 'LOST';
+      
+      // Se for fechado/expirado, determinar WIN ou LOSS pelo lucro
+      if (statusLower === 'expired' || statusLower === 'closed' || statusLower === 'sold') {
+        if (profit != null) {
+          return Number(profit) > 0 ? 'WIN' : 'LOSS';
+        }
+        return 'CLOSED';
+      }
+
+      // Mapear status diretos
+      if (statusLower === 'won' || statusLower === 'win') return 'WIN';
+      if (statusLower === 'lost' || statusLower === 'loss') return 'LOSS';
       if (statusLower === 'pending') return 'PENDING';
-      if (statusLower === 'expired') return 'CLOSED';
-      if (statusLower === 'closed') return 'CLOSED';
-      if (statusLower === 'sold') return 'CLOSED';
+      
       // Se for um status em uppercase, manter
       return status.toUpperCase();
     },
@@ -1431,20 +1412,80 @@ export default {
   align-items: flex-start;
 }
 
-.header-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #DFDFDF;
-  margin: 0;
-  line-height: 1.2;
+/* New Header Styles */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 38px 15px 38px;
+  width: 100%;
 }
 
-.header-subtitle {
-  font-size: 0.875rem;
-  color: #A1A1A1;
-  margin: 0;
-  line-height: 1.4;
+.header-left {
+  flex: 1;
 }
+
+.header-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.results-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: rgba(18, 18, 18, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid #ef4444; /* Borda vermelha sólida */
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.1); /* Brilho sutil vermelho */
+  border-radius: 8px;
+  padding: 0.6rem 1.25rem;
+}
+
+.card-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card-value {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.card-summary {
+  flex-direction: row;
+  gap: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.summary-label {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 700;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: 800;
+} 
+
 
 .balance-display-card {
   background-color: #0E0E0E;
