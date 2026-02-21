@@ -28,7 +28,7 @@
 
 			<div class="main-header">
 				<div class="main-header-left">
-					<h1 style="font-size: 20px;">Estatísticas das IAs</h1>
+					<h1 style="font-size: 20px; color: white;">Estatísticas das IAs</h1>
 					<p style="font-size: 14px;">Monitoramento de performance e resultados das IAs cadastradas na Deriv.</p>
 				</div>
 				<div class="main-header-right">
@@ -530,13 +530,13 @@
 			<div class="main-content">
 				<div class="filter-controls">
 					<div class="date-filter">
-						<input type="date" v-model="filterStartDate">
+						<input type="date" v-model="filterStartDate" @change="fetchData">
 					</div>
 					<div class="date-filter">
-						<input type="date" v-model="filterEndDate">
+						<input type="date" v-model="filterEndDate" @change="fetchData">
 					</div>
 					<div class="account-filter" style="margin-right: 10px;">
-						<select v-model="selectedAccountFilter" style="padding: 10px; border-radius: 8px; background-color: #1a1a1a; color: #fff; border: 1px solid #333;">
+						<select v-model="selectedAccountFilter" @change="fetchData" style="padding: 10px; border-radius: 8px; background-color: #1a1a1a; color: #fff; border: 1px solid #333;">
 							<option value="all">Todas as Contas</option>
 							<option value="real">Conta Real</option>
 							<option value="demo">Conta Demo</option>
@@ -1062,14 +1062,51 @@ export default {
 			}
 		},
 		
-		/**
-	 * ✅ BACKEND REMOVIDO: Busca dados gerais das IAs
+	/**
+	 * Busca dados reais agregados das IAs
 	 */
 	async fetchData() {
-		console.log('[StatsIAsView] Backend removido - fetchData agora apenas visual');
-		// Manter visual com dados mockados
-		this.allStats = [];
-		this.displayedStats = [];
+		try {
+			console.log('[StatsIAsView] Carregando dados reais das IAs...');
+			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+			
+			// Preparar query params
+			const params = new URLSearchParams({
+				startDate: this.filterStartDate,
+				endDate: this.filterEndDate,
+				accountType: this.selectedAccountFilter
+			});
+
+			const response = await fetch(`${apiBase}/ai/stats-aggregated?${params.toString()}`, {
+				headers: {
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				}
+			});
+			
+			const result = await response.json();
+			
+			if (result.success && result.data) {
+				const { bots, summary } = result.data;
+				
+				// Atualizar lista da tabela
+				this.displayedStats = bots.map(bot => ({
+					...bot,
+					riskMode: 'N/A', // Campos não presentes na agregação de sessões atual
+					tradeMode: 'N/A'
+				}));
+				
+				// Atualizar cards de resumo
+				this.totalActiveIAs = summary.totalActiveIAs;
+				this.combinedProfit7Days = summary.combinedProfit;
+				this.globalAccuracy = summary.globalAccuracy;
+				this.topProfitIA = summary.topProfitIA;
+				
+				console.log('[StatsIAsView] ✅ Dados carregados:', { bots: bots.length, summary });
+			}
+		} catch (error) {
+			console.error('[StatsIAsView] Erro ao carregar dados:', error);
+			this.$root.$toast.error('Erro ao carregar estatísticas das IAs');
+		}
 	},
 		
 		/**
