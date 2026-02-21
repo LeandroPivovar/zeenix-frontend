@@ -439,21 +439,6 @@ export default {
         },
         startBalanceUpdates() {
             this.fetchAccountBalance();
-            this.balanceUpdateInterval = setInterval(() => {
-                this.reloadBalance().then(() => {
-                    if (this.info) {
-                        this.accountBalance = this.info.balance;
-                        this.accountCurrency = this.info.currency;
-                        this.accountLoginid = this.info.loginid;
-                        this.isDemo = this.info.isDemo;
-                        this.preferredCurrency = this.getPreferredCurrency();
-                        this.balancesByCurrencyReal = this.info.balancesByCurrencyReal || {};
-                        this.balancesByCurrencyDemo = this.info.balancesByCurrencyDemo || {};
-                    }
-                }).catch(error => {
-                    console.error('[MasterTrader] Erro ao atualizar saldo:', error);
-                });
-            }, 30000);
         },
         stopBalanceUpdates() {
             if (this.balanceUpdateInterval) {
@@ -529,14 +514,8 @@ export default {
                 console.error('[MasterTrader] Erro ao carregar visibilidade:', e);
             }
         }
-        this.preferredCurrency = this.getPreferredCurrency();
         this.startBalanceUpdates();
         this.loadCopiersCount();
-        
-        // Atualizar contagem de copiadores a cada 30 segundos
-        setInterval(() => {
-            this.loadCopiersCount();
-        }, 30000);
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobile);
@@ -692,8 +671,6 @@ export default {
     color: #f0f6fc; /* Texto principal claro */
 }
 
-.layout-master-trader.sidebar-collapsed {
-}
 
 .layout-master-trader .agente-autonomo-header {
   display: none !important; 

@@ -103,11 +103,14 @@ export default {
       accountCurrency: "USD",
       accountLoginid: null,
       isDemo: false,
-      balanceUpdateInterval: null,
-      preferredCurrency: "USD",
-      balancesByCurrencyReal: {},
       balancesByCurrencyDemo: {},
       isSettingsOpen: false,
+      ws: null,
+      isAuthorized: false,
+      rawBalance: 0,
+      processedContractIds: [],
+      syncTimeout: null,
+      unknownTradeTimeout: null,
     };
   },
   computed: {
@@ -770,15 +773,8 @@ export default {
       this.loadTradeHistory();
       this.loadAgentLogs();
 
-      // Polling a cada 5 segundos se o agente estiver ativo
-      this.pollingInterval = setInterval(() => {
-        if (this.agenteEstaAtivo) {
-          this.loadAgentConfig();
-          this.loadSessionStats();
-          this.loadTradeHistory();
-          this.loadAgentLogs();
-        }
-      }, 5000);
+      // Iniciar WebSocket para atualizações em tempo real
+      this.initWebSocket();
       
       // Atualizar tempo ativo a cada segundo para mostrar tempo preciso com segundos
       this.timeUpdateInterval = setInterval(() => {
@@ -786,14 +782,11 @@ export default {
           // Força atualização do computed agenteData para recalcular tempo ativo
           this.$forceUpdate();
         }
-      }, 1000); // A cada 1 segundo para atualizar segundos para atualização mais fluida
+      }, 1000); 
     },
     
     stopPolling() {
-      if (this.pollingInterval) {
-        clearInterval(this.pollingInterval);
-        this.pollingInterval = null;
-      }
+      this.stopWebSocket();
       if (this.timeUpdateInterval) {
         clearInterval(this.timeUpdateInterval);
         this.timeUpdateInterval = null;
@@ -1031,6 +1024,104 @@ export default {
         console.error("[AgenteAutonomo] ERRO: Nenhum token encontrado!");
       }
       return defaultToken;
+    },
+
+    initWebSocket() {
+      console.log('[AgenteAutonomo] 🔌 Inicializando WebSocket...');
+      if (this.ws) this.stopWebSocket();
+
+      const appId = localStorage.getItem("deriv_app_id") || "1089";
+      const endpoint = `wss://ws.derivws.com/websockets/v3?app_id=${appId}`;
+
+      try {
+        this.ws = new WebSocket(endpoint);
+
+        this.ws.onopen = () => {
+          console.log('[AgenteAutonomo] ✅ WS Conectado');
+          const token = this.getDerivToken();
+          if (token) {
+            this.ws.send(JSON.stringify({ authorize: token }));
+          }
+        };
+
+        this.ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            this.handleWebSocketMessage(msg);
+          } catch (e) {
+            console.error('[AgenteAutonomo] Erro no parse WS:', e);
+          }
+        };
+
+        this.ws.onerror = (error) => console.error('[AgenteAutonomo] ❌ Erro WS:', error);
+
+        this.ws.onclose = () => {
+          console.log('[AgenteAutonomo] 🔌 WS Fechado');
+          if (this.agenteEstaAtivo) {
+            setTimeout(() => this.initWebSocket(), 5000);
+          }
+        };
+      } catch (error) {
+        console.error('[AgenteAutonomo] Erro WS:', error);
+      }
+    },
+
+    stopWebSocket() {
+      if (this.ws) {
+        this.ws.onclose = null;
+        this.ws.close();
+        this.ws = null;
+      }
+      this.isAuthorized = false;
+    },
+
+    handleWebSocketMessage(msg) {
+      if (msg.msg_type === 'authorize') {
+        if (msg.error) {
+          console.error('[AgenteAutonomo] Erro auth WS:', msg.error.message);
+        } else {
+          console.log('[AgenteAutonomo] 🔐 WS Autorizado');
+          this.isAuthorized = true;
+          this.rawBalance = parseFloat(msg.authorize.balance);
+          this.ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+          this.ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
+        }
+      }
+
+      if (msg.msg_type === 'balance') {
+        this.rawBalance = parseFloat(msg.balance.balance);
+        window.dispatchEvent(new CustomEvent('balanceUpdated', {
+          detail: { balance: this.rawBalance, source: 'AgenteAutonomoWS' }
+        }));
+      }
+
+      if (msg.msg_type === 'proposal_open_contract') {
+        this.handleContractUpdate(msg.proposal_open_contract);
+      }
+    },
+
+    handleContractUpdate(contract) {
+      const status = contract.status;
+      const contractId = contract.contract_id;
+
+      if (contract.is_sold || status !== 'open') {
+        console.log('[AgenteAutonomo] 🏁 Contrato finalizado, refrescando dados...');
+        
+        const cid = String(contractId);
+        if (!this.processedContractIds.includes(cid)) {
+          this.processedContractIds.push(cid);
+          if (this.processedContractIds.length > 100) this.processedContractIds.shift();
+
+          // Refresh imediato (debounce)
+          if (this.syncTimeout) clearTimeout(this.syncTimeout);
+          this.syncTimeout = setTimeout(() => {
+            this.loadSessionStats();
+            this.loadTradeHistory();
+            this.loadAgentLogs();
+            this.loadAgentConfig();
+          }, 2000);
+        }
+      }
     },
 
     async fetchAccountBalance() {

@@ -104,27 +104,24 @@ export default {
   data() {
     return {
       realtimeLogs: [],
-      logPollingInterval: null,
       lastLogTimestamp: null
     };
   },
   watch: {
     isActive(newVal) {
-      if (newVal) this.startLogPolling();
-      else this.stopLogPolling();
+      if (newVal) this.fetchRealtimeLogs(200);
     },
     userId(newVal) {
       if (newVal && this.isActive) {
-        this.stopLogPolling();
-        this.startLogPolling();
+        this.fetchRealtimeLogs(200);
       }
     }
   },
   mounted() {
-    if (this.isActive) this.startLogPolling();
+    if (this.isActive) this.fetchRealtimeLogs(200);
   },
   beforeUnmount() {
-    this.stopLogPolling();
+    // No polling to stop
   },
   computed: {
     allFormattedLogs() {
@@ -264,12 +261,6 @@ export default {
       } catch (e) { console.error('Log fetch error:', e); }
       return [];
     },
-    startLogPolling() {
-      // ✅ [PERFORMANCE] Display limit (200 items)
-      this.stopLogPolling();
-      this.fetchRealtimeLogs(200);
-      this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(200), 3000);
-    },
     async clearLogs() {
       if (await confirm('Tem certeza que deseja limpar todos os logs?')) {
         this.realtimeLogs = [];
@@ -353,7 +344,7 @@ export default {
       }
     },
     stopLogPolling() {
-      if (this.logPollingInterval) clearInterval(this.logPollingInterval);
+      // Logic removed
     }
   }
 };
