@@ -16,15 +16,15 @@
 </template>
 
 <script>
-import AgenteAutonomoActive from "../autonomo/AgenteAutonomoActive.vue";
-import AgenteAutonomoInactive from "../autonomo/AgenteAutonomoInactive.vue";
+import MasterAgenteActive from "./MasterAgenteActive.vue";
+import MasterAgenteInactive from "./MasterAgenteInactive.vue";
 import { loadAccountBalance, reloadAccountBalance } from '../../utils/balanceLoader';
 
 export default {
   name: "AgenteAutonomoView",
   components: {
-    AgenteAutonomoActive,
-    AgenteAutonomoInactive,
+    MasterAgenteActive,
+    MasterAgenteInactive,
   },
   props: {
     isMobile: {
@@ -113,8 +113,8 @@ export default {
   computed: {
     componenteAtual() {
       return this.agenteEstaAtivo
-        ? "AgenteAutonomoActive"
-        : "AgenteAutonomoInactive";
+        ? "MasterAgenteActive"
+        : "MasterAgenteInactive";
     },
 
     agenteData() {
