@@ -562,7 +562,7 @@
 				</div>
 			</button>
 			
-			<div v-show="showLogs" class="border-t border-[#27272a] animate-in fade-in slide-in-from-top-2 duration-300">
+			<div v-if="showLogs" class="border-t border-[#27272a] animate-in fade-in slide-in-from-top-2 duration-300">
 				<AutonomousAgentLogs 
 					:userId="getUserId()" 
 					:isActive="true"
