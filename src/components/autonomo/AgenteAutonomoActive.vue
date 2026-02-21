@@ -1122,8 +1122,6 @@
                 // Session Reporting
                 renderedWinRate: 0,
                 renderedAvgProfit: 0,
-                
-				selectedAggregation: 'week', // week, month, semester, year
                 showCycleCompletionModal: false,
                 currentCycleNumber: 1,
                 currentCycleProfit: 0,
