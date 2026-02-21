@@ -1349,19 +1349,20 @@ export default {
 
 				// Converter dados para formato CSV usando ponto e vírgula (padrão Excel BR)
 				const csvRows = [
+					'sep=;', // Forçar Excel a reconhecer ponto e vírgula como separador
 					headers.join(';'), // Adicionar cabeçalho
 					...this.displayedStats.map(bot => [
 						`"${bot.name}"`,
 						bot.totalTrades,
 						bot.wins,
 						bot.losses,
-						`"${this.formatCurrency(bot.profit)}"`,
+						`"${this.formatCurrency(bot.profit).replace(/\u00A0/g, ' ')}"`, // Limpar non-breaking space (Â)
 						`"${bot.riskMode}"`,
 						`"${bot.tradeMode}"`
 					].join(';'))
 				];
 
-				const csvContent = '\ufeff' + csvRows.join('\n'); // Adicionar BOM para UTF-8 no Excel
+				const csvContent = '\ufeff' + csvRows.join('\r\n'); // Usar \r\n para melhor compatibilidade com Windows/Excel
 				const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 				const link = document.createElement('a');
 				
