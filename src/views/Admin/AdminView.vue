@@ -99,7 +99,6 @@
                                         <button @click="toggleStatus(admin)" class="action-link">
                                             {{ admin.status === 'Ativo' ? 'Desativar' : 'Ativar' }}
                                         </button>
-                                        <button @click="deleteAdmin(admin)" class="action-link delete">Excluir</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -132,7 +131,6 @@
                                     <button @click="toggleStatus(admin)" class="action-link">
                                         {{ admin.status === 'Ativo' ? 'Desativar' : 'Ativar' }}
                                     </button>
-                                    <button @click="deleteAdmin(admin)" class="action-link delete">Excluir</button>
                                 </div>
                             </div>
                         </div>
@@ -475,10 +473,8 @@
                             <div class="form-group">
                                 <label for="adminPermission">Permissão</label>
                                 <select id="adminPermission" v-model="newAdmin.permission" required>
-                                    <option value="Super Admin">Super Admin</option>
-                                    <option value="Editor">Editor</option>
-                                    <option value="Suporte">Suporte</option>
-                                    <option value="Visualizador">Visualizador</option>
+                                    <option value="Administrador">Administrador</option>
+                                    <option value="Usuário">Usuário</option>
                                 </select>
                             </div>
                             
@@ -821,7 +817,10 @@ export default {
 
                 alert('Usuário atualizado com sucesso!');
                 this.showEditUserModal = false;
-                await this.loadAllUsers(this.allUsersPagination.currentPage, this.allUsersPagination.recordsPerPage);
+                await Promise.all([
+                    this.loadAllUsers(this.allUsersPagination.currentPage, this.allUsersPagination.recordsPerPage),
+                    this.loadAdministrators()
+                ]);
             } catch (error) {
                 console.error('Erro ao atualizar usuário:', error);
                 alert(error.message);
@@ -1077,7 +1076,16 @@ export default {
         
 
         editAdmin(admin) {
-            this.$root.$toast.info(`Editando: ${admin.name}`);
+            this.editingUser = {
+                id: admin.id,
+                name: admin.name,
+                email: admin.email,
+                planId: admin.planId || '',
+                role: admin.role || 'admin',
+                traderMestre: admin.traderMestre || false,
+                isActive: admin.isActive !== undefined ? admin.isActive : true
+            };
+            this.showEditUserModal = true;
         },
         
         async toggleStatus(admin) {
@@ -1100,6 +1108,10 @@ export default {
 
                 const updated = await response.json();
                 admin.status = updated.status;
+                admin.isActive = (updated.status === 'Ativo');
+                
+                await this.loadAllUsers(this.allUsersPagination.currentPage, this.allUsersPagination.recordsPerPage);
+                
                 this.$root.$toast.success(`Status alterado para: ${updated.status}`);
             } catch (error) {
                 console.error('Erro ao alterar status:', error);
