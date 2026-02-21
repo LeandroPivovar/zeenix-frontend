@@ -1518,7 +1518,7 @@
 				return 'Semanal';
 			},
 			sessionTrades() {
-				// ✅ [ZENIX v3.4] Smart Session Logic (Gap Detection)
+				// ✅ [ZENIX v3.4] Smart Session Logic (Session ID priority)
 				// 'Session' should represent the CURRENT continuous run, distinct from 'Today' (all runs).
 				
 				if (this.selectedPeriod !== 'session' && this.selectedPeriod !== 'today') return [];
@@ -1551,7 +1551,23 @@
 					return combined;
 				}
 
-				// If period is SESSION, apply "Gap Filter"
+				// ✅ [ZENIX v3.4] Prioritize sessionId from config for "Session" view
+				const activeSessionId = this.agentConfig?.sessionId || this.agentConfig?.session_id;
+				
+				if (activeSessionId) {
+					const filtered = combined.filter(t => {
+						const tSessionId = t.sessionId || t.session_id;
+						return String(tSessionId) === String(activeSessionId);
+					});
+					// If we found trades with this sessionId, use them. 
+					// If not, fallback to gap detection (legacy or session just started)
+					if (filtered.length > 0) {
+						console.log(`[sessionTrades] Filtered by Session ID ${activeSessionId}:`, filtered.length);
+						return filtered;
+					}
+				}
+
+				// Fallback: If period is SESSION, apply "Gap Filter"
 				// We look from the END (most recent) backwards.
 				// If we find a gap > 60 minutes, we assume the session started after that gap.
 				const GAP_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
@@ -1576,7 +1592,7 @@
 					currentSessionTrades.unshift(curr);
 				}
 				
-				console.log('[sessionTrades] Filtered Session Trades:', currentSessionTrades.length, 'Total Today:', combined.length);
+				console.log('[sessionTrades] Fallback Gap Detection:', currentSessionTrades.length, 'Total Today:', combined.length);
 				return currentSessionTrades;
 			},
 			formattedSessionItems() {
@@ -1641,16 +1657,20 @@
 					};
 				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 20000); // Increased limit to 20k as per user request
 
-			// ✅ Remove duplicates based on trade ID
-			const uniqueTrades = [];
-			const seenIds = new Set();
-			for (const trade of normalizedTrades) {
-				if (!seenIds.has(`${trade.createdAt}-${trade.profit}-${trade.stake}-${trade.market}`)) {
-					seenIds.add(`${trade.createdAt}-${trade.profit}-${trade.stake}-${trade.market}`);
-					uniqueTrades.push(trade);
+				// ✅ Improved deduplication: Use real ID if available
+				const uniqueTrades = [];
+				const seenIds = new Set();
+				for (const trade of normalizedTrades) {
+					const dedupeKey = trade.id && !trade.id.includes('-') && !trade.id.includes(':') 
+						? String(trade.id) 
+						: `${trade.createdAt}-${trade.profit}-${trade.stake}-${trade.market}`;
+					
+					if (!seenIds.has(dedupeKey)) {
+						seenIds.add(dedupeKey);
+						uniqueTrades.push(trade);
+					}
 				}
-			}
-			const dedupedTrades = uniqueTrades;
+				const dedupedTrades = uniqueTrades;
 
 				// 2. Group trades into sessions (using sessionId, time gap, or date change)
 				const sessions = [];
@@ -2455,7 +2475,12 @@
                      // instead of generic range query, to ensure consistency.
                      if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
                          const dateParam = 'today';
-                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateParam}${agentFilter}`;
+                         // ✅ [SESSION FIX] For 'session' period, pass sessionId to backend so it filters by session_id
+                         // agentConfig.id IS the session config id used as session_id in autonomous_agent_trades
+                         const sessionIdParam = (this.selectedPeriod === 'session' && this.agentConfig?.id)
+                           ? `&sessionId=${this.agentConfig.id}`
+                           : '';
+                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateParam}${agentFilter}${sessionIdParam}`;
                      } else if (isRange) {
                          const startStr = startDate.toISOString();
                          const endStr = endDate.toISOString();
@@ -2481,7 +2506,9 @@
                                  const summary = !Array.isArray(result.data) ? result.data.summary : null;
                                  
                                  console.log('[AgenteAutonomo] Trades históricos carregados:', trades.length);
-                                 this.dailyTrades = trades || []; // Ensure array
+                                 // ✅ [FLICKER FIX] Assign atomically — never set dailyTrades to [] first
+                                 // This prevents the brief empty flash while new data loads
+                                 this.dailyTrades = trades; // Assign directly, no intermediate empty state
                                  if (summary) this.dailyTradesSummary = summary;
                                  
                                  // ✅ [ZENIX v3.2] Force chart update immediately if in session/today

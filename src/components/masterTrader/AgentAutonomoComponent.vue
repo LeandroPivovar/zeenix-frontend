@@ -16,15 +16,15 @@
 </template>
 
 <script>
-import AgenteAutonomoActive from "../autonomo/AgenteAutonomoActive.vue";
-import AgenteAutonomoInactive from "../autonomo/AgenteAutonomoInactive.vue";
+import MasterAgenteActive from "./MasterAgenteActive.vue";
+import MasterAgenteInactive from "./MasterAgenteInactive.vue";
 import { loadAccountBalance, reloadAccountBalance } from '../../utils/balanceLoader';
 
 export default {
   name: "AgenteAutonomoView",
   components: {
-    AgenteAutonomoActive,
-    AgenteAutonomoInactive,
+    MasterAgenteActive,
+    MasterAgenteInactive,
   },
   props: {
     isMobile: {
@@ -113,8 +113,8 @@ export default {
   computed: {
     componenteAtual() {
       return this.agenteEstaAtivo
-        ? "AgenteAutonomoActive"
-        : "AgenteAutonomoInactive";
+        ? "MasterAgenteActive"
+        : "MasterAgenteInactive";
     },
 
     agenteData() {
@@ -213,7 +213,8 @@ export default {
         realTimeOperations: this.realTimeOperations,
         operationHistory: this.operationHistory,
         agentActions: this.agentActions,
-        agentStatus: this.agenteEstaAtivo ? "ATIVO" : "PAUSADO",
+        agentStatus: this.agenteEstaAtivo ? (this.agentConfig?.sessionStatus || "ATIVO") : "PAUSADO",
+        sessionStatus: this.agentConfig?.sessionStatus || null,
         accountBalance: accountBalanceValue, // Garantir que sempre seja um número válido
       };
     },
@@ -481,8 +482,21 @@ export default {
             if (result.data.isActive === true) {
               this.agenteEstaAtivo = true;
             } else if (result.data.isActive === false) {
-              // Só definir como false se explicitamente for false
-              this.agenteEstaAtivo = false;
+              // ✅ [FIX] Checar sessionStatus: se o agente parou por stop condition
+              // (stopped_loss, stopped_profit, stopped_blindado, stopped_consecutive_loss, paused)
+              // o usuário ainda deve ver a tela ativa (monitoramento) e não o painel de configuração.
+              // Só redirecionar para inativo se sessionStatus for null/'inactive' (desativado pelo usuário)
+              const stoppedButSessionExists = result.data.sessionStatus && 
+                result.data.sessionStatus !== 'inactive';
+              
+              if (stoppedButSessionExists) {
+                // Agente parou por stop condition hoje — manter na tela ativa
+                this.agenteEstaAtivo = true;
+                console.log('[AgenteAutonomo] Agente parado por stop condition, mantendo tela ativa. Status:', result.data.sessionStatus);
+              } else {
+                // Agente realmente desativado (ou nunca teve sessão)
+                this.agenteEstaAtivo = false;
+              }
             }
             // Se isActive não estiver definido, manter o estado atual
           } catch (error) {
