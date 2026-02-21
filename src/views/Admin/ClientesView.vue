@@ -664,16 +664,14 @@ export default {
 			this.tempFilters.onlyRealAccount = !this.tempFilters.onlyRealAccount;
 			if (this.tempFilters.onlyRealAccount) {
 				this.tempFilters.noRealBalance = false;
-				this.tempFilters.minBalance = null;
-				this.tempFilters.maxBalance = null;
+				// Removido o reset do minBalance e maxBalance para permitir filtros combinados
 			}
 		},
 		toggleNoRealBalance() {
 			this.tempFilters.noRealBalance = !this.tempFilters.noRealBalance;
 			if (this.tempFilters.noRealBalance) {
 				this.tempFilters.onlyRealAccount = false;
-				this.tempFilters.minBalance = null;
-				this.tempFilters.maxBalance = null;
+				// Removido o reset do minBalance e maxBalance para permitir filtros combinados
 			}
 		},
 		openBalanceIntervalModal() {
@@ -689,11 +687,7 @@ export default {
 			this.tempFilters.minBalance = min;
 			this.tempFilters.maxBalance = max;
 			
-			// If interval is set, clear other modes
-			if (this.tempFilters.minBalance !== null || this.tempFilters.maxBalance !== null) {
-				this.tempFilters.onlyRealAccount = false;
-				this.tempFilters.noRealBalance = false;
-			}
+			// Removido o reset automático de onlyRealAccount e noRealBalance para permitir combinações
 			
 			this.showBalanceIntervalModal = false;
 		},
@@ -711,6 +705,11 @@ export default {
                 activityPeriod: null
 			};
 			this.tempFilters = { ...this.filters }; // Sync temp
+
+			// Resetar filtros externos (dropdown e busca)
+			this.balanceFilter = '';
+			this.searchQuery = '';
+
 			this.fetchClients();
 			this.closeFilterModal();
 		},
