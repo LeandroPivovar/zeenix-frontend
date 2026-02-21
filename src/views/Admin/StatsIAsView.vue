@@ -32,8 +32,8 @@
 					<p style="font-size: 14px;">Monitoramento de performance e resultados das IAs cadastradas na Deriv.</p>
 				</div>
 				<div class="main-header-right">
-					<button class="btn pdf-btn" @click="exportReportToPDF">
-						<img src="../../assets/icons/box-down.svg" alt="Exportar PDF" width="20px"> Exportar Relatório
+					<button class="btn pdf-btn" @click="exportToCSV">
+						<img src="../../assets/icons/box-down.svg" alt="Exportar CSV" width="20px"> Exportar Relatório
 					</button>
 				</div>
 			</div>
@@ -1329,8 +1329,57 @@ export default {
 			return 'USD';
 		},
 		
-		exportReportToPDF() {
-			this.$root.$toast.success(`Download do PDF de Estatísticas iniciado! (Arquivo: Relatorio_IAs_${this.filterStartDate}_a_${this.filterEndDate}.pdf)`);
+		exportToCSV() {
+			try {
+				if (this.displayedStats.length === 0) {
+					this.$root.$toast.warn('Nenhum dado disponível para exportar');
+					return;
+				}
+
+				// Cabeçalhos
+				const headers = [
+					'Nome do Bot',
+					'Total de Trades',
+					'Ganho',
+					'Perda',
+					'Lucro Total',
+					'Risco Mais Usado',
+					'Modo Mais Usado'
+				];
+
+				// Converter dados para formato CSV
+				const csvRows = [
+					headers.join(','), // Adicionar cabeçalho
+					...this.displayedStats.map(bot => [
+						`"${bot.name}"`,
+						bot.totalTrades,
+						bot.wins,
+						bot.losses,
+						`"${this.formatCurrency(bot.profit)}"`,
+						`"${bot.riskMode}"`,
+						`"${bot.tradeMode}"`
+					].join(','))
+				];
+
+				const csvContent = csvRows.join('\n');
+				const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+				const link = document.createElement('a');
+				
+				const url = URL.createObjectURL(blob);
+				const fileName = `Relatorio_IAs_${this.filterStartDate}_a_${this.filterEndDate}.csv`;
+				
+				link.setAttribute('href', url);
+				link.setAttribute('download', fileName);
+				link.style.visibility = 'hidden';
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+
+				this.$root.$toast.success(`Download do CSV iniciado! (${fileName})`);
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao exportar CSV:', error);
+				this.$root.$toast.error('Erro ao gerar o relatório CSV');
+			}
 		},
 
 		// Métodos de monitoramento de IA
