@@ -25,9 +25,10 @@
       </div>
     </div>
 
+    <!-- Desktop Terminal View -->
     <div class="hidden md:block">
-      <div dir="ltr" class="relative h-[500px] border-border bg-black/40">
-        <div class="h-full w-full overflow-y-scroll custom-scrollbar" ref="desktopLogsContainer">
+      <div dir="ltr" class="relative overflow-hidden h-[500px] border-border bg-black/40">
+        <div class="h-full w-full overflow-y-auto custom-scrollbar" ref="desktopLogsContainer">
           <div class="p-4 font-mono text-xs space-y-4 text-left">
             <div v-if="realtimeLogs.length === 0" class="flex flex-col items-center justify-center h-[300px] text-muted-foreground opacity-50">
               <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m7 15 5-5 5 5"/></svg>
@@ -59,7 +60,7 @@
 
     <!-- Mobile Card View -->
     <div class="md:hidden">
-      <div class="logs-content h-[500px] overflow-y-scroll custom-scrollbar" ref="mobileLogsContainer">
+      <div class="logs-content h-[500px] overflow-y-auto custom-scrollbar" ref="mobileLogsContainer">
         <div v-if="realtimeLogs.length === 0" class="flex flex-col items-center justify-center h-full text-[#A1A1AA] opacity-50 text-center p-8">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <p class="text-xs">Nenhum log registrado</p>
@@ -359,4 +360,13 @@ export default {
 };
 </script>
 
-
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 8px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { 
+  background: #22c55e; /* Ganha cor verde para ficar bem visível */
+  border-radius: 10px; 
+  border: 2px solid #000; /* Borda para dar profundidade */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #1eb054; }
+</style>
