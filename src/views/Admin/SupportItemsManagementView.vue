@@ -8,6 +8,11 @@
             <TopNavbar 
                 v-if="!isMobile"
                 :is-sidebar-collapsed="isSidebarCollapsed"
+                :balance="currentBalance?.balance || info?.balance"
+                :account-type="accountType"
+                :balances-by-currency-real="balancesByCurrencyReal"
+                :balances-by-currency-demo="balancesByCurrencyDemo"
+                :currency-prefix="preferredCurrencyPrefix"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
                 @open-settings="showSettingsModal = true"
@@ -220,6 +225,7 @@
 
 <script>
 /* eslint-disable no-undef */
+import accountBalanceMixin from '../../mixins/accountBalanceMixin';
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
@@ -239,6 +245,7 @@ export default {
         ConfirmActionModal,
         SuccessModal
     },
+    mixins: [accountBalanceMixin],
     data() {
         return {
             isSidebarOpen: true, 
