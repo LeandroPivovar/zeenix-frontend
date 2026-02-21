@@ -344,7 +344,7 @@
 
 		<!-- Balance Interval Modal (Second Modal) -->
 		<Teleport to="body">
-			<div v-if="showBalanceIntervalModal" class="modal-overlay" @click.self="showBalanceIntervalModal = false">
+			<div v-if="showBalanceIntervalModal" class="modal-overlay sub-modal" @click.self="showBalanceIntervalModal = false">
 				<div class="modal-content small-modal">
 					<div class="modal-header">
 						<h3 class="modal-title">Intervalo de Saldo</h3>
@@ -711,7 +711,7 @@ export default {
 			this.searchQuery = '';
 
 			this.fetchClients();
-			this.closeFilterModal();
+			// this.closeFilterModal();
 		},
 		applyFilters() {
 			this.filters = { ...this.tempFilters }; // Commit temp to actual
@@ -1346,6 +1346,10 @@ p {
     align-items: center;
     z-index: 1000;
     backdrop-filter: blur(5px);
+}
+
+.modal-overlay.sub-modal {
+    z-index: 1100;
 }
 
 .modal-content {
