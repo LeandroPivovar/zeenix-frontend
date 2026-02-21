@@ -600,33 +600,53 @@
                                         
                                         <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Configurações da Análise</h4>
 
-                                        <!-- Row 2: Direction -->
-                                        <div v-if="recoveryConfig.selectedTradeTypeGroup">
-                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Direção Permitida</label>
-                                            <div class="flex bg-[#111] p-1 rounded-lg border border-[#333] max-w-md">
-                                                 <button 
-                                                    v-for="(dir, idx) in selectedRecoveryDirections" 
-                                                    :key="dir.value"
-                                                    type="button"
-                                                    @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
-                                                    class="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all flex items-center justify-center gap-2"
-                                                    :style="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'background-color: #22C55E !important; color: black !important;' : ''"
-                                                    :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? '' : 'text-gray-500 hover:text-white'"
-                                                >
-                                                    <i class="fa-solid fa-arrow-up" v-if="idx===0"></i>
-                                                    <i class="fa-solid fa-arrow-down" v-else></i>
-                                                    {{ dir.label }}
-                                                </button>
-                                                <button 
-                                                    type="button"
-                                                    @click="updateRecoveryDirection('both')"
-                                                    class="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all flex items-center justify-center gap-2"
-                                                    :style="recoveryConfig.directionMode === 'both' ? 'background-color: #22C55E !important; color: black !important;' : ''"
-                                                    :class="recoveryConfig.directionMode === 'both' ? 'shadow-lg shadow-zenix-green/20' : 'text-gray-500 hover:text-white'"
-                                                >
-                                                    <i class="fa-solid fa-arrows-up-down"></i>
-                                                    Ambos
-                                                </button>
+                                        <!-- Row 2: Direction & Payouts -->
+                                        <div v-if="recoveryConfig.selectedTradeTypeGroup" class="bg-[#111] p-4 rounded-xl border border-dashed border-[#333]">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Direção Permitida</label>
+                                                    <div class="flex bg-[#1E1E1E] p-1 rounded-lg border border-[#333]">
+                                                        <button 
+                                                            type="button"
+                                                            @click="updateRecoveryDirection('both')"
+                                                            class="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all"
+                                                            :style="recoveryConfig.directionMode === 'both' ? 'background-color: #22C55E !important; color: black !important;' : ''"
+                                                            :class="recoveryConfig.directionMode === 'both' ? '' : 'text-gray-500 hover:text-white'"
+                                                        >
+                                                            Ambos
+                                                        </button>
+                                                        <button 
+                                                            v-for="(dir, idx) in selectedRecoveryDirections" 
+                                                            :key="dir.value"
+                                                            type="button"
+                                                            @click="updateRecoveryDirection(idx === 0 ? 'up' : 'down', dir.value)"
+                                                            class="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded transition-all flex items-center justify-center gap-1"
+                                                            :style="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? 'background-color: #22C55E !important; color: black !important;' : ''"
+                                                            :class="(idx === 0 && recoveryConfig.directionMode === 'up') || (idx === 1 && recoveryConfig.directionMode === 'down') ? '' : 'text-gray-500 hover:text-white'"
+                                                        >
+                                                            <i class="fa-solid fa-arrow-up" v-if="idx===0"></i>
+                                                            <i class="fa-solid fa-arrow-down" v-else></i>
+                                                            {{ dir.label }}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="grid grid-cols-2 gap-4">
+                                                    <div v-for="dir in selectedRecoveryDirections" :key="'payout-' + dir.value">
+                                                        <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Payout ({{ dir.label }})</label>
+                                                        <div class="relative">
+                                                            <input 
+                                                                type="number" 
+                                                                v-model.number="recoveryConfig.directionPayouts[dir.value]" 
+                                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-2 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                                step="1"
+                                                                min="1"
+                                                            />
+                                                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                                <span class="text-[10px] text-gray-500 font-bold">%</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -695,18 +715,7 @@
                                         </div>
 
                                         <!-- Row 5: Detailed Params -->
-                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                            <div>
-                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
-                                                    Payout Min. (%) <i class="fa-regular fa-circle-question text-[10px]"></i>
-                                                </label>
-                                                <input 
-                                                    type="number" 
-                                                    v-model.number="recoveryConfig.minPayoutPercent" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                    min="1" max="100"
-                                                />
-                                            </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                             <div>
                                                 <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
                                                     Pausa Técnica (perdas) <i class="fa-regular fa-circle-question text-[10px]"></i>
