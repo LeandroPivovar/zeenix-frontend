@@ -1043,7 +1043,6 @@
 				dateOptions: [
 					{ label: 'Sessão', value: 'session' },
 					{ label: 'Hoje', value: 'today' },
-					{ label: 'Ontem', value: 'yesterday' },
 					{ label: 'Últimos 7 dias', value: '7d' },
 					{ label: 'Últimos 30 dias', value: '30d' },
 					{ label: 'Semestre', value: '6m' },
@@ -1056,7 +1055,8 @@
 				weeklyData: [],
                 
                 dailyData: [],
-                dailyTrades: [],
+                dailyTrades: [],           // trades for session/today view (live)
+                allTrades: [],             // ✅ [ZENIX v3.8] All-time trade cache (filter client-side)
                 dailyTradesSummary: { totalTrades: 0, totalWins: 0, totalProfit: 0, winRate: 0 },
                 agentConfig: null,
                 
@@ -1601,15 +1601,65 @@
 				console.log('[sessionTrades] Fallback Gap Detection:', currentSessionTrades.length, 'Total Today:', combined.length);
 				return currentSessionTrades;
 			},
+			// ✅ [ZENIX v3.8] Client-side filter: returns allTrades sliced by selectedPeriod date range
+			filteredDailyTrades() {
+				if (!this.allTrades || this.allTrades.length === 0) return [];
+				
+				const now = new Date();
+				let startMs = 0; // 0 = no lower bound
+				
+				const startOf = (daysAgo) => {
+					const d = new Date(now);
+					d.setDate(d.getDate() - daysAgo);
+					d.setHours(0, 0, 0, 0);
+					return d.getTime();
+				};
+				
+				switch (this.selectedPeriod) {
+					case 'today':
+						startMs = startOf(0); break;
+					case '7d':
+						startMs = startOf(7); break;
+					case '30d':
+						startMs = startOf(30); break;
+					case '6m':
+						startMs = startOf(180); break;
+					case '1y':
+						startMs = startOf(365); break;
+					case 'thisMonth': {
+						const s = new Date(now.getFullYear(), now.getMonth(), 1);
+						startMs = s.getTime(); break;
+					}
+					case 'lastMonth': {
+						const s = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+						startMs = s.getTime(); break;
+					}
+					case 'thisYear': {
+						const s = new Date(now.getFullYear(), 0, 1);
+						startMs = s.getTime(); break;
+					}
+					case 'all':
+					default:
+						startMs = 0; break; // All trades
+				}
+				
+				if (startMs === 0) return this.allTrades;
+				
+				return this.allTrades.filter(t => {
+					const dateStr = t.createdAt || t.created_at || t.time;
+					if (!dateStr) return false;
+					return new Date(dateStr).getTime() >= startMs;
+				});
+			},
 			formattedSessionItems() {
-				// Decide source array based on selectedPeriod
+				// ✅ [ZENIX v3.8] Decide source based on period
 				let sourceTrades = [];
 				if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
 					sourceTrades = this.sessionTrades;
 				} else {
-					// ✅ FIX: For longer historical periods (7D, 30D, ANO), use dailyTrades which contains the full range
-					sourceTrades = [...(this.dailyTrades || [])];
-					console.log('[formattedSessionItems] history mode - using dailyTrades:', sourceTrades.length, 'trades');
+					// Use client-side filtered allTrades for all other periods
+					sourceTrades = [...(this.filteredDailyTrades || [])];
+					console.log('[formattedSessionItems] history mode - using filteredDailyTrades:', sourceTrades.length, 'trades');
 				}
 
 				if (!sourceTrades || sourceTrades.length === 0) return [];
@@ -1849,9 +1899,8 @@
                          });
                     }
 				} else {
-					// ✅ [ZENIX v3.5] Calculate from currently loaded dailyTrades for consistency
-                    // This ensures cards and table always match exactly
-                    const historicalTrades = this.dailyTrades || [];
+					// ✅ [ZENIX v3.8] Use filteredDailyTrades (already filtered client-side)
+                    const historicalTrades = this.filteredDailyTrades || [];
                     if (historicalTrades.length > 0) {
                         trades = historicalTrades.length;
                         historicalTrades.forEach(t => {
@@ -2454,134 +2503,87 @@
                 const userId = this.getUserId();
                 if (!userId) return;
                 
-                console.log('[AgenteAutonomo] fetchTradesForPeriod iniciado para:', this.selectedPeriod);
+                console.log('[AgenteAutonomo] fetchTradesForPeriod iniciado');
 
-                // ✅ [ZENIX v3.1] Even for 'session', we want to fetch today's historical trades 
-                // to show the full history on the dashboard.
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
 
-                // Calcular intervalo de datas
-                let startDate = new Date();
-                let endDate = new Date();
-                let isRange = false;
-                
-                // Reset hours
-                startDate.setHours(0, 0, 0, 0);
-                endDate.setHours(23, 59, 59, 999);
+                try {
+                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    // PATH A: Session / Today — fetch today's daily-trades (also filtered by sessionId if session)
+                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
+                        let url = '';
+                        if (this.selectedPeriod === 'session') {
+                            const activeSessionId = this.agentConfig?.sessionId || this.agentConfig?.session_id || this.agentConfig?.id;
+                            const sessionIdParam = activeSessionId ? `&sessionId=${activeSessionId}` : '';
+                            url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=today${agentFilter}${sessionIdParam}`;
+                        } else {
+                            const today = new Date();
+                            const startStr = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+                            const endStr = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999).toISOString();
+                            url = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${startStr}&endDate=${endStr}${agentFilter}&date=range&limit=5000`;
+                        }
 
-                switch (this.selectedPeriod) {
-                    case 'session':
-                    case 'today':
-                        // ✅ [ZENIX v3.6] If we have a selected day from chart, use its date range
-                        if (this.selectedDay?.fullDate) {
-                            try {
-                                const dayDate = new Date(this.selectedDay.fullDate);
-                                startDate = new Date(dayDate);
-                                startDate.setHours(0, 0, 0, 0);
-                                endDate = new Date(dayDate);
-                                endDate.setHours(23, 59, 59, 999);
-                            } catch (e) {
-                                console.error('[AgenteAutonomo] Error parsing selectedDay.fullDate:', e);
+                        console.log('[AgenteAutonomo] Buscando trades session/today:', url);
+                        const res = await fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                            }
+                        });
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.success) {
+                                const trades = Array.isArray(result.data) ? result.data : (result.data.trades || []);
+                                this.dailyTrades = trades;
+                                if (!Array.isArray(result.data) && result.data.summary) {
+                                    this.dailyTradesSummary = result.data.summary;
+                                }
+                                this.generateChartFromTrades(this.dailyTrades);
+                                console.log('[AgenteAutonomo] dailyTrades (session/today):', trades.length);
                             }
                         }
-                        isRange = true;
-                        break;
-                    case 'yesterday':
-                        startDate.setDate(startDate.getDate() - 1);
-                        endDate = new Date(startDate);
-                        endDate.setHours(23, 59, 59, 999);
-                        isRange = true;
-						break;
-                    case '7d':
-                        startDate.setDate(startDate.getDate() - 7);
-                        isRange = true;
-                        break;
-                    case '30d':
-                        startDate.setDate(startDate.getDate() - 30);
-                        isRange = true;
-                        break;
-                    case 'thisMonth':
-                        startDate.setDate(1);
-                        isRange = true;
-                        break;
-                    case 'custom':
-                        if (this.customDateRange) {
-                            startDate = new Date(this.customDateRange.start);
-                            endDate = new Date(this.customDateRange.end);
-                            endDate.setHours(23, 59, 59, 999);
-                            isRange = true;
-                        }
-                        break;
-                    case '6m':
-                        startDate.setMonth(startDate.getMonth() - 6);
-                        isRange = true;
-                        break;
-                    case '1y':
-                        startDate.setFullYear(startDate.getFullYear() - 1);
-                        isRange = true;
-                        break;
-                    // 'all' - pode ser pesado, vamos limitar ou tratar no backend?
-                    case 'all': // Get full history (1 year)
-                        startDate.setFullYear(startDate.getFullYear() - 1);
-                        isRange = true;
-                        break;
-                }
-                
-                
-                this.loadingDetailedStats = true;
-                try {
-                     const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
-                     const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
-                     
-                     let url = '';
+                    }
 
-                     // ✅ [ZENIX v3.3] Restrict sessionId strictly to 'session' view
-                     if (this.selectedPeriod === 'session') {
-                         const dateParam = 'today';
-                         const activeSessionId = this.agentConfig?.sessionId || this.agentConfig?.session_id || this.agentConfig?.id;
-                         const sessionIdParam = activeSessionId ? `&sessionId=${activeSessionId}` : '';
-                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateParam}${agentFilter}${sessionIdParam}`;
-                     } else if (isRange || this.selectedPeriod === 'today') {
-                         const startStr = startDate.toISOString();
-                         const endStr = endDate.toISOString();
-                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${startStr}&endDate=${endStr}${agentFilter}&date=range&limit=5000`;
-                     } else {
-                         return; // Should not happen with valid period
-                     }
-                     
-                     console.log('[AgenteAutonomo] Buscando trades históricos:', url);
-                     
-                     const response = await fetch(url, {
-                        method: "GET",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${localStorage.getItem("token")}`,
-						}
-                     });
-                     
-                         if (response.ok) {
-                             const result = await response.json();
-                             if (result.success) {
-                                 const trades = Array.isArray(result.data) ? result.data : (result.data.trades || []);
-                                 const summary = !Array.isArray(result.data) ? result.data.summary : null;
-                                 
-                                 console.log('[AgenteAutonomo] Trades históricos carregados:', trades.length);
-                                 // ✅ [FLICKER FIX] Assign atomically — never set dailyTrades to [] first
-                                 // This prevents the brief empty flash while new data loads
-                                 this.dailyTrades = trades; // Assign directly, no intermediate empty state
-                                 if (summary) this.dailyTradesSummary = summary;
-                                 
-                                 // ✅ [ZENIX v3.2] Force chart update immediately if in session/today
-                                 if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
-                                     this.generateChartFromTrades(this.dailyTrades);
-                                 }
-                             }
-                         }
+                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    // PATH B: ALWAYS fetch all-time trades for client-side filtering
+                    // This populates `allTrades` which feeds filteredDailyTrades computed
+                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    // Only refetch if allTrades is empty or period changed to a broader one
+                    const years = 1; // Fetch last 1 year
+                    const allStart = new Date();
+                    allStart.setFullYear(allStart.getFullYear() - years);
+                    allStart.setHours(0, 0, 0, 0);
+                    const allEnd = new Date();
+                    allEnd.setHours(23, 59, 59, 999);
+
+                    const allUrl = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${allStart.toISOString()}&endDate=${allEnd.toISOString()}${agentFilter}&date=range&limit=10000`;
+                    console.log('[AgenteAutonomo] Buscando TODOS os trades (all-time cache):', allUrl);
+
+                    const allRes = await fetch(allUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        }
+                    });
+                    if (allRes.ok) {
+                        const allResult = await allRes.json();
+                        if (allResult.success) {
+                            const allData = Array.isArray(allResult.data) ? allResult.data : (allResult.data.trades || []);
+                            // Sort DESC by date
+                            this.allTrades = allData.sort((a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at));
+                            console.log('[AgenteAutonomo] allTrades cache atualizado:', this.allTrades.length, 'trades');
+                        }
+                    }
                 } catch(e) {
-                    console.error("[AgenteAutonomo] Erro ao buscar trades históricos:", e);
-                } finally {
-                    this.loadingDetailedStats = false;
+                    console.error('[AgenteAutonomo] Erro ao buscar trades:', e);
                 }
             },
+
+
 
 			async fetchAgentConfig() {
 				const userId = this.getUserId();
