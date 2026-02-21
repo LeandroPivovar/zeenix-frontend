@@ -2475,7 +2475,11 @@
                      // instead of generic range query, to ensure consistency.
                      if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
                          const dateParam = 'today';
-                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateParam}${agentFilter}`;
+                         // ✅ [SESSION FIX] For 'session' period, pass sessionId to backend so it filters by session_id
+                         const sessionIdParam = (this.selectedPeriod === 'session' && this.agentConfig?.id)
+                           ? `&sessionId=${this.agentConfig.id}`
+                           : '';
+                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateParam}${agentFilter}${sessionIdParam}`;
                      } else if (isRange) {
                          const startStr = startDate.toISOString();
                          const endStr = endDate.toISOString();
@@ -2501,7 +2505,8 @@
                                  const summary = !Array.isArray(result.data) ? result.data.summary : null;
                                  
                                  console.log('[AgenteAutonomo] Trades históricos carregados:', trades.length);
-                                 this.dailyTrades = trades || []; // Ensure array
+                                 // ✅ [FLICKER FIX] Assign atomically — never set dailyTrades to [] first
+                                 this.dailyTrades = trades; // Assign directly, no intermediate empty state
                                  if (summary) this.dailyTradesSummary = summary;
                                  
                                  // ✅ [ZENIX v3.2] Force chart update immediately if in session/today
