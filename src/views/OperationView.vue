@@ -36,108 +36,107 @@
         </div>
 
 
-        <div class="header-container desktop-only">
-          <div class="header-left">
-            <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
-            <p class="text-sm text-[#A1A1AA] mt-0 max-w-2xl">
-              Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
-            </p>
-          </div>
-        </div>
-
-        <div class="view-toggle-bar-wrapper">
-          <div class="view-toggle-bar-flex">
-            <div class="view-toggle-bar-tabs">
+        <!-- INTEGRATED HEADER (Title + Subtitle + Tabs + Status) -->
+        <div class="header-integrated-wrapper desktop-only">
+          <div class="header-integrated-left">
+            <div class="header-text-group">
+              <h1 class="header-title">Operação Manual</h1>
+              <p class="header-subtitle">
+                Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
+              </p>
+            </div>
+            
+            <div class="header-tabs-group">
               <button
-                class="px-6 py-3 bg-zenix-card text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300 desktop-only"
-                :class="{ 'border-b-2 border-zenix-green text-zenix-text font-semibold shadow-[0_0_8px_rgba(0,0,0,0.25)]': currentView === 'OperationChart' && activeSubTab === 'chart', 'border-b-2 border-transparent text-[#7A7A7A]': currentView !== 'OperationChart' || activeSubTab !== 'chart' }"
+                class="tab-btn"
+                :class="{ 'active': currentView === 'OperationChart' && activeSubTab === 'chart' }"
                 @click="changeView('OperationChart')"
               >
                 Análise gráfica
               </button>
               <button
-                class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-                :class="{ 'border-b-2 border-zenix-green text-zenix-text': (currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits', 'border-b-2 border-transparent': !((currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits') }"
+                class="tab-btn"
+                :class="{ 'active': (currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits' }"
                 @click="changeView('OperationDigits')"
               >
                 Análise de dígitos
               </button>
               <button
-                class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-                :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLogs', 'border-b-2 border-transparent': currentView !== 'OperationLogs' }"
+                class="tab-btn"
+                :class="{ 'active': currentView === 'OperationLogs' }"
                 @click="changeView('OperationLogs')"
               >
                 Registro
               </button>
               <button
-                class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-                :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLastOrders', 'border-b-2 border-transparent': currentView !== 'OperationLastOrders' }"
+                class="tab-btn"
+                :class="{ 'active': currentView === 'OperationLastOrders' }"
                 @click="changeView('OperationLastOrders')"
               >
                 Histórico
               </button>
             </div>
+          </div>
 
-            <!-- RESULTS CARD -->
-            <div class="results-card desktop-only">
-              <!-- STATUS -->
-              <div class="card-section mr-8">
-                <span class="card-label mb-1">STATUS</span>
-                <template v-if="activeOperation.isOpen">
-                  <div class="flex flex-col gap-0.5">
-                    <div class="flex items-center gap-2">
-                       <span class="text-[10px] text-white/50 font-medium whitespace-nowrap">Tempo restante:</span>
-                       <span :class="['card-value text-sm font-bold tabular-nums', getTimerClass]">
-                        <template v-if="activeOperation.ticksRemaining !== null">
-                          {{ activeOperation.ticksRemaining }} ticks
-                        </template>
-                        <template v-else-if="formattedTimeRemaining && formattedTimeRemaining !== '--:--' && formattedTimeRemaining !== '00:00'">
-                          {{ formattedTimeRemaining }}
-                        </template>
-                        <template v-else>
-                          PROCESSANDO
-                        </template>
-                      </span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                       <span class="text-[10px] text-white/40 font-medium whitespace-nowrap">Estimativa:</span>
-                       <span :class="['card-value text-[12px] font-bold tabular-nums', estimativaClass]">
-                        {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
-                      </span>
-                    </div>
+          <!-- RESULTS CARD (Aligned to floor) -->
+          <div class="results-card-integrated">
+            <!-- STATUS -->
+            <div class="card-section mr-6">
+              <span class="card-label mb-1">STATUS</span>
+              <template v-if="activeOperation.isOpen">
+                <div class="flex flex-col gap-0.5">
+                  <div class="flex items-center gap-1.5">
+                     <span class="text-[9px] text-white/40 font-medium whitespace-nowrap">Tempo restante:</span>
+                     <span :class="['card-value-small tabular-nums', getTimerClass]">
+                      <template v-if="activeOperation.ticksRemaining !== null">
+                        {{ activeOperation.ticksRemaining }} ticks
+                      </template>
+                      <template v-else-if="formattedTimeRemaining && formattedTimeRemaining !== '--:--' && formattedTimeRemaining !== '00:00'">
+                        {{ formattedTimeRemaining }}
+                      </template>
+                      <template v-else>
+                        PROCESSANDO
+                      </template>
+                    </span>
                   </div>
-                </template>
-                <span v-else class="card-value text-[12px] text-white/30 font-bold">AGUARDANDO...</span>
-              </div>
-
-              <!-- CAPITAL -->
-              <div class="card-section px-8 border-l border-white/10 flex-row items-center gap-2">
-                <span class="card-label mb-0">CAPITAL</span>
-                <span class="card-value text-lg text-white font-black">{{ accountBalanceFormatted }}</span>
-              </div>
-
-              <!-- ÚLTIMO RESULTADO -->
-              <div class="card-section px-8 border-l border-white/10 flex-row items-center gap-2">
-                <span class="card-label mb-0">ÚLT. RESULTADO</span>
-                <span :class="['card-value text-lg font-black', lastTradeProfitClass]">
-                  {{ formattedLastTradeResult }}
-                </span>
-              </div>
-
-              <!-- WIN / LOSS / WIN RATE -->
-              <div class="card-section-summary-row border-l border-white/10 ml-2">
-                <div class="summary-item">
-                  <span class="summary-label">WIN</span>
-                  <span class="summary-value text-xl text-zenix-green">{{ sessionStats.wins }}</span>
+                  <div class="flex items-center gap-1.5">
+                     <span class="text-[9px] text-white/40 font-medium whitespace-nowrap">Estimativa:</span>
+                     <span :class="['card-value-small tabular-nums', estimativaClass]">
+                      {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
+                    </span>
+                  </div>
                 </div>
-                <div class="summary-item">
-                  <span class="summary-label">LOSS</span>
-                  <span class="summary-value text-xl text-red-500">{{ sessionStats.losses }}</span>
-                </div>
-                <div class="summary-item">
-                  <span class="summary-label">WIN RATE</span>
-                  <span class="summary-value text-xl text-white">{{ sessionStats.winRate || 0 }}%</span>
-                </div>
+              </template>
+              <span v-else class="card-value-small text-white/20 font-bold">AGUARDANDO...</span>
+            </div>
+
+            <!-- CAPITAL -->
+            <div class="card-section px-6 border-l border-white/5 flex-row items-center gap-2">
+              <span class="card-label">CAPITAL</span>
+              <span class="card-value-integrated">{{ accountBalanceFormatted }}</span>
+            </div>
+
+            <!-- ÚLTIMO RESULTADO -->
+            <div class="card-section px-6 border-l border-white/5 flex-row items-center gap-2">
+              <span class="card-label">ÚLT. RESULTADO</span>
+              <span :class="['card-value-integrated', lastTradeProfitClass]">
+                {{ formattedLastTradeResult }}
+              </span>
+            </div>
+
+            <!-- WIN / LOSS / WIN RATE -->
+            <div class="card-section-summary-integrated border-l border-white/5 ml-2">
+              <div class="summary-item">
+                <span class="summary-label">WIN</span>
+                <span class="summary-value-integrated text-zenix-green">{{ sessionStats.wins }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">LOSS</span>
+                <span class="summary-value-integrated text-red-500">{{ sessionStats.losses }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">WIN RATE</span>
+                <span class="summary-value-integrated text-white">{{ sessionStats.winRate || 0 }}%</span>
               </div>
             </div>
           </div>
@@ -1417,41 +1416,76 @@ export default {
 }
 
 /* New Header Styles */
-.header-container {
+/* INTEGRATED HEADER STYLES */
+.header-integrated-wrapper {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 10px 38px 15px 38px;
+  align-items: flex-end;
+  padding: 15px 38px 0 38px;
   width: 100%;
 }
 
-.header-left {
+.header-integrated-left {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
   flex: 1;
 }
 
-.results-card.desktop-only {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center;
-  background: rgba(18, 18, 18, 0.4);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px 12px 0 0;
-  padding: 1rem 2.5rem;
-  margin-bottom: -1px;
+.header-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.view-toggle-bar-flex {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: flex-end !important;
-  width: 100% !important;
-  gap: 20px;
+.header-title {
+  font-size: 1.125rem; /* text-lg approx */
+  font-weight: 700;
+  color: #FAFAFA;
 }
 
-.view-toggle-bar-tabs {
+.header-subtitle {
+  font-size: 0.75rem; /* Reduced font size */
+  color: #A1A1AA;
+  max-width: 600px;
+  line-height: 1.4;
+}
+
+.header-tabs-group {
   display: flex;
   gap: 4px;
+}
+
+.tab-btn {
+  padding: 8px 20px;
+  background: rgba(18, 18, 18, 0.4);
+  color: #7A7A7A;
+  font-size: 0.8125rem; /* Reduced font size */
+  font-weight: 600;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+  background: #111;
+  color: #FAFAFA;
+}
+
+.tab-btn.active {
+  border-bottom-color: #22C55E;
+  color: #FAFAFA;
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.results-card-integrated {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: rgba(18, 18, 18, 0.2);
+  border-radius: 12px 12px 0 0;
+  padding: 0.75rem 2rem;
+  margin-bottom: -1px;
 }
 
 .card-section {
@@ -1461,22 +1495,31 @@ export default {
 }
 
 .card-label {
-  font-size: 10px;
+  font-size: 9px; /* Reduced label size */
   color: rgba(255, 255, 255, 0.3);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
-.card-value {
+.card-value-small {
+  font-size: 0.8125rem;
+  font-weight: 700;
   white-space: nowrap;
 }
 
-.card-section-summary-row {
+.card-value-integrated {
+  font-size: 0.9375rem; /* Slightly reduced */
+  font-weight: 800;
+  color: white;
+  white-space: nowrap;
+}
+
+.card-section-summary-integrated {
   display: flex;
   flex-direction: row;
-  gap: 1.5rem;
-  padding-left: 1.5rem !important;
+  gap: 1.25rem;
+  padding-left: 1.25rem;
   align-items: center;
 }
 
@@ -1487,12 +1530,13 @@ export default {
 }
 
 .summary-label {
-  font-size: 9px;
+  font-size: 8px; /* Reduced label size */
   color: rgba(255, 255, 255, 0.3);
   font-weight: 700;
 }
 
-.summary-value {
+.summary-value-integrated {
+  font-size: 1.125rem; /* text-lg approx */
   font-weight: 900;
   line-height: 1;
 } 
