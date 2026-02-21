@@ -20,7 +20,7 @@
             />
 
             <main class="layout-content">
-                <div class="content-header mb-6 flex justify-between items-center px-4 w-full">
+                <div class="sticky top-0 z-50 bg-[#0A0A0A] content-header mb-6 flex justify-between items-center px-4 py-4 w-full border-b border-[#333]/50 shadow-md">
                     <div>
                         <h1 class="text-2xl font-bold text-white">
                             {{ isMonitoring ? 'Acompanhamento de Estratégia [BETA]' : 'Criador de Estratégias [BETA]' }}
@@ -32,11 +32,11 @@
                     </div>
 
                     <div v-if="!isMonitoring" class="flex flex-wrap items-center gap-3">
-                        <div class="flex items-center gap-2 bg-[#141414] border border-[#333] rounded-lg p-1">
+                        <div class="flex items-center gap-2 bg-[#141414] border border-[#333] rounded-lg p-1 shadow-lg">
                             <select 
                                 v-model="selectedSavedStrategyId" 
                                 @change="loadSavedStrategy"
-                                class="bg-[#141414] text-white text-xs border-none focus:ring-0 min-w-[150px] cursor-pointer hover:text-zenix-green transition-colors"
+                                class="bg-[#141414] text-white text-xs border-none focus:ring-0 min-w-[150px] cursor-pointer hover:text-zenix-green transition-colors outline-none"
                             >
                                 <option value="" disabled class="bg-[#141414] text-gray-500">Selecionar Estratégia</option>
                                 <option v-for="s in savedStrategies" :key="s.id" :value="s.id" class="bg-[#141414] text-white">{{ s.name }}</option>
@@ -99,17 +99,6 @@
                     @update:validator="validator = $event"
                 />
                 <div v-else class="strategy-creator-form-container px-4">
-                     <!-- Tabs -->
-                     <div class="flex items-center gap-4 mb-6 border-b border-[#333] pb-4">
-                        <button 
-                            type="button"
-                            @click="activeTab = 'config'"
-                            class="text-sm font-bold uppercase tracking-wider pb-2 border-b-2 transition-all"
-                            :class="activeTab === 'config' ? 'text-zenix-green border-zenix-green' : 'text-gray-500 border-transparent hover:text-white'"
-                        >
-                            Configuração
-                        </button>
-                    </div>
 
                     <form v-show="activeTab === 'config'" @submit.prevent="submitForm" class="space-y-8">
                         
