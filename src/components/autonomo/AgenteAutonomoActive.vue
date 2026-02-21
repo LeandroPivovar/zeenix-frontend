@@ -245,10 +245,10 @@
 									<!-- Icon Container -->
 									<div class="w-12 h-12 rounded-lg bg-[#0c0c0c] flex items-center justify-center relative shrink-0 border border-[#27272a]">
 										<img 
-											:src="agent.id === 'sentinel' ? require('@/assets/images/sentinel-bot.png') : (agent.id === 'falcon' ? require('@/assets/images/falcon-bot.png') : (agent.id === 'zeus' ? require('@/assets/images/zeus-bot.png') : require('@/assets/images/sentinel-bot.png')))" 
+											v-if="agent.id === 'zeus' || agent.id === 'falcon'"
+											:src="agent.id === 'zeus' ? '/img/agents/zeus.png' : '/img/agents/falcon.png'" 
 											:alt="agent.title"
 											class="w-full h-full object-cover rounded-md"
-											@error="(e) => e.target.src = require('@/assets/images/sentinel-bot.png')"
 										/>
 										<div v-else class="strategy-icons-inline text-2xl">
 											{{ agent.emoji }}
