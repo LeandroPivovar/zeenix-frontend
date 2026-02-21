@@ -2801,6 +2801,17 @@ export default {
       // Inicializar contador
       this.initializeContractCountdown();
       
+      // Emitir evento para o pai (OperationView) atualizar estatísticas e saldo
+      this.$emit('trade-result', {
+        contractId: contractId,
+        buyPrice: this.activeContract.buy_price,
+        entrySpot: this.activeContract.entry_spot,
+        direction: this.activeContract.contract_type,
+        currency: this.activeContract.currency || this.currency || 'USD',
+        status: 'EXECUTED',
+        purchaseTime: this.activeContract.entry_time
+      });
+
       // Inicializar P&L
       this.updateRealTimeProfit();
       
@@ -3031,6 +3042,14 @@ export default {
             status: this.activeContract.status
           });
 
+          this.$emit('trade-result', {
+            contractId: String(this.activeContract.contract_id),
+            status: 'CLOSED',
+            profit: profit,
+            direction: this.activeContract.contract_type,
+            balanceAfter: this.accountBalanceValue
+          });
+
          derivTradingService.notifyEnd(resultData);
       }
       
@@ -3044,14 +3063,15 @@ export default {
       // this.showTradeResultModal = true;
       
       // Limpar contrato após um curto delay para o usuário ver o resultado final no painel
-      // Não limpar contrato aqui. Ele será substituído quando uma nova operação começar.
-      // setTimeout(() => {
-      //   this.activeContract = null;
-      //   this.purchasePrice = null;
-      //   this.realTimeProfit = null;
-      //   this.tradeMessage = '';
-      //   this.aiRecommendation = null; // Reset signal to allow new generation
-      // }, 5000);
+      setTimeout(() => {
+        if (!this.showTradeResultModal) {
+          this.activeContract = null;
+          this.purchasePrice = null;
+          this.realTimeProfit = null;
+          this.tradeMessage = '';
+          this.aiRecommendation = null; 
+        }
+      }, 3000);
     },
     checkMobile() {
       this.isMobile = window.innerWidth <= 768;

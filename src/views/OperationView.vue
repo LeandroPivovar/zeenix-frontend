@@ -31,8 +31,8 @@
       <main class="main-content">
         <!-- Mobile Header (only visible on mobile) -->
         <div class="mobile-header mobile-only">
-          <h1 class="mobile-title">{{ mobileTitle }}</h1>
-          <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
+          <h1 class="mobile-title">Operação Manual</h1>
+          <p class="mobile-subtitle">Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.</p>
         </div>
 
 
@@ -55,13 +55,25 @@
                     <div v-if="activeOperation.isOpen" class="absolute inset-0 rounded-full border border-zenix-green/20 animate-ping"></div>
                   </div>
                 </div>
-                <div class="flex flex-col justify-center">
-                  <span class="bar-value text-zenix-green uppercase font-bold text-sm leading-tight">
-                    {{ activeOperation.isOpen ? 'Em Operação' : 'Operação Manual' }}
-                  </span>
-                  <span v-if="activeOperation.isOpen" :class="['text-[11px] tabular-nums font-medium', estimativaClass]">
-                    Estimativa: {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
-                  </span>
+                <div class="flex flex-col justify-center gap-0.5">
+                  <span class="bar-value text-zenix-green uppercase font-bold text-sm leading-tight">Operação Manual</span>
+                  <!-- Em operação: mostra tempo restante + estimativa -->
+                  <template v-if="activeOperation.isOpen">
+                    <span :class="['text-[11px] tabular-nums font-semibold leading-tight', getTimerClass]">
+                      <template v-if="activeOperation.ticksRemaining !== null">
+                        Faltam {{ activeOperation.ticksRemaining }} ticks
+                      </template>
+                      <template v-else-if="formattedTimeRemaining && formattedTimeRemaining !== '--:--' && formattedTimeRemaining !== '00:00'">
+                        Faltam {{ formattedTimeRemaining }}
+                      </template>
+                      <template v-else>
+                        Em andamento...
+                      </template>
+                    </span>
+                    <span :class="['text-[11px] tabular-nums font-medium leading-tight', estimativaClass]">
+                      Estimativa {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
+                    </span>
+                  </template>
                   <span v-else class="text-[10px] text-white/30 uppercase tracking-tighter">Aguardando...</span>
                 </div>
               </div>
@@ -133,17 +145,6 @@
               </div>
             </div>
 
-            <!-- TEMPO RESTANTE -->
-            <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2 h-4">
-                <span class="bar-label">Tempo Restante</span>
-              </div>
-              <div class="flex items-center gap-2 h-7">
-                <span :class="['bar-value text-lg tabular-nums leading-none font-bold', getTimerClass]">
-                  {{ formattedTimeRemaining }}
-                </span>
-              </div>
-            </div>
 
             <!-- TABS (Far Right) -->
             <div class="bar-tabs-container">
@@ -258,6 +259,7 @@ export default {
       activeOperation: {
         time: null,
         ticks: null,
+        ticksRemaining: null,
         isOpen: false,
         realTimeProfit: 0,
         finalResult: null
@@ -943,20 +945,10 @@ export default {
       console.log('[OperationView] ========== SNAPSHOT APLICADO ==========');
     },
     handleTradeResult(result) {
-      console.log('[OperationView] ========== RESULTADO DA OPERAÇÃO RECEBIDO ==========');
-      console.log('[OperationView] Resultado completo:', JSON.stringify(result, null, 2));
-      console.log('[OperationView] Estado atual da view:', {
-        accountBalanceValue: this.accountBalanceValue,
-        accountCurrency: this.accountCurrency,
-        preferredCurrency: this.preferredCurrency,
-        accountLoginId: this.accountLoginId
-      });
+      console.log('[OperationView] Resultado recebido:', result?.status, result?.contractId);
       
+      // Atualizar saldo se disponível
       if (result?.balanceAfter != null) {
-        console.log('[OperationView] Atualizando saldo:', {
-          anterior: this.accountBalanceValue,
-          novo: Number(result.balanceAfter)
-        });
         this.accountBalanceValue = Number(result.balanceAfter);
         this.persistConnectionBalance(
           result.balanceAfter,
@@ -976,20 +968,28 @@ export default {
             second: '2-digit',
           });
 
-      // Se o status for CLOSED e tiver contractId, tentar atualizar ordem existente
+      // Se o status for CLOSED com contractId, atualizar ordem existente no array
       if (result.status === 'CLOSED' && result.contractId) {
         const existingOrderIndex = this.lastOrders.findIndex(
           order => order.contractId === result.contractId
         );
         
         if (existingOrderIndex !== -1) {
-          // Atualizar ordem existente com o profit
-          this.lastOrders[existingOrderIndex].profit = result.profit != null ? Number(result.profit) : null;
-          console.log('[OperationView] Ordem existente atualizada com lucro:', this.lastOrders[existingOrderIndex]);
+          // Atualizar ordem existente com o profit e status final
+          const updatedOrder = { ...this.lastOrders[existingOrderIndex] };
+          if (result.profit != null) updatedOrder.profit = Number(result.profit);
+          updatedOrder.status = 'CLOSED';
+
+          // Força reatividade trocando o elemento
+          this.lastOrders.splice(existingOrderIndex, 1, updatedOrder);
+
+          // Atualizar stats com base no resultado final
+          this.updateSessionStats(result);
           return;
         }
       }
 
+      // Criar entrada nova no histórico (p.ex., quando a operação é executada)
       const orderEntry = {
         time: timestamp,
         type: result.direction || 'CALL',
@@ -1001,32 +1001,38 @@ export default {
         contractId: result.contractId || null,
       };
 
-      console.log('[OperationView] Adicionando ordem ao histórico:', orderEntry);
       this.lastOrders.unshift(orderEntry);
-      this.lastOrders = this.lastOrders.slice(0, 10);
-      console.log('[OperationView] Total de ordens no histórico:', this.lastOrders.length);
-      console.log('[OperationView] ========== RESULTADO PROCESSADO ==========');
+      if (this.lastOrders.length > 10) {
+        this.lastOrders.pop();
+      }
+
+      // Atualizar estatísticas apenas quando fechar
       this.updateSessionStats(result);
     },
     updateSessionStats(result) {
-      if (result && result.profit != null) {
-        const profit = Number(result.profit);
-        this.sessionStats.total++;
-        if (profit > 0) {
-          this.sessionStats.wins++;
-        } else if (profit < 0) {
-          this.sessionStats.losses++;
-        }
-        this.sessionStats.profit += profit;
-        
-        if (this.sessionStats.total > 0) {
-          this.sessionStats.winRate = Math.round((this.sessionStats.wins / this.sessionStats.total) * 100);
-        }
+      if (!result || result.profit == null) return;
+
+      // Atualizar estatísticas APENAS quando a operação fechar
+      const isClosed = result.status === 'CLOSED' || result.status === 'won' || result.status === 'lost';
+      if (!isClosed) return;
+
+      const profit = Number(result.profit);
+      this.sessionStats.total++;
+      if (profit > 0) {
+        this.sessionStats.wins++;
+      } else if (profit < 0) {
+        this.sessionStats.losses++;
+      }
+      this.sessionStats.profit += profit;
+
+      if (this.sessionStats.total > 0) {
+        this.sessionStats.winRate = Math.round((this.sessionStats.wins / this.sessionStats.total) * 100);
       }
     },
     handleTimerUpdate(data) {
-      this.activeOperation.time = data.time;
-      this.activeOperation.ticks = data.ticks;
+      this.activeOperation.time = data.time != null ? data.time : null;
+      this.activeOperation.ticks = data.ticks != null ? data.ticks : null;
+      this.activeOperation.ticksRemaining = data.ticks != null ? Math.floor(data.ticks) : null;
     },
     handleContractUpdate() {
       // console.log('[OperationView] Contract update');
@@ -1036,6 +1042,8 @@ export default {
       if (!isOpen) {
         this.activeOperation.time = null;
         this.activeOperation.ticks = null;
+        this.activeOperation.ticksRemaining = null;
+        this.activeOperation.realTimeProfit = 0;
       } else {
         // Reset final result when starting a new operation
         this.activeOperation.finalResult = null;
