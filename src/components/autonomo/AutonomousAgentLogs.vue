@@ -104,7 +104,8 @@ export default {
   data() {
     return {
       realtimeLogs: [],
-      lastLogTimestamp: null
+      showAllLogs: false,
+      logStream: null
     };
   },
   watch: {
@@ -349,17 +350,59 @@ export default {
     },
     startHeartbeat() {
       this.stopHeartbeat();
-      this.fetchRealtimeLogs(200); // Fetch once immediately
-      // ✅ [ZENIX v4.0] Heartbeat lento (20s) para mostrar logs de análise 
-      // mesmo sem trades imediatos, respeitando o pedido de "não usar polling" agressivo.
-      this.heartbeatInterval = setInterval(() => {
-        if (this.isActive) this.fetchRealtimeLogs(200);
-      }, 20000); 
+      
+      let userId = this.userId || localStorage.getItem('userId');
+      if (!userId) return;
+
+      const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+      const token = localStorage.getItem('token');
+      
+      const streamUrl = `${apiBase}/autonomous-agent/logs-stream/${userId}?token=${token}`;
+      
+      this.logStream = new EventSource(streamUrl);
+      
+      this.logStream.onmessage = (event) => {
+        try {
+          // Ignore heartbeat lines if any
+          if (event.data === ': heartbeat') return;
+          
+          const logData = JSON.parse(event.data);
+          
+          // Se recebemos um array (histórico todo de uma vez)
+          if (Array.isArray(logData)) {
+             this.realtimeLogs = logData;
+          } else {
+             // Se recebemos um objeto único, adicione ao array
+             // Mas verifique se ele já não existe para não duplicar
+             const exists = this.realtimeLogs.some(l => l.id === logData.id);
+             if (!exists) {
+                // Manter a ordem decrescente (mais novo primeiro)
+                this.realtimeLogs.unshift(logData);
+             }
+          }
+          
+          // Limitar o array na memória para não vazar
+          if (this.realtimeLogs.length > 500) {
+             this.realtimeLogs.pop();
+          }
+          
+          this.$emit('update-logs', this.realtimeLogs);
+        } catch(e) {
+          console.warn('[AutonomousAgentLogs] Erro ao parsear stream_log:', e);
+        }
+      };
+
+      this.logStream.onerror = (error) => {
+        console.error('[AutonomousAgentLogs] Erro no EventSource:', error);
+        this.stopHeartbeat();
+        // Fallback or retry could be implemented here
+        setTimeout(() => { if(this.isActive) this.startHeartbeat(); }, 5000);
+      };
     },
     stopHeartbeat() {
-      if (this.heartbeatInterval) {
-        clearInterval(this.heartbeatInterval);
-        this.heartbeatInterval = null;
+      if (this.logStream) {
+        this.logStream.close();
+        this.logStream = null;
       }
     },
     stopLogPolling() {
