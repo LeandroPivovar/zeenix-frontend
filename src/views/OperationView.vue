@@ -1419,10 +1419,11 @@ export default {
 }
 
 /* RESTRUCTURED FLOOR HEADER STYLES */
-.header-floor-wrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end; /* All aligned to bottom */
+.header-floor-wrapper.desktop-only {
+  display: flex !important;
+  justify-content: space-between !important;
+  flex-direction: row !important;
+  align-items: flex-end !important; /* All aligned to bottom */
   padding: 15px 38px 0 38px;
   width: 100%;
   gap: 30px;
@@ -1491,9 +1492,9 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
-  background: rgba(18, 18, 18, 0.2);
+  background: rgba(18, 18, 18, 0.25);
   border-radius: 12px 12px 0 0;
-  padding: 0.75rem 2rem;
+  padding: 0.85rem 2.5rem;
   margin-bottom: -1px;
 }
 
@@ -1504,40 +1505,48 @@ export default {
 }
 
 .label-tiny {
-  font-size: 8px;
-  color: rgba(255, 255, 255, 0.2);
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.25);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .value-tiny {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.95rem; /* Increased */
+  font-weight: 800;
   white-space: nowrap;
 }
 
 .value-small {
-  font-size: 0.875rem;
+  font-size: 1.15rem; /* Increased */
   white-space: nowrap;
 }
 
 .status-summary-minimal {
   display: flex;
   flex-direction: row;
-  gap: 1rem;
-  padding-left: 1rem;
+  gap: 1.5rem;
+  padding-left: 1.5rem;
   align-items: center;
 }
 
+.summary-item {
+  display: flex;
+  flex-direction: column; /* Label ABOVE value */
+  align-items: center;
+  gap: 2px;
+}
+
 .summary-label-tiny {
-  font-size: 7px;
-  color: rgba(255, 255, 255, 0.2);
+  font-size: 8px; /* Slightly larger labels */
+  color: rgba(255, 255, 255, 0.25);
   font-weight: 700;
+  text-transform: uppercase;
 }
 
 .summary-value-tiny {
-  font-size: 1rem;
+  font-size: 1.25rem; /* Increased font size */
   font-weight: 900;
   line-height: 1;
 }
