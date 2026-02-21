@@ -104,26 +104,27 @@ export default {
   data() {
     return {
       realtimeLogs: [],
-      showAllLogs: false,
-      logStream: null
+      logPollingInterval: null,
+      lastLogTimestamp: null
     };
   },
   watch: {
     isActive(newVal) {
-      if (newVal) this.startHeartbeat();
-      else this.stopHeartbeat();
+      if (newVal) this.startLogPolling();
+      else this.stopLogPolling();
     },
     userId(newVal) {
       if (newVal && this.isActive) {
-        this.startHeartbeat();
+        this.stopLogPolling();
+        this.startLogPolling();
       }
     }
   },
   mounted() {
-    if (this.isActive) this.startHeartbeat();
+    if (this.isActive) this.startLogPolling();
   },
   beforeUnmount() {
-    this.stopHeartbeat();
+    this.stopLogPolling();
   },
   computed: {
     allFormattedLogs() {
@@ -177,14 +178,9 @@ export default {
           log.type === 'vitoria' ||
           titleLine.includes('META') ||
           titleLine.includes('PROTEÇÃO') ||
-          titleLine.includes('BLINDADO') ||
-          titleLine.includes('TAKE PROFIT') ||
-          titleLine.includes('LUCRO ATINGIDO')
+          titleLine.includes('BLINDADO')
         ) {
           logType = 'success';
-        }
-        else if (titleLine.includes('PAUSA') || titleLine.includes('CICLO')) {
-          logType = 'warning';
         }
         
         // Icons
@@ -268,6 +264,12 @@ export default {
       } catch (e) { console.error('Log fetch error:', e); }
       return [];
     },
+    startLogPolling() {
+      // ✅ [PERFORMANCE] Display limit (200 items)
+      this.stopLogPolling();
+      this.fetchRealtimeLogs(200);
+      this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(200), 3000);
+    },
     async clearLogs() {
       if (await confirm('Tem certeza que deseja limpar todos os logs?')) {
         this.realtimeLogs = [];
@@ -288,6 +290,8 @@ export default {
 
         // Formatar logs para exportação (usando lógica similar ao computed mas no array completo)
         const formattedFullLogs = fullLogs.map(log => {
+           // Reutilizar lógica de formatação simples aqui ou extrair método se fosse complexo
+           // Para texto puro, a formatação visual (cores) não importa, apenas Title/Details
             const message = log.message || '';
             const lines = message.split('\n');
             const titleLine = lines[0].replace(/^\[.*?\]\s*/, '').trim().toUpperCase();
@@ -348,66 +352,11 @@ export default {
         alert('Erro ao exportar logs.');
       }
     },
-    startHeartbeat() {
-      this.stopHeartbeat();
-      
-      let userId = this.userId || localStorage.getItem('userId');
-      if (!userId) return;
-
-      const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-      const token = localStorage.getItem('token');
-      
-      const streamUrl = `${apiBase}/autonomous-agent/logs-stream/${userId}?token=${token}`;
-      
-      this.logStream = new EventSource(streamUrl);
-      
-      this.logStream.onmessage = (event) => {
-        try {
-          // Ignore heartbeat lines if any
-          if (event.data === ': heartbeat') return;
-          
-          const logData = JSON.parse(event.data);
-          
-          // Se recebemos um array (histórico todo de uma vez)
-          if (Array.isArray(logData)) {
-             this.realtimeLogs = logData;
-          } else {
-             // Se recebemos um objeto único, adicione ao array
-             // Mas verifique se ele já não existe para não duplicar
-             const exists = this.realtimeLogs.some(l => l.id === logData.id);
-             if (!exists) {
-                // Manter a ordem decrescente (mais novo primeiro)
-                this.realtimeLogs.unshift(logData);
-             }
-          }
-          
-          // Limitar o array na memória para não vazar
-          if (this.realtimeLogs.length > 500) {
-             this.realtimeLogs.pop();
-          }
-          
-          this.$emit('update-logs', this.realtimeLogs);
-        } catch(e) {
-          console.warn('[AutonomousAgentLogs] Erro ao parsear stream_log:', e);
-        }
-      };
-
-      this.logStream.onerror = (error) => {
-        console.error('[AutonomousAgentLogs] Erro no EventSource:', error);
-        this.stopHeartbeat();
-        // Fallback or retry could be implemented here
-        setTimeout(() => { if(this.isActive) this.startHeartbeat(); }, 5000);
-      };
-    },
-    stopHeartbeat() {
-      if (this.logStream) {
-        this.logStream.close();
-        this.logStream = null;
-      }
-    },
     stopLogPolling() {
-      this.stopHeartbeat();
+      if (this.logPollingInterval) clearInterval(this.logPollingInterval);
     }
   }
 };
 </script>
+
+
