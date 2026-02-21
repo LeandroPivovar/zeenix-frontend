@@ -1347,9 +1347,9 @@ export default {
 					'Modo Mais Usado'
 				];
 
-				// Converter dados para formato CSV
+				// Converter dados para formato CSV usando ponto e vírgula (padrão Excel BR)
 				const csvRows = [
-					headers.join(','), // Adicionar cabeçalho
+					headers.join(';'), // Adicionar cabeçalho
 					...this.displayedStats.map(bot => [
 						`"${bot.name}"`,
 						bot.totalTrades,
@@ -1358,10 +1358,10 @@ export default {
 						`"${this.formatCurrency(bot.profit)}"`,
 						`"${bot.riskMode}"`,
 						`"${bot.tradeMode}"`
-					].join(','))
+					].join(';'))
 				];
 
-				const csvContent = csvRows.join('\n');
+				const csvContent = '\ufeff' + csvRows.join('\n'); // Adicionar BOM para UTF-8 no Excel
 				const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 				const link = document.createElement('a');
 				
