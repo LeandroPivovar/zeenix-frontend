@@ -109,19 +109,20 @@ export default {
   },
   watch: {
     isActive(newVal) {
-      if (newVal) this.fetchRealtimeLogs(200);
+      if (newVal) this.startHeartbeat();
+      else this.stopHeartbeat();
     },
     userId(newVal) {
       if (newVal && this.isActive) {
-        this.fetchRealtimeLogs(200);
+        this.startHeartbeat();
       }
     }
   },
   mounted() {
-    if (this.isActive) this.fetchRealtimeLogs(200);
+    if (this.isActive) this.startHeartbeat();
   },
   beforeUnmount() {
-    // No polling to stop
+    this.stopHeartbeat();
   },
   computed: {
     allFormattedLogs() {
@@ -175,9 +176,14 @@ export default {
           log.type === 'vitoria' ||
           titleLine.includes('META') ||
           titleLine.includes('PROTEÇÃO') ||
-          titleLine.includes('BLINDADO')
+          titleLine.includes('BLINDADO') ||
+          titleLine.includes('TAKE PROFIT') ||
+          titleLine.includes('LUCRO ATINGIDO')
         ) {
           logType = 'success';
+        }
+        else if (titleLine.includes('PAUSA') || titleLine.includes('CICLO')) {
+          logType = 'warning';
         }
         
         // Icons
@@ -281,8 +287,6 @@ export default {
 
         // Formatar logs para exportação (usando lógica similar ao computed mas no array completo)
         const formattedFullLogs = fullLogs.map(log => {
-           // Reutilizar lógica de formatação simples aqui ou extrair método se fosse complexo
-           // Para texto puro, a formatação visual (cores) não importa, apenas Title/Details
             const message = log.message || '';
             const lines = message.split('\n');
             const titleLine = lines[0].replace(/^\[.*?\]\s*/, '').trim().toUpperCase();
@@ -343,12 +347,24 @@ export default {
         alert('Erro ao exportar logs.');
       }
     },
+    startHeartbeat() {
+      this.stopHeartbeat();
+      this.fetchRealtimeLogs(200); // Fetch once immediately
+      // ✅ [ZENIX v4.0] Heartbeat lento (20s) para mostrar logs de análise 
+      // mesmo sem trades imediatos, respeitando o pedido de "não usar polling" agressivo.
+      this.heartbeatInterval = setInterval(() => {
+        if (this.isActive) this.fetchRealtimeLogs(200);
+      }, 20000); 
+    },
+    stopHeartbeat() {
+      if (this.heartbeatInterval) {
+        clearInterval(this.heartbeatInterval);
+        this.heartbeatInterval = null;
+      }
+    },
     stopLogPolling() {
-      // Logic removed
+      this.stopHeartbeat();
     }
   }
 };
 </script>
-
-
-

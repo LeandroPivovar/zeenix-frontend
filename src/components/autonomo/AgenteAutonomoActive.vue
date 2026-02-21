@@ -1860,13 +1860,15 @@
 								isEnded = true;
 								const statusMap = {
 									'stopped_loss': 'STOP LOSS ATINGIDO',
-									'stopped_profit': 'META ATINGIDA',
+									'stopped_profit': 'TAKE PROFIT (META ATINGIDA)',
 									'stopped_blindado': 'STOP LOSS BLINDADO',
 									'error': 'ERRO NO SISTEMA',
 									'inactive': 'SESSÃO ENCERRADA',
-									'stopped_consecutive_loss': 'STOP POR 3 PERDAS SEGUIDAS'
+									'stopped_consecutive_loss': 'STOP POR 3 PERDAS SEGUIDAS',
+                                    'cycle_pause': 'PAUSA POR CICLO CONCLUÍDO',
+                                    'take_profit': 'TAKE PROFIT (META ATINGIDA)'
 								};
-								endReason = statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase();
+								endReason = statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase().replace('_', ' ');
 								footerText += ` (${endReason})`;
 							}
 						} else {
@@ -2021,6 +2023,12 @@
                     }
                 }
             },
+            showLogs(newVal) {
+                // ✅ [ZENIX v4.0] Fetch logs instantly when expanded
+                if (newVal && this.$refs.strategyLogs) {
+                    this.$refs.strategyLogs.fetchRealtimeLogs(200);
+                }
+            },
             finalCapital: {
                 immediate: true,
                 handler(newVal) {
@@ -2103,7 +2111,8 @@
                     if (isModalOpenForToday || isSessionOrTodayView) {
                         const existingIds = new Set((this.dailyTrades || []).map(t => {
                             const id = String(t.id || t.contractId || t.contract_id || '');
-                            if (id && !id.includes('-') && !id.includes(':')) return id;
+                            // ✅ [ZENIX v4.1] Only fallback to composite if ID is missing or suspiciously short/temp
+                            if (id && id.length > 5) return id;
                             const ts = t.createdAt || t.created_at || t.time;
                             return `${ts}-${t.profit}-${t.stake}-${t.market}`;
                         }));
@@ -2112,7 +2121,7 @@
                         newTrades.forEach(trade => {
                             const tid = String(trade.id || trade.contractId || trade.contract_id || '');
                             const ts = trade.createdAt || trade.created_at || trade.time;
-                            const dedupeKey = tid && !tid.includes('-') && !tid.includes(':') 
+                            const dedupeKey = (tid && tid.length > 5) 
                                 ? tid 
                                 : `${ts}-${trade.profit}-${trade.stake}-${trade.market}`;
                                 
@@ -2146,7 +2155,9 @@
                             // ✅ Force chart update for live session
                             if (isSessionOrTodayView) {
                                 this.$nextTick(() => {
-                                    this.generateChartFromTrades(this.dailyTrades);
+                                    // ✅ [ZENIX v4.0] Full sync of top metrics on trade
+                                    this.syncRenderedValues();
+                                    
                                     // ✅ [ZENIX v4.0] Trigger log refresh on trade event (no polling)
                                     if (this.$refs.strategyLogs) {
                                         this.$refs.strategyLogs.fetchRealtimeLogs(200);
