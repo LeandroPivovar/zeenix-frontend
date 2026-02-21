@@ -78,16 +78,16 @@
               </button>
             </div>
 
-            <!-- RESULTS CARD (Labels side-by-side with values) -->
+            <!-- RESULTS CARD (Lado a lado explicitamente) -->
             <div class="results-card desktop-only">
               <!-- STATUS -->
               <div class="card-section mr-8">
                 <span class="card-label mb-1">STATUS</span>
                 <template v-if="activeOperation.isOpen">
-                  <div class="flex flex-col gap-1">
+                  <div class="flex flex-col gap-0.5">
                     <div class="flex items-center gap-2">
-                      <span class="text-[11px] text-white/50 font-medium">Tempo restante:</span>
-                      <span :class="['card-value text-sm font-bold tabular-nums', getTimerClass]">
+                       <span class="text-[10px] text-white/50 font-medium whitespace-nowrap">Tempo restante:</span>
+                       <span :class="['card-value text-sm font-bold tabular-nums', getTimerClass]">
                         <template v-if="activeOperation.ticksRemaining !== null">
                           {{ activeOperation.ticksRemaining }} ticks
                         </template>
@@ -100,7 +100,7 @@
                       </span>
                     </div>
                     <div class="flex items-center gap-2">
-                       <span class="text-[10px] text-white/40 font-medium">Estimativa:</span>
+                       <span class="text-[10px] text-white/40 font-medium whitespace-nowrap">Estimativa:</span>
                        <span :class="['card-value text-[12px] font-bold tabular-nums', estimativaClass]">
                         {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
                       </span>
@@ -111,32 +111,32 @@
               </div>
 
               <!-- CAPITAL -->
-              <div class="card-section px-4 border-l border-white/5">
-                <span class="card-label">CAPITAL</span>
-                <span class="card-value text-white">{{ accountBalanceFormatted }}</span>
+              <div class="card-section px-8 border-l border-white/10">
+                <span class="card-label mb-1">CAPITAL</span>
+                <span class="card-value text-lg text-white font-black">{{ accountBalanceFormatted }}</span>
               </div>
 
               <!-- ÚLTIMO RESULTADO -->
-              <div class="card-section px-4 border-l border-white/5">
-                <span class="card-label uppercase">Último Resultado</span>
-                <span :class="['card-value font-bold', lastTradeProfitClass]">
+              <div class="card-section px-8 border-l border-white/10">
+                <span class="card-label mb-1">ÚLT. RESULTADO</span>
+                <span :class="['card-value text-lg font-black', lastTradeProfitClass]">
                   {{ formattedLastTradeResult }}
                 </span>
               </div>
 
-              <!-- WIN / LOSS / WIN RATE -->
-              <div class="card-section card-summary border-l border-white/5">
+              <!-- WIN / LOSS / WIN RATE (Sempre horizontal) -->
+              <div class="card-section card-summary-row border-l border-white/10 ml-2">
                 <div class="summary-item">
                   <span class="summary-label">WIN</span>
-                  <span class="summary-value text-zenix-green">{{ sessionStats.wins }}</span>
+                  <span class="summary-value text-xl text-zenix-green">{{ sessionStats.wins }}</span>
                 </div>
                 <div class="summary-item">
                   <span class="summary-label">LOSS</span>
-                  <span class="summary-value text-red-500">{{ sessionStats.losses }}</span>
+                  <span class="summary-value text-xl text-red-500">{{ sessionStats.losses }}</span>
                 </div>
                 <div class="summary-item">
                   <span class="summary-label">WIN RATE</span>
-                  <span class="summary-value text-white">{{ sessionStats.winRate || 0 }}%</span>
+                  <span class="summary-value text-xl text-white">{{ sessionStats.winRate || 0 }}%</span>
                 </div>
               </div>
             </div>
@@ -1429,11 +1429,24 @@ export default {
   flex: 1;
 }
 
+.results-card {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  background: rgba(18, 18, 18, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05); /* Estilo de borda padrão */
+  border-radius: 12px 12px 0 0;
+  padding: 1rem 2.5rem;
+  margin-bottom: -1px;
+}
+
 .view-toggle-bar-flex {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  width: 100%;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-end !important;
+  width: 100% !important;
+  gap: 20px;
 }
 
 .view-toggle-bar-tabs {
@@ -1441,24 +1454,14 @@ export default {
   gap: 4px;
 }
 
-.results-card {
-  display: flex;
-  align-items: center;
-  background: rgba(18, 18, 18, 0.4);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05); /* Mesma borda sutil das outras caixas */
-  border-radius: 12px 12px 0 0; 
-  padding: 1.2rem 2.5rem; /* Padding aumentado */
-  margin-bottom: -1px;
-}
-
 .card-section {
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 .card-label {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.3);
   font-weight: 700;
   text-transform: uppercase;
@@ -1466,15 +1469,15 @@ export default {
 }
 
 .card-value {
-  font-size: 15px; /* Fonte maior */
-  font-weight: 800;
   white-space: nowrap;
 }
 
-.card-summary {
+.card-summary-row {
+  display: flex;
   flex-direction: row;
   gap: 1.5rem;
   padding-left: 1.5rem;
+  align-items: center;
 }
 
 .summary-item {
@@ -1484,14 +1487,14 @@ export default {
 }
 
 .summary-label {
-  font-size: 10px;
+  font-size: 9px;
   color: rgba(255, 255, 255, 0.3);
   font-weight: 700;
 }
 
 .summary-value {
-  font-size: 18px; /* Fonte bem maior para os stats */
   font-weight: 900;
+  line-height: 1;
 } 
 
 
