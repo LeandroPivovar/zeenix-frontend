@@ -88,7 +88,7 @@
                 <template v-if="activeOperation.isOpen">
                   <div class="flex flex-col gap-0.5">
                     <div class="flex items-center gap-1.5">
-                       <span class="text-[9px] text-white/30 font-medium whitespace-nowrap">Tempo restante:</span>
+                       <span class="text-[10px] text-white/30 font-medium whitespace-nowrap">Tempo restante:</span>
                        <span :class="['value-tiny tabular-nums', getTimerClass]">
                         <template v-if="activeOperation.ticksRemaining !== null">
                           {{ activeOperation.ticksRemaining }} ticks
@@ -102,7 +102,7 @@
                       </span>
                     </div>
                     <div class="flex items-center gap-1.5">
-                       <span class="text-[9px] text-white/30 font-medium whitespace-nowrap">Estimativa:</span>
+                       <span class="text-[10px] text-white/30 font-medium whitespace-nowrap">Estimativa:</span>
                        <span :class="['value-tiny tabular-nums', estimativaClass]">
                         {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
                       </span>
@@ -1493,6 +1493,8 @@ export default {
   flex-direction: row;
   align-items: center;
   background: rgba(18, 18, 18, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
   border-radius: 12px 12px 0 0;
   padding: 0.85rem 2.5rem;
   margin-bottom: -1px;
@@ -1505,7 +1507,7 @@ export default {
 }
 
 .label-tiny {
-  font-size: 9px;
+  font-size: 10px;
   color: rgba(255, 255, 255, 0.25);
   font-weight: 700;
   text-transform: uppercase;
@@ -1539,7 +1541,7 @@ export default {
 }
 
 .summary-label-tiny {
-  font-size: 8px; /* Slightly larger labels */
+  font-size: 10px; /* Slightly larger labels */
   color: rgba(255, 255, 255, 0.25);
   font-weight: 700;
   text-transform: uppercase;
