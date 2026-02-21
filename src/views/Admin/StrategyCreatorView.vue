@@ -19,8 +19,8 @@
                 @open-settings="showSettingsModal = true"
             />
 
-            <main class="layout-content relative">
-                <div class="content-header flex justify-between items-center px-4 py-4 w-full sticky top-0 z-50 bg-[#0A0A0A] border-b border-[#333]/50 shadow-md mb-6">
+            <main class="layout-content relative !overflow-visible">
+                <div class="content-header flex justify-between items-center px-4 py-4 w-full sticky top-[60px] z-50 bg-[#0A0A0A] border-b border-[#333]/50 shadow-md mb-6">
                     <div>
                         <h1 class="text-2xl font-bold text-white">
                             {{ isMonitoring ? 'Acompanhamento de Estratégia [BETA]' : 'Criador de Estratégias [BETA]' }}
