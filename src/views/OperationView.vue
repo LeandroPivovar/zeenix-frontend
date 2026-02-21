@@ -43,40 +43,81 @@
               Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
             </p>
           </div>
-          
-          <div class="header-right">
-            <!-- RESULTS CARD -->
-            <div class="results-card">
+        </div>
+
+        <div class="view-toggle-bar-wrapper">
+          <div class="view-toggle-bar-flex">
+            <div class="view-toggle-bar-tabs">
+              <button
+                class="px-6 py-3 bg-zenix-card text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300 desktop-only"
+                :class="{ 'border-b-2 border-zenix-green text-zenix-text font-semibold shadow-[0_0_8px_rgba(0,0,0,0.25)]': currentView === 'OperationChart' && activeSubTab === 'chart', 'border-b-2 border-transparent text-[#7A7A7A]': currentView !== 'OperationChart' || activeSubTab !== 'chart' }"
+                @click="changeView('OperationChart')"
+              >
+                <span class="desktop-text">Análise gráfica</span>
+                <span class="mobile-text">Gráfico</span>
+              </button>
+              <button
+                class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+                :class="{ 'border-b-2 border-zenix-green text-zenix-text': (currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits', 'border-b-2 border-transparent': !((currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits') }"
+                @click="changeView('OperationDigits')"
+              >
+                <span class="desktop-text">Análise de dígitos</span>
+                <span class="mobile-text">Dígitos</span>
+              </button>
+              <button
+                class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+                :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLogs', 'border-b-2 border-transparent': currentView !== 'OperationLogs' }"
+                @click="changeView('OperationLogs')"
+              >
+                <span class="desktop-text">Registro</span>
+                <span class="mobile-text">Histórico</span>
+              </button>
+              <button
+                class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+                :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLastOrders', 'border-b-2 border-transparent': currentView !== 'OperationLastOrders' }"
+                @click="changeView('OperationLastOrders')"
+              >
+                <span class="desktop-text">Últimas Ordens</span>
+                <span class="mobile-text">Registros</span>
+              </button>
+            </div>
+
+            <!-- RESULTS CARD (Moved here, added explicit labels) -->
+            <div class="results-card desktop-only">
               <!-- STATUS -->
-              <div class="card-section">
+              <div class="card-section mr-4">
                 <span class="card-label">STATUS</span>
                 <template v-if="activeOperation.isOpen">
-                  <span :class="['card-value text-xs font-semibold leading-tight', getTimerClass]">
-                    <template v-if="activeOperation.ticksRemaining !== null">
-                      {{ activeOperation.ticksRemaining }} ticks
-                    </template>
-                    <template v-else-if="formattedTimeRemaining && formattedTimeRemaining !== '--:--' && formattedTimeRemaining !== '00:00'">
-                      {{ formattedTimeRemaining }}
-                    </template>
-                    <template v-else>
-                      PROCESSANDO
-                    </template>
-                  </span>
-                  <span :class="['card-value text-[10px] leading-tight', estimativaClass]">
-                    {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
-                  </span>
+                  <div class="flex flex-col">
+                    <span :class="['card-value text-xs font-semibold leading-tight flex items-center gap-1', getTimerClass]">
+                      <span class="text-[9px] opacity-70">Tempo restante:</span>
+                      <template v-if="activeOperation.ticksRemaining !== null">
+                        {{ activeOperation.ticksRemaining }} ticks
+                      </template>
+                      <template v-else-if="formattedTimeRemaining && formattedTimeRemaining !== '--:--' && formattedTimeRemaining !== '00:00'">
+                        {{ formattedTimeRemaining }}
+                      </template>
+                      <template v-else>
+                        PROCESSANDO
+                      </template>
+                    </span>
+                    <span :class="['card-value text-[10px] leading-tight flex items-center gap-1', estimativaClass]">
+                      <span class="text-[8px] opacity-60">Estimativa:</span>
+                      {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
+                    </span>
+                  </div>
                 </template>
                 <span v-else class="card-value text-[10px] text-white/30">AGUARDANDO...</span>
               </div>
 
               <!-- CAPITAL -->
-              <div class="card-section">
+              <div class="card-section px-4 border-l border-white/5">
                 <span class="card-label">CAPITAL</span>
                 <span class="card-value text-white">{{ accountBalanceFormatted }}</span>
               </div>
 
               <!-- ÚLTIMO RESULTADO -->
-              <div class="card-section">
+              <div class="card-section px-4 border-l border-white/5">
                 <span class="card-label uppercase">Último Resultado</span>
                 <span :class="['card-value font-bold', lastTradeProfitClass]">
                   {{ formattedLastTradeResult }}
@@ -84,7 +125,7 @@
               </div>
 
               <!-- WIN / LOSS / WIN RATE -->
-              <div class="card-section card-summary">
+              <div class="card-section card-summary border-l border-white/5">
                 <div class="summary-item">
                   <span class="summary-label">WIN</span>
                   <span class="summary-value text-zenix-green">{{ sessionStats.wins }}</span>
@@ -99,43 +140,6 @@
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div class="view-toggle-bar-wrapper">
-          <div class="view-toggle-bar">
-            <button
-              class="px-6 py-3 bg-zenix-card text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300 desktop-only"
-              :class="{ 'border-b-2 border-zenix-green text-zenix-text font-semibold shadow-[0_0_8px_rgba(0,0,0,0.25)]': currentView === 'OperationChart' && activeSubTab === 'chart', 'border-b-2 border-transparent text-[#7A7A7A]': currentView !== 'OperationChart' || activeSubTab !== 'chart' }"
-              @click="changeView('OperationChart')"
-            >
-              <span class="desktop-text">Análise gráfica</span>
-              <span class="mobile-text">Gráfico</span>
-            </button>
-            <button
-              class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-              :class="{ 'border-b-2 border-zenix-green text-zenix-text': (currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits', 'border-b-2 border-transparent': !((currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits') }"
-              @click="changeView('OperationDigits')"
-            >
-              <span class="desktop-text">Análise de dígitos</span>
-              <span class="mobile-text">Dígitos</span>
-            </button>
-            <button
-              class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-              :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLogs', 'border-b-2 border-transparent': currentView !== 'OperationLogs' }"
-              @click="changeView('OperationLogs')"
-            >
-              <span class="desktop-text">Registro</span>
-              <span class="mobile-text">Histórico</span>
-            </button>
-            <button
-              class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-              :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLastOrders', 'border-b-2 border-transparent': currentView !== 'OperationLastOrders' }"
-              @click="changeView('OperationLastOrders')"
-            >
-              <span class="desktop-text">Últimas Ordens</span>
-              <span class="mobile-text">Registros</span>
-            </button>
           </div>
         </div>
 
@@ -1425,21 +1429,27 @@ export default {
   flex: 1;
 }
 
-.header-right {
+.view-toggle-bar-flex {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.view-toggle-bar-tabs {
+  display: flex;
+  gap: 4px;
 }
 
 .results-card {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
   background: rgba(18, 18, 18, 0.4);
   backdrop-filter: blur(10px);
-  border: 1px solid #ef4444; /* Borda vermelha sólida */
-  box-shadow: 0 0 15px rgba(239, 68, 68, 0.1); /* Brilho sutil vermelho */
-  border-radius: 8px;
-  padding: 0.6rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.05); /* Borda sutil como as outras caixas */
+  border-radius: 8px 8px 0 0; /* Match tab style upper corners */
+  padding: 0.8rem 2rem; /* Aumentado o padding como pedido */
+  margin-bottom: -1px; /* Align with bottom of tabs */
 }
 
 .card-section {
