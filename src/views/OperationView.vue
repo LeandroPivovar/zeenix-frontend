@@ -78,7 +78,7 @@
               </button>
             </div>
 
-            <!-- RESULTS CARD (Lado a lado explicitamente) -->
+            <!-- RESULTS CARD -->
             <div class="results-card desktop-only">
               <!-- STATUS -->
               <div class="card-section mr-8">
@@ -111,21 +111,21 @@
               </div>
 
               <!-- CAPITAL -->
-              <div class="card-section px-8 border-l border-white/10">
-                <span class="card-label mb-1">CAPITAL</span>
+              <div class="card-section px-8 border-l border-white/10 flex-row items-center gap-2">
+                <span class="card-label mb-0">CAPITAL</span>
                 <span class="card-value text-lg text-white font-black">{{ accountBalanceFormatted }}</span>
               </div>
 
               <!-- ÚLTIMO RESULTADO -->
-              <div class="card-section px-8 border-l border-white/10">
-                <span class="card-label mb-1">ÚLT. RESULTADO</span>
+              <div class="card-section px-8 border-l border-white/10 flex-row items-center gap-2">
+                <span class="card-label mb-0">ÚLT. RESULTADO</span>
                 <span :class="['card-value text-lg font-black', lastTradeProfitClass]">
                   {{ formattedLastTradeResult }}
                 </span>
               </div>
 
-              <!-- WIN / LOSS / WIN RATE (Sempre horizontal) -->
-              <div class="card-section card-summary-row border-l border-white/10 ml-2">
+              <!-- WIN / LOSS / WIN RATE -->
+              <div class="card-section-summary-row border-l border-white/10 ml-2">
                 <div class="summary-item">
                   <span class="summary-label">WIN</span>
                   <span class="summary-value text-xl text-zenix-green">{{ sessionStats.wins }}</span>
@@ -1429,13 +1429,13 @@ export default {
   flex: 1;
 }
 
-.results-card {
+.results-card.desktop-only {
   display: flex !important;
   flex-direction: row !important;
   align-items: center;
   background: rgba(18, 18, 18, 0.4);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05); /* Estilo de borda padrão */
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 12px 12px 0 0;
   padding: 1rem 2.5rem;
   margin-bottom: -1px;
@@ -1472,11 +1472,11 @@ export default {
   white-space: nowrap;
 }
 
-.card-summary-row {
+.card-section-summary-row {
   display: flex;
   flex-direction: row;
   gap: 1.5rem;
-  padding-left: 1.5rem;
+  padding-left: 1.5rem !important;
   align-items: center;
 }
 
