@@ -1529,36 +1529,11 @@
 				return 'Semanal';
 			},
 			sessionTrades() {
-				// ✅ [ZENIX v3.1] Centralized Session Logic
-				// Merge historical dailyTrades (for today) with live tradeHistory
-				// This ensures we show all trades from today, even if they exceed the session limit
+				// ✅ [ZENIX v3.3] Session-Only Logic
+				// We no longer merge dailyTrades into the session view.
+				// tradeHistory (liveSession) is already filtered by session_date on the backend.
 				if (this.selectedPeriod !== 'session') return [];
-
-				const historicalToday = this.dailyTrades || [];
-				const liveSession = this.tradeHistory || [];
-				
-				// ✅ Simplified: Use only trade ID for deduplication
-				const getTradeId = (t) => {
-					return String(t.id || t.contractId || t.contract_id || '');
-				};
-				
-				const combined = [...liveSession];
-				const seenIds = new Set(liveSession.map(t => getTradeId(t)));
-				
-				console.log('[sessionTrades] Live IDs:', Array.from(seenIds).slice(0, 5));
-				
-				historicalToday.forEach(t => {
-					const id = getTradeId(t);
-					if (id && !seenIds.has(id)) {
-						combined.push(t);
-						seenIds.add(id);
-					} else if (id) {
-						console.log('[sessionTrades] SKIPPED duplicate from historical:', id);
-					}
-				});
-				
-				console.log('[sessionTrades] Live:', liveSession.length, 'Historical:', historicalToday.length, 'Combined:', combined.length, 'Unique IDs:', seenIds.size);
-				return combined;
+				return this.tradeHistory || [];
 			},
 			formattedSessionItems() {
 				// Decide source array based on selectedPeriod
@@ -2536,8 +2511,12 @@
                     const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
                     
                     if (this.selectedPeriod === 'session') {
-                        // Sempre agrupado por dia, até na sessão
-                        url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=1${agentFilter}&aggregateBy=day`;
+                        // ✅ [ZENIX v3.2] Usar evolução por trade para a sessão atual para bater com os cards
+                        const sessionStart = this.agenteData?.sessionDate || '';
+                        url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?startDate=${sessionStart}${agentFilter}&aggregateBy=trade`;
+                    } else if (this.selectedPeriod === 'today' || this.selectedPeriod === 'yesterday') {
+                        // ✅ Usar evolução por trade para períodos curtos de 1-2 dias
+                        url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}${agentFilter}&aggregateBy=trade`;
                     } else if (this.selectedPeriod === 'custom' && this.customDateRange) {
                          url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?startDate=${this.customDateRange.start}&endDate=${this.customDateRange.end}${agentFilter}&aggregateBy=day`;
                     } else {

@@ -250,6 +250,7 @@
           agentStatus: this.agenteEstaAtivo ? "ATIVO" : "PAUSADO",
           accountBalance: accountBalanceValue, // Garantir que sempre seja um número válido
           sessionStatus: this.agentConfig?.sessionStatus || 'active', // ✅ Passar status da sessão para modais
+          sessionDate: this.agentConfig?.sessionDate || this.agentConfig?.createdAt, // ✅ [ZENIX v3.3] Data de início da sessão
         };
       },
       
@@ -877,7 +878,7 @@
           if (!userId) return;
 
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
-          const url = `${apiBase}/autonomous-agent/trade-history/${userId}?limit=50`;
+          const url = `${apiBase}/autonomous-agent/trade-history/${userId}?limit=500`;
           console.log('[AgenteAutonomo] Fetching trade history from:', url);
           
           const response = await fetch(url, {
