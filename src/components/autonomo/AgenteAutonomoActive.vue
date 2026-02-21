@@ -1476,7 +1476,7 @@
 				if (!this.dailyData || this.dailyData.length === 0) return [];
 
 				const now = new Date();
-				const todayStr = now.toISOString().split('T')[0];
+				const todayStr = now.toLocaleDateString('sv-SE'); // YYYY-MM-DD local
 				
 				switch (this.selectedPeriod) {
 					case 'today':
@@ -1544,14 +1544,13 @@
                 });
 			},
             todayTrades() {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0); // Start of today
-                const todayTimestamp = today.getTime();
+                const now = new Date();
+                const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
                 return (this.tradeHistory || []).filter(t => {
                     const createdAt = t.createdAt || t.created_at || t.time;
                     const tDate = new Date(createdAt).getTime();
-                    return tDate >= todayTimestamp;
+                    return tDate >= todayMidnight;
                 });
             },
 			formattedSessionItems() {
@@ -2036,7 +2035,7 @@
                 }
             },
 			pausarAgenteEIrParaTopo() {
-				this.$emit('pausarAgente');
+				this.$emit('pausar-agente');
 				window.scrollTo({ top: 0, behavior: 'smooth' });
 			},
 			
@@ -2365,6 +2364,9 @@
                         }
                         break;
                     case 'today':
+                        // Already set to start and end of TODAY by default above
+                        isRange = true;
+                        break;
                     case 'yesterday':
                         startDate.setDate(startDate.getDate() - 1);
                         endDate = new Date(startDate);
