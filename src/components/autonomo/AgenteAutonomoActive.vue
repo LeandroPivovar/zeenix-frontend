@@ -245,13 +245,9 @@
 									<!-- Icon Container -->
 									<div class="w-12 h-12 rounded-lg bg-[#0c0c0c] flex items-center justify-center relative shrink-0 border border-[#27272a]">
 										<img 
-											v-if="agent.id === 'zeus'"
-											src="/img/agents/zeus.png"
-											class="w-full h-full object-cover rounded-md"
-										/>
-										<img 
-											v-else-if="agent.id === 'falcon'"
-											src="/img/agents/falcon.png"
+											v-if="agent.id === 'zeus' || agent.id === 'falcon'"
+											:src="agent.id === 'zeus' ? '/img/agents/zeus.png' : '/img/agents/falcon.png'" 
+											:alt="agent.title"
 											class="w-full h-full object-cover rounded-md"
 										/>
 										<div v-else class="strategy-icons-inline text-2xl">
@@ -315,6 +311,30 @@
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">OPERAÇÕES HOJE</div>
 						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">{{ renderedOperacoesHoje }}</div>
+					</div>
+				</div>
+
+				<!-- Win Rate -->
+				<div class="flex items-center gap-3">
+					<div class="p-2 rounded-lg bg-blue-500/10 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-percent text-blue-500"><line x1="19" x2="5" y1="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>
+					</div>
+					<div>
+						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Win Rate</div>
+						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">{{ renderedWinRate.toFixed(1) }}%</div>
+					</div>
+				</div>
+
+				<!-- Media/Op -->
+				<div class="flex items-center gap-3">
+					<div class="p-2 rounded-lg bg-purple-500/10 flex items-center justify-center">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calculator text-purple-500"><rect width="18" height="18" x="3" y="4" rx="2"></rect><line x1="8" x2="16" y1="8" y2="8"></line><line x1="8" x2="16" y1="12" y2="12"></line><line x1="8" x2="16" y1="16" y2="16"></line></svg>
+					</div>
+					<div>
+						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Média/Op</div>
+						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
+                            {{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(renderedAvgProfit) }}
+                        </div>
 					</div>
 				</div>
 
@@ -1043,7 +1063,6 @@
 				dateOptions: [
 					{ label: 'Sessão', value: 'session' },
 					{ label: 'Hoje', value: 'today' },
-					{ label: 'Ontem', value: 'yesterday' },
 					{ label: 'Últimos 7 dias', value: '7d' },
 					{ label: 'Últimos 30 dias', value: '30d' },
 					{ label: 'Semestre', value: '6m' },
@@ -1056,7 +1075,8 @@
 				weeklyData: [],
                 
                 dailyData: [],
-                dailyTrades: [],
+                dailyTrades: [],           // trades for session/today view (live)
+                allTrades: [],             // ✅ [ZENIX v3.8] All-time trade cache (filter client-side)
                 dailyTradesSummary: { totalTrades: 0, totalWins: 0, totalProfit: 0, winRate: 0 },
                 agentConfig: null,
                 
@@ -1100,9 +1120,8 @@
                 stopBlindadoAcknowledged: false,
 
                 // Session Reporting
-                // selectedPeriod removed (duplicate)
-                
-                // Cycle Modal State
+                renderedWinRate: 0,
+                renderedAvgProfit: 0,
                 showCycleCompletionModal: false,
                 currentCycleNumber: 1,
                 currentCycleProfit: 0,
@@ -1139,12 +1158,10 @@
             
 			if (this.abaAtiva === 'grafico') {
 				this.$nextTick(() => {
+                    this.selectedPeriod = 'session'; // Force session mode on entry
 					this.initIndexChart();
 					// Buscar dados iniciais
 					this.fetchAllStats();
-					
-					// ✅ [ZENIX v2.3] Polling de 3s removido para evitar pulos de dados e consumo excessivo.
-                    // O sistema agora é 100% orientado a eventos e WebSockets vindos do pai.
 				});
 			}
 
@@ -1540,18 +1557,34 @@
 				}
 				
 				const combined = [...liveSession];
-				const seenIds = new Set(liveSession.map(t => getTradeId(t)));
+				const seenIds = new Set();
 				
+				const addWithDedupe = (trade) => {
+					const id = getTradeId(trade);
+					// ✅ [ZENIX v4.0] Robust Deduplication Key
+					const dedupeKey = id && !id.includes('-') && !id.includes(':') 
+						? id 
+						: `${getTimestamp(trade)}-${trade.profit}-${trade.stake}-${trade.market}`;
+					
+					if (dedupeKey && !seenIds.has(dedupeKey)) {
+						seenIds.add(dedupeKey);
+						return true;
+					}
+					return false;
+				};
+
+				// Initial dedupe of liveSession
+				const dedupedLive = liveSession.filter(addWithDedupe);
+				
+				const finalTrades = [...dedupedLive];
 				historicalToday.forEach(t => {
-					const id = getTradeId(t);
-					if (id && !seenIds.has(id)) {
-						combined.push(t);
-						seenIds.add(id);
+					if (addWithDedupe(t)) {
+						finalTrades.push(t);
 					}
 				});
 
 				// Sort by time ascending
-				combined.sort((a, b) => getTimestamp(a) - getTimestamp(b));
+				finalTrades.sort((a, b) => getTimestamp(a) - getTimestamp(b));
 
 				// If period is TODAY, return everything (All runs)
 				if (this.selectedPeriod === 'today') {
@@ -1584,9 +1617,9 @@
 				// Start with the last trade
 				currentSessionTrades.push(combined[combined.length - 1]);
 				
-				for (let i = combined.length - 2; i >= 0; i--) {
-					const curr = combined[i];
-					const next = combined[i+1]; // (which is technically chronologically later)
+				for (let i = finalTrades.length - 2; i >= 0; i--) {
+					const curr = finalTrades[i];
+					const next = finalTrades[i+1]; // (which is technically chronologically later)
 					
 					const diff = getTimestamp(next) - getTimestamp(curr);
 					
@@ -1598,18 +1631,68 @@
 					currentSessionTrades.unshift(curr);
 				}
 				
-				console.log('[sessionTrades] Fallback Gap Detection:', currentSessionTrades.length, 'Total Today:', combined.length);
+				console.log('[sessionTrades] Fallback Gap Detection:', currentSessionTrades.length, 'Total Today:', finalTrades.length);
 				return currentSessionTrades;
 			},
+			// ✅ [ZENIX v3.8] Client-side filter: returns allTrades sliced by selectedPeriod date range
+			filteredDailyTrades() {
+				if (!this.allTrades || this.allTrades.length === 0) return [];
+				
+				const now = new Date();
+				let startMs = 0; // 0 = no lower bound
+				
+				const startOf = (daysAgo) => {
+					const d = new Date(now);
+					d.setDate(d.getDate() - daysAgo);
+					d.setHours(0, 0, 0, 0);
+					return d.getTime();
+				};
+				
+				switch (this.selectedPeriod) {
+					case 'today':
+						startMs = startOf(0); break;
+					case '7d':
+						startMs = startOf(7); break;
+					case '30d':
+						startMs = startOf(30); break;
+					case '6m':
+						startMs = startOf(180); break;
+					case '1y':
+						startMs = startOf(365); break;
+					case 'thisMonth': {
+						const s = new Date(now.getFullYear(), now.getMonth(), 1);
+						startMs = s.getTime(); break;
+					}
+					case 'lastMonth': {
+						const s = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+						startMs = s.getTime(); break;
+					}
+					case 'thisYear': {
+						const s = new Date(now.getFullYear(), 0, 1);
+						startMs = s.getTime(); break;
+					}
+					case 'all':
+					default:
+						startMs = 0; break; // All trades
+				}
+				
+				if (startMs === 0) return this.allTrades;
+				
+				return this.allTrades.filter(t => {
+					const dateStr = t.createdAt || t.created_at || t.time;
+					if (!dateStr) return false;
+					return new Date(dateStr).getTime() >= startMs;
+				});
+			},
 			formattedSessionItems() {
-				// Decide source array based on selectedPeriod
+				// ✅ [ZENIX v3.8] Decide source based on period
 				let sourceTrades = [];
 				if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
 					sourceTrades = this.sessionTrades;
 				} else {
-					// ✅ FIX: For longer historical periods (7D, 30D, ANO), use dailyTrades which contains the full range
-					sourceTrades = [...(this.dailyTrades || [])];
-					console.log('[formattedSessionItems] history mode - using dailyTrades:', sourceTrades.length, 'trades');
+					// Use client-side filtered allTrades for all other periods
+					sourceTrades = [...(this.filteredDailyTrades || [])];
+					console.log('[formattedSessionItems] history mode - using filteredDailyTrades:', sourceTrades.length, 'trades');
 				}
 
 				if (!sourceTrades || sourceTrades.length === 0) return [];
@@ -1667,8 +1750,10 @@
 				const uniqueTrades = [];
 				const seenIds = new Set();
 				for (const trade of normalizedTrades) {
-					const dedupeKey = trade.id && !trade.id.includes('-') && !trade.id.includes(':') 
-						? String(trade.id) 
+					// ✅ [ZENIX v3.9] Robust Deduplication: Ensure ID is string before includes
+					const rawId = trade.id !== undefined && trade.id !== null ? String(trade.id) : '';
+					const dedupeKey = rawId && !rawId.includes('-') && !rawId.includes(':') 
+						? rawId 
 						: `${trade.createdAt}-${trade.profit}-${trade.stake}-${trade.market}`;
 					
 					if (!seenIds.has(dedupeKey)) {
@@ -1745,7 +1830,7 @@
 						displayLabel = `SESSÃO ${sessionNum} FINALIZADA`;
 					}
 
-					if (this.selectedPeriod === 'session' && idx === 0 && !sessionTrades.isMidnightEnd) {
+					if ((this.selectedPeriod === 'session' || this.selectedPeriod === 'today') && idx === 0 && !sessionTrades.isMidnightEnd) {
 						// ... logic for live session status ...
 						const status = this.agenteData.sessionStatus;
 						const validEndStatuses = ['stopped_loss', 'stopped_profit', 'stopped_blindado', 'paused', 'inactive', 'error', 'stopped_consecutive_loss'];
@@ -1764,21 +1849,24 @@
 									endReason = 'PAUSA SEGURANÇA (5 min)';
 									footerText += ` (${endReason})`;
 								} else {
-									isEnded = false;
-									footerText = `EM ANDAMENTO - ${endTime}`;
-									displayLabel = 'SESSÃO ATUAL';
+									isEnded = true;
+									endReason = 'AGENTE PAUSADO MANUAMENTE';
+									footerText = `${endTime} (${endReason})`;
+									displayLabel = 'SESSÃO FINALIZADA';
 								}
 							} else {
 								isEnded = true;
 								const statusMap = {
 									'stopped_loss': 'STOP LOSS ATINGIDO',
-									'stopped_profit': 'META ATINGIDA',
-									'stopped_blindado': 'STOP BLINDADO ATINGIDO',
+									'stopped_profit': 'TAKE PROFIT (META ATINGIDA)',
+									'stopped_blindado': 'STOP LOSS BLINDADO',
 									'error': 'ERRO NO SISTEMA',
 									'inactive': 'SESSÃO ENCERRADA',
-									'stopped_consecutive_loss': 'STOP POR PERDAS'
+									'stopped_consecutive_loss': 'STOP POR 3 PERDAS SEGUIDAS',
+                                    'cycle_pause': 'PAUSA POR CICLO CONCLUÍDO',
+                                    'take_profit': 'TAKE PROFIT (META ATINGIDA)'
 								};
-								endReason = statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase();
+								endReason = statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase().replace('_', ' ');
 								footerText += ` (${endReason})`;
 							}
 						} else {
@@ -1786,7 +1874,8 @@
 							footerText = `EM ANDAMENTO - ${endTime}`;
 							displayLabel = 'SESSÃO ATUAL';
 						}
-					} else if (!sessionTrades.isMidnightEnd) {
+					}
+ else if (!sessionTrades.isMidnightEnd) {
                         // Historical or past sessions (non-midnight)
                          if (this.selectedPeriod !== 'session') {
                              displayLabel = 'HISTÓRICO'; // Generic label for historical list
@@ -1849,9 +1938,8 @@
                          });
                     }
 				} else {
-					// ✅ [ZENIX v3.5] Calculate from currently loaded dailyTrades for consistency
-                    // This ensures cards and table always match exactly
-                    const historicalTrades = this.dailyTrades || [];
+					// ✅ [ZENIX v3.8] Use filteredDailyTrades (already filtered client-side)
+                    const historicalTrades = this.filteredDailyTrades || [];
                     if (historicalTrades.length > 0) {
                         trades = historicalTrades.length;
                         historicalTrades.forEach(t => {
@@ -1931,6 +2019,12 @@
                     if (newLogs && newLogs.length > 0) {
                         this.checkLogsForStopEvents(newLogs);
                     }
+                }
+            },
+            showLogs(newVal) {
+                // ✅ [ZENIX v4.0] Fetch logs instantly when expanded
+                if (newVal && this.$refs.strategyLogs) {
+                    this.$refs.strategyLogs.fetchRealtimeLogs(200);
                 }
             },
             finalCapital: {
@@ -2013,14 +2107,25 @@
                     const isSessionOrTodayView = this.selectedPeriod === 'session' || this.selectedPeriod === 'today';
                     
                     if (isModalOpenForToday || isSessionOrTodayView) {
-                        const existingIds = new Set((this.dailyTrades || []).map(t => String(t.id || t.contractId || t.contract_id || '')));
+                        const existingIds = new Set((this.dailyTrades || []).map(t => {
+                            const id = String(t.id || t.contractId || t.contract_id || '');
+                            // ✅ [ZENIX v4.1] Only fallback to composite if ID is missing or suspiciously short/temp
+                            if (id && id.length > 5) return id;
+                            const ts = t.createdAt || t.created_at || t.time;
+                            return `${ts}-${t.profit}-${t.stake}-${t.market}`;
+                        }));
                         let added = false;
                         
                         newTrades.forEach(trade => {
                             const tid = String(trade.id || trade.contractId || trade.contract_id || '');
-                            if (tid && !existingIds.has(tid)) {
+                            const ts = trade.createdAt || trade.created_at || trade.time;
+                            const dedupeKey = (tid && tid.length > 5) 
+                                ? tid 
+                                : `${ts}-${trade.profit}-${trade.stake}-${trade.market}`;
+                                
+                            if (dedupeKey && !existingIds.has(dedupeKey)) {
                                 this.dailyTrades = [trade, ...(this.dailyTrades || [])];
-                                existingIds.add(tid);
+                                existingIds.add(dedupeKey);
                                 added = true;
                             }
                         });
@@ -2029,9 +2134,33 @@
                             console.log('[AgenteAutonomoActive] ⚡ Live trades injected into dailyTrades:', newTrades.length);
                             // Re-sort DESC
                             this.dailyTrades = [...this.dailyTrades].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                            
+                            // ✅ [ZENIX v3.9] Also inject into allTrades to ensure other periods update too
+                            const allIds = new Set((this.allTrades || []).map(t => String(t.id || t.contractId || t.contract_id || '')));
+                            let allAdded = false;
+                            newTrades.forEach(trade => {
+                                const tid = String(trade.id || trade.contractId || trade.contract_id || '');
+                                if (tid && !allIds.has(tid)) {
+                                    this.allTrades = [trade, ...(this.allTrades || [])];
+                                    allIds.add(tid);
+                                    allAdded = true;
+                                }
+                            });
+                            if (allAdded) {
+                                this.allTrades = [...this.allTrades].sort((a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at));
+                            }
+
                             // ✅ Force chart update for live session
                             if (isSessionOrTodayView) {
-                                this.$nextTick(() => this.generateChartFromTrades(this.dailyTrades));
+                                this.$nextTick(() => {
+                                    // ✅ [ZENIX v4.0] Full sync of top metrics on trade
+                                    this.syncRenderedValues();
+                                    
+                                    // ✅ [ZENIX v4.0] Trigger log refresh on trade event (no polling)
+                                    if (this.$refs.strategyLogs) {
+                                        this.$refs.strategyLogs.fetchRealtimeLogs(200);
+                                    }
+                                });
                             }
                         }
                     }
@@ -2059,13 +2188,22 @@
 			},
             syncRenderedValues() {
                 if (this.loadingDetailedStats) return; // ✅ [FLICKER FIX] Don't sync while loading to maintain persistence
-                // Sincronização inicial ou pós-filtro
-                this.renderedPeriodProfit = this.periodProfit || 0;
+                
+                // ✅ [ZENIX v4.0] Métricas baseadas no período selecionado (Sessão)
+                const metrics = this.selectedPeriodMetrics;
+                
+                this.renderedPeriodProfit = metrics.totalProfit || 0;
                 this.renderedPeriodProfitPercent = this.periodProfitPercent || 0;
                 this.renderedAvgDailyProfit = this.avgDailyProfit || 0;
                 this.renderedAvgDailyProfitPercent = this.avgDailyProfitPercent || 0;
-                this.renderedDailyResultValue = this.dailyResultValue || 0;
-                this.renderedOperacoesHoje = this.operacoesHojeDisplay || '--';
+                
+                // Top Cards Sync
+                this.renderedDailyResultValue = metrics.totalProfit || 0;
+                this.renderedOperacoesHoje = metrics.totalTrades > 0 ? `${metrics.totalTrades} ops` : '0 ops';
+                
+                // ✅ [ZENIX v4.0] New rendered metrics for summary
+                this.renderedWinRate = metrics.winRate || 0;
+                this.renderedAvgProfit = metrics.avgProfit || 0;
             },
 			checkStopStatus(status) {
 				if (!status || status === 'active' || status === this.lastProcessedStatus) return;
@@ -2268,7 +2406,7 @@
                 // Mark loading but keep old data visible until new data arrives
                 this.loadingDetailedStats = true;
                 this.selectedDay = day; 
-                this.selectedPeriod = 'today'; // Default to today/daily view when opening from chart
+                this.selectedPeriod = 'session'; // Default to today/daily view when opening from chart
                 
                 // ✅ [ANTI-FLICKER] Do NOT clear dailyTrades here — fetchDailyDetails will replace atomically
                 // this.dailyTrades = []; // REMOVED: causes empty flash
@@ -2454,134 +2592,89 @@
                 const userId = this.getUserId();
                 if (!userId) return;
                 
-                console.log('[AgenteAutonomo] fetchTradesForPeriod iniciado para:', this.selectedPeriod);
+                console.log('[AgenteAutonomo] fetchTradesForPeriod iniciado');
 
-                // ✅ [ZENIX v3.1] Even for 'session', we want to fetch today's historical trades 
-                // to show the full history on the dashboard.
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
 
-                // Calcular intervalo de datas
-                let startDate = new Date();
-                let endDate = new Date();
-                let isRange = false;
-                
-                // Reset hours
-                startDate.setHours(0, 0, 0, 0);
-                endDate.setHours(23, 59, 59, 999);
+                try {
+                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    // PATH A: Session / Today — fetch today's daily-trades (also filtered by sessionId if session)
+                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
+                        let url = '';
+                        if (this.selectedPeriod === 'session') {
+                            const activeSessionId = this.agentConfig?.sessionId || this.agentConfig?.session_id || this.agentConfig?.id;
+                            const sessionIdParam = activeSessionId ? `&sessionId=${activeSessionId}` : '';
+                            url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=today${agentFilter}${sessionIdParam}`;
+                        } else {
+                            const today = new Date();
+                            const startStr = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+                            const endStr = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999).toISOString();
+                            url = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${startStr}&endDate=${endStr}${agentFilter}&date=range&limit=5000`;
+                        }
 
-                switch (this.selectedPeriod) {
-                    case 'session':
-                    case 'today':
-                        // ✅ [ZENIX v3.6] If we have a selected day from chart, use its date range
-                        if (this.selectedDay?.fullDate) {
-                            try {
-                                const dayDate = new Date(this.selectedDay.fullDate);
-                                startDate = new Date(dayDate);
-                                startDate.setHours(0, 0, 0, 0);
-                                endDate = new Date(dayDate);
-                                endDate.setHours(23, 59, 59, 999);
-                            } catch (e) {
-                                console.error('[AgenteAutonomo] Error parsing selectedDay.fullDate:', e);
+                        console.log('[AgenteAutonomo] Buscando trades session/today:', url);
+                        const res = await fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                            }
+                        });
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.success) {
+                                const trades = Array.isArray(result.data) ? result.data : (result.data.trades || []);
+                                this.dailyTrades = trades;
+                                if (!Array.isArray(result.data) && result.data.summary) {
+                                    this.dailyTradesSummary = result.data.summary;
+                                }
+                                this.generateChartFromTrades(this.dailyTrades);
+                                console.log('[AgenteAutonomo] dailyTrades (session/today):', trades.length);
                             }
                         }
-                        isRange = true;
-                        break;
-                    case 'yesterday':
-                        startDate.setDate(startDate.getDate() - 1);
-                        endDate = new Date(startDate);
-                        endDate.setHours(23, 59, 59, 999);
-                        isRange = true;
-						break;
-                    case '7d':
-                        startDate.setDate(startDate.getDate() - 7);
-                        isRange = true;
-                        break;
-                    case '30d':
-                        startDate.setDate(startDate.getDate() - 30);
-                        isRange = true;
-                        break;
-                    case 'thisMonth':
-                        startDate.setDate(1);
-                        isRange = true;
-                        break;
-                    case 'custom':
-                        if (this.customDateRange) {
-                            startDate = new Date(this.customDateRange.start);
-                            endDate = new Date(this.customDateRange.end);
-                            endDate.setHours(23, 59, 59, 999);
-                            isRange = true;
-                        }
-                        break;
-                    case '6m':
-                        startDate.setMonth(startDate.getMonth() - 6);
-                        isRange = true;
-                        break;
-                    case '1y':
-                        startDate.setFullYear(startDate.getFullYear() - 1);
-                        isRange = true;
-                        break;
-                    // 'all' - pode ser pesado, vamos limitar ou tratar no backend?
-                    case 'all': // Get full history (1 year)
-                        startDate.setFullYear(startDate.getFullYear() - 1);
-                        isRange = true;
-                        break;
-                }
-                
-                
-                this.loadingDetailedStats = true;
-                try {
-                     const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
-                     const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
-                     
-                     let url = '';
+                    }
 
-                     // ✅ [ZENIX v3.3] Restrict sessionId strictly to 'session' view
-                     if (this.selectedPeriod === 'session') {
-                         const dateParam = 'today';
-                         const activeSessionId = this.agentConfig?.sessionId || this.agentConfig?.session_id || this.agentConfig?.id;
-                         const sessionIdParam = activeSessionId ? `&sessionId=${activeSessionId}` : '';
-                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateParam}${agentFilter}${sessionIdParam}`;
-                     } else if (isRange || this.selectedPeriod === 'today') {
-                         const startStr = startDate.toISOString();
-                         const endStr = endDate.toISOString();
-                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${startStr}&endDate=${endStr}${agentFilter}&date=range&limit=5000`;
-                     } else {
-                         return; // Should not happen with valid period
-                     }
-                     
-                     console.log('[AgenteAutonomo] Buscando trades históricos:', url);
-                     
-                     const response = await fetch(url, {
-                        method: "GET",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${localStorage.getItem("token")}`,
-						}
-                     });
-                     
-                         if (response.ok) {
-                             const result = await response.json();
-                             if (result.success) {
-                                 const trades = Array.isArray(result.data) ? result.data : (result.data.trades || []);
-                                 const summary = !Array.isArray(result.data) ? result.data.summary : null;
-                                 
-                                 console.log('[AgenteAutonomo] Trades históricos carregados:', trades.length);
-                                 // ✅ [FLICKER FIX] Assign atomically — never set dailyTrades to [] first
-                                 // This prevents the brief empty flash while new data loads
-                                 this.dailyTrades = trades; // Assign directly, no intermediate empty state
-                                 if (summary) this.dailyTradesSummary = summary;
-                                 
-                                 // ✅ [ZENIX v3.2] Force chart update immediately if in session/today
-                                 if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
-                                     this.generateChartFromTrades(this.dailyTrades);
-                                 }
-                             }
-                         }
+                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    // PATH B: ALWAYS fetch all-time trades for client-side filtering
+                    // This populates `allTrades` which feeds filteredDailyTrades computed
+                    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    // Only fetch if allTrades is empty or we explicitly need a refresh
+                    if (!this.allTrades || this.allTrades.length === 0 || this.loadingDetailedStats) {
+                        const years = 1; // Fetch last 1 year
+                        const allStart = new Date();
+                        allStart.setFullYear(allStart.getFullYear() - years);
+                        allStart.setHours(0, 0, 0, 0);
+                        const allEnd = new Date();
+                        allEnd.setHours(23, 59, 59, 999);
+
+                        const allUrl = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${allStart.toISOString()}&endDate=${allEnd.toISOString()}${agentFilter}&date=range&limit=10000`;
+                        console.log('[AgenteAutonomo] Buscando TODOS os trades (all-time cache):', allUrl);
+
+                        const allRes = await fetch(allUrl, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                            }
+                        });
+                        if (allRes.ok) {
+                            const allResult = await allRes.json();
+                            if (allResult.success) {
+                                const allData = Array.isArray(allResult.data) ? allResult.data : (allResult.data.trades || []);
+                                // Sort DESC by date
+                                this.allTrades = allData.sort((a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at));
+                                console.log('[AgenteAutonomo] allTrades cache atualizado:', this.allTrades.length, 'trades');
+                            }
+                        }
+                    }
                 } catch(e) {
-                    console.error("[AgenteAutonomo] Erro ao buscar trades históricos:", e);
-                } finally {
-                    this.loadingDetailedStats = false;
+                    console.error('[AgenteAutonomo] Erro ao buscar trades:', e);
                 }
             },
+
+
 
 			async fetchAgentConfig() {
 				const userId = this.getUserId();
@@ -3104,15 +3197,21 @@
                         const isFinalCycle = (cycleNum === totalCycles);
 
                         if (isFinalCycle && this.lastProcessedCycle !== cycleNum) {
-                            console.log(`[AgenteAutonomo] 🔄 [Logs] Final Cycle ${cycleNum}/${totalCycles} Completion Detected!`);
-                            this.currentCycleNumber = parseInt(cycleNum);
-                            this.currentCycleProfit = profit;
-                            this.showCycleCompletionModal = true;
-                            this.lastProcessedCycle = cycleNum;
-                        }
-                    }
+                    console.log(`[AgenteAutonomo] 🔄 [Logs] Final Cycle ${cycleNum}/${totalCycles} Completion Detected!`);
+                    this.currentCycleNumber = parseInt(cycleNum);
+                    this.currentCycleProfit = profit;
+                    this.showCycleCompletionModal = true;
+                    this.lastProcessedCycle = cycleNum;
                 }
-            },
+            }
+        }
+        
+        // 5. MANUAL PAUSE (agente pausado manualmente)
+        if (!stopDetected && recentLogs.find(l => l.message && l.message.toUpperCase().includes('PAUSADO PELO USUÁRIO'))) {
+            // This is just for consistency in log-based detection if we wanted to trigger something
+            console.log('[AgenteAutonomo] Pausa manual detectada nos logs.');
+        }
+    },
             handleConfirmCycle() {
                 this.showCycleCompletionModal = false;
             },
