@@ -245,14 +245,10 @@
 									<!-- Icon Container -->
 									<div class="w-12 h-12 rounded-lg bg-[#0c0c0c] flex items-center justify-center relative shrink-0 border border-[#27272a]">
 										<img 
-											v-if="agent.id === 'zeus'"
-											src="/img/agents/zeus.png"
+											:src="agent.id === 'sentinel' ? require('@/assets/images/sentinel-bot.png') : (agent.id === 'falcon' ? require('@/assets/images/falcon-bot.png') : (agent.id === 'zeus' ? require('@/assets/images/zeus-bot.png') : require('@/assets/images/sentinel-bot.png')))" 
+											:alt="agent.title"
 											class="w-full h-full object-cover rounded-md"
-										/>
-										<img 
-											v-else-if="agent.id === 'falcon'"
-											src="/img/agents/falcon.png"
-											class="w-full h-full object-cover rounded-md"
+											@error="(e) => e.target.src = require('@/assets/images/sentinel-bot.png')"
 										/>
 										<div v-else class="strategy-icons-inline text-2xl">
 											{{ agent.emoji }}
@@ -1717,8 +1713,10 @@
 				const uniqueTrades = [];
 				const seenIds = new Set();
 				for (const trade of normalizedTrades) {
-					const dedupeKey = trade.id && !trade.id.includes('-') && !trade.id.includes(':') 
-						? String(trade.id) 
+					// ✅ [ZENIX v3.9] Robust Deduplication: Ensure ID is string before includes
+					const rawId = trade.id !== undefined && trade.id !== null ? String(trade.id) : '';
+					const dedupeKey = rawId && !rawId.includes('-') && !rawId.includes(':') 
+						? rawId 
 						: `${trade.createdAt}-${trade.profit}-${trade.stake}-${trade.market}`;
 					
 					if (!seenIds.has(dedupeKey)) {
@@ -2078,6 +2076,22 @@
                             console.log('[AgenteAutonomoActive] ⚡ Live trades injected into dailyTrades:', newTrades.length);
                             // Re-sort DESC
                             this.dailyTrades = [...this.dailyTrades].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                            
+                            // ✅ [ZENIX v3.9] Also inject into allTrades to ensure other periods update too
+                            const allIds = new Set((this.allTrades || []).map(t => String(t.id || t.contractId || t.contract_id || '')));
+                            let allAdded = false;
+                            newTrades.forEach(trade => {
+                                const tid = String(trade.id || trade.contractId || trade.contract_id || '');
+                                if (tid && !allIds.has(tid)) {
+                                    this.allTrades = [trade, ...(this.allTrades || [])];
+                                    allIds.add(tid);
+                                    allAdded = true;
+                                }
+                            });
+                            if (allAdded) {
+                                this.allTrades = [...this.allTrades].sort((a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at));
+                            }
+
                             // ✅ Force chart update for live session
                             if (isSessionOrTodayView) {
                                 this.$nextTick(() => this.generateChartFromTrades(this.dailyTrades));
@@ -2551,31 +2565,33 @@
                     // PATH B: ALWAYS fetch all-time trades for client-side filtering
                     // This populates `allTrades` which feeds filteredDailyTrades computed
                     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    // Only refetch if allTrades is empty or period changed to a broader one
-                    const years = 1; // Fetch last 1 year
-                    const allStart = new Date();
-                    allStart.setFullYear(allStart.getFullYear() - years);
-                    allStart.setHours(0, 0, 0, 0);
-                    const allEnd = new Date();
-                    allEnd.setHours(23, 59, 59, 999);
+                    // Only fetch if allTrades is empty or we explicitly need a refresh
+                    if (!this.allTrades || this.allTrades.length === 0 || this.loadingDetailedStats) {
+                        const years = 1; // Fetch last 1 year
+                        const allStart = new Date();
+                        allStart.setFullYear(allStart.getFullYear() - years);
+                        allStart.setHours(0, 0, 0, 0);
+                        const allEnd = new Date();
+                        allEnd.setHours(23, 59, 59, 999);
 
-                    const allUrl = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${allStart.toISOString()}&endDate=${allEnd.toISOString()}${agentFilter}&date=range&limit=10000`;
-                    console.log('[AgenteAutonomo] Buscando TODOS os trades (all-time cache):', allUrl);
+                        const allUrl = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${allStart.toISOString()}&endDate=${allEnd.toISOString()}${agentFilter}&date=range&limit=10000`;
+                        console.log('[AgenteAutonomo] Buscando TODOS os trades (all-time cache):', allUrl);
 
-                    const allRes = await fetch(allUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        }
-                    });
-                    if (allRes.ok) {
-                        const allResult = await allRes.json();
-                        if (allResult.success) {
-                            const allData = Array.isArray(allResult.data) ? allResult.data : (allResult.data.trades || []);
-                            // Sort DESC by date
-                            this.allTrades = allData.sort((a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at));
-                            console.log('[AgenteAutonomo] allTrades cache atualizado:', this.allTrades.length, 'trades');
+                        const allRes = await fetch(allUrl, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                            }
+                        });
+                        if (allRes.ok) {
+                            const allResult = await allRes.json();
+                            if (allResult.success) {
+                                const allData = Array.isArray(allResult.data) ? allResult.data : (allResult.data.trades || []);
+                                // Sort DESC by date
+                                this.allTrades = allData.sort((a, b) => new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at));
+                                console.log('[AgenteAutonomo] allTrades cache atualizado:', this.allTrades.length, 'trades');
+                            }
                         }
                     }
                 } catch(e) {
