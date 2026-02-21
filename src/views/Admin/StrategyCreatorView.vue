@@ -674,17 +674,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
-                                                    Nível de Soros <i class="fa-regular fa-circle-question text-[10px]"></i>
-                                                </label>
-                                                <input 
-                                                    type="number" 
-                                                    v-model.number="recoveryConfig.sorosLevel" 
-                                                    class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                    min="0"
-                                                />
-                                            </div>
                                         </div>
 
                                         <!-- Row 4: Target & Prediction -->
