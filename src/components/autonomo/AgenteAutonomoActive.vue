@@ -601,9 +601,10 @@
                         </div>
 
                         <div class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-semibold mr-8 sm:mr-10"
-                            :class="(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'"
+                            :class="selectedPeriodMetrics.totalProfit >= 0 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'"
                         >
-                            {{ (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit)) }}
+                            <!-- ✅ [ZENIX v3.7] Always use selectedPeriodMetrics for live accuracy -->
+                            {{ selectedPeriodMetrics.totalProfit < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriodMetrics.totalProfit)) }}
                         </div>
                     </div>
 				</h2>
@@ -617,9 +618,9 @@
                         {{ selectedPeriod === 'session' ? 'Lucro da Sessão' : (selectedPeriod === 'today' ? 'Lucro do Dia' : 'Lucro do Período') }}
                     </div>
 					<div class="text-base sm:text-xl font-bold tabular-nums text-left" 
-                        :class="(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'"
+                        :class="selectedPeriodMetrics.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'"
                     >
-						{{ (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit)) }}
+						{{ selectedPeriodMetrics.totalProfit < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriodMetrics.totalProfit)) }}
 					</div>
 				</div>
 
@@ -666,24 +667,25 @@
 			<!-- Statistics Grid -->
 			<div class="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mt-4">
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.ops : selectedPeriodMetrics.totalTrades }}</div>
+					<!-- ✅ [ZENIX v3.7] Always use selectedPeriodMetrics for live accuracy -->
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedPeriodMetrics.totalTrades }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Operações</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-green-500">{{ selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.wins : selectedPeriodMetrics.wins }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-green-500">{{ selectedPeriodMetrics.wins }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Positivas</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-red-500">{{ selectedPeriod === 'today' || selectedPeriod === 'session' ? (activeDayDetails.ops - activeDayDetails.wins) : (selectedPeriodMetrics.totalTrades - selectedPeriodMetrics.wins) }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-red-500">{{ selectedPeriodMetrics.totalTrades - selectedPeriodMetrics.wins }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Negativas</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ (selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.winRate : selectedPeriodMetrics.winRate).toFixed(1) }}%</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedPeriodMetrics.winRate.toFixed(1) }}%</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Win Rate</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums" :class="(selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ (selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : ((selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriod === 'today' || selectedPeriod === 'session' ? (activeDayDetails.profit / (activeDayDetails.ops || 1)) : selectedPeriodMetrics.avgProfit)) }}
+					<div class="text-base sm:text-lg font-bold tabular-nums" :class="selectedPeriodMetrics.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'">
+						{{ selectedPeriodMetrics.totalProfit < 0 ? '-' : (selectedPeriodMetrics.totalProfit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriodMetrics.avgProfit)) }}
 					</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
 				</div>
@@ -1998,31 +2000,39 @@
                     this.renderedOperacoesHoje = newVal;
                 }
             },
-            // ✅ [ZENIX v3.1] Watch for live trades and update dailyTrades if modal is open for today
+            // ✅ [ZENIX v3.7] Watch for live trades — inject into dailyTrades and update chart
             tradeHistory: {
                 deep: true,
                 handler(newTrades) {
                     if (!newTrades || newTrades.length === 0) return;
                     
-                    // If the detailed modal is open for today, we need to inject live trades
                     const todayStr = new Date().toISOString().split('T')[0];
-                    if (this.selectedDay && this.selectedDay.fullDate === todayStr) {
-                        const existingIds = new Set(this.dailyTrades.map(t => String(t.id || t.contractId)));
+                    
+                    // Inject live trades into dailyTrades for modal table (always for today)
+                    const isModalOpenForToday = this.selectedDay && this.selectedDay.fullDate === todayStr;
+                    const isSessionOrTodayView = this.selectedPeriod === 'session' || this.selectedPeriod === 'today';
+                    
+                    if (isModalOpenForToday || isSessionOrTodayView) {
+                        const existingIds = new Set((this.dailyTrades || []).map(t => String(t.id || t.contractId || t.contract_id || '')));
                         let added = false;
                         
                         newTrades.forEach(trade => {
-                            const tid = String(trade.id || trade.contractId);
-                            if (!existingIds.has(tid)) {
-                                this.dailyTrades.unshift(trade);
+                            const tid = String(trade.id || trade.contractId || trade.contract_id || '');
+                            if (tid && !existingIds.has(tid)) {
+                                this.dailyTrades = [trade, ...(this.dailyTrades || [])];
                                 existingIds.add(tid);
                                 added = true;
                             }
                         });
                         
                         if (added) {
-                            console.log('[AgenteAutonomoActive] Live trades synced to dailyTrades for modal');
-                            // Re-sort and slice to maintain consistency if needed
-                            this.dailyTrades.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                            console.log('[AgenteAutonomoActive] ⚡ Live trades injected into dailyTrades:', newTrades.length);
+                            // Re-sort DESC
+                            this.dailyTrades = [...this.dailyTrades].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                            // ✅ Force chart update for live session
+                            if (isSessionOrTodayView) {
+                                this.$nextTick(() => this.generateChartFromTrades(this.dailyTrades));
+                            }
                         }
                     }
                 }
@@ -2254,12 +2264,14 @@
             async openDayDetails(day) {
                 console.log('[AgenteAutonomo] openDayDetails (Instant):', day);
                 
-                // ✅ [ZENIX v3.6] Open modal INSTANTLY
+                // ✅ [ZENIX v3.7] Open modal INSTANTLY — never clear dailyTrades to avoid flicker
+                // Mark loading but keep old data visible until new data arrives
+                this.loadingDetailedStats = true;
                 this.selectedDay = day; 
                 this.selectedPeriod = 'today'; // Default to today/daily view when opening from chart
                 
-                // Clear old data to prevent flickering with stale info
-                this.dailyTrades = [];
+                // ✅ [ANTI-FLICKER] Do NOT clear dailyTrades here — fetchDailyDetails will replace atomically
+                // this.dailyTrades = []; // REMOVED: causes empty flash
                 this.dailyTradesSummary = null;
 
                 // Load config in background if missing
