@@ -59,6 +59,12 @@
                             <label><i class="fas fa-bullhorn"></i> Origem do Usuário</label>
                             <select v-model="filterUserOrigin">
                                 <option value="">Todas Campanhas</option>
+                                <option value="Google">Google</option>
+                                <option value="YouTube">YouTube</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="Instagram">Instagram</option>
+                                <option value="TikTok">TikTok</option>
+                                <option value="Outros">Outros</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -66,6 +72,11 @@
                             <div class="select-wrapper">
                                 <select v-model="filterDepositRange">
                                     <option value="">Selecionar faixa</option>
+                                    <option value="0-100">$0 - $100</option>
+                                    <option value="101-500">$101 - $500</option>
+                                    <option value="501-1000">$501 - $1000</option>
+                                    <option value="1001-5000">$1001 - $5000</option>
+                                    <option value="5000+">$5000+</option>
                                 </select>
                             </div>
                         </div>
@@ -287,6 +298,7 @@
                                     <tr>
                                         <th>Nome</th>
                                         <th>País</th>
+                                        <th>Origem</th>
                                         <th>Login ID</th>
                                         <th>Total Depositado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
                                         <th>Volume Operado <i class="fas fa-arrows-alt-v ml-1 text-xs opacity-50"></i></th>
@@ -316,6 +328,9 @@
                                                 <span class="country-flag">{{ getCountryFlag(client.country) }}</span>
                                                 <span class="country-name">{{ client.country }}</span>
                                             </div>
+                                        </td>
+                                        <td>
+                                            <span class="origin-tag" :class="(client.origin || '').toLowerCase()">{{ client.origin || 'N/A' }}</span>
                                         </td>
                                         <td class="login-id">{{ client.email }}</td>
                                         <td class="font-medium text-white">{{ formatCurrency(client.realAmount || 0) }}</td>
@@ -1111,6 +1126,22 @@ export default {
             
             if (this.filterSelectedCountry) {
                 filtered = filtered.filter(user => user.country === this.filterSelectedCountry);
+            }
+
+            if (this.filterUserOrigin) {
+                filtered = filtered.filter(user => user.origin === this.filterUserOrigin);
+            }
+
+            if (this.filterDepositRange) {
+                filtered = filtered.filter(user => {
+                    const amount = Number(user.realAmount) || 0;
+                    if (this.filterDepositRange === '0-100') return amount >= 0 && amount <= 100;
+                    if (this.filterDepositRange === '101-500') return amount > 100 && amount <= 500;
+                    if (this.filterDepositRange === '501-1000') return amount > 500 && amount <= 1000;
+                    if (this.filterDepositRange === '1001-5000') return amount > 1000 && amount <= 5000;
+                    if (this.filterDepositRange === '5000+') return amount > 5000;
+                    return true;
+                });
             }
             
             this.displayedClients = filtered;
