@@ -55,14 +55,6 @@
                         <span class="kpi-label">Experts cadastrados</span>
                         <span class="kpi-value value-green">{{ isLoadingStats ? '...' : kpis.registeredExperts }}</span>
                     </div>
-                    <div class="kpi-card" :class="{ 'loading': isLoadingStats }">
-                        <span class="kpi-label">Volume gerenciado</span>
-                        <span class="kpi-value value-green">{{ isLoadingStats ? '...' : '$' + kpis.managedVolume }}</span>
-                    </div>
-                    <div class="kpi-card" :class="{ 'loading': isLoadingStats }">
-                        <span class="kpi-label">Comissão total (Markup)</span>
-                        <span class="kpi-value value-green">{{ isLoadingStats ? '...' : '$' + kpis.totalCommission }}</span>
-                    </div>
                 </section>
 
                 <section class="system-admins">
