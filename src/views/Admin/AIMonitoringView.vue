@@ -1767,9 +1767,8 @@ export default {
 
             // Log Soros if active
             if (!isRecovery && this.sessionState.consecutiveWins === 2 && this.sessionState.lastResultWin) {
-                this.addLog('Gestão Soros', [
-                    `🚀 SOROS ATIVADO`,
-                    `Stake: Base + Lucro = ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`,
+                this.addLog('🚀 SOROS ATIVADO', [
+                    `Stake: Base + último lucro = ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`,
                     `Sequência: ${this.sessionState.consecutiveWins} vitórias`
                 ], 'info');
             }
@@ -2160,7 +2159,7 @@ export default {
 
             this.isStopping = true;
             this.stopTickConnection();
-            this.addLog('🏁 Encerramento de Sessão', [
+            this.addLog('⏹️ Operação finalizada.', [
                 `Motivo: ${redirect === true || (typeof redirect === 'object' && redirect.isTrusted) ? 'parada pelo usuário' : 'parada automática'}`,
                 `Status: Finalizado`
             ], 'info');
@@ -2264,7 +2263,7 @@ export default {
             if (this.sessionState.negotiationMode !== oldMode) {
                 // Ignore if switching to/from 'NORMAL' which is just a sensitivity adjustment
                 // Or log it differently
-                 this.addLog('🧭 Alteração de Sensibilidade', [`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`], 'warning');
+                 this.addLog('🧭 Alteração de Sensibilidade', [`MODO ${this.sessionState.negotiationMode} ATIVADO`], 'warning');
             }
 
             if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
@@ -2274,15 +2273,14 @@ export default {
                     const parcels = this.sessionState.parcelas_total || 4;
                     const parcelValue = this.sessionState.valor_parcela || (lossSum / parcels);
                     
-                    this.addLog('Martingale Parcelado Iniciado', [
-                        `⚠️ Modo CONSERVADOR ativado`,
+                    this.addLog('⚠️ Martingale Parcelado Ativo', [
+                        `Modo CONSERVADOR: Perda será recuperada em ${parcels} parcelas.`,
                         `Perda Total: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
-                        `Qtd Parcelas: ${parcels}`,
                         `Valor da Parcela: ${this.preferredCurrencyPrefix}${parcelValue.toFixed(2)}`
                     ], 'warning');
                 } else {
-                    this.addLog('Ativação de Recuperação', [
-                        `⚠️ Modo MARTINGALE ativado`,
+                    this.addLog('⚠️ Ativação de Recuperação', [
+                        `Modo Martingale iniciado.`,
                         `Perda acumulada: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
                         `Próximo stake: Calculado automaticamente`
                     ], 'warning');
@@ -2290,15 +2288,13 @@ export default {
             } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
                 
                 if (isConservador) {
-                    this.addLog('Recuperação Conservadora Concluída', [
-                        `✅ Dívida totalmente quitada`,
-                        `Lucro recuperado com sucesso`,
+                    this.addLog('✅ Recuperação Conservadora Concluída', [
+                        `Ciclo de parcelas finalizado com sucesso.`,
                         `Voltando ao modo PRINCIPAL`
                     ], 'success');
                 } else {
-                    this.addLog('Recuperação Concluída', [
-                        `✅ SUCESSO na recuperação`,
-                        `Voltando ao modo PRINCIPAL`,
+                    this.addLog('✅ Recuperação Concluída', [
+                        `Retornando ao modo principal.`,
                         `Stake resetado para base`
                     ], 'success');
                 }
@@ -2306,10 +2302,9 @@ export default {
                 
                 if (isConservador) {
                      // Check if it was a re-split (installments reset to 4)
-                    this.addLog('Re-parcelamento (Loss)', [
-                        `📉 Loss no parcelamento`,
+                    this.addLog('📉 Re-parcelamento Ativo', [
+                        `Loss no parcelamento (${this.sessionState.recoverySplitsUsed || 1}/3). Novo desdobramento iniciado.`,
                         `Nova Perda Acumulada: ${this.preferredCurrencyPrefix}${this.sessionState.prejuizo_acumulado.toFixed(2)}`,
-                        `Reparcelado em 4x`,
                         `Nova Parcela (1/4): ${this.preferredCurrencyPrefix}${this.sessionState.valor_parcela.toFixed(2)}`
                     ], 'warning');
                 } else {
@@ -2374,6 +2369,9 @@ export default {
 
             // 1. Meta Batida
             if (profit >= target) {
+                 this.addLog(`🎯 META BATIDA! +${this.preferredCurrencyPrefix}${profit.toFixed(2)}`, [
+                     `Parabéns! Você atingiu sua meta de lucro.`
+                 ], 'success');
                  this.stopResult = {
                     title: 'Meta Batida! 🚀',
                     message: 'Parabéns! Você atingiu sua meta de lucro.',
@@ -2388,6 +2386,9 @@ export default {
             // 2. Stop Loss
             if (profit <= -stopLoss) {
                 console.log('[StopLoss] Triggered! Profit:', profit, 'Limit:', -stopLoss);
+                this.addLog(`🛑 STOP LOSS! -${this.preferredCurrencyPrefix}${Math.abs(profit).toFixed(2)}`, [
+                     `Limite de perda atingido. Gerenciamento ativado.`
+                ], 'error');
                 this.stopResult = {
                     title: 'Stop Loss Atingido 🛑',
                     message: 'Limite de perda atingido. Gerenciamento ativado.',
