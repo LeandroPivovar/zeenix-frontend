@@ -568,7 +568,8 @@
 		@click.self="selectedDay = null"
 	>
 		<div role="dialog" 
-			class="w-full max-w-[95%] sm:max-w-4xl border border-[#27272a] p-3 sm:p-6 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto bg-[#09090b] relative flex flex-col scale-in-center animate-in zoom-in-95 duration-200"
+			class="w-full max-w-[95%] sm:max-w-4xl border border-[#27272a] p-3 sm:p-6 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto bg-[#09090b] relative flex flex-col scale-in-center animate-in zoom-in-95 duration-200 transition-opacity"
+            :class="{ 'opacity-60 pointer-events-none': loadingDetailedStats }"
 		>
 			
 			<!-- Close Button -->
@@ -580,13 +581,16 @@
 			<!-- Header -->
 			<div class="flex flex-col space-y-1.5 text-left mb-2">
 				<h2 class="text-sm sm:text-lg font-semibold leading-none tracking-tight flex items-center justify-between gap-4">
-					<span class="text-[#FAFAFA]" v-if="selectedPeriod === 'session' || selectedPeriod === 'today'">Relatório Diário — {{ activeDayDetails.date }}/2026</span>
-                    <span class="text-[#FAFAFA]" v-else>Relatório do Período</span>
+					<div class="flex items-center gap-2">
+                        <span class="text-[#FAFAFA]" v-if="selectedPeriod === 'session' || selectedPeriod === 'today'">Relatório Diário — {{ activeDayDetails.date }}/2026</span>
+                        <span class="text-[#FAFAFA]" v-else>Relatório do Período</span>
+                        <div v-if="loadingDetailedStats" class="animate-spin rounded-full h-3 w-3 border-2 border-green-500 border-t-transparent"></div>
+                    </div>
 
                     <div class="flex items-center gap-2">
                          <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a] mr-4">
                             <button 
-                                v-for="type in [{id:'session', label:'SESSÃO'}, {id:'today', label:'HOJE'}, {id:'7d', label:'7D'}, {id:'30d', label:'30D'}]" 
+                                v-for="type in [{id:'session', label:'SESSÃO'}, {id:'today', label:'HOJE'}, {id:'7d', label:'7D'}, {id:'30d', label:'30D'}, {id:'1y', label:'ANO'}]" 
                                 :key="type.id"
                                 @click="selectedPeriod = type.id"
                                 class="px-2 py-1 rounded-md text-[10px] font-bold uppercase transition-all"
@@ -1118,6 +1122,7 @@
                 renderedDailyResultValue: 0,
                 renderedOperacoesHoje: '--',
                 lastProcessedLogId: null, // ✅ [ZENIX v2.2] Evitar re-processar logs já vistos
+                loadingDetailedStats: false, // ✅ [FLICKER FIX] Track loading state for detailed reports
 			};
 		},
 		mounted() {
@@ -1655,7 +1660,7 @@
 						// Keep original for referencing if needed
 						original: trade 
 					};
-				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 20000); // Increased limit to 20k as per user request
+				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Removed 20k slice to show all operations as requested
 
 				// ✅ Improved deduplication: Use real ID if available
 				const uniqueTrades = [];
@@ -2030,6 +2035,7 @@
 				}
 			},
             syncRenderedValues() {
+                if (this.loadingDetailedStats) return; // ✅ [FLICKER FIX] Don't sync while loading to maintain persistence
                 // Sincronização inicial ou pós-filtro
                 this.renderedPeriodProfit = this.periodProfit || 0;
                 this.renderedPeriodProfitPercent = this.periodProfitPercent || 0;
@@ -2242,7 +2248,12 @@
                 
                 // ✅ FIX: Fetch data FIRST, then open modal
                 // This prevents showing stale/incorrect data while loading
-                await this.fetchDailyDetails(day);
+                this.loadingDetailedStats = true;
+                try {
+                    await this.fetchDailyDetails(day);
+                } finally {
+                    this.loadingDetailedStats = false;
+                }
                 
                 // Only set selectedDay AFTER data is loaded
                 // fetchDailyDetails already updates selectedDay with fresh data
@@ -2251,17 +2262,23 @@
             async fetchDailyDetails(day) {
                 const userId = this.getUserId();
                 if (!userId || !day) return;
-                
-                
+                this.loadingDetailedStats = true;
                 try {
                     // Use fullDate if available (YYYY-MM-DD), otherwise fallback (might fail if not standard)
                     const dateQuery = day.fullDate || 'today';
+                    
+                    // ✅ [ZENIX v3.3] Use activeSessionId priority and restrict strictly to 'session' view
+                    const activeSessionId = this.agentConfig?.sessionId || this.agentConfig?.session_id || this.agentConfig?.id;
+                    const sessionIdParam = (this.selectedPeriod === 'session' && dateQuery === 'today' && activeSessionId) 
+                        ? `&sessionId=${activeSessionId}` 
+                        : '';
+                        
                     console.log('[AgenteAutonomo] Buscando daily-trades para:', dateQuery);
                     
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
                     const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
                     // Backend uses param date, updated in previous steps
-                    const url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateQuery}${agentFilter}`;
+                    const url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateQuery}${agentFilter}${sessionIdParam}`;
                     const options = {
 						method: "GET",
 						headers: {
@@ -2328,7 +2345,9 @@
                     }
 				} catch(error) {
 					console.error("[AgenteAutonomo] Erro ao buscar detalhes diários:", error);
-				}
+				} finally {
+                    this.loadingDetailedStats = false;
+                }
 			},
 			async fetchDailyStats() {
 				const userId = this.getUserId();
@@ -2457,31 +2476,36 @@
                             isRange = true;
                         }
                         break;
-                    // 'all', '6m', '1y' - pode ser pesado, vamos limitar ou tratar no backend?
-                    // Por enquanto vamos deixar o backend decidir limite ou pegar 30 dias se 'all' for muito
-                    case 'all': // Try to get reasonable history
+                    case '6m':
+                        startDate.setMonth(startDate.getMonth() - 6);
+                        isRange = true;
+                        break;
+                    case '1y':
+                        startDate.setFullYear(startDate.getFullYear() - 1);
+                        isRange = true;
+                        break;
+                    // 'all' - pode ser pesado, vamos limitar ou tratar no backend?
+                    case 'all': // Get full history (1 year)
                         startDate.setFullYear(startDate.getFullYear() - 1);
                         isRange = true;
                         break;
                 }
                 
+                
+                this.loadingDetailedStats = true;
                 try {
                      const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
                      const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
                      
                      let url = '';
 
-                     // ✅ [ZENIX v3.2] For 'session' and 'today', use the specific DATE endpoint (like daily modal)
-                     // instead of generic range query, to ensure consistency.
-                     if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
+                     // ✅ [ZENIX v3.3] Restrict sessionId strictly to 'session' view
+                     if (this.selectedPeriod === 'session') {
                          const dateParam = 'today';
-                         // ✅ [SESSION FIX] For 'session' period, pass sessionId to backend so it filters by session_id
-                         // agentConfig.id IS the session config id used as session_id in autonomous_agent_trades
-                         const sessionIdParam = (this.selectedPeriod === 'session' && this.agentConfig?.id)
-                           ? `&sessionId=${this.agentConfig.id}`
-                           : '';
+                         const activeSessionId = this.agentConfig?.sessionId || this.agentConfig?.session_id || this.agentConfig?.id;
+                         const sessionIdParam = activeSessionId ? `&sessionId=${activeSessionId}` : '';
                          url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateParam}${agentFilter}${sessionIdParam}`;
-                     } else if (isRange) {
+                     } else if (isRange || this.selectedPeriod === 'today') {
                          const startStr = startDate.toISOString();
                          const endStr = endDate.toISOString();
                          url = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${startStr}&endDate=${endStr}${agentFilter}&date=range`;
@@ -2519,6 +2543,8 @@
                          }
                 } catch(e) {
                     console.error("[AgenteAutonomo] Erro ao buscar trades históricos:", e);
+                } finally {
+                    this.loadingDetailedStats = false;
                 }
             },
 
