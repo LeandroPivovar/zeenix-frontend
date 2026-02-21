@@ -31,135 +31,116 @@
       <main class="main-content">
         <!-- Mobile Header (only visible on mobile) -->
         <div class="mobile-header mobile-only">
-          <h1 class="mobile-title">{{ mobileTitle }}</h1>
-          <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
+          <h1 class="mobile-title">Operação Manual</h1>
+          <p class="mobile-subtitle">Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.</p>
         </div>
 
 
-        <div class="manual-premium-bar-wrapper w-full px-0">
-          <div class="manual-premium-bar w-full">
-            <!-- Floating Particles for Premium Feel -->
-            <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-              <div class="absolute w-1 h-1 rounded-full bg-zenix-green/30" style="top: 20%; left: 15%; animation: float-particle 8s ease-in-out 0s infinite;"></div>
-              <div class="absolute w-0.5 h-0.5 rounded-full bg-zenix-green/20" style="top: 60%; left: 40%; animation: float-particle 10s ease-in-out 2s infinite;"></div>
-              <div class="absolute w-1 h-1 rounded-full bg-zenix-green/25" style="top: 40%; right: 20%; animation: float-particle 9s ease-in-out 1s infinite;"></div>
+        <!-- RESTRUCTURED HEADER (Left: Title+Subtitle+Tabs | Right: All Status/Results) -->
+        <div class="header-floor-wrapper desktop-only">
+          <!-- LEFT COLUMN (Text and Tabs) -->
+          <div class="header-floor-left">
+            <div class="header-text-column">
+              <h1 class="header-title-small">Operação Manual</h1>
+              <p class="header-subtitle-small">
+                Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
+              </p>
             </div>
-
-            <!-- STATUS -->
-            <div class="bar-section">
-              <div class="flex items-center gap-3">
-                <div class="relative flex-shrink-0">
-                  <div class="absolute inset-0 rounded-full bg-zenix-green/30 blur-md scale-[1.5]"></div>
-                  <div class="relative w-12 h-12 rounded-full bg-gradient-to-br from-zenix-green/20 to-zenix-green/5 border border-zenix-green/40 flex items-center justify-center backdrop-blur-md shadow-[0_0_20px_rgba(34,197,94,0.2)]">
-                    <i class="fas fa-bolt text-xl text-zenix-green drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]"></i>
-                    <div v-if="activeOperation.isOpen" class="absolute inset-0 rounded-full border border-zenix-green/20 animate-ping"></div>
-                  </div>
-                </div>
-                <div class="flex flex-col justify-center">
-                  <span class="bar-value text-zenix-green uppercase font-bold text-sm leading-tight">
-                    {{ activeOperation.isOpen ? 'Em Operação' : 'Operação Manual' }}
-                  </span>
-                  <span v-if="activeOperation.isOpen" :class="['text-[11px] tabular-nums font-medium', estimativaClass]">
-                    Estimativa: {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
-                  </span>
-                  <span v-else class="text-[10px] text-white/30 uppercase tracking-tighter">Aguardando...</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- CAPITAL -->
-            <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2 h-4">
-                <span class="bar-label">Capital</span>
-                <button @click="balanceVisible = !balanceVisible" class="opacity-20 hover:opacity-100 transition-opacity">
-                  <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
-                </button>
-              </div>
-              <div class="flex items-center gap-2 h-7">
-                <span class="bar-value text-lg leading-none font-bold">{{ balanceVisible ? accountBalanceFormatted : '••••••' }}</span>
-              </div>
-            </div>
-
-            <!-- ÚLTIMO RESULTADO -->
-            <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2 h-4">
-                <span class="bar-label">Último Resultado</span>
-                <button @click="profitVisible = !profitVisible" class="opacity-20 hover:opacity-100 transition-opacity">
-                  <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
-                </button>
-              </div>
-              <div class="flex items-center gap-2 h-7">
-                <span :class="['bar-value text-lg leading-none font-bold', lastTradeProfitClass]">
-                  {{ profitVisible ? formattedLastTradeResult : '••••••' }}
-                </span>
-              </div>
-            </div>
-
-            <!-- DESEMPENHO (WIN, LOSS, WIN RATE) -->
-            <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-8">
-                <!-- WIN -->
-                <div class="flex flex-col items-center">
-                  <div class="flex items-center gap-2 h-4">
-                    <span class="bar-label">WIN</span>
-                  </div>
-                  <div class="flex items-center gap-2 h-7">
-                    <span class="bar-value text-lg font-bold text-zenix-green tabular-nums leading-none">{{ tradesVisible ? sessionStats.wins : '•' }}</span>
-                  </div>
-                </div>
-
-                <!-- LOSS -->
-                <div class="flex flex-col items-center">
-                  <div class="flex items-center gap-2 h-4">
-                    <span class="bar-label">LOSS</span>
-                  </div>
-                  <div class="flex items-center gap-2 h-7">
-                    <span class="bar-value text-lg font-bold tabular-nums leading-none" style="color: #FF4D4D !important;">{{ tradesVisible ? sessionStats.losses : '•' }}</span>
-                  </div>
-                </div>
-
-                <!-- WIN RATE -->
-                <div class="flex flex-col items-center">
-                  <div class="flex items-center gap-2 h-4">
-                    <span class="bar-label">WIN RATE</span>
-                    <button @click="tradesVisible = !tradesVisible" class="opacity-20 hover:opacity-100 transition-opacity flex items-center">
-                      <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[10px]"></i>
-                    </button>
-                  </div>
-                  <div class="flex items-center gap-2 h-7">
-                    <span class="bar-value text-lg font-bold text-white/90 tabular-nums leading-none">{{ tradesVisible ? sessionStats.winRate + '%' : '••%' }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- TEMPO RESTANTE -->
-            <div class="bar-section items-center text-center">
-              <div class="flex items-center gap-2 h-4">
-                <span class="bar-label">Tempo Restante</span>
-              </div>
-              <div class="flex items-center gap-2 h-7">
-                <span :class="['bar-value text-lg tabular-nums leading-none font-bold', getTimerClass]">
-                  {{ formattedTimeRemaining }}
-                </span>
-              </div>
-            </div>
-
-            <!-- TABS (Far Right) -->
-            <div class="bar-tabs-container">
+            
+            <div class="header-tabs-row">
               <button
-                v-for="(label, view) in { 'OperationChart': 'Gráfico', 'OperationDigits': 'Dígitos', 'OperationLogs': 'Registro', 'OperationLastOrders': 'Últimas Ordens' }"
-                :key="view"
-                class="bar-tab-btn"
-                :class="{ 
-                  'active': (view === 'OperationChart' && activeSubTab === 'chart' && currentView === 'OperationChart') || 
-                            (view === 'OperationDigits' && (currentView === 'OperationDigits' || (currentView === 'OperationChart' && activeSubTab === 'digits'))) ||
-                            (view !== 'OperationChart' && view !== 'OperationDigits' && currentView === view)
-                }"
-                @click="changeView(view)"
+                class="floor-tab-btn"
+                :class="{ 'active': currentView === 'OperationChart' && activeSubTab === 'chart' }"
+                @click="changeView('OperationChart')"
               >
-                {{ label }}
+                Análise gráfica
               </button>
+              <button
+                class="floor-tab-btn"
+                :class="{ 'active': (currentView === 'OperationChart' && activeSubTab === 'digits') || currentView === 'OperationDigits' }"
+                @click="changeView('OperationDigits')"
+              >
+                Análise de dígitos
+              </button>
+              <button
+                class="floor-tab-btn"
+                :class="{ 'active': currentView === 'OperationLogs' }"
+                @click="changeView('OperationLogs')"
+              >
+                Registro
+              </button>
+              <button
+                class="floor-tab-btn"
+                :class="{ 'active': currentView === 'OperationLastOrders' }"
+                @click="changeView('OperationLastOrders')"
+              >
+                Histórico
+              </button>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN (Results card aligned to floor) -->
+          <div class="header-floor-right">
+            <div class="header-results-card">
+              <!-- STATUS -->
+              <div class="status-minimal-section mr-6">
+                <span class="label-tiny mb-1">STATUS</span>
+                <template v-if="activeOperation.isOpen">
+                  <div class="flex flex-col gap-0.5">
+                    <div class="flex items-center gap-1.5">
+                       <span class="text-[10px] text-white/30 font-medium whitespace-nowrap">Tempo restante:</span>
+                       <span :class="['value-tiny tabular-nums', getTimerClass]">
+                        <template v-if="activeOperation.ticksRemaining !== null">
+                          {{ activeOperation.ticksRemaining }} ticks
+                        </template>
+                        <template v-else-if="formattedTimeRemaining && formattedTimeRemaining !== '--:--' && formattedTimeRemaining !== '00:00'">
+                          {{ formattedTimeRemaining }}
+                        </template>
+                        <template v-else>
+                          PROCESSANDO
+                        </template>
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                       <span class="text-[10px] text-white/30 font-medium whitespace-nowrap">Estimativa:</span>
+                       <span :class="['value-tiny tabular-nums', estimativaClass]">
+                        {{ formatDynamicCurrency(activeOperation.realTimeProfit || 0) }}
+                      </span>
+                    </div>
+                  </div>
+                </template>
+                <span v-else class="value-tiny text-white/20 font-bold">AGUARDANDO...</span>
+              </div>
+
+              <!-- CAPITAL -->
+              <div class="status-minimal-section px-6 border-l border-white/5 flex-row items-center gap-2">
+                <span class="label-tiny">CAPITAL</span>
+                <span class="value-small text-white font-black">{{ accountBalanceFormatted }}</span>
+              </div>
+
+              <!-- ÚLTIMO RESULTADO -->
+              <div class="status-minimal-section px-6 border-l border-white/5 flex-row items-center gap-2">
+                <span class="label-tiny">ÚLT. RESULTADO</span>
+                <span :class="['value-small font-black', lastTradeProfitClass]">
+                  {{ formattedLastTradeResult }}
+                </span>
+              </div>
+
+              <!-- WIN / LOSS / WIN RATE -->
+              <div class="status-summary-minimal border-l border-white/5 ml-2">
+                <div class="summary-item">
+                  <span class="summary-label-tiny">WIN</span>
+                  <span class="summary-value-tiny text-zenix-green">{{ sessionStats.wins }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label-tiny">LOSS</span>
+                  <span class="summary-value-tiny text-red-500">{{ sessionStats.losses }}</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label-tiny">WIN RATE</span>
+                  <span class="summary-value-tiny text-white">{{ sessionStats.winRate || 0 }}%</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -258,6 +239,7 @@ export default {
       activeOperation: {
         time: null,
         ticks: null,
+        ticksRemaining: null,
         isOpen: false,
         realTimeProfit: 0,
         finalResult: null
@@ -943,20 +925,10 @@ export default {
       console.log('[OperationView] ========== SNAPSHOT APLICADO ==========');
     },
     handleTradeResult(result) {
-      console.log('[OperationView] ========== RESULTADO DA OPERAÇÃO RECEBIDO ==========');
-      console.log('[OperationView] Resultado completo:', JSON.stringify(result, null, 2));
-      console.log('[OperationView] Estado atual da view:', {
-        accountBalanceValue: this.accountBalanceValue,
-        accountCurrency: this.accountCurrency,
-        preferredCurrency: this.preferredCurrency,
-        accountLoginId: this.accountLoginId
-      });
+      console.log('[OperationView] Resultado recebido:', result?.status, result?.contractId);
       
+      // Atualizar saldo se disponível
       if (result?.balanceAfter != null) {
-        console.log('[OperationView] Atualizando saldo:', {
-          anterior: this.accountBalanceValue,
-          novo: Number(result.balanceAfter)
-        });
         this.accountBalanceValue = Number(result.balanceAfter);
         this.persistConnectionBalance(
           result.balanceAfter,
@@ -976,20 +948,28 @@ export default {
             second: '2-digit',
           });
 
-      // Se o status for CLOSED e tiver contractId, tentar atualizar ordem existente
+      // Se o status for CLOSED com contractId, atualizar ordem existente no array
       if (result.status === 'CLOSED' && result.contractId) {
         const existingOrderIndex = this.lastOrders.findIndex(
           order => order.contractId === result.contractId
         );
         
         if (existingOrderIndex !== -1) {
-          // Atualizar ordem existente com o profit
-          this.lastOrders[existingOrderIndex].profit = result.profit != null ? Number(result.profit) : null;
-          console.log('[OperationView] Ordem existente atualizada com lucro:', this.lastOrders[existingOrderIndex]);
+          // Atualizar ordem existente com o profit e status final
+          const updatedOrder = { ...this.lastOrders[existingOrderIndex] };
+          if (result.profit != null) updatedOrder.profit = Number(result.profit);
+          updatedOrder.status = 'CLOSED';
+
+          // Força reatividade trocando o elemento
+          this.lastOrders.splice(existingOrderIndex, 1, updatedOrder);
+
+          // Atualizar stats com base no resultado final
+          this.updateSessionStats(result);
           return;
         }
       }
 
+      // Criar entrada nova no histórico (p.ex., quando a operação é executada)
       const orderEntry = {
         time: timestamp,
         type: result.direction || 'CALL',
@@ -1001,32 +981,38 @@ export default {
         contractId: result.contractId || null,
       };
 
-      console.log('[OperationView] Adicionando ordem ao histórico:', orderEntry);
       this.lastOrders.unshift(orderEntry);
-      this.lastOrders = this.lastOrders.slice(0, 10);
-      console.log('[OperationView] Total de ordens no histórico:', this.lastOrders.length);
-      console.log('[OperationView] ========== RESULTADO PROCESSADO ==========');
+      if (this.lastOrders.length > 10) {
+        this.lastOrders.pop();
+      }
+
+      // Atualizar estatísticas apenas quando fechar
       this.updateSessionStats(result);
     },
     updateSessionStats(result) {
-      if (result && result.profit != null) {
-        const profit = Number(result.profit);
-        this.sessionStats.total++;
-        if (profit > 0) {
-          this.sessionStats.wins++;
-        } else if (profit < 0) {
-          this.sessionStats.losses++;
-        }
-        this.sessionStats.profit += profit;
-        
-        if (this.sessionStats.total > 0) {
-          this.sessionStats.winRate = Math.round((this.sessionStats.wins / this.sessionStats.total) * 100);
-        }
+      if (!result || result.profit == null) return;
+
+      // Atualizar estatísticas APENAS quando a operação fechar
+      const isClosed = result.status === 'CLOSED' || result.status === 'won' || result.status === 'lost';
+      if (!isClosed) return;
+
+      const profit = Number(result.profit);
+      this.sessionStats.total++;
+      if (profit > 0) {
+        this.sessionStats.wins++;
+      } else if (profit < 0) {
+        this.sessionStats.losses++;
+      }
+      this.sessionStats.profit += profit;
+
+      if (this.sessionStats.total > 0) {
+        this.sessionStats.winRate = Math.round((this.sessionStats.wins / this.sessionStats.total) * 100);
       }
     },
     handleTimerUpdate(data) {
-      this.activeOperation.time = data.time;
-      this.activeOperation.ticks = data.ticks;
+      this.activeOperation.time = data.time != null ? data.time : null;
+      this.activeOperation.ticks = data.ticks != null ? data.ticks : null;
+      this.activeOperation.ticksRemaining = data.ticks != null ? Math.floor(data.ticks) : null;
     },
     handleContractUpdate() {
       // console.log('[OperationView] Contract update');
@@ -1036,6 +1022,8 @@ export default {
       if (!isOpen) {
         this.activeOperation.time = null;
         this.activeOperation.ticks = null;
+        this.activeOperation.ticksRemaining = null;
+        this.activeOperation.realTimeProfit = 0;
       } else {
         // Reset final result when starting a new operation
         this.activeOperation.finalResult = null;
@@ -1187,7 +1175,7 @@ export default {
           exitPrice: order.exitSpot || null, // Preço de saída (spot)
           profit: order.profit != null ? Number(order.profit) : null,
           currency: 'USD',
-          status: this.mapStatus(order.status),
+          status: this.mapStatus(order.status, order.profit),
           contractId: order.derivTransactionId || null,
           market: getMarketName(order.symbol),
         }));
@@ -1247,16 +1235,23 @@ export default {
         dailyProfit: this.sessionStats.profit
       });
     },
-    mapStatus(status) {
+    mapStatus(status, profit) {
       if (!status) return 'PENDING';
       const statusLower = status.toLowerCase();
-      // Mapear status do banco para exibição
-      if (statusLower === 'won') return 'WON';
-      if (statusLower === 'lost') return 'LOST';
+      
+      // Se for fechado/expirado, determinar WIN ou LOSS pelo lucro
+      if (statusLower === 'expired' || statusLower === 'closed' || statusLower === 'sold') {
+        if (profit != null) {
+          return Number(profit) > 0 ? 'WIN' : 'LOSS';
+        }
+        return 'CLOSED';
+      }
+
+      // Mapear status diretos
+      if (statusLower === 'won' || statusLower === 'win') return 'WIN';
+      if (statusLower === 'lost' || statusLower === 'loss') return 'LOSS';
       if (statusLower === 'pending') return 'PENDING';
-      if (statusLower === 'expired') return 'CLOSED';
-      if (statusLower === 'closed') return 'CLOSED';
-      if (statusLower === 'sold') return 'CLOSED';
+      
       // Se for um status em uppercase, manter
       return status.toUpperCase();
     },
@@ -1423,20 +1418,141 @@ export default {
   align-items: flex-start;
 }
 
-.header-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #DFDFDF;
-  margin: 0;
-  line-height: 1.2;
+/* RESTRUCTURED FLOOR HEADER STYLES */
+.header-floor-wrapper.desktop-only {
+  display: flex !important;
+  justify-content: space-between !important;
+  flex-direction: row !important;
+  align-items: flex-end !important; /* All aligned to bottom */
+  padding: 15px 38px 0 38px;
+  width: 100%;
+  gap: 30px;
 }
 
-.header-subtitle {
-  font-size: 0.875rem;
-  color: #A1A1A1;
-  margin: 0;
-  line-height: 1.4;
+.header-floor-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
 }
+
+.header-text-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header-title-small {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #FAFAFA;
+}
+
+.header-subtitle-small {
+  font-size: 0.7rem;
+  color: #71717A;
+  max-width: 500px;
+  line-height: 1.3;
+}
+
+.header-tabs-row {
+  display: flex;
+  gap: 4px;
+}
+
+.floor-tab-btn {
+  padding: 7px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  color: #52525B; /* zinc-600 */
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.floor-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #D4D4D8;
+}
+
+.floor-tab-btn.active {
+  background: rgba(34, 197, 94, 0.05);
+  color: #FAFAFA;
+  border-bottom-color: #22C55E;
+}
+
+/* RIGHT COLUMN - RESULTS CARD */
+.header-floor-right {
+  display: flex;
+  align-items: flex-end;
+}
+
+.header-results-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: rgba(18, 18, 18, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  padding: 0.85rem 2.5rem;
+  margin-bottom: -1px;
+}
+
+.status-minimal-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.label-tiny {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.25);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.value-tiny {
+  font-size: 0.95rem; /* Increased */
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.value-small {
+  font-size: 1.15rem; /* Increased */
+  white-space: nowrap;
+}
+
+.status-summary-minimal {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  padding-left: 1.5rem;
+  align-items: center;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column; /* Label ABOVE value */
+  align-items: center;
+  gap: 2px;
+}
+
+.summary-label-tiny {
+  font-size: 10px; /* Slightly larger labels */
+  color: rgba(255, 255, 255, 0.25);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.summary-value-tiny {
+  font-size: 1.25rem; /* Increased font size */
+  font-weight: 900;
+  line-height: 1;
+}
+
 
 .balance-display-card {
   background-color: #0E0E0E;

@@ -153,16 +153,18 @@ export default {
     getStatusDisplay(status) {
       if (!status) return 'PENDING';
       const statusLower = status.toLowerCase();
-      if (statusLower === 'expired') return 'CLOSED';
       if (statusLower === 'won' || statusLower === 'win') return 'WIN';
       if (statusLower === 'lost' || statusLower === 'loss') return 'LOSS';
+      // Mapear outros status fechados conforme a lógica da view pai
+      if (statusLower === 'expired' || statusLower === 'closed' || statusLower === 'sold') return 'CLOSED';
       return status.toUpperCase();
     },
     getStatusClass(status) {
       if (!status) return 'pending';
       const statusLower = status.toLowerCase();
-      if (statusLower === 'won' || statusLower === 'win' || statusLower === 'closed' || statusLower === 'expired') return 'win closed';
+      if (statusLower === 'won' || statusLower === 'win') return 'win';
       if (statusLower === 'lost' || statusLower === 'loss') return 'loss';
+      if (statusLower === 'closed' || statusLower === 'expired' || statusLower === 'sold') return 'closed';
       return 'pending';
     }
   }

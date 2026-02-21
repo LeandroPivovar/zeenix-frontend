@@ -117,7 +117,7 @@
                         :style="{ height: item.percentage + '%', backgroundColor: item.statusClass === 'status-max' ? '#22C55E' : (item.statusClass === 'status-heated' ? '#F59E0B' : (item.statusClass === 'status-min' ? '#EF4444' : 'rgba(255,255,255,0.1)')) }"
                       ></div>
                     </div>
-                    <span class="text-[9px] font-bold text-white/20 mt-4 uppercase">{{ item.percentage }}%</span>
+                    <span class="text-[10px] font-bold text-white/20 mt-4 uppercase">{{ item.percentage }}%</span>
                   </div>
                 </div>
               </div>
@@ -130,7 +130,7 @@
                     <h3 class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Volatilidade</h3>
                     <div class="flex items-center gap-2 px-2 py-1 bg-zenix-green/10 rounded-full border border-zenix-green/20">
                       <span class="w-1.5 h-1.5 bg-zenix-green rounded-full shadow-[0_0_5px_#22C55E]"></span>
-                      <span class="text-[9px] font-bold text-zenix-green uppercase">{{ dvxStatusText }}</span>
+                      <span class="text-[10px] font-bold text-zenix-green uppercase">{{ dvxStatusText }}</span>
                     </div>
                   </div>
                                     <div class="flex items-center gap-6 py-4">
@@ -153,7 +153,7 @@
                             :style="{ left: dvxValueComputed + '%', transform: 'translate(-50%, -50%)' }"
                           ></div>
                         </div>
-                        <div class="flex justify-between items-center text-[9px] font-bold text-white/10 uppercase">
+                        <div class="flex justify-between items-center text-[10px] font-bold text-white/10 uppercase">
                           <span>Baixa</span>
                           <span>Alta</span>
                         </div>
@@ -463,7 +463,7 @@
                             <span class="text-xs font-bold transition-colors" :class="isAnalyzing ? 'text-zenix-green' : 'text-white/40 group-hover:text-white/60 uppercase tracking-tighter'">
                               {{ isAnalyzing ? 'Analisando...' : 'Gerar Sinal de IA' }}
                             </span>
-                            <span v-if="!isAnalyzing" class="text-[9px] text-white/20 uppercase tracking-widest font-medium">Toque para iniciar</span>
+                            <span v-if="!isAnalyzing" class="text-[10px] text-white/20 uppercase tracking-widest font-medium">Toque para iniciar</span>
                           </div>
                         </button>
                      </div>
@@ -2801,6 +2801,17 @@ export default {
       // Inicializar contador
       this.initializeContractCountdown();
       
+      // Emitir evento para o pai (OperationView) atualizar estatísticas e saldo
+      this.$emit('trade-result', {
+        contractId: contractId,
+        buyPrice: this.activeContract.buy_price,
+        entrySpot: this.activeContract.entry_spot,
+        direction: this.activeContract.contract_type,
+        currency: this.activeContract.currency || this.currency || 'USD',
+        status: 'EXECUTED',
+        purchaseTime: this.activeContract.entry_time
+      });
+
       // Inicializar P&L
       this.updateRealTimeProfit();
       
@@ -3031,6 +3042,14 @@ export default {
             status: this.activeContract.status
           });
 
+          this.$emit('trade-result', {
+            contractId: String(this.activeContract.contract_id),
+            status: 'CLOSED',
+            profit: profit,
+            direction: this.activeContract.contract_type,
+            balanceAfter: this.accountBalanceValue
+          });
+
          derivTradingService.notifyEnd(resultData);
       }
       
@@ -3044,14 +3063,15 @@ export default {
       // this.showTradeResultModal = true;
       
       // Limpar contrato após um curto delay para o usuário ver o resultado final no painel
-      // Não limpar contrato aqui. Ele será substituído quando uma nova operação começar.
-      // setTimeout(() => {
-      //   this.activeContract = null;
-      //   this.purchasePrice = null;
-      //   this.realTimeProfit = null;
-      //   this.tradeMessage = '';
-      //   this.aiRecommendation = null; // Reset signal to allow new generation
-      // }, 5000);
+      setTimeout(() => {
+        if (!this.showTradeResultModal) {
+          this.activeContract = null;
+          this.purchasePrice = null;
+          this.realTimeProfit = null;
+          this.tradeMessage = '';
+          this.aiRecommendation = null; 
+        }
+      }, 3000);
     },
     checkMobile() {
       this.isMobile = window.innerWidth <= 768;
