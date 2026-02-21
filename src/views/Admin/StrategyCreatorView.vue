@@ -1143,15 +1143,7 @@
                                         :class="['category-item-btn', { 'active': (modalContext === 'main' ? form.selectedTradeTypeGroup : recoveryConfig.selectedTradeTypeGroup) === item.value }]"
                                     >
                                         <div class="flex items-center gap-2">
-                                            <div class="w-5 h-5 flex items-center justify-center text-zenix-green">
-                                                <img 
-                                                    v-if="item.icon && item.icon.endsWith('.svg')" 
-                                                    :src="`/deriv_icons/${item.icon}`" 
-                                                    class="w-full h-full object-contain filter-zenix-green" 
-                                                    :alt="item.label" 
-                                                />
-                                                <i v-else :class="item.icon"></i>
-                                            </div>
+                                            <span class="text-zenix-green font-bold text-lg leading-none mb-1">•</span>
                                             <span>{{ item.label }}</span>
                                         </div>
                                     </button>
