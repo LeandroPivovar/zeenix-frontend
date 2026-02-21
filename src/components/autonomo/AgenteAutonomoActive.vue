@@ -1226,14 +1226,25 @@
                 return this.sessionStats?.netProfit || 0;
             },
             dailyOpsValue() {
-                if (this.dailyRealtimeStats) return this.dailyRealtimeStats.totalOps;
-                return this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
+                const trades = this.todayTrades;
+                return trades.length;
             },
 			periodProfit() {
-				// ✅ [ZENIX v2.3] Prioridade absoluta para sessionStats (vido do pai via WS) para evitar flickering
-                if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
-                    const val = this.sessionStats?.netProfit;
-                    return (val === undefined || val === null || isNaN(val)) ? 0 : val;
+				// ✅ [ZENIX v3.2] Use local calculation for session and today to ensure consistency
+                if (this.selectedPeriod === 'session') {
+                    const trades = this.sessionTrades;
+                    return trades.reduce((sum, t) => {
+                         const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                         return sum + p;
+                    }, 0);
+                }
+                
+                if (this.selectedPeriod === 'today') {
+                    const trades = this.todayTrades;
+                    return trades.reduce((sum, t) => {
+                         const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                         return sum + p;
+                    }, 0);
                 }
 				
 				// Fallback para soma de dados históricos (filtros passados)
@@ -1332,8 +1343,9 @@
 				return '0h 0m 0s';
 			},
 			operacoesHojeDisplay() {
-				// ✅ [ZENIX v2.3] Consistência absoluta com sessionStats
-				return this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
+				// ✅ [ZENIX v3.2] Consistência absoluta com trades locais
+				const trades = this.todayTrades;
+                return trades.length;
 			},
 			totalCapital() {
 				// Só para compatibilidade interna se usado em outros lugares
@@ -1531,6 +1543,17 @@
                     return tDate >= (sessionStart - 5000);
                 });
 			},
+            todayTrades() {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Start of today
+                const todayTimestamp = today.getTime();
+
+                return (this.tradeHistory || []).filter(t => {
+                    const createdAt = t.createdAt || t.created_at || t.time;
+                    const tDate = new Date(createdAt).getTime();
+                    return tDate >= todayTimestamp;
+                });
+            },
 			formattedSessionItems() {
 				// Decide source array based on selectedPeriod
 				let sourceTrades = [];
@@ -1763,27 +1786,30 @@
 				let profit = 0;
 				
 				if (this.selectedPeriod === 'session') {
-					// ✅ [ZENIX v3.1] Use LOCAL calculated stats from sessionTrades
-                    // This fixes the issue where sessionStats (from backend) reports 0 profit but trades exist
-                    const sessionTrades = this.sessionTrades;
+					// ✅ [ZENIX v3.2] Use LOCAL calculated stats from sessionTrades
+                    const tradesList = this.sessionTrades;
                     
-                    trades = sessionTrades.length;
+                    trades = tradesList.length;
                     
-                    if (trades > 0) {
-                         sessionTrades.forEach(t => {
-                             const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
-                             profit += p;
-                             if (p > 0) wins++;
-                         });
-                    } else {
-                        // Fallback to prop if array is empty (maybe initially)
-                        trades = this.sessionStats?.totalTrades || 0;
-                        wins = this.sessionStats?.wins || 0;
-                        profit = this.sessionStats?.netProfit || 0;
-                    }
+                    tradesList.forEach(t => {
+                        const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                        profit += p;
+                        if (p > 0) wins++;
+                    });
 
-				} else if (this.dailyTradesSummary && (this.selectedPeriod === 'today' || this.selectedPeriod === '7d' || this.selectedPeriod === '30d')) {
-                    // Use backend summary if available and period matches roughly (or is custom)
+				} else if (this.selectedPeriod === 'today') {
+					// ✅ [ZENIX v3.2] Use LOCAL calculated stats from todayTrades
+                    const tradesList = this.todayTrades;
+                    
+                    trades = tradesList.length;
+                    
+                    tradesList.forEach(t => {
+                        const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                        profit += p;
+                        if (p > 0) wins++;
+                    });
+                } else if (this.dailyTradesSummary && (this.selectedPeriod === '7d' || this.selectedPeriod === '30d')) {
+                    // Use backend summary for longer periods
                     trades = this.dailyTradesSummary.totalTrades;
                     wins = this.dailyTradesSummary.totalWins;
                     profit = this.dailyTradesSummary.totalProfit;
