@@ -273,13 +273,10 @@
 					</div>
 					<div class="modal-body">
 						<!-- Option 1: Only Real Account -->
-						<div class="filter-option" @click="toggleOnlyRealAccount">
+						<div class="filter-option" :class="{ 'active': tempFilters.onlyRealAccount }" @click="toggleOnlyRealAccount">
 							<div class="filter-info">
 								<span class="filter-label">Somente conta real</span>
 								<p class="filter-desc">Exibe apenas usuários com conta real e seus saldos reais</p>
-							</div>
-							<div class="custom-checkbox" :class="{ 'checked': tempFilters.onlyRealAccount }">
-								<i class="fas fa-check" v-if="tempFilters.onlyRealAccount" style="color: white; font-size: 12px;">✓</i>
 							</div>
 						</div>
 
@@ -297,13 +294,10 @@
 						</div>
 
 						<!-- Option 3: Users without balance -->
-						<div class="filter-option" @click="toggleNoRealBalance">
+						<div class="filter-option" :class="{ 'active': tempFilters.noRealBalance }" @click="toggleNoRealBalance">
 							<div class="filter-info">
 								<span class="filter-label">Usuários sem saldo na conta real</span>
 								<p class="filter-desc">Exibe usuários com conta real zerada</p>
-							</div>
-							<div class="custom-checkbox" :class="{ 'checked': tempFilters.noRealBalance }">
-								<i class="fas fa-check" v-if="tempFilters.noRealBalance" style="color: white; font-size: 12px;">✓</i>
 							</div>
 						</div>
 
@@ -662,17 +656,9 @@ export default {
 		},
 		toggleOnlyRealAccount() {
 			this.tempFilters.onlyRealAccount = !this.tempFilters.onlyRealAccount;
-			if (this.tempFilters.onlyRealAccount) {
-				this.tempFilters.noRealBalance = false;
-				// Removido o reset do minBalance e maxBalance para permitir filtros combinados
-			}
 		},
 		toggleNoRealBalance() {
 			this.tempFilters.noRealBalance = !this.tempFilters.noRealBalance;
-			if (this.tempFilters.noRealBalance) {
-				this.tempFilters.onlyRealAccount = false;
-				// Removido o reset do minBalance e maxBalance para permitir filtros combinados
-			}
 		},
 		openBalanceIntervalModal() {
 			this.tempMinBalance = this.tempFilters.minBalance;
@@ -1431,6 +1417,11 @@ p {
 .filter-option:hover {
     border-color: rgba(34, 197, 94, 0.3);
     background: rgba(34, 197, 94, 0.05);
+}
+
+.filter-option.active {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
 }
 
 .filter-info {
