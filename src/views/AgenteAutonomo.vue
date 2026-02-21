@@ -1047,21 +1047,6 @@
         // Iniciar WebSocket para atualizações em tempo real (Saldo e Operações)
         this.initWebSocket();
 
-        // Polling apenas para configuração e logs (menos frequentes ou sem stream dedicado)
-        // ✅ [ZENIX v2.6] Polling reativado com Smart Merge para garantir que status STOP do backend seja recebido
-        // Intervalo reduzido para 5s para feedback rápido
-        this.pollingInterval = setInterval(() => {
-          if (this.agenteEstaAtivo) {
-            this.loadAgentConfig();
-            this.loadAgentLogs(); // Logs ainda via polling ou SSE
-            
-            // ✅ Reativado: Busca status do backend (ex: Stopped por perdas)
-            // Agora usa Smart Merge para não piscar a tela
-            this.loadSessionStats();
-            this.loadTradeHistory();
-          }
-        }, 5000); // 5s para detectar STOP rápido
-        
         // Atualizar tempo ativo a cada segundo
         this.timeUpdateInterval = setInterval(() => {
           if (this.agenteEstaAtivo && this.agentConfig) {
@@ -1071,10 +1056,6 @@
       },
       
       stopPolling() {
-        if (this.pollingInterval) {
-          clearInterval(this.pollingInterval);
-          this.pollingInterval = null;
-        }
         if (this.timeUpdateInterval) {
           clearInterval(this.timeUpdateInterval);
           this.timeUpdateInterval = null;
@@ -1290,6 +1271,7 @@
               this.loadSessionStats();
               this.loadTradeHistory();
               this.loadAgentLogs(); 
+              this.loadAgentConfig();
             }, 10000); 
           }
         } else {
@@ -1301,8 +1283,9 @@
           this.unknownTradeTimeout = setTimeout(() => {
              console.log('[AgenteAutonomo] ❓ Contrato desconhecido detectado, sincronizando histórico...');
              this.loadTradeHistory();
-             // Também atualizamos stats para pegar contadores oficiais
              this.loadSessionStats();
+             this.loadAgentLogs();
+             this.loadAgentConfig();
           }, 2000); // 2 segundos de delay para dar tempo do backend salvar
         }
       },
@@ -1788,9 +1771,7 @@
   
 
   
-  .layout-agente-autnomo.sidebar-collapsed .top-header {
-  }
-  
+
   .container-componentes {
     padding-left: 10px;
     padding-right: 10px;
@@ -1968,11 +1949,9 @@
   
   /* Responsividade Tablet */
   @media screen and (max-width: 1024px) {
-    .layout-agente-autnomo {
-    }
+
   
-    .layout-agente-autnomo.sidebar-collapsed {
-    }
+
   
     .layout-agente-autnomo.sidebar-collapsed .top-header {
       left: 0;

@@ -1556,16 +1556,15 @@
 					return combined;
 				}
 
-				// ✅ [ZENIX v3.4] Prioritize sessionId from config for "Session" view
+				// ✅ [ZENIX v3.6] Prioritize sessionId ONLY for "Session" view of CURRENT day
 				const activeSessionId = this.agentConfig?.sessionId || this.agentConfig?.session_id;
+				const isToday = this.selectedDay?.fullDate === new Date().toISOString().split('T')[0];
 				
-				if (activeSessionId) {
+				if (this.selectedPeriod === 'session' && isToday && activeSessionId) {
 					const filtered = combined.filter(t => {
 						const tSessionId = t.sessionId || t.session_id;
 						return String(tSessionId) === String(activeSessionId);
 					});
-					// If we found trades with this sessionId, use them. 
-					// If not, fallback to gap detection (legacy or session just started)
 					if (filtered.length > 0) {
 						console.log(`[sessionTrades] Filtered by Session ID ${activeSessionId}:`, filtered.length);
 						return filtered;
@@ -1606,9 +1605,9 @@
 				if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
 					sourceTrades = this.sessionTrades;
 				} else {
-					// ✅ FIX: For longer historical periods, use dailyTrades ONLY
+					// ✅ FIX: For longer historical periods (7D, 30D, ANO), use dailyTrades which contains the full range
 					sourceTrades = [...(this.dailyTrades || [])];
-					console.log('[formattedSessionItems] long-history mode - using dailyTrades:', sourceTrades.length, 'trades');
+					console.log('[formattedSessionItems] history mode - using dailyTrades:', sourceTrades.length, 'trades');
 				}
 
 				if (!sourceTrades || sourceTrades.length === 0) return [];
@@ -2253,24 +2252,23 @@
 			},
 
             async openDayDetails(day) {
-                console.log('[AgenteAutonomo] openDayDetails:', day);
+                console.log('[AgenteAutonomo] openDayDetails (Instant):', day);
                 
-                // Garantir que temos a configuração do agente para calcular metas
+                // ✅ [ZENIX v3.6] Open modal INSTANTLY
+                this.selectedDay = day; 
+                this.selectedPeriod = 'today'; // Default to today/daily view when opening from chart
+                
+                // Clear old data to prevent flickering with stale info
+                this.dailyTrades = [];
+                this.dailyTradesSummary = null;
+
+                // Load config in background if missing
                 if (!this.agentConfig) {
-                    await this.fetchAgentConfig();
+                    this.fetchAgentConfig();
                 }
                 
-                // ✅ FIX: Fetch data FIRST, then open modal
-                // This prevents showing stale/incorrect data while loading
-                this.loadingDetailedStats = true;
-                try {
-                    await this.fetchDailyDetails(day);
-                } finally {
-                    this.loadingDetailedStats = false;
-                }
-                
-                // Only set selectedDay AFTER data is loaded
-                // fetchDailyDetails already updates selectedDay with fresh data
+                // Fetch details in background
+                this.fetchDailyDetails(day);
 			},
 
             async fetchDailyDetails(day) {
@@ -2461,7 +2459,18 @@
                 switch (this.selectedPeriod) {
                     case 'session':
                     case 'today':
-                        // Datas já estão em hoje
+                        // ✅ [ZENIX v3.6] If we have a selected day from chart, use its date range
+                        if (this.selectedDay?.fullDate) {
+                            try {
+                                const dayDate = new Date(this.selectedDay.fullDate);
+                                startDate = new Date(dayDate);
+                                startDate.setHours(0, 0, 0, 0);
+                                endDate = new Date(dayDate);
+                                endDate.setHours(23, 59, 59, 999);
+                            } catch (e) {
+                                console.error('[AgenteAutonomo] Error parsing selectedDay.fullDate:', e);
+                            }
+                        }
                         isRange = true;
                         break;
                     case 'yesterday':
@@ -3151,19 +3160,8 @@
 				if (this.selectedDay && this.selectedDay.fullDate === new Date().toISOString().split('T')[0]) {
 					this.fetchDailyDetails(this.selectedDay);
 				}
-			},
-			startReturnOscillation() {
-				this.returnInterval = setInterval(() => {
-					// Oscilação Zeus: entre 3.50% e 4.10% (Valor Verde)
-					const zeusVar = (Math.random() * 0.08 - 0.04); // +/- 0.04
-					this.zeusReturn = Math.max(3.50, Math.min(4.10, this.zeusReturn + zeusVar));
-
-					// Oscilação Falcon: entre 2.50% e 3.20% (Valor Verde)
-					const falconVar = (Math.random() * 0.06 - 0.03); // +/- 0.03
-					this.falconReturn = Math.max(2.50, Math.min(3.20, this.falconReturn + falconVar));
-				}, 50000); // A cada 50 segundos
 			}
-		},
+		}
 	}
 </script>
 
