@@ -20,7 +20,7 @@
             />
 
             <main class="layout-content">
-                <div class="sticky top-0 z-50 bg-[#0A0A0A] content-header mb-6 flex justify-between items-center px-4 py-4 w-full border-b border-[#333]/50 shadow-md">
+                <div class="content-header mb-6 flex justify-between items-center px-4 w-full relative">
                     <div>
                         <h1 class="text-2xl font-bold text-white">
                             {{ isMonitoring ? 'Acompanhamento de Estratégia [BETA]' : 'Criador de Estratégias [BETA]' }}
@@ -31,8 +31,8 @@
                         <p class="text-sm text-[#7D7D7D]">{{ isMonitoring ? 'Acompanhe a atividade do robô em tempo real.' : 'Configure sua estratégia automatizada para execução no mercado.' }}</p>
                     </div>
 
-                    <div v-if="!isMonitoring" class="flex flex-wrap items-center gap-3">
-                        <div class="flex items-center gap-2 bg-[#141414] border border-[#333] rounded-lg p-1 shadow-lg">
+                    <div v-if="!isMonitoring" class="flex flex-wrap items-center gap-3 sticky top-4 z-50">
+                        <div class="flex items-center gap-2 bg-[#141414] border border-[#333] rounded-lg p-1 shadow-lg shadow-black/50">
                             <select 
                                 v-model="selectedSavedStrategyId" 
                                 @change="loadSavedStrategy"
