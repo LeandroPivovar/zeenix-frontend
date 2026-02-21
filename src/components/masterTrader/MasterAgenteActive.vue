@@ -569,7 +569,7 @@
 	>
 		<div role="dialog" 
 			class="w-full max-w-[95%] sm:max-w-4xl border border-[#27272a] p-3 sm:p-6 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto bg-[#09090b] relative flex flex-col scale-in-center animate-in zoom-in-95 duration-200 transition-opacity"
-            :class="{ 'opacity-60 pointer-events-none': loadingDetailedStats }"
+            :class="{ 'opacity-90 pointer-events-none': loadingDetailedStats }"
 		>
 			
 			<!-- Close Button -->
@@ -1603,12 +1603,12 @@
 			formattedSessionItems() {
 				// Decide source array based on selectedPeriod
 				let sourceTrades = [];
-				if (this.selectedPeriod === 'session') {
+				if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
 					sourceTrades = this.sessionTrades;
 				} else {
-					// ✅ FIX: For historical periods, use dailyTrades ONLY
+					// ✅ FIX: For longer historical periods, use dailyTrades ONLY
 					sourceTrades = [...(this.dailyTrades || [])];
-					console.log('[formattedSessionItems] historical mode - using dailyTrades:', sourceTrades.length, 'trades');
+					console.log('[formattedSessionItems] long-history mode - using dailyTrades:', sourceTrades.length, 'trades');
 				}
 
 				if (!sourceTrades || sourceTrades.length === 0) return [];
@@ -1835,11 +1835,9 @@
 				let wins = 0;
 				let profit = 0;
 				
-				if (this.selectedPeriod === 'session') {
-					// ✅ [ZENIX v3.1] Use LOCAL calculated stats from sessionTrades
-                    // This fixes the issue where sessionStats (from backend) reports 0 profit but trades exist
+				if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
+					// ✅ [ZENIX v3.5] Unified Session/Today Source
                     const sessionTrades = this.sessionTrades;
-                    
                     trades = sessionTrades.length;
                     
                     if (trades > 0) {
@@ -1848,26 +1846,32 @@
                              profit += p;
                              if (p > 0) wins++;
                          });
-                    } else {
-                        // Fallback to prop if array is empty (maybe initially)
-                        trades = this.sessionStats?.totalTrades || 0;
-                        wins = this.sessionStats?.wins || 0;
-                        profit = this.sessionStats?.netProfit || 0;
                     }
-
-				} else if (this.dailyTradesSummary && (this.selectedPeriod === 'today' || this.selectedPeriod === '7d' || this.selectedPeriod === '30d')) {
-                    // Use backend summary if available and period matches roughly (or is custom)
-                    trades = this.dailyTradesSummary.totalTrades;
-                    wins = this.dailyTradesSummary.totalWins;
-                    profit = this.dailyTradesSummary.totalProfit;
-                } else {
-					// Sum up from filteredDailyData
-					const data = this.filteredDailyData || [];
-					data.forEach(day => {
-						trades += (day.ops || 0);
-						wins += (day.wins || 0);
-						profit += (day.profit || 0);
-					});
+				} else {
+					// ✅ [ZENIX v3.5] Calculate from currently loaded dailyTrades for consistency
+                    // This ensures cards and table always match exactly
+                    const historicalTrades = this.dailyTrades || [];
+                    if (historicalTrades.length > 0) {
+                        trades = historicalTrades.length;
+                        historicalTrades.forEach(t => {
+                             const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.result !== undefined ? parseFloat(t.result) : 0));
+                             profit += p;
+                             if (p > 0) wins++;
+                        });
+                    } else if (this.dailyTradesSummary) {
+                        // Fallback to summary if array is still empty
+                        trades = this.dailyTradesSummary.totalTrades;
+                        wins = this.dailyTradesSummary.totalWins;
+                        profit = this.dailyTradesSummary.totalProfit;
+                    } else {
+                        // Final fallback to summary data
+                        const data = this.filteredDailyData || [];
+                        data.forEach(day => {
+                            trades += (day.ops || 0);
+                            wins += (day.wins || 0);
+                            profit += (day.profit || 0);
+                        });
+                    }
 				}
 				
 				const winRate = trades > 0 ? (wins / trades) * 100 : 0;
@@ -1884,12 +1888,22 @@
 		},
 		watch: {
 			'agenteData.accountBalance'() { this.$forceUpdate(); },
-			selectedPeriod() {
-				// Atualizar dados quando o filtro mudar
-				this.fetchProfitEvolution();
-                this.fetchDailyStats();
-                this.fetchTradesForPeriod();
-                this.syncRenderedValues();
+			async selectedPeriod() {
+				// ✅ [ZENIX v3.5] Parallel Fetching Optimization
+                // Consolidate all fetches and ensure metrics sync AFTER all data is ready
+				this.loadingDetailedStats = true;
+                try {
+                    await Promise.all([
+                        this.fetchProfitEvolution(),
+                        this.fetchDailyStats(),
+                        this.fetchTradesForPeriod()
+                    ]);
+                    
+                    // Force sync rendered values to reflect fresh data immediately
+                    this.syncRenderedValues();
+                } finally {
+                    this.loadingDetailedStats = false;
+                }
 			},
 			'agenteData.sessionStatus'(newStatus) {
 				if (newStatus === 'active') {
@@ -2508,7 +2522,7 @@
                      } else if (isRange || this.selectedPeriod === 'today') {
                          const startStr = startDate.toISOString();
                          const endStr = endDate.toISOString();
-                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${startStr}&endDate=${endStr}${agentFilter}&date=range`;
+                         url = `${apiBase}/autonomous-agent/daily-trades/${userId}?startDate=${startStr}&endDate=${endStr}${agentFilter}&date=range&limit=5000`;
                      } else {
                          return; // Should not happen with valid period
                      }
