@@ -2660,7 +2660,7 @@ export default {
                 const newPayouts = { ...config.directionPayouts };
                 let hasUpdates = false;
 
-                const promises = directionsToCalculate.map(async (dir) => {
+                for (const dir of directionsToCalculate) {
                     let cType = actualContractTypes[0]; 
                     if (dir === 'down' && actualContractTypes.length > 1) {
                         cType = actualContractTypes[1];
@@ -2708,11 +2708,9 @@ export default {
                         }
                     } catch (err) {
                         console.error(`Erro ao buscar payout para ${dir}:`, err);
-                        this.$root.$toast.error(`Falha ao calcular payout da direção: ${dir}. Reveja os parâmetros.`);
+                        this.$root.$toast.error(`Falha ao calcular payout da direção: ${dir}.`);
                     }
-                });
-
-                await Promise.all(promises);
+                }
                 
                 if (hasUpdates) {
                     for (const k in newPayouts) {
