@@ -1797,7 +1797,7 @@
 						displayLabel = `SESSÃO${shortId} FINALIZADA`;
 					}
 
-					if (this.selectedPeriod === 'session' && idx === 0 && !sessionTrades.isMidnightEnd) {
+					if (idx === 0 && !sessionTrades.isMidnightEnd) {
 						// ... logic for live session status ...
 						const status = this.agenteData.sessionStatus;
 						const validEndStatuses = ['loss', 'profit', 'blindado', 'paused', 'inactive', 'error', 'closs', 'manual', 'cycle'];
