@@ -2834,7 +2834,8 @@
                              d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
                          }
                     }
-                    return isNaN(d.getTime()) ? null : Math.floor(d.getTime() / 1000);
+                    // ✅ Subtrai 3 horas (10800 segundos) visualmente fuso-horário UTC-3
+                    return isNaN(d.getTime()) ? null : (Math.floor(d.getTime() / 1000) - 10800);
                 };
 
                 // 1. Sort trades by time ascending
