@@ -1840,8 +1840,8 @@
 									'error': 'ERRO NO SISTEMA',
 									'inactive': 'SESSÃO ENCERRADA',
 									'closs': 'STOP POR PERDAS',
-									'paused': 'SESSÃO FINALIZADA POR STOP MANUAL',
-									'manual': 'SESSÃO FINALIZADA POR STOP MANUAL',
+									'paused': 'SESSÃO PAUSADA MANUALMENTE',
+									'manual': 'SESSÃO PAUSADA MANUALMENTE',
                                     'cycle': 'CICLOS COMPLETOS',
                                     'restart': 'REINÍCIO DO SERVIDOR'
 								};
@@ -1863,7 +1863,7 @@
                         } else if (stop > 0 && totalProfit <= -stop) {
                             endReason = 'STOP LOSS ATINGIDO';
                         } else {
-                            endReason = 'SESSÃO FINALIZADA POR STOP MANUAL';
+                            endReason = 'SESSÃO PAUSADA MANUALMENTE';
                         }
 
                          if (this.selectedPeriod !== 'session') {
@@ -1980,8 +1980,8 @@
                     'error': 'ERRO NO SISTEMA',
                     'inactive': 'SESSÃO ENCERRADA',
                     'closs': 'STOP POR PERDAS',
-                    'paused': 'AGENTE PAROU MANUALMENTE',
-                    'manual': 'AGENTE PAROU MANUALMENTE',
+                    'paused': 'SESSÃO PAUSADA MANUALMENTE',
+                    'manual': 'SESSÃO PAUSADA MANUALMENTE',
                     'cycle': 'CICLOS COMPLETOS',
                     'restart': 'REINÍCIO DO SERVIDOR'
                 };
