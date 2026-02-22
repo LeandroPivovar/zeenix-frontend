@@ -298,7 +298,7 @@
                             class="panel-input-btn"
                         >
                             <div class="flex items-center gap-3">
-                                <i :class="selectedTradeTypeIcon + ' text-[#22C55E] text-xl'"></i>
+                                <span class="trade-type-dot"></span>
                                 <span class="font-medium">{{ selectedTradeTypeGroupLabel }}</span>
                             </div>
                             <i class="fas fa-chevron-down text-xs opacity-40"></i>
@@ -561,7 +561,10 @@
                                         @click="selectTradeType(item)"
                                         :class="['category-item-btn', { 'active': selectedTradeTypeGroup === item.value }]"
                                     >
-                                        {{ item.label }}
+                                        <div class="flex items-center gap-2">
+                                            <span class="trade-type-dot"></span>
+                                            <span>{{ item.label }}</span>
+                                        </div>
                                     </button>
                                 </div>
                             </div>
@@ -1601,7 +1604,17 @@ export default {
     box-shadow: 0 0 15px currentColor;
   }
 
-/* Mobile Responsive */
+  .trade-type-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #22C55E;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+    margin-right: 8px;
+  }
+
+  /* Mobile Responsive */
 @media (max-width: 768px) {
     .main-container {
         width: 100% !important;

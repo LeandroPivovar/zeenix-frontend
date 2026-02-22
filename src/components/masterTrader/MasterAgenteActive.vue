@@ -1723,8 +1723,8 @@
 						const prevTrade = dedupedTrades[i-1];
 						const currTrade = dedupedTrades[i];
 						
-						const prevSessionId = prevTrade.sessionId;
-						const currSessionId = currTrade.sessionId;
+						const prevSessionId = prevTrade.sessionId || prevTrade.session_id;
+						const currSessionId = currTrade.sessionId || currTrade.session_id;
 						
 						const prevTime = new Date(prevTrade.createdAt);
 						const currTime = new Date(currTrade.createdAt);
