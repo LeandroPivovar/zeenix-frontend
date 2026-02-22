@@ -1729,7 +1729,7 @@
 					if (this.selectedPeriod === 'session' && idx === 0 && !sessionTrades.isMidnightEnd) {
 						// ... logic for live session status ...
 						const status = this.agenteData.sessionStatus;
-						const validEndStatuses = ['stopped_loss', 'stopped_profit', 'stopped_blindado', 'paused', 'inactive', 'error', 'stopped_consecutive_loss'];
+						const validEndStatuses = ['stopped_loss', 'stopped_profit', 'stopped_blindado', 'paused', 'inactive', 'error', 'stopped_consecutive_loss', 'stopped_manual', 'stopped_cycle'];
 						
 						if (validEndStatuses.includes(status)) {
 							if (status === 'paused') {
@@ -1757,7 +1757,9 @@
 									'stopped_blindado': 'STOP BLINDADO ATINGIDO',
 									'error': 'ERRO NO SISTEMA',
 									'inactive': 'SESSÃO ENCERRADA',
-									'stopped_consecutive_loss': 'STOP POR PERDAS'
+									'stopped_consecutive_loss': 'STOP POR PERDAS',
+                                    'stopped_manual': 'PARADA MANUAL',
+                                    'stopped_cycle': 'CICLOS COMPLETOS'
 								};
 								endReason = statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase();
 								footerText += ` (${endReason})`;
