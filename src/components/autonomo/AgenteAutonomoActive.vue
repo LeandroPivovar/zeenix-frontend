@@ -1237,8 +1237,8 @@
                 };
             },
             dailyResultValue() {
-                if (this.dailyRealtimeStats) return this.dailyRealtimeStats.netProfit;
-                return this.sessionStats?.netProfit || 0;
+                // ✅ [ZENIX v4.3] Return TOTAL profit of the day (all sessions) for box labeled "Resultado do Dia"
+                return this.totalProfitToday || 0;
             },
             dailyOpsValue() {
                 if (this.dailyRealtimeStats) return this.dailyRealtimeStats.totalOps;
@@ -1537,16 +1537,11 @@
                 // Retorna 'Semanal', 'Mensal' etc baseado na range geral se quiser, por padrão 'Semanal' baseada na tabela
 				return 'Semanal';
 			},
-			sessionTrades() {
-				// ✅ [ZENIX v3.4] Smart Session Logic (Session Date + Gap Detection)
-				// 'Session' should represent the CURRENT continuous run from the database.
-				
-				if (this.selectedPeriod !== 'session' && this.selectedPeriod !== 'today') return [];
-
+            allTradesToday() {
+                // ✅ [ZENIX v4.3] Helper to get ALL unique trades of the day (Historical + Live)
 				const historicalToday = this.dailyTrades || [];
 				const liveSession = this.tradeHistory || [];
 				
-
 				const getTimestamp = (t) => {
 					const d = t.createdAt || t.created_at || t.time;
 					return d ? new Date(d).getTime() : 0;
@@ -1555,7 +1550,6 @@
 				const combined = [];
 				const getDedupKey = (t) => `${getTimestamp(t)}-${parseFloat(t.profit || t.profit_loss || 0).toFixed(2)}-${parseFloat(t.stake || 0).toFixed(2)}-${t.symbol || t.market || ''}`;
 				
-                // ✅ [ZENIX v4.3] Robust Deduping (Prioritize live trades, then merge history)
                 const finalSeenKeys = new Set();
                 
                 // 1. Process Live Session (WS)
@@ -1567,7 +1561,7 @@
                     }
                 });
 
-                // 2. Process Historical Today (DB) - only if not already in live
+                // 2. Process Historical Today (DB)
                 historicalToday.forEach(t => {
                     const key = getDedupKey(t);
                     if (key && !finalSeenKeys.has(key)) {
@@ -1578,6 +1572,27 @@
 
 				// Sort by time ascending
 				combined.sort((a, b) => getTimestamp(a) - getTimestamp(b));
+                return combined;
+            },
+            totalProfitToday() {
+                // ✅ [ZENIX v4.3] Absolute total profit of all trades today
+                return this.allTradesToday.reduce((sum, t) => {
+                    const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                    return sum + (isNaN(rawProfit) ? 0 : rawProfit);
+                }, 0);
+            },
+			sessionTrades() {
+				// ✅ [ZENIX v3.4] Smart Session Logic (Session Date + Gap Detection)
+				// 'Session' should represent the CURRENT continuous run from the database.
+				
+				if (this.selectedPeriod !== 'session' && this.selectedPeriod !== 'today') return [];
+
+				const combined = this.allTradesToday;
+				
+				const getTimestamp = (t) => {
+					const d = t.createdAt || t.created_at || t.time;
+					return d ? new Date(d).getTime() : 0;
+				}
 
 				// If period is TODAY, return everything (All runs)
 				if (this.selectedPeriod === 'today') {
@@ -1900,11 +1915,15 @@
                         profit = this.sessionStats?.netProfit || 0;
                     }
 
-				} else if (this.dailyTradesSummary && (this.selectedPeriod === 'today' || this.selectedPeriod === '7d' || this.selectedPeriod === '30d')) {
-                    // Use backend summary if available and period matches roughly (or is custom)
-                    trades = this.dailyTradesSummary.totalTrades;
-                    wins = this.dailyTradesSummary.totalWins;
-                    profit = this.dailyTradesSummary.totalProfit;
+                } else if (this.selectedPeriod === 'today') {
+                    // ✅ [ZENIX v4.3] Use CALCULATED allTradesToday for 'today' dashboard consistency
+                    trades = this.allTradesToday.length;
+                    this.allTradesToday.forEach(t => {
+                        const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                        profit += p;
+                        if (p > 0) wins++;
+                    });
+                } else if (this.dailyTradesSummary && (this.selectedPeriod === '7d' || this.selectedPeriod === '30d')) {
                 } else {
 					// Sum up from filteredDailyData
 					const data = this.filteredDailyData || [];
@@ -1954,6 +1973,13 @@
 				if (newStatus && newStatus !== 'active') {
 					console.log('[AgenteAutonomo] Session Status Inativo detectado:', newStatus);
 				}
+
+                // ✅ [ZENIX v4.3] Refresh config on activation to update sessionStartTime
+                if (newStatus === 'active' && oldStatus !== 'active') {
+                    console.log('[AgenteAutonomo] Agent activated. Refreshing config...');
+                    this.fetchAgentConfig();
+                    this.fetchTradesForPeriod();
+                }
 			},
             realtimeLogs: {
                 // ✅ [ZENIX v2.2] Removido 'deep: true' para performance (logs são substituídos, não mutados)
