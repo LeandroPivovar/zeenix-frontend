@@ -747,6 +747,32 @@
                                                 />
                                             </div>
                                         </div>
+                                        
+                                        <!-- Row 6: Conservador Settings -->
+                                        <div v-if="form.riskProfile === 'conservador'" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 p-4 bg-[#111] border border-dashed border-zenix-green/30 rounded-xl">
+                                            <div>
+                                                <label class="block text-zenix-green text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                                    Parcelas Base <i class="fa-regular fa-circle-question text-[10px]" title="Número de fatias em que o prejuízo será dividido inicialmente."></i>
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="recoveryConfig.conservadorInstallments" 
+                                                    class="w-full bg-[#1A1A1A] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    min="1"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label class="block text-zenix-green text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
+                                                    Máx. Reparcelamentos <i class="fa-regular fa-circle-question text-[10px]" title="Limite máximo de derrotas consecutivas permitidas dentro da recuperação."></i>
+                                                </label>
+                                                <input 
+                                                    type="number" 
+                                                    v-model.number="recoveryConfig.conservadorMaxReinstallments" 
+                                                    class="w-full bg-[#1A1A1A] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
+                                                    min="1"
+                                                />
+                                            </div>
+                                        </div>
 
                                         <div class="border-t border-[#333] my-6"></div>
                                         
@@ -1542,6 +1568,8 @@ export default {
                 stopLoss: 50,
                 active: false,
                 riskProfile: 'moderado',
+                conservadorInstallments: 4, // New: Parcelas Base (Conservador)
+                conservadorMaxReinstallments: 4, // New: Máx Reparcelamento (Conservador)
                 attackFilters: []
             },
 

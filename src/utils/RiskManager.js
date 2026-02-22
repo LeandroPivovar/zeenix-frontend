@@ -136,10 +136,11 @@ export const RiskManager = {
             if (riskProfile === 'conservador') {
                 // If installments finished but still have debt, or just starting
                 if (state.recoveryInstallmentsRemaining <= 0 || state.valor_parcela <= 0) {
+                    const maxInstallments = config.recoveryConfig?.conservadorInstallments || config.conservadorInstallments || 4;
                     state.prejuizo_acumulado = state.totalLossAccumulated;
-                    state.parcelas_total = 4;
+                    state.parcelas_total = maxInstallments;
                     state.valor_parcela = state.prejuizo_acumulado / state.parcelas_total;
-                    state.recoveryInstallmentsRemaining = 4;
+                    state.recoveryInstallmentsRemaining = maxInstallments;
 
                     console.log('--- Martingale Parcelado (Novo Ciclo) ---');
                     console.log(`Prejuízo Acumulado: $${state.prejuizo_acumulado.toFixed(2)}`);
@@ -275,18 +276,21 @@ export const RiskManager = {
                     state.prejuizo_acumulado += absoluteLoss;
                     state.consecutiveLossesInRecovery++;
 
-                    // ✅ USER REQUEST: Always re-split accumulated loss by 4 on new loss
-                    state.parcelas_total = 4;
-                    state.recoveryInstallmentsRemaining = 4;
-                    state.valor_parcela = state.prejuizo_acumulado / 4;
+                    // ✅ USER REQUEST: Always re-split accumulated loss by X on new loss
+                    const maxInstallments = config.recoveryConfig?.conservadorInstallments || config.conservadorInstallments || 4;
+                    const maxReinstallments = config.recoveryConfig?.conservadorMaxReinstallments || config.conservadorMaxReinstallments || 4;
+
+                    state.parcelas_total = maxInstallments;
+                    state.recoveryInstallmentsRemaining = maxInstallments;
+                    state.valor_parcela = state.prejuizo_acumulado / maxInstallments;
 
                     console.log('--- Auditoria Conservadora (Re-parcelamento por Loss) ---');
                     console.log(`Prejuízo Acumulado: $${state.prejuizo_acumulado.toFixed(2)}`);
-                    console.log(`Nova Parcela Alvo (1/4): $${state.valor_parcela.toFixed(2)}`);
+                    console.log(`Nova Parcela Alvo (1/${maxInstallments}): $${state.valor_parcela.toFixed(2)}`);
 
-                    // ✅ USER REQUEST: Limit of 3 additional losses in recovery (total 4 in streak)
-                    if (state.consecutiveLossesInRecovery >= 4) {
-                        console.log('%c[RiskManager] ⚠️ Limite de derrotas na recuperação atingido (3x). Voltando ao modo ataque.', 'background: #ff0000; color: #fff; font-weight: bold; padding: 4px;');
+                    // ✅ USER REQUEST: Limit of X additional losses in recovery
+                    if (state.consecutiveLossesInRecovery >= maxReinstallments) {
+                        console.log(`%c[RiskManager] ⚠️ Limite de derrotas na recuperação atingido (${maxReinstallments}x). Voltando ao modo ataque.`, 'background: #ff0000; color: #fff; font-weight: bold; padding: 4px;');
                         this._finishRecovery(state);
                         return;
                     }
@@ -337,10 +341,11 @@ export const RiskManager = {
 
                 // Initialize Conservador Specifics on entry
                 if (riskProfile === 'conservador') {
+                    const maxInstallments = config.recoveryConfig?.conservadorInstallments || config.conservadorInstallments || 4;
                     state.prejuizo_acumulado = state.totalLossAccumulated;
-                    state.parcelas_total = 4;
+                    state.parcelas_total = maxInstallments;
                     state.valor_parcela = state.prejuizo_acumulado / state.parcelas_total;
-                    state.recoveryInstallmentsRemaining = 4;
+                    state.recoveryInstallmentsRemaining = maxInstallments;
                     state.consecutiveLossesInRecovery = 1; // The loss that triggered recovery
                 }
             }
