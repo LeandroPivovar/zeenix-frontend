@@ -1545,9 +1545,10 @@
 				
 				const combined = [];
 				const getDedupKey = (t) => {
-                    // Tenta usar ID real primeiro se for numérico confiável
-                    const possibleId = t.id || t.contractId || t.contract_id;
-                    if (possibleId && !String(possibleId).includes('-') && !String(possibleId).includes(':')) {
+                    // ✅ [ZENIX v4.6] Usa contract_id pois é o único ID que BATE EXATAMENTE entre WebSocket(Deriv) e Banco DB.
+                    // Ignorar t.id diretamente porque t.id no DB = 1, e t.id no WS = undefined (conflito)
+                    const possibleId = t.contractId || t.contract_id;
+                    if (possibleId) {
                         return String(possibleId);
                     }
                     // Fallback
@@ -1722,9 +1723,15 @@
 			const uniqueTrades = [];
 			const seenIds = new Set();
 			for (const trade of normalizedTrades) {
-                const ts = new Date(trade.createdAt).getTime();
-                const tsSeconds = Math.floor(ts / 1000);
-                const key = `TS-${tsSeconds}-${trade.profit}-${trade.stake}`;
+                let key;
+                const possibleId = trade.contractId || trade.contract_id || (trade.original && (trade.original.contractId || trade.original.contract_id));
+                if (possibleId) {
+                    key = String(possibleId);
+                } else {
+                    const ts = new Date(trade.createdAt).getTime();
+                    const tsSeconds = Math.floor(ts / 1000);
+                    key = `TS-${tsSeconds}-${trade.profit}-${trade.stake}`;
+                }
 
 				if (!seenIds.has(key)) {
 					seenIds.add(key);
@@ -1839,8 +1846,8 @@
 									'error': 'ERRO NO SISTEMA',
 									'inactive': 'SESSÃO ENCERRADA',
 									'closs': 'STOP POR PERDAS',
-									'paused': 'AGENTE PAROU MANUALMENTE',
-									'manual': 'AGENTE PAROU MANUALMENTE',
+									'paused': 'SESSÃO FINALIZADA POR STOP MANUAL',
+									'manual': 'SESSÃO FINALIZADA POR STOP MANUAL',
                                     'cycle': 'CICLOS COMPLETOS',
                                     'restart': 'REINÍCIO DO SERVIDOR'
 								};
@@ -1862,7 +1869,7 @@
                         } else if (stop > 0 && totalProfit <= -stop) {
                             endReason = 'STOP LOSS ATINGIDO';
                         } else {
-                            endReason = 'PARADA MANUAL';
+                            endReason = 'SESSÃO FINALIZADA POR STOP MANUAL';
                         }
 
                          if (this.selectedPeriod !== 'session') {

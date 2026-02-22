@@ -951,7 +951,7 @@ export default {
       // Se o contractId já existir, atualizar ordem existente no array independentemente do status
       if (result.contractId) {
         const existingOrderIndex = this.lastOrders.findIndex(
-          order => order.contractId === result.contractId
+          order => String(order.contractId) === String(result.contractId)
         );
         
         if (existingOrderIndex !== -1) {

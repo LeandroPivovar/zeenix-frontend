@@ -1552,9 +1552,10 @@
 				
 				const combined = [];
 				const getDedupKey = (t) => {
-                    // Tenta usar ID real primeiro se for numérico confiável
-                    const possibleId = t.id || t.contractId || t.contract_id;
-                    if (possibleId && !String(possibleId).includes('-') && !String(possibleId).includes(':')) {
+                    // ✅ [ZENIX v4.6] Usa contract_id pois é o único ID que BATE EXATAMENTE entre WebSocket(Deriv) e Banco DB.
+                    // Ignorar t.id diretamente porque t.id no DB = 1, e t.id no WS = undefined (conflito)
+                    const possibleId = t.contractId || t.contract_id;
+                    if (possibleId) {
                         return String(possibleId);
                     }
                     // Fallback
@@ -1704,9 +1705,15 @@
 				const uniqueTrades = [];
 				const seenIds = new Set();
 				for (const trade of normalizedTrades) {
-					const dedupeKey = trade.id && !trade.id.includes('-') && !trade.id.includes(':') 
-						? String(trade.id) 
-						: `${trade.createdAt}-${trade.profit}-${trade.stake}-${trade.market}`;
+					let dedupeKey;
+					const possibleId = trade.contractId || trade.contract_id || (trade.original && (trade.original.contractId || trade.original.contract_id));
+					if (possibleId) {
+						dedupeKey = String(possibleId);
+					} else {
+						const ts = new Date(trade.createdAt).getTime();
+                        const tsSeconds = Math.floor(ts / 1000);
+						dedupeKey = `TS-${tsSeconds}-${trade.profit}-${trade.stake}`;
+					}
 					
 					if (!seenIds.has(dedupeKey)) {
 						seenIds.add(dedupeKey);
@@ -1821,8 +1828,8 @@
 									'error': 'ERRO NO SISTEMA',
 									'inactive': 'SESSÃO ENCERRADA',
 									'closs': 'STOP POR PERDAS',
-									'paused': 'AGENTE PAROU MANUALMENTE',
-									'manual': 'AGENTE PAROU MANUALMENTE',
+									'paused': 'SESSÃO FINALIZADA POR STOP MANUAL',
+									'manual': 'SESSÃO FINALIZADA POR STOP MANUAL',
                                     'cycle': 'CICLOS COMPLETOS',
                                     'restart': 'REINÍCIO DO SERVIDOR'
 								};
@@ -1835,7 +1842,18 @@
 							displayLabel = 'SESSÃO ATUAL';
 						}
 					} else if (!sessionTrades.isMidnightEnd) {
-                        // Historical or past sessions (non-midnight)
+                        // Historical or past sessions (non-midnight) - Automatic Detection of Stop Reason
+                        const target = this.agentConfig?.profitTarget || this.agentConfig?.dailyProfitTarget || 0;
+                        const stop = this.agenteData.stopValue || this.agentConfig?.lossLimit || this.agentConfig?.dailyLossLimit || 25;
+                        
+                        if (target > 0 && totalProfit >= target) {
+                            endReason = 'META ALCANÇADA';
+                        } else if (stop > 0 && totalProfit <= -stop) {
+                            endReason = 'STOP LOSS ATINGIDO';
+                        } else {
+                            endReason = 'SESSÃO FINALIZADA POR STOP MANUAL';
+                        }
+
                          if (this.selectedPeriod !== 'session') {
                              displayLabel = `SESSÃO${shortId}`; // Generic label for historical list
                              footerText = `FIM - ${endTime} (${endReason})`;
@@ -2892,7 +2910,6 @@
                         if (existingIdx !== -1) {
                             chartData[existingIdx].value = cumulative;
                         } else {
-                            // Ensure time is monotonic
                             const lastPoint = chartData[chartData.length - 1];
                             if (lastPoint && ts <= lastPoint.time) {
                                 lastPoint.value = cumulative;
