@@ -390,7 +390,6 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-outline" @click="syncFeaturesToBenefits">Sincronizar com Benefícios</button>
                         <button class="btn btn-save-config" @click="showFeaturesModal = false">Concluir</button>
                     </div>
                 </div>
