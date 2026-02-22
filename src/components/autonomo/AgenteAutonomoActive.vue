@@ -1545,8 +1545,12 @@
 				
 				const combined = [];
 				const getDedupKey = (t) => {
-                    // ✅ [ZENIX v4.5] ULTIMATE DEDUP KEY: Only timestamp and precise financial values.
-                    // Ignores all IDs because WS and DB formats differ unpredictably.
+                    // Tenta usar ID real primeiro se for numérico confiável
+                    const possibleId = t.id || t.contractId || t.contract_id;
+                    if (possibleId && !String(possibleId).includes('-') && !String(possibleId).includes(':')) {
+                        return String(possibleId);
+                    }
+                    // Fallback
                     const ts = getTimestamp(t);
                     const tsSeconds = Math.floor(ts / 1000); 
                     const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
@@ -1734,8 +1738,7 @@
 				let currentSessionTrades = [];
 				
 				if (dedupedTrades.length > 0) {
-					// ✅ [ZENIX v3.3] Session Splitting: Split by Session ID, 1h gap, or Midnight
-					// We apply grouping for all periods to satisfy requested splitting at 00:00
+					// We apply grouping for all periods to satisfy requested splitting at 00:00 or sessionId change
 					currentSessionTrades.push(dedupedTrades[0]);
 					
 					for (let i = 1; i < dedupedTrades.length; i++) {
@@ -1753,22 +1756,25 @@
 						const isMidnightSplit = prevTime.toLocaleDateString() !== currTime.toLocaleDateString();
 						
 						// 2. Session ID change
-						const isSessionChange = prevSessionId !== currSessionId;
+						// Ignora se for o mesmo (ou se ambos forem undefined/null mas estamos em uma gap < 4h)
+						const isSessionChange = (prevSessionId && currSessionId) ? (String(prevSessionId) !== String(currSessionId)) : false;
 						
-						// 3. Gap de tempo (4 horas)
+						// 3. Gap de tempo
 						const hourDiff = Math.abs(prevTime - currTime) / (1000 * 60 * 60);
-						const isGapSplit = hourDiff >= 4;
+						const isGapSplit = hourDiff >= 4; // 4h para autonomo
 
 						if (isMidnightSplit || isSessionChange || isGapSplit) {
-							// Tag if the session ended due to midnight
+							// Se cortou aqui, finaliza a sessão acumulada ANTES de colocar o 'currTrade' NELA
 							if (isMidnightSplit) {
 								currentSessionTrades.isMidnightEnd = true;
 							}
 							sessions.push(currentSessionTrades);
 							currentSessionTrades = [];
 						}
+						// Coloca o currTrade na sessão correta (a nova ou a mesma se não cortou)
 						currentSessionTrades.push(currTrade);
 					}
+					// Faz o push da última sessão montada
 					sessions.push(currentSessionTrades);
 				}
 				
