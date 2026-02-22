@@ -2683,11 +2683,24 @@ export default {
                     }
 
                     try {
+                        console.log(`[calculatePayouts] Fetching proposal for dir: ${dir}, cType: ${cType}`);
+                        console.log(`[calculatePayouts] Payload:`, proposalParams);
+
                         const proposal = await derivTradingService.getProposal(proposalParams);
+                        
+                        console.log(`[calculatePayouts] Response (` + cType + `):`, proposal);
+
                         if (proposal && (proposal.ask_price || proposal.askPrice) && proposal.payout) {
                            const askPrice = proposal.askPrice || proposal.ask_price;
                            const payoutPercent = ((proposal.payout - askPrice) / askPrice) * 100;
+                           
+                           console.log(`[calculatePayouts] Calculated payout % = ${payoutPercent} for ${cType}`);
+                           
                            config.directionPayouts = { ...config.directionPayouts, [cType]: Math.round(payoutPercent) };
+                           
+                           console.log(`[calculatePayouts] Updated directionPayouts object:`, config.directionPayouts);
+                        } else {
+                           console.warn(`[calculatePayouts] Invalid or incomplete proposal data for ${cType}:`, proposal);
                         }
                     } catch (err) {
                         console.error(`Erro ao buscar payout para ${dir}:`, err);
