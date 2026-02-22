@@ -1669,7 +1669,7 @@ export default {
                     active: false, 
                     type: 'digit',
                     desc: 'Busca sequências de dígitos (Par, Ímpar, <4, etc).',
-                    config: { length: 3, target: 'under_4' }
+                    config: { length: 3, target: 'under_4', tradeInFavor: true }
                 },
                 { 
                     id: 'parity_majority', 
@@ -1702,7 +1702,7 @@ export default {
                     active: false,
                     type: 'digit',
                     desc: 'Verifica se os últimos X dígitos estão acima ou abaixo de um valor.',
-                    config: { length: 3, type: 'under', threshold: 5 }
+                    config: { length: 3, type: 'under', threshold: 5, tradeInFavor: true }
                 },
                 {
                     id: 'price_ma',
@@ -1744,7 +1744,7 @@ export default {
                     active: false,
                     type: 'digit',
                     desc: 'Verifica se últimos X ticks terminaram com dígito Y.',
-                    config: { length: 3, digit: 0 }
+                    config: { length: 3, digit: 0, tradeInFavor: true }
                 },
                 {
                     id: 'digit_diff_sequence',
@@ -1776,7 +1776,7 @@ export default {
                     active: false,
                     type: 'digit',
                     desc: 'Média dos últimos X dígitos é Op L.',
-                    config: { period: 10, op: '>', threshold: 4.5 }
+                    config: { period: 10, op: '>', threshold: 4.5, tradeInFavor: true }
                 },
                 {
                     id: 'digit_position_return',

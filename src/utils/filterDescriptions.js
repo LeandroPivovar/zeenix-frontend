@@ -7,7 +7,7 @@ export const filterDescriptions = {
             when: "Quando ocorre a repetição configurada.",
             result: "Libera a entrada após a sequência."
         },
-        template: "A estratégia observa os últimos {length} resultados e, quando o mesmo dígito se repete {length} vezes seguidas, considera a condição válida."
+        template: "A estratégia observa os últimos {length} resultados e, quando o dígito {digit} se repete {length} vezes seguidas, a estratégia entra {tradeInFavor_translated} a sequência."
     },
     digit_diff_sequence: {
         title: "Sequência de Dígitos Diferentes",
@@ -34,7 +34,7 @@ export const filterDescriptions = {
             when: "Quando os dígitos ficam acima ou abaixo do valor.",
             result: "Libera a entrada após a sequência."
         },
-        template: "Quando os últimos {length} dígitos ficam {type_translated} de {threshold}, a estratégia libera a entrada."
+        template: "Quando os últimos {length} dígitos ficam {type_translated} de {threshold}, a estratégia entra {tradeInFavor_translated} a sequência."
     },
     parity_alternation: {
         title: "Alternância de Paridade",
@@ -70,7 +70,7 @@ export const filterDescriptions = {
             when: "Quando a média atinge a condição definida.",
             result: "Libera a entrada conforme a média."
         },
-        template: "A estratégia calcula a média dos últimos {period} dígitos e libera a entrada quando o valor fica {op_translated} de {threshold}."
+        template: "A estratégia calcula a média dos últimos {period} dígitos e entra {tradeInFavor_translated} a condição quando o valor fica {op_translated} de {threshold}."
     },
     digit_position_return: {
         title: "Dígito Retorna à Posição",
@@ -195,7 +195,7 @@ export const filterDescriptions = {
             when: "Quando a sequência alvo é atingida.",
             result: "Entra contra ou a favor da sequência."
         },
-        template: "A estratégia aguarda uma sequência de {length} dígitos do grupo {target_translated}."
+        template: "A estratégia aguarda uma sequência de {length} dígitos do grupo {target_translated} e entra {tradeInFavor_translated} a sequência."
     },
     // NEXUS / ATLAS
     price_momentum: {

@@ -140,7 +140,7 @@ export const StrategyAnalysis = {
      * Digit Sequence - Checks for N consecutive digits of a group (under 4, over 5, etc).
      */
     digitSequence(config, digitHistory) {
-        const { length, target } = config;
+        const { length, target, tradeInFavor = true } = config;
         const subHistory = digitHistory.slice(0, length);
 
         if (subHistory.length < length) {
@@ -159,12 +159,24 @@ export const StrategyAnalysis = {
 
         const allMatch = subHistory.every(checkValue);
 
+        // Determine trade direction based on the toggle
+        let targetDirection = null;
+        if (allMatch) {
+            let baseDir, oppDir;
+            if (target === 'even') { baseDir = 'DIGITEVEN'; oppDir = 'DIGITODD'; }
+            else if (target === 'odd') { baseDir = 'DIGITODD'; oppDir = 'DIGITEVEN'; }
+            else if (target === 'under_4') { baseDir = 'DIGITUNDER'; oppDir = 'DIGITOVER'; }
+            else if (target === 'over_5') { baseDir = 'DIGITOVER'; oppDir = 'DIGITUNDER'; }
+
+            targetDirection = tradeInFavor ? baseDir : oppDir;
+        }
+
         return {
             pass: allMatch,
             reason: allMatch
-                ? `Sequência de ${length} dígitos (${target}) detectada`
+                ? `Sequência de ${length} dígitos (${target}) detectada. Trade ${tradeInFavor ? 'a favor' : 'contra'}`
                 : `Sequência negada: Últimos dígitos não seguem o padrão ${target}`,
-            direction: allMatch ? (target === 'even' ? 'DIGITEVEN' : target === 'odd' ? 'DIGITODD' : target === 'under_4' ? 'DIGITUNDER' : 'DIGITOVER') : null
+            direction: targetDirection
         };
     },
 
@@ -269,15 +281,23 @@ export const StrategyAnalysis = {
     },
 
     overUnderSequence(config, digitHistory) {
-        const { length, type, threshold } = config;
+        const { length, type, threshold, tradeInFavor = true } = config;
         const subHistory = digitHistory.slice(0, length);
         if (subHistory.length < length) return { pass: false, reason: `Aguardando dados (${subHistory.length}/${length})` };
 
         const allMatch = subHistory.every(d => type === 'over' ? d > threshold : d < threshold);
+
+        let targetDirection = null;
+        if (allMatch) {
+            const baseDir = type === 'over' ? 'DIGITOVER' : 'DIGITUNDER';
+            const oppDir = type === 'over' ? 'DIGITUNDER' : 'DIGITOVER';
+            targetDirection = tradeInFavor ? baseDir : oppDir;
+        }
+
         return {
             pass: allMatch,
-            reason: allMatch ? `Sequência ${type}/${threshold} OK` : `Falha no Over/Under`,
-            direction: allMatch ? (type === 'over' ? 'DIGITOVER' : 'DIGITUNDER') : null
+            reason: allMatch ? `Sequência ${type}/${threshold} OK. Trade ${tradeInFavor ? 'a favor' : 'contra'}` : `Falha no Over/Under`,
+            direction: targetDirection
         };
     },
 
@@ -422,12 +442,22 @@ export const StrategyAnalysis = {
     // --- NEW PHASE 3 FILTERS (DIGITS) ---
 
     digitEqualSequence(config, digitHistory) {
-        const { length, digit } = config;
+        const { length, digit, tradeInFavor = true } = config;
         const subHistory = digitHistory.slice(0, length);
         if (subHistory.length < length) return { pass: false, reason: `Aguardando dados` };
 
         const allMatch = subHistory.every(d => d === digit);
-        return { pass: allMatch, reason: allMatch ? `Sequência de ${length} dígitos ${digit} OK` : `Falha Sequência Igual` };
+
+        let targetDirection = null;
+        if (allMatch) {
+            targetDirection = tradeInFavor ? 'DIGITMATCH' : 'DIGITDIFF';
+        }
+
+        return {
+            pass: allMatch,
+            reason: allMatch ? `Sequência de ${length} dígitos ${digit} detectada. Trade ${tradeInFavor ? 'a favor' : 'contra'}` : `Falha Sequência Igual`,
+            direction: targetDirection
+        };
     },
 
     digitDiffSequence(config, digitHistory) {
@@ -472,7 +502,7 @@ export const StrategyAnalysis = {
     },
 
     digitAverage(config, digitHistory) {
-        const { period, op, threshold } = config;
+        const { period, op, threshold, tradeInFavor = true } = config;
         const subHistory = digitHistory.slice(0, period);
         if (subHistory.length < period) return { pass: false, reason: `Aguardando dados` };
 
@@ -484,7 +514,21 @@ export const StrategyAnalysis = {
         else if (op === '<=' && avg <= threshold) pass = true;
         else if (op === '=' && avg === threshold) pass = true;
 
-        return { pass, reason: pass ? `Média Dígitos ${avg.toFixed(1)} ${op} ${threshold}` : `Média Falhou (${avg.toFixed(1)})` };
+        let targetDirection = null;
+        if (pass) {
+            let baseDir, oppDir;
+            if (op === '>' || op === '>=') { baseDir = 'DIGITOVER'; oppDir = 'DIGITUNDER'; }
+            else if (op === '<' || op === '<=') { baseDir = 'DIGITUNDER'; oppDir = 'DIGITOVER'; }
+            else { baseDir = 'DIGITOVER'; oppDir = 'DIGITUNDER'; } // fallback
+
+            targetDirection = tradeInFavor ? baseDir : oppDir;
+        }
+
+        return {
+            pass,
+            reason: pass ? `Média Dígitos ${avg.toFixed(1)} ${op} ${threshold}. Trade ${tradeInFavor ? 'a favor' : 'contra'}` : `Média Falhou (${avg.toFixed(1)})`,
+            direction: targetDirection
+        };
     },
 
     digitPositionReturn(config, digitHistory) {
