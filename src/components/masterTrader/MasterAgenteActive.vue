@@ -1202,6 +1202,10 @@
 				return `${formatDate(startDate)} - ${formatDate(today)} ${today.getFullYear()}`;
 		},
 			initialCapital() {
+				// ✅ [ZENIX v4.3] Derive Initial Capital from Final - Profit for consistency in UI reporting
+				if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
+					return (this.finalCapital || 0) - (this.periodProfit || 0);
+				}
 				return this.agentConfig?.initialBalance || this.agentConfig?.initialCapital || 0;
 			},
 			stakeAmount() {
@@ -1236,20 +1240,12 @@
                 return this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
             },
 			periodProfit() {
-				// ✅ [ZENIX v3.6] Calculate session profit accurately from trades to avoid backend mismatches
-                if (this.selectedPeriod === 'session') {
-                    if (!this.sessionTrades || this.sessionTrades.length === 0) return 0;
-                    const total = this.sessionTrades.reduce((sum, trade) => {
-                        const profit = parseFloat(trade.profit || trade.contract_profit || 0);
-                        return sum + (isNaN(profit) ? 0 : profit);
-                    }, 0);
-                    return isNaN(total) ? 0 : total;
-                }
-
-                if (this.selectedPeriod === 'today') {
+				// ✅ [ZENIX v4.3] Use real-time session stats for selected periods to ensure UI updates instantly on restart
+                if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
                     const val = this.sessionStats?.netProfit;
                     return (val === undefined || val === null || isNaN(val)) ? 0 : val;
                 }
+
 				
 				// Fallback para soma de dados históricos (filtros passados)
                 if (!this.dailyData || this.dailyData.length === 0) return 0;
@@ -1544,20 +1540,21 @@
 				const historicalToday = this.dailyTrades || [];
 				const liveSession = this.tradeHistory || [];
 				
-				const getTradeId = (t) => String(t.id || t.contractId || t.contract_id || '');
+
 				const getTimestamp = (t) => {
 					const d = t.createdAt || t.created_at || t.time;
 					return d ? new Date(d).getTime() : 0;
 				}
 				
 				const combined = [...liveSession];
-				const seenIds = new Set(liveSession.map(t => getTradeId(t)));
+				const getDedupKey = (t) => `${getTimestamp(t)}-${t.profit || t.profit_loss || 0}-${t.stake || 0}-${t.symbol || t.market || ''}`;
+				const seenKeys = new Set(liveSession.map(t => getDedupKey(t)));
 				
 				historicalToday.forEach(t => {
-					const id = getTradeId(t);
-					if (id && !seenIds.has(id)) {
+					const key = getDedupKey(t);
+					if (key && !seenKeys.has(key)) {
 						combined.push(t);
-						seenIds.add(id);
+						seenKeys.add(key);
 					}
 				});
 
