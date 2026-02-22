@@ -2194,11 +2194,9 @@ export default {
 
                             console.log(`[calculatePayouts] Payout decimal = ${payoutDecimal} for ${cType}`);
 
-                            // Directly update the reactive config
-                            config.directionPayouts = {
-                                ...config.directionPayouts,
-                                [cType]: payoutDecimal
-                            };
+                            // Mutate directly on the reactive source (fixes Vue reactivity)
+                            const target = isMain ? this.form : this.recoveryConfig;
+                            target.directionPayouts = Object.assign({}, target.directionPayouts, { [cType]: payoutDecimal });
 
                             anySuccess = true;
                         } else {
