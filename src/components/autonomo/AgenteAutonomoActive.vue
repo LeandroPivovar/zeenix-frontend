@@ -79,18 +79,29 @@
             />
 			
 			<!-- Metric Cards -->
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 				<!-- Capital Card -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
 					<div class="flex items-center gap-2 mb-3">
 						<div class="p-2 rounded-lg bg-[#22C55E]/10 flex items-center justify-center">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet text-[#22C55E]"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Banca / Stake</span>
+						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital</span>
 					</div>
 					<div class="text-xl md:text-2xl font-bold mb-1 tabular-nums text-left text-[#FAFAFA] flex items-center gap-2 flex-wrap">
 						<span>{{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(renderedFinalCapital) }}</span>
-						<span class="text-[#A1A1AA] opacity-50 text-sm">/</span>
+					</div>
+				</div>
+
+				<!-- Stake Card -->
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
+					<div class="flex items-center gap-2 mb-3">
+						<div class="p-2 rounded-lg bg-[#3B82F6]/10 flex items-center justify-center">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-coins text-[#3B82F6]"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
+						</div>
+						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Stake</span>
+					</div>
+					<div class="text-xl md:text-2xl font-bold mb-1 tabular-nums text-left text-[#FAFAFA] flex items-center gap-2 flex-wrap">
 						<span>{{ hideValues ? '••••' : preferredCurrencyPrefix + formatPrice(stakeAmount) }}</span>
 					</div>
 				</div>
