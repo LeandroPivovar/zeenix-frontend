@@ -530,6 +530,16 @@
 
           const result = await response.json();
           if (result.success) {
+            // ✅ Limpar dados instantaneamente no frontend para zerar UI (evita flash de dados velhos)
+            this.apiTradeHistory = [];
+            this.sessionStats = {
+              totalTrades: 0, wins: 0, losses: 0, winRate: 0,
+              totalProfit: 0, totalLoss: 0, netProfit: 0,
+              totalCapital: this.balanceNumeric || 0, operationsToday: 0
+            };
+            this.operacoesHoje = 0;
+            this.dailyProfit = 0;
+
             // ✅ Definir como ativo ANTES de carregar config (evita race condition)
             this.agenteEstaAtivo = true;
             this.startSimulations();
