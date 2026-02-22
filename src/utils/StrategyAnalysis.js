@@ -244,17 +244,27 @@ export const StrategyAnalysis = {
     // --- NEW FILTERS ---
 
     paritySequence(config, digitHistory) {
-        const { length, parity } = config;
+        // Now accepts tradeInFavor: true (trade the parity) or false (trade opposite parity)
+        const { length, parity, tradeInFavor = true } = config;
         const subHistory = digitHistory.slice(0, length);
         if (subHistory.length < length) return { pass: false, reason: `Aguardando dados (${subHistory.length}/${length})` };
 
         const isEven = parity === 'even';
         const allMatch = subHistory.every(d => (d % 2 === 0) === isEven);
 
+        // Determine trade direction based on the toggle. 
+        // If parity='even' and tradeInFavor=true -> DIGITEVEN. If tradeInFavor=false -> DIGITODD
+        let targetDirection = null;
+        if (allMatch) {
+            const baseDirection = parity === 'even' ? 'DIGITEVEN' : 'DIGITODD';
+            const oppositeDirection = parity === 'even' ? 'DIGITODD' : 'DIGITEVEN';
+            targetDirection = tradeInFavor ? baseDirection : oppositeDirection;
+        }
+
         return {
             pass: allMatch,
-            reason: allMatch ? `Sequência Paridade (${parity}) OK` : `Sequência Paridade falhou`,
-            direction: allMatch ? (parity === 'even' ? 'DIGITEVEN' : 'DIGITODD') : null
+            reason: allMatch ? `Sequência Paridade (${parity}) detectada. Trade ${tradeInFavor ? 'a favor' : 'contra'}` : `Sequência Paridade falhou`,
+            direction: targetDirection
         };
     },
 

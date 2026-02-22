@@ -25,7 +25,7 @@ export const filterDescriptions = {
             when: "Quando ocorre uma sequência da paridade definida.",
             result: "Libera a entrada ao final da sequência."
         },
-        template: "A cada {length} repetições de números {parity_translated}, a estratégia considera o padrão válido para entrada."
+        template: "A cada {length} repetições de números {parity_translated}, a estratégia entra {tradeInFavor_translated} a sequência."
     },
     over_under_sequence: {
         title: "Sequência Over / Under",
@@ -222,6 +222,7 @@ export const filterDescriptions = {
 export const getTranslation = (key, value) => {
     const maps = {
         parity: { even: 'Pares', odd: 'Ímpares' },
+        tradeInFavor: { true: 'a favor da', false: 'contra a' },
         type: { over: 'Acima', under: 'Abaixo', SMA: 'Simples', EMA: 'Exponencial' },
         op: { '>': 'maior que', '<': 'menor que', '>=': 'maior ou igual a', '<=': 'menor ou igual a', '=': 'igual a' },
         direction: { up: 'Para Cima', down: 'Para Baixo', rise: 'Alta', fall: 'Baixa', increasing: 'Aumentando', decreasing: 'Diminuindo' },
@@ -230,6 +231,7 @@ export const getTranslation = (key, value) => {
     };
 
     if (key === 'parity_translated') return maps.parity[value] || value;
+    if (key === 'tradeInFavor_translated') return maps.tradeInFavor[String(value)] || value;
     if (key === 'type_translated') return maps.type[value] || value;
     if (key === 'op_translated') return maps.op[value] || value;
     if (key === 'direction_translated') return maps.direction[value] || value;

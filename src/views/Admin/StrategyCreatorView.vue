@@ -1694,7 +1694,7 @@ export default {
                     active: false,
                     type: 'digit',
                     desc: 'Verifica se os últimos X dígitos têm a mesma paridade.',
-                    config: { length: 3, parity: 'even' }
+                    config: { length: 3, parity: 'even', tradeInFavor: true }
                 },
                 {
                     id: 'over_under_sequence',
