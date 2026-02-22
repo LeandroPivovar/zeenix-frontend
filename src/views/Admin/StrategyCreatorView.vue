@@ -325,6 +325,16 @@
                                                         {{ dir.label }}
                                                     </button>
                                                 </div>
+                                                <button 
+                                                    type="button" 
+                                                    @click="calculatePayouts('main')" 
+                                                    class="mt-3 w-full bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/30 rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2" 
+                                                    :disabled="isCalculatingPayouts.main"
+                                                >
+                                                    <i v-if="isCalculatingPayouts.main" class="fa-solid fa-spinner fa-spin"></i>
+                                                    <i v-else class="fa-solid fa-calculator"></i>
+                                                    {{ isCalculatingPayouts.main ? 'Calculando...' : 'Calcular Payouts' }}
+                                                </button>
                                             </div>
                                             <div class="grid grid-cols-2 gap-4">
                                                 <div v-for="dir in selectedDirections" :key="'payout-' + dir.value">
@@ -623,6 +633,16 @@
                                                             {{ dir.label }}
                                                         </button>
                                                     </div>
+                                                    <button 
+                                                        type="button" 
+                                                        @click="calculatePayouts('recovery')" 
+                                                        class="mt-3 w-full bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/30 rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2" 
+                                                        :disabled="isCalculatingPayouts.recovery"
+                                                    >
+                                                        <i v-if="isCalculatingPayouts.recovery" class="fa-solid fa-spinner fa-spin"></i>
+                                                        <i v-else class="fa-solid fa-calculator"></i>
+                                                        {{ isCalculatingPayouts.recovery ? 'Calculando...' : 'Calcular Payouts' }}
+                                                    </button>
                                                 </div>
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div v-for="dir in selectedRecoveryDirections" :key="'payout-' + dir.value">
@@ -1862,6 +1882,7 @@ import TargetProfitModal from '../../components/TargetProfitModal.vue';
 import StopBlindadoAjusteModal from '../../components/StopBlindadoAjusteModal.vue';
 
 import { filterDescriptions, getTranslation } from '@/utils/filterDescriptions';
+import derivTradingService from '@/services/deriv-trading.service';
 
 export default {
     name: 'StrategyCreatorView',
@@ -1894,6 +1915,7 @@ export default {
             tempStrategyName: '',
             tempStrategyStatus: 'Rascunho',
             isLoadingAccounts: false,
+            isCalculatingPayouts: { main: false, recovery: false },
             availableAccounts: [],
             selectedToken: null,
             savedStrategies: [],
@@ -2603,6 +2625,85 @@ export default {
         window.removeEventListener('resize', this.handleResize);
     },
     methods: {
+        async calculatePayouts(context = 'main') {
+            const isMain = context === 'main';
+            const config = isMain ? this.form : this.recoveryConfig;
+            
+            if (!config.market || !config.selectedTradeTypeGroup || !config.duration) {
+                this.$root.$toast.error('Preencha mercado, tipo de trade e duração antes de calcular o payout.');
+                return;
+            }
+
+            this.isCalculatingPayouts[context] = true;
+
+            try {
+                const directionsToCalculate = config.directionMode === 'both' ? ['up', 'down'] : [config.directionMode];
+                
+                let actualContractTypes = [];
+                for (const cat of this.tradeTypeCategories) {
+                    const item = cat.items.find(i => i.value === config.selectedTradeTypeGroup);
+                    if (item) {
+                        actualContractTypes = item.directions.map(d => d.value);
+                        break;
+                    }
+                }
+                
+                if (actualContractTypes.length === 0 && config.tradeType) {
+                    actualContractTypes = [config.tradeType];
+                }
+
+                if (actualContractTypes.length === 0) {
+                     this.$root.$toast.error('Tipo de trade inválido para calcular payout.');
+                     return;
+                }
+
+                const promises = directionsToCalculate.map(async (dir) => {
+                    let cType = actualContractTypes[0]; 
+                    if (dir === 'down' && actualContractTypes.length > 1) {
+                        cType = actualContractTypes[1];
+                    } else if (dir === 'up') {
+                        cType = actualContractTypes[0];
+                    }
+
+                    const proposalParams = {
+                        symbol: config.market,
+                        contractType: cType,
+                        duration: config.duration,
+                        durationUnit: config.durationUnit,
+                        amount: 10,
+                        basis: 'stake' 
+                    };
+
+                    if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF', 'HIGHER', 'LOWER', 'ONETOUCH', 'NOTOUCH'].includes(cType)) {
+                        proposalParams.barrier = config.prediction !== undefined ? String(config.prediction) : String(config.barrier);
+                    }
+                    if (['RANGE', 'UPORDOWN', 'EXPIRYRANGE', 'EXPIRYMISS'].includes(cType)) {
+                         proposalParams.barrier = String(config.barrier);
+                         proposalParams.barrier2 = String(config.barrier2);
+                    }
+
+                    try {
+                        const proposal = await derivTradingService.getProposal(proposalParams);
+                        if (proposal && proposal.ask_price && proposal.payout) {
+                           const payoutPercent = ((proposal.payout - proposal.ask_price) / proposal.ask_price) * 100;
+                           config.directionPayouts = { ...config.directionPayouts, [dir]: Math.round(payoutPercent) };
+                        }
+                    } catch (err) {
+                        console.error(`Erro ao buscar payout para ${dir}:`, err);
+                        this.$root.$toast.error(`Falha ao calcular payout da direção: ${dir}. Reveja os parâmetros.`);
+                    }
+                });
+
+                await Promise.all(promises);
+                this.$root.$toast.success('Payouts calculados com sucesso!');
+
+            } catch (error) {
+                console.error('Erro geral ao calcular payouts:', error);
+                this.$root.$toast.error('Erro inesperado ao calcular payouts.');
+            } finally {
+                this.isCalculatingPayouts[context] = false;
+            }
+        },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
             if (this.isMobile) {
