@@ -835,6 +835,7 @@ export default {
                 isActive: plan.isActive !== undefined ? plan.isActive : true,
                 displayOrder: plan.displayOrder || 0,
                 externalId: plan.externalId || '',
+                purchaseLink: plan.purchaseLink || '',
                 selectedIAs: plan.selectedIAs || [],
                 selectedAgents: plan.selectedAgents || [],
                 selectedTraders: plan.selectedTraders || [],
