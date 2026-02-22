@@ -2541,6 +2541,8 @@
 
                      // ✅ [ZENIX v3.3] Restrict sessionId strictly to 'session' view
                      if (this.selectedPeriod === 'session') {
+                         url = `${apiBase}/autonomous-agent/trade-history/${userId}?limit=500${agentFilter}`;
+                     } else if (this.selectedPeriod === 'today') {
                          const dateParam = 'today';
                          const activeSessionId = this.agentConfig?.sessionId || this.agentConfig?.session_id || this.agentConfig?.id;
                          const sessionIdParam = activeSessionId ? `&sessionId=${activeSessionId}` : '';

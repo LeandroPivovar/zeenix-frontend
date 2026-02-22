@@ -544,12 +544,13 @@
 				<AutonomousAgentLogs 
 					:userId="getUserId()" 
 					:isActive="agenteData.sessionStatus === 'active'"
-					:agentName="agenteData.estrategia.replace('IA ', '').replace('IA', '')"
+					:initialLogs="initialLogs"
+					:agentName="currentAgentName.replace('AGENTE ', '')"
 					:market="agenteData.mercado"
 					:riskProfile="agenteData.risco"
 					:accountType="accountType === 'demo' ? 'test' : 'prod'"
 					ref="strategyLogs"
-					@update-logs="realtimeLogs = $event"
+					@update-logs="realtimeLogs = $event; $emit('update-logs', $event)"
 				/>
 			</div>
 		</div>
@@ -965,9 +966,13 @@
 			isMobile: {
 				type: Boolean,
 				default: false
+			},
+			initialLogs: {
+				type: Array,
+				default: () => []
 			}
 		},
-		emits: ['pausarAgente'],
+		emits: ['pausarAgente', 'update-logs'],
 		data() {
 			return {
 				selectedDay: null,
@@ -1554,17 +1559,13 @@
 				
 				const combined = [];
 				const getDedupKey = (t) => {
-                    // ✅ [ZENIX v4.3] Superior Dedup Key: Prioritize Universal Broker ID (Contract ID)
-                    // Live trades have 'id' = contractId. Historical have 'contract_id' and 'id' (db).
-                    const contractId = t.contract_id || t.contractId || (String(t.id).length > 8 ? t.id : null);
-                    if (contractId) return `CID-${contractId}`;
-                    
+                    // ✅ [ZENIX v4.5] ULTIMATE DEDUP KEY: Only timestamp and precise financial values.
+                    // Ignores all IDs because WS and DB formats differ unpredictably.
                     const ts = getTimestamp(t);
                     const tsSeconds = Math.floor(ts / 1000); 
                     const profit = parseFloat(t.profit || t.profit_loss || 0).toFixed(2);
                     const stake = parseFloat(t.stake || 0).toFixed(2);
-                    const mkt = (t.symbol || t.market || t.asset || '').toUpperCase();
-					return `TS-${tsSeconds}-${profit}-${stake}-${mkt}`;
+					return `TS-${tsSeconds}-${profit}-${stake}`;
                 };
 				
                 const finalSeenKeys = new Set();
@@ -1724,21 +1725,13 @@
 					};
 				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 20000); // Increased limit to 20k as per user request
 
-			// ✅ Remove duplicates using identical priority logic as allTradesToday
+			// ✅ Remove duplicates using EXACTLY same priority logic as allTradesToday
 			const uniqueTrades = [];
 			const seenIds = new Set();
 			for (const trade of normalizedTrades) {
-                const raw = trade.original || trade;
-                const contractId = raw.contract_id || raw.contractId || (String(raw.id).length > 8 ? raw.id : null);
-                let key = '';
-                
-                if (contractId) {
-                    key = `CID-${contractId}`;
-                } else {
-                    const ts = new Date(trade.createdAt).getTime();
-                    const tsSeconds = Math.floor(ts / 1000);
-                    key = `TS-${tsSeconds}-${trade.profit}-${trade.stake}-${trade.market.toUpperCase()}`;
-                }
+                const ts = new Date(trade.createdAt).getTime();
+                const tsSeconds = Math.floor(ts / 1000);
+                const key = `TS-${tsSeconds}-${trade.profit}-${trade.stake}`;
 
 				if (!seenIds.has(key)) {
 					seenIds.add(key);
@@ -2577,7 +2570,9 @@
 
                      // ✅ [ZENIX v3.2] For 'session' and 'today', use the specific DATE endpoint (like daily modal)
                      // instead of generic range query, to ensure consistency.
-                     if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
+                     if (this.selectedPeriod === 'session') {
+                         url = `${apiBase}/autonomous-agent/trade-history/${userId}?limit=500${agentFilter}`;
+                     } else if (this.selectedPeriod === 'today') {
                          const dateParam = 'today';
                          url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateParam}${agentFilter}`;
                      } else if (isRange) {
