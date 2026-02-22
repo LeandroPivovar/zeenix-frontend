@@ -122,6 +122,8 @@ export default {
     }
   },
   mounted() {
+    // ✅ Always fetch logs on mount so they are visible even if agent is paused/stopped
+    this.fetchRealtimeLogs(200);
     if (this.isActive) this.startLogPolling();
   },
   beforeUnmount() {

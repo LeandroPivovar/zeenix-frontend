@@ -1046,7 +1046,6 @@
 				dateOptions: [
 					{ label: 'Sessão', value: 'session' },
 					{ label: 'Hoje', value: 'today' },
-					{ label: 'Ontem', value: 'yesterday' },
 					{ label: 'Últimos 7 dias', value: '7d' },
 					{ label: 'Últimos 30 dias', value: '30d' },
 					{ label: 'Semestre', value: '6m' },
@@ -1806,17 +1805,17 @@
 							} else {
 								isEnded = true;
 								const statusMap = {
-									'stopped_loss': 'STOP LOSS ATINGIDO',
-									'stopped_profit': 'META ATINGIDA',
-									'stopped_blindado': 'STOP BLINDADO ATINGIDO',
-									'loss': 'STOP LOSS ATINGIDO',
-									'profit': 'META ATINGIDA',
-									'blindado': 'STOP BLINDADO ATINGIDO',
+									'stopped_loss': 'AGENTE PAROU POR STOP LOSS',
+									'stopped_profit': 'AGENTE PAROU POR META ALCANÇADA',
+									'stopped_blindado': 'AGENTE PAROU POR STOP LOSS BLINDADO',
+									'loss': 'AGENTE PAROU POR STOP LOSS',
+									'profit': 'AGENTE PAROU POR META ALCANÇADA',
+									'blindado': 'AGENTE PAROU POR STOP LOSS BLINDADO',
 									'error': 'ERRO NO SISTEMA',
 									'inactive': 'SESSÃO ENCERRADA',
 									'closs': 'STOP POR PERDAS',
-									'paused': 'PARADA MANUAL',
-									'manual': 'PARADA MANUAL',
+									'paused': 'AGENTE PAROU MANUALMENTE',
+									'manual': 'AGENTE PAROU MANUALMENTE',
                                     'cycle': 'CICLOS COMPLETOS',
                                     'restart': 'REINÍCIO DO SERVIDOR'
 								};
@@ -1934,17 +1933,17 @@
                 if (!status || status === 'active') return null;
 
                 const statusMap = {
-                    'stopped_loss': 'STOP LOSS ATINGIDO',
-                    'stopped_profit': 'META ATINGIDA',
-                    'stopped_blindado': 'STOP BLINDADO ATINGIDO',
-                    'loss': 'STOP LOSS ATINGIDO',
-                    'profit': 'META ATINGIDA',
-                    'blindado': 'STOP BLINDADO ATINGIDO',
+                    'stopped_loss': 'AGENTE PAROU POR STOP LOSS',
+                    'stopped_profit': 'AGENTE PAROU POR META ALCANÇADA',
+                    'stopped_blindado': 'AGENTE PAROU POR STOP LOSS BLINDADO',
+                    'loss': 'AGENTE PAROU POR STOP LOSS',
+                    'profit': 'AGENTE PAROU POR META ALCANÇADA',
+                    'blindado': 'AGENTE PAROU POR STOP LOSS BLINDADO',
                     'error': 'ERRO NO SISTEMA',
                     'inactive': 'SESSÃO ENCERRADA',
                     'closs': 'STOP POR PERDAS',
-                    'paused': 'PARADA MANUAL',
-                    'manual': 'PARADA MANUAL',
+                    'paused': 'AGENTE PAROU MANUALMENTE',
+                    'manual': 'AGENTE PAROU MANUALMENTE',
                     'cycle': 'CICLOS COMPLETOS',
                     'restart': 'REINÍCIO DO SERVIDOR'
                 };

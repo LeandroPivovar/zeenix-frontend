@@ -144,7 +144,6 @@
 									Período:
 									<select v-model="filtroDataSelecionado" class="custom-select" style="min-width: 130px;">
 										<option value="hoje">Hoje</option>
-										<option value="ontem">Ontem</option>
 										<option value="7d">Últimos 7 dias</option>
 										<option value="30d">Últimos 30 dias</option>
 										<option value="personalizado">Personalizado</option>
@@ -304,9 +303,6 @@
 				switch (filtroDataSelecionado) {
 					case 'hoje':
 						startDate = '2025-11-25';
-						return historicoOperacoes.filter(op => op.data === startDate);
-					case 'ontem':
-						startDate = '2025-11-24';
 						return historicoOperacoes.filter(op => op.data === startDate);
 					case 'personalizado':
 						if (dataInicio && dataFim) {
