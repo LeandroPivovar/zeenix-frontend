@@ -104,25 +104,27 @@ export default {
   data() {
     return {
       realtimeLogs: [],
+      logPollingInterval: null,
       lastLogTimestamp: null
     };
   },
   watch: {
     isActive(newVal) {
-      if (newVal) this.startHeartbeat();
-      else this.stopHeartbeat();
+      if (newVal) this.startLogPolling();
+      else this.stopLogPolling();
     },
     userId(newVal) {
       if (newVal && this.isActive) {
-        this.startHeartbeat();
+        this.stopLogPolling();
+        this.startLogPolling();
       }
     }
   },
   mounted() {
-    if (this.isActive) this.startHeartbeat();
+    if (this.isActive) this.startLogPolling();
   },
   beforeUnmount() {
-    this.stopHeartbeat();
+    this.stopLogPolling();
   },
   computed: {
     allFormattedLogs() {
@@ -176,14 +178,9 @@ export default {
           log.type === 'vitoria' ||
           titleLine.includes('META') ||
           titleLine.includes('PROTEÇÃO') ||
-          titleLine.includes('BLINDADO') ||
-          titleLine.includes('TAKE PROFIT') ||
-          titleLine.includes('LUCRO ATINGIDO')
+          titleLine.includes('BLINDADO')
         ) {
           logType = 'success';
-        }
-        else if (titleLine.includes('PAUSA') || titleLine.includes('CICLO')) {
-          logType = 'warning';
         }
         
         // Icons
@@ -267,6 +264,12 @@ export default {
       } catch (e) { console.error('Log fetch error:', e); }
       return [];
     },
+    startLogPolling() {
+      // ✅ [PERFORMANCE] Display limit (200 items)
+      this.stopLogPolling();
+      this.fetchRealtimeLogs(200);
+      this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(200), 3000);
+    },
     async clearLogs() {
       if (await confirm('Tem certeza que deseja limpar todos os logs?')) {
         this.realtimeLogs = [];
@@ -287,6 +290,8 @@ export default {
 
         // Formatar logs para exportação (usando lógica similar ao computed mas no array completo)
         const formattedFullLogs = fullLogs.map(log => {
+           // Reutilizar lógica de formatação simples aqui ou extrair método se fosse complexo
+           // Para texto puro, a formatação visual (cores) não importa, apenas Title/Details
             const message = log.message || '';
             const lines = message.split('\n');
             const titleLine = lines[0].replace(/^\[.*?\]\s*/, '').trim().toUpperCase();
@@ -347,24 +352,11 @@ export default {
         alert('Erro ao exportar logs.');
       }
     },
-    startHeartbeat() {
-      this.stopHeartbeat();
-      this.fetchRealtimeLogs(200); // Fetch once immediately
-      // ✅ [ZENIX v4.0] Heartbeat lento (20s) para mostrar logs de análise 
-      // mesmo sem trades imediatos, respeitando o pedido de "não usar polling" agressivo.
-      this.heartbeatInterval = setInterval(() => {
-        if (this.isActive) this.fetchRealtimeLogs(200);
-      }, 20000); 
-    },
-    stopHeartbeat() {
-      if (this.heartbeatInterval) {
-        clearInterval(this.heartbeatInterval);
-        this.heartbeatInterval = null;
-      }
-    },
     stopLogPolling() {
-      this.stopHeartbeat();
+      if (this.logPollingInterval) clearInterval(this.logPollingInterval);
     }
   }
 };
 </script>
+
+

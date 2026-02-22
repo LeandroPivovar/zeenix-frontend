@@ -386,14 +386,14 @@ export default {
 			this.loadSessionStats();
 			this.loadTradeHistory();
 
-			// Polling a cada 5 segundos se o agente estiver ativo
-			this.pollingInterval = setInterval(() => {
-				if (this.agentConfig?.isActive) {
-					this.loadAgentConfig();
-					this.loadSessionStats();
-					this.loadTradeHistory();
-				}
-			}, 5000);
+			// Polling foi removido conforme solicitação:
+			// this.pollingInterval = setInterval(() => {
+			// 	if (this.agentConfig?.isActive) {
+			// 		this.loadAgentConfig();
+			// 		this.loadSessionStats();
+			// 		this.loadTradeHistory();
+			// 	}
+			// }, 5000);
 		},
 
 		stopPolling() {
@@ -415,8 +415,8 @@ export default {
 		getSessionStatusLabel(status) {
 			const labels = {
 				active: '🟢 Ativo',
-				stopped_profit: '🎯 Stop Win',
-				stopped_loss: '🛑 Stop Loss',
+				profit: '🎯 Stop Win',
+				loss: '🛑 Stop Loss',
 				paused: '⏸ Pausado',
 			};
 			return labels[status] || status;

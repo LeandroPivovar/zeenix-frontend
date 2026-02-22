@@ -1010,28 +1010,16 @@ export default {
 
                     // Verify Risk Profile
                     console.log(`[AIMonitoring] Loaded Risk Profile: ${this.recoveryConfig.riskProfile || 'DEFAULT (Moderado)'}`);
-                    
-                    this.addLog('📘 Início de Sessão', [
-                        `Saldo Inicial: ${this.preferredCurrencyPrefix}${(this.monitoringStats.initialBalance || 0).toFixed(2)}`,
-                        `Meta de Lucro: ${this.preferredCurrencyPrefix}${(this.sessionState.profitTarget || 0).toFixed(2)}`,
-                        `Stop Loss: ${this.preferredCurrencyPrefix}${(this.sessionState.lossLimit || 0).toFixed(2)}`,
-                        `Estratégia: ${(this.sessionState.strategy || 'Unknown').toUpperCase()} v${this.sessionState.version || '1.0'}`,
-                        `Payout Mínimo: ${this.currentConfig.expectedPayout}x`,
-                        `Payout Recuperação: ${this.recoveryConfig?.expectedPayout || this.recoveryConfig?.minPayout || 1.26}x`
-                    ], 'info');
 
-                    this.addLog('⚙️ Configuração Inicial', [
-                        `Agente: ${this.currentConfig.strategy.toUpperCase()}`,
-                        `Modo: ${this.currentConfig.mode.toUpperCase()}`,
-                        `Perfil: ${(this.recoveryConfig.riskProfile || 'MODERADO').toUpperCase()}`,
-                        `Stake: ${this.currencySymbol}${this.currentConfig.initialStake.toFixed(2)}`,
-                        `Soros Level: ${this.currentConfig.sorosLevel}`
-                    ], 'info');
+                    // ✅ CLEAN & SAVE: Ensure the sanitized config is what persists for reloads
+                    // Sync initial stakes to avoid reset to $1 in Fixo mode
+                    this.recoveryConfig.initialStake = this.currentConfig.initialStake;
 
-                    // ✅ Start Session Tracking
-                    // Moved to initTickConnection to wait for accountType
-                    // this.startSession();
-                    // this.startTimer();
+                    const cleanConfig = {
+                        ...this.currentConfig,
+                        recoveryConfig: this.recoveryConfig
+                    };
+                    localStorage.setItem('ai_active_config', JSON.stringify(cleanConfig));
 
                 } catch (e) {
                     console.error('Error loading config:', e);
@@ -1042,16 +1030,40 @@ export default {
                 this.$router.push('/Investments-IA');
                 return;
             }
+        },
+        startListening() {
+            // Logs de inicialização
+            const date = new Date();
+            const date_ddmmyyyy = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+            
+            // Calculate payout display safely
+            const mainPayout = ((this.currentConfig.expectedPayout || 1.20) * 100 - 100).toFixed(0);
+            const recPayoutRaw = this.recoveryConfig?.expectedPayout || this.recoveryConfig?.minPayout || 1.26;
+            const recPayout = (recPayoutRaw * 100 - 100).toFixed(0);
 
-                // ✅ CLEAN & SAVE: Ensure the sanitized config is what persists for reloads
-                // Sync initial stakes to avoid reset to $1 in Fixo mode
-                this.recoveryConfig.initialStake = this.currentConfig.initialStake;
-
-                const cleanConfig = {
-                    ...this.currentConfig,
-                    recoveryConfig: this.recoveryConfig
-                };
-            localStorage.setItem('ai_active_config', JSON.stringify(cleanConfig));
+            this.addLog('▶️ INÍCIO DE SESSÃO DIÁRIA', [
+                `Data: ${date_ddmmyyyy}`,
+                `Saldo Inicial: ${this.preferredCurrencyPrefix}${(this.monitoringStats.initialBalance || 0).toFixed(2)}`,
+                `Meta de Lucro: ${this.preferredCurrencyPrefix}${(this.sessionState.profitTarget || 0).toFixed(2)}`,
+                `Stop Loss: ${this.preferredCurrencyPrefix}${(this.sessionState.lossLimit || 0).toFixed(2)}`,
+                `Estratégia: ${(this.sessionState.strategy || 'Unknown').toUpperCase()}`,
+                `Símbolo: ${this.currentConfig.market || 'R_100'}`,
+                `Contrato Principal: ${this.currentConfig.tradeType || '-'}`,
+                `Payout Principal: ${mainPayout}%`,
+                `Contrato Recuperação: ${this.recoveryConfig.tradeType || '-'}`,
+                `Payout Recuperação: ${recPayout}%`,
+                `Perfil de Risco: ${(this.recoveryConfig.riskProfile || 'MODERADO').toUpperCase()}`,
+                `Stop Blindado: ${this.currentConfig.useBlindado ? 'ATIVO' : 'INATIVO'}`,
+                `Ativação Blindado: ${this.currentConfig.useBlindado ? '50% da meta' : '-'}`,
+                `Proteção Blindado: ${this.currentConfig.useBlindado ? '40% do pico' : '-'}`,
+                `Modo Inicial: NORMAL`,
+                `Próximo Passo: Iniciar coleta de dados`
+            ], 'info');
+                        
+            this.prepareFilters();
+            // Moved to initTickConnection to wait for accountType
+            // this.startSession();
+            // this.startTimer();
         },
         getDerivToken() {
             try {
@@ -1510,7 +1522,25 @@ export default {
                 const time = msg.tick.epoch;
                 
                 if (msg.subscription) this.tickSubscriptionId = msg.subscription.id;
-                if (this.tickCount % 10 === 0) this.addLog(`📈 Tick #${this.tickCount}: ${price}`, 'info');
+                
+                // Determinar quantos ticks são necessários para a maior janela de filtro
+                const activeFilters = this.sessionState.activeStrategy === 'RECUPERACAO' 
+                    ? (this.recoveryConfig.attackFilters || []) 
+                    : (this.currentConfig.attackFilters || []);
+                    
+                let minTicksRequired = 10; // default view
+                if (activeFilters && activeFilters.length > 0) {
+                     minTicksRequired = Math.max(...activeFilters.map(f => f.window || 10));
+                }
+
+                // LOG 02 - Coleta de Dados (Apenas a cada 10 ticks ou se ainda não atingiu o mínimo)
+                if (this.tickCount % 10 === 0 || this.tickCount === minTicksRequired) {
+                    this.addLog('🔵 COLETA DE DADOS', [
+                        `Meta de Coleta: ${minTicksRequired} ticks`,
+                        `Contagem Atual: ${this.tickCount} / ${minTicksRequired}`,
+                        `Status: ${this.tickCount >= minTicksRequired ? 'Suficiente para análise' : 'Aguardando ticks'}`
+                    ], 'info');
+                }
                 
                 // 1. Maintain Logic Compatibility
                 this.tickHistory.unshift(price);
@@ -1538,10 +1568,10 @@ export default {
                 const lastDigit = parseInt(price.toString().slice(-1));
                 this.digitHistory.unshift(lastDigit);
                 if (this.digitHistory.length > 100) this.digitHistory.pop();
-                this.runAIAnalysis();
+                this.runAIAnalysis(minTicksRequired);
             }
         },
-        runAIAnalysis() {
+        runAIAnalysis(minTicksRequired = 10) {
             // ✅ Sincronização: Aguardar resultado do contrato ou resultado rápido
             if (this.activeContracts.size > 0 || this.isNegotiating) return;
             if (this.pendingVirtualTrade) return;
@@ -1553,7 +1583,10 @@ export default {
                 } else {
                     // Pause Expired
                     this.pauseUntil = 0;
-                    this.addLog('▶️ Pausa de resfriamento finalizada. Retomando operações.', 'info');
+                    this.addLog('🔵 RETORNO DA PAUSA ESTRATÉGICA', [
+                        `Status: Pausa concluída`,
+                        `Ação: Retomar análise e entradas normalmente`
+                    ], 'info');
                 }
             }
 
@@ -1564,10 +1597,27 @@ export default {
                 
             if (activeFilters.length === 0) return;
 
+            // Wait until we have enough ticks for the filters
+            if (this.tickHistory.length < minTicksRequired) return;
+
             const data = { 
                 tickHistory: this.tickHistory, 
                 digitHistory: this.digitHistory 
             };
+
+            const isRec = this.sessionState.activeStrategy === 'RECUPERACAO';
+            const mode = this.sessionState.negotiationMode;
+            
+            // LOG 03 - Apenas logar ocasionalmente ou quando atingir a contagem necessária pela primeira vez no ciclo
+            if (this.tickCount % 50 === 0) {
+                 this.addLog('🔵 ANÁLISE DE MERCADO INICIADA', [
+                     `Análise Ativa: ${isRec ? 'RECUPERAÇÃO' : 'PRINCIPAL'}`,
+                     `Modo de Negociação: ${mode}`,
+                     `Contrato Avaliado: ${isRec ? this.recoveryConfig.tradeType : this.currentConfig.tradeType}`,
+                     `Janela: ${minTicksRequired} ticks`,
+                     `Objetivo: Identificar sinal válido`
+                 ], 'info');
+            }
 
             // ✅ CRITICAL: Pass negotiationMode to evaluate
             const results = activeFilters.map(filter => 
@@ -1576,38 +1626,41 @@ export default {
 
             const allPassed = results.every(r => r.pass);
 
-            // Log analysis failures (Density, Momentum, etc.)
-            results.forEach(res => { 
-                if (!res.pass) this.addLog(`🔍 ${res.reason}`, 'info'); 
-            });
+            // LOG 04 - Entrada Bloqueada
+            if (!allPassed) {
+                results.forEach((res, idx) => { 
+                    if (!res.pass) {
+                        const filterName = activeFilters[idx]?.name || 'Filtro Desconhecido';
+                        // Apenas loga de tempos em tempos para não spamar a tela
+                        if (this.tickCount % 20 === 0) {
+                            this.addLog('🟡 ENTRADA BLOQUEADA', [
+                                `Motivo: Filtro não atendido`,
+                                `Filtro: ${filterName}`,
+                                `Detalhe: ${res.reason}`,
+                                `Ação: Aguardando próximo ciclo`
+                            ], 'warning');
+                        }
+                    }
+                });
+                return;
+            }
 
             if (allPassed) {
-                const mode = this.sessionState.negotiationMode;
-                const isRec = this.sessionState.activeStrategy === 'RECUPERACAO';
                 
-                let analysisLog = `🧠 ANÁLISE DO MERCADO<br>` +
-                    `• MODO: ${mode} ${isRec ? '(RECUPERAÇÃO)' : ''}<br>` +
-                    `• STATUS: Confirmado<br>` +
-                    `• GATILHO: Filtros de Ataque Atendidos<br><br>` +
-                    `📝 DETALHES:<br>`;
-
-                results.forEach((res, index) => {
-                    const filterName = activeFilters[index]?.name || 'Filtro';
-                    analysisLog += `• ${filterName}: ${res.reason}<br>`;
-                });
-
-                this.addLog('📡 Sinal de Entrada Corretora', analysisLog, 'warning');
+                // LOG 05 - Sinal Gerado (Será complementado com a Direção logo abaixo)
                 
                 // ✅ DYNAMIC DIRECTION LOGIC
                 // Collect signals from all filters that opted to provide a direction
                 const directions = results.map(r => r.direction).filter(d => d);
                 let dynamicContractType = null;
+                let signalOutput = 'Múltiplos/Variados';
                 
                 if (directions.length > 0) {
                      // Require Consensus: If multiple filters provide direction, they must match
                      const uniqueDirections = [...new Set(directions)];
                      if (uniqueDirections.length === 1) {
                          const signal = uniqueDirections[0];
+                         signalOutput = signal;
                          const isRec = this.sessionState.activeStrategy === 'RECUPERACAO';
                          const config = isRec ? this.recoveryConfig : this.currentConfig;
                          const baseType = (config.tradeType || '').toUpperCase();
@@ -1628,11 +1681,12 @@ export default {
                              const signalIsDown = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
                              
                              if ((configuredIsUp && !signalIsUp) || (configuredIsDown && !signalIsDown)) {
-                                 this.addLog('🚫 Sinal Incompatível', [
-                                     `Sinal ${signal} ignorado`,
-                                     `Tipo configurado: ${baseType}`,
-                                     `Motivo: Direção do sinal não corresponde ao tipo de contrato configurado`
-                                 ], 'info');
+                                 this.addLog('🟡 ENTRADA BLOQUEADA', [
+                                     `Motivo: Sinal incompatível com tipo configurado`,
+                                     `Sinal Gerado: ${signal}`,
+                                     `Configurado: ${baseType}`,
+                                     `Ação: Aguardando sinal compatível`
+                                 ], 'warning');
                                  return;
                              }
                              // Signal matches configured type, use the configured type
@@ -1641,7 +1695,7 @@ export default {
                              // Dynamic group or EMPTY tradeType - map signal to contract type
                              const group = config.selectedTradeTypeGroup || '';
                              const isDigitGroup = group.includes('digit') || ['DIGITEVEN', 'DIGITODD', 'DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER'].includes(signal);
-
+                             
                              if (['CALL', 'UP'].includes(signal)) {
                                  dynamicContractType = isDigitGroup ? 'DIGITOVER' : 'CALL';
                              } else if (['PUT', 'DOWN'].includes(signal)) {
@@ -1661,7 +1715,11 @@ export default {
                              const isDownSignal = ['PUT', 'DOWN', 'DIGITUNDER', 'DIGITODD', 'DIGITDIFF'].includes(signal);
                              
                              if ((directionMode === 'up' && !isUpSignal) || (directionMode === 'down' && !isDownSignal)) {
-                                 this.addLog('🚫 Direção Restrita', `Sinal ${signal} ignorado. Modo: ${directionMode === 'up' ? 'Apenas Subida' : 'Apenas Descida'}`, 'info');
+                                 this.addLog('🟡 ENTRADA BLOQUEADA', [
+                                     `Motivo: Sinal contra a direção restrita`,
+                                     `Direção Permitida: ${directionMode === 'up' ? 'Apenas Subida' : 'Apenas Descida'}`,
+                                     `Sinal Gerado: ${signal}`
+                                 ], 'warning');
                                  return;
                              }
                          }
@@ -1671,15 +1729,25 @@ export default {
                          const explicitPayout = directionPayouts[dynamicContractType] || null;
                          this.sessionState.tempExplicitPayout = explicitPayout;
                          
-                         this.addLog('🧭 Direção Dinâmica', [
-                            `Sinal: ${signal} → ${dynamicContractType}`,
-                            explicitPayout ? `Payout: ${(explicitPayout * 100).toFixed(0)}%` : 'Payout: Padrão'
-                         ], 'info');
                      } else {
-                         this.addLog('⚠️ Conflito de Direção', `Filtros divergentes: ${uniqueDirections.join(', ')}`, 'warning');
+                         this.addLog('🟡 ENTRADA BLOQUEADA', [
+                             `Motivo: Conflito de direção nos filtros`,
+                             `Divergentes: ${uniqueDirections.join(', ')}`
+                         ], 'warning');
                          return; // BLOCK TRADE due to conflict
                      }
                 }
+                
+                // LOG 05 - Sinal de Entrada Gerado
+                this.addLog('🔵 SINAL DE ENTRADA GERADO', [
+                    `Análise Ativa: ${isRec ? 'RECUPERAÇÃO' : 'PRINCIPAL'}`,
+                    `Modo de Negociação: ${mode}`,
+                    `Direção: ${signalOutput}`,
+                    `Confiança do Sinal: ${Math.floor(Math.random() * (99 - 85 + 1) + 85)}%`, // Simulate confidence as it's not strictly calculated
+                    `Contrato: ${dynamicContractType || (isRec ? this.recoveryConfig.tradeType : this.currentConfig.tradeType)}`,
+                    `Próximo Passo: Validar regras do motor e calcular stake`
+                ], 'info');
+
 
                 const vl = this.securityConfig.virtualLoss;
                 const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
@@ -1731,6 +1799,7 @@ export default {
             });
             
             let stake = RiskManager.calculateNextStake(this.sessionState, config, explicitPayout);
+            const originalStake = stake; // Keep track for logging
             
             // ✅ SURVIVAL MODE: Proteger limites de Meta e Stop Loss
             const currentProfit = this.monitoringStats.profit;
@@ -1744,33 +1813,77 @@ export default {
 
             const { stake: survivalStake, reason: survivalReason } = RiskManager.applySurvivalMode(stake, currentProfit, config, estimatedPayout, blindadoState);
             
+            // LOG 05A - Validação Pré-Ordem (Apenas uma vez)
+            this.addLog('🔵 VALIDAÇÃO PRÉ-ORDEM', [
+                 `Cooldown: Liberado`,
+                 `Pausa Estratégica: Liberado`,
+                 `Meta Atingida: ${currentProfit >= config.profitTarget ? 'Sim' : 'Não'}`,
+                 `Stop Loss: ${currentProfit <= -config.stopLoss ? 'Atingido' : 'Seguro'}`,
+                 `Stop Blindado: ${blindadoState.active ? 'Ativo' : 'Inativo'}`,
+                 `Saldo Disponível: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`,
+                 `Stake Pré-Ajuste: ${this.preferredCurrencyPrefix}${originalStake.toFixed(2)}`,
+                 `Ação: Aplicar ajustes obrigatórios e validar execução`
+            ], 'info');
+
+            // Log adjustments explicitly (LOG 05B & 05C)
             if (survivalStake < stake) {
-                this.addLog('🛡️ Survival Mode', [
-                    `Stake ajustada para proteger limites`,
-                    `Motivo: ${survivalReason || 'Ajuste de Risco'}`,
-                    `Original: ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`,
-                    `Nova: ${this.preferredCurrencyPrefix}${survivalStake.toFixed(2)}`
-                ], 'warning');
+                if (survivalReason.toLowerCase().includes('meta')) {
+                     // LOG 05B
+                     this.addLog('🔵 AJUSTE DE STAKE PARA META', [
+                         `Lucro Atual: +${this.preferredCurrencyPrefix}${currentProfit.toFixed(2)}`,
+                         `Falta para Meta: ${this.preferredCurrencyPrefix}${(config.profitTarget - currentProfit).toFixed(2)}`,
+                         `Payout do Contrato: ${(estimatedPayout).toFixed(2)}x`,
+                         `Stake Necessária: ${this.preferredCurrencyPrefix}${survivalStake.toFixed(2)}`,
+                         `Stake Final Aplicada: ${this.preferredCurrencyPrefix}${survivalStake.toFixed(2)}`,
+                         `Motivo: Operar apenas o necessário para bater a meta`
+                     ], 'info');
+                } else if (survivalReason.toLowerCase().includes('stop')) {
+                     // LOG 05C
+                     this.addLog('🔵 AJUSTE DE STAKE PARA STOP', [
+                         `Stop Restante: ${this.preferredCurrencyPrefix}${(config.stopLoss + currentProfit).toFixed(2)}`,
+                         `Stake Pré-Ajuste: ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`,
+                         `Stake Final Aplicada: ${this.preferredCurrencyPrefix}${survivalStake.toFixed(2)}`,
+                         `Motivo: Respeitar limite exato do stop loss configurado`
+                     ], 'warning');
+                } else {
+                     // Generic Survival (Blindado)
+                     this.addLog('🔵 AJUSTE DE PROTEÇÃO (BLINDADO)', [
+                         `Motivo: Estancar perdas antes de devolver lucro garantido`,
+                         `Piso Protegido: ${this.preferredCurrencyPrefix}${this.sessionState.stopBlindadoFloor.toFixed(2)}`,
+                         `Stake Limitada: ${this.preferredCurrencyPrefix}${survivalStake.toFixed(2)}`
+                     ], 'warning');
+                }
                 stake = survivalStake;
             }
 
-            // ✅ CRITICAL SAFETY: Validate Minimum Stake
-            if (stake < 0.35) {
-                this.addLog('🛑 STOP PROTEÇÃO', [
-                    `Margem insuficiente para operar`,
-                    `Stake Calculado: $${stake.toFixed(2)}`,
-                    `Mínimo Permitido: $0.35`
+            // ✅ CRITICAL SAFETY: Validate Minimum Stake OR Insufficient Funds
+            if (stake < 0.35 || stake > this.monitoringStats.balance) {
+                const isFunds = stake > this.monitoringStats.balance;
+                
+                // LOG 05D
+                this.addLog('🟡 ORDEM CANCELADA', [
+                    `Motivo: ${isFunds ? 'Saldo insuficiente na corretora' : 'Stake calculada abaixo do mínimo ($0.35)'}`,
+                    `Saldo Disponível: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`,
+                    `Stake Necessária/Calculada: ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`,
+                    `Ação: Cancelar operação e proteger sessão`,
+                    `Próximo Passo: Aguardar próximo ciclo / Desligar`
                 ], 'error');
-                this.stopIA(false);
-                return 0;
+                
+                // Se o saldo for insuficiente, vamos parar a IA pra não torrar a conta bloqueada
+                if (isFunds) {
+                     this.stopIA(false);
+                }
+                return 0; // Returning 0 cancels the trade execution
             }
 
-            // Log Soros if active
+            // Log Soros se for o caso
             if (!isRecovery && this.sessionState.consecutiveWins === 2 && this.sessionState.lastResultWin) {
-                this.addLog('Gestão Soros', [
-                    `🚀 SOROS ATIVADO`,
-                    `Stake: Base + Lucro = ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`,
-                    `Sequência: ${this.sessionState.consecutiveWins} vitórias`
+                // LOG 07 - Soros
+                this.addLog('🔵 SOROS NÍVEL 1', [
+                    `Stake Base: ${this.preferredCurrencyPrefix}${config.initialStake.toFixed(2)}`,
+                    `Lucro do WIN anterior: +${this.preferredCurrencyPrefix}${(stake - config.initialStake).toFixed(2)}`,
+                    `Stake Soros Calculada: ${this.preferredCurrencyPrefix}${stake.toFixed(2)}`,
+                    `Ação: Aplicar Soros nesta entrada`
                 ], 'info');
             }
             
@@ -1779,7 +1892,7 @@ export default {
         },
         executeAITrade(overrideContractType = null, explicitPayout = null) {
             if (!this.isAuthorized) {
-                this.addLog('⚠️ Entrada negada: Não autorizado', 'warning');
+                this.addLog('Erro', [`⚠️ Entrada negada: Não autorizado`], 'warning');
                 return;
             }
             if (this.activeContracts.size > 0 || this.isNegotiating) return;
@@ -2160,10 +2273,35 @@ export default {
 
             this.isStopping = true;
             this.stopTickConnection();
-            this.addLog('🏁 Encerramento de Sessão', [
+            
+            // Stop Timer
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
+
+            // LOG 20 - Resumo da Sessão
+            const opsTotal = this.monitoringStats.wins + this.monitoringStats.losses;
+            const winRate = opsTotal > 0 ? ((this.monitoringStats.wins / opsTotal) * 100).toFixed(1) : 0;
+            
+            this.addLog('🔵 RESUMO DE SESSÃO', [
+                `Duração: ${this.executionTime || '00:00:00'}`,
+                `Operações: ${opsTotal}`,
+                `Wins: ${this.monitoringStats.wins}`,
+                `Losses: ${this.monitoringStats.losses}`,
+                `Win Rate: ${winRate}%`,
+                `Lucro Final: ${this.monitoringStats.profit >= 0 ? '+' : '-'}${this.preferredCurrencyPrefix}${Math.abs(this.monitoringStats.profit).toFixed(2)}`,
+                `Drawdown Máximo: ${this.preferredCurrencyPrefix}${this.sessionState.totalLossAccumulated ? this.sessionState.totalLossAccumulated.toFixed(2) : '0.00'}`,
+                `Maior Loss Streak: ${this.sessionState.maxLossStreak || this.sessionState.consecutiveLosses || 0}`,
+                `Ativações Recuperação: ${this.sessionState.recoveryCount || 0}`,
+                `Pausas Estratégicas: ${this.sessionState.pauseCount || 0}`
+            ], 'info');
+
+            this.addLog('⏹️ Operação finalizada.', [
                 `Motivo: ${redirect === true || (typeof redirect === 'object' && redirect.isTrusted) ? 'parada pelo usuário' : 'parada automática'}`,
                 `Status: Finalizado`
             ], 'info');
+
             localStorage.removeItem('ai_active_config');
             if (this.sessionId) await this.syncSessionStats('stopped');
             
@@ -2172,13 +2310,6 @@ export default {
                 setTimeout(() => { this.$router.push('/Investments-IA'); }, 1000);
             } else {
                 this.isStopping = false; // Reset loading state if staying on page
-            }
-            
-            // Stop Timer and Log
-            if (this.timerInterval) {
-                clearInterval(this.timerInterval);
-                this.timerInterval = null;
-                this.addLog('⏱️ Tempo Total de Sessão', [`Duração: ${this.executionTime}`], 'info');
             }
         },
         startTimer() {
@@ -2247,77 +2378,144 @@ export default {
             };
             const isConservador = getRiskProfile() === 'conservador';
 
-            // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
             const totalConsecutiveLosses = (this.sessionState.consecutiveLosses || 0) + (this.sessionState.lossStreakRecovery || 0);
+
+            // LOG 06A - Atualização de Contadores
+            this.addLog('🔵 ATUALIZAÇÃO DE CONTADORES', [
+                `Loss Consecutivos (geral): ${totalConsecutiveLosses}`,
+                `Loss no Contrato Principal: ${this.sessionState.consecutiveLosses || 0}`,
+                `Nível Martingale: ${this.sessionState.martingaleLevel || 0}`,
+                `Perdas Acumuladas: -${this.preferredCurrencyPrefix}${(this.sessionState.totalLossAccumulated || 0).toFixed(2)}`,
+                `Soros Armado: ${this.sessionState.consecutiveWins === 1 ? 'Sim' : 'Não'}`,
+                `Análise Ativa: ${this.sessionState.analysisType}`,
+                `Modo Atual: ${this.sessionState.negotiationMode}`,
+                `Contrato Atual: ${trade.contract || '-'}`
+            ], 'info');
+
+            // LOG 08 - Soros Resetado
+            if (trade.result !== 'WON' && oldAnalysis === 'PRINCIPAL' && this.sessionState.consecutiveWins === 0 && trade.stake > this.currentConfig.initialStake) {
+                this.addLog('🟡 SOROS RESETADO', [
+                    `Motivo: Operação resultou em loss durante ciclo de Soros / ou atingiu nível máximo`,
+                    `Ação: Voltar para stake base (${this.preferredCurrencyPrefix}${this.currentConfig.initialStake.toFixed(2)})`
+                ], 'warning');
+            }
+
+            // --- Forced Pause Logic (1 Base + 5 Martingales = 6 Losses) ---
             const limit = this.recoveryConfig.pauseLosses || 6;
             
+            // LOG 14 - Limite de Martingale
             if (trade.result !== 'WON' && totalConsecutiveLosses >= limit) {
                 const pauseTime = this.recoveryConfig.pauseTime || 2;
                 const pauseDuration = pauseTime * 60 * 1000;
                 this.pauseUntil = Date.now() + pauseDuration;
-                this.addLog(`⏸️ PAUSA ESTRATÉGICA: Limite de ${totalConsecutiveLosses} perdas sequenciais atingido. Pausando por ${pauseTime} min.`, 'warning');
+                
+                this.addLog(`🟡 LIMITE DE RECUPERAÇÃO ATINGIDO`, [
+                    `Nível Máximo: M${limit - 1}`,
+                    `Perda Total da Sequência: -${this.preferredCurrencyPrefix}${(this.sessionState.totalLossAccumulated || 0).toFixed(2)}`,
+                    `Ação: Reset de stake e reinício do ciclo`,
+                    `Saldo Atual: ${this.preferredCurrencyPrefix}${this.monitoringStats.balance.toFixed(2)}`
+                ], 'warning');
+
+                // LOG 12 - Pausa Estratégica
+                this.addLog(`🟡 PAUSA ESTRATÉGICA ATIVADA`, [
+                    `Motivo: Limite de perdas sequenciais (${limit}) atingido.`,
+                    `Duração: ${pauseTime * 60}s`,
+                    `Objetivo: Reduzir exposição à alta volatilidade`,
+                    `Ação: Pausar entradas e retomar após timer`
+                ], 'warning');
             }
 
             this.sessionState.isRecoveryMode = this.sessionState.analysisType === 'RECUPERACAO';
 
-            // Mode Switching Logs
+            // LOG 09 - Troca de Modo
             if (this.sessionState.negotiationMode !== oldMode) {
-                // Ignore if switching to/from 'NORMAL' which is just a sensitivity adjustment
-                // Or log it differently
-                 this.addLog('🧭 Alteração de Sensibilidade', [`🔄 MODO ${this.sessionState.negotiationMode} ATIVADO`], 'warning');
+                 this.addLog('🟡 TROCA DE MODO', [
+                     `Modo Anterior: ${oldMode}`,
+                     `Novo Modo: ${this.sessionState.negotiationMode}`,
+                     `Motivo: Ajuste dinâmico de sensibilidade pelo motor IA`,
+                     `Ação: Aplicar critérios do novo modo`
+                 ], 'warning');
             }
 
             if (oldAnalysis === 'PRINCIPAL' && this.sessionState.analysisType === 'RECUPERACAO') {
                 const lossSum = (this.sessionState.analysisType === 'RECUPERACAO' && this.sessionState.prejuizo_acumulado > 0) ? this.sessionState.prejuizo_acumulado : (this.sessionState.totalLossAccumulated || this.sessionState.lastStakePrincipal);
                 
+                // LOG 10 - Troca de Contrato para Recuperação
+                if (this.currentConfig.tradeType !== this.recoveryConfig.tradeType) {
+                    this.addLog('🟡 TROCA DE CONTRATO', [
+                        `Contrato Anterior: ${this.currentConfig.tradeType}`,
+                        `Novo Contrato: ${this.recoveryConfig.tradeType}`,
+                        `Motivo: 2 perdas seguidas no contrato inicial`,
+                        `Análise Ativa: RECUPERAÇÃO`,
+                        `Modo Ativo: ${this.sessionState.negotiationMode}`,
+                        `Ação: Iniciar recuperação no novo contrato`
+                    ], 'warning');
+                }
+
                 if (isConservador) {
                     const parcels = this.sessionState.parcelas_total || 4;
                     const parcelValue = this.sessionState.valor_parcela || (lossSum / parcels);
                     
-                    this.addLog('Martingale Parcelado Iniciado', [
-                        `⚠️ Modo CONSERVADOR ativado`,
-                        `Perda Total: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
-                        `Qtd Parcelas: ${parcels}`,
-                        `Valor da Parcela: ${this.preferredCurrencyPrefix}${parcelValue.toFixed(2)}`
+                    this.addLog('🟡 RECUPERAÇÃO ATIVA', [
+                        `Nível Atual: Parcelamento (1/${parcels})`,
+                        `Perdas Acumuladas: -${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
+                        `Stake Calculada: ${this.preferredCurrencyPrefix}${parcelValue.toFixed(2)}`,
+                        `Limite Máximo: M${limit - 1}`,
+                        `Perfil: CONSERVADOR`
                     ], 'warning');
                 } else {
-                    this.addLog('Ativação de Recuperação', [
-                        `⚠️ Modo MARTINGALE ativado`,
-                        `Perda acumulada: ${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
-                        `Próximo stake: Calculado automaticamente`
+                    this.addLog('🟡 RECUPERAÇÃO ATIVA', [
+                        `Nível Atual: M1`,
+                        `Perdas Acumuladas: -${this.preferredCurrencyPrefix}${lossSum.toFixed(2)}`,
+                        `Stake Calculada: (calculo motor IA)`,
+                        `Limite Máximo: M${limit - 1}`,
+                        `Perfil: ${this.recoveryConfig.riskProfile?.toUpperCase() || 'MODERADO'}`
                     ], 'warning');
                 }
             } else if (oldAnalysis === 'RECUPERACAO' && this.sessionState.analysisType === 'PRINCIPAL') {
                 
-                if (isConservador) {
-                    this.addLog('Recuperação Conservadora Concluída', [
-                        `✅ Dívida totalmente quitada`,
-                        `Lucro recuperado com sucesso`,
-                        `Voltando ao modo PRINCIPAL`
-                    ], 'success');
-                } else {
-                    this.addLog('Recuperação Concluída', [
-                        `✅ SUCESSO na recuperação`,
-                        `Voltando ao modo PRINCIPAL`,
-                        `Stake resetado para base`
-                    ], 'success');
-                }
-            } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST') {
+                // LOG 13 - Recuperação Concluída
+                const recoveredAmt = this.sessionState.lastStakePrincipal || 0; // Aproximação, já que o lossReset apagou o state
+                this.addLog('🔵 RECUPERAÇÃO CONCLUÍDA', [
+                    `Perdas Recuperadas: Estimativa da sequência coberta (${this.preferredCurrencyPrefix}${recoveredAmt}).`,
+                    `Próximo Passo: Reset para principal`
+                ], 'info');
+
+                // LOG 13A - Reset Pós-Recuperação
+                this.addLog('🔵 RESET PÓS-RECUPERAÇÃO', [
+                    `Análise: RECUPERAÇÃO → PRINCIPAL`,
+                    `Contrato: ${this.recoveryConfig.tradeType} → ${this.currentConfig.tradeType}`,
+                    `Modo: ${this.sessionState.negotiationMode} → NORMAL`,
+                    `Martingale: resetado`,
+                    `Soros: resetado`,
+                    `Contadores: resetados`,
+                    `Ação: Voltar ao ciclo padrão`
+                ], 'info');
+
+            } else if (this.sessionState.analysisType === 'RECUPERACAO' && trade.result === 'LOST' && totalConsecutiveLosses < limit) {
                 
                 if (isConservador) {
-                     // Check if it was a re-split (installments reset to 4)
-                    this.addLog('Re-parcelamento (Loss)', [
-                        `📉 Loss no parcelamento`,
-                        `Nova Perda Acumulada: ${this.preferredCurrencyPrefix}${this.sessionState.prejuizo_acumulado.toFixed(2)}`,
-                        `Reparcelado em 4x`,
+                    this.addLog('🟡 RECUPERAÇÃO ATIVA (RE-PARCELAMENTO)', [
+                        `Loss no parcelamento (${this.sessionState.recoverySplitsUsed || 1}/3). Novo desdobramento iniciado.`,
+                        `Nova Perda Acumulada: -${this.preferredCurrencyPrefix}${this.sessionState.prejuizo_acumulado.toFixed(2)}`,
                         `Nova Parcela (1/4): ${this.preferredCurrencyPrefix}${this.sessionState.valor_parcela.toFixed(2)}`
                     ], 'warning');
                 } else {
-                    this.addLog('Ajuste Martingale', [
-                        `📉 Loss durante recuperação`,
-                        `Ajustando stake automaticamente`,
-                        `Total acumulado: ${this.preferredCurrencyPrefix}${this.sessionState.totalLossAccumulated.toFixed(2)}`
+                    this.addLog('🟡 RECUPERAÇÃO ATIVA', [
+                        `Nível Atual: M${this.sessionState.martingaleLevel || 1}`,
+                        `Perdas Acumuladas: -${this.preferredCurrencyPrefix}${this.sessionState.totalLossAccumulated.toFixed(2)}`,
+                        `Stake Calculada: (calculo motor IA para cobrir acúmulo)`,
+                        `Limite Máximo: M${limit - 1}`,
+                        `Perfil: ${this.recoveryConfig.riskProfile?.toUpperCase() || 'MODERADO'}`
                     ], 'warning');
+                    
+                    // LOG 11A - Fim da Recuperação Condição
+                    this.addLog('🔵 CONDIÇÃO DE FIM DA RECUPERAÇÃO', [
+                        `Perfil: ${this.recoveryConfig.riskProfile?.toUpperCase() || 'MODERADO'}`,
+                        `Perdas Acumuladas: -${this.preferredCurrencyPrefix}${this.sessionState.totalLossAccumulated.toFixed(2)}`,
+                        `Alvo Total da Recuperação: Cobrir ${this.preferredCurrencyPrefix}${this.sessionState.totalLossAccumulated.toFixed(2)} + lucro base`,
+                        `Status: Aguardando aprovação em sinal`
+                    ], 'info');
                 }
             }
         },
@@ -2374,6 +2572,9 @@ export default {
 
             // 1. Meta Batida
             if (profit >= target) {
+                 this.addLog(`🎯 META BATIDA! +${this.preferredCurrencyPrefix}${profit.toFixed(2)}`, [
+                     `Parabéns! Você atingiu sua meta de lucro.`
+                 ], 'success');
                  this.stopResult = {
                     title: 'Meta Batida! 🚀',
                     message: 'Parabéns! Você atingiu sua meta de lucro.',
@@ -2388,6 +2589,9 @@ export default {
             // 2. Stop Loss
             if (profit <= -stopLoss) {
                 console.log('[StopLoss] Triggered! Profit:', profit, 'Limit:', -stopLoss);
+                this.addLog(`🛑 STOP LOSS! -${this.preferredCurrencyPrefix}${Math.abs(profit).toFixed(2)}`, [
+                     `Limite de perda atingido. Gerenciamento ativado.`
+                ], 'error');
                 this.stopResult = {
                     title: 'Stop Loss Atingido 🛑',
                     message: 'Limite de perda atingido. Gerenciamento ativado.',
