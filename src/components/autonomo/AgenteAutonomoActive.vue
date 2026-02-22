@@ -197,7 +197,7 @@
 							</div>
                             <div class="flex flex-col">
                                 <span class="text-[10px] text-[#A1A1AA] font-bold uppercase tracking-wider mb-0.5">AGENTE ATIVO</span>
-								<span class="text-white font-bold">{{ agenteData.estrategia ? agenteData.estrategia.replace('IA ', '') : 'Agente' }}</span>
+								<span class="text-white font-bold">{{ currentAgentName.replace('AGENTE ', '') }}</span>
                             </div>
 						</div>
 					</div>
@@ -543,8 +543,8 @@
 			<div v-show="showLogs" class="border-t border-[#27272a] animate-in fade-in slide-in-from-top-2 duration-300">
 				<AutonomousAgentLogs 
 					:userId="getUserId()" 
-					:isActive="true"
-					:agentName="agenteData.estrategia.replace('IA ', '')"
+					:isActive="agenteData.sessionStatus === 'active'"
+					:agentName="agenteData.estrategia.replace('IA ', '').replace('IA', '')"
 					:market="agenteData.mercado"
 					:riskProfile="agenteData.risco"
 					:accountType="accountType === 'demo' ? 'test' : 'prod'"
@@ -1187,7 +1187,9 @@
 				return 'zeus'; // Fallback default
 			},
             currentAgentName() {
-                const name = this.agenteData?.name || this.agenteData?.estrategia || 'Autônomo';
+                let name = this.agenteData?.name || this.agenteData?.estrategia || 'Autônomo';
+                // ✅ [ZENIX v4.3] Remove "IA" or "IA " from name as per user request
+                name = name.replace(/IA\s*/gi, '').trim();
                 return (name.toLowerCase().includes('agente') ? name : `Agente ${name}`).toUpperCase();
             },
 			dateRangeText() {
@@ -1209,7 +1211,7 @@
 			initialCapital() {
 				// ✅ [ZENIX v4.3] Derive Initial Capital from Final - Profit for consistency in UI reporting
 				if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
-					return (this.finalCapital || 0) - (this.periodProfit || 0);
+					return (this.finalCapital || 0) - (this.totalProfitToday || 0);
 				}
 				return this.agentConfig?.initialBalance || this.agentConfig?.initialCapital || 0;
 			},
@@ -1241,8 +1243,8 @@
                 return this.totalProfitToday || 0;
             },
             dailyOpsValue() {
-                if (this.dailyRealtimeStats) return this.dailyRealtimeStats.totalOps;
-                return this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
+                // ✅ [ZENIX v4.3] Use deduped allTradesToday length for absolute daily count
+                return this.allTradesToday.length || 0;
             },
 			periodProfit() {
 				// ✅ [ZENIX v4.3] Use CALCULATED local stats for Session/Today to avoid backend/WS duplication issues
@@ -1349,8 +1351,8 @@
 				return '0h 0m 0s';
 			},
 			operacoesHojeDisplay() {
-				// ✅ [ZENIX v2.3] Consistência absoluta com sessionStats
-				return this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
+				// ✅ [ZENIX v4.3] Consistência absoluta com a lista de trades dedupados hoje
+				return this.dailyOpsValue;
 			},
 			totalCapital() {
 				// Só para compatibilidade interna se usado em outros lugares
@@ -1548,7 +1550,18 @@
 				}
 				
 				const combined = [];
-				const getDedupKey = (t) => `${getTimestamp(t)}-${parseFloat(t.profit || t.profit_loss || 0).toFixed(2)}-${parseFloat(t.stake || 0).toFixed(2)}-${t.symbol || t.market || ''}`;
+				const getDedupKey = (t) => {
+                    // ✅ [ZENIX v4.3] Perfect Dedup: Prioritize Broker's Contract ID
+                    const contractId = t.contract_id || t.contractId || t.contract_id;
+                    if (contractId) return `CID-${contractId}`;
+                    
+                    const ts = getTimestamp(t);
+                    const tsSeconds = Math.floor(ts / 1000); // Strip milliseconds
+                    const profit = parseFloat(t.profit || t.profit_loss || 0).toFixed(2);
+                    const stake = parseFloat(t.stake || 0).toFixed(2);
+                    const mkt = (t.symbol || t.market || t.asset || '').toUpperCase();
+					return `${tsSeconds}-${profit}-${stake}-${mkt}`;
+                };
 				
                 const finalSeenKeys = new Set();
                 
@@ -1707,12 +1720,24 @@
 					};
 				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 20000); // Increased limit to 20k as per user request
 
-			// ✅ Remove duplicates based on trade ID
+			// ✅ Remove duplicates using exactly the same logic as allTradesToday
 			const uniqueTrades = [];
 			const seenIds = new Set();
 			for (const trade of normalizedTrades) {
-				if (!seenIds.has(`${trade.createdAt}-${trade.profit}-${trade.stake}-${trade.market}`)) {
-					seenIds.add(`${trade.createdAt}-${trade.profit}-${trade.stake}-${trade.market}`);
+                const raw = trade.original || trade;
+                const contractId = raw.contract_id || raw.contractId || raw.id;
+                let key = '';
+                
+                if (contractId && String(contractId).length > 8) {
+                    key = `CID-${contractId}`;
+                } else {
+                    const ts = new Date(trade.createdAt).getTime();
+                    const tsSeconds = Math.floor(ts / 1000);
+                    key = `${tsSeconds}-${trade.profit}-${trade.stake}-${trade.market.toUpperCase()}`;
+                }
+
+				if (!seenIds.has(key)) {
+					seenIds.add(key);
 					uniqueTrades.push(trade);
 				}
 			}
