@@ -328,7 +328,7 @@
                                                 <button 
                                                     type="button" 
                                                     @click="calculatePayouts('main')" 
-                                                    class="mt-3 w-full bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/30 rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2" 
+                                                    :class="['mt-3 w-full rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2', isCalculatingPayouts.main ? 'bg-blue-500/5 text-blue-500/50 border border-blue-500/10 cursor-not-allowed opacity-50' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/30']" 
                                                     :disabled="isCalculatingPayouts.main"
                                                 >
                                                     <i v-if="isCalculatingPayouts.main" class="fa-solid fa-spinner fa-spin"></i>
@@ -636,7 +636,7 @@
                                                     <button 
                                                         type="button" 
                                                         @click="calculatePayouts('recovery')" 
-                                                        class="mt-3 w-full bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/30 rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2" 
+                                                        :class="['mt-3 w-full rounded-lg py-2 text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2', isCalculatingPayouts.recovery ? 'bg-blue-500/5 text-blue-500/50 border border-blue-500/10 cursor-not-allowed opacity-50' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border border-blue-500/30']" 
                                                         :disabled="isCalculatingPayouts.recovery"
                                                     >
                                                         <i v-if="isCalculatingPayouts.recovery" class="fa-solid fa-spinner fa-spin"></i>
