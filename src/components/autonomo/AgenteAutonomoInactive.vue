@@ -874,14 +874,25 @@ import ImplementationModal from '../modals/ImplementationModal.vue';
             }
         },
 		availableAgents() {
-			// if (!this.planFeatures) return this.allAgents;
+			if (this.isAdmin) return this.allAgents;
+			if (!this.planFeatures) return this.allAgents;
 			
-			// const allowedAgents = this.planFeatures.agents || [];
+			const features = this.planFeatures || {};
 			
-			// return this.allAgents.filter(agent => {
-			// 	return allowedAgents.some(allowedId => allowedId.toLowerCase() === agent.id.toLowerCase());
-			// });
-            return this.allAgents;
+			// 1. Verificar se o plano tem lista explícita de agentes
+			if (Array.isArray(features.agents)) {
+				return this.allAgents.filter(agent => {
+					const agentIdLow = agent.id.toLowerCase();
+					return features.agents.some(id => id.toString().toLowerCase() === agentIdLow);
+				});
+			}
+			
+			// 2. Fallback: Se tiver a permissão global de agente autônomo, mostrar todos
+			if (features.autonomous_agent === true) {
+				return this.allAgents;
+			}
+			
+			return [];
 		},
 		riskLevelText() {
 			const labels = {

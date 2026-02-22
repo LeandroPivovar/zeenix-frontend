@@ -23,7 +23,7 @@
                 <div class="select-group">
                     <select v-model="selectedTrader" @change="onTraderSelected" class="trader-select">
                         <option value="">Selecione um trader</option>
-                        <option v-for="trader in tradersList" :key="trader.id" :value="trader.id">
+                        <option v-for="trader in availableTraders" :key="trader.id" :value="trader.id">
                             {{ trader.name }} 
                         </option>
                     </select>
@@ -295,7 +295,12 @@
 <script>
 export default {
     name: 'CopyTradingComponent',
-    props: ['performanceData', 'isMobile'],
+    props: {
+        performanceData: { type: Object, required: true },
+        isMobile: { type: Boolean, default: false },
+        planFeatures: { type: Object, default: null },
+        isAdmin: { type: Boolean, default: false }
+    },
     data() {
         return {
             selectedPeriod: '7',
@@ -317,6 +322,26 @@ export default {
         }
     },
     computed: {
+        availableTraders() {
+            if (this.isAdmin) return this.tradersList;
+            if (!this.planFeatures) return this.tradersList;
+            
+            const features = this.planFeatures || {};
+            
+            // 1. Verificar se o plano tem lista explícita de traders
+            if (Array.isArray(features.traders)) {
+                return this.tradersList.filter(trader => {
+                    return features.traders.some(id => id.toString() === trader.id.toString());
+                });
+            }
+            
+            // 2. Fallback: Se tiver a permissão global de copy trading, mostrar todos
+            if (features.copy_trading === true) {
+                return this.tradersList;
+            }
+            
+            return [];
+        },
         selectedTraderStats() {
             const trader = this.tradersList.find(t => t.id === this.selectedTrader);
             return trader || { name: '', roi: '0', dd: '0', followers: '0', winRate: '0%', totalTrades: '0' };

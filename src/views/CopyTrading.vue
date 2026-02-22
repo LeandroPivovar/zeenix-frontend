@@ -16,6 +16,8 @@
                 v-if="showPerformance"
                 :performance-data="performanceData"
                 :is-mobile="isMobile"
+                :plan-features="planFeatures"
+                :is-admin="isAdmin"
                 @navigate-to-history="showPerformance = false; showHistory = true; updateHeaders()"
                 @navigate-to-performance="showPerformance = true; showHistory = false; updateHeaders()"
                 @copy-activated="handleCopyActivated"
@@ -41,10 +43,36 @@ import AppSidebar from '../components/Sidebar.vue'
 import CopyTradingComponent from '../components/copy/CopyTradingComponent.vue'
 import CopyHistory from '../components/copy/CopyHistory.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
+import accountBalanceMixin from '@/mixins/accountBalanceMixin'
 
 export default {
     name: 'CopyTrading',
     components: { AppSidebar, CopyTradingComponent, CopyHistory, DesktopBottomNav },
+    mixins: [accountBalanceMixin],
+    computed: {
+        isAdmin() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+                
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const role = payload.role || payload.roles || payload.userRole || payload.user_role;
+                const isAdminFlag = payload.isAdmin || payload.is_admin;
+                
+                if (isAdminFlag === true || isAdminFlag === 'true') return true;
+                
+                if (role) {
+                    const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
+                    return roleStr.includes('admin') || roleStr === 'admin';
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('[CopyTradingView] Erro ao verificar se usuário é admin:', error);
+                return false;
+            }
+        }
+    },
     data() {
         return {
             loading: true,

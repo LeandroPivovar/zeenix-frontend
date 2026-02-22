@@ -55,23 +55,6 @@
                         </p>
                     </div>
 
-                    <div class="card-actions">
-                        <button class="btn-link">Editar</button>
-                        <button class="btn-link">Logs</button>
-                        <button class="btn-link">Testar</button>
-                        <button 
-                            v-if="connection.status === 'active'" 
-                            class="btn-link btn-danger"
-                        >
-                            Desativar
-                        </button>
-                        <button 
-                            v-else 
-                            class="btn-link btn-success-action"
-                        >
-                            Ativar
-                        </button>
-                    </div>
                 </div>
             </section>
             
@@ -308,28 +291,7 @@ export default {
             ],
 
             // 3. Logs do Webhook
-            webhookLogs: [
-                {
-                    id: 1,
-                    timestamp: '20/11/2025 13:19:35',
-                    eventType: 'order_approved',
-                    eventLabel: 'Compra Aprovada',
-                    status: 'success',
-                    statusLabel: 'Sucesso',
-                    email: 'denoc89670@okcdeals.com',
-                    details: 'Usuário criado e email enviado',
-                },
-                {
-                    id: 2,
-                    timestamp: '20/11/2025 13:05:48',
-                    eventType: 'order_approved',
-                    eventLabel: 'Compra Aprovada',
-                    status: 'success',
-                    statusLabel: 'Sucesso',
-                    email: 'johndoe@example.com',
-                    details: 'Usuário criado com sucesso',
-                },
-            ],
+            webhookLogs: [],
 
             // 4. Alertas e Uptime
             emailAlertsEnabled: true,
@@ -348,6 +310,7 @@ export default {
     mounted() {
         this.handleResize();
         window.addEventListener('resize', this.handleResize);
+        this.refreshLogs(); // Carregar logs ao iniciar
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
@@ -365,12 +328,67 @@ export default {
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         },
-        refreshLogs() {
+        async refreshLogs() {
             console.log('Atualizando logs...');
-            // TODO: Implementar chamada à API para buscar logs atualizados
+            try {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
+                const response = await fetch(`${apiBase}/webhook/logs?limit=50`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                });
+                const result = await response.json();
+                if (result.success) {
+                    this.webhookLogs = result.data.map(log => this.formatLog(log));
+                }
+            } catch (error) {
+                console.error('Erro ao buscar logs:', error);
+            }
         },
-        clearLogs() {
-            this.webhookLogs = [];
+        async clearLogs() {
+            try {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
+                const response = await fetch(`${apiBase}/webhook/clear-logs`, {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                });
+                const result = await response.json();
+                if (result.success) {
+                    this.webhookLogs = [];
+                    if (this.$root && this.$root.$toast) {
+                        this.$root.$toast.success('Logs limpos com sucesso');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao limpar logs:', error);
+            }
+        },
+        formatLog(log) {
+            const eventLabels = {
+                'order_approved': 'Compra Aprovada',
+                'subscription_renewed': 'Assinatura Renovada',
+                'subscription_cancelled': 'Assinatura Cancelada'
+            };
+            
+            const statusLabels = {
+                'received': 'Recebido',
+                'success': 'Sucesso',
+                'error': 'Erro'
+            };
+
+            return {
+                id: log.id,
+                timestamp: new Date(log.createdAt).toLocaleString('pt-BR'),
+                eventType: log.eventType || 'unknown',
+                eventLabel: eventLabels[log.eventType] || (log.eventType ? log.eventType.replace(/_/g, ' ') : 'Desconhecido'),
+                status: log.status || 'received',
+                statusLabel: statusLabels[log.status] || 'Desconhecido',
+                email: log.email || 'N/A',
+                details: log.details || (log.status === 'received' ? 'Aguardando processamento' : ''),
+                payload: log.payload
+            };
         },
         requestClearLogs() {
             this.confirmModalData = {

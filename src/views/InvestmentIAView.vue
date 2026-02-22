@@ -778,9 +778,28 @@ export default {
             // ✅ Only show ACTIVE strategies
             const activeStrategies = this.allStrategies.filter(s => s.status === 'Ativo');
             
+            if (this.isAdmin) return activeStrategies;
             if (!this.planFeatures) return activeStrategies;
             
-            return activeStrategies;
+            const features = this.planFeatures || {};
+            
+            // 1. Verificar se o plano tem lista explícita de IAs
+            if (Array.isArray(features.ias)) {
+                return activeStrategies.filter(strategy => {
+                    const strategyIdLow = strategy.id.toLowerCase();
+                    return features.ias.some(id => id.toString().toLowerCase() === strategyIdLow);
+                });
+            }
+            
+            // 2. Legacy boolean checks (orion_ai, etc)
+            return activeStrategies.filter(strategy => {
+                const id = strategy.id.toLowerCase();
+                if (id === 'orion' && features.orion_ai === true) return true;
+                if (id === 'atlas' && features.atlas_ai === true) return true;
+                if (id === 'nexus' && features.nexus_ai === true) return true;
+                if (id.includes('black') && (features.black_module === true || features.orion_black === true)) return true;
+                return false;
+            });
         },
         
         performanceDisplay() {
