@@ -1776,7 +1776,14 @@ export default {
                     active: false,
                     type: 'digit',
                     desc: 'Média dos últimos X dígitos é Op L.',
-                    config: { period: 10, op: '>', threshold: 4.5, tradeInFavor: true }
+                },
+                {
+                    id: 'virtual_loss',
+                    name: 'Filtro de Loss Virtual',
+                    active: false,
+                    type: 'digit',
+                    desc: 'Libera a entrada após X perdedores em uma janela de Y ticks.',
+                    config: { window: 15, limit: 4, loserDigits: '7,8,9', targetDirection: 'DIGITUNDER' }
                 },
                 {
                     id: 'digit_position_return',
@@ -2517,7 +2524,10 @@ export default {
                 ticksToConfirm: 'Confirmação (Ticks)',
                 digits: 'Dígitos',
                 operator: 'Operador de Comparação',
-                tradeInFavor: 'A Favor da Tendência'
+                tradeInFavor: 'A Favor da Tendência',
+                loserDigits: 'Dígitos Perdedores',
+                limit: 'Limite de Losses',
+                targetDirection: 'Direção da Entrada'
             };
             return map[key] || key.replace(/([A-Z])/g, ' $1');
         },

@@ -207,15 +207,15 @@ export const filterDescriptions = {
         },
         template: "A estratégia calcula o momentum dos últimos {window} ticks e entra se o delta for maior que {minDelta} (Confirmado por {ticksToConfirm} ticks)."
     },
-    // APOLLO
-    digit_density: {
-        title: "Densidade de Dígitos",
+    // VIRTUAL LOSS
+    virtual_loss: {
+        title: "Filtro de Loss Virtual",
         loftop: {
-            what: "Conta a densidade de dígitos alvo.",
-            when: "Quando a densidade é maior/menor que o limite.",
-            result: "Entra baseado na densidade."
+            what: "Identifica um padrão adverso antes da entrada.",
+            when: "Quando o limite de dígitos perdedores é atingido.",
+            result: "Opera contra a tendência recente (reversão)."
         },
-        template: "A estratégia verifica se os dígitos {digits} aparecem {operator_translated} {threshold} vezes na janela de {window} ticks."
+        template: "O robô observa os últimos {window} ticks. Se detectar {limit} ou mais dígitos perdedores ({loserDigits}), ele libera a entrada em {targetDirection_translated}."
     }
 };
 
@@ -227,7 +227,15 @@ export const getTranslation = (key, value) => {
         op: { '>': 'maior que', '<': 'menor que', '>=': 'maior ou igual a', '<=': 'menor ou igual a', '=': 'igual a' },
         direction: { up: 'Para Cima', down: 'Para Baixo', rise: 'Alta', fall: 'Baixa', increasing: 'Aumentando', decreasing: 'Diminuindo' },
         condition: { cross_up: 'Cruzar para Cima', cross_down: 'Cruzar para Baixo', oversold: 'Abaixo de', overbought: 'Acima de', '>': 'Maior que', '<': 'Menor que' },
-        target: { under_4: 'Abaixo de 4', over_5: 'Acima de 5', even: 'Pares', odd: 'Ímpares' }
+        target: { under_4: 'Abaixo de 4', over_5: 'Acima de 5', even: 'Pares', odd: 'Ímpares' },
+        targetDirection: {
+            DIGITOVER: 'Superior (Over)',
+            DIGITUNDER: 'Inferior (Under)',
+            DIGITEVEN: 'Par (Even)',
+            DIGITODD: 'Ímpar (Odd)',
+            DIGITMATCH: 'Combina (Match)',
+            DIGITDIFF: 'Difere (Diff)'
+        }
     };
 
     if (key === 'parity_translated') return maps.parity[value] || value;
@@ -238,6 +246,7 @@ export const getTranslation = (key, value) => {
     if (key === 'condition_translated') return maps.condition[value] || value;
     if (key === 'target_translated') return maps.target[value] || value;
     if (key === 'operator_translated') return maps.op[value] || value;
+    if (key === 'targetDirection_translated') return maps.targetDirection[value] || value;
 
     return value;
 };

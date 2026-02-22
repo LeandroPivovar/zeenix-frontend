@@ -88,6 +88,8 @@ export const StrategyAnalysis = {
                 return this.spikeDetect(activeConfig, tickHistory);
             case 'step_pattern':
                 return this.stepPattern(activeConfig, tickHistory);
+            case 'virtual_loss':
+                return this.virtualLoss(activeConfig, digitHistory);
             default:
                 return { pass: false, reason: 'Filtro desconhecido' };
         }
@@ -133,6 +135,31 @@ export const StrategyAnalysis = {
                 ? `Densidade OK: Encontrado ${count} dígitos ${targetDigits.join('/')} ${unique ? '(Únicos)' : ''}`
                 : `Densidade negada: Encontrado ${count} dígitos (Limite ${operator}${threshold})`,
             direction: null // Density doesn't imply a specific contract direction (Call/Put/Over/Under)
+        };
+    },
+
+    /**
+     * Virtual Loss Filter - Counts specific losing digits in a window.
+     */
+    virtualLoss(config, digitHistory) {
+        const { window, limit, loserDigits, targetDirection } = config;
+        const subHistory = digitHistory.slice(0, window);
+
+        if (subHistory.length < window) {
+            return { pass: false, reason: `Aguardando dados (${subHistory.length}/${window})` };
+        }
+
+        const losers = loserDigits.split(',').map(d => parseInt(d.trim()));
+        const matchingDigits = subHistory.filter(d => losers.includes(d));
+        const count = matchingDigits.length;
+        const pass = count >= limit;
+
+        return {
+            pass,
+            reason: pass
+                ? `Loss Virtual OK: ${count} perdedores encontrados (Limite ${limit}). Direção: ${targetDirection}`
+                : `Loss Virtual negado: Apenas ${count} perdedores encontrados`,
+            direction: pass ? targetDirection : null
         };
     },
 
