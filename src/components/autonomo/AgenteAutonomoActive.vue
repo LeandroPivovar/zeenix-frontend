@@ -1565,7 +1565,7 @@
 				
 				// ✅ [ZENIX v3.5] Prioridade na data da sessão (Official Start)
 				const sessionStartTime = this.agentConfig?.sessionDate ? new Date(this.agentConfig.sessionDate).getTime() : 0;
-				const GAP_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
+				const GAP_THRESHOLD_MS = 4 * 60 * 60 * 1000; // Increased to 4 hours to avoid premature splits
 				
 				const currentSessionTrades = [];
 				// Start with the last trade
@@ -1694,9 +1694,9 @@
 						// 2. Session ID change
 						const isSessionChange = prevSessionId && currSessionId && prevSessionId !== currSessionId;
 						
-						// 3. 1-hour gap
+						// 3. Gap de tempo (4 horas)
 						const hourDiff = Math.abs(prevTime - currTime) / (1000 * 60 * 60);
-						const isGapSplit = hourDiff >= 1;
+						const isGapSplit = hourDiff >= 4;
 
 						if (isMidnightSplit || isSessionChange || isGapSplit) {
 							// Tag if the session ended due to midnight
@@ -1784,12 +1784,24 @@
 							displayLabel = 'SESSÃO ATUAL';
 						}
 					} else if (!sessionTrades.isMidnightEnd) {
-                        // Historical or past sessions (non-midnight)
+                        // Historical or past sessions (non-midnight) - Automatic Detection of Stop Reason
+                        const target = this.agentConfig?.dailyProfitTarget || 0;
+                        const stop = this.agenteData.stopValue || this.agentConfig?.lossLimit || this.agentConfig?.dailyLossLimit || 25;
+                        
+                        if (target > 0 && totalProfit >= target) {
+                            endReason = 'META ALCANÇADA';
+                        } else if (stop > 0 && totalProfit <= -stop) {
+                            endReason = 'STOP LOSS ATINGIDO';
+                        } else {
+                            endReason = 'PARADA MANUAL';
+                        }
+
                          if (this.selectedPeriod !== 'session') {
                              displayLabel = 'HISTÓRICO'; // Generic label for historical list
-                             footerText = `FIM - ${endTime}`;
+                             footerText = `${endTime} (${endReason})`;
                          } else {
-                             footerText = `FIM DA SESSÃO - ${endTime}`;
+                             footerText = `${endTime} (${endReason})`;
+                             displayLabel = `SESSÃO ${sessionNum} FINALIZADA`;
                          }
                     }
 
