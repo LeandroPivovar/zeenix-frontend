@@ -1734,7 +1734,7 @@
 						const isMidnightSplit = prevTime.toLocaleDateString() !== currTime.toLocaleDateString();
 						
 						// 2. Session ID change
-						const isSessionChange = prevSessionId && currSessionId && prevSessionId !== currSessionId;
+						const isSessionChange = prevSessionId !== currSessionId;
 						
 						// 3. 1-hour gap
 						const hourDiff = Math.abs(prevTime - currTime) / (1000 * 60 * 60);
