@@ -1165,9 +1165,69 @@
         </Teleport>
 
         <!-- Advanced Filter Modal -->
-        <Teleport to="body">
-            <div v-if="showFilterModal" class="modal-overlay" @click.self="showFilterModal = false">
-                <div class="modal-content categorized-modal" style="max-width: 600px">
+        <div v-if="showFilterModal" class="modal-overlay" @click.self="showFilterModal = false" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+  <div class="modal-content categorized-modal" style="max-width: 600px; background: #161616; border: 1px solid #2a2a2a; border-radius: 16px; width: 100%; overflow: hidden;">
+    <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid #2a2a2a;">
+      <h3 class="modal-title font-bold text-white">{{ filterStep === 1 ? (modalContext === 'main' ? 'Selecionar Filtros de Ataque' : 'Selecionar Filtros de Recuperação') : 'Configurar Filtros' }}</h3>
+      <button @click="showFilterModal = false" class="modal-close-btn" style="background: none; border: none; color: #888; cursor: pointer; font-size: 1.1rem; padding: 0.25rem;">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body custom-scrollbar" style="max-height: 70vh; overflow-y: auto; padding: 1.5rem;">
+      <div v-if="filterStep === 1" class="space-y-4">
+        <p class="text-sm text-gray-400 mb-4 px-1">Selecione os filtros desejados para as entradas de {{ modalContext === 'main' ? 'ataque' : 'recuperação' }}. Todos os filtros devem ser atendidos para executar uma operação.</p>
+        <div class="space-y-8">
+          <div v-for="group in groupedFiltersForModal" :key="group.id" class="space-y-3">
+            <div class="flex items-center gap-2 px-1 mb-4">
+              <div class="w-2 h-4 bg-zenix-green rounded-full"></div>
+              <i :class="[group.icon, 'text-zenix-green text-xs']"></i>
+              <h4 class="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">{{ group.label }}</h4>
+            </div>
+            <div class="grid grid-cols-1 gap-3">
+              <div v-for="filter in group.filters" :key="filter.id" @click="toggleFilter(filter)" class="p-4 rounded-xl border transition-all cursor-pointer group/item"
+                   :class="[filter.active ? 'border-zenix-green bg-zenix-green/5' : 'border-[#333] bg-[#111] hover:border-[#444]']">
+                <div class="flex items-center gap-3 mb-2">
+                  <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
+                       :class="filter.active ? 'bg-zenix-green border-zenix-green text-black' : 'border-[#444] group-hover/item:border-gray-500'">
+                    <i v-if="filter.active" class="fa-solid fa-check text-[10px]"></i>
+                  </div>
+                  <span class="text-white font-bold">{{ filter.name }}</span>
+                </div>
+                <p class="text-xs text-gray-500 pl-8 leading-relaxed">{{ filter.desc }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else-if="filterStep === 2" class="space-y-4">
+        <h3 class="text-lg font-bold text-white mb-4">Configurar Filtros</h3>
+        <div class="flex space-x-1 mb-6 bg-[#111] p-1 rounded-lg">
+          <button v-for="mode in ['Veloz', 'Moderado', 'Preciso']" :key="mode" @click="activeConfigTab = mode"
+                  :class="['flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded transition-all', activeConfigTab === mode ? 'bg-zenix-green text-black shadow-lg' : 'text-gray-400 hover:text-white hover:bg-[#222]']">
+            {{ mode }}
+          </button>
+        </div>
+        <div class="mb-4 p-3 bg-[#181818] border border-[#333] rounded flex items-center gap-3">
+          <i class="fas fa-info-circle text-zenix-green"></i>
+          <span class="text-xs text-gray-400">Configurando modo: <strong class="text-white">{{ activeConfigTab }}</strong>. O robô usará estes valores quando estiver operando neste modo.</span>
+        </div>
+        <div v-for="filter in activeFiltersForModal.filter(f => f.active)" :key="filter.id" class="mb-8 border-b border-[#333] pb-8 last:border-0 last:pb-0">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-8 h-8 rounded bg-zenix-green/10 flex items-center justify-center text-zenix-green">
+              <i class="fa-solid fa-filter"></i>
+            </div>
+            <h4 class="text-white font-bold text-lg">{{ filter.name }}</h4>
+          </div>
+          <div class="mb-6 p-4 bg-[#111] border border-[#333] rounded">
+            <p class="text-sm text-gray-400">{{ filter.desc }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+            
+                
                     <div class="modal-header">
                         <div class="flex items-center gap-3">
                             <button v-if="filterStep === 2" @click="prevFilterStep" class="text-gray-400 hover:text-white transition-colors">
