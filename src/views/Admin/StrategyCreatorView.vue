@@ -1723,12 +1723,11 @@
                     </div>
                 </div>
             </div>
-        </div>
         </Teleport>
 
         <!-- Pause Strategy Modal -->
         <Teleport to="body">
-            <div v-if="showPauseModal" class="modal-overlay" @click.self="showPauseModal = false">
+            <div v-if="showPayoutModal" @click.self="showPayoutModal = false" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
                 <div class="modal-content" style="max-width: 500px">
                      <div class="modal-header">
                         <h3 class="modal-title">Pausa Estratégica</h3>
