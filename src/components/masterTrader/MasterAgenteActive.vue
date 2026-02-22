@@ -1552,10 +1552,16 @@
 				
 				const combined = [];
 				const getDedupKey = (t) => {
-                    // ✅ [ZENIX v4.5] ULTIMATE DEDUP KEY: Only timestamp and precise financial values.
+                    // ✅ [ZENIX v4.6] Usa contract_id pois é o único ID que BATE EXATAMENTE entre WebSocket(Deriv) e Banco DB.
+                    // Ignorar t.id diretamente porque t.id no DB = 1, e t.id no WS = undefined (conflito)
+                    const possibleId = t.contractId || t.contract_id;
+                    if (possibleId) {
+                        return String(possibleId);
+                    }
+                    // Fallback
                     const ts = getTimestamp(t);
                     const tsSeconds = Math.floor(ts / 1000); 
-                    const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.result !== undefined ? parseFloat(t.result) : 0));
+                    const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
                     const profit = (isNaN(rawProfit) ? 0 : rawProfit).toFixed(2);
                     const rawStake = t.stake !== undefined ? parseFloat(t.stake) : (t.stake_amount !== undefined ? parseFloat(t.stake_amount) : (t.buy_price !== undefined ? parseFloat(t.buy_price) : 0));
                     const stake = (isNaN(rawStake) ? 0 : rawStake).toFixed(2);
@@ -1658,7 +1664,7 @@
 					// ... (keep existing mapping logic)
                     // Handle potential snake_case from backend vs camelCase from frontend mapping
 					const createdAt = trade.createdAt || trade.created_at || trade.time;
-					const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.result !== undefined ? parseFloat(trade.result) : 0));
+					const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.profitLoss !== undefined ? parseFloat(trade.profitLoss) : (trade.result !== undefined && !isNaN(parseFloat(trade.result)) ? parseFloat(trade.result) : 0)));
 					const profit = isNaN(rawProfit) ? 0 : rawProfit;
 					
 					const rawStake = trade.stake !== undefined ? parseFloat(trade.stake) : (trade.stake_amount !== undefined ? parseFloat(trade.stake_amount) : (trade.buy_price !== undefined ? parseFloat(trade.buy_price) : (trade.entry !== undefined ? parseFloat(trade.entry) : 0)));
@@ -1699,9 +1705,15 @@
 				const uniqueTrades = [];
 				const seenIds = new Set();
 				for (const trade of normalizedTrades) {
-					const dedupeKey = trade.id && !trade.id.includes('-') && !trade.id.includes(':') 
-						? String(trade.id) 
-						: `${trade.createdAt}-${trade.profit}-${trade.stake}-${trade.market}`;
+					let dedupeKey;
+					const possibleId = trade.contractId || trade.contract_id || (trade.original && (trade.original.contractId || trade.original.contract_id));
+					if (possibleId) {
+						dedupeKey = String(possibleId);
+					} else {
+						const ts = new Date(trade.createdAt).getTime();
+                        const tsSeconds = Math.floor(ts / 1000);
+						dedupeKey = `TS-${tsSeconds}-${trade.profit}-${trade.stake}`;
+					}
 					
 					if (!seenIds.has(dedupeKey)) {
 						seenIds.add(dedupeKey);
@@ -1715,16 +1727,15 @@
 				let currentSessionTrades = [];
 				
 				if (dedupedTrades.length > 0) {
-					// ✅ [ZENIX v3.3] Session Splitting: Split by Session ID, 1h gap, or Midnight
-					// We apply grouping for all periods to satisfy requested splitting at 00:00
+					// We apply grouping for all periods to satisfy requested splitting at 00:00 or sessionId change
 					currentSessionTrades.push(dedupedTrades[0]);
 					
 					for (let i = 1; i < dedupedTrades.length; i++) {
 						const prevTrade = dedupedTrades[i-1];
 						const currTrade = dedupedTrades[i];
 						
-						const prevSessionId = prevTrade.sessionId;
-						const currSessionId = currTrade.sessionId;
+						const prevSessionId = prevTrade.sessionId || prevTrade.session_id;
+						const currSessionId = currTrade.sessionId || currTrade.session_id;
 						
 						const prevTime = new Date(prevTrade.createdAt);
 						const currTime = new Date(currTrade.createdAt);
@@ -1734,22 +1745,25 @@
 						const isMidnightSplit = prevTime.toLocaleDateString() !== currTime.toLocaleDateString();
 						
 						// 2. Session ID change
-						const isSessionChange = prevSessionId && currSessionId && prevSessionId !== currSessionId;
+						// Ignora se for o mesmo (ou se ambos forem undefined/null mas estamos em uma gap < 1h)
+						const isSessionChange = (prevSessionId && currSessionId) ? (String(prevSessionId) !== String(currSessionId)) : false;
 						
 						// 3. 1-hour gap
 						const hourDiff = Math.abs(prevTime - currTime) / (1000 * 60 * 60);
-						const isGapSplit = hourDiff >= 1;
+						const isGapSplit = hourDiff >= 1; // 1h para Master Trader
 
 						if (isMidnightSplit || isSessionChange || isGapSplit) {
-							// Tag if the session ended due to midnight
+							// Se cortou aqui, finaliza a sessão acumulada ANTES de colocar o 'currTrade' NELA
 							if (isMidnightSplit) {
 								currentSessionTrades.isMidnightEnd = true;
 							}
 							sessions.push(currentSessionTrades);
 							currentSessionTrades = [];
 						}
+						// Coloca o currTrade na sessão correta (a nova ou a mesma se não cortou)
 						currentSessionTrades.push(currTrade);
 					}
+					// Faz o push da última sessão montada
 					sessions.push(currentSessionTrades);
 				}
 				
@@ -1779,7 +1793,7 @@
 						displayLabel = `SESSÃO${shortId} FINALIZADA`;
 					}
 
-					if (this.selectedPeriod === 'session' && idx === 0 && !sessionTrades.isMidnightEnd) {
+					if (idx === 0 && !sessionTrades.isMidnightEnd) {
 						// ... logic for live session status ...
 						const status = this.agenteData.sessionStatus;
 						const validEndStatuses = ['loss', 'profit', 'blindado', 'paused', 'inactive', 'error', 'closs', 'manual', 'cycle'];
@@ -1814,8 +1828,8 @@
 									'error': 'ERRO NO SISTEMA',
 									'inactive': 'SESSÃO ENCERRADA',
 									'closs': 'STOP POR PERDAS',
-									'paused': 'AGENTE PAROU MANUALMENTE',
-									'manual': 'AGENTE PAROU MANUALMENTE',
+									'paused': 'SESSÃO FINALIZADA POR STOP MANUAL',
+									'manual': 'SESSÃO FINALIZADA POR STOP MANUAL',
                                     'cycle': 'CICLOS COMPLETOS',
                                     'restart': 'REINÍCIO DO SERVIDOR'
 								};
@@ -1828,7 +1842,18 @@
 							displayLabel = 'SESSÃO ATUAL';
 						}
 					} else if (!sessionTrades.isMidnightEnd) {
-                        // Historical or past sessions (non-midnight)
+                        // Historical or past sessions (non-midnight) - Automatic Detection of Stop Reason
+                        const target = this.agentConfig?.profitTarget || this.agentConfig?.dailyProfitTarget || 0;
+                        const stop = this.agenteData.stopValue || this.agentConfig?.lossLimit || this.agentConfig?.dailyLossLimit || 25;
+                        
+                        if (target > 0 && totalProfit >= target) {
+                            endReason = 'META ALCANÇADA';
+                        } else if (stop > 0 && totalProfit <= -stop) {
+                            endReason = 'STOP LOSS ATINGIDO';
+                        } else {
+                            endReason = 'SESSÃO FINALIZADA POR STOP MANUAL';
+                        }
+
                          if (this.selectedPeriod !== 'session') {
                              displayLabel = `SESSÃO${shortId}`; // Generic label for historical list
                              footerText = `FIM - ${endTime} (${endReason})`;
@@ -1885,7 +1910,8 @@
                     
                     if (trades > 0) {
                          sessionTrades.forEach(t => {
-                             const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                             const rawP = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
+                             const p = isNaN(rawP) ? 0 : rawP;
                              profit += p;
                              if (p > 0) wins++;
                          });
@@ -1897,7 +1923,8 @@
                     if (historicalTrades.length > 0) {
                         trades = historicalTrades.length;
                         historicalTrades.forEach(t => {
-                             const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.result !== undefined ? parseFloat(t.result) : 0));
+                             const rawP = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
+                             const p = isNaN(rawP) ? 0 : rawP;
                              profit += p;
                              if (p > 0) wins++;
                         });
@@ -2837,7 +2864,8 @@
                              d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
                          }
                     }
-                    return isNaN(d.getTime()) ? null : Math.floor(d.getTime() / 1000);
+                    // ✅ Subtrai 3 horas (10800 segundos) visualmente fuso-horário UTC-3
+                    return isNaN(d.getTime()) ? null : (Math.floor(d.getTime() / 1000) - 10800);
                 };
 
                 // 1. Sort trades by time ascending
@@ -2863,7 +2891,8 @@
                 }
 
                 sorted.forEach(trade => {
-                    const profit = parseFloat(trade.profit !== undefined ? trade.profit : (trade.profit_loss !== undefined ? trade.profit_loss : 0));
+                    const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.profitLoss !== undefined ? parseFloat(trade.profitLoss) : (trade.result !== undefined && !isNaN(parseFloat(trade.result)) ? parseFloat(trade.result) : 0)));
+                    const profit = isNaN(rawProfit) ? 0 : rawProfit;
                     if (!isNaN(profit)) {
                         cumulative += profit;
                         
@@ -2881,7 +2910,6 @@
                         if (existingIdx !== -1) {
                             chartData[existingIdx].value = cumulative;
                         } else {
-                            // Ensure time is monotonic
                             const lastPoint = chartData[chartData.length - 1];
                             if (lastPoint && ts <= lastPoint.time) {
                                 lastPoint.value = cumulative;

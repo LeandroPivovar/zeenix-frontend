@@ -89,8 +89,8 @@
                   <span v-else class="text-muted">-</span>
                 </td>
                 <td style="text-align: center;">
-                  <span v-if="order.status" class="order-status" :class="getStatusClass(order.status)">
-                    {{ getStatusDisplay(order.status) }}
+                  <span v-if="order.status" class="order-status" :class="getStatusClass(order.status, order.profit)">
+                    {{ getStatusDisplay(order.status, order.profit) }}
                   </span>
                   <span v-else class="text-muted">-</span>
                 </td>
@@ -150,21 +150,35 @@ export default {
       }
       return timeString;
     },
-    getStatusDisplay(status) {
+    getStatusDisplay(status, profit) {
       if (!status) return 'PENDING';
       const statusLower = status.toLowerCase();
+      
+      // ✅ [ZENIX v4.3] Se o status for genérico (closed/expired/sold), usar o lucro para decidir
+      if (statusLower === 'closed' || statusLower === 'expired' || statusLower === 'sold') {
+        if (profit > 0) return 'WIN';
+        if (profit < 0) return 'LOSS';
+        return 'CLOSED';
+      }
+
       if (statusLower === 'won' || statusLower === 'win') return 'WIN';
       if (statusLower === 'lost' || statusLower === 'loss') return 'LOSS';
-      // Mapear outros status fechados conforme a lógica da view pai
-      if (statusLower === 'expired' || statusLower === 'closed' || statusLower === 'sold') return 'CLOSED';
+      
       return status.toUpperCase();
     },
-    getStatusClass(status) {
+    getStatusClass(status, profit) {
       if (!status) return 'pending';
       const statusLower = status.toLowerCase();
+
+      // ✅ [ZENIX v4.3] Se o status for genérico, usar o lucro para cor
+      if (statusLower === 'closed' || statusLower === 'expired' || statusLower === 'sold') {
+        if (profit > 0) return 'win';
+        if (profit < 0) return 'loss';
+        return 'closed';
+      }
+
       if (statusLower === 'won' || statusLower === 'win') return 'win';
       if (statusLower === 'lost' || statusLower === 'loss') return 'loss';
-      if (statusLower === 'closed' || statusLower === 'expired' || statusLower === 'sold') return 'closed';
       return 'pending';
     }
   }
@@ -369,10 +383,14 @@ export default {
   display: inline-block;
 }
 
-.order-status.win,
-.order-status.closed {
+.order-status.win {
   background: rgba(34, 197, 94, 0.2);
   color: #22C55E;
+}
+
+.order-status.closed {
+  background: rgba(122, 122, 122, 0.2);
+  color: #7A7A7A;
 }
 
 .order-status.loss {

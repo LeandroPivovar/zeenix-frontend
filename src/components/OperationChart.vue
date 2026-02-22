@@ -293,7 +293,7 @@
             <label class="panel-label">Tipo de Negociação</label>
             <button @click="openTradeTypeModal" class="panel-input-btn">
               <div class="flex items-center gap-2">
-                <img v-if="selectedTradeTypeGroupIcon" :src="selectedTradeTypeGroupIcon" class="w-5 h-5 contrast-[1.2] brightness-[1.2]" alt="" />
+                <span class="trade-type-dot"></span>
                 <span class="font-medium">{{ selectedTradeTypeGroupLabel }}</span>
               </div>
               <i class="fas fa-chevron-down text-[10px] opacity-40"></i>
@@ -616,7 +616,7 @@
                     :class="['category-item-btn', { 'active': selectedTradeTypeGroup === item.value }]"
                   >
                     <div class="flex items-center gap-2">
-                      <img v-if="item.icon" :src="`/deriv_icons/${item.icon}`" class="w-5 h-5 contrast-[1.5] brightness-[1.5]" alt="" />
+                      <span class="trade-type-dot"></span>
                       <span>{{ item.label }}</span>
                     </div>
                   </button>
@@ -2808,6 +2808,7 @@ export default {
         entrySpot: this.activeContract.entry_spot,
         direction: this.activeContract.contract_type,
         currency: this.activeContract.currency || this.currency || 'USD',
+        symbol: this.activeContract.symbol || this.symbol,
         status: 'EXECUTED',
         purchaseTime: this.activeContract.entry_time
       });
@@ -3047,7 +3048,10 @@ export default {
             status: 'CLOSED',
             profit: profit,
             direction: this.activeContract.contract_type,
-            balanceAfter: this.accountBalanceValue
+            balanceAfter: this.accountBalanceValue,
+            symbol: this.activeContract.symbol || this.symbol,
+            exitSpot: this.activeContract.exit_spot,
+            sellPrice: this.activeContract.sell_price
           });
 
          derivTradingService.notifyEnd(resultData);
@@ -5531,4 +5535,13 @@ export default {
     }
 }
 
+.trade-type-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #22C55E;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+  margin-right: 8px;
+}
 </style>

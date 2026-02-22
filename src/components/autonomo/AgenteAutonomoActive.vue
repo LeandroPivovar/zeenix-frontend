@@ -1544,37 +1544,36 @@
 				}
 				
 				const combined = [];
-				const getDedupKey = (t) => {
-                    // ✅ [ZENIX v4.5] ULTIMATE DEDUP KEY: Only timestamp and precise financial values.
-                    // Ignores all IDs because WS and DB formats differ unpredictably.
-                    const ts = getTimestamp(t);
-                    const tsSeconds = Math.floor(ts / 1000); 
-                    const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.result !== undefined ? parseFloat(t.result) : 0));
-                    const profit = (isNaN(rawProfit) ? 0 : rawProfit).toFixed(2);
-                    const rawStake = t.stake !== undefined ? parseFloat(t.stake) : (t.stake_amount !== undefined ? parseFloat(t.stake_amount) : (t.buy_price !== undefined ? parseFloat(t.buy_price) : 0));
-                    const stake = (isNaN(rawStake) ? 0 : rawStake).toFixed(2);
-					return `TS-${tsSeconds}-${profit}-${stake}`;
-                };
+				const finalSeenKeys = new Set();
 				
-                const finalSeenKeys = new Set();
+				const addTrade = (t) => {
+					// Puxando possível ID para garantir match WS vs DB
+					const possibleId = t.contractId || t.contract_id || (t.original && (t.original.contractId || t.original.contract_id));
+					const idKey = possibleId ? String(possibleId) : null;
+
+					// Fallback (TS Key) extremamente forte para pegar itens onde ID falhou no fetch DB
+					const ts = getTimestamp(t);
+					const tsSeconds = Math.floor(ts / 1000); 
+					const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
+					const profit = (isNaN(rawProfit) ? 0 : rawProfit).toFixed(2);
+					const rawStake = t.stake !== undefined ? parseFloat(t.stake) : (t.stake_amount !== undefined ? parseFloat(t.stake_amount) : (t.buy_price !== undefined ? parseFloat(t.buy_price) : 0));
+					const stake = (isNaN(rawStake) ? 0 : rawStake).toFixed(2);
+					const exactTsKey = `TS-${tsSeconds}-${profit}-${stake}`;
+
+					if ((idKey && finalSeenKeys.has(idKey)) || finalSeenKeys.has(exactTsKey)) {
+						return; // already seen
+					}
+
+					if (idKey) finalSeenKeys.add(idKey);
+					finalSeenKeys.add(exactTsKey);
+					combined.push(t);
+				};
                 
                 // 1. Process Live Session (WS)
-                liveSession.forEach(t => {
-                    const key = getDedupKey(t);
-                    if (!finalSeenKeys.has(key)) {
-                        combined.push(t);
-                        finalSeenKeys.add(key);
-                    }
-                });
+                liveSession.forEach(addTrade);
 
                 // 2. Process Historical Today (DB)
-                historicalToday.forEach(t => {
-                    const key = getDedupKey(t);
-                    if (key && !finalSeenKeys.has(key)) {
-                        combined.push(t);
-                        finalSeenKeys.add(key);
-                    }
-                });
+                historicalToday.forEach(addTrade);
 
 				// Sort by time ascending
 				combined.sort((a, b) => getTimestamp(a) - getTimestamp(b));
@@ -1583,7 +1582,8 @@
             totalProfitToday() {
                 // ✅ [ZENIX v4.3] Absolute total profit of all trades today
                 return this.allTradesToday.reduce((sum, t) => {
-                    const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                    const rawP = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : 0));
+                    const rawProfit = isNaN(rawP) ? 0 : rawP;
                     return sum + (isNaN(rawProfit) ? 0 : rawProfit);
                 }, 0);
             },
@@ -1676,7 +1676,7 @@
 					// ... (keep existing mapping logic)
                     // Handle potential snake_case from backend vs camelCase from frontend mapping
 					const createdAt = trade.createdAt || trade.created_at || trade.time;
-					const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.result !== undefined ? parseFloat(trade.result) : 0));
+					const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.profitLoss !== undefined ? parseFloat(trade.profitLoss) : (trade.result !== undefined && !isNaN(parseFloat(trade.result)) ? parseFloat(trade.result) : 0)));
 					const profit = isNaN(rawProfit) ? 0 : rawProfit;
 					
 					const rawStake = trade.stake !== undefined ? parseFloat(trade.stake) : (trade.stake_amount !== undefined ? parseFloat(trade.stake_amount) : (trade.buy_price !== undefined ? parseFloat(trade.buy_price) : (trade.entry !== undefined ? parseFloat(trade.entry) : 0)));
@@ -1717,14 +1717,20 @@
 			const uniqueTrades = [];
 			const seenIds = new Set();
 			for (const trade of normalizedTrades) {
+				const possibleId = trade.contractId || trade.contract_id || (trade.original && (trade.original.contractId || trade.original.contract_id));
+				const idKey = possibleId ? String(possibleId) : null;
+
                 const ts = new Date(trade.createdAt).getTime();
                 const tsSeconds = Math.floor(ts / 1000);
-                const key = `TS-${tsSeconds}-${trade.profit}-${trade.stake}`;
+				const exactTsKey = `TS-${tsSeconds}-${trade.profit}-${trade.stake}`;
 
-				if (!seenIds.has(key)) {
-					seenIds.add(key);
-					uniqueTrades.push(trade);
+				if ((idKey && seenIds.has(idKey)) || seenIds.has(exactTsKey)) {
+					continue; // Already seen
 				}
+
+				if (idKey) seenIds.add(idKey);
+				seenIds.add(exactTsKey);
+				uniqueTrades.push(trade);
 			}
 			const dedupedTrades = uniqueTrades;
 
@@ -1733,16 +1739,15 @@
 				let currentSessionTrades = [];
 				
 				if (dedupedTrades.length > 0) {
-					// ✅ [ZENIX v3.3] Session Splitting: Split by Session ID, 1h gap, or Midnight
-					// We apply grouping for all periods to satisfy requested splitting at 00:00
+					// We apply grouping for all periods to satisfy requested splitting at 00:00 or sessionId change
 					currentSessionTrades.push(dedupedTrades[0]);
 					
 					for (let i = 1; i < dedupedTrades.length; i++) {
 						const prevTrade = dedupedTrades[i-1];
 						const currTrade = dedupedTrades[i];
 						
-						const prevSessionId = prevTrade.sessionId;
-						const currSessionId = currTrade.sessionId;
+						const prevSessionId = prevTrade.sessionId || prevTrade.session_id;
+						const currSessionId = currTrade.sessionId || currTrade.session_id;
 						
 						const prevTime = new Date(prevTrade.createdAt);
 						const currTime = new Date(currTrade.createdAt);
@@ -1752,22 +1757,25 @@
 						const isMidnightSplit = prevTime.toLocaleDateString() !== currTime.toLocaleDateString();
 						
 						// 2. Session ID change
-						const isSessionChange = prevSessionId && currSessionId && prevSessionId !== currSessionId;
+						// Ignora se for o mesmo (ou se ambos forem undefined/null mas estamos em uma gap < 4h)
+						const isSessionChange = (prevSessionId && currSessionId) ? (String(prevSessionId) !== String(currSessionId)) : false;
 						
-						// 3. Gap de tempo (4 horas)
+						// 3. Gap de tempo
 						const hourDiff = Math.abs(prevTime - currTime) / (1000 * 60 * 60);
-						const isGapSplit = hourDiff >= 4;
+						const isGapSplit = hourDiff >= 4; // 4h para autonomo
 
 						if (isMidnightSplit || isSessionChange || isGapSplit) {
-							// Tag if the session ended due to midnight
+							// Se cortou aqui, finaliza a sessão acumulada ANTES de colocar o 'currTrade' NELA
 							if (isMidnightSplit) {
 								currentSessionTrades.isMidnightEnd = true;
 							}
 							sessions.push(currentSessionTrades);
 							currentSessionTrades = [];
 						}
+						// Coloca o currTrade na sessão correta (a nova ou a mesma se não cortou)
 						currentSessionTrades.push(currTrade);
 					}
+					// Faz o push da última sessão montada
 					sessions.push(currentSessionTrades);
 				}
 				
@@ -1797,29 +1805,32 @@
 						displayLabel = `SESSÃO${shortId} FINALIZADA`;
 					}
 
-					if (this.selectedPeriod === 'session' && idx === 0 && !sessionTrades.isMidnightEnd) {
+					if (idx === 0 && !sessionTrades.isMidnightEnd) {
 						// ... logic for live session status ...
 						const status = this.agenteData.sessionStatus;
 						const validEndStatuses = ['loss', 'profit', 'blindado', 'paused', 'inactive', 'error', 'closs', 'manual', 'cycle'];
 						
 						if (validEndStatuses.includes(status)) {
-							if (status === 'paused') {
-								// ... pause check ...
+							if (status === 'paused' || status === 'manual') {
+								// Verificação de pausa de segurança (gatilhada por perdas)
 								let consecutiveLosses = 0;
 								for (let i = 0; i < sessionTrades.length; i++) {
 									if (sessionTrades[i].profit < 0) consecutiveLosses++;
 									else break;
 								}
 
+								isEnded = true; // Sempre encerra visualmente a sessão ao pausar
+								
+								// Se houver 2 perdas seguidas, é considerado pausa de segurança automática
 								if (consecutiveLosses >= 2) {
-									isEnded = true;
 									endReason = 'PAUSA SEGURANÇA (5 min)';
-									footerText += ` (${endReason})`;
 								} else {
-									isEnded = false;
-									footerText = `EM ANDAMENTO - ${endTime}`;
-									displayLabel = 'SESSÃO ATUAL';
+									// Caso contrário, é pausa manual do usuário
+									endReason = 'SESSÃO PAUSADA MANUALMENTE';
 								}
+								
+								footerText += ` (${endReason})`;
+								displayLabel = `SESSÃO${shortId} FINALIZADA`;
 							} else {
 								isEnded = true;
 								const statusMap = {
@@ -1832,8 +1843,8 @@
 									'error': 'ERRO NO SISTEMA',
 									'inactive': 'SESSÃO ENCERRADA',
 									'closs': 'STOP POR PERDAS',
-									'paused': 'AGENTE PAROU MANUALMENTE',
-									'manual': 'AGENTE PAROU MANUALMENTE',
+									'paused': 'SESSÃO PAUSADA MANUALMENTE',
+									'manual': 'SESSÃO PAUSADA MANUALMENTE',
                                     'cycle': 'CICLOS COMPLETOS',
                                     'restart': 'REINÍCIO DO SERVIDOR'
 								};
@@ -1855,7 +1866,7 @@
                         } else if (stop > 0 && totalProfit <= -stop) {
                             endReason = 'STOP LOSS ATINGIDO';
                         } else {
-                            endReason = 'PARADA MANUAL';
+                            endReason = 'SESSÃO PAUSADA MANUALMENTE';
                         }
 
                          if (this.selectedPeriod !== 'session') {
@@ -1916,7 +1927,8 @@
                     
                     if (trades > 0) {
                          sessionTrades.forEach(t => {
-                             const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                             const rawP = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
+                             const p = isNaN(rawP) ? 0 : rawP;
                              profit += p;
                              if (p > 0) wins++;
                          });
@@ -1931,7 +1943,8 @@
                     // ✅ [ZENIX v4.3] Use CALCULATED allTradesToday for 'today' dashboard consistency
                     trades = this.allTradesToday.length;
                     this.allTradesToday.forEach(t => {
-                        const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                        const rawP = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
+                        const p = isNaN(rawP) ? 0 : rawP;
                         profit += p;
                         if (p > 0) wins++;
                     });
@@ -1970,8 +1983,8 @@
                     'error': 'ERRO NO SISTEMA',
                     'inactive': 'SESSÃO ENCERRADA',
                     'closs': 'STOP POR PERDAS',
-                    'paused': 'AGENTE PAROU MANUALMENTE',
-                    'manual': 'AGENTE PAROU MANUALMENTE',
+                    'paused': 'SESSÃO PAUSADA MANUALMENTE',
+                    'manual': 'SESSÃO PAUSADA MANUALMENTE',
                     'cycle': 'CICLOS COMPLETOS',
                     'restart': 'REINÍCIO DO SERVIDOR'
                 };
@@ -2825,7 +2838,8 @@
                              d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
                          }
                     }
-                    return isNaN(d.getTime()) ? null : Math.floor(d.getTime() / 1000);
+                    // ✅ Subtrai 3 horas (10800 segundos) visualmente fuso-horário UTC-3
+                    return isNaN(d.getTime()) ? null : (Math.floor(d.getTime() / 1000) - 10800);
                 };
 
                 // 1. Sort trades by time ascending
@@ -2851,7 +2865,8 @@
                 }
 
                 sorted.forEach(trade => {
-                    const profit = parseFloat(trade.profit !== undefined ? trade.profit : (trade.profit_loss !== undefined ? trade.profit_loss : 0));
+                    const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.profitLoss !== undefined ? parseFloat(trade.profitLoss) : (trade.result !== undefined && !isNaN(parseFloat(trade.result)) ? parseFloat(trade.result) : 0)));
+                    const profit = isNaN(rawProfit) ? 0 : rawProfit;
                     if (!isNaN(profit)) {
                         cumulative += profit;
                         

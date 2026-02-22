@@ -1,0 +1,15 @@
+﻿diff --git a/src/components/autonomo/AgenteAutonomoActive.vue b/src/components/autonomo/AgenteAutonomoActive.vue
+index 92d6993c..3c749b70 100644
+--- a/src/components/autonomo/AgenteAutonomoActive.vue
++++ b/src/components/autonomo/AgenteAutonomoActive.vue
+@@ -1741,8 +1741,8 @@
+ 						const prevTrade = dedupedTrades[i-1];
+ 						const currTrade = dedupedTrades[i];
+ 						
+-						const prevSessionId = prevTrade.sessionId;
+-						const currSessionId = currTrade.sessionId;
++						const prevSessionId = prevTrade.sessionId || prevTrade.session_id;
++						const currSessionId = currTrade.sessionId || currTrade.session_id;
+ 						
+ 						const prevTime = new Date(prevTrade.createdAt);
+ 						const currTime = new Date(currTrade.createdAt);
