@@ -1518,8 +1518,8 @@
 				return 'Semanal';
 			},
 			sessionTrades() {
-				// ✅ [ZENIX v3.4] Smart Session Logic (Gap Detection)
-				// 'Session' should represent the CURRENT continuous run, distinct from 'Today' (all runs).
+				// ✅ [ZENIX v3.4] Smart Session Logic (Session Date + Gap Detection)
+				// 'Session' should represent the CURRENT continuous run from the database.
 				
 				if (this.selectedPeriod !== 'session' && this.selectedPeriod !== 'today') return [];
 
@@ -1551,12 +1551,12 @@
 					return combined;
 				}
 
-				// If period is SESSION, apply "Gap Filter"
-				// We look from the END (most recent) backwards.
-				// If we find a gap > 60 minutes, we assume the session started after that gap.
-				const GAP_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
-				
+				// If period is SESSION, apply "History Filter"
 				if (combined.length === 0) return [];
+				
+				// ✅ [ZENIX v3.5] Prioridade na data da sessão (Official Start)
+				const sessionStartTime = this.agentConfig?.sessionDate ? new Date(this.agentConfig.sessionDate).getTime() : 0;
+				const GAP_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
 				
 				const currentSessionTrades = [];
 				// Start with the last trade
@@ -1564,15 +1564,22 @@
 				
 				for (let i = combined.length - 2; i >= 0; i--) {
 					const curr = combined[i];
-					const next = combined[i+1]; // (which is technically chronologically later)
+					const next = combined[i+1];
+					const currTime = getTimestamp(curr);
 					
-					const diff = getTimestamp(next) - getTimestamp(curr);
-					
+					// 1. Verificar se ultrapassamos o início da sessão oficial do banco
+					if (sessionStartTime > 0 && currTime < sessionStartTime) {
+						console.log(`[sessionTrades] SessionDate boundary (${this.agentConfig.sessionDate}) reached. Stop.`);
+						break;
+					}
+
+					// 2. Fallback: Gap de 1h se a data da sessão falhar ou não existir
+					const diff = getTimestamp(next) - currTime;
 					if (diff > GAP_THRESHOLD_MS) {
-						// Gap detected! Stop collecting, this is the start of the current session.
-						console.log(`[sessionTrades] Gap of ${Math.round(diff/60000)}min detected at ${curr.createdAt}. Session start cut-off.`);
+						console.log(`[sessionTrades] Gap of ${Math.round(diff/60000)}min detected at ${curr.createdAt}.`);
 						break; 
 					}
+
 					currentSessionTrades.unshift(curr);
 				}
 				
