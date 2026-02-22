@@ -1765,8 +1765,9 @@
 									'error': 'ERRO NO SISTEMA',
 									'inactive': 'SESSÃO ENCERRADA',
 									'closs': 'STOP POR PERDAS',
-                                    'manual': 'PARADA MANUAL',
-                                    'cycle': 'CICLOS COMPLETOS'
+									'manual': 'PARADA MANUAL',
+                                    'cycle': 'CICLOS COMPLETOS',
+                                    'restart': 'REINÍCIO DO SERVIDOR'
 								};
 								endReason = statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase();
 								footerText += ` (${endReason})`;
