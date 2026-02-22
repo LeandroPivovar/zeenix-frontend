@@ -2194,9 +2194,9 @@ export default {
 
                             console.log(`[calculatePayouts] Payout decimal = ${payoutDecimal} for ${cType}`);
 
-                            // Mutate directly on the reactive source (fixes Vue reactivity)
+                            // Mutate directly on the reactive source — Vue 3 Proxy intercepts the set
                             const target = isMain ? this.form : this.recoveryConfig;
-                            target.directionPayouts = Object.assign({}, target.directionPayouts, { [cType]: payoutDecimal });
+                            target.directionPayouts[cType] = payoutDecimal;
 
                             anySuccess = true;
                         } else {
