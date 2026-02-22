@@ -65,6 +65,11 @@
                             <span class="hint-text">ID do gateway de pagamento (opcional).</span>
                         </div>
                         <div class="form-group">
+                            <label for="purchaseLink">Link de Compra</label>
+                            <input type="text" id="purchaseLink" name="purchaseLink" placeholder="https://..." v-model="planForm.purchaseLink">
+                            <span class="hint-text">URL para o checkout do plano (opcional).</span>
+                        </div>
+                        <div class="form-group">
                             <label for="currency">Moeda</label>
                             <div class="select-wrapper">
                                 <select name="currency" id="currency" v-model="planForm.currency" required>
@@ -209,6 +214,7 @@
                         <div class="th popular">Mais Vendido</div>
                         <div class="th recommended">Recomendado</div>
                         <div class="th active">Status</div>
+                        <div class="th purchase">Link de Compra</div>
                         <div class="th order">Ordem</div>
                         <div class="th actions">Ações</div>
                     </div>
@@ -240,6 +246,12 @@
                                 <span :class="plan.isActive ? 'status-active' : 'status-inactive'">
                                     {{ plan.isActive ? 'Ativo' : 'Inativo' }}
                                 </span>
+                            </div>
+                            <div class="td purchase">
+                                <a v-if="plan.purchaseLink" :href="plan.purchaseLink" target="_blank" class="purchase-link-preview" title="Ver Link de Compra">
+                                    <i class="fas fa-external-link-alt"></i> Link
+                                </a>
+                                <span v-else>-</span>
                             </div>
                             <div class="td order">{{ plan.displayOrder }}</div>
                             <div class="td actions">
@@ -308,6 +320,13 @@
                                 <span :class="plan.isActive ? 'status-active' : 'status-inactive'">
                                     {{ plan.isActive ? 'Ativo' : 'Inativo' }}
                                 </span>
+                            </span>
+                        </div>
+                        <div class="card-row-plan">
+                            <span class="card-label-plan">Link:</span>
+                            <span class="card-value-plan">
+                                <a v-if="plan.purchaseLink" :href="plan.purchaseLink" target="_blank" class="text-zenix-green">Abrir Link</a>
+                                <span v-else>-</span>
                             </span>
                         </div>
                         <div class="card-row-plan">
@@ -421,6 +440,7 @@ export default {
                 isActive: true,
                 displayOrder: 0,
                 externalId: '',
+                purchaseLink: '',
                 selectedIAs: [],
                 selectedAgents: [],
                 selectedTraders: []
@@ -628,6 +648,7 @@ export default {
                 isActive: plan.isActive !== undefined ? plan.isActive : true,
                 displayOrder: plan.displayOrder || 0,
                 externalId: plan.externalId || '',
+                purchaseLink: plan.purchaseLink || '',
                 // Features extraídas
                 selectedIAs: parsedFeatures.ias || [],
                 selectedAgents: parsedFeatures.agents || [],
@@ -650,6 +671,7 @@ export default {
                 isActive: true,
                 displayOrder: 0,
                 externalId: '',
+                purchaseLink: '',
                 selectedIAs: [],
                 selectedAgents: [],
                 selectedTraders: []
@@ -754,6 +776,7 @@ export default {
                     isActive: this.planForm.isActive !== undefined ? this.planForm.isActive : true,
                     displayOrder: parseInt(this.planForm.displayOrder) || 0,
                     externalId: this.planForm.externalId || null,
+                    purchaseLink: this.planForm.purchaseLink || null,
                 };
 
                 const response = await fetch(url, {
@@ -1390,7 +1413,7 @@ body {
 
 .table-header {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr 0.6fr 1fr;
+    grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr 1fr 0.6fr 1fr;
     align-items: center;
     padding: 10px 0;
     font-weight: 500;
@@ -1409,7 +1432,7 @@ body {
     font-size: 0.9rem;
     border-bottom: 1px solid #2a2a2a; 
     display: grid; 
-    grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr 0.6fr 1fr;
+    grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr 1fr 0.6fr 1fr;
     align-items: center;
     width: 100%;
     padding: 8px 0;

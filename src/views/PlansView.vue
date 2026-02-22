@@ -396,11 +396,62 @@ export default {
             return this.currentPlan && plan.id === this.currentPlan;
         },
         async handlePlanAction(plan) {
-            // Placeholder para ação do botão
-            if (this.$toast) {
-                this.$toast.info(`Ação para o plano: ${plan.name}`);
-            } else {
-                await alert(`Ação para o plano: ${plan.name}`);
+            // Se for o plano atual, avisar o usuário
+            if (this.isCurrentPlan(plan)) {
+                this.$toast?.info('Você já possui este plano ativo.');
+                return;
+            }
+
+            // Se for um plano gratuito (Starter)
+            if (plan.price === 0) {
+                await this.activateStarterPlan(plan);
+                return;
+            }
+
+            // Se for um plano pago e tiver link de compra configurado
+            if (plan.purchaseLink) {
+                console.log(`[PlansView] Redirecionando para checkout: ${plan.purchaseLink}`);
+                window.open(plan.purchaseLink, '_blank');
+                return;
+            }
+
+            // Fallback se for pago mas não tiver link
+            this.$toast?.warning('Link de assinatura indisponível momentaneamente. Entre em contato com o suporte.');
+        },
+
+        async activateStarterPlan(plan) {
+            try {
+                this.activating = true;
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch(`${apiBase}/plans/activate`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ planId: plan.id })
+                });
+
+                if (response.ok) {
+                    this.$toast?.success('Plano Starter ativado com sucesso!');
+                    // Atualizar usuário no localStorage
+                    const userStr = localStorage.getItem('user');
+                    if (userStr) {
+                        const user = JSON.parse(userStr);
+                        user.planId = plan.id;
+                        localStorage.setItem('user', JSON.stringify(user));
+                        this.currentPlan = plan.id;
+                    }
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Erro ao ativar plano');
+                }
+            } catch (err) {
+                this.$toast?.error(err.message || 'Erro ao ativar o plano.');
+            } finally {
+                this.activating = false;
             }
         },
         getDerivToken() {
