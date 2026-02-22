@@ -1869,7 +1869,7 @@
 
         <!-- Payout Result Modal -->
         <Teleport to="body">
-            <div v-if="showPayoutModal" class="modal-overlay" @click.self="showPayoutModal = false" style="z-index: 9999;">
+            <div v-if="showPayoutModal" class="modal-overlay" @click.self="showPayoutModal = false" style="z-index: 99999;">
                 <div class="modal-content" style="max-width: 500px">
                     <div class="modal-header">
                         <h3 class="modal-title">Resultado de Payouts</h3>
@@ -1906,6 +1906,7 @@
                 </div>
             </div>
         </Teleport>
+
     </div>
 </template>
 
