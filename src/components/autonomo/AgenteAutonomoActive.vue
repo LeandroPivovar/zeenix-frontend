@@ -1243,7 +1243,10 @@
                 return this.totalProfitToday || 0;
             },
             dailyOpsValue() {
-                // ✅ [ZENIX v4.3] Use deduped allTradesToday length for absolute daily count
+                // ✅ [ZENIX v4.3] Ops count sensitive to selected period
+                if (this.selectedPeriod === 'session') {
+                    return this.sessionTrades.length || 0;
+                }
                 return this.allTradesToday.length || 0;
             },
 			periodProfit() {
@@ -1551,16 +1554,17 @@
 				
 				const combined = [];
 				const getDedupKey = (t) => {
-                    // ✅ [ZENIX v4.3] Perfect Dedup: Prioritize Broker's Contract ID
-                    const contractId = t.contract_id || t.contractId || t.contract_id;
+                    // ✅ [ZENIX v4.3] Superior Dedup Key: Prioritize Universal Broker ID (Contract ID)
+                    // Live trades have 'id' = contractId. Historical have 'contract_id' and 'id' (db).
+                    const contractId = t.contract_id || t.contractId || (String(t.id).length > 8 ? t.id : null);
                     if (contractId) return `CID-${contractId}`;
                     
                     const ts = getTimestamp(t);
-                    const tsSeconds = Math.floor(ts / 1000); // Strip milliseconds
+                    const tsSeconds = Math.floor(ts / 1000); 
                     const profit = parseFloat(t.profit || t.profit_loss || 0).toFixed(2);
                     const stake = parseFloat(t.stake || 0).toFixed(2);
                     const mkt = (t.symbol || t.market || t.asset || '').toUpperCase();
-					return `${tsSeconds}-${profit}-${stake}-${mkt}`;
+					return `TS-${tsSeconds}-${profit}-${stake}-${mkt}`;
                 };
 				
                 const finalSeenKeys = new Set();
@@ -1720,20 +1724,20 @@
 					};
 				}).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 20000); // Increased limit to 20k as per user request
 
-			// ✅ Remove duplicates using exactly the same logic as allTradesToday
+			// ✅ Remove duplicates using identical priority logic as allTradesToday
 			const uniqueTrades = [];
 			const seenIds = new Set();
 			for (const trade of normalizedTrades) {
                 const raw = trade.original || trade;
-                const contractId = raw.contract_id || raw.contractId || raw.id;
+                const contractId = raw.contract_id || raw.contractId || (String(raw.id).length > 8 ? raw.id : null);
                 let key = '';
                 
-                if (contractId && String(contractId).length > 8) {
+                if (contractId) {
                     key = `CID-${contractId}`;
                 } else {
                     const ts = new Date(trade.createdAt).getTime();
                     const tsSeconds = Math.floor(ts / 1000);
-                    key = `${tsSeconds}-${trade.profit}-${trade.stake}-${trade.market.toUpperCase()}`;
+                    key = `TS-${tsSeconds}-${trade.profit}-${trade.stake}-${trade.market.toUpperCase()}`;
                 }
 
 				if (!seenIds.has(key)) {
