@@ -391,7 +391,7 @@
                                         </div>
                                         <!-- Prediction/Barrier -->
                                         <div>
-                                             <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType)">
+                                             <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(form.tradeType) || ['digits_over_under', 'digits_match_diff'].includes(form.selectedTradeTypeGroup)">
                                                 <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Dígito (Previsão)</label>
                                                 <div class="relative">
                                                     <select 
@@ -405,7 +405,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div v-if="['HIGHER', 'LOWER', 'ONETOUCH', 'NOTOUCH', 'RANGE', 'UPORDOWN'].includes(form.tradeType)">
+                                            <div v-if="['HIGHER', 'LOWER', 'ONETOUCH', 'NOTOUCH', 'RANGE', 'UPORDOWN'].includes(form.tradeType) || ['higher_lower', 'touch_no_touch', 'in_out', 'ends_in_out'].includes(form.selectedTradeTypeGroup)">
                                                 <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Barreira</label>
                                                 <input 
                                                     type="text" 
@@ -699,7 +699,7 @@
                                         <!-- Row 4: Target & Prediction -->
 
                                         <!-- Row 4: Prediction -->
-                                        <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(recoveryConfig.tradeType)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div v-if="['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF'].includes(recoveryConfig.tradeType) || ['digits_over_under', 'digits_match_diff'].includes(recoveryConfig.selectedTradeTypeGroup)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div>
                                                 <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Previsão</label>
                                                 <div class="relative">
@@ -2684,8 +2684,9 @@ export default {
 
                     try {
                         const proposal = await derivTradingService.getProposal(proposalParams);
-                        if (proposal && proposal.ask_price && proposal.payout) {
-                           const payoutPercent = ((proposal.payout - proposal.ask_price) / proposal.ask_price) * 100;
+                        if (proposal && (proposal.ask_price || proposal.askPrice) && proposal.payout) {
+                           const askPrice = proposal.askPrice || proposal.ask_price;
+                           const payoutPercent = ((proposal.payout - askPrice) / askPrice) * 100;
                            config.directionPayouts = { ...config.directionPayouts, [dir]: Math.round(payoutPercent) };
                         }
                     } catch (err) {
