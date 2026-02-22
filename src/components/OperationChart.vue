@@ -2808,6 +2808,7 @@ export default {
         entrySpot: this.activeContract.entry_spot,
         direction: this.activeContract.contract_type,
         currency: this.activeContract.currency || this.currency || 'USD',
+        symbol: this.activeContract.symbol || this.symbol,
         status: 'EXECUTED',
         purchaseTime: this.activeContract.entry_time
       });
@@ -3047,7 +3048,10 @@ export default {
             status: 'CLOSED',
             profit: profit,
             direction: this.activeContract.contract_type,
-            balanceAfter: this.accountBalanceValue
+            balanceAfter: this.accountBalanceValue,
+            symbol: this.activeContract.symbol || this.symbol,
+            exitSpot: this.activeContract.exit_spot,
+            sellPrice: this.activeContract.sell_price
           });
 
          derivTradingService.notifyEnd(resultData);

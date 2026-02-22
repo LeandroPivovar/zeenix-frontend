@@ -948,46 +948,56 @@ export default {
             second: '2-digit',
           });
 
-      // Se o status for CLOSED com contractId, atualizar ordem existente no array
-      if (result.status === 'CLOSED' && result.contractId) {
+      // Se o contractId já existir, atualizar ordem existente no array independentemente do status
+      if (result.contractId) {
         const existingOrderIndex = this.lastOrders.findIndex(
           order => order.contractId === result.contractId
         );
         
         if (existingOrderIndex !== -1) {
-          // Atualizar ordem existente com o profit e status final
+          // Atualizar ordem existente
           const updatedOrder = { ...this.lastOrders[existingOrderIndex] };
           if (result.profit != null) updatedOrder.profit = Number(result.profit);
-          updatedOrder.status = 'CLOSED';
+          if (result.status) updatedOrder.status = result.status;
+          if (result.exitPrice != null) updatedOrder.exitPrice = result.exitPrice;
+          if (result.sellPrice != null) updatedOrder.sellPrice = result.sellPrice;
+          
+          // Se o status terminar a operação, atualizar mapeamento da interface
+          if (['won', 'lost', 'win', 'loss', 'closed', 'expired', 'sold'].includes(String(result.status).toLowerCase())) {
+             updatedOrder.status = 'CLOSED';
+             this.updateSessionStats(result);
+          }
 
           // Força reatividade trocando o elemento
           this.lastOrders.splice(existingOrderIndex, 1, updatedOrder);
-
-          // Atualizar stats com base no resultado final
-          this.updateSessionStats(result);
           return;
         }
       }
 
-      // Criar entrada nova no histórico (p.ex., quando a operação é executada)
+      // Criar entrada nova no histórico (p.ex., quando a operação é inicialmente executada)
       const orderEntry = {
         time: timestamp,
         type: result.direction || 'CALL',
         price: result.buyPrice != null ? Number(result.buyPrice) : null,
+        entryPrice: result.entrySpot || result.buyPrice || null,
+        exitPrice: result.exitSpot || result.sellPrice || null,
         profit: result.profit != null ? Number(result.profit) : null,
         currency: result.currency || this.accountCurrency,
         status: result.status || 'EXECUTED',
         longcode: result.longcode || '',
         contractId: result.contractId || null,
+        market: result.market || this.getMarketName(result.symbol) || 'N/A'
       };
 
       this.lastOrders.unshift(orderEntry);
-      if (this.lastOrders.length > 10) {
+      if (this.lastOrders.length > 50) {
         this.lastOrders.pop();
       }
 
-      // Atualizar estatísticas apenas quando fechar
-      this.updateSessionStats(result);
+      // Atualizar estatísticas se a operação recém-criada já veio finalizada
+      if (['won', 'lost', 'win', 'loss', 'closed', 'expired', 'sold'].includes(String(result.status).toLowerCase())) {
+         this.updateSessionStats(result);
+      }
     },
     updateSessionStats(result) {
       if (!result || result.profit == null) return;
@@ -1113,45 +1123,8 @@ export default {
                   });
                 }
         
-        // Função para mapear símbolo para nome de mercado
-        const getMarketName = (symbol) => {
-          if (!symbol) return 'N/A';
-          const marketMap = {
-            'R_10': 'Volatility 10 Index',
-            'R_25': 'Volatility 25 Index',
-            'R_50': 'Volatility 50 Index',
-            'R_75': 'Volatility 75 Index',
-            'R_100': 'Volatility 100 Index',
-            '1HZ10V': 'Volatility 10 (1s) Index',
-            '1HZ25V': 'Volatility 25 (1s) Index',
-            '1HZ50V': 'Volatility 50 (1s) Index',
-            '1HZ75V': 'Volatility 75 (1s) Index',
-            '1HZ100V': 'Volatility 100 (1s) Index',
-            'cryBTCUSD': 'BTC/USD',
-            'cryETHUSD': 'ETH/USD',
-            'frxEURUSD': 'EUR/USD',
-            'frxUSDJPY': 'USD/JPY',
-            'frxGBPUSD': 'GBP/USD',
-            'frxUSDCHF': 'USD/CHF',
-            'frxAUDUSD': 'AUD/USD',
-            'frxUSDCAD': 'USD/CAD',
-            'frxNZDUSD': 'NZD/USD',
-            'frxEURGBP': 'EUR/GBP',
-            'frxEURJPY': 'EUR/JPY',
-            'frxGBPJPY': 'GBP/JPY',
-            'frxAUDCAD': 'AUD/CAD',
-            'frxAUDJPY': 'AUD/JPY',
-            'frxCHFJPY': 'CHF/JPY',
-            'frxEURAUD': 'EUR/AUD',
-            'frxGBPAUD': 'GBP/AUD',
-            'frxUSDMXN': 'USD/MXN',
-            'frxXAUUSD': 'XAU/USD',
-            'frxXAGUSD': 'XAG/USD',
-            'frxXPTUSD': 'XPT/USD',
-            'frxXPDUSD': 'XPD/USD',
-          };
-          return marketMap[symbol] || symbol;
-        };
+        // Pegando o mercado via helper method
+        const getMarketName = this.getMarketName;
 
         // Verificar se componente ainda está montado antes de atualizar
         if (this.isComponentDestroyed || !this.$el) {
@@ -1254,6 +1227,44 @@ export default {
       
       // Se for um status em uppercase, manter
       return status.toUpperCase();
+    },
+    getMarketName(symbol) {
+      if (!symbol) return 'N/A';
+      const marketMap = {
+        'R_10': 'Volatility 10 Index',
+        'R_25': 'Volatility 25 Index',
+        'R_50': 'Volatility 50 Index',
+        'R_75': 'Volatility 75 Index',
+        'R_100': 'Volatility 100 Index',
+        '1HZ10V': 'Volatility 10 (1s) Index',
+        '1HZ25V': 'Volatility 25 (1s) Index',
+        '1HZ50V': 'Volatility 50 (1s) Index',
+        '1HZ75V': 'Volatility 75 (1s) Index',
+        '1HZ100V': 'Volatility 100 (1s) Index',
+        'cryBTCUSD': 'BTC/USD',
+        'cryETHUSD': 'ETH/USD',
+        'frxEURUSD': 'EUR/USD',
+        'frxUSDJPY': 'USD/JPY',
+        'frxGBPUSD': 'GBP/USD',
+        'frxUSDCHF': 'USD/CHF',
+        'frxAUDUSD': 'AUD/USD',
+        'frxUSDCAD': 'USD/CAD',
+        'frxNZDUSD': 'NZD/USD',
+        'frxEURGBP': 'EUR/GBP',
+        'frxEURJPY': 'EUR/JPY',
+        'frxGBPJPY': 'GBP/JPY',
+        'frxAUDCAD': 'AUD/CAD',
+        'frxAUDJPY': 'AUD/JPY',
+        'frxCHFJPY': 'CHF/JPY',
+        'frxEURAUD': 'EUR/AUD',
+        'frxGBPAUD': 'GBP/AUD',
+        'frxUSDMXN': 'USD/MXN',
+        'frxXAUUSD': 'XAU/USD',
+        'frxXAGUSD': 'XAG/USD',
+        'frxXPTUSD': 'XPT/USD',
+        'frxXPDUSD': 'XPD/USD',
+      };
+      return marketMap[symbol] || symbol;
     },
     persistConnectionBalance(balanceValue, currency) {
       const saved = localStorage.getItem('deriv_connection');
