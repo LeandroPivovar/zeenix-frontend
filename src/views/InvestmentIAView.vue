@@ -896,26 +896,7 @@ export default {
 
     },
     methods: {
-        getStrategyIcon(name) {
-            const icons = {
-                'Atlas': 'fas fa-shield-alt',
-                'Apollo': 'fas fa-rocket',
-                'Nexus': 'fas fa-chart-bar',
-                'Orion': 'fas fa-star',
-                'Titan': 'fas fa-yin-yang'
-            };
-            return icons[name] || 'fas fa-robot';
-        },
-        getStrategyDescription(name) {
-                const descs = {
-                'Atlas': 'Híbrida: Dígitos + Price Action.',
-                'Apollo': 'Densidade de Dígitos e Microtendências',
-                'Nexus': 'Price Action com Barreira.',
-                'Orion': 'Estatística de Dígitos e Recuperação.',
-                'Titan': 'Dígitos Par/Ímpar Direcional.'
-            };
-            return descs[name] || 'Estratégia de IA avançada.';
-        },
+
         /**
          * ✅ ZENIX v3.5: Atualiza o saldo em tempo real vindo da IA (InvestmentActive)
          * Evita chamadas extras à API Deriv usando os dados de lucro já disponíveis
@@ -1485,7 +1466,7 @@ export default {
                         id: s.id,
                         title: identity?.name || s.title || s.name,
                         marketType: s.config?.form?.market || s.marketType || 'Custom',
-                        icon: (identity?.icon ? `fas fa-${identity.icon}` : '') || s.icon || 'fas fa-robot',
+                        icon: identity?.icon ? `fa-solid fa-${identity.icon}` : (s.icon || 'fas fa-robot'),
                         description: identity?.description || s.description || 'Estratégia personalizada',
                         
                         // Fix: Load Return/Assertiveness from Identity Config
