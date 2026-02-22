@@ -1257,6 +1257,12 @@
                    </label>
                 </div>
                 
+                <select v-else-if="key === 'targetDirection' && selectedDirections.length > 0" v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#1A1A1A] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm">
+                    <option v-for="dir in selectedDirections" :key="dir.value" :value="dir.value">
+                        {{ dir.label }}
+                    </option>
+                </select>
+
                 <input v-else-if="typeof value === 'number'" type="number" step="any" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#1A1A1A] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm" />
                 
                 <input v-else type="text" v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#1A1A1A] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm" />
