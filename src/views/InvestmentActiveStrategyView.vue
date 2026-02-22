@@ -218,7 +218,7 @@ export default {
             this.initTickConnection();
             this.$root.$toast.success('Robô iniciado com sucesso!');
             
-            // Logs de inicialização V2
+            // LOG 01 - Início de Sessão
             const date = new Date();
             const date_ddmmyyyy = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
             
@@ -626,6 +626,7 @@ export default {
                 this.sessionState.lastResultWin) {
                 
                 if (stake > config.initialStake) {
+                     // LOG 07 - Soros Ativado
                      const logMsg = `🚀 SOROS ATIVADO<br>` +
                          `• Nível: ${this.sessionState.consecutiveWins} / ${sorosLevel}<br>` +
                          `• Stake Antigo: $${this.sessionState.lastStakePrincipal ? this.sessionState.lastStakePrincipal.toFixed(2) : config.initialStake.toFixed(2)}<br>` +
