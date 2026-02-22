@@ -720,7 +720,7 @@
                                 <!-- SESSION HEADER: INICIO -->
                                 <tr v-if="item.type === 'header'" class="bg-[#1a1a1a]">
                                     <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-yellow-500 uppercase tracking-wider border-y border-[#27272a] text-left">
-                                         <span v-if="item.sessionNumber && selectedPeriod === 'session'" class="text-zenix-green mr-1">SESSÃO {{ item.sessionNumber }} - </span>
+                                         <span v-if="item.sessionNumber" class="text-zenix-green mr-1">SESSÃO{{ item.sessionNumber }} - </span>
                                          {{ currentAgentName }} - INÍCIO {{ item.startTime }}
                                     </td>
                                 </tr>
@@ -1787,6 +1787,8 @@
 				
 				sessions.forEach((sessionTrades, idx) => {
 					const sessionNum = sessions.length - idx; // Session 1 is the oldest
+					const sessId = sessionTrades[0]?.sessionId || sessionTrades[0]?.session_id;
+					const shortId = sessId ? ` #${sessId.substring(0, 6).toUpperCase()}` : ` ${sessionNum}`;
 					
 					// Calculate session data
 					const startTime = this.formatToSPTime(sessionTrades[sessionTrades.length - 1].createdAt);
@@ -1804,7 +1806,7 @@
 					if (sessionTrades.isMidnightEnd) {
 						endReason = 'FECHAMENTO DIÁRIO';
 						footerText = `00:00 (${endReason})`;
-						displayLabel = `SESSÃO ${sessionNum} FINALIZADA`;
+						displayLabel = `SESSÃO${shortId} FINALIZADA`;
 					}
 
 					if (this.selectedPeriod === 'session' && idx === 0 && !sessionTrades.isMidnightEnd) {
@@ -1869,11 +1871,11 @@
                         }
 
                          if (this.selectedPeriod !== 'session') {
-                             displayLabel = 'HISTÓRICO'; // Generic label for historical list
+                             displayLabel = `SESSÃO${shortId}`; // Usar o ID da sessão em vez de genérico
                              footerText = `${endTime} (${endReason})`;
                          } else {
                              footerText = `${endTime} (${endReason})`;
-                             displayLabel = `SESSÃO ${sessionNum} FINALIZADA`;
+                             displayLabel = `SESSÃO${shortId} FINALIZADA`;
                          }
                     }
 
@@ -1904,7 +1906,7 @@
 					items.push({
 						type: 'header',
 						id: `header-${idx}`,
-						sessionNumber: this.selectedPeriod !== 'session' ? '' : sessionNum, // Hide number for history
+						sessionNumber: shortId, // Mostrar shortId sempre
 						startTime: startTime
 					});
 				});
