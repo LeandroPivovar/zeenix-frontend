@@ -243,7 +243,6 @@ export default {
         if (!userId) return;
         
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
-        // ✅ [PERFORMANCE] Limit configurable (default 500 for display, 2000 for export)
         const response = await fetch(`${apiBase}/autonomous-agent/logs/${userId}?limit=${limit}`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -251,13 +250,31 @@ export default {
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data) {
-            console.log(`[AutonomousAgentLogs] Logs recebidos (limit=${limit}):`, result.data.length);
-            
             if (returnDataOnly) {
               return result.data;
             } else {
-              this.realtimeLogs = result.data;
-              this.$emit('update-logs', this.realtimeLogs);
+              // ✅ [ZENIX v4.3] Deep Message-Based Deduplication
+              // Backend might repeat logs due to polling overlaps; we filter them here.
+              const incoming = result.data;
+              const existing = this.realtimeLogs;
+              
+              const filtered = incoming.filter(newLog => {
+                const cleanMsg = (m) => m.replace(/^\[.*?\]\s*/, '').trim();
+                const newMsg = cleanMsg(newLog.message);
+                
+                return !existing.some(oldLog => {
+                    const oldMsg = cleanMsg(oldLog.message);
+                    const timeDiff = Math.abs(new Date(oldLog.timestamp) - new Date(newLog.timestamp));
+                    // Match if message is identical and timestamp is within 5 seconds
+                    return (oldMsg === newMsg && timeDiff < 5000);
+                });
+              });
+              
+              if (filtered.length > 0) {
+                console.log(`[AutonomousAgentLogs] Adicionando ${filtered.length} novos registros únicos.`);
+                this.realtimeLogs = [...filtered, ...existing].slice(0, 1000);
+                this.$emit('update-logs', this.realtimeLogs);
+              }
             }
           }
         }
@@ -266,6 +283,7 @@ export default {
     },
     startLogPolling() {
       // ✅ [PERFORMANCE] Display limit (200 items)
+      console.log('[AutonomousAgentLogs] Iniciando polling de logs...');
       this.stopLogPolling();
       this.fetchRealtimeLogs(200);
       this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(200), 3000);
