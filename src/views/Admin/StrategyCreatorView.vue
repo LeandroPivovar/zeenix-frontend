@@ -1242,10 +1242,38 @@
             <h4 class="text-white font-bold text-lg">{{ filter.name }}</h4>
           </div>
           <div class="mb-6 p-4 bg-[#111] border border-[#333] rounded">
-            <p class="text-sm text-gray-400">{{ filter.desc }}</p>
+            <p class="text-sm text-gray-400 mb-4">{{ filter.desc }}</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div v-for="(value, key) in getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()]" :key="key">
+                <label class="block text-xs font-bold text-gray-400 capitalize tracking-wider mb-2">
+                   {{ key.replace(/([A-Z])/g, ' $1') }}
+                </label>
+                
+                <div v-if="typeof value === 'boolean'" class="flex items-center mt-2">
+                   <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="sr-only peer">
+                      <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-zenix-green"></div>
+                   </label>
+                </div>
+                
+                <input v-else-if="typeof value === 'number'" type="number" step="any" v-model.number="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#1A1A1A] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm" />
+                
+                <input v-else type="text" v-model="getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()][key]" class="w-full bg-[#1A1A1A] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+    
+    <div class="modal-footer" style="padding: 1.25rem 1.5rem; border-top: 1px solid #2a2a2a; display: flex; justify-content: flex-end; gap: 1rem; background: #161616;">
+      <button v-if="filterStep === 2" @click="prevFilterStep" class="px-6 py-2 rounded-lg font-bold text-sm bg-[#222] text-white hover:bg-[#333] transition-colors border border-[#444]">
+        Voltar
+      </button>
+      <button @click="filterStep === 1 ? filterStep = 2 : saveFilters()" class="px-6 py-2 rounded-lg font-bold text-sm bg-zenix-green text-black hover:bg-[#1eb155] transition-colors">
+        {{ filterStep === 1 ? 'Avançar para Configuração' : 'Salvar Filtros' }}
+      </button>
     </div>
   </div>
 </div>
