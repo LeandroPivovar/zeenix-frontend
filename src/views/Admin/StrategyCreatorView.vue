@@ -1866,6 +1866,46 @@
                 </div>
             </div>
         </Teleport>
+
+        <!-- Payout Result Modal -->
+        <Teleport to="body">
+            <div v-if="payoutResultModal.isOpen" class="modal-overlay" @click.self="payoutResultModal.isOpen = false">
+                <div class="modal-content" style="max-width: 500px">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Resultado de Payouts</h3>
+                        <button @click="payoutResultModal.isOpen = false" class="modal-close-btn">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body space-y-6">
+                        <p class="text-sm text-gray-400">Aqui estão os payouts retornados pela corretora. Confira qual seria o resultado de uma aposta de <strong class="text-white">$1.00</strong> em cada direção listada:</p>
+                        
+                        <div class="space-y-4">
+                            <div v-for="(res, idx) in payoutResultModal.results" :key="idx" class="bg-[#111] border border-[#333] p-4 rounded-xl flex items-center justify-between">
+                                <div>
+                                    <div class="text-xs text-gray-500 font-bold uppercase mb-1">{{ res.cType }}</div>
+                                    <div class="text-zenix-green text-2xl font-black">{{ res.percent }}%</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xs text-gray-500 font-bold uppercase mb-1">Retorno Líquido ($1)</div>
+                                    <div class="text-white text-xl font-bold">+${{ res.returnAmount.toFixed(2) }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex gap-3">
+                            <button @click="payoutResultModal.isOpen = false" class="flex-1 bg-[#1E1E1E] hover:bg-[#2A2A2A] text-white font-bold py-3.5 rounded-lg transition-colors border border-[#333]">
+                                Cancelar
+                            </button>
+                            <button @click="applyCalculatedPayouts" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20">
+                                <i class="fa-solid fa-check"></i>
+                                Aplicar Payouts
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
@@ -1916,6 +1956,7 @@ export default {
             tempStrategyStatus: 'Rascunho',
             isLoadingAccounts: false,
             isCalculatingPayouts: { main: false, recovery: false },
+            payoutResultModal: { isOpen: false, results: [], context: 'main' },
             availableAccounts: [],
             selectedToken: null,
             savedStrategies: [],
@@ -2713,12 +2754,19 @@ export default {
                 }
                 
                 if (hasUpdates) {
-                    for (const k in newPayouts) {
-                        config.directionPayouts[k] = newPayouts[k];
-                    }
-                }
+                    const mappedResults = Object.keys(newPayouts).map(key => {
+                        const percent = newPayouts[key];
+                        return { 
+                            cType: key, 
+                            percent: percent, 
+                            returnAmount: (1 * (percent / 100)) 
+                        };
+                    });
 
-                this.$root.$toast.success('Payouts calculados com sucesso!');
+                    this.payoutResultModal.results = mappedResults;
+                    this.payoutResultModal.context = context;
+                    this.payoutResultModal.isOpen = true;
+                }
 
             } catch (error) {
                 console.error('Erro geral ao calcular payouts:', error);
@@ -2726,6 +2774,16 @@ export default {
             } finally {
                 this.isCalculatingPayouts[context] = false;
             }
+        },
+        applyCalculatedPayouts() {
+            const config = this.payoutResultModal.context === 'main' ? this.form : this.recoveryConfig;
+            
+            for (const res of this.payoutResultModal.results) {
+                config.directionPayouts[res.cType] = res.percent;
+            }
+            
+            this.payoutResultModal.isOpen = false;
+            this.$root.$toast.success('Payouts aplicados com sucesso aos campos!');
         },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
