@@ -1247,7 +1247,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div v-for="(value, key) in getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()]" :key="key">
                 <label class="block text-xs font-bold text-gray-400 capitalize tracking-wider mb-2">
-                   {{ key.replace(/([A-Z])/g, ' $1') }}
+                   {{ getFilterKeyTranslation(key) }}
                 </label>
                 
                 <div v-if="typeof value === 'boolean'" class="flex items-center mt-2">
@@ -2487,6 +2487,39 @@ export default {
 
         prevFilterStep() {
             this.filterStep = 1;
+        },
+
+        getFilterKeyTranslation(key) {
+            const map = {
+                length: 'Tamanho da Sequência',
+                parity: 'Paridade Alvo',
+                type: 'Tipo',
+                threshold: 'Limite',
+                digit: 'Dígito',
+                period: 'Período',
+                count: 'Contagem',
+                op: 'Operador',
+                periodShort: 'Período Curto',
+                periodLong: 'Período Longo',
+                direction: 'Direção',
+                lookback: 'Janela de Análise',
+                condition: 'Condição',
+                level: 'Nível',
+                stdDev: 'Desvio Padrão',
+                multiplier: 'Multiplicador',
+                window: 'Janela (Ticks)',
+                rangeTicks: 'Range (Ticks)',
+                jumpThreshold: 'Salto Mínimo',
+                percentage: 'Porcentagem (%)',
+                maxNoise: 'Ruído Máximo',
+                target: 'Alvo',
+                minDelta: 'Delta Mínimo',
+                ticksToConfirm: 'Confirmação (Ticks)',
+                digits: 'Dígitos',
+                operator: 'Operador de Comparação',
+                tradeInFavor: 'A Favor da Tendência'
+            };
+            return map[key] || key.replace(/([A-Z])/g, ' $1');
         },
 
         // --- Triple Config Helper ---
