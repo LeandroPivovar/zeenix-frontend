@@ -344,12 +344,9 @@
                                                             type="number" 
                                                             v-model.number="form.directionPayouts[dir.value]" 
                                                             class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-2 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                            step="1"
-                                                            min="1"
+                                                            step="0.0001"
+                                                            min="0"
                                                         />
-                                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                            <span class="text-[10px] text-gray-500 font-bold">%</span>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -652,12 +649,9 @@
                                                                 type="number" 
                                                                 v-model.number="recoveryConfig.directionPayouts[dir.value]" 
                                                                 class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-2 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                                step="1"
-                                                                min="1"
+                                                                step="0.0001"
+                                                                min="0"
                                                             />
-                                                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                                <span class="text-[10px] text-gray-500 font-bold">%</span>
-                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1368,43 +1362,7 @@
             </div>
         </Teleport>
 
-        <!-- Payout Result Modal (fixed overlay, no Teleport) -->
-        <div v-if="showPayoutModal" @click.self="showPayoutModal = false" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
-            <div style="background: #161616; border: 1px solid #2a2a2a; border-radius: 16px; width: 100%; max-width: 500px; overflow: hidden;">
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid #2a2a2a;">
-                    <h3 style="color: white; font-size: 1rem; font-weight: 700; margin: 0;">Resultado de Payouts</h3>
-                    <button @click="showPayoutModal = false" style="background: none; border: none; color: #888; cursor: pointer; font-size: 1.1rem; padding: 0.25rem;">
-                        <i class="fa-solid fa-times"></i>
-                    </button>
-                </div>
-                <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
-                    <p style="color: #9ca3af; font-size: 0.875rem; margin: 0;">Aqui estão os payouts retornados pela corretora. Confira qual seria o resultado de uma aposta de <strong style="color: white;">$1.00</strong> em cada direção:</p>
 
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        <div v-for="(res, idx) in payoutModalResults" :key="idx" style="background: #111; border: 1px solid #333; border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <div style="color: #6b7280; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">{{ res.cType }}</div>
-                                <div style="color: #00e676; font-size: 1.75rem; font-weight: 900; line-height: 1;">{{ res.percent }}%</div>
-                            </div>
-                            <div style="text-align: right;">
-                                <div style="color: #6b7280; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Retorno Líquido ($1)</div>
-                                <div style="color: white; font-size: 1.25rem; font-weight: 700;">+${{ res.returnAmount.toFixed(2) }}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 0.75rem; padding-top: 0.5rem;">
-                        <button @click="showPayoutModal = false" style="flex: 1; background: #1e1e1e; border: 1px solid #333; color: white; font-weight: 700; padding: 0.875rem; border-radius: 8px; cursor: pointer; transition: background 0.2s;">
-                            Cancelar
-                        </button>
-                        <button @click="applyCalculatedPayouts" style="flex: 1; background: #3b82f6; border: none; color: white; font-weight: 700; padding: 0.875rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s;">
-                            <i class="fa-solid fa-check"></i>
-                            Aplicar Payouts
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
     </div>
 </template>
@@ -1452,9 +1410,6 @@ export default {
             showStopModal: false, // New Stop Result Modal
             stopResult: { title: '', message: '', profit: 0, type: 'info' }, // Data for Stop Modal
             showSaveStrategyModal: false, // Custom Save Strategy Modal
-            showPayoutModal: false,
-            payoutModalResults: [],
-            payoutModalContext: 'main',
             tempStrategyName: '',
             tempStrategyStatus: 'Rascunho',
             isLoadingAccounts: false,
@@ -2180,8 +2135,7 @@ export default {
             this.isCalculatingPayouts[context] = true;
 
             try {
-                const directionsToCalculate = config.directionMode === 'both' ? ['up', 'down'] : [config.directionMode];
-                
+                // Determine which contract types correspond to each direction
                 let actualContractTypes = [];
                 for (const cat of this.tradeTypeCategories) {
                     const item = cat.items.find(i => i.value === config.selectedTradeTypeGroup);
@@ -2196,20 +2150,19 @@ export default {
                 }
 
                 if (actualContractTypes.length === 0) {
-                     this.$root.$toast.error('Tipo de trade inválido para calcular payout.');
-                     return;
+                    this.$root.$toast.error('Tipo de trade inválido para calcular payout.');
+                    return;
                 }
 
-                const newPayouts = { ...config.directionPayouts };
-                let hasUpdates = false;
+                // Determine directions to calculate
+                const directionsToCalculate = config.directionMode === 'both'
+                    ? actualContractTypes.slice(0, 2)
+                    : [config.directionMode === 'up' ? actualContractTypes[0] : (actualContractTypes[1] || actualContractTypes[0])];
 
-                for (const dir of directionsToCalculate) {
-                    let cType = actualContractTypes[0]; 
-                    if (dir === 'down' && actualContractTypes.length > 1) {
-                        cType = actualContractTypes[1];
-                    } else if (dir === 'up') {
-                        cType = actualContractTypes[0];
-                    }
+                let anySuccess = false;
+
+                for (let i = 0; i < directionsToCalculate.length; i++) {
+                    const cType = directionsToCalculate[i];
 
                     const proposalParams = {
                         symbol: config.market,
@@ -2217,59 +2170,49 @@ export default {
                         duration: config.duration,
                         durationUnit: config.durationUnit,
                         amount: 10,
-                        basis: 'stake' 
+                        basis: 'stake'
                     };
 
                     if (['DIGITOVER', 'DIGITUNDER', 'DIGITMATCH', 'DIGITDIFF', 'HIGHER', 'LOWER', 'ONETOUCH', 'NOTOUCH'].includes(cType)) {
                         proposalParams.barrier = config.prediction !== undefined ? String(config.prediction) : String(config.barrier);
                     }
                     if (['RANGE', 'UPORDOWN', 'EXPIRYRANGE', 'EXPIRYMISS'].includes(cType)) {
-                         proposalParams.barrier = String(config.barrier);
-                         proposalParams.barrier2 = String(config.barrier2);
+                        proposalParams.barrier = String(config.barrier);
+                        proposalParams.barrier2 = String(config.barrier2);
                     }
 
                     try {
-                        console.log(`[calculatePayouts] Fetching proposal for dir: ${dir}, cType: ${cType}`);
-                        console.log(`[calculatePayouts] Payload:`, proposalParams);
+                        console.log(`[calculatePayouts] Fetching proposal for cType: ${cType}`, proposalParams);
 
                         const proposal = await derivTradingService.getProposal(proposalParams);
-                        
-                        console.log(`[calculatePayouts] Response (` + cType + `):`, proposal);
 
-                        if (proposal && (proposal.ask_price || proposal.askPrice) && proposal.payout) {
-                           const askPrice = proposal.askPrice || proposal.ask_price;
-                           const payoutPercent = ((proposal.payout - askPrice) / askPrice) * 100;
-                           
-                           console.log(`[calculatePayouts] Calculated payout % = ${payoutPercent} for ${cType}`);
-                           
-                           newPayouts[cType] = Math.round(payoutPercent);
-                           hasUpdates = true;
-                           
-                           console.log(`[calculatePayouts] Updated directionPayouts object snapshot:`, newPayouts);
+                        console.log(`[calculatePayouts] Response (${cType}):`, proposal);
+
+                        if (proposal && proposal.payout) {
+                            // Convert payout to decimal: 22.62 -> 0.22
+                            const payoutDecimal = parseFloat((proposal.payout / 100).toFixed(4));
+
+                            console.log(`[calculatePayouts] Payout decimal = ${payoutDecimal} for ${cType}`);
+
+                            // Directly update the reactive config
+                            config.directionPayouts = {
+                                ...config.directionPayouts,
+                                [cType]: payoutDecimal
+                            };
+
+                            anySuccess = true;
                         } else {
-                           console.warn(`[calculatePayouts] Invalid or incomplete proposal data for ${cType}:`, proposal);
+                            console.warn(`[calculatePayouts] Proposta inválida para ${cType}:`, proposal);
+                            this.$root.$toast.warning(`Payout não disponível para ${cType}.`);
                         }
                     } catch (err) {
-                        console.error(`Erro ao buscar payout para ${dir}:`, err);
-                        this.$root.$toast.error(`Falha ao calcular payout da direção: ${dir}.`);
+                        console.error(`Erro ao buscar payout para ${cType}:`, err);
+                        this.$root.$toast.error(`Falha ao calcular payout para ${cType}.`);
                     }
                 }
-                
-                if (hasUpdates) {
-                    const mappedResults = Object.keys(newPayouts).map(key => {
-                        const percent = newPayouts[key];
-                        return { 
-                            cType: key, 
-                            percent: percent, 
-                            returnAmount: (1 * (percent / 100)) 
-                        };
-                    });
-                    
-                    console.log("[calculatePayouts] Opening modal with results:", mappedResults);
 
-                    this.payoutModalResults = mappedResults;
-                    this.payoutModalContext = context;
-                    this.showPayoutModal = true;
+                if (anySuccess) {
+                    this.$root.$toast.success('Payouts atualizados com sucesso!');
                 }
 
             } catch (error) {
@@ -2278,16 +2221,6 @@ export default {
             } finally {
                 this.isCalculatingPayouts[context] = false;
             }
-        },
-        applyCalculatedPayouts() {
-            const config = this.payoutModalContext === 'main' ? this.form : this.recoveryConfig;
-            
-            for (const res of this.payoutModalResults) {
-                config.directionPayouts[res.cType] = res.percent;
-            }
-            
-            this.showPayoutModal = false;
-            this.$root.$toast.success('Payouts aplicados com sucesso aos campos!');
         },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
