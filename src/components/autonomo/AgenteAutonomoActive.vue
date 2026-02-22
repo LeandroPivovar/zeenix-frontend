@@ -719,7 +719,8 @@
                                 <!-- SESSION HEADER: INICIO -->
                                 <tr v-if="item.type === 'header'" class="bg-[#1a1a1a]">
                                     <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-yellow-500 uppercase tracking-wider border-y border-[#27272a] text-left">
-                                         SESSÃO {{ item.sessionNumber }} - INÍCIO {{ item.startTime }}
+                                         <span v-if="item.sessionNumber && selectedPeriod === 'session'" class="text-zenix-green mr-1">SESSÃO {{ item.sessionNumber }} - </span>
+                                         {{ currentAgentName }} - INÍCIO {{ item.startTime }}
                                     </td>
                                 </tr>
 
@@ -757,8 +758,13 @@
                                     <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider border-b border-[#27272a] text-left">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center gap-2">
-                                                <span :class="item.isEnded ? 'text-[#A1A1AA]' : 'text-emerald-500'">{{ item.displayLabel }} - {{ item.timeLabel }}</span>
-                                                <span v-if="item.endReason" class="text-xs text-red-400">({{ item.endReason }})</span>
+                                                <span :class="item.isEnded ? 'text-[#A1A1AA]' : 'text-emerald-500'">
+                                                    {{ item.displayLabel === 'SESSÃO ATUAL' ? currentAgentName : item.displayLabel }} - {{ item.timeLabel }}
+                                                </span>
+                                                <span v-if="item.endReason" class="text-xs text-red-400 flex items-center gap-1">
+                                                    ({{ item.endReason }})
+                                                    <i v-if="item.endReason === 'PARADA MANUAL'" class="fa-solid fa-hand-paper text-[10px]"></i>
+                                                </span>
                                             </div>
                                             <div class="flex items-center gap-4">
                                                 <span class="text-[#FAFAFA] opacity-70">{{ item.totalOps }} OPERAÇÕES</span>
@@ -1180,6 +1186,10 @@
                 if (strategy.includes('titan')) return 'titan';
 				return 'zeus'; // Fallback default
 			},
+            currentAgentName() {
+                const name = this.agenteData?.name || this.agenteData?.estrategia || 'Autônomo';
+                return (name.toLowerCase().includes('agente') ? name : `Agente ${name}`).toUpperCase();
+            },
 			dateRangeText() {
 				const option = this.dateOptions.find(o => o.value === this.selectedPeriod);
 				if (option) return option.label;
@@ -1235,10 +1245,12 @@
                 return this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
             },
 			periodProfit() {
-				// ✅ [ZENIX v4.3] Use real-time session stats for selected periods to ensure UI updates instantly on restart
+				// ✅ [ZENIX v4.3] Use CALCULATED local stats for Session/Today to avoid backend/WS duplication issues
+                // This ensures that the header profit matches the sum of visible trades in the list.
                 if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
-                    const val = this.sessionStats?.netProfit;
-                    return (val === undefined || val === null || isNaN(val)) ? 0 : val;
+                    // Safety check: isNaN might occur if metrics are pending
+                    const profitValue = this.selectedPeriodMetrics.totalProfit;
+                    return isNaN(profitValue) ? 0 : profitValue;
                 }
 
 				// Fallback para soma de dados históricos (filtros passados)
@@ -1540,17 +1552,29 @@
 					return d ? new Date(d).getTime() : 0;
 				}
 				
-				const combined = [...liveSession];
-				const getDedupKey = (t) => `${getTimestamp(t)}-${t.profit || t.profit_loss || 0}-${t.stake || 0}-${t.symbol || t.market || ''}`;
-				const seenKeys = new Set(liveSession.map(t => getDedupKey(t)));
+				const combined = [];
+				const getDedupKey = (t) => `${getTimestamp(t)}-${parseFloat(t.profit || t.profit_loss || 0).toFixed(2)}-${parseFloat(t.stake || 0).toFixed(2)}-${t.symbol || t.market || ''}`;
 				
-				historicalToday.forEach(t => {
-					const key = getDedupKey(t);
-					if (key && !seenKeys.has(key)) {
-						combined.push(t);
-						seenKeys.add(key);
-					}
-				});
+                // ✅ [ZENIX v4.3] Robust Deduping (Prioritize live trades, then merge history)
+                const finalSeenKeys = new Set();
+                
+                // 1. Process Live Session (WS)
+                liveSession.forEach(t => {
+                    const key = getDedupKey(t);
+                    if (!finalSeenKeys.has(key)) {
+                        combined.push(t);
+                        finalSeenKeys.add(key);
+                    }
+                });
+
+                // 2. Process Historical Today (DB) - only if not already in live
+                historicalToday.forEach(t => {
+                    const key = getDedupKey(t);
+                    if (key && !finalSeenKeys.has(key)) {
+                        combined.push(t);
+                        finalSeenKeys.add(key);
+                    }
+                });
 
 				// Sort by time ascending
 				combined.sort((a, b) => getTimestamp(a) - getTimestamp(b));
@@ -1568,8 +1592,19 @@
 				const GAP_THRESHOLD_MS = 4 * 60 * 60 * 1000; // Increased to 4 hours to avoid premature splits
 				
 				const currentSessionTrades = [];
-				// Start with the last trade
-				currentSessionTrades.push(combined[combined.length - 1]);
+				
+                // ✅ [ZENIX v4.3] Date Validation BEFORE including last trade to prevent "stale" displays from previous sessions
+                const lastTrade = combined[combined.length - 1];
+                const lastTradeTime = getTimestamp(lastTrade);
+
+                if (sessionStartTime > 0 && lastTradeTime < sessionStartTime) {
+                    // IMPORTANT: If the absolute last trade is older than session start, it means session is truly empty
+                    console.log(`[sessionTrades] Last available trade is before official sessionStartTime. Returning empty.`);
+                    return [];
+                }
+
+                // Start with the last trade
+				currentSessionTrades.push(lastTrade);
 				
 				for (let i = combined.length - 2; i >= 0; i--) {
 					const curr = combined[i];
