@@ -99,11 +99,12 @@ export default {
     agentName: { type: String, default: 'AGENTE' },
     market: { type: String, default: '' },
     riskProfile: { type: String, default: '' },
-    accountType: { type: String, default: '' }
+    accountType: { type: String, default: '' },
+    initialLogs: { type: Array, default: () => [] }
   },
   data() {
     return {
-      realtimeLogs: [],
+      realtimeLogs: this.initialLogs || [],
       logPollingInterval: null,
       lastLogTimestamp: null
     };
@@ -253,25 +254,27 @@ export default {
             if (returnDataOnly) {
               return result.data;
             } else {
-              // ✅ [ZENIX v4.3] Deep Message-Based Deduplication
-              // Backend might repeat logs due to polling overlaps; we filter them here.
+              // ✅ [ZENIX v4.4] Advanced Content-Based Deduplication
+              // Filters redundant logs even if timestamps or prefixes [INFO] vary slightly.
               const incoming = result.data;
               const existing = this.realtimeLogs;
               
               const filtered = incoming.filter(newLog => {
-                const cleanMsg = (m) => m.replace(/^\[.*?\]\s*/, '').trim();
+                const cleanMsg = (m) => m ? m.replace(/^\[.*?\]\s*/, '').trim() : '';
                 const newMsg = cleanMsg(newLog.message);
-                
+                if (!newMsg) return false;
+
                 return !existing.some(oldLog => {
                     const oldMsg = cleanMsg(oldLog.message);
                     const timeDiff = Math.abs(new Date(oldLog.timestamp) - new Date(newLog.timestamp));
-                    // Match if message is identical and timestamp is within 5 seconds
-                    return (oldMsg === newMsg && timeDiff < 5000);
+                    // ✅ [ZENIX v4.5] Reduced deduplication window to 2s. 
+                    // This allows users to restart the agent quickly and see logs.
+                    return (oldMsg === newMsg && timeDiff < 2000);
                 });
               });
               
               if (filtered.length > 0) {
-                console.log(`[AutonomousAgentLogs] Adicionando ${filtered.length} novos registros únicos.`);
+                console.log(`[AutonomousAgentLogs] Filtered ${filtered.length} unique logs from ${incoming.length} incoming.`);
                 this.realtimeLogs = [...filtered, ...existing].slice(0, 1000);
                 this.$emit('update-logs', this.realtimeLogs);
               }

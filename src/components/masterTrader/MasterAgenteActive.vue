@@ -1733,6 +1733,8 @@
 				
 				sessions.forEach((sessionTrades, idx) => {
 					const sessionNum = sessions.length - idx; // Session 1 is the oldest
+					const sessId = sessionTrades[0]?.sessionId || sessionTrades[0]?.session_id;
+					const shortId = sessId ? ` #${sessId.substring(0, 6).toUpperCase()}` : ` ${sessionNum}`;
 					
 					// Calculate session data
 					const startTime = this.formatToSPTime(sessionTrades[sessionTrades.length - 1].createdAt);
@@ -1750,7 +1752,7 @@
 					if (sessionTrades.isMidnightEnd) {
 						endReason = 'FECHAMENTO DIÁRIO';
 						footerText = `00:00 (${endReason})`;
-						displayLabel = `SESSÃO ${sessionNum} FINALIZADA`;
+						displayLabel = `SESSÃO${shortId} FINALIZADA`;
 					}
 
 					if (this.selectedPeriod === 'session' && idx === 0 && !sessionTrades.isMidnightEnd) {
@@ -1804,10 +1806,11 @@
 					} else if (!sessionTrades.isMidnightEnd) {
                         // Historical or past sessions (non-midnight)
                          if (this.selectedPeriod !== 'session') {
-                             displayLabel = 'HISTÓRICO'; // Generic label for historical list
-                             footerText = `FIM - ${endTime}`;
+                             displayLabel = `SESSÃO${shortId}`; // Generic label for historical list
+                             footerText = `FIM - ${endTime} (${endReason})`;
                          } else {
-                             footerText = `FIM DA SESSÃO - ${endTime}`;
+                             footerText = `FIM DA SESSÃO - ${endTime} (${endReason})`;
+                             displayLabel = `SESSÃO${shortId} FINALIZADA`;
                          }
                     }
 
@@ -1838,7 +1841,7 @@
 					items.push({
 						type: 'header',
 						id: `header-${idx}`,
-						sessionNumber: this.selectedPeriod !== 'session' ? '' : sessionNum, // Hide number for history
+						sessionNumber: shortId, // Hide number for history
 						startTime: startTime
 					});
 				});
@@ -2541,6 +2544,8 @@
 
                      // ✅ [ZENIX v3.3] Restrict sessionId strictly to 'session' view
                      if (this.selectedPeriod === 'session') {
+                         url = `${apiBase}/autonomous-agent/trade-history/${userId}?limit=500${agentFilter}`;
+                     } else if (this.selectedPeriod === 'today') {
                          const dateParam = 'today';
                          const activeSessionId = this.agentConfig?.sessionId || this.agentConfig?.session_id || this.agentConfig?.id;
                          const sessionIdParam = activeSessionId ? `&sessionId=${activeSessionId}` : '';

@@ -43,10 +43,12 @@
               :user-id="currentUserId"
               :plan-features="planFeatures"
               :is-mobile="isMobile"
+              :initial-logs="realtimeLogs"
               @pausar-agente="toggleAgenteStatus('componenteAtivo')"
               @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
               @change-agent="handleChangeAgent"
               @live-balance-update="handleLiveBalanceUpdate"
+              @update-logs="realtimeLogs = $event"
             />
           </div>
 
@@ -135,6 +137,9 @@
   
         // Ações do Agente
         agentActions: [],
+        
+        // logs persistentes entre trocas de componentes
+        realtimeLogs: [],
   
         // Estado do Sidebar
         isSidebarOpen: false, // Começa fechado no mobile
