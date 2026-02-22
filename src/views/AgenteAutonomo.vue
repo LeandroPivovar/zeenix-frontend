@@ -1048,9 +1048,8 @@
         // Iniciar WebSocket para atualizações em tempo real (Saldo e Operações)
         this.initWebSocket();
 
-        // Polling apenas para configuração e logs (menos frequentes ou sem stream dedicado)
-        // ✅ [ZENIX v2.6] Polling reativado com Smart Merge para garantir que status STOP do backend seja recebido
-        // Intervalo reduzido para 5s para feedback rápido
+        // Polling foi removido conforme solicitação do usuário
+        /*
         this.pollingInterval = setInterval(() => {
           if (this.agenteEstaAtivo) {
             this.loadAgentConfig();
@@ -1062,6 +1061,7 @@
             this.loadTradeHistory();
           }
         }, 5000); // 5s para detectar STOP rápido
+        */
         
         // Atualizar tempo ativo a cada segundo
         this.timeUpdateInterval = setInterval(() => {

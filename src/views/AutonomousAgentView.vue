@@ -386,14 +386,14 @@ export default {
 			this.loadSessionStats();
 			this.loadTradeHistory();
 
-			// Polling a cada 5 segundos se o agente estiver ativo
-			this.pollingInterval = setInterval(() => {
-				if (this.agentConfig?.isActive) {
-					this.loadAgentConfig();
-					this.loadSessionStats();
-					this.loadTradeHistory();
-				}
-			}, 5000);
+			// Polling foi removido conforme solicitação:
+			// this.pollingInterval = setInterval(() => {
+			// 	if (this.agentConfig?.isActive) {
+			// 		this.loadAgentConfig();
+			// 		this.loadSessionStats();
+			// 		this.loadTradeHistory();
+			// 	}
+			// }, 5000);
 		},
 
 		stopPolling() {
