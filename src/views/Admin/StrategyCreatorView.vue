@@ -775,6 +775,7 @@
                                                 />
                                             </div>
                                         </div>
+                                        </div>
 
                                         <div class="border-t border-[#333] my-6"></div>
                                         
