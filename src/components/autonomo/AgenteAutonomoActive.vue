@@ -1811,23 +1811,26 @@
 						const validEndStatuses = ['loss', 'profit', 'blindado', 'paused', 'inactive', 'error', 'closs', 'manual', 'cycle'];
 						
 						if (validEndStatuses.includes(status)) {
-							if (status === 'paused') {
-								// ... pause check ...
+							if (status === 'paused' || status === 'manual') {
+								// Verificação de pausa de segurança (gatilhada por perdas)
 								let consecutiveLosses = 0;
 								for (let i = 0; i < sessionTrades.length; i++) {
 									if (sessionTrades[i].profit < 0) consecutiveLosses++;
 									else break;
 								}
 
+								isEnded = true; // Sempre encerra visualmente a sessão ao pausar
+								
+								// Se houver 2 perdas seguidas, é considerado pausa de segurança automática
 								if (consecutiveLosses >= 2) {
-									isEnded = true;
 									endReason = 'PAUSA SEGURANÇA (5 min)';
-									footerText += ` (${endReason})`;
 								} else {
-									isEnded = false;
-									footerText = `EM ANDAMENTO - ${endTime}`;
-									displayLabel = 'SESSÃO ATUAL';
+									// Caso contrário, é pausa manual do usuário
+									endReason = 'SESSÃO PAUSADA MANUALMENTE';
 								}
+								
+								footerText += ` (${endReason})`;
+								displayLabel = `SESSÃO${shortId} FINALIZADA`;
 							} else {
 								isEnded = true;
 								const statusMap = {
