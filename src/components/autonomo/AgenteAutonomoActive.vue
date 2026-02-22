@@ -1759,12 +1759,16 @@
 							} else {
 								isEnded = true;
 								const statusMap = {
+									'stopped_loss': 'STOP LOSS ATINGIDO',
+									'stopped_profit': 'META ATINGIDA',
+									'stopped_blindado': 'STOP BLINDADO ATINGIDO',
 									'loss': 'STOP LOSS ATINGIDO',
 									'profit': 'META ATINGIDA',
 									'blindado': 'STOP BLINDADO ATINGIDO',
 									'error': 'ERRO NO SISTEMA',
 									'inactive': 'SESSÃO ENCERRADA',
 									'closs': 'STOP POR PERDAS',
+									'paused': 'PARADA MANUAL',
 									'manual': 'PARADA MANUAL',
                                     'cycle': 'CICLOS COMPLETOS',
                                     'restart': 'REINÍCIO DO SERVIDOR'
