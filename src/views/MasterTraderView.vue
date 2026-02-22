@@ -708,9 +708,7 @@ export default {
     padding: 90px 20px;
     margin: 0; 
     border-bottom: 1px solid #30363d;
-    position: sticky; 
-    top: 0;
-    z-index: 10;
+    position: relative; 
 }
 
 .top-status-bar {

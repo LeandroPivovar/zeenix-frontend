@@ -579,11 +579,16 @@
 			<!-- Header -->
 			<div class="flex flex-col space-y-1.5 text-left mb-2">
 				<h2 class="text-sm sm:text-lg font-semibold leading-none tracking-tight flex items-center justify-between gap-4">
-					<div class="flex items-center gap-2">
-                        <span class="text-[#FAFAFA]" v-if="selectedPeriod === 'session' || selectedPeriod === 'today'">Relatório Diário — {{ activeDayDetails.date }}/2026</span>
-                        <span class="text-[#FAFAFA]" v-else>Relatório do Período</span>
-                        <div v-if="loadingDetailedStats" class="animate-spin rounded-full h-3 w-3 border-2 border-green-500 border-t-transparent"></div>
-                    </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[#FAFAFA]" v-if="selectedPeriod === 'session' || selectedPeriod === 'today'">
+                                Relatório Diário — {{ activeDayDetails.date }}/2026
+                            </span>
+                            <span class="text-[#FAFAFA]" v-else>Relatório do Período</span>
+                            <div v-if="selectedPeriod === 'session' && translatedSessionStatus" class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-white/10 text-white border-white/20 ml-2">
+                                {{ translatedSessionStatus }}
+                            </div>
+                            <div v-if="loadingDetailedStats" class="animate-spin rounded-full h-3 w-3 border-2 border-green-500 border-t-transparent ml-2"></div>
+                        </div>
 
                     <div class="flex items-center gap-2">
                          <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a] mr-4">
@@ -625,9 +630,9 @@
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3 col-span-2 sm:col-span-1">
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Evolução do Capital</div>
 					<div class="text-[10px] sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left flex items-center gap-2">
-						<span class="opacity-70">{{ preferredCurrencyPrefix }} {{ formatPrice(initialCapital) }}</span>
+						<span class="opacity-70">{{ preferredCurrencyPrefix }} {{ formatPrice(modalInitialCapital) }}</span>
 						<span class="text-[#A1A1AA] text-xs">-></span>
-						<span>{{ preferredCurrencyPrefix }} {{ formatPrice(finalCapital) }}</span>
+						<span>{{ preferredCurrencyPrefix }} {{ formatPrice(modalFinalCapital) }}</span>
 					</div>
 				</div>
 
@@ -1546,15 +1551,33 @@
 					return d ? new Date(d).getTime() : 0;
 				}
 				
-				const combined = [...liveSession];
-				const getDedupKey = (t) => `${getTimestamp(t)}-${t.profit || t.profit_loss || 0}-${t.stake || 0}-${t.symbol || t.market || ''}`;
-				const seenKeys = new Set(liveSession.map(t => getDedupKey(t)));
+				const combined = [];
+				const getDedupKey = (t) => {
+                    // ✅ [ZENIX v4.5] ULTIMATE DEDUP KEY: Only timestamp and precise financial values.
+                    const ts = getTimestamp(t);
+                    const tsSeconds = Math.floor(ts / 1000); 
+                    const profit = parseFloat(t.profit || t.profit_loss || 0).toFixed(2);
+                    const stake = parseFloat(t.stake || 0).toFixed(2);
+					return `TS-${tsSeconds}-${profit}-${stake}`;
+                };
 				
+				const finalSeenKeys = new Set();
+				
+				// 1. Process Live Session (WS)
+				liveSession.forEach(t => {
+					const key = getDedupKey(t);
+					if (!finalSeenKeys.has(key)) {
+						combined.push(t);
+						finalSeenKeys.add(key);
+					}
+				});
+
+				// 2. Process Historical Today (DB)
 				historicalToday.forEach(t => {
 					const key = getDedupKey(t);
-					if (key && !seenKeys.has(key)) {
+					if (key && !finalSeenKeys.has(key)) {
 						combined.push(t);
-						seenKeys.add(key);
+						finalSeenKeys.add(key);
 					}
 				});
 
@@ -1904,6 +1927,42 @@
                     avgProfit: avgProfit
 				};
 			},
+            translatedSessionStatus() {
+                const status = this.agenteData.sessionStatus || this.agenteData.agentStatus;
+                if (!status || status === 'active') return null;
+
+                const statusMap = {
+                    'stopped_loss': 'STOP LOSS ATINGIDO',
+                    'stopped_profit': 'META ATINGIDA',
+                    'stopped_blindado': 'STOP BLINDADO ATINGIDO',
+                    'loss': 'STOP LOSS ATINGIDO',
+                    'profit': 'META ATINGIDA',
+                    'blindado': 'STOP BLINDADO ATINGIDO',
+                    'error': 'ERRO NO SISTEMA',
+                    'inactive': 'SESSÃO ENCERRADA',
+                    'closs': 'STOP POR PERDAS',
+                    'paused': 'PARADA MANUAL',
+                    'manual': 'PARADA MANUAL',
+                    'cycle': 'CICLOS COMPLETOS',
+                    'restart': 'REINÍCIO DO SERVIDOR'
+                };
+                return statusMap[status] || (this.lastProcessedStatus ? statusMap[this.lastProcessedStatus] : null) || status.toUpperCase();
+            },
+            modalFinalCapital() {
+                // Return current exact final balance across the board
+                return this.finalCapital;
+            },
+            modalInitialCapital() {
+                // If we are evaluating a specific period or today/session, we walk backwards from the final capital
+                let periodProfit = 0;
+                if (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') {
+                    periodProfit = this.selectedPeriod === 'today' ? this.activeDayDetails.profit : this.selectedPeriodMetrics.totalProfit;
+                } else {
+                    periodProfit = this.selectedPeriodMetrics.totalProfit;
+                }
+                
+                return this.finalCapital - periodProfit;
+            },
 		},
 		watch: {
 			'agenteData.accountBalance'() { this.$forceUpdate(); },
