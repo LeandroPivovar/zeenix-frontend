@@ -619,9 +619,17 @@
 					</div>
 				</div>
 
-				<!-- Capital -->
+				<!-- Capital Inicial -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3">
-					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Capital Atual</div>
+					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Capital Inicial</div>
+					<div class="text-[10px] sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
+						{{ preferredCurrencyPrefix }} {{ formatPrice(finalCapital - (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit)) }}
+					</div>
+				</div>
+
+				<!-- Capital Final -->
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3">
+					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Capital Final</div>
 					<div class="text-[10px] sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
 						{{ preferredCurrencyPrefix }} {{ formatPrice(finalCapital) }}
 					</div>
