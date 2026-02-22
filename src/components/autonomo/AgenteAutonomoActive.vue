@@ -1544,42 +1544,36 @@
 				}
 				
 				const combined = [];
-				const getDedupKey = (t) => {
-                    // ✅ [ZENIX v4.6] Usa contract_id pois é o único ID que BATE EXATAMENTE entre WebSocket(Deriv) e Banco DB.
-                    // Ignorar t.id diretamente porque t.id no DB = 1, e t.id no WS = undefined (conflito)
-                    const possibleId = t.contractId || t.contract_id;
-                    if (possibleId) {
-                        return String(possibleId);
-                    }
-                    // Fallback
-                    const ts = getTimestamp(t);
-                    const tsSeconds = Math.floor(ts / 1000); 
-                    const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
-                    const profit = (isNaN(rawProfit) ? 0 : rawProfit).toFixed(2);
-                    const rawStake = t.stake !== undefined ? parseFloat(t.stake) : (t.stake_amount !== undefined ? parseFloat(t.stake_amount) : (t.buy_price !== undefined ? parseFloat(t.buy_price) : 0));
-                    const stake = (isNaN(rawStake) ? 0 : rawStake).toFixed(2);
-					return `TS-${tsSeconds}-${profit}-${stake}`;
-                };
+				const finalSeenKeys = new Set();
 				
-                const finalSeenKeys = new Set();
+				const addTrade = (t) => {
+					// Puxando possível ID para garantir match WS vs DB
+					const possibleId = t.contractId || t.contract_id || (t.original && (t.original.contractId || t.original.contract_id));
+					const idKey = possibleId ? String(possibleId) : null;
+
+					// Fallback (TS Key) extremamente forte para pegar itens onde ID falhou no fetch DB
+					const ts = getTimestamp(t);
+					const tsSeconds = Math.floor(ts / 1000); 
+					const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
+					const profit = (isNaN(rawProfit) ? 0 : rawProfit).toFixed(2);
+					const rawStake = t.stake !== undefined ? parseFloat(t.stake) : (t.stake_amount !== undefined ? parseFloat(t.stake_amount) : (t.buy_price !== undefined ? parseFloat(t.buy_price) : 0));
+					const stake = (isNaN(rawStake) ? 0 : rawStake).toFixed(2);
+					const exactTsKey = `TS-${tsSeconds}-${profit}-${stake}`;
+
+					if ((idKey && finalSeenKeys.has(idKey)) || finalSeenKeys.has(exactTsKey)) {
+						return; // already seen
+					}
+
+					if (idKey) finalSeenKeys.add(idKey);
+					finalSeenKeys.add(exactTsKey);
+					combined.push(t);
+				};
                 
                 // 1. Process Live Session (WS)
-                liveSession.forEach(t => {
-                    const key = getDedupKey(t);
-                    if (!finalSeenKeys.has(key)) {
-                        combined.push(t);
-                        finalSeenKeys.add(key);
-                    }
-                });
+                liveSession.forEach(addTrade);
 
                 // 2. Process Historical Today (DB)
-                historicalToday.forEach(t => {
-                    const key = getDedupKey(t);
-                    if (key && !finalSeenKeys.has(key)) {
-                        combined.push(t);
-                        finalSeenKeys.add(key);
-                    }
-                });
+                historicalToday.forEach(addTrade);
 
 				// Sort by time ascending
 				combined.sort((a, b) => getTimestamp(a) - getTimestamp(b));
@@ -1723,20 +1717,20 @@
 			const uniqueTrades = [];
 			const seenIds = new Set();
 			for (const trade of normalizedTrades) {
-                let key;
-                const possibleId = trade.contractId || trade.contract_id || (trade.original && (trade.original.contractId || trade.original.contract_id));
-                if (possibleId) {
-                    key = String(possibleId);
-                } else {
-                    const ts = new Date(trade.createdAt).getTime();
-                    const tsSeconds = Math.floor(ts / 1000);
-                    key = `TS-${tsSeconds}-${trade.profit}-${trade.stake}`;
-                }
+				const possibleId = trade.contractId || trade.contract_id || (trade.original && (trade.original.contractId || trade.original.contract_id));
+				const idKey = possibleId ? String(possibleId) : null;
 
-				if (!seenIds.has(key)) {
-					seenIds.add(key);
-					uniqueTrades.push(trade);
+                const ts = new Date(trade.createdAt).getTime();
+                const tsSeconds = Math.floor(ts / 1000);
+				const exactTsKey = `TS-${tsSeconds}-${trade.profit}-${trade.stake}`;
+
+				if ((idKey && seenIds.has(idKey)) || seenIds.has(exactTsKey)) {
+					continue; // Already seen
 				}
+
+				if (idKey) seenIds.add(idKey);
+				seenIds.add(exactTsKey);
+				uniqueTrades.push(trade);
 			}
 			const dedupedTrades = uniqueTrades;
 
