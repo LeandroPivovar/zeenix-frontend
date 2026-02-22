@@ -1362,7 +1362,43 @@
             </div>
         </Teleport>
 
-
+        <!-- Payout Modal -->
+        <transition name="modal-fade">
+            <div v-if="showPayoutModal" class="modal-overlay" @click.self="showPayoutModal = false">
+                <div class="modal-content" style="max-width: 420px; width: 90%;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Payouts Calculados</h3>
+                        <button @click="showPayoutModal = false" class="modal-close-btn"><i class="fa-solid fa-times"></i></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-gray-400 text-sm mb-4">Payouts retornados pela corretora para os contratos selecionados:</p>
+                        <div class="space-y-3 mb-6">
+                            <div v-for="(res, idx) in payoutModalResults" :key="idx"
+                                class="flex items-center justify-between bg-[#111] border border-[#333] rounded-xl p-4">
+                                <div>
+                                    <div class="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">{{ res.cType }}</div>
+                                    <div class="text-zenix-green text-2xl font-black">{{ res.decimal }}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Payout bruto</div>
+                                    <div class="text-white text-lg font-bold">{{ res.payout }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button @click="showPayoutModal = false"
+                                class="flex-1 bg-[#1E1E1E] border border-[#333] text-white font-bold py-3 rounded-lg hover:bg-[#2a2a2a] transition-colors">
+                                Cancelar
+                            </button>
+                            <button @click="applyCalculatedPayouts"
+                                class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-check"></i> Aplicar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
 
     </div>
 </template>
@@ -1409,7 +1445,10 @@ export default {
             showAccountModal: false,
             showStopModal: false, // New Stop Result Modal
             stopResult: { title: '', message: '', profit: 0, type: 'info' }, // Data for Stop Modal
-            showSaveStrategyModal: false, // Custom Save Strategy Modal
+            showSaveStrategyModal: false,
+            showPayoutModal: false,
+            payoutModalResults: [],
+            payoutModalContext: 'main', // Custom Save Strategy Modal
             tempStrategyName: '',
             tempStrategyStatus: 'Rascunho',
             isLoadingAccounts: false,
@@ -2160,6 +2199,7 @@ export default {
                     : [config.directionMode === 'up' ? actualContractTypes[0] : (actualContractTypes[1] || actualContractTypes[0])];
 
                 let anySuccess = false;
+                const payoutResults = [];
 
                 for (let i = 0; i < directionsToCalculate.length; i++) {
                     const cType = directionsToCalculate[i];
@@ -2191,13 +2231,9 @@ export default {
                         if (proposal && proposal.payout) {
                             // Convert payout to decimal: 22.62 -> 0.22
                             const payoutDecimal = parseFloat((proposal.payout / 100).toFixed(4));
-
                             console.log(`[calculatePayouts] Payout decimal = ${payoutDecimal} for ${cType}`);
 
-                            // Mutate directly on the reactive source — Vue 3 Proxy intercepts the set
-                            const target = isMain ? this.form : this.recoveryConfig;
-                            target.directionPayouts[cType] = payoutDecimal;
-
+                            payoutResults.push({ cType, decimal: payoutDecimal, payout: proposal.payout });
                             anySuccess = true;
                         } else {
                             console.warn(`[calculatePayouts] Proposta inválida para ${cType}:`, proposal);
@@ -2210,7 +2246,9 @@ export default {
                 }
 
                 if (anySuccess) {
-                    this.$root.$toast.success('Payouts atualizados com sucesso!');
+                    this.payoutModalResults = payoutResults;
+                    this.payoutModalContext = context;
+                    this.showPayoutModal = true;
                 }
 
             } catch (error) {
@@ -2219,6 +2257,15 @@ export default {
             } finally {
                 this.isCalculatingPayouts[context] = false;
             }
+        },
+        applyCalculatedPayouts() {
+            const config = this.payoutModalContext === 'main' ? this.form : this.recoveryConfig;
+            for (const res of this.payoutModalResults) {
+                // Use Vue.set-equivalent: replace object so Proxy sees the change
+                config.directionPayouts = Object.assign({}, config.directionPayouts, { [res.cType]: res.decimal });
+            }
+            this.showPayoutModal = false;
+            this.$root.$toast.success('Payouts aplicados!');
         },
         handleResize() {
             this.isMobile = window.innerWidth < 1024;
