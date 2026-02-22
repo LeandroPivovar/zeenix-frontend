@@ -2687,7 +2687,7 @@ export default {
                         if (proposal && (proposal.ask_price || proposal.askPrice) && proposal.payout) {
                            const askPrice = proposal.askPrice || proposal.ask_price;
                            const payoutPercent = ((proposal.payout - askPrice) / askPrice) * 100;
-                           config.directionPayouts = { ...config.directionPayouts, [dir]: Math.round(payoutPercent) };
+                           config.directionPayouts = { ...config.directionPayouts, [cType]: Math.round(payoutPercent) };
                         }
                     } catch (err) {
                         console.error(`Erro ao buscar payout para ${dir}:`, err);
