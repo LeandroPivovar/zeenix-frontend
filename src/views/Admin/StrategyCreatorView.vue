@@ -2657,6 +2657,9 @@ export default {
                      return;
                 }
 
+                const newPayouts = { ...config.directionPayouts };
+                let hasUpdates = false;
+
                 const promises = directionsToCalculate.map(async (dir) => {
                     let cType = actualContractTypes[0]; 
                     if (dir === 'down' && actualContractTypes.length > 1) {
@@ -2696,9 +2699,10 @@ export default {
                            
                            console.log(`[calculatePayouts] Calculated payout % = ${payoutPercent} for ${cType}`);
                            
-                           config.directionPayouts = { ...config.directionPayouts, [cType]: Math.round(payoutPercent) };
+                           newPayouts[cType] = Math.round(payoutPercent);
+                           hasUpdates = true;
                            
-                           console.log(`[calculatePayouts] Updated directionPayouts object:`, config.directionPayouts);
+                           console.log(`[calculatePayouts] Updated directionPayouts object snapshot:`, newPayouts);
                         } else {
                            console.warn(`[calculatePayouts] Invalid or incomplete proposal data for ${cType}:`, proposal);
                         }
@@ -2709,6 +2713,18 @@ export default {
                 });
 
                 await Promise.all(promises);
+                
+                if (hasUpdates) {
+                    if (typeof this.$set === 'function') {
+                        Object.keys(newPayouts).forEach(k => {
+                            this.$set(config.directionPayouts, k, newPayouts[k]);
+                        });
+                    } else {
+                        config.directionPayouts = { ...config.directionPayouts, ...newPayouts };
+                    }
+                    this.$forceUpdate();
+                }
+
                 this.$root.$toast.success('Payouts calculados com sucesso!');
 
             } catch (error) {
