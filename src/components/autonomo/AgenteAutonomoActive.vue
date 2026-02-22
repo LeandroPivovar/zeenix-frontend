@@ -1923,7 +1923,6 @@
                         profit += p;
                         if (p > 0) wins++;
                     });
-                } else if (this.dailyTradesSummary && (this.selectedPeriod === '7d' || this.selectedPeriod === '30d')) {
                 } else {
 					// Sum up from filteredDailyData
 					const data = this.filteredDailyData || [];
@@ -1955,7 +1954,7 @@
                 this.fetchTradesForPeriod();
                 this.syncRenderedValues();
 			},
-			'agenteData.sessionStatus'(newStatus) {
+			'agenteData.sessionStatus'(newStatus, oldStatus) {
 				if (newStatus === 'active') {
                     // ✅ [FIX] Reset flags when new session starts
                     this.sessionSummaryAcknowledged = false;
