@@ -662,24 +662,24 @@
 			<!-- Statistics Grid -->
 			<div class="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mt-4">
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.ops : selectedPeriodMetrics.totalTrades }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedPeriod === 'today' ? activeDayDetails.ops : selectedPeriodMetrics.totalTrades }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Operações</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-green-500">{{ selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.wins : selectedPeriodMetrics.wins }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-green-500">{{ selectedPeriod === 'today' ? activeDayDetails.wins : selectedPeriodMetrics.wins }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Positivas</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-red-500">{{ selectedPeriod === 'today' || selectedPeriod === 'session' ? (activeDayDetails.ops - activeDayDetails.wins) : (selectedPeriodMetrics.totalTrades - selectedPeriodMetrics.wins) }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-red-500">{{ selectedPeriod === 'today' ? (activeDayDetails.ops - activeDayDetails.wins) : (selectedPeriodMetrics.totalTrades - selectedPeriodMetrics.wins) }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Negativas</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ (selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.winRate : selectedPeriodMetrics.winRate).toFixed(1) }}%</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ (selectedPeriod === 'today' ? activeDayDetails.winRate : selectedPeriodMetrics.winRate).toFixed(1) }}%</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Win Rate</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums" :class="(selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ (selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : ((selectedPeriod === 'today' || selectedPeriod === 'session' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriod === 'today' || selectedPeriod === 'session' ? (activeDayDetails.profit / (activeDayDetails.ops || 1)) : selectedPeriodMetrics.avgProfit)) }}
+					<div class="text-base sm:text-lg font-bold tabular-nums" :class="(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'">
+						{{ (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : ((selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriod === 'today' ? (activeDayDetails.profit / (activeDayDetails.ops || 1)) : selectedPeriodMetrics.avgProfit)) }}
 					</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
 				</div>
