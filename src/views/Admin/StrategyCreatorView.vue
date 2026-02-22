@@ -1385,16 +1385,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex gap-3">
-                            <button @click="showPayoutModal = false"
-                                class="flex-1 bg-[#1E1E1E] border border-[#333] text-white font-bold py-3 rounded-lg hover:bg-[#2a2a2a] transition-colors">
-                                Cancelar
-                            </button>
-                            <button @click="applyCalculatedPayouts"
-                                class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-check"></i> Aplicar
-                            </button>
-                        </div>
+
                     </div>
                 </div>
             </div>
