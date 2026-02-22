@@ -2715,14 +2715,9 @@ export default {
                 await Promise.all(promises);
                 
                 if (hasUpdates) {
-                    if (typeof this.$set === 'function') {
-                        Object.keys(newPayouts).forEach(k => {
-                            this.$set(config.directionPayouts, k, newPayouts[k]);
-                        });
-                    } else {
-                        config.directionPayouts = { ...config.directionPayouts, ...newPayouts };
+                    for (const k in newPayouts) {
+                        config.directionPayouts[k] = newPayouts[k];
                     }
-                    this.$forceUpdate();
                 }
 
                 this.$root.$toast.success('Payouts calculados com sucesso!');
