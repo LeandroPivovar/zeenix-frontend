@@ -415,8 +415,8 @@ export default {
 		getSessionStatusLabel(status) {
 			const labels = {
 				active: '🟢 Ativo',
-				stopped_profit: '🎯 Stop Win',
-				stopped_loss: '🛑 Stop Loss',
+				profit: '🎯 Stop Win',
+				loss: '🛑 Stop Loss',
 				paused: '⏸ Pausado',
 			};
 			return labels[status] || status;
