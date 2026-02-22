@@ -599,9 +599,9 @@
                         {{ selectedPeriod === 'session' ? 'Lucro da Sessão' : (selectedPeriod === 'today' ? 'Lucro do Dia' : 'Lucro do Período') }}
                     </div>
 					<div class="text-base sm:text-xl font-bold tabular-nums text-left" 
-                        :class="(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'"
+                        :class="selectedPeriodMetrics.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'"
                     >
-						{{ (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit)) }}
+						{{ selectedPeriodMetrics.totalProfit < 0 ? '-' : '+' }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriodMetrics.totalProfit)) }}
 					</div>
 				</div>
 
@@ -650,24 +650,24 @@
 			<!-- Statistics Grid -->
 			<div class="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mt-4">
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedPeriod === 'today' ? activeDayDetails.ops : selectedPeriodMetrics.totalTrades }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedPeriodMetrics.totalTrades }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Operações</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-green-500">{{ selectedPeriod === 'today' ? activeDayDetails.wins : selectedPeriodMetrics.wins }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-green-500">{{ selectedPeriodMetrics.wins }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Positivas</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-red-500">{{ selectedPeriod === 'today' ? (activeDayDetails.ops - activeDayDetails.wins) : (selectedPeriodMetrics.totalTrades - selectedPeriodMetrics.wins) }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-red-500">{{ selectedPeriodMetrics.totalTrades - selectedPeriodMetrics.wins }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Negativas</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ (selectedPeriod === 'today' ? activeDayDetails.winRate : selectedPeriodMetrics.winRate).toFixed(1) }}%</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedPeriodMetrics.winRate.toFixed(1) }}%</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Win Rate</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums" :class="(selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ (selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) < 0 ? '-' : ((selectedPeriod === 'today' ? activeDayDetails.profit : selectedPeriodMetrics.totalProfit) > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriod === 'today' ? (activeDayDetails.profit / (activeDayDetails.ops || 1)) : selectedPeriodMetrics.avgProfit)) }}
+					<div class="text-base sm:text-lg font-bold tabular-nums" :class="selectedPeriodMetrics.totalProfit >= 0 ? 'text-green-500' : 'text-red-500'">
+						{{ selectedPeriodMetrics.totalProfit < 0 ? '-' : (selectedPeriodMetrics.totalProfit > 0 ? '+' : '') }}{{ preferredCurrencyPrefix }} {{ formatPrice(Math.abs(selectedPeriodMetrics.avgProfit)) }}
 					</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
 				</div>
@@ -1550,8 +1550,10 @@
                     // Ignores all IDs because WS and DB formats differ unpredictably.
                     const ts = getTimestamp(t);
                     const tsSeconds = Math.floor(ts / 1000); 
-                    const profit = parseFloat(t.profit || t.profit_loss || 0).toFixed(2);
-                    const stake = parseFloat(t.stake || 0).toFixed(2);
+                    const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.result !== undefined ? parseFloat(t.result) : 0));
+                    const profit = (isNaN(rawProfit) ? 0 : rawProfit).toFixed(2);
+                    const rawStake = t.stake !== undefined ? parseFloat(t.stake) : (t.stake_amount !== undefined ? parseFloat(t.stake_amount) : (t.buy_price !== undefined ? parseFloat(t.buy_price) : 0));
+                    const stake = (isNaN(rawStake) ? 0 : rawStake).toFixed(2);
 					return `TS-${tsSeconds}-${profit}-${stake}`;
                 };
 				
