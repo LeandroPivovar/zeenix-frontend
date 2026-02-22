@@ -1555,7 +1555,7 @@
                     // ✅ [ZENIX v4.5] ULTIMATE DEDUP KEY: Only timestamp and precise financial values.
                     const ts = getTimestamp(t);
                     const tsSeconds = Math.floor(ts / 1000); 
-                    const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.result !== undefined ? parseFloat(t.result) : 0));
+                    const rawProfit = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
                     const profit = (isNaN(rawProfit) ? 0 : rawProfit).toFixed(2);
                     const rawStake = t.stake !== undefined ? parseFloat(t.stake) : (t.stake_amount !== undefined ? parseFloat(t.stake_amount) : (t.buy_price !== undefined ? parseFloat(t.buy_price) : 0));
                     const stake = (isNaN(rawStake) ? 0 : rawStake).toFixed(2);
@@ -1658,7 +1658,7 @@
 					// ... (keep existing mapping logic)
                     // Handle potential snake_case from backend vs camelCase from frontend mapping
 					const createdAt = trade.createdAt || trade.created_at || trade.time;
-					const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.result !== undefined ? parseFloat(trade.result) : 0));
+					const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.profitLoss !== undefined ? parseFloat(trade.profitLoss) : (trade.result !== undefined && !isNaN(parseFloat(trade.result)) ? parseFloat(trade.result) : 0)));
 					const profit = isNaN(rawProfit) ? 0 : rawProfit;
 					
 					const rawStake = trade.stake !== undefined ? parseFloat(trade.stake) : (trade.stake_amount !== undefined ? parseFloat(trade.stake_amount) : (trade.buy_price !== undefined ? parseFloat(trade.buy_price) : (trade.entry !== undefined ? parseFloat(trade.entry) : 0)));
@@ -1885,7 +1885,8 @@
                     
                     if (trades > 0) {
                          sessionTrades.forEach(t => {
-                             const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : 0);
+                             const rawP = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
+                             const p = isNaN(rawP) ? 0 : rawP;
                              profit += p;
                              if (p > 0) wins++;
                          });
@@ -1897,7 +1898,8 @@
                     if (historicalTrades.length > 0) {
                         trades = historicalTrades.length;
                         historicalTrades.forEach(t => {
-                             const p = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.result !== undefined ? parseFloat(t.result) : 0));
+                             const rawP = t.profit !== undefined ? parseFloat(t.profit) : (t.profit_loss !== undefined ? parseFloat(t.profit_loss) : (t.profitLoss !== undefined ? parseFloat(t.profitLoss) : (t.result !== undefined && !isNaN(parseFloat(t.result)) ? parseFloat(t.result) : 0)));
+                             const p = isNaN(rawP) ? 0 : rawP;
                              profit += p;
                              if (p > 0) wins++;
                         });
@@ -2863,7 +2865,8 @@
                 }
 
                 sorted.forEach(trade => {
-                    const profit = parseFloat(trade.profit !== undefined ? trade.profit : (trade.profit_loss !== undefined ? trade.profit_loss : 0));
+                    const rawProfit = trade.profit !== undefined ? parseFloat(trade.profit) : (trade.profit_loss !== undefined ? parseFloat(trade.profit_loss) : (trade.profitLoss !== undefined ? parseFloat(trade.profitLoss) : (trade.result !== undefined && !isNaN(parseFloat(trade.result)) ? parseFloat(trade.result) : 0)));
+                    const profit = isNaN(rawProfit) ? 0 : rawProfit;
                     if (!isNaN(profit)) {
                         cumulative += profit;
                         
