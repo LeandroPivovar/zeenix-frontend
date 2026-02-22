@@ -748,8 +748,10 @@
                                             </div>
                                         </div>
                                         
-                                        <!-- Row 6: Conservador Settings -->
-                                        <div v-if="form.riskProfile === 'conservador'" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 p-4 bg-[#111] border border-dashed border-zenix-green/30 rounded-xl">
+                                        <!-- Row 6: Configuração de Parcelamento -->
+                                        <div class="mt-6 p-4 bg-[#111] border border-dashed border-zenix-green/30 rounded-xl">
+                                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">PARCELAMENTO DO PREJUÍZO (CONSERVADOR)</h4>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div>
                                                 <label class="block text-zenix-green text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
                                                     Parcelas Base <i class="fa-regular fa-circle-question text-[10px]" title="Número de fatias em que o prejuízo será dividido inicialmente."></i>
