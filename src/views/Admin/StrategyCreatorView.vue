@@ -1867,45 +1867,43 @@
             </div>
         </Teleport>
 
-        <!-- Payout Result Modal -->
-        <Teleport to="body">
-            <div v-if="showPayoutModal" class="modal-overlay" @click.self="showPayoutModal = false" style="z-index: 99999;">
-                <div class="modal-content" style="max-width: 500px">
-                    <div class="modal-header">
-                        <h3 class="modal-title">Resultado de Payouts</h3>
-                        <button @click="showPayoutModal = false" class="modal-close-btn">
-                            <i class="fa-solid fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body space-y-6">
-                        <p class="text-sm text-gray-400">Aqui estão os payouts retornados pela corretora. Confira qual seria o resultado de uma aposta de <strong class="text-white">$1.00</strong> em cada direção listada:</p>
-                        
-                        <div class="space-y-4">
-                            <div v-for="(res, idx) in payoutModalResults" :key="idx" class="bg-[#111] border border-[#333] p-4 rounded-xl flex items-center justify-between">
-                                <div>
-                                    <div class="text-xs text-gray-500 font-bold uppercase mb-1">{{ res.cType }}</div>
-                                    <div class="text-zenix-green text-2xl font-black">{{ res.percent }}%</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-xs text-gray-500 font-bold uppercase mb-1">Retorno Líquido ($1)</div>
-                                    <div class="text-white text-xl font-bold">+${{ res.returnAmount.toFixed(2) }}</div>
-                                </div>
+        <!-- Payout Result Modal (fixed overlay, no Teleport) -->
+        <div v-if="showPayoutModal" @click.self="showPayoutModal = false" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+            <div style="background: #161616; border: 1px solid #2a2a2a; border-radius: 16px; width: 100%; max-width: 500px; overflow: hidden;">
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid #2a2a2a;">
+                    <h3 style="color: white; font-size: 1rem; font-weight: 700; margin: 0;">Resultado de Payouts</h3>
+                    <button @click="showPayoutModal = false" style="background: none; border: none; color: #888; cursor: pointer; font-size: 1.1rem; padding: 0.25rem;">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+                    <p style="color: #9ca3af; font-size: 0.875rem; margin: 0;">Aqui estão os payouts retornados pela corretora. Confira qual seria o resultado de uma aposta de <strong style="color: white;">$1.00</strong> em cada direção:</p>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div v-for="(res, idx) in payoutModalResults" :key="idx" style="background: #111; border: 1px solid #333; border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <div style="color: #6b7280; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">{{ res.cType }}</div>
+                                <div style="color: #00e676; font-size: 1.75rem; font-weight: 900; line-height: 1;">{{ res.percent }}%</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color: #6b7280; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Retorno Líquido ($1)</div>
+                                <div style="color: white; font-size: 1.25rem; font-weight: 700;">+${{ res.returnAmount.toFixed(2) }}</div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="pt-4 flex gap-3">
-                            <button @click="showPayoutModal = false" class="flex-1 bg-[#1E1E1E] hover:bg-[#2A2A2A] text-white font-bold py-3.5 rounded-lg transition-colors border border-[#333]">
-                                Cancelar
-                            </button>
-                            <button @click="applyCalculatedPayouts" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20">
-                                <i class="fa-solid fa-check"></i>
-                                Aplicar Payouts
-                            </button>
-                        </div>
+                    <div style="display: flex; gap: 0.75rem; padding-top: 0.5rem;">
+                        <button @click="showPayoutModal = false" style="flex: 1; background: #1e1e1e; border: 1px solid #333; color: white; font-weight: 700; padding: 0.875rem; border-radius: 8px; cursor: pointer; transition: background 0.2s;">
+                            Cancelar
+                        </button>
+                        <button @click="applyCalculatedPayouts" style="flex: 1; background: #3b82f6; border: none; color: white; font-weight: 700; padding: 0.875rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s;">
+                            <i class="fa-solid fa-check"></i>
+                            Aplicar Payouts
+                        </button>
                     </div>
                 </div>
             </div>
-        </Teleport>
+        </div>
 
     </div>
 </template>
