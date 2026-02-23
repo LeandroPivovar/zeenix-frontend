@@ -414,19 +414,8 @@
                                         </div>
                                     </div>
 
-                                    <!-- Row 4: Detailed Params (Min Payout, Delay) -->
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div>
-                                            <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
-                                                Payout Min. (%) <i class="fa-regular fa-circle-question text-[10px]"></i>
-                                            </label>
-                                            <input 
-                                                type="number" 
-                                                v-model.number="form.minPayoutPercent" 
-                                                class="w-full bg-[#1E1E1E] text-white border border-[#333] rounded-lg p-3 focus:outline-none focus:border-zenix-green transition-colors text-sm"
-                                                min="1" max="100"
-                                            />
-                                        </div>
+                                    <!-- Row 4: Detailed Params (Delay) -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
                                                 Delay WIN (s) <i class="fa-regular fa-circle-question text-[10px]"></i>
@@ -1558,7 +1547,6 @@ export default {
                 expectedPayout: 1.20, // Default for DIGITUNDER 8 (bet $1, get $1.20 total)
                 directionMode: 'both', // 'both', 'up', 'down'
                 directionPayouts: {}, // { [contractType]: payout }
-                minPayoutPercent: 80, // New: Payout Min (%)
                 delayWin: 0, // New: Delay WIN (s)
                 delayLoss: 0, // New: Delay LOSS (s)
                 attackFilters: []
@@ -1599,7 +1587,6 @@ export default {
                 pauseVolatility: 50,
                 pauseTime: 5,
                 expectedPayout: 2.26, // Default for DIGITUNDER 4 (bet $1, get $2.26 total)
-                minPayoutPercent: 80, // New: Payout Min (%)
                 delayWin: 1, // New: Delay WIN (s)
                 delayLoss: 2, // New: Delay LOSS (s)
                 virtualLossTarget: 0, // New: Loss Virtual Slider
@@ -3559,26 +3546,6 @@ export default {
                             // 1. Update sessionState with the real PROFIT RATE for accuracy in next calculations
                             // Deriv Payout = Stake + Profit. 
                             const realPayoutRate = payout / stakeValue;
-
-                            // ? MIN PAYOUT CHECK (Main & Recovery)
-                            // If Recovery, use recovery minPayoutPercent. If Main, use form.minPayoutPercent.
-                            const isRecovery = this.sessionState.analysisType === 'RECUPERACAO';
-                            const minPayout = isRecovery 
-                                ? (this.recoveryConfig.minPayoutPercent || 0)
-                                : (this.form.minPayoutPercent || 0);
-
-                            if (minPayout > 0) {
-                                // Calculate payout percentage (e.g., 1.95 -> 95%)
-                                // Correct formula: ((Payout - Stake) / Stake) * 100
-                                const currentPayoutPercent = ((payout - stakeValue) / stakeValue) * 100;
-                                
-                                if (currentPayoutPercent < minPayout) {
-                                     this.addLog(`?? Payout Baixo (${currentPayoutPercent.toFixed(1)}%). Mínimo: ${minPayout}%. Ignorando entrada.`, 'warning');
-                                     this.isNegotiating = false;
-                                     this.retryingProposal = false;
-                                     return;
-                                }
-                            }
                             
                             // ? CRITICAL: Flag for buy logic to use the real rate in Fast Result
                             this.sessionState.tempExplicitPayout = realPayoutRate;
