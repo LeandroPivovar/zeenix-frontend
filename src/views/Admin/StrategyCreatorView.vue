@@ -1283,7 +1283,7 @@
 
         <!-- Pause Strategy Modal -->
         <Teleport to="body">
-            <div v-if="showPayoutModal" @click.self="showPayoutModal = false" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+            <div v-if="showPauseModal" @click.self="showPauseModal = false" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
                 <div class="modal-content" style="max-width: 500px">
                      <div class="modal-header">
                         <h3 class="modal-title">Pausa Estratégica</h3>
@@ -1425,7 +1425,7 @@
         <!-- Payout Modal -->
         <Teleport to="body">
             <transition name="modal-fade">
-                <div v-if="showPayoutModal" class="modal-overlay" @click.self="showPayoutModal = false" style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+                <div v-if="showPayoutModal" class="modal-overlay" @click.self="showPayoutModal = false">
                     <div class="modal-content" style="max-width: 420px; width: 90%;">
                         <div class="modal-header">
                             <h3 class="modal-title">Payouts Calculados</h3>
