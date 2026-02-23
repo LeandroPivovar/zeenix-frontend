@@ -1424,37 +1424,35 @@
 
         <!-- Payout Modal -->
         <Teleport to="body">
-            <transition name="modal-fade">
-                <div v-if="showPayoutModal" class="modal-overlay" @click.self="showPayoutModal = false">
-                    <div class="modal-content" style="max-width: 420px; width: 90%;">
-                        <div class="modal-header">
-                            <h3 class="modal-title">Payouts Calculados</h3>
-                            <button @click="showPayoutModal = false" class="modal-close-btn"><i class="fa-solid fa-times"></i></button>
-                        </div>
-                        <div class="modal-body">
-                            <p class="text-gray-400 text-sm mb-4">Payouts retornados pela corretora para os contratos selecionados:</p>
-                            <div class="space-y-3 mb-6">
-                                <div v-for="(res, idx) in payoutModalResults" :key="idx"
-                                    class="flex items-center justify-between bg-[#111] border border-[#333] rounded-xl p-4">
-                                    <div>
-                                        <div class="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">{{ res.cType }}</div>
-                                        <div class="text-zenix-green text-2xl font-black">{{ res.decimal }}</div>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Payout bruto</div>
-                                        <div class="text-white text-lg font-bold">{{ res.payout }}</div>
-                                    </div>
+            <div v-if="showPayoutModal" class="modal-overlay" @click.self="showPayoutModal = false">
+                <div class="modal-content" style="max-width: 420px; width: 90%;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Payouts Calculados</h3>
+                        <button @click="showPayoutModal = false" class="modal-close-btn"><i class="fa-solid fa-times"></i></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-gray-400 text-sm mb-4">Payouts retornados pela corretora para os contratos selecionados:</p>
+                        <div class="space-y-3 mb-6">
+                            <div v-for="(res, idx) in payoutModalResults" :key="idx"
+                                class="flex items-center justify-between bg-[#111] border border-[#333] rounded-xl p-4">
+                                <div>
+                                    <div class="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">{{ res.cType }}</div>
+                                    <div class="text-zenix-green text-2xl font-black">{{ res.decimal }}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Payout bruto</div>
+                                    <div class="text-white text-lg font-bold">{{ res.payout }}</div>
                                 </div>
                             </div>
-                            <div class="pt-4 mt-2 border-t border-[#333]">
-                                <button @click="applyCalculatedPayouts" class="w-full bg-zenix-green text-black font-bold py-3 rounded-lg hover:bg-green-500 transition-colors">
-                                    Aplicar Payouts à Estratégia
-                                </button>
-                            </div>
+                        </div>
+                        <div class="pt-4 mt-2 border-t border-[#333]">
+                            <button @click="applyCalculatedPayouts" class="w-full bg-zenix-green text-black font-bold py-3 rounded-lg hover:bg-green-500 transition-colors">
+                                Aplicar Payouts à Estratégia
+                            </button>
                         </div>
                     </div>
                 </div>
-            </transition>
+            </div>
         </Teleport>
 
     </div>
