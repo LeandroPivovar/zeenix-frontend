@@ -1244,6 +1244,14 @@
           <div class="mb-6 p-4 bg-[#111] border border-[#333] rounded">
             <p class="text-sm text-gray-400 mb-4">{{ filter.desc }}</p>
             
+            <div v-if="getFilterDescription(filter)" class="mb-4 bg-zenix-green/5 p-4 rounded-lg border border-zenix-green/20">
+              <div class="flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-lightbulb text-zenix-green text-sm"></i>
+                <h5 class="text-xs font-bold text-zenix-green uppercase tracking-wider">Lógica do Filtro Aplicada</h5>
+              </div>
+              <p class="text-sm text-gray-300 leading-relaxed" v-html="getFilterDescription(filter).text"></p>
+            </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div v-for="(value, key) in getFilterConfig(filter)[activeConfigTab.toLowerCase() === 'moderado' ? 'normal' : activeConfigTab.toLowerCase()]" :key="key">
                 <label class="block text-xs font-bold text-gray-400 capitalize tracking-wider mb-2">
